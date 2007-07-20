@@ -79,7 +79,7 @@ public class HelpSourcesDetailPanel extends javax.swing.JPanel {
         add(scrollHelpSources, gridBagConstraints);
 
         lblHelpSources.setLabelFor(lstHelpSources);
-        org.openide.awt.Mnemonics.setLocalizedText(lblHelpSources, org.openide.util.NbBundle.getBundle("org/netbeans/modules/visualweb/complib/ui/Bundle").getString("manager.HelpSourcesLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(lblHelpSources, org.openide.util.NbBundle.getBundle("org/netbeans/modules/visualweb/complib/ui/Bundle").getString("manager.HelpSourcesLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -89,7 +89,7 @@ public class HelpSourcesDetailPanel extends javax.swing.JPanel {
         add(lblHelpSources, gridBagConstraints);
 
         lblHelpSetFile.setLabelFor(txtHelpSetFile);
-        org.openide.awt.Mnemonics.setLocalizedText(lblHelpSetFile, org.openide.util.NbBundle.getBundle("org/netbeans/modules/visualweb/complib/ui/Bundle").getString("manager.HelpSetFileLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(lblHelpSetFile, org.openide.util.NbBundle.getBundle("org/netbeans/modules/visualweb/complib/ui/Bundle").getString("manager.HelpSetFileLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -99,7 +99,6 @@ public class HelpSourcesDetailPanel extends javax.swing.JPanel {
 
         txtHelpSetFile.setEditable(false);
         txtHelpSetFile.setText("chelp");
-        txtHelpSetFile.setPreferredSize(new java.awt.Dimension(100, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
@@ -111,7 +110,7 @@ public class HelpSourcesDetailPanel extends javax.swing.JPanel {
 
         tpnlDescription.setBackground(javax.swing.UIManager.getDefaults().getColor("Button.background"));
         tpnlDescription.setEditable(false);
-        tpnlDescription.setText(org.openide.util.NbBundle.getBundle(HelpSourcesDetailPanel.class).getString("manager.HelpDescription"));
+        tpnlDescription.setText(org.openide.util.NbBundle.getBundle(HelpSourcesDetailPanel.class).getString("manager.HelpDescription")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -119,7 +118,6 @@ public class HelpSourcesDetailPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
         add(tpnlDescription, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
