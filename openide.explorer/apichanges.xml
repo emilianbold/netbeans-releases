@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
         method allows using substring search for the typed in text in the quick
         search feature instead of the (default) prefix search.
         </description>
-        <class package="org.openide.explorer" name="TreeView" link="yes"/>
+        <class package="org.openide.explorer.view" name="TreeView"/>
         <issue number="108729"/>
     </change>
      <change id="extendedDelete">
@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
         <description>Added an interface ExtendedDelete that can be registered to
         handle deletion of selected nodes instead of the default implementation.
         </description>
-        <class package="org.openide.explorer" name="ExtendedDelete" link="yes"/>
+        <class package="org.openide.explorer" name="ExtendedDelete"/>
         <issue number="76722"/>
     </change>
 
@@ -63,7 +63,7 @@ Microsystems, Inc. All Rights Reserved.
         <description>Added setters for the visibility of the description area
         and availability of the popup menu to PropertySheet
         </description>
-        <class package="org.openide.explorer.propertysheet" name="PropertySheet" link="yes"/>
+        <class package="org.openide.explorer.propertysheet" name="PropertySheet"/>
         <issue number="100170"/>
     </change>
 
