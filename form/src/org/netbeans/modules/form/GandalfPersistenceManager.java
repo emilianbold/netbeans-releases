@@ -3078,7 +3078,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
             saveAuxValues(auxValues, buf2, ONE_INDENT + ONE_INDENT);
             buf2.append(ONE_INDENT); addElementClose(buf2, XML_AUX_VALUES);
         }
-        addElementClose(buf2, XML_FORM);
 
         // determine FormInfo type (for backward compatibility)
         String compatFormInfo = getFormInfoForKnownClass(
@@ -3100,6 +3099,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 new String[] { ATTR_FORM_VERSION, ATTR_FORM_TYPE },
                 new String[] { formatVersion, compatFormInfo });
         }
+        buf1.append(buf2);
+        addElementClose(buf1, XML_FORM);
 
         // final cleanup
         if (expressions != null)
@@ -3126,7 +3127,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         try {
             os = formFile.getOutputStream(lock);
             os.write(buf1.toString().getBytes(encoding));
-            os.write(buf2.toString().getBytes(encoding));
         }
         catch (Exception ex) {
             PersistenceException pe = new PersistenceException(
