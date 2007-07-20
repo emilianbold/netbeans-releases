@@ -67,6 +67,7 @@ public final class EjbViewController {
     
     private final String ejbClass;
     private final org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule;
+    private String displayName;
     
     public EjbViewController(String ejbClass, org.netbeans.modules.j2ee.api.ejbjar.EjbJar ejbModule) {
         this.ejbClass = ejbClass;
@@ -74,20 +75,21 @@ public final class EjbViewController {
     }
     
     public String getDisplayName() {
-        String displayName = null;
-        try {
-            displayName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
-                public String run(EjbJarMetadata metadata) throws IOException {
-                    Ejb ejb = metadata.findByEjbClass(ejbClass);
-                    String name = ejb.getDefaultDisplayName();
-                    if (name == null) {
-                        name = ejb.getEjbName();
+        if (displayName == null) {
+            try {
+                displayName = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
+                    public String run(EjbJarMetadata metadata) throws IOException {
+                        Ejb ejb = metadata.findByEjbClass(ejbClass);
+                        String name = ejb.getDefaultDisplayName();
+                        if (name == null) {
+                            name = ejb.getEjbName();
+                        }
+                        return name;
                     }
-                    return name;
-                }
-            });
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
+                });
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
         }
         return displayName;
     }
