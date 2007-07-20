@@ -232,8 +232,15 @@ public final class FileObjectFactory {
             o = (ref != null) ? ref.get() : null;
             assert (o == null || o instanceof BaseFileObj);
         }
-
-        return (BaseFileObj) o;
+        BaseFileObj retval = (BaseFileObj) o;
+        if (retval != null) {
+            if (!file.getName().equals(retval.getNameExt())) {
+                if (!file.equals(retval.getFileName().getFile())) {
+                    retval = null;
+                }
+            }
+        }
+        return retval;
     }
 
     private static Reference getReference(final List list, final File file) {

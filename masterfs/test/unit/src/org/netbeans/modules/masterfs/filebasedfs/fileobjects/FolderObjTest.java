@@ -114,6 +114,37 @@ public class FolderObjTest extends NbTestCase {
             lck.releaseLock();
         }        
     }
+            
+    public void testRefresh109490() throws Exception {
+        final File wDir = getWorkDir();
+        final FileObject wDirFo = FileBasedFileSystem.getFileObject(wDir);
+        final List fileEvents = new ArrayList();
+        FileSystem fs = wDirFo.getFileSystem();
+        FileChangeListener fListener = new FileChangeAdapter(){
+                public void fileDataCreated(FileEvent fe) {
+                    super.fileDataCreated(fe);
+                    fileEvents.add(fe);
+                }            
+            };
+        try {
+            fs.addFileChangeListener(fListener);
+
+            File file = new File(wDir, "testao.f");
+            File file2 = new File(wDir, "testc1.f");
+            assertEquals(file.hashCode(), file2.hashCode());
+            wDirFo.getChildren();
+            assertTrue(file.createNewFile());
+            assertTrue(file2.createNewFile());
+            assertEquals(0, fileEvents.size());
+            fs.refresh(true);
+            assertEquals(2, fileEvents.size());
+            assertEquals(Arrays.asList(wDirFo.getChildren()).toString(), 2,wDirFo.getChildren().length);
+            assertTrue(Arrays.asList(wDirFo.getChildren()).toString().indexOf(file.getName()) != -1);            
+            assertTrue(Arrays.asList(wDirFo.getChildren()).toString().indexOf(file2.getName()) != -1);                        
+        } finally {
+            fs.removeFileChangeListener(fListener);
+        }
+    }
     
     public void testCreateFolder72617() throws IOException {
         Handler handler = new IntrusiveLogHandler("FolderCreated:") {//NOI18N

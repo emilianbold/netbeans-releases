@@ -106,6 +106,9 @@ public class FileName implements FileNaming {
     }
 
     public final boolean equals(final Object obj) {
+        if (obj instanceof FileName ) {
+            return (obj.hashCode() == hashCode()) && name.equals(((FileName)obj).name);
+        }
         return (obj instanceof FileNaming && obj.hashCode() == hashCode());
     }
 
