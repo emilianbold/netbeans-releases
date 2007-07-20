@@ -185,16 +185,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                                 url = new URL(url.toExternalForm()+'/');   //NOI18N
                             }
                             result.add(ClassPathSupport.createResource(url));
-                            
-                            // generated/wsimport/client
-                            f = new File(projectHelper.resolveFile(buildDir),"generated/wsimport/client"); //NOI18N
-                            url = f.toURI().toURL();
-                            if (!f.exists()) {  //NOI18N
-                                assert !url.toExternalForm().endsWith("/");  //NOI18N
-                                url = new URL(url.toExternalForm()+'/');   //NOI18N
-                            }
-                            result.add(ClassPathSupport.createResource(url));
-                            
+
                             // generated/addons/<subDirs>
                             result.addAll(getGeneratedSrcRoots(buildDir,
                                     new String[] {DIR_GEN_BINDINGS}));
