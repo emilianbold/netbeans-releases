@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -59,6 +59,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
         suite.addTest(new MethodThrowsTest("testStupid"));
         suite.addTest(new MethodThrowsTest("testTuner"));
         suite.addTest(new MethodThrowsTest("testAddFirstToBadFormatted"));
+        suite.addTest(new MethodThrowsTest("testAddFirst2"));
         return suite;
     }
     
@@ -81,7 +82,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -125,7 +126,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -171,7 +172,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -217,7 +218,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -261,7 +262,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -305,7 +306,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -346,7 +347,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -388,7 +389,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -430,7 +431,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -474,7 +475,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -525,7 +526,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -567,7 +568,7 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -594,11 +595,56 @@ public class MethodThrowsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
-    protected void setUp() throws Exception {
-        super.setUp();
-        testFile = getFile(getSourceDir(), getSourcePckg() + "Test.java");
-    }
+    public void testAddFirst2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui()\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() throws IOException\n" +
+            "    {\n" +
+            "    }\n" +
+            "}\n";
 
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    // should check kind, here we can be sure!
+                    ClassTree clazz = (ClassTree) typeDecl;
+                    MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                    MethodTree copy = make.addMethodThrows(
+                        method, make.Identifier("IOException")
+                    );
+                    workingCopy.rewrite(method, copy);
+                }
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
