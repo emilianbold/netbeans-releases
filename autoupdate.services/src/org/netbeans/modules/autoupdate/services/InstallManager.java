@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,13 +61,26 @@ public class InstallManager {
                 String targetCluster = update.getInstallInfo ().getTargetCluster ();
                 File firstPossible = null;
                 for (File cluster : UpdateTracking.clusters (false)) {
-                    if (firstPossible == null && cluster.isDirectory () && cluster.canWrite ()) {
-                        firstPossible = cluster;
+                    if (firstPossible == null) {
+                        if (! cluster.exists ()) {
+                            cluster.mkdirs ();
+                        }
+                        if (cluster.canWrite ()) {
+                            firstPossible = cluster;
+                        }
                     }
                     
-                    if (targetCluster != null && targetCluster.equals (cluster.getName ()) && cluster.canWrite ()) {
-                        res = cluster;
-                        break;
+                    if (targetCluster != null && targetCluster.equals (cluster.getName ())) {
+                        if (! cluster.exists ()) {
+                            cluster.mkdirs ();
+                        }
+                        if (cluster.canWrite ()) {
+                            res = cluster;
+                            break;
+                        } else {
+                            ERR.log (Level.WARNING, "No write permision in target cluster " + targetCluster + 
+                                    " for " + update.getUpdateElement ());
+                        }
                     }
                 }
                 
