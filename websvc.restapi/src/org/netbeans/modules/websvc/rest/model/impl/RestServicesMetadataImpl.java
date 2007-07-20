@@ -1,6 +1,6 @@
 /*
- * and Distribution License (the License). You may not use this file except in
  * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
@@ -16,26 +16,29 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+package org.netbeans.modules.websvc.rest.model.impl;
 
-package org.netbeans.modules.websvc.rest.model.spi;
-
-import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
+import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
+import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
-import org.netbeans.modules.websvc.rest.model.impl.RestServicesMetadataModelImpl;
 
 /**
  *
- * @author Milan Kuchtiak
+ * @author Peter Liu
  */
-public class RestServicesMetadataModelFactory {
+public class RestServicesMetadataImpl implements RestServicesMetadata {
+    private RestServices root;
     
-    private RestServicesMetadataModelFactory() {
+    public RestServicesMetadataImpl(RestServices root) {
+        this.root = root;
     }
     
-    public static MetadataModel<RestServicesMetadata> createMetadataModel(MetadataUnit metadataUnit) {
-        return MetadataModelFactory.createMetadataModel(new RestServicesMetadataModelImpl(metadataUnit));
+    public RestServices getRoot() {
+        return root;
+    }
+    
+    public RestServiceDescription findWebserviceByName(String wsName) {
+        return null;
     }
     
 }
