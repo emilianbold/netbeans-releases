@@ -171,8 +171,10 @@ class DropTargetLayer extends JComponent {
         // draw the menu item subselection rectangles
         //JComponent selected = null;//canvas.getSelectedComponent();
         for(RADComponent rad : canvas.getSelectedRADComponents()) {
-            JComponent selected = (JComponent) canvas.formDesigner.getComponent(rad);
-            drawSelectedComponent(g2, selected);
+            if(rad != null) {
+                JComponent selected = (JComponent) canvas.formDesigner.getComponent(rad);
+                drawSelectedComponent(g2, selected);
+            }
         }
         
         g2.dispose();
