@@ -115,9 +115,9 @@ public final class FormatterImpl extends ExtFormatter {
         if (doc != indentImpl.document())
             return endOffset - startOffset; // should not happen in reality
         indentImpl.reformat(startOffset, endOffset);
-        Context ctx = indentImpl.reformatContext();
-        return (ctx != null)
-                ? ctx.endOffset() - ctx.startOffset()
+        TaskHandler handler = indentImpl.reformatHandler();
+        return (handler != null)
+                ? handler.endPos().getOffset() - handler.startPos().getOffset()
                 : endOffset - startOffset;
     }
 

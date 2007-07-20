@@ -60,8 +60,6 @@ public final class TaskHandler {
     
     private Document doc;
 
-    private Context context;
-
     private List<MimeItem> items;
 
     private Map<MimePath,MimeItem> mime2Item;
@@ -84,7 +82,6 @@ public final class TaskHandler {
     TaskHandler(boolean indent, Document doc) {
         this.indent = indent;
         this.doc = doc;
-        context = IndentSpiPackageAccessor.get().createContext(this);
     }
 
     public boolean isIndent() {
@@ -101,10 +98,6 @@ public final class TaskHandler {
     
     public Position endPos() {
         return endPos;
-    }
-
-    Context context() {
-        return context;
     }
 
     int maxMimePathSize() {
@@ -244,7 +237,7 @@ public final class TaskHandler {
     /**
      * Item that services indentation/reformatting for a single mime-path.
      */
-    private static final class MimeItem {
+    public static final class MimeItem {
         
         private final TaskHandler handler;
         
@@ -256,15 +249,28 @@ public final class TaskHandler {
         
         private ExtraLock extraLock;
         
+        private Context context;
+        
         MimeItem(TaskHandler handler, MimePath mimePath) {
             this.handler = handler;
             this.mimePath = mimePath;
         }
 
-        MimePath mimePath() {
+        public MimePath mimePath() {
             return mimePath;
         }
-
+        
+        public Context context() {
+            if (context == null) {
+                context = IndentSpiPackageAccessor.get().createContext(this);
+            }
+            return context;
+        }
+        
+        public TaskHandler handler() {
+            return handler;
+        }
+        
         boolean hasFactories() {
             Lookup lookup = MimeLookup.getLookup(mimePath);
             return (lookup.lookup(IndentTask.Factory.class) != null)
@@ -275,7 +281,7 @@ public final class TaskHandler {
             Lookup lookup = MimeLookup.getLookup(mimePath);
             if (!handler.isIndent()) { // Attempt reformat task first
                 ReformatTask.Factory factory = lookup.lookup(ReformatTask.Factory.class);
-                if (factory != null && (reformatTask = factory.createTask(handler.context())) != null
+                if (factory != null && (reformatTask = factory.createTask(context())) != null
                 && !existingFactories.contains(factory)) {
                     extraLock = reformatTask.reformatLock();
                     existingFactories.add(factory);
@@ -285,7 +291,7 @@ public final class TaskHandler {
             
             if (handler.isIndent() || reformatTask == null) { // Possibly fallback to reindent for reformatting
                 IndentTask.Factory factory = lookup.lookup(IndentTask.Factory.class);
-                if (factory != null && (indentTask = factory.createTask(handler.context())) != null
+                if (factory != null && (indentTask = factory.createTask(context())) != null
                 && !existingFactories.contains(factory)) {
                     extraLock = indentTask.indentLock();
                     existingFactories.add(factory);

@@ -102,8 +102,8 @@ public final class IndentImpl {
         indentHandler = null;
     }
     
-    public Context indentContext() {
-        return indentHandler.context();
+    public TaskHandler indentHandler() {
+        return indentHandler;
     }
     
     public synchronized void reformatLock() {
@@ -122,8 +122,8 @@ public final class IndentImpl {
         reformatHandler = null;
     }
     
-    public Context reformatContext() {
-        return reformatHandler.context();
+    public TaskHandler reformatHandler() {
+        return reformatHandler;
     }
 
     public void reindent(int startOffset, int endOffset) throws BadLocationException {

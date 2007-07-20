@@ -82,6 +82,20 @@ is the proper place.
 
     <changes>
 
+        <change id="Context.mimePath.added">
+            <summary>Added Context.mimePath()</summary>
+            <version major="1" minor="1"/>
+            <date day="17" month="7" year="2007"/>
+            <author login="mmetelka"/>
+            <compatibility source="compatible" deletion="no" addition="yes" modification="no"/>
+            <description>
+                <p>
+                Added <code>Context.mimePath()</code> method.
+                </p>
+            </description>
+            <issue number="110129"/>
+        </change>
+
         <change id="created">
             <summary>editor/indent module was created.</summary>
             <version major="1" minor="0"/>

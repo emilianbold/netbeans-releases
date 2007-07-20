@@ -55,6 +55,6 @@ public abstract class IndentSpiPackageAccessor {
         INSTANCE = accessor;
     }
     
-    public abstract Context createContext(TaskHandler handler);
+    public abstract Context createContext(TaskHandler.MimeItem mimeItem);
     
 }
