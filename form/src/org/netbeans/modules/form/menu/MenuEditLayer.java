@@ -589,8 +589,10 @@ public class MenuEditLayer extends JPanel {
         try {
             //clear old bgs first
             for(RADComponent rad : selectedComponents) {
-                JComponent c = (JComponent) formDesigner.getComponent(rad);
-                c.setBackground(getNormalBackground(c));
+                if(isMenuRelatedRADComponent(rad)) {
+                    JComponent c = (JComponent) formDesigner.getComponent(rad);
+                    c.setBackground(getNormalBackground(c));
+                }
             }
 
             selectedComponents.clear();
