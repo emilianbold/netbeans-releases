@@ -376,14 +376,6 @@ public class TestcaseNode extends FilterNode {
                 ex.printStackTrace();
             }
         }
-        
-        // Delete test case
-        FileObject testCaseDir = getTestCaseDir();
-        try {
-            testCaseDir.delete();
-        } catch (java.io.IOException ex) {
-            ex.printStackTrace();
-        }
     }
     
     public Node.PropertySet[] getPropertySets() {
