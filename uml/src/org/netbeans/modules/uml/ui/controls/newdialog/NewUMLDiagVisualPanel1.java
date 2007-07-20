@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.Icon;
@@ -35,33 +36,46 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
 import org.dom4j.Document;
+
 import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.common.generics.ETPairT;
+import org.netbeans.modules.uml.core.UMLSettings;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
+import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
+
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 public final class NewUMLDiagVisualPanel1 extends JPanel
-        implements DocumentListener, ListSelectionListener, ActionListener, INewUMLFileTemplates {
+        implements DocumentListener, ListSelectionListener, 
+        ActionListener, INewUMLFileTemplates {
     
     private NewUMLDiagWizardPanel1 panel;
     private Document m_doc = null;
     private java.util.List saveNamespaces = new java.util.ArrayList();
     private INewDialogDiagramDetails mDetails = null;
+    private int diagramCount = UMLSettings.getDefault().getNewDiagramCount();
+
     private java.util.ResourceBundle bundle =
-            NbBundle.getBundle(NewUMLDiagVisualPanel1.class);
-    private String badCharList = bundle.getString("IDS_INVALID_CHARS");
+        NbBundle.getBundle(NewUMLDiagVisualPanel1.class);
+
+    private String badCharList = bundle.getString("IDS_INVALID_CHARS"); // NOI18N
     
     /** Creates new form NewUMLDiagVisualPanel1 */
-    public NewUMLDiagVisualPanel1(NewUMLDiagWizardPanel1 panel) {
+    public NewUMLDiagVisualPanel1(NewUMLDiagWizardPanel1 panel) 
+    {
         this.panel = panel;
         initComponents();
+
+        updateDefaultDiagramName();
         
         diagramTypes.addListSelectionListener(this);
         // Register listener for the textFields to validate entered text
@@ -70,20 +84,41 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
         nameSpace.addActionListener(this);
     }
     
-    public String getName() {
-        return org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("IDS_NEWDIAGRAM");
+    private List<String> namespaceChildNames = null;
+    
+    private void updateDefaultDiagramName()
+    {
+        String defaultName = null;
+        
+        if (diagramTypes.getSelectedValue() == null)
+            defaultName = NewDialogUtilities.getDefaultDiagramName();
+
+        else
+            defaultName = ((String)diagramTypes.getSelectedValue()) +
+                " " + diagramCount; // NOI18N
+        
+        diagName.setText(defaultName);
     }
     
-    public void read(WizardDescriptor wizDesc) {
-        mDetails = (INewDialogDiagramDetails) wizDesc.getProperty(DIAGRAM_DETAILS);
+    public String getName() 
+    {
+        return org.openide.util.NbBundle.getBundle(
+            NewUMLDiagVisualPanel1.class).getString("IDS_NEWDIAGRAM"); // NOI18N
+    }
+    
+    public void read(WizardDescriptor wizDesc) 
+    {
+        mDetails = (INewDialogDiagramDetails)wizDesc.getProperty(DIAGRAM_DETAILS);
         
-        if ( mDetails != null ) {
+        if (mDetails != null) 
+        {
             populateList();
             populateComboBox();
         }
     }
     
-    void store(WizardDescriptor wizDesc) {
+    void store(WizardDescriptor wizDesc) 
+    {
         // store the diagram kind
         wizDesc.putProperty(PROP_DIAG_KIND, (String) getSelectedDiagramType());
         // store diagram name
@@ -93,19 +128,22 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
         
     }
     
-    public boolean valid(WizardDescriptor wizDesc) {
+    public boolean valid(WizardDescriptor wizDesc) 
+    {
         boolean valid = true;
         String errorMsg = "";
         
         String selectedDiagType = (String) getSelectedDiagramType();
         // validate if a diagram type is selected
-        if (selectedDiagType == null || selectedDiagType.length() == 0) {
+        if (selectedDiagType == null || selectedDiagType.length() == 0) 
+        {
             errorMsg = bundle.getString("IDS_PLEASESELECTADIAGRAM"); // NOI18N
             valid = false;
         }
         
         // validate diagram name
-        if (valid) {
+        if (valid) 
+        {
             boolean nameHasBadChar = false;
             //StringBuffer badChars = new StringBuffer();
             String sDiagramName = getDiagramName();
@@ -119,29 +157,41 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
                 nameHasBadChar = true;
             }
             
-            if (trimmedLen == 0) {
+            if (trimmedLen == 0) 
+            {
                 errorMsg = bundle.getString("IDS_DIAGRAMNAME_EMPTY"); // NOI18N
                 valid = false;
-            } else if (bNameHasSpaces) {
+            }
+            
+            else if (bNameHasSpaces) 
+            {
                 errorMsg = bundle.getString("IDS_DIAGRAMNAME_HAS_SPACES"); // NOI18N
                 valid = false;
-            } else if(nameHasBadChar) {
+            }
+            
+            else if(nameHasBadChar) 
+            {
                 errorMsg = NbBundle.getMessage(NewUMLDiagVisualPanel1.class,
-                        "MSG_Invalid_Diagram_Name", trimmedName);
+                    "MSG_Invalid_Diagram_Name", trimmedName); // NOI18N
                 valid = false;
             }
         }
         
         // check if a selected namespace is valid for the selected diagram type
-        if (valid) {
+        if (valid) 
+        {
             // Get the namespace
             INamespace selectedNamespace = NewDialogUtilities.getNamespace(
                     (String) getSelectedNamespace());
             
-            if ( selectedNamespace != null ) {
-                ETPairT<Boolean, String> retVal = panel.isValidDiagramForNamespace(
-                        selectedDiagType, selectedNamespace);
-                if (retVal != null) {
+            if (selectedNamespace != null)
+            {
+                ETPairT<Boolean, String> retVal = 
+                    panel.isValidDiagramForNamespace(
+                    selectedDiagType, selectedNamespace);
+            
+                if (retVal != null) 
+                {
                     valid = ((Boolean) retVal.getParamOne()).booleanValue();
                     String mesg = (String) retVal.getParamTwo();
                     errorMsg = (mesg == null ? "" : mesg.trim());
@@ -160,7 +210,9 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
      * always regenerated by the Form Editor.
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void initComponents()
+    {
+
         diagTypeLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         diagramTypes = new javax.swing.JList();
@@ -170,25 +222,21 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
         nameSpace = new javax.swing.JComboBox();
 
         diagTypeLabel.setLabelFor(diagramTypes);
-        org.openide.awt.Mnemonics.setLocalizedText(diagTypeLabel, org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("IDS_DIAGRAMTYPE"));
+        org.openide.awt.Mnemonics.setLocalizedText(diagTypeLabel, org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("IDS_DIAGRAMTYPE")); // NOI18N
 
         diagramTypes.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         diagramTypes.setCellRenderer(new ElementListCellRenderer());
         jScrollPane1.setViewportView(diagramTypes);
-        diagramTypes.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("ACSD_NEW_DIAGRAM_WIZARD_DIAGRAMTYPE_LIST"));
+        diagramTypes.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("ACSD_NEW_DIAGRAM_WIZARD_DIAGRAMTYPE_LIST")); // NOI18N
 
         diagNameLabel.setLabelFor(diagName);
-        org.openide.awt.Mnemonics.setLocalizedText(diagNameLabel, org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("IDS_DIAGRAMNAME"));
+        org.openide.awt.Mnemonics.setLocalizedText(diagNameLabel, org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("IDS_DIAGRAMNAME")); // NOI18N
 
-        diagName.setText(NewDialogUtilities.getDefaultDiagramName());
         diagName.selectAll();
         diagName.requestFocus();
-        diagName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("ACSD_NEW_DIAGRAM_WIZARD_DIAGRAMNAME_TEXTFIELD"));
 
         nameSpaceLabel.setLabelFor(nameSpace);
-        org.openide.awt.Mnemonics.setLocalizedText(nameSpaceLabel, org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("IDS_NAMESPACE"));
-
-        nameSpace.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("ACSD_NEW_DIAGRAM_WIZARD_NAMESPACE_COMBOBOX"));
+        org.openide.awt.Mnemonics.setLocalizedText(nameSpaceLabel, org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("IDS_NAMESPACE")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -224,13 +272,18 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
                     .add(nameSpaceLabel))
                 .add(60, 60, 60))
         );
+
+        diagName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("ACSD_NEW_DIAGRAM_WIZARD_DIAGRAMNAME_TEXTFIELD")); // NOI18N
+        nameSpace.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewUMLDiagVisualPanel1.class).getString("ACSD_NEW_DIAGRAM_WIZARD_NAMESPACE_COMBOBOX")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
-    private void populateList() {
-        
-        if (diagramTypes != null) {
+    private void populateList()
+    {
+        if (diagramTypes != null)
+        {
             ListModel listDataModel = diagramTypes.getModel();
-            if (listDataModel != null && listDataModel.getSize() > 0) {
+            if (listDataModel != null && listDataModel.getSize() > 0)
+            {
                 return;
             }
             
@@ -239,103 +292,139 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
             fileName += "NewDialogDefinitions.etc"; // NOI18N
             m_doc = XMLManip.getDOMDocument(fileName);
             org.dom4j.Node node = m_doc.selectSingleNode(
-                    "//PropertyDefinitions/PropertyDefinition"); // NOI18N
+                "//PropertyDefinitions/PropertyDefinition"); // NOI18N
             
-            if (node != null) {
+            if (node != null)
+            {
                 org.dom4j.Element elem = (org.dom4j.Element)node;
                 String name = elem.attributeValue("name"); // NOI18N
                 
                 Vector elements = new Vector();
                 List nodeList = m_doc.selectNodes(
-                        "//PropertyDefinition/aDefinition[@name='"  // NOI18N
-                        + "Diagram" + "']/aDefinition");  // NOI18N
-                if (diagramTypes != null) {
+                    "//PropertyDefinition/aDefinition[@name='"  // NOI18N
+                    + "Diagram" + "']/aDefinition");  // NOI18N
+                
+                if (diagramTypes != null)
+                {
                     int diaKind = IDiagramKind.DK_ALL;
-                    if (mDetails != null) {
+                    if (mDetails != null)
+                    {
                         diaKind = mDetails.getAvailableDiagramKinds();
                     }
+                    
                     int count = nodeList.size();
-                    for (int i=0; i<count; i++) {
+                    for (int i=0; i<count; i++)
+                    {
                         org.dom4j.Element subNode = (org.dom4j.Element)nodeList.get(i);
                         String subName =
-                                subNode.attributeValue("displayName"); // NOI18N
+                            subNode.attributeValue("displayName"); // NOI18N
                         subName = NewDialogResources.getString(subName);
                         
-                        if (diaKind == IDiagramKind.DK_ALL) {
+                        if (diaKind == IDiagramKind.DK_ALL)
+                        {
                             elements.add(subName);
-                        } else {
+                        }
+                        
+                        else
+                        {
                             //only some of diagram kinds are valid
                             if (subName.equals(NewDialogResources
-                                    .getString("PSK_CLASS_DIAGRAM"))) // NOI18N
+                                .getString("PSK_CLASS_DIAGRAM"))) // NOI18N
                             {
                                 if ((diaKind & IDiagramKind.DK_CLASS_DIAGRAM)
-                                == IDiagramKind.DK_CLASS_DIAGRAM) {
+                                    == IDiagramKind.DK_CLASS_DIAGRAM)
+                                {
                                     elements.add(subName);
                                 }
-                            } else if (subName.equals(NewDialogResources
-                                    .getString("PSK_ACTIVITY_DIAGRAM"))) // NOI18N
+                            }
+                            
+                            else if (subName.equals(NewDialogResources
+                                .getString("PSK_ACTIVITY_DIAGRAM"))) // NOI18N
                             {
                                 if ((diaKind & IDiagramKind.DK_ACTIVITY_DIAGRAM)
-                                == IDiagramKind.DK_ACTIVITY_DIAGRAM) {
+                                    == IDiagramKind.DK_ACTIVITY_DIAGRAM)
+                                {
                                     elements.add(subName);
                                 }
-                            } else if (subName.equals(NewDialogResources
-                                    .getString("PSK_COLLABORATION_DIAGRAM"))) // NOI18N
+                            }
+                            
+                            else if (subName.equals(NewDialogResources
+                                .getString("PSK_COLLABORATION_DIAGRAM"))) // NOI18N
                             {
                                 if ((diaKind & IDiagramKind.DK_COLLABORATION_DIAGRAM)
-                                == IDiagramKind.DK_COLLABORATION_DIAGRAM) {
+                                    == IDiagramKind.DK_COLLABORATION_DIAGRAM)
+                                {
                                     elements.add(subName);
                                 }
-                            } else if (subName.equals(NewDialogResources
-                                    .getString("PSK_COMPONENT_DIAGRAM"))) // NOI18N
+                            }
+                            
+                            else if (subName.equals(NewDialogResources
+                                .getString("PSK_COMPONENT_DIAGRAM"))) // NOI18N
                             {
                                 if ((diaKind & IDiagramKind.DK_COMPONENT_DIAGRAM)
-                                == IDiagramKind.DK_COMPONENT_DIAGRAM) {
+                                    == IDiagramKind.DK_COMPONENT_DIAGRAM)
+                                {
                                     elements.add(subName);
                                 }
-                            } else if (subName.equals(NewDialogResources
-                                    .getString("PSK_DEPLOYMENT_DIAGRAM"))) // NOI18N
+                            }
+                            
+                            else if (subName.equals(NewDialogResources
+                                .getString("PSK_DEPLOYMENT_DIAGRAM"))) // NOI18N
                             {
                                 if ((diaKind & IDiagramKind.DK_DEPLOYMENT_DIAGRAM)
-                                == IDiagramKind.DK_DEPLOYMENT_DIAGRAM) {
+                                    == IDiagramKind.DK_DEPLOYMENT_DIAGRAM)
+                                {
                                     elements.add(subName);
                                 }
-                            } else if (subName.equals(NewDialogResources
-                                    .getString("PSK_SEQUENCE_DIAGRAM")))  // NOI18N
+                            }
+                            
+                            else if (subName.equals(NewDialogResources
+                                .getString("PSK_SEQUENCE_DIAGRAM")))  // NOI18N
                             {
                                 if ((diaKind & IDiagramKind.DK_SEQUENCE_DIAGRAM)
-                                == IDiagramKind.DK_SEQUENCE_DIAGRAM) {
+                                    == IDiagramKind.DK_SEQUENCE_DIAGRAM)
+                                {
                                     elements.add(subName);
                                 }
-                            } else if (subName.equals(NewDialogResources.getString(
-                                    "PSK_STATE_DIAGRAM")))  // NOI18N
+                            }
+                            
+                            else if (subName.equals(NewDialogResources.getString(
+                                "PSK_STATE_DIAGRAM")))  // NOI18N
                             {
                                 if ((diaKind & IDiagramKind.DK_STATE_DIAGRAM)
-                                == IDiagramKind.DK_STATE_DIAGRAM) {
+                                    == IDiagramKind.DK_STATE_DIAGRAM)
+                                {
                                     elements.add(subName);
                                 }
-                            } else if (subName.equals(NewDialogResources.getString(
-                                    "PSK_USE_CASE_DIAGRAM")))  // NOI18N
+                            }
+                            
+                            else if (subName.equals(NewDialogResources.getString(
+                                "PSK_USE_CASE_DIAGRAM")))  // NOI18N
                             {
                                 if ((diaKind & IDiagramKind.DK_USECASE_DIAGRAM)
-                                == IDiagramKind.DK_USECASE_DIAGRAM) {
+                                    == IDiagramKind.DK_USECASE_DIAGRAM)
+                                {
                                     elements.add(subName);
                                 }
                             }
                         }
                     }
                 }
+                
                 diagramTypes.setListData(elements);
-                if (diagramTypes.getSelectedIndex() == -1) {
+                if (diagramTypes.getSelectedIndex() == -1)
+                {
                     diagramTypes.setSelectedIndex(0);
                 }
             }
         }
     }
     
-    private void populateComboBox() {
+    private void populateComboBox()
+    {
         //load namespaces
-        if (nameSpace != null) {
+        if (nameSpace != null)
+        {
             NewDialogUtilities.loadNamespace(nameSpace, mDetails.getNamespace());
             // Fix for bug#6283146
             int itemCounts = nameSpace.getItemCount();
@@ -346,37 +435,50 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
     }
     
     //list selection listener callback
-    public void valueChanged(ListSelectionEvent e) {
+    public void valueChanged(ListSelectionEvent event)
+    {
         // Fix for bug#6283146
         nameSpace.removeAllItems();
         String diaType = (String)diagramTypes.getSelectedValue();
-        if (diaType != null) {
+
+        if (diaType != null)
+        {
             if (diaType.equals(NewDialogResources.getString(
-                    "PSK_SEQUENCE_DIAGRAM"))) // NOI18N
+                "PSK_SEQUENCE_DIAGRAM"))) // NOI18N
             {
-                if(saveNamespaces.size()>0)
+                if (saveNamespaces.size()>0)
                     nameSpace.addItem(saveNamespaces.get(0));
-            } else {
-                for(int i=0;i<saveNamespaces.size();i++)
+            }
+        
+            else
+            {
+                for (int i=0; i < saveNamespaces.size(); i++)
                     nameSpace.addItem(saveNamespaces.get(i));
             }
+            
+            updateDefaultDiagramName();
         }
+        
         //fire change event to validate the selection
-        if (panel != null) {
+        if (panel != null)
+        {
             panel.fireChangeEvent();
         }
     }
     
-    class ElementListCellRenderer extends JLabel implements ListCellRenderer {
-        public Icon getImageIcon(String diaName) {
+    class ElementListCellRenderer extends JLabel implements ListCellRenderer
+    {
+        public Icon getImageIcon(String diaName)
+        {
             Icon retIcon = null;
             String displayName = NewDialogResources.getStringKey(diaName);
             String str = "//PropertyDefinition/aDefinition[@name='" +  // NOI18N
-                    "Diagram" + "']/aDefinition[@displayName='" +
-                    displayName + "']";  // NOI18N
+                "Diagram" + "']/aDefinition[@displayName='" + // NOI18N
+                displayName + "']";  // NOI18N
             
             org.dom4j.Node node = m_doc.selectSingleNode(str);
-            if (node.getNodeType() == org.dom4j.Element.ELEMENT_NODE) {
+            if (node.getNodeType() == org.dom4j.Element.ELEMENT_NODE)
+            {
                 org.dom4j.Element elem = (org.dom4j.Element)node;
                 String fileName = elem.attributeValue("image");  // NOI18N
                 File file = new File(fileName);
@@ -388,22 +490,24 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
         }
         
         public Component getListCellRendererComponent(
-                JList list,
-                Object value,            // value to display
-                int index,               // cell index
-                boolean isSelected,      // is the cell selected
-                boolean cellHasFocus)    // the list and the cell have the focus
+            JList list,
+            Object value,            // value to display
+            int index,               // cell index
+            boolean isSelected,      // is the cell selected
+            boolean cellHasFocus)    // the list and the cell have the focus
         {
             String s = value.toString();
             setText(s);
             setIcon(getImageIcon(s));
             
-            if (isSelected) {
+            if (isSelected)
+            {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
             }
             
-            else {
+            else
+            {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
@@ -415,37 +519,46 @@ public final class NewUMLDiagVisualPanel1 extends JPanel
         }
     }
     
-    public Object getSelectedDiagramType() {
+    public Object getSelectedDiagramType() 
+    {
         return diagramTypes.getSelectedValue();
     }
     
-    public Object getSelectedNamespace() {
+    public Object getSelectedNamespace() 
+    {
         return nameSpace.getSelectedItem();
     }
     
-    public String getDiagramName() {
+    public String getDiagramName() 
+    {
         String str = "";
         str = diagName.getText();
         return str;
     }
     
 // implementing method in DocumentListener
-    public void changedUpdate(DocumentEvent e) {
-        if (panel != null) {
+    public void changedUpdate(DocumentEvent e)
+    {
+        if (panel != null)
+        {
             panel.fireChangeEvent();
         }
     }
     
-    public void removeUpdate(DocumentEvent e) {
+    public void removeUpdate(DocumentEvent e)
+    {
         changedUpdate(e);
     }
     
-    public void insertUpdate(DocumentEvent e) {
+    public void insertUpdate(DocumentEvent e)
+    {
         changedUpdate(e);
     }
-
-    public void actionPerformed(ActionEvent e) {
-        if (panel != null) {
+    
+    public void actionPerformed(ActionEvent e)
+    {
+        if (panel != null)
+        {
             panel.fireChangeEvent();
         }
     }

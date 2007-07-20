@@ -28,6 +28,7 @@ import java.util.Vector;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
+import org.netbeans.modules.uml.core.UMLSettings;
 import org.netbeans.modules.uml.core.coreapplication.CoreProductManager;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProduct;
 import org.netbeans.modules.uml.core.coreapplication.ICoreProductManager;
@@ -599,6 +600,55 @@ public class NewDialogUtilities
       //kris richards - "DefaultDiagramName" pref expunged. Set to "New Diagram".
       return NbBundle.getMessage (NewDialogUtilities.class, "NEW_DIAGRAM");
    }
+
+   
+    public static String getDefaultDiagramBaseName(int kind)
+    {
+        String key = "NEW_DIAGRAM"; // NOI18N
+        
+        switch (kind)
+        {
+        case IDiagramKind.DK_ACTIVITY_DIAGRAM:
+            key = "PSK_ACTIVITY_DIAGRAM"; // NOI18N
+            break;
+
+        case IDiagramKind.DK_CLASS_DIAGRAM:
+            key = "PSK_CLASS_DIAGRAM"; // NOI18N
+            break;
+
+        case IDiagramKind.DK_COLLABORATION_DIAGRAM:
+            key = "PSK_COLLABORATION_DIAGRAM"; // NOI18N
+            break;
+
+        case IDiagramKind.DK_COMPONENT_DIAGRAM:
+            key = "PSK_COMPONENT_DIAGRAM"; // NOI18N
+            break;
+
+        case IDiagramKind.DK_DEPLOYMENT_DIAGRAM:
+            key = "PSK_DEPLOYMENT_DIAGRAM"; // NOI18N
+            break;
+
+        case IDiagramKind.DK_SEQUENCE_DIAGRAM:
+            key = "PSK_SEQUENCE_DIAGRAM"; // NOI18N
+            break;
+
+        case IDiagramKind.DK_STATE_DIAGRAM:
+            key = "PSK_STATE_DIAGRAM"; // NOI18N
+            break;
+
+        case IDiagramKind.DK_USECASE_DIAGRAM:
+            key = "PSK_USE_CASE_DIAGRAM"; // NOI18N
+            break;
+        }
+        
+        return NbBundle.getMessage (NewDialogUtilities.class, key);
+    }
+    
+    public static String getDefaultDiagramName(int kind)
+    {
+        return getDefaultDiagramBaseName(kind) + " " + // NOI18N
+            UMLSettings.getDefault().getNewDiagramCount();
+    }
    
    public static String getDefaultElementName()
    {

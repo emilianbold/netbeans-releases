@@ -47,6 +47,7 @@ import org.netbeans.modules.uml.core.support.Debug;
 import java.awt.Dialog;
 import java.text.MessageFormat;
 import java.util.Collection;
+import org.netbeans.modules.uml.core.UMLSettings;
 import org.netbeans.modules.uml.ui.controls.newdialog.INewUMLFileTemplates;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewUMLDiagWizardIterator;
 import org.openide.DialogDisplayer;
@@ -218,16 +219,14 @@ public class UMLDiagramManager
             String diagramName,
             IDiagramCallback callback)
     {
-        
+        UMLSettings.getDefault().incrementDiagramCount(diagramName, diagramKind);
         IDiagram retDia = doCreateDiagram(diagramKind, namespace, diagramName);
-        if (retDia != null && callback != null)
-        {
-            callback.returnedDiagram(retDia);
-        }
         
-//	  if (retDia != null)
-//	      retDia.save();
+        if (retDia != null && callback != null)
+            callback.returnedDiagram(retDia);
+
         m_CurrentDiagram = retDia;
+        
         //call garbage collection explicitly to collect any left overs.
         garbageCollect();
         return retDia;

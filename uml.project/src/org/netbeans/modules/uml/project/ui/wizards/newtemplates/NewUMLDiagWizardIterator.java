@@ -26,7 +26,10 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
+
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.uml.core.UMLSettings;
+
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
@@ -43,8 +46,10 @@ import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogDiagramDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogElementDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogPackageDetails;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogResultProcessor;
+import org.netbeans.modules.uml.ui.controls.newdialog.NewDialogUtilities;
 import org.netbeans.modules.uml.ui.controls.newdialog.NewUMLDiagWizardPanel1;
 import org.netbeans.spi.project.ui.templates.support.Templates;
+
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.TemplateWizard;
@@ -103,17 +108,21 @@ public final class NewUMLDiagWizardIterator
             {
                pDetails.setNamespace( (INamespace) umlProject );
             }
+            
             pDetails.setAllowFromRESelection( false );
             wiz.putProperty(PACKAGE_DETAILS, pDetails);
             break;
+            
          case NEW_ELEMENT:
             INewDialogElementDetails eDetails = new NewDialogElementDetails();
             if (umlProject instanceof INamespace)
             {
                eDetails.setNamespace( (INamespace) umlProject );
             }
+            
             wiz.putProperty(ELEMENT_DETAILS, eDetails);
             break;
+            
          case NEW_DIAGRAM:
          default:
             INewDialogDiagramDetails details = new NewDialogDiagramDetails();
@@ -121,6 +130,7 @@ public final class NewUMLDiagWizardIterator
             {
                details.setNamespace((INamespace) umlProject);
             }
+            
             details.setDiagramKind(IDiagramKind.DK_UNKNOWN);
             details.setAvailableDiagramKinds(IDiagramKind.DK_ALL);
             wiz.putProperty(DIAGRAM_DETAILS, details);
@@ -151,11 +161,13 @@ public final class NewUMLDiagWizardIterator
                new AddPackageWizardPanel1()
             };
             break;
+            
          case NEW_ELEMENT:
             panels = new WizardDescriptor.Panel[] {
                new AddElementWizardPanel1()
             };
             break;
+            
          case NEW_DIAGRAM:
          default:  //NEW_DIAGRAM
             panels = new WizardDescriptor.Panel[] {
@@ -172,25 +184,27 @@ public final class NewUMLDiagWizardIterator
             {
                steps[i] = c.getName();
             }
+            
             if (c instanceof JComponent)
             { // assume Swing components
                JComponent jc = (JComponent) c;
                // Sets step number of a component
-               jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+               jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
                // Sets steps names for a panel
-               jc.putClientProperty("WizardPanel_contentData", steps);
+               jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
                // Turn on subtitle creation on each step
-               jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+               jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
             }
          }
       }
+      
       return panels;
    }
    
    private String[] createSteps()
    {
       String[] beforeSteps = null;
-      Object prop = wizard.getProperty("WizardPanel_contentData");
+      Object prop = wizard.getProperty("WizardPanel_contentData"); // NOI18N
       if (prop != null && prop instanceof String[])
       {
          beforeSteps = (String[]) prop;
@@ -208,6 +222,7 @@ public final class NewUMLDiagWizardIterator
          {
             res[i] = beforeSteps[i];
          }
+         
          else
          {
             res[i] = panels[i - beforeSteps.length + 1].getComponent().getName();
@@ -231,6 +246,7 @@ public final class NewUMLDiagWizardIterator
             processor.handleResult( pDetails );
          }
          break;
+         
       case NEW_ELEMENT:
          INewDialogElementDetails eDetails = (INewDialogElementDetails)
                wiz.getProperty(this.ELEMENT_DETAILS);
@@ -240,14 +256,19 @@ public final class NewUMLDiagWizardIterator
             processor.handleResult( eDetails );
          }
          break;
+         
       case NEW_DIAGRAM:
       default:
          INewDialogDiagramDetails dDetails = (INewDialogDiagramDetails)
                wiz.getProperty(DIAGRAM_DETAILS);
+         
          if (dDetails != null)
          {
-            UMLProjectGenerator.createNewDiagram(
-                  dDetails.getNamespace(), dDetails.getDiagramKind(), dDetails.getName());
+             UMLSettings.getDefault().incrementDiagramCount(
+                 dDetails.getName(), dDetails.getDiagramKind());
+             
+             UMLProjectGenerator.createNewDiagram(
+                 dDetails.getNamespace(), dDetails.getDiagramKind(), dDetails.getName());
          }
          break;
       }
