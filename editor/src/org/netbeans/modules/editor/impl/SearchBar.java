@@ -76,7 +76,7 @@ import org.openide.util.Utilities;
 public final class SearchBar extends JToolBar {
 
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
-    private static final Color NOT_FOUND = new Color(220, 90, 90);
+    private static final Color NOT_FOUND = new Color(220, 90, 90, 255);
     private static final Color INVALID_REGEXP = Color.red;
     
     /** Shared mouse listener used for setting the border painting property
