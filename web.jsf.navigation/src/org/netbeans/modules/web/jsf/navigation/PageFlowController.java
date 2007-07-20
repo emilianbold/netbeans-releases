@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -130,7 +131,7 @@ public class PageFlowController {
             }
 
 
-            webFiles = new HashSet<FileObject>();
+            webFiles = new LinkedList<FileObject>();
         } else {
             webFiles = getAllProjectRelevantFilesObjects();
         }
@@ -282,13 +283,12 @@ public class PageFlowController {
 
 
     private Collection<FileObject> getAllProjectRelevantFilesObjects() {
-        Collection<FileObject> webFiles = getProjectKnownFileOjbects(getWebFolder());
-        return webFiles;
+        return getProjectKnownFileOjbects(getWebFolder());
     }
 
 
     private Collection<FileObject> getProjectKnownFileOjbects(FileObject folder) {
-        Collection<FileObject> webFiles = new HashSet<FileObject>();
+        Collection<FileObject> projectKnownFiles = new LinkedList<FileObject>();
 
         FileObject[] childrenFiles = new FileObject[]{};
         if (folder != null) {
@@ -297,14 +297,14 @@ public class PageFlowController {
         for (FileObject file : childrenFiles) {
             if (!file.isFolder()) {
                 if (isKnownFile(file)) {
-                    webFiles.add(file);
+                    projectKnownFiles.add(file);
                 }
             } else if (isKnownFolder(file)) {
-                webFiles.addAll(getProjectKnownFileOjbects(file));
+                projectKnownFiles.addAll(getProjectKnownFileOjbects(file));
             }
         }
 
-        return webFiles;
+        return projectKnownFiles;
     }
 
     public final boolean isKnownFile(FileObject file) {
@@ -480,7 +480,7 @@ public class PageFlowController {
 
 
     private Collection<String> getFacesConfigPageNames(List<NavigationRule> navRules) {
-        // Get all the pages in the faces config.
+        // Get all the pages in the faces config.  But don't list them twice.
         Collection<String> pages = new HashSet<String>();
         for (NavigationRule navRule : navRules) {
             String pageName = FacesModelUtility.getFromViewIdFiltered(navRule);

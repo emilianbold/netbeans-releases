@@ -52,6 +52,8 @@ public class VWPContentModelProvider implements PageContentModelProvider {
                         return null;
                     }
                 }
+            } else {
+                return null; //REMINDER
             }
             model = new VWPContentModel(this, facesModel);
             if (model != null) {

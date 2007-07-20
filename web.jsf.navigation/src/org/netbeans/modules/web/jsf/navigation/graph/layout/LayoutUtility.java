@@ -18,8 +18,9 @@
  */
 package org.netbeans.modules.web.jsf.navigation.graph.layout;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.visual.graph.GraphPinScene;
-import org.netbeans.modules.web.jsf.navigation.graph.layout.FreePlaceNodesLayouter;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
 
 /**
@@ -28,8 +29,14 @@ import org.netbeans.modules.web.jsf.navigation.graph.PageFlowScene;
  */
 public class LayoutUtility<N, E, P> {
     
+    final static Logger LOG = Logger.getLogger(LayoutUtility.class.getName());
+    
     public static enum LayoutType  {
         GRID_GRAPH,  TREE_GRAPH, FREE_PLACES_NODES
+    }
+    
+    static {
+        LOG.setLevel(Level.ALL);
     }
     
     public  LayoutUtility() {
@@ -39,16 +46,17 @@ public class LayoutUtility<N, E, P> {
         switch( type ) {
         case GRID_GRAPH:
             GridGraphLayoutUtility.performLayout(graph);
+            
             break;
         case TREE_GRAPH:
             /* Tree Graph Layout Utility was taken from Tree Graph Layout as is incomplete.*/
             TreeGraphLayoutUtility.performLayout(graph);
             break;
         case FREE_PLACES_NODES:
-            TreeGraphLayoutUtility.performLayout(graph); //Putting this in temporarily.
+            //TreeGraphLayoutUtility.performLayout(graph); //Putting this in temporarily.
             /* Tree Graph Layout Utility was taken from Tree Graph Layout as is incomplete.*/
-//            if ( graph instanceof PageFlowScene)
-//                FreePlaceNodesLayouter.performLayout((PageFlowScene)graph);
+            if ( graph instanceof PageFlowScene)
+                FreePlaceNodesLayouter.performLayout((PageFlowScene)graph);
             break;
         }
     }

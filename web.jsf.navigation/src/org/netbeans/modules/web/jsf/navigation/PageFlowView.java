@@ -91,8 +91,6 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     private ThreadPoolExecutor executor;
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.web.jsf.navigation");
-    private static final int CAPACITY = 1000;
-
     private JComponent view;
 
 

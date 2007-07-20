@@ -27,6 +27,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Arrays;
 import java.util.Collection;
@@ -100,29 +101,23 @@ import org.openide.util.actions.SystemAction;
 // TODO - remove popup menu action
 public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> {
 
-    private VMDColorScheme scheme = VMDFactory.getNetBeans60Scheme();
-    private LayerWidget backgroundLayer = new LayerWidget(this);
-    private LayerWidget mainLayer = new LayerWidget(this);
-    private LayerWidget connectionLayer = new LayerWidget(this);
-
-    public LayerWidget getConnectionLayer() {
-        return connectionLayer;
-    }
-    private LayerWidget upperLayer = new LayerWidget(this);
+    private static final VMDColorScheme scheme = VMDFactory.getNetBeans60Scheme();
+    private final LayerWidget backgroundLayer = new LayerWidget(this);
+    private final LayerWidget mainLayer = new LayerWidget(this);
+    private final LayerWidget connectionLayer = new LayerWidget(this);
+    private final LayerWidget upperLayer = new LayerWidget(this);
 
     private Router router;
+    private final Router routerDirect = RouterFactory.createDirectRouter();
+    private static final int MAX_EDGES = 20;
 
-    private WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction();
+    private final WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction();
     //    private WidgetAction popupNodeAction = ActionFactory.createPopupMenuAction (new NodePopupMenuProvider(this));
-    private WidgetAction popupGraphAction;
     private WidgetAction moveAction = ActionFactory.createMoveAction();
-    private WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
-    private WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
-    private WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
-    //    private final static WidgetAction CYCLE_FOCUS_OBJECT_SCENE = new CycleFocusAction (new CycleObjectSceneFocusProvider2 ());
-    //    private SceneLayout sceneGraphLayout;
+    private final WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
+    private final WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
+    private final WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     private PageFlowView tc;
-    private FreePlaceNodesLayouter fpnl;
 
     private static Paint PAINT_BACKGROUND;
     static {
@@ -155,16 +150,12 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         addChild(upperLayer);
 
         router = RouterFactory.createOrthogonalSearchRouter(mainLayer, connectionLayer);
-        //router = RouterFactory.createOrthogonalSearchRouter(mainLayer);
-        //router =RouterFactory.createDirectRouter();
-
-        popupGraphAction = ActionFactory.createPopupMenuAction(new PageFlowPopupProvider(this, tc));
 
         Chain actions = getActions();
         actions.addAction(ActionFactory.createZoomAction());
         actions.addAction(ActionFactory.createPanAction());
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
-        actions.addAction(popupGraphAction);
+        actions.addAction(ActionFactory.createPopupMenuAction(new PageFlowPopupProvider(this, tc)));
         actions.addAction(createActionMap());
         addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
 
@@ -174,7 +165,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         //Temporary workaround  ISSUE# 107506
         actions.addAction(new MyActionMapAction(inputMap, actionMap));
         MyActionMapAction action = new MyActionMapAction(null, null);
-        fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
+        FreePlaceNodesLayouter fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
     }
 
 
@@ -206,9 +197,9 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     public void createMalFormedWidget() {
         List<Widget> widgets = getChildren();
         if (!widgets.contains(malFormedLabel)) {
-            ;
-        }
-        {
+            addChild(malFormedLabel);
+            validate();
+        } else   {
             addChild(malFormedLabel);
             validate();
         }
@@ -220,9 +211,9 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     public void removeMalFormedWidget() {
         List<Widget> widgets = getChildren();
         if (widgets.contains(malFormedLabel)) {
-            ;
-        }
-        {
+            addChild(malFormedLabel);
+validate();
+        } else {
             removeChild(malFormedLabel);
             validate();
         }
@@ -408,7 +399,11 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         } else {
             connectionWidget = new VMDConnectionWidget(this, new PFENotModifiableScheme());
         }
-        connectionWidget.setRouter(router);
+        if ( getEdges().size() > MAX_EDGES ) {
+            connectionWidget.setRouter(routerDirect);
+        } else {
+            connectionWidget.setRouter(router);
+        }
 
 
         LabelWidget label = new LabelWidget(this, edge.getName());
@@ -429,6 +424,14 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         //        connectionWidget.getActions().addAction(createActionMap());
         return connectionWidget;
     }
+/*    
+    protected Widget attachEdgeWidget(NavigationCaseEdge edge, boolean directEdge){
+        ConnectionWidget connectionWidget = (ConnectionWidget)attachEdgeWidget(edge);
+        if( directEdge ){
+            connectionWidget.setRouter(router);
+        }
+    }
+ * */
 
     public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName) {
         VMDConnectionWidget edgeWidget = (VMDConnectionWidget) findWidget(edge);
@@ -488,6 +491,10 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         return anchor;
     }
 
+    public LayerWidget getConnectionLayer() {
+        return connectionLayer;
+    }
+
     private final class PageFlowSelectProvider implements SelectProvider {
 
         public boolean isAimingAllowed(Widget widget, Point localLocation, boolean invertSelection) {
@@ -516,7 +523,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     public final class CaseNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
 
-        public boolean isEnabled(Widget widget) {            
+        public boolean isEnabled(Widget widget) {
             NavigationCaseEdge caseNode = (NavigationCaseEdge) findObject(widget.getParentWidget());
             return caseNode.isModifiable();
         }
@@ -579,8 +586,8 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
                 //                }
                 if (widget instanceof LabelWidget) {
                     ((LabelWidget) widget).setLabel(newName);
-                } else if ( widget instanceof VMDNodeWidget ){
-                    ((VMDNodeWidget)widget).getNodeNameWidget().setLabel(newName);
+                } else if (widget instanceof VMDNodeWidget) {
+                    ((VMDNodeWidget) widget).getNodeNameWidget().setLabel(newName);
                 }
                 validate();
             }
@@ -591,18 +598,14 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
     private class MyObjectSceneListener implements ObjectSceneListener {
 
+        List<NavigationCaseEdge> directlyRoutedLinks = new ArrayList<NavigationCaseEdge>();
+
         public void objectAdded(ObjectSceneEvent event, Object addedObject) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         public void objectRemoved(ObjectSceneEvent event, Object removedObject) {
-
             throw new UnsupportedOperationException("Not supported yet.");
-            /* Workaround for issue: 100275
-             * selectionChanged should have been sufficient to take care of the case when a selected object is removed */
-            //            if ( getSelectedObjects().size() == 0 ){
-            //                tc.setDefaultActivatedNode();
-            //            }
         }
 
         public void objectStateChanged(ObjectSceneEvent event, Object changedObject, ObjectState previousState, ObjectState newState) {
