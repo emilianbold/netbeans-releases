@@ -267,8 +267,6 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
 //                ProjectSensitiveActions.projectCommandAction( IcanproConstants.COMMAND_DEPLOY, bundle.getString( "LBL_DeployAction_Name" ), null ), // NOI18N
                 actions.add(ProjectSensitiveActions.projectCommandAction( IcanproConstants.POPULATE_CATALOG, bundle.getString( "LBL_Populate_Catalog" ), null )); // NOI18N
                 actions.add(null);
-                actions.add(getProjectDebuggerAction());
-                actions.add(null);
                 actions.add(CommonProjectActions.setAsMainProjectAction());
                 actions.add(CommonProjectActions.openSubprojectsAction());
                 actions.add(CommonProjectActions.closeProjectAction());
@@ -300,41 +298,6 @@ public class IcanproLogicalViewProvider implements LogicalViewProvider {
                 }
             }
         }        
-
-        /**
-         * Find a registered BPELProjectDebuggerAction if available and add
-         * to context menu.
-         */
-        private Action getProjectDebuggerAction( ) {
-            Action action = null;
-            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("BPELProjectDebuggerAction");
-            
-            if (fo != null) {
-                DataFolder df = DataFolder.findFolder(fo);
-                DataObject[] as = df.getChildren();
-                fo = as[0].getPrimaryFile();
-                for (Enumeration e = fo.getAttributes(); e.hasMoreElements() ;) {
-                    String cmd = (String) e.nextElement();
-                    String cmdClass = (String) fo.getAttribute(cmd);
-                    try {
-                        // get system class loader
-                        ClassLoader classLoader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
-                        if (classLoader != null) {
-                            // get the action to add
-                            Class attachDebuggerClass = classLoader.loadClass(cmdClass);
-                            Object objAction = SystemAction.get(attachDebuggerClass);
-                            if (objAction instanceof Action) {
-                                action = (Action)  objAction;
-                                break;
-                            }
-                        }
-                    } catch (ClassNotFoundException ex) {
-                        break;
-                    }
-                }
-            }
-            return action;
-        }
 
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
