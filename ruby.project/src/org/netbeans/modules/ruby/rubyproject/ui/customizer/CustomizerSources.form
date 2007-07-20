@@ -18,7 +18,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="projectLocation" pref="509" max="32767" attributes="0"/>
+              <Component id="projectLocation" pref="514" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="jLabel2" min="-2" pref="131" max="-2" attributes="0"/>
@@ -28,8 +28,8 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="jLabel3" min="-2" pref="147" max="-2" attributes="0"/>
                   <Group type="103" alignment="1" groupAlignment="1" attributes="0">
-                      <Component id="jScrollPane2" alignment="0" pref="492" max="32767" attributes="0"/>
-                      <Component id="jScrollPane1" alignment="1" pref="492" max="32767" attributes="0"/>
+                      <Component id="jScrollPane2" alignment="0" pref="494" max="32767" attributes="0"/>
+                      <Component id="jScrollPane1" alignment="1" pref="494" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
@@ -138,10 +138,16 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="encodingLabel">
           <Properties>
+            <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+              <ComponentRef name="encoding"/>
+            </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/ruby/rubyproject/ui/customizer/Bundle.properties" key="TXT_Encoding" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JComboBox" name="encoding">
           <Properties>
