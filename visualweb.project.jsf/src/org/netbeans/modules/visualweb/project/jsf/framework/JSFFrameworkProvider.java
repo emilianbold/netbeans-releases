@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
@@ -49,7 +51,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.Repository;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -70,6 +71,12 @@ import org.openide.cookies.OpenCookie;
  * @author Po-Ting Wu
  */
 public class JSFFrameworkProvider extends WebFrameworkProvider {
+    
+    private static final Logger LOGGER = Logger.getLogger(JSFFrameworkProvider.class.getName());
+    
+    private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
+    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+
     private static final String FACES_STATE_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD"; // NOI18N
     private static final String FACES_VALIDATE_XML = "com.sun.faces.validateXml"; // NOI18N
     private static final String FACES_VERIFY_OBJECTS = "com.sun.faces.verifyObjects"; // NOI18N
@@ -113,7 +120,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     project.getProjectDirectory().setAttribute("NewProject", Boolean.TRUE); // NOI18N
                     template.create(project, webModule.getJ2eePlatformVersion(), pageName);
                 } catch (IOException ioe){
-                    Exceptions.printStackTrace(ioe);
+                    LOGGER.log(Level.WARNING, "Exception during extending an web project", ioe); //NOI18N
                 }
            }
         }); 
@@ -138,8 +145,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 try {
                                     JSFUtils.createJSFUserLibrary(installFolder, libraryVersion);
                                     jsfLib = JSFUtils.getJSFLibrary(libraryVersion);
-                                } catch (IOException ioe) {
-                                    Exceptions.printStackTrace(ioe);
+                                } catch (IOException ioExceptoin) {
+                                    LOGGER.log(Level.WARNING, "Exception during extending an web project", ioExceptoin); //NOI18N
                                 }
                             }
                         }
@@ -152,8 +159,8 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             jsfLib,
                             LibraryManager.getDefault().getLibrary("jstl11"),
                         });
-                    } catch (IOException ioe) {
-                        // Exceptions.printStackTrace(ioe);
+                    } catch (IOException ioExceptoin) {
+                        LOGGER.log(Level.WARNING, "Exception during extending an web project", ioExceptoin); //NOI18N
                     }
                 }
             }
@@ -179,15 +186,15 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                                 }
                             }
                         } catch (IOException ioe){
-                            Exceptions.printStackTrace(ioe);
+                            LOGGER.log(Level.WARNING, "Exception during extending an web project", ioe); //NOI18N
                         }
                     }
                 }); 
             }
-        } catch (FileNotFoundException exc) {
-            Exceptions.printStackTrace(exc);
-        } catch (IOException exc) {
-            Exceptions.printStackTrace(exc);
+        } catch (FileNotFoundException exception) {
+            LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N 
+        } catch (IOException exception) {
+            LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
         }
         return result;
     }
@@ -324,7 +331,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     }
                     
                     String facesServletName = panel == null ? "Faces Servlet" : panel.getServletName(); // NOI18N
-                    String urlPattern = panel == null ? "/faces/*" : panel.getURLPattern(); // NOI18N
+                    String facesMapping = panel == null ? "faces/*" : panel.getURLPattern(); // NOI18N
 
                     // The UpLoad Filter
                     Filter filter;
@@ -441,7 +448,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     for (int i = 0; i < maps.length; i++) {
                         mapping = maps[i];
                         if (facesServletName.equals(mapping.getServletName()) &&
-                            urlPattern.equals(mapping.getUrlPattern())) {
+                            facesMapping.equals(mapping.getUrlPattern())) {
                             hasFacesPattern = true;
                         }
                     }
@@ -449,7 +456,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     if (!hasFacesPattern) {
                         mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); // NOI18N
                         mapping.setServletName(facesServletName);
-                        mapping.setUrlPattern(urlPattern);
+                        mapping.setUrlPattern(facesMapping);
                         ddRoot.addServletMapping(mapping);
                     }
 
@@ -463,14 +470,31 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     mapping.setUrlPattern("/theme/*"); // NOI18N
                     ddRoot.addServletMapping(mapping);
 
-                    // Adjust the path to the startpage based on JSF parameters
-                    String welcomeFile = JsfProjectUtils.getWelcomeFile(urlPattern, pageName);
-                    WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
-                    if (wfl == null) {
-                        wfl = (WelcomeFileList) ddRoot.createBean("WelcomeFileList");
-                        ddRoot.setWelcomeFileList(wfl);
+                    // add welcome file
+                    WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
+                    if (welcomeFiles == null) {
+                        welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); //NOI18N
+                        ddRoot.setWelcomeFileList(welcomeFiles);
                     }
-                    wfl.setWelcomeFile(new String[] { welcomeFile });
+                    // add the welcome file only if there not any
+                    if (welcomeFiles.sizeWelcomeFile() == 0) {
+                        if (facesMapping.charAt(0) == '/') {
+                            // if the mapping start with '/' (like /faces/*), then the welcame file can be the mapping
+                            welcomeFiles.addWelcomeFile(ConfigurationUtils.translateURI(facesMapping, pageName));
+                        }
+                        else {
+                            // if the mapping doesn't strat '/' (like *.jsf), then the welcome file has to be
+                            // a helper file, which will foward the request to the right url
+                            welcomeFiles.addWelcomeFile(FORWARD_JSF);
+                            //copy forwardToJSF.jsp
+                            if (facesMapping.charAt(0) != '/') {
+                                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
+                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, pageName));
+                                FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
+                                createFile(target, content, "UTF-8");  //NOI18N
+                            }
+                        }
+                    }
 
                     // Catch ServletException
                     ErrorPage errorPage = (ErrorPage)ddRoot.createBean("ErrorPage");
@@ -515,15 +539,15 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     }
                     
                     if (isMyFaces) {
-                        Listener facesListener = (Listener) ddRoot.createBean("Listener");
-                        facesListener.setListenerClass("org.apache.myfaces.webapp.StartupServletContextListener");
+                        Listener facesListener = (Listener) ddRoot.createBean("Listener"); // NOI18N
+                        facesListener.setListenerClass("org.apache.myfaces.webapp.StartupServletContextListener"); // NOI18N
                         ddRoot.addListener(facesListener);
                     }
                     ddRoot.write(dd);
                     
                     
                 } catch (ClassNotFoundException cnfe){
-                    Exceptions.printStackTrace(cnfe);
+                    LOGGER.log(Level.WARNING, "Exception in JSFMoveClassPlugin", cnfe); //NOI18N
                 }
             }
             
@@ -536,41 +560,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         facesConfigTemplate = "faces-config_1_2.xml"; //NOI18N
                     }
                 }
-                String content = readResource(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-jsf/" + facesConfigTemplate).getInputStream(), "UTF-8"); //NOI18N
+                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
                 FileObject target = FileUtil.createData(webModule.getWebInf(), "faces-config.xml");//NOI18N
                 createFile(target, content, "UTF-8"); //NOI18N
-            }
-
-            // update welcome page
-            FileObject documentBase = webModule.getDocumentBase();
-            FileObject indexjsp = documentBase.getFileObject("index.jsp"); //NOI18N
-            if (indexjsp != null){
-                changeIndexJSP(indexjsp, pageName);
-            }
-        }
-        
-        /** Changes the index.jsp file. Only when there is <h1>JSP Page</h1> string.
-         */
-        private void changeIndexJSP(FileObject indexjsp, String pageName) throws IOException {
-            
-            String content = readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
-            
-            // what find
-            String find = "<h1>JSP Page</h1>"; // NOI18N
-            String endLine = System.getProperty("line.separator"); //NOI18N
-            if ( content.indexOf(find) > 0){
-                StringBuffer replace = new StringBuffer();
-                replace.append(find);
-                replace.append(endLine);
-                replace.append("    <br/>");                        //NOI18N
-                replace.append(endLine);
-                replace.append("    <a href=\".");                  //NOI18N
-                replace.append(ConfigurationUtils.translateURI(panel == null ? "/faces/*" : panel.getURLPattern(),"/"+pageName)); //NOI18N
-                replace.append("\">");                              //NOI18N
-                replace.append(NbBundle.getMessage(JSFFrameworkProvider.class,"LBL_JSF_WELCOME_PAGE"));
-                replace.append("</a>");                             //NOI18N
-                content = content.replaceFirst(find, new String(replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
-                createFile(indexjsp, content, "UTF-8"); //NOI18N
             }
         }
     }
