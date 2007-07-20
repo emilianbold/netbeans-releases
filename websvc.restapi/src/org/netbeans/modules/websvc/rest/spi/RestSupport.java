@@ -39,6 +39,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
@@ -108,6 +110,8 @@ public abstract class RestSupport {
      */
     public abstract FileObject getPersistenceXml();
 
+    public abstract MetadataModel<RestServicesMetadata> getRestServicesMetadataModel();
+    
     /**
      * Generates test client.  Typically RunTestClientAction would need to call 
      * this before invoke the build script target.
