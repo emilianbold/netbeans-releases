@@ -134,7 +134,9 @@ public class ServletGroupNode extends NamedBeanGroupNode {
         
         try {
             MetadataModel<WebAppMetadata> webAppModel = getMetadataModel(WebAppMetadata.class);
-            resultMap = webAppModel.runReadAction(new ServletMetadataReader());
+            if(webAppModel != null) {
+                resultMap = webAppModel.runReadAction(new ServletMetadataReader());
+            }
         } catch (MetadataModelException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (IOException ex) {
