@@ -39,13 +39,15 @@
             </file>
             <file name="less_or_equal.xml" url="nbresloc:/org/netbeans/modules/xslt/mapper/palette/less_or_equal.xml">
                 <attr name="metainfo" stringvalue="XPathMetainfo/Operator/lesser_or_equal"/>
-                <attr name="position" intvalue="400"/>
+                <attr name="position" intvalue="350"/>
             </file>
             <file name="greater_than.xml" url="nbresloc:/org/netbeans/modules/xslt/mapper/palette/greater_than.xml">
                 <attr name="metainfo" stringvalue="XPathMetainfo/Operator/greater_than"/>
+                <attr name="position" intvalue="400"/>
             </file>
             <file name="greater_or_equal.xml" url="nbresloc:/org/netbeans/modules/xslt/mapper/palette/greater_or_equal.xml">
                 <attr name="metainfo" stringvalue="XPathMetainfo/Operator/greater_or_equal"/>
+                <attr name="position" intvalue="450"/>
             </file>
             <file name="addition.xml" url="nbresloc:/org/netbeans/modules/xslt/mapper/palette/addition.xml">
                 <attr name="metainfo" stringvalue="XPathMetainfo/Operator/addition"/>
@@ -305,6 +307,7 @@
                 <attr name="Checked" boolvalue="true"/>
                 <attr name="A11yName" stringvalue="A11yName_Operator_less_than"/>
                 <attr name="A11yDesc" stringvalue="A11yDesc_Operator_less_than"/>
+                <attr name="position" intvalue="650"/>
             </file>
             <file name="lesser_or_equal"> <!-- DON'T RENAME THE NAME BECAUSE IT DEPENDS ON THE INTERNAL CONSTANTS FROM THE "XPath 1.1 Model" MODULE-->
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -328,6 +331,7 @@
                 <attr name="Checked" boolvalue="true"/>
                 <attr name="A11yName" stringvalue="A11yName_Operator_less_or_equal"/>
                 <attr name="A11yDesc" stringvalue="A11yDesc_Operator_less_or_equal"/>
+                <attr name="position" intvalue="700"/>
             </file>
             <file name="greater_than">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -351,7 +355,7 @@
                 <attr name="Checked" boolvalue="true"/>
                 <attr name="A11yName" stringvalue="A11yName_Operator_greater_than"/>
                 <attr name="A11yDesc" stringvalue="A11yDesc_Operator_greater_than"/>
-                <attr name="position" intvalue="700"/>
+                <attr name="position" intvalue="750"/>
             </file>
             <file name="greater_or_equal">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -496,6 +500,7 @@
                 <attr name="Checked" boolvalue="true"/>
                 <attr name="A11yName" stringvalue="A11yName_Operator_mod"/>
                 <attr name="A11yDesc" stringvalue="A11yDesc_Operator_mod"/>
+                <attr name="position" intvalue="450"/>
             </file>
             <file name="negative">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>
@@ -1012,6 +1017,7 @@
                 <attr name="Checked" boolvalue="true"/>
                 <attr name="A11yName" stringvalue="A11yName_Boolean_lang"/>
                 <attr name="A11yDesc" stringvalue="A11yDesc_Boolean_lang"/>
+                <attr name="position" intvalue="700"/>
             </file>
             <file name="or">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.mapper.palette.Bundle"/>

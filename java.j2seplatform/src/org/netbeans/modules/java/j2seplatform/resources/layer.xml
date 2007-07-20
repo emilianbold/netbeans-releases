@@ -36,6 +36,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name=".default.instance">
                     <attr name="instanceOf" stringvalue="org.netbeans.spi.java.platform.PlatformInstall"/>
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.j2seplatform.J2SEInstallImpl.create"/>
+                    <attr name="position" intvalue="100"/>
                 </file>
             </folder>
         </folder>
