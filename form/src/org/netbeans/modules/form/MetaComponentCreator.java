@@ -764,6 +764,7 @@ public class MetaComponentCreator {
 		newMetaCont.setOldLayoutSupport(true);
                 LayoutSupportManager laysup = newMetaCont.getLayoutSupport();
                 knownLayout = laysup.prepareLayoutDelegate(false, false);
+
                 if ((knownLayout && !laysup.isDedicated() && formModel.isFreeDesignDefaultLayout())
                     || (!knownLayout && SwingLayoutBuilder.isRelevantContainer(laysup.getPrimaryContainerDelegate())))
                 {   // general containers should use the new layout support when created
@@ -1196,8 +1197,10 @@ public class MetaComponentCreator {
                             FormLAF.setCustomizingUIClasses(true); // Issue 80198
                             try {
                                 Class clazz = prepareClass0(classSource);
-                                // Force creation of the default instance in the correct L&F context
-                                BeanSupport.getDefaultInstance(clazz);
+                                if (clazz != null) {
+                                    // Force creation of the default instance in the correct L&F context
+                                    BeanSupport.getDefaultInstance(clazz);
+                                }
                                 return clazz;
                             } finally {
                                 FormLAF.setCustomizingUIClasses(false);

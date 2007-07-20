@@ -2838,7 +2838,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     ClassSource classSource = CopySupport.getCopiedBeanClassSource(transferable);
                     if (classSource != null) {
                         Class componentClass = getComponentCreator().prepareClass(classSource);
-                        item = new PaletteItem(classSource, componentClass);
+                        if (componentClass != null) {
+                            item = new PaletteItem(classSource, componentClass);
+                        }
                     } else {
                         Lookup.Template template = new Lookup.Template(NewComponentDropProvider.class);
                         Collection<NewComponentDropProvider> providers = Lookup.getDefault().lookup(template).allInstances();
