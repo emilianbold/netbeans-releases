@@ -610,14 +610,24 @@ public class CasaWrapperModelTest extends TestCase {
     public void INCORRECTtestAddEndpointsToServiceEngineServiceUnit() {
         System.out.println("addEndpointsToServiceEngineServiceUnit");
         
-        JBIServiceUnitTransferObject suTransfer = null;
-        CasaServiceEngineServiceUnit seSU = null;
-        CasaWrapperModel instance = null;
+        String descriptor = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " + 
+                            "<jbi xmlns=\"http://java.sun.com/xml/ns/jbi\" xmlns:ns0=\"http://enterprise.netbeans.org/bpel/sunchronousSample/SynchronousSample_1\" " +
+                            "xmlns:ns1=\"http://localhost/SynchronousSample/SynchronousSample\" version=\"1.0\">" +
+                            "<services binding-component=\"false\">" + 
+                            "<provider endpoint-name=\"partenrlinktyperole1_myRole999\" interface-name=\"ns1:portType999\" service-name=\"ns0:SynchronousSample\"/>" +
+                            "</services>" + 
+                            "</jbi>";
+        JBIServiceUnitTransferObject suTransfer = new JBIServiceUnitTransferObject("bpelse",
+                                                                                    "bpelse",
+                                                                                    "Sample SU",
+                                                                                    descriptor);
+        CasaServiceEngineServiceUnit seSU = casaWrapperModel.getServiceEngineServiceUnits().get(0);
         
-        instance.addEndpointsToServiceEngineServiceUnit(suTransfer, seSU);
+        int oldSize = seSU.getEndpoints().size();
+        casaWrapperModel.addEndpointsToServiceEngineServiceUnit(suTransfer, seSU);
+        int newSize = seSU.getEndpoints().size();
+        assertEquals(oldSize+1, newSize);
         
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
     }
 
     /**

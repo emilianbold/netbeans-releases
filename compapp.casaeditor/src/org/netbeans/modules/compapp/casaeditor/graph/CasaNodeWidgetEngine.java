@@ -162,7 +162,7 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget
      * Sets all node properties at once.
      */
     public void setNodeProperties(String nodeName, String nodeType) {
-        boolean hasNodeName = nodeName != null && nodeName.length() > 0;
+        boolean hasNodeName = nodeName != null && nodeName.length() >= 0;
         boolean hasNodeType = nodeType != null && nodeType.length() > 0;
         if (hasNodeType && hasNodeName) {
             mTitleWidget.setLabel("(" + nodeType + ") " + nodeName);    // NOI18N
