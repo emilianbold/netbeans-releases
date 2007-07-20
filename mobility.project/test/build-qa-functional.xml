@@ -120,9 +120,9 @@
     
     <target name="prepare-wtk" depends="set-wtk-path">
         <fail unless="wtk.zipfile.name" message="Not supported platform."/>
-        
+        <property name="wtk.dir" location="${nbextra.dir}/qa/performance/mobility"/>
         <property name="emulators.mobility" value="${netbeans.dest.dir}/mobility8/emulators-inst"/>
         <mkdir dir="${emulators.mobility}"/>
-        <copy file="${nbextra.dir}/qa/performance/mobility/${wtk.zipfile.name}" todir="${emulators.mobility}"/>
+        <copy file="${wtk.dir}/${wtk.zipfile.name}" todir="${emulators.mobility}"/>
     </target>
 </project>
