@@ -84,10 +84,10 @@ public class IndentFactory implements IndentTask.Factory {
                 if (indentValue instanceof Object[]) {
                     Object[] params = (Object[]) indentValue;
                     int length = doc.getLength();
-                    int ln = NbDocument.findLineNumber ((StyledDocument) doc, offset - 1);
-                    int endLine = NbDocument.findLineNumber ((StyledDocument) doc, length - 1);
-                    int start = NbDocument.findLineOffset ((StyledDocument) doc, ln);
-                    int end = ln < endLine ? NbDocument.findLineOffset ((StyledDocument) doc, ln + 1) : length;
+                    int ln = NbDocument.findLineNumber (doc, offset - 1);
+                    int endLine = NbDocument.findLineNumber (doc, length - 1);
+                    int start = NbDocument.findLineOffset (doc, ln);
+                    int end = ln < endLine ? NbDocument.findLineOffset (doc, ln + 1) : length;
                     String line = doc.getText (start, end - start);
                     int indent = getIndent (line);
                     ts.move (start);
@@ -97,7 +97,7 @@ public class IndentFactory implements IndentTask.Factory {
                         indent += 4;
                     else
                     if (ni == 0 && ln > 0) {
-                        int start1 = NbDocument.findLineOffset ((StyledDocument) doc, ln - 1);
+                        int start1 = NbDocument.findLineOffset (doc, ln - 1);
                         line = doc.getText (start1, start - start1);
                         ts.move (start1);
                         ts.moveNext ();
@@ -106,9 +106,9 @@ public class IndentFactory implements IndentTask.Factory {
                             indent -= 4;
                     }
                     try {
-                        start = NbDocument.findLineOffset ((StyledDocument) doc, ln + 1);
+                        start = NbDocument.findLineOffset (doc, ln + 1);
                         try {
-                            end = NbDocument.findLineOffset ((StyledDocument) doc, ln + 2);
+                            end = NbDocument.findLineOffset (doc, ln + 2);
                             line = doc.getText (start, end - start);
                         } catch (IndexOutOfBoundsException ex) {
                             line = doc.getText (start, doc.getLength () - start);
@@ -162,12 +162,12 @@ public class IndentFactory implements IndentTask.Factory {
             int end, 
             Object[] params
         ) {
-            Map p = new HashMap ();
+            Map<String,Integer> p = new HashMap<String,Integer> ();
             do {
                 Token t = ts.token ();
                 String id = t.text ().toString ();
                 if (((Set) params [1]).contains (id)) {
-                    Integer i = (Integer) p.get (id);
+                    Integer i = p.get (id);
                     if (i == null) {
                         i = Integer.valueOf (1);
                     } else
@@ -176,7 +176,7 @@ public class IndentFactory implements IndentTask.Factory {
                 }
                 if (((Set) params [2]).contains (t.text ().toString ())) {
                     id = (String) ((Map) params [3]).get (id);
-                    Integer i = (Integer) p.get (id);
+                    Integer i = p.get (id);
                     if (i == null) {
                         i = Integer.valueOf (-1);
                     } else
@@ -212,7 +212,7 @@ public class IndentFactory implements IndentTask.Factory {
             }
         }
 
-        private static Map indentProperties = new WeakHashMap ();
+        private static Map<Language,Object> indentProperties = new WeakHashMap<Language,Object> ();
 
         private static Object getIndentProperties (Language l) {
             if (!indentProperties.containsKey (l)) {

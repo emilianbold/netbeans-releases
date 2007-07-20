@@ -183,7 +183,7 @@ public class LLSyntaxAnalyser {
                     //S ystem.out.println(input.getIndex () + ": no rule for " + nt + "&" + input.next (0));
                     createErrorNode (node, input.getOffset ()).addItem (readEmbeddings (input.read (), skipErrors, embeddings));
                 } else {
-                    Rule rule = (Rule) rules.get (newRule);
+                    Rule rule = rules.get (newRule);
                     Feature parse = language.getFeature ("PARSE", rule.getNT ());
                     if (parse != null) {
                         stack.push (it);
@@ -401,7 +401,7 @@ public class LLSyntaxAnalyser {
     }
     
     private int getRule (String nt, TokenInput input) {
-        Map m = (Map) first.get (nt);
+        Map m = first.get (nt);
         if (m == null) return -1;
         int i = 1;
         while (true) {
@@ -530,6 +530,7 @@ public class LLSyntaxAnalyser {
         
         private String toString = null;
         
+        @Override
         public String toString () {
             if (toString == null) {
                 StringBuilder sb = new StringBuilder ();

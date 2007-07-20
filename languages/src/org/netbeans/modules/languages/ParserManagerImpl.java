@@ -375,7 +375,7 @@ public class ParserManagerImpl extends ParserManager {
 //                        );
                     if (!type.equals (t.id ().name ()))
                         throw new IllegalArgumentException ();
-                    sb.append (t.text ().toString ());
+                    sb.append (t.text ());
                 }
                 int no = ts.offset () + ts.token ().length ();
                 tokens.add (ASTToken.create (
