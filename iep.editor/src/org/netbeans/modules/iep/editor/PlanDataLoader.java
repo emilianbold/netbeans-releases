@@ -48,6 +48,8 @@ public class PlanDataLoader extends UniFileLoader {
      */
     public static final String PLAN_EXTENSION = "iep";
 
+    public static final String MIME_TYPE = "text/x-iep+xml";                 // NOI18N
+
     private static final long serialVersionUID = -4579746482156152493L;
 
     public PlanDataLoader() {

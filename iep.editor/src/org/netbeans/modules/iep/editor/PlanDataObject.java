@@ -59,5 +59,13 @@ public class PlanDataObject extends MultiDataObject {
         getCookieSet().remove(cookie);
     }
 
+    public PlanEditorSupport getPlanEditorSupport() {
+        return editorSupport;
+    }
+
+    private transient PlanEditorSupport editorSupport;
+
+    public static final String IEP_ICON_BASE_WITH_EXT = "org/netbeans/modules/iep/editor/eventProcess.png";
+ 
     private static final long serialVersionUID = 6338889116068357651L;
 }
