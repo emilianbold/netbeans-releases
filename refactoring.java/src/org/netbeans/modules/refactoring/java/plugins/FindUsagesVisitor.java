@@ -21,6 +21,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import javax.lang.model.element.*;
 import org.netbeans.api.java.source.WorkingCopy;
 
@@ -48,23 +49,41 @@ public class FindUsagesVisitor extends FindVisitor {
     
     @Override
     public Tree visitNewClass(NewClassTree node, Element p) {
-        addIfMatch(getCurrentPath(), node,p);
+        Trees trees = workingCopy.getTrees();
+        ClassTree classTree = ((NewClassTree) node).getClassBody();
+        if (classTree != null && p.getKind()==ElementKind.CONSTRUCTOR) {
+            for (Tree t : classTree.getMembers()) {
+                if (t.getKind() == Tree.Kind.METHOD) {
+                    TreePath superCall = trees.getPath(workingCopy.getCompilationUnit(), ((ExpressionStatementTree) ((MethodTree) t).getBody().getStatements().get(0)).getExpression());
+                    Element superCallElement = trees.getElement(superCall);
+                    if (superCallElement != null && superCallElement.equals(p)) {
+                        addUsage(superCall);
+                    }
+                }
+            }
+        } else {
+            addIfMatch(getCurrentPath(), node, p);
+        }
         return super.visitNewClass(node, p);
     }
     
     private void addIfMatch(TreePath path, Tree tree, Element elementToFind) {
-        if (workingCopy.getTreeUtilities().isSynthetic(path))
-            return ;
-        Element el = workingCopy.getTrees().getElement(path);
-        if (el==null)
+        if (workingCopy.getTreeUtilities().isSynthetic(path)) {
             return;
-        
+        }
+        Trees trees = workingCopy.getTrees();
+        Element el = trees.getElement(path);
+        if (el == null) {
+            return;
+        }
         if (elementToFind.getKind() == ElementKind.METHOD && el.getKind() == ElementKind.METHOD) {
-            if (el.equals(elementToFind) || workingCopy.getElements().overrides(((ExecutableElement) el), (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())) {
+            if (el.equals(elementToFind) || workingCopy.getElements().overrides((ExecutableElement) el, (ExecutableElement) elementToFind, (TypeElement) elementToFind.getEnclosingElement())) {
                 addUsage(getCurrentPath());
             }
         } else if (el.equals(elementToFind)) {
-                addUsage(getCurrentPath());
+            addUsage(getCurrentPath());
+            return;
         }
     }
 }
+
