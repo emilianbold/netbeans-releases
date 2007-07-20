@@ -157,6 +157,8 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
     /** Save settings to XML file 
      *  @param changedProp the Map of settings to save */
     protected void updateSettings(Map changedProp){
+        Document doc = null;
+
         synchronized (Settings.class) {
             boolean save = false;
 
@@ -197,7 +199,7 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
             if (save == false) return;
 
             // now we can save local map to XML file
-            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+            doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
             Element rootElem = doc.getDocumentElement();
 
             // save XML
@@ -246,9 +248,9 @@ public class PropertiesMIMEOptionFile extends MIMEOptionFile{
             }
 
             doc.getDocumentElement().normalize();
-            
-            saveSettings(doc);
         }
+        
+        saveSettings(doc);
     }
     
 }

@@ -138,16 +138,15 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
             "Please file a bug (http://www.netbeans.org/community/issues.html) " + //NOI18N
             "for editor/settings and attach this stacktrace to it."; //NOI18N
             
+        Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+        
         synchronized (Settings.class) {
             // put changed properties to local map
             properties.putAll(changedProp);
 
             // now we can save local map to XML file
-            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
             Element rootElem = doc.getDocumentElement();
-
             ArrayList removed = new ArrayList();
-
             Map defaultAbbrevs = base.getDefaultAbbrevMap();
             // if default abbreviations don't exist for appropriate kit, set them empty
             if (defaultAbbrevs == null) defaultAbbrevs = new HashMap();
@@ -194,9 +193,9 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
             }
 
             doc.getDocumentElement().normalize();
-
-            saveSettings(doc);
         }
+        
+        saveSettings(doc);
     }
     
 }

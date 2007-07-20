@@ -242,14 +242,14 @@ public class FontsColorsMIMEOptionFile extends MIMEOptionFile{
             "Please file a bug (http://www.netbeans.org/community/issues.html) " + //NOI18N
             "for editor/settings and attach this stacktrace to it."; //NOI18N
         
+        Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+        
         synchronized (Settings.class) {
             // put changed properties to local map
             properties.putAll(changedProp);
 
             // now we can save local map to XML file
-            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
             Element rootElem = doc.getDocumentElement();
-
             Map elementColors = new HashMap();
 
             // save Colorings first
@@ -304,9 +304,9 @@ public class FontsColorsMIMEOptionFile extends MIMEOptionFile{
             }
 
             doc.getDocumentElement().normalize();
-
-            saveSettings(doc);
         }
+        
+        saveSettings(doc);
     }
     
 }

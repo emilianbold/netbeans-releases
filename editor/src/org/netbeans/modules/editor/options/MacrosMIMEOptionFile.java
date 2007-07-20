@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.editor.options;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -130,20 +129,18 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
     /** Save settings to XML file 
      *  @param changedProp the Map of settings to save */
     protected void updateSettings(Map changedProp){
+        Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+        
         synchronized (Settings.class) {
             // put changed properties to local map
             properties.putAll(changedProp);
 
             // now we can save local map to XML file
-            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
             org.w3c.dom.Element rootElem = doc.getDocumentElement();
-
             ArrayList removed = new ArrayList();
-
             Map defaultMacros = base.getDefaultMacrosMap();
             // if default macros don't exist for appropriate kit, set them empty
             if (defaultMacros == null) defaultMacros = new HashMap();
-
 
             // save XML
             for( Iterator i = properties.keySet().iterator(); i.hasNext(); ) {
@@ -186,9 +183,9 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
             }
 
             doc.getDocumentElement().normalize();
-
-            saveSettings(doc);
         }
+        
+        saveSettings(doc);
     }
     
 }

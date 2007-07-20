@@ -21,7 +21,6 @@ package org.netbeans.modules.editor.options;
 
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,7 +36,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import java.util.List;
 import org.netbeans.editor.MultiKeyBinding;
 import javax.swing.text.JTextComponent;
@@ -174,16 +172,15 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
             "Please file a bug (http://www.netbeans.org/community/issues.html) " + //NOI18N
             "for editor/settings and attach this stacktrace to it."; //NOI18N
         
+        Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
+        
         synchronized (Settings.class) {
             // put changed properties to local map
             properties.putAll(changedProp);
 
             // now we can save local map to XML file
-            Document doc = XMLUtil.createDocument(TAG_ROOT, null, processor.getPublicID(), processor.getSystemID());
             Element rootElem = doc.getDocumentElement();
-
             ArrayList removed = new ArrayList();
-
             Map defaultKeybs = base.getDefaultKeyBindingsMap();
 
             // if default keybindings don't exist for appropriate kit, set them empty
@@ -246,9 +243,9 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
             }
 
             doc.getDocumentElement().normalize();
-
-            saveSettings(doc);
         }
+        
+        saveSettings(doc);
     }
     
     private static String tryRemoveKeyFromMap (Document doc, Map props, String key, Map defaultKeybs, Element root) {

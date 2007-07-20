@@ -168,29 +168,27 @@ public abstract class MIMEOptionFile{
     }
     
     protected void saveSettings(Document doc){
-        synchronized (Settings.class) {
+        try{
+            FileLock lock = processor.getXMLDataObject().getPrimaryFile().lock();
             try{
-                FileLock lock = processor.getXMLDataObject().getPrimaryFile().lock();
-                try{
-                    OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
-                    try {
-                        wasSaved = true;
-                        XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-                        os.flush();
-                    } catch (Exception e){
-                        wasSaved = false;
-                        e.printStackTrace();
-                    } finally {
-                        os.close();
-                    }
-                }catch (IOException ioe){
-                    ioe.printStackTrace();
-                }finally{
-                    lock.releaseLock();
+                OutputStream os = processor.getXMLDataObject().getPrimaryFile().getOutputStream(lock);
+                try {
+                    wasSaved = true;
+                    XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+                    os.flush();
+                } catch (Exception e){
+                    wasSaved = false;
+                    e.printStackTrace();
+                } finally {
+                    os.close();
                 }
-            }catch (IOException ioexc){
-                ioexc.printStackTrace();
+            }catch (IOException ioe){
+                ioe.printStackTrace();
+            }finally{
+                lock.releaseLock();
             }
+        }catch (IOException ioexc){
+            ioexc.printStackTrace();
         }
     }
     
