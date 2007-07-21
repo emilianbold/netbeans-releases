@@ -275,13 +275,12 @@ public class JavaClass {
         final HashMap<ElementHandle, String> elementAndNames = getElementHandlesToReplace(name, newName);
         WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
-                    new Refactor.ElementsRenamer(wc, elementAndNames).scan(wc.getCompilationUnit(), null);
-                    //To take care of VB expressions, Ex:- getValue(#{SessionBean1.personRowSet})
-                    renamePropertyBindingExpression(wc, name, newName);
+                new Refactor.ElementsRenamer(wc, elementAndNames).scan(wc.getCompilationUnit(), null);
+                //To take care of VB expressions, Ex:- getValue(#{SessionBean1.personRowSet})
+                renamePropertyBindingExpression(wc, name, newName);
                 return null;
             }
-        //}, fObjs);
-        }, fObj);
+        }, fObjs);
     }
     
     private HashMap<ElementHandle, String> getElementHandlesToReplace(final String name, final String newName) {

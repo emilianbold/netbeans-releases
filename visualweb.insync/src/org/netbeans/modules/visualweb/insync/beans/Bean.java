@@ -282,10 +282,11 @@ public class Bean extends BeansNode {
             //System.err.println("B.setName " + oldname + "=>" + name);
             name = newname;
             List<FileObject> fObjs = new ArrayList<FileObject>();
-            fObjs.add(((FacesModel)unit.getModel()).getJavaFile());
+            FileObject currentFObj = ((FacesModel)unit.getModel()).getJavaFile();
+            fObjs.add(currentFObj);
             FacesModel[] models = ((FacesModelSet)unit.getModel().getOwner()).getFacesModels();
             for (int i=0; i < models.length; i++) {
-                if(!models[i].isPageBean()) {
+                if(currentFObj != models[i].getJavaFile()) {
                     fObjs.add(models[i].getJavaFile());
                 }
             }
