@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.util.ResourceBundle;
 import javax.swing.Action;
 import javax.swing.TransferHandler;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -44,7 +45,7 @@ public class DesignCenterAction extends CallbackSystemAction
       
       mBundle = NbBundle.getBundle(DesignCenterAction.class);
       
-      putValue(Action.NAME, mBundle.getString("Action.DesignCenter.Title"));
+      putValue(Action.NAME, mBundle.getString("Action.DesignCenter.Title")); // NOI18N
 //      putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(mBundle.getString("IDS_CTRLSHIFTC")));
       //putValue(Action.SMALL_ICON, "org/netbeans/modules/uml/resources/designcenter.gif");
    }
@@ -82,10 +83,9 @@ public class DesignCenterAction extends CallbackSystemAction
       
    }
    
-   protected String iconResource() 
+   protected String iconResource()
    {
-        //return (String)getValue(Action.SMALL_ICON);
-       return "org/netbeans/modules/uml/resources/designcenter.gif"; // NOI18N
+       return ImageUtil.instance().IMAGE_FOLDER + "designcenter.gif"; // NOI18N
    }
    
    public boolean isEnabled()	{

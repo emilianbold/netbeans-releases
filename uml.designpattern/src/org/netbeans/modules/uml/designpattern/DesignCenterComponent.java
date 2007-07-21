@@ -46,6 +46,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -74,8 +75,8 @@ import org.netbeans.modules.uml.ui.swing.testbed.addin.menu.Separator;
  * @version 1.0
  */
 public class DesignCenterComponent extends TopComponent {
-    private static final String TREE_TYPE_ID = "DesignCenter";
-    private static ResourceBundle mBundle = ResourceBundle.getBundle("org.netbeans.modules.uml.designpattern.Bundle");
+    private static final String TREE_TYPE_ID = "DesignCenter"; // NOI18N
+    private static ResourceBundle mBundle = ResourceBundle.getBundle("org.netbeans.modules.uml.designpattern.Bundle"); // NOI18N
     /** generated Serialized Version UID */
     static final long serialVersionUID = -8400374912390440402L;
 
@@ -97,7 +98,7 @@ public class DesignCenterComponent extends TopComponent {
      */
     public DesignCenterComponent() {
         super();
-        setName(mBundle.getString("Pane.DesignCenter.Title"));
+        setName(mBundle.getString("Pane.DesignCenter.Title")); // NOI18N
         initializeTopComponent();
     }
 
@@ -113,13 +114,13 @@ public class DesignCenterComponent extends TopComponent {
             //doLayout();
             
             InputMap inputMap = mDesignCenter.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-            inputMap.put(KeyStroke.getKeyStroke("shift F10"),
-                    "SHOW_CONTEXT_MENU");
+            inputMap.put(KeyStroke.getKeyStroke("shift F10"), // NOI18N
+                    "SHOW_CONTEXT_MENU"); // NOI18N
             
-            inputMap.put(KeyStroke.getKeyStroke("DELETE"),
-                    "DELETE_SELECTED_ELEMENT");
+            inputMap.put(KeyStroke.getKeyStroke("DELETE"), // NOI18N
+                    "DELETE_SELECTED_ELEMENT"); // NOI18N
             
-            mDesignCenter.getActionMap().put("SHOW_CONTEXT_MENU", new AbstractAction() {
+            mDesignCenter.getActionMap().put("SHOW_CONTEXT_MENU", new AbstractAction() { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     Component c = (Component)e.getSource() ;
                     
@@ -128,7 +129,7 @@ public class DesignCenterComponent extends TopComponent {
                 }
             });
             
-            mDesignCenter.getActionMap().put("DELETE_SELECTED_ELEMENT", new AbstractAction() {
+            mDesignCenter.getActionMap().put("DELETE_SELECTED_ELEMENT", new AbstractAction() { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     
                     mDesignCenter.deleteSelectedItems() ;
@@ -152,17 +153,17 @@ public class DesignCenterComponent extends TopComponent {
       //manager.remove("org.netbeans.modules.uml.view.projecttree.insert.popup");
 
       //remove new project and new workspace menu item
-      Object item = manager.find("org.netbeans.modules.uml.view.projecttree.insert.new");
+      Object item = manager.find("org.netbeans.modules.uml.view.projecttree.insert.new"); // NOI18N
       if (item != null && item instanceof IMenuManager)
       {
-         ((IMenuManager)item).remove("MBK_NEW_WORKSPACE");
+         ((IMenuManager)item).remove("MBK_NEW_WORKSPACE"); // NOI18N
       }
 
       //remove open project and open workspace menu item
-      Object openItem = manager.find("org.netbeans.modules.uml.view.projecttree.insert.open");
+      Object openItem = manager.find("org.netbeans.modules.uml.view.projecttree.insert.open"); // NOI18N
       if (openItem != null && openItem instanceof IMenuManager)
       {
-         ((IMenuManager)openItem).remove("MBK_OPEN_WORKSPACE");
+         ((IMenuManager)openItem).remove("MBK_OPEN_WORKSPACE"); // NOI18N
       }
    }
 
@@ -217,9 +218,9 @@ public class DesignCenterComponent extends TopComponent {
                mDesignCenter.refresh(false);
            }
        } catch(Exception E) {
-           String msg = "An error occured while trying refresh the " +
-                        "design center.";
-           javax.swing.JOptionPane.showMessageDialog(null, "Exception: " + E.getMessage());
+           String msg = "An error occured while trying refresh the " + // NOI18N
+                        "design center."; // NOI18N
+           javax.swing.JOptionPane.showMessageDialog(null, "Exception: " + E.getMessage()); // NOI18N
 //           ExceptionDialog.showExceptionError(msg, E);
        }
     }
@@ -289,7 +290,7 @@ public class DesignCenterComponent extends TopComponent {
       {
           TopComponent tc = null;
           try {
-              tc = WindowManager.getDefault().findTopComponent("designpattern");
+              tc = WindowManager.getDefault().findTopComponent("designpattern"); // NOI18N
           } catch(Exception ex) {
               //ignore this
           }
@@ -318,7 +319,7 @@ public class DesignCenterComponent extends TopComponent {
 
    public HelpCtx getHelpCtx()
    {
-       return new HelpCtx("DEToolsDesignCenter2_htm_wp1737211");
+       return new HelpCtx("DEToolsDesignCenter2_htm_wp1737211"); // NOI18N
    }
 
     protected void componentClosed()
@@ -426,7 +427,7 @@ public class DesignCenterComponent extends TopComponent {
       {
           mgr.add(new Separator());
           
-          Action[] actions = getActionsFromRegistry("contextmenu/uml/designcenter");
+          Action[] actions = getActionsFromRegistry("contextmenu/uml/designcenter"); // NOI18N
           
           for(Action curAction : actions)
           {
@@ -543,12 +544,12 @@ public class DesignCenterComponent extends TopComponent {
       }
    }
    
-   public Image getIcon()
-	{
-		return Utilities.loadImage(
-			"org/netbeans/modules/uml/resources/designcenter.gif"); // NOI18N
-	}
-   
+    public Image getIcon()
+    {
+        return Utilities.loadImage(ImageUtil.instance().IMAGE_FOLDER + 
+            "designcenter.gif"); // NOI18N
+    }
+
 //   public class StandardDesignCenterNode extends AbstractNode
 //   {
 //       public StandardDesignCenterNode(String desc)
