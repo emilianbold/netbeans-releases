@@ -579,11 +579,13 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             }
         });
         treeScroll.setViewportView(templatesTree);
+        templatesTree.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_DomainTemplatesTree")); // NOI18N
+        templatesTree.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_DomainTemplatesTree")); // NOI18N
 
-        addButton.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Add")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Add")); // NOI18N
         addButton.setActionCommand("ADD");
 
-        removeButton.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Remove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Remove")); // NOI18N
         removeButton.setActionCommand("REMOVE");
 
         org.jdesktop.layout.GroupLayout templatesTreePanelLayout = new org.jdesktop.layout.GroupLayout(templatesTreePanel);
@@ -595,7 +597,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                     .add(treeScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
                     .add(templatesTreePanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE)
+                        .add(addButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 72, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton)
                         .add(4, 4, 4)))
@@ -612,7 +614,13 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 .addContainerGap())
         );
 
-        modelElementLabel.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Model_Element")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_AddButton")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_AddButton")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_RemoveButton")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_RemoveButton")); // NOI18N
+
+        modelElementLabel.setLabelFor(modelElementCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(modelElementLabel, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Model_Element")); // NOI18N
 
         modelElementCombo.addItemListener(new java.awt.event.ItemListener()
         {
@@ -622,7 +630,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             }
         });
 
-        stereotypeLabel.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Stereotype")); // NOI18N
+        stereotypeLabel.setLabelFor(stereotypeText);
+        org.openide.awt.Mnemonics.setLocalizedText(stereotypeLabel, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Stereotype")); // NOI18N
 
         stereotypeText.addInputMethodListener(new java.awt.event.InputMethodListener()
         {
@@ -635,7 +644,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             }
         });
 
-        descriptionLabel.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Description")); // NOI18N
+        descriptionLabel.setLabelFor(descriptionTextArea);
+        org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Description")); // NOI18N
 
         descriptionTextArea.setColumns(20);
         descriptionTextArea.setLineWrap(true);
@@ -653,6 +663,8 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             }
         });
         descriptionScroll.setViewportView(descriptionTextArea);
+        descriptionTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_Description")); // NOI18N
+        descriptionTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_Description")); // NOI18N
 
         templatesTableScroll.setBorder(null);
 
@@ -700,19 +712,22 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
             }
         });
         templatesTableScroll.setViewportView(templatesTable);
+        templatesTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_OutputParameters")); // NOI18N
+        templatesTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_OutputParameters")); // NOI18N
 
-        addRowButton.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Add_Row")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addRowButton, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Add_Row")); // NOI18N
         addRowButton.setActionCommand("ADD_ROW");
 
-        modifyRowButton.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Modify_Row")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(modifyRowButton, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Modify_Row")); // NOI18N
         modifyRowButton.setActionCommand("MODIFY_ROW");
         modifyRowButton.setPreferredSize(new java.awt.Dimension(111, 23));
 
-        removeRowButton.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Remove_Row")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeRowButton, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "BTN_Remove_Row")); // NOI18N
         removeRowButton.setActionCommand("REMOVE_ROW");
         removeRowButton.setPreferredSize(new java.awt.Dimension(111, 23));
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Templates")); // NOI18N
+        jLabel2.setLabelFor(templatesTable);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_Templates")); // NOI18N
 
         org.jdesktop.layout.GroupLayout templatePropsPanelLayout = new org.jdesktop.layout.GroupLayout(templatePropsPanel);
         templatePropsPanel.setLayout(templatePropsPanelLayout);
@@ -767,7 +782,19 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                 .addContainerGap(79, Short.MAX_VALUE))
         );
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_DomainObjects_PanelTitle")); // NOI18N
+        modelElementCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_ElementType")); // NOI18N
+        modelElementCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_ElementType")); // NOI18N
+        stereotypeText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_Stereotype")); // NOI18N
+        stereotypeText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_Stereotype")); // NOI18N
+        addRowButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_AddTemplateRow")); // NOI18N
+        addRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_AddTemplateRowButton")); // NOI18N
+        modifyRowButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_EditTemplateRowButton")); // NOI18N
+        modifyRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_EditTemplateRowButton")); // NOI18N
+        removeRowButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_RemoveTemplateRow")); // NOI18N
+        removeRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_RemoveTemplateRow")); // NOI18N
+
+        jLabel1.setLabelFor(templatesTree);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_DomainObjects_PanelTitle")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -794,6 +821,9 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
                     .add(templatePropsPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_TemplatesOptionsPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_TemplatesOptionPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void stereotypeTextInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_stereotypeTextInputMethodTextChanged
