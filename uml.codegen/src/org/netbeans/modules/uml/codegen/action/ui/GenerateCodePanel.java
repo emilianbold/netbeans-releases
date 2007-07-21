@@ -39,6 +39,7 @@ import org.netbeans.modules.uml.codegen.ui.customizer.TabbedPanel;
 import org.netbeans.modules.uml.codegen.ui.customizer.TemplateModel;
 import org.netbeans.modules.uml.codegen.ui.customizer.VerticalTabbedPanel;
 import org.netbeans.modules.uml.project.ProjectUtil;
+import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -59,6 +60,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
     
     private VerticalTabbedPanel templateFamilies = null;
     private TemplateModel model = null;
+    private UMLProject umlProject = null;
     
     private final static String PROJECT_SOURCES_SUFFIX = 
         NbBundle.getMessage(GenerateCodePanel.class, 
@@ -68,13 +70,13 @@ public class GenerateCodePanel extends javax.swing.JPanel
         NbBundle.getMessage(GenerateCodePanel.class, 
         "TXT_Project_src_folder"); // NOI18N
     
-    /**
-     * Creates new form ExportCodeOptionsPanel
-     */
     public GenerateCodePanel(
-        boolean isCollapsable, UMLProjectProperties prjProps)
+        boolean isCollapsable, 
+        UMLProjectProperties prjProps, 
+        UMLProject umlProject)
     {
         initComponents();
+        this.umlProject = umlProject;
 
         String folder = prjProps.getCodeGenFolderLocation();
         
@@ -419,26 +421,33 @@ public class GenerateCodePanel extends javax.swing.JPanel
         if (javaSrcRootFolder != null)
             return javaSrcRootFolder.getPath();
         
-        String lastFolderUsed = 
+        String genCodeFolder = 
             edProps.getProperty(UMLProjectProperties.CODE_GEN_FOLDER_LOCATION);
         
-        if (lastFolderUsed != null && lastFolderUsed.length() > 0)
-            return lastFolderUsed;
+        if (genCodeFolder != null && genCodeFolder.length() > 0)
+            return genCodeFolder;
 
         // if the export source folder hasn't been saved to file yet,
         // provide a suggestion for a place to put the sources
 
-        // defensive code: use user's home dir as the base dir
-        if (lastFolderUsed == null || lastFolderUsed.length() == 0)
-            lastFolderUsed = System.getProperty("user.home"); // NOI18N
-
+        if (umlProject != null)
+            genCodeFolder = umlProject.getProjectDirectory().getParent().getPath();
+        
+        if (genCodeFolder == null || genCodeFolder.length() == 0)
+        {
+            // defensive code: if all else fails use user's home dir as the base dir
+            genCodeFolder = System.getProperty("user.home"); // NOI18N
+        }
+        
         // append suggested Java project name + "src" dir
-        return lastFolderUsed + File.separatorChar + projectProps.getProject().getName() + 
+        return genCodeFolder + File.separatorChar + projectProps.getProject().getName() + 
             PROJECT_SOURCES_SUFFIX + File.separatorChar + PROJECT_SRC_FOLDER;
     }
 
-    boolean noSourceFolder = false;
-    boolean noTemplatesEnabled = false;
+    
+    
+    private boolean noSourceFolder = false;
+    private boolean noTemplatesEnabled = false;
     
     public void changedUpdate(DocumentEvent event)
     {}

@@ -22,7 +22,9 @@ package org.netbeans.modules.uml.codegen.ui.customizer;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.codegen.action.ui.GenerateCodePanel;
+import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
@@ -86,7 +88,8 @@ public class ProjectTemplatesCustomizer
 //                new DomainTemplatesManagerPanel(uiProps);
 //            ProjectTemplatesPanel panel = new ProjectTemplatesPanel(uiProps);
 
-            GenerateCodePanel panel = new GenerateCodePanel(false, uiProps);
+            UMLProject project = (UMLProject)context.lookup(Project.class);
+            GenerateCodePanel panel = new GenerateCodePanel(false, uiProps, project);
             category.setOkButtonListener(panel);
             return panel;
         }

@@ -27,7 +27,6 @@ import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.codegen.CodeGenUtil;
 import org.netbeans.modules.uml.codegen.action.ui.GenerateCodePanel;
-import org.netbeans.modules.uml.common.ui.SaveNotifier;
 
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
 import org.netbeans.modules.uml.core.metamodel.core.constructs.IEnumeration;
@@ -47,8 +46,6 @@ import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
 import org.netbeans.modules.uml.util.AbstractNBTask;
-import org.netbeans.modules.uml.util.DummyCorePreference;
-import org.netbeans.modules.uml.util.StringTokenizer2;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -57,7 +54,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 
@@ -167,7 +163,8 @@ public class GenerateCodeAction extends CookieAction
             GenerateCodePanel gcPanel = new GenerateCodePanel(
                 // retrieveExportFolderDefault(nodes[0]), 
                 true,
-                retrieveUMLProject().getUMLProjectProperties());
+                retrieveUMLProject().getUMLProjectProperties(),
+                retrieveUMLProject());
 
             gcPanel.requestFocus();
 
