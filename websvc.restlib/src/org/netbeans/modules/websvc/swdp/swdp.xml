@@ -28,16 +28,19 @@ Microsystems, Inc. All Rights Reserved.
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/rest/jsr311-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jersey.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/jsp-api-2.0-20040521.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/servlet.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/persistence-api-1.0.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/activation.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/jsr250-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/localizer.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxrpc16/mail.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/wadl2java.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/api/jaxws-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jaxb-api.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/jaxb-impl.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jaxws21/jaxb-xjc.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/jaxws21/api/jsr173_api.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/jaxws-tools.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/jaxws21/jaxws-rt.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/rome-0.9.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jdom-1.0.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jettison-1.0-RC1.jar!/</resource>
