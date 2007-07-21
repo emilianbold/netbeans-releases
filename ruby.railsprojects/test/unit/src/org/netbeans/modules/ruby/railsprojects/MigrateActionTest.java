@@ -9,11 +9,9 @@ package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.ruby.RubyTestBase;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -21,6 +19,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -28,7 +27,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Tor Norbye
  */
-public class MigrateActionTest extends RubyTestBase {
+public class MigrateActionTest extends RubyProjectTestBase {
     
     public MigrateActionTest(String testName) {
         super(testName);
@@ -44,14 +43,6 @@ public class MigrateActionTest extends RubyTestBase {
         super.tearDown();
     }
 
-    protected Project getTestProject(String path) {
-        FileObject fo = getTestFile("testfiles/railsproj");
-        Project p = FileOwnerQuery.getOwner(fo);
-        assertNotNull(p);
-
-        return p;
-    }
-    
     protected RailsProject getRailsProject(String path) {
         Project p = getTestProject(path);
         assertNotNull(p);

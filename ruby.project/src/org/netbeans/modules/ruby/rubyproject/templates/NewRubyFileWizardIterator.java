@@ -68,7 +68,7 @@ public class NewRubyFileWizardIterator implements WizardDescriptor.Instantiating
     public NewRubyFileWizardIterator() {}
     
     
-    private NewRubyFileWizardIterator( int type ) {
+    NewRubyFileWizardIterator( int type ) {
         this.type = type;
     }    
     
