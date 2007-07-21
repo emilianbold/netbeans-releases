@@ -31,23 +31,14 @@ import org.netbeans.modules.visualweb.api.j2ee.common.RequestedJdbcResource;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfo;
 import org.netbeans.modules.visualweb.dataconnectivity.model.DataSourceInfoListener;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
-import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 import org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-import java.util.jar.JarFile;
 
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.dataconnectivity.model.ProjectDataSourceManager;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 
 /**
@@ -113,6 +104,11 @@ public class DataSourceResolver implements DataSourceInfoListener {
       int i = 0;
         JDBCDriver[] newDrivers;
         newDrivers = JDBCDriverManager.getDefault().getDrivers();
+        
+        // hack for bug in Creator 110472 - wrong Oracle driver class name
+        if (driverClass.equals("oracle.jdbc.OracleDriver")) {
+            driverClass = "oracle.jdbc.driver.OracleDriver";
+        }
         
         for (i = 0; i <newDrivers.length; i++) {
             if (newDrivers[i].getClassName().equals(driverClass)) {
