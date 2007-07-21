@@ -32,7 +32,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <attr name="templateWizardIterator" newvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
                     <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/ -->
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml.png"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml-project.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyAnalysisProject.html"/>
                 </file>   
                 
@@ -42,7 +42,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator.umlJava"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
                     <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/ -->
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml.png"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml-project.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/emptyJavaProject.html"/>
                 </file>
                 
@@ -52,7 +52,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator.reverseEngineer"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
                     <!-- attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/ -->
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml.png"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml-project.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/revEngProject.html"/>
                 </file>  
                 
@@ -61,7 +61,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <attr boolvalue="true" name="template"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator.roseImport"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/umlProject.gif"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/uml-project.png"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/project/ui/resources/roseImportProject.html"/>
                 </file> --> 
                 

@@ -285,7 +285,7 @@ public class ImportedProjectChildren extends Children.Keys //Children.Array
                 
                 retVal = new AbstractNode(new Children.SortedArray());
                 retVal.setName(info.getDisplayName());
-                retVal.setIconBaseWithExtension(ImageUtil.IMAGE_FOLDER + "uml.png"); // NOI18N
+                retVal.setIconBaseWithExtension(ImageUtil.IMAGE_FOLDER + "uml-project.png"); // NOI18N
                 mNodeMap.put(object, retVal);
             }
         }

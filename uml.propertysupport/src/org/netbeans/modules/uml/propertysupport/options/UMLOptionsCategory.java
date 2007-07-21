@@ -28,6 +28,7 @@
 
 package org.netbeans.modules.uml.propertysupport.options;
 
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
@@ -49,17 +50,17 @@ public class UMLOptionsCategory extends OptionsCategory {
     }
     
     public String getCategoryName() {
-//          Returns name of category used in list on the left side of Options Dialog.
-	return NbBundle.getMessage(UMLOptionsCategory.class, "UML") ;
+        // Returns name of category used in list on the left side of Options Dialog.
+	return NbBundle.getMessage(UMLOptionsCategory.class, "UML"); // NOI18N
     }
     
     public String getIconBase() {
-//          Returns base name of 32x32 icon used in list on the left side of Options Dialog.
-	return "org/netbeans/modules/uml/propertysupport/nonsource/uml_icon32" ; //No I18N
+        // Returns base name of 32x32 icon used in list on the left side of Options Dialog.
+	return ImageUtil.instance().IMAGE_FOLDER + "uml-project-32"; // NOI18N
 
     }
     
     public String getTitle() {
-	return NbBundle.getMessage(UMLOptionsCategory.class, "UML_Options") ;
+	return NbBundle.getMessage(UMLOptionsCategory.class, "UML_Options"); // NOI18N
     }
 }

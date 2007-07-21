@@ -214,7 +214,7 @@ public class PanelUmlImports extends JPanel
        {
            setText(value.toString());
            
-           Icon image = ImageUtil.instance().getIcon("uml.png"); // NOI18N
+           Icon image = ImageUtil.instance().getIcon("uml-project.png"); // NOI18N
            
            if (image != null)
            {

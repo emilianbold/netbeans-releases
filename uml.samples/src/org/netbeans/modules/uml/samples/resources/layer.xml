@@ -29,7 +29,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.uml.samples.bankapp.UMLBankAppSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/uml/samples/bankapp/resources/UMLBankAppSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml.png"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/uml/resources/images/uml-project.png"/>
                     </file>
                 </folder>
             </folder>

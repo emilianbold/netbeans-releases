@@ -302,7 +302,7 @@ public class UMLPhysicalViewProvider implements LogicalViewProvider
                     mProject, mHelper, evaluator, mImportSupport),
                     Lookups.singleton(mProject));
             
-            setIconBaseWithExtension(ImageUtil.IMAGE_FOLDER + "uml.png"); // NOI18N
+            setIconBaseWithExtension(ImageUtil.IMAGE_FOLDER + "uml-project.png"); // NOI18N
             
             setName(ProjectUtils.getInformation( mProject ).getDisplayName());
             

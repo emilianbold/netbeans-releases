@@ -88,7 +88,8 @@ import org.openide.windows.WindowManager;
  */
 public class UMLProject implements Project, AntProjectListener
 {
-    private static final Icon PROJECT_ICON = ImageUtil.instance().getIcon("uml.png"); // NOI18N
+    private static final Icon PROJECT_ICON = 
+        ImageUtil.instance().getIcon("uml-project.png"); // NOI18N
 
     private final Lookup mLookup;
     private final UMLProjectHelper mHelper;

@@ -499,7 +499,7 @@ public class ADDrawingAreaBundle extends ADDrawingAreaResourceBundle
 			"graphwindow.default.height", "400" }, {
 			"editor.undo.limit", "50" }, {
 			// "editor.icon", "images/Describe.jpg" }, {
-			"editor.icon", "images/uml.png" }, {
+			"editor.icon", "images/uml-project.png" }, {
 			"dialog.zoom.title", mBundle.getString("dialog.zoom.title") }, {
 			"dialog.zoom.message", mBundle.getString("dialog.zoom.message") }, {
 
