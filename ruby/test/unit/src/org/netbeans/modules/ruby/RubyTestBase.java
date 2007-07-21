@@ -10,6 +10,7 @@
 package org.netbeans.modules.ruby;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -225,11 +226,11 @@ public abstract class RubyTestBase extends NbTestCase {
         return cb.toString();
     }
 
-    protected File getDataFile(String relFilePath) {
+    protected File getDataSourceDir() {
         // Check whether token dump file exists
         // Try to remove "/build/" from the dump file name if it exists.
         // Otherwise give a warning.
-        File inputFile = new File(getDataDir(), relFilePath);
+        File inputFile = getDataDir();
         String inputFilePath = inputFile.getAbsolutePath();
         boolean replaced = false;
         if (inputFilePath.indexOf("/build/test/") != -1) {
@@ -247,6 +248,13 @@ public abstract class RubyTestBase extends NbTestCase {
             );
         }
         inputFile = new File(inputFilePath);
+        assertTrue(inputFile.exists());
+        
+        return inputFile;
+    }
+    
+    protected File getDataFile(String relFilePath) {
+        File inputFile = new File(getDataSourceDir(), relFilePath);
         
         return inputFile;
     }
@@ -273,6 +281,46 @@ public abstract class RubyTestBase extends NbTestCase {
         }
 
         String expected = readFile(goldenFile);
-        assertEquals(expected, description);
+
+        // Because the unit test differ is so bad...
+        if (false) { // disabled
+            if (!expected.equals(description)) {
+                BufferedWriter fw = new BufferedWriter(new FileWriter("/tmp/expected.txt"));
+                fw.write(expected);
+                fw.close();
+                fw = new BufferedWriter(new FileWriter("/tmp/actual.txt"));
+                fw.write(description);
+                fw.close();
+            }
+        }
+
+        assertEquals(expected.trim(), description.trim());
     }
+
+    protected void assertFileContentsMatches(String relFilePath, String description, boolean includeTestName, String ext) throws Exception {
+        File rubyFile = getDataFile(relFilePath);
+        if (!rubyFile.exists()) {
+            NbTestCase.fail("File " + rubyFile + " not found.");
+        }
+
+        File goldenFile = getDataFile(relFilePath + (includeTestName ? ("." + getName()) : "") + ext);
+        if (!goldenFile.exists()) {
+            if (!goldenFile.createNewFile()) {
+                NbTestCase.fail("Cannot create file " + goldenFile);
+            }
+            FileWriter fw = new FileWriter(goldenFile);
+            try {
+                fw.write(description);
+            }
+            finally{
+                fw.close();
+            }
+            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
+        }
+
+        String expected = readFile(goldenFile);
+        assertEquals(expected.trim(), description.trim());
+    }
+
+
 }
