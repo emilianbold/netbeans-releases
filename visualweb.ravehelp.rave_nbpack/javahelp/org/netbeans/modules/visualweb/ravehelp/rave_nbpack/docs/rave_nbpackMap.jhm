@@ -650,4 +650,10 @@
 	<mapID target="projrave_ui_elements_navigator_win_navigator_win_popup" url="ui_elements/navigator_win/navigator_win_popup.html"/>
 	<mapID target="projrave_ui_elements_navigator_win_request_bean_node" url="ui_elements/navigator_win/request_bean_node.html"/>
 	<mapID target="projrave_ui_elements_navigator_win_session_bean_node" url="ui_elements/navigator_win/session_bean_node.html"/>
+	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_common_task" url="ui_elements/palette/wdstk-jsf1_2/common_task.html"/>
+	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_common_tasks_group" url="ui_elements/palette/wdstk-jsf1_2/common_tasks_group.html"/>
+	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_common_tasks_section" url="ui_elements/palette/wdstk-jsf1_2/common_tasks_section.html"/>
+	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_propsheets_common_task_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/common_task_props.html"/>
+	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_propsheets_common_tasks_group_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/common_tasks_group_props.html"/>
+	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_propsheets_common_tasks_section_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/common_tasks_section_props.html"/>
 </map>

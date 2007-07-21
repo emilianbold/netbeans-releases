@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/Users/james/VisWebCVS/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
+		<directory title="C:/!MySunProjects/Rave/cvstree/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
 			<directory title="a11y">
 				<directory title="CVS">
 					<file title="Entries"/>
@@ -758,6 +758,9 @@
 							<file title="checkbox_group_props.html"/>
 							<file title="checkbox_props.html"/>
 							<file title="column_props.html"/>
+							<file title="common_task_props.html"/>
+							<file title="common_tasks_group_props.html"/>
+							<file title="common_tasks_section_props.html"/>
 							<file title="dropdown_list_props.html"/>
 							<file title="file_upload_props.html"/>
 							<file title="form_props.html"/>
@@ -803,6 +806,9 @@
 						<file title="checkbox.html"/>
 						<file title="checkbox_group.html"/>
 						<file title="column.html"/>
+						<file title="common_task.html"/>
+						<file title="common_tasks_group.html"/>
+						<file title="common_tasks_section.html"/>
 						<file title="dropdown_list.html"/>
 						<file title="file_upload.html"/>
 						<file title="form.html"/>
