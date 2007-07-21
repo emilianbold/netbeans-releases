@@ -206,10 +206,13 @@ public class GenerateCodePanel extends javax.swing.JPanel
         showDialogCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         showDialogCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        templatesLabel.setLabelFor(panelPlaceHolder);
         templatesLabel.setText(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "LBL_TemplatesLabel")); // NOI18N
 
         panelPlaceHolder.setLayout(new java.awt.BorderLayout());
         scrollPlaceHolder.setViewportView(panelPlaceHolder);
+        panelPlaceHolder.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSN_TemplatesPanel")); // NOI18N
+        panelPlaceHolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSD_TemplatesPanel")); // NOI18N
 
         statusLabel.setForeground(new java.awt.Color(255, 0, 0));
         statusLabel.setText("<status message>");
@@ -263,14 +266,22 @@ public class GenerateCodePanel extends javax.swing.JPanel
 
         locationLabel.getAccessibleContext().setAccessibleName("");
         locationLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ExportFolder")); // NOI18N
-        locationText.getAccessibleContext().setAccessibleName("");
+        locationText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSN_FolderLocationText")); // NOI18N
         locationText.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ExportFolder")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleName("");
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ASCN_BrowseButton")); // NOI18N
         browseButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BrowseButton")); // NOI18N
-        backupSourcesCheck.getAccessibleContext().setAccessibleName("");
+        backupSourcesCheck.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSN_BackupFiles")); // NOI18N
         backupSourcesCheck.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_BackupSourcesCheckBox")); // NOI18N
+        generateMarkersCheck.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSN_GenMarkersMerge")); // NOI18N
+        generateMarkersCheck.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSD_GenMakersMerge")); // NOI18N
+        addMarkersCheck.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ASCN_AddMergeMarkers")); // NOI18N
+        addMarkersCheck.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSD_AddMergeMarkers")); // NOI18N
+        showDialogCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSN_PromptDialog")); // NOI18N
+        showDialogCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSD_PromptDialog")); // NOI18N
+        statusLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSN_StatusMessage")); // NOI18N
+        statusLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSD_StatusMessage")); // NOI18N
 
-        getAccessibleContext().setAccessibleName("");
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ACSN_GenCodeDialog")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GenerateCodePanel.class, "ASCD_ExportCodePanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
