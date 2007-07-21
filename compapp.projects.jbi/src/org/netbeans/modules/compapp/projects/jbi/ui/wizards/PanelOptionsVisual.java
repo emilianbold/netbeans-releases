@@ -45,13 +45,12 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         setAsMainCheckBox = new javax.swing.JCheckBox();
 
-        setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setSelected(true);
-        setAsMainCheckBox.setText(NbBundle.getBundle("org/netbeans/modules/compapp/projects/jbi/ui/wizards/Bundle").getString("LBL_NWP1_SetAsMain_CheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, NbBundle.getBundle("org/netbeans/modules/compapp/projects/jbi/ui/wizards/Bundle").getString("LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -60,7 +59,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(setAsMainCheckBox)
-                .addContainerGap(302, Short.MAX_VALUE))
+                .addContainerGap(294, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -69,6 +68,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
                 .add(setAsMainCheckBox)
                 .add(35, 35, 35))
         );
+
+        setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     boolean valid(WizardDescriptor wizardDescriptor) {
