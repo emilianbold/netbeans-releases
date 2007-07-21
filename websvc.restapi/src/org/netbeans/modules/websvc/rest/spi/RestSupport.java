@@ -77,6 +77,7 @@ public abstract class RestSupport {
     public static final String WEB_RESOURCE_CLASS = "webresources.WebResources";
     public static final String REST_API_JAR = "jsr311-api.jar";
     public static final String REST_RI_JAR = "jersey.jar";
+    public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";
     
     AntProjectHelper helper;
 
@@ -309,7 +310,16 @@ public abstract class RestSupport {
     }
 
     protected String getProjectProperty(String name) {
-        return helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(name);
+        return helper.getStandardPropertyEvaluator().getProperty(name);
+    }
+    
+    protected boolean ignorePlatformRestLibrary() {
+        String v = getProjectProperty(IGNORE_PLATFORM_RESTLIB);
+        Boolean ignore = v != null ? Boolean.valueOf(v) : true;
+        if (ignore == Boolean.FALSE) {
+            return false;
+        }
+        return true;
     }
 }
 

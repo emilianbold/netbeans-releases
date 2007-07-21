@@ -749,9 +749,15 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-init-rest" if="rest.support.on">
+                <condition property="platform.restlib.classpath" value="${{j2ee.platform.classpath}}">
+                    <and>
+                        <isset property="restlib.ignore.platform"/>
+                        <isfalse value="${{restlib.ignore.platform}}"/>
+                    </and>
+                </condition>
                 <taskdef name="restapt" classname="com.sun.ws.rest.tools.ant.WebResourcesProcessorTask">
                     <classpath>
-                        <path path="${{j2ee.platform.classpath}}"/>
+                        <path path="${{platform.restlib.classpath}}"/>
                         <path path="${{libs.restlib.classpath}}"/>
                     </classpath>
                 </taskdef>
