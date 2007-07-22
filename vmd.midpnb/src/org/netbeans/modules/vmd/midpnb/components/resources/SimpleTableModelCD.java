@@ -29,11 +29,9 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.table.TableModelEditorElement;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorTableModel;
 
 /**
  *
@@ -64,8 +62,7 @@ public class SimpleTableModelCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-//                 .addProperty("Values", new PropertyEditorTableModel(), PROP_VALUES); // TODO - Column Names
-                 .addProperty("Values", PropertyEditorResource.createInstance(new TableModelEditorElement(), "<new>", "<none>"), PROP_VALUES); // TODO - Column Names
+                 .addProperty("Values", new PropertyEditorTableModel(), PROP_VALUES); // TODO - Column Names
     }
 
     private Presenter createSetterPresenter () {

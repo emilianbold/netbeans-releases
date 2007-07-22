@@ -46,6 +46,8 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.table.TableModelEditorElement;
 
 /**
  *
@@ -103,8 +105,9 @@ public class TableItemCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Title", PropertyEditorString.createInstance(), PROP_TITLE) //NOI18N
-                    .addProperty("Table Model", org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourcesComboBox.create(TableModelCD.TYPEID, //NOI18N
-                        NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE")), PROP_MODEL) //NOI18N
+                    .addProperty("Table Model", PropertyEditorResource.createInstance(new TableModelEditorElement(), //NOI18N
+                        NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), //NOI18N
+                        NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE")), PROP_MODEL) //NOI18N
                     .addProperty("Show Borders", PropertyEditorBooleanUC.createInstance(false), PROP_BORDERS) //NOI18N   
                     .addProperty("Title Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_TITLE_FONT) //NOI18N
                     .addProperty("Headers Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_HEADERS_FONT) //NOI18N

@@ -17,11 +17,17 @@
 
 package org.netbeans.modules.vmd.midpnb.propertyeditors.table;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Vector;
 import javax.swing.JComponent;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 
@@ -29,18 +35,17 @@ import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
  *
  * @author Anton Chechel
  */
-public class TableModelEditorElement extends PropertyEditorResourceElement {
-    
-    private static final int DEAFULT_TABLE_SIZE = 3;
-    
+public class TableModelEditorElement extends PropertyEditorResourceElement implements TableModelListener {
+
+    private boolean doNotFireEvent;
     private long componentID;
     private CustomEditorTableModel tableModel;
-    
+
     public TableModelEditorElement() {
         resetTableModel();
         initComponents();
     }
-    
+
     public JComponent getJComponent() {
         return this;
     }
@@ -56,13 +61,14 @@ public class TableModelEditorElement extends PropertyEditorResourceElement {
             setAllEnabled(false);
             return;
         }
-        
+
         this.componentID = wrapper.getComponentID();
         final PropertyValue[] columns = new PropertyValue[1];
         final PropertyValue[] values = new PropertyValue[1];
 
         final DesignComponent component = wrapper.getComponent();
-        if (component != null) { // existing component
+        if (component != null) {
+            // existing component
             if (!component.getType().equals(getTypeID())) {
                 throw new IllegalArgumentException("Passed component must have typeID " + getTypeID() + " instead passed " + component.getType()); // NOI18N
             }
@@ -92,29 +98,67 @@ public class TableModelEditorElement extends PropertyEditorResourceElement {
         setAllEnabled(true);
         setTableValues(columns[0], values[0]);
     }
-    
-    private void setTableValues(PropertyValue columns, PropertyValue values) {
+
+    public synchronized void tableChanged(TableModelEvent e) {
+        if (isShowing() && !doNotFireEvent) {
+            Vector dataVector = tableModel.getDataVector();
+            List<PropertyValue> propertyValueColumn = new ArrayList<PropertyValue>(dataVector.size());
+            for (int i = 0; i < dataVector.size(); i++) {
+                Vector row = (Vector) dataVector.elementAt(i);
+                List<PropertyValue> propertyValueRow = new ArrayList<PropertyValue>(row.size());
+                for (int j = 0; j < row.size(); j++) {
+                    String str = (String) row.elementAt(j);
+                    propertyValueRow.add(MidpTypes.createStringValue(str != null ? str : "")); // NOI18N
+                }
+                propertyValueColumn.add(PropertyValue.createArray(MidpTypes.TYPEID_JAVA_LANG_STRING, propertyValueRow));
+            }
+
+            PropertyValue values = PropertyValue.createArray(MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), propertyValueColumn);
+            fireElementChanged(componentID, SimpleTableModelCD.PROP_VALUES, values);
+            // TODO save headers
+        }
+    }
+
+    private synchronized void setTableValues(PropertyValue columns, PropertyValue values) {
+        doNotFireEvent = true;
         if (values == null) {
             resetTableModel();
         } else {
-//            JTableHeader jth = new JTableHeader();
-//            TableColumnModel tcm = table.getTableHeader().getColumnModel();
-//            int count = tcm.getColumnCount();
-//            for (int i = 0; i < count; i++) {
-//                tcm.removeColumn(tcm.getColumn(i));
-//            }
-//            
-//            List<PropertyValue> array = columns.getArray();
-//            for (PropertyValue pv : array) {
-//                tcm.addColumn(MidpTypes.getString(pv));
-//            }
+            String[] header = null;
+            if (columns != null) {
+                List<PropertyValue> list = columns.getArray();
+                if (list != null) {
+                    header = new String[list.size()];
+                    for (int i = 0; i < list.size(); i++) {
+                        header[i] = MidpTypes.getString(list.get(i));
+                    }
+                }
+            }
+
+            List<PropertyValue> list = values.getArray();
+            String[][] arrays = null;
+            if (list != null && list.size() > 0) {
+                List<PropertyValue> list2 = list.get(0).getArray();
+                arrays = new String[list.size()][list2.size()];
+                for (int x = 0; x < list.size(); x++) {
+                    list2 = list.get(x).getArray();
+                    for (int y = 0; y < list2.size(); y++) {
+                        arrays[x][y] = MidpTypes.getString(list2.get(y));
+                    }
+                }
+            }
+
+            tableModel.setDataVector(arrays, header);
         }
+        doNotFireEvent = false;
     }
-    
+
     private void resetTableModel() {
+        if (tableModel != null) {
+            tableModel.removeTableModelListener(this);
+        }
         tableModel = new CustomEditorTableModel();
-        tableModel.setColumnCount(DEAFULT_TABLE_SIZE);
-        tableModel.setRowCount(DEAFULT_TABLE_SIZE);
+        tableModel.addTableModelListener(this);
         if (table != null) {
             table.setModel(tableModel);
         }
@@ -128,7 +172,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement {
         tableLabel.setEnabled(isEnabled);
         table.setEnabled(isEnabled);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -250,8 +294,8 @@ public class TableModelEditorElement extends PropertyEditorResourceElement {
     private void addRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addRowButtonActionPerformed
         tableModel.addRow(new String[table.getColumnCount()]);
     }//GEN-LAST:event_addRowButtonActionPerformed
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addColButton;
     private javax.swing.JButton addRowButton;
@@ -262,5 +306,4 @@ public class TableModelEditorElement extends PropertyEditorResourceElement {
     private javax.swing.JTable table;
     private javax.swing.JLabel tableLabel;
     // End of variables declaration//GEN-END:variables
-    
 }
