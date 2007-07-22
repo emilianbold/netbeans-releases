@@ -184,7 +184,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                    .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
                     .add(replaceAll)
                     .add(declareFinal)
                     .add(layout.createSequentialGroup()
@@ -226,6 +226,16 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
                 .add(errorLabel)
                 .addContainerGap())
         );
+
+        name.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "AD_IntrVar_Name")); // NOI18N
+        replaceAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "AD_IntrVar_ReplaceAllOccurences")); // NOI18N
+        declareFinal.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "AD_IntrVar_DeclareFinal")); // NOI18N
+        accessPublic.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "AD_IntrVar_Public")); // NOI18N
+        accessProtected.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "AD_IntrVar_Protected")); // NOI18N
+        accessDefault.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "AD_IntrVar_Default")); // NOI18N
+        accessPrivate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "AD_IntrVar_Private")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "AD_IntrVar_Dialog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
