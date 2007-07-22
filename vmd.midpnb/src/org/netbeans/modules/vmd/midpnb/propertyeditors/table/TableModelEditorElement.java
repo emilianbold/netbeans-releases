@@ -42,7 +42,8 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     private CustomEditorTableModel tableModel;
 
     public TableModelEditorElement() {
-        resetTableModel();
+        tableModel = new CustomEditorTableModel();
+        tableModel.addTableModelListener(this);
         initComponents();
     }
 
@@ -122,7 +123,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     private synchronized void setTableValues(PropertyValue columns, PropertyValue values) {
         doNotFireEvent = true;
         if (values == null) {
-            resetTableModel();
+            tableModel.clear();
         } else {
             String[] header = null;
             if (columns != null) {
@@ -151,17 +152,6 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
             tableModel.setDataVector(arrays, header);
         }
         doNotFireEvent = false;
-    }
-
-    private void resetTableModel() {
-        if (tableModel != null) {
-            tableModel.removeTableModelListener(this);
-        }
-        tableModel = new CustomEditorTableModel();
-        tableModel.addTableModelListener(this);
-        if (table != null) {
-            table.setModel(tableModel);
-        }
     }
 
     private void setAllEnabled(boolean isEnabled) {

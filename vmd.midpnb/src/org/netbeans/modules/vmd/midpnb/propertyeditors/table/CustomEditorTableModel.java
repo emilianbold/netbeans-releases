@@ -38,4 +38,10 @@ class CustomEditorTableModel extends DefaultTableModel {
             fireTableStructureChanged();
         }
     }
+    
+    public void clear() {
+        columnIdentifiers.clear();
+        dataVector.clear();
+        fireTableStructureChanged();
+    }
 }

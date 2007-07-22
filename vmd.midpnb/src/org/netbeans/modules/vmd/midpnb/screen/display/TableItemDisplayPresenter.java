@@ -60,6 +60,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
     public TableItemDisplayPresenter() {
         label = new JLabel();      
         panel = new JPanel() {
+            @Override
             public void paint(Graphics g) {
                 super.paint(g);
                 paintTable(g);
@@ -154,6 +155,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         }
     }
     
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         DesignComponent tableModelComponent = getComponent().readProperty(TableItemCD.PROP_MODEL).getComponent();
@@ -167,6 +169,8 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
                 for (int i = 0; i < list.size(); i++) {
                     columnNames[i] = MidpTypes.getString(list.get(i));
                 }
+            } else {
+                columnNames = null;
             }
             
             PropertyValue valuesProperty = tableModelComponent.readProperty(SimpleTableModelCD.PROP_VALUES);
@@ -177,7 +181,9 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
                     List<String> row = gatherStringValues(list.get(i).getArray());
                     values[i] = row.toArray(new String[row.size()]);
                 }
-            } 
+            } else {
+                values = null;
+            }
         }
         
         panel.setPreferredSize(calculatePrefferedSize());
@@ -225,6 +231,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         return colWidths;
     }
     
+    @Override
      public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
         List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());  
         DesignComponent tableModel = getComponent().readProperty(TableItemCD.PROP_MODEL).getComponent();
