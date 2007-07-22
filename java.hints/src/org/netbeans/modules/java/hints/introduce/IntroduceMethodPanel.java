@@ -121,6 +121,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
         accessPrivate = new javax.swing.JRadioButton();
         errorLabel = createErrorLabel();
 
+        lblName.setLabelFor(name);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getBundle(IntroduceMethodPanel.class).getString("LBL_Name")); // NOI18N
 
         name.setColumns(20);
@@ -173,7 +174,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
                                 .add(accessDefault)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(accessPrivate))))
-                    .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE))
+                    .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -194,6 +195,15 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
                 .add(errorLabel)
                 .addContainerGap())
         );
+
+        name.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "AN_IntrMethod_Name")); // NOI18N
+        name.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "AD_IntrMethod_Name")); // NOI18N
+        accessPublic.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "AD_IntrMethod_Public")); // NOI18N
+        accessProtected.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "AD_IntrMethod_Protected")); // NOI18N
+        accessDefault.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "AD_IntrMethod_Default")); // NOI18N
+        accessPrivate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "AD_IntrMethod_Private")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "AD_IntrMethod_Dialog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
