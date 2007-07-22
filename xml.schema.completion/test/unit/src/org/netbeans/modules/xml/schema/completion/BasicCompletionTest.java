@@ -40,13 +40,16 @@ public class BasicCompletionTest extends AbstractTestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new BasicCompletionTest("testNoNamespaceCompletion"));
-        suite.addTest(new BasicCompletionTest("testPurchaseOrder"));
+        suite.addTest(new BasicCompletionTest("testPurchaseOrder1"));
+        suite.addTest(new BasicCompletionTest("testPurchaseOrder2"));
         suite.addTest(new BasicCompletionTest("testCompletionFilter1"));
         suite.addTest(new BasicCompletionTest("testCompletionFilter2"));
         suite.addTest(new BasicCompletionTest("testEmptyTag1"));
         suite.addTest(new BasicCompletionTest("testEmptyTag2"));
         suite.addTest(new BasicCompletionTest("testEmptyTag3"));
-        suite.addTest(new BasicCompletionTest("testEndtagCompletion"));
+        suite.addTest(new BasicCompletionTest("testEndtagCompletion1"));
+        suite.addTest(new BasicCompletionTest("testEndtagCompletion2"));
+        suite.addTest(new BasicCompletionTest("testEndtagCompletion3"));
         suite.addTest(new BasicCompletionTest("testSchemaFromRuntimeCatalog"));
         //suite.addTest(new BasicCompletionTest("testCompletionUsingSchemaFromCatalog"));
         suite.addTest(new BasicCompletionTest("testWildcard1"));
@@ -60,7 +63,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
-     * Queries elements.
+     * Queries elements from schema with no namespace.
      */
     public void testNoNamespaceCompletion() throws Exception {
         StringBuffer buffer = new StringBuffer();
@@ -76,9 +79,9 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
-     * Queries elements.
+     * Queries elements from a PO schema.
      */
-    public void testPurchaseOrder() throws Exception {
+    public void testPurchaseOrder1() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
         buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
@@ -93,7 +96,24 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
-     * Query completion inside comments.
+     * Queries elements from a PO schema.
+     */
+    public void testPurchaseOrder2() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
+        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
+        buffer.append("  <po:billTo>\n"); //offset=14
+        buffer.append("</po:purchaseOrder>\n");
+        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(237);
+        String[] expectedResult = null;
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Tests completion filtering.
      */
     public void testCompletionFilter1() throws Exception {
         StringBuffer buffer = new StringBuffer();
@@ -110,6 +130,9 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     
+    /**
+     * Tests completion filtering.
+     */
     public void testCompletionFilter2() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
@@ -125,9 +148,9 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
-     * Queries elements.
+     * Tests end tag completion.
      */
-    public void testEndtagCompletion() throws Exception {
+    public void testEndtagCompletion1() throws Exception {
         StringBuffer buffer = new StringBuffer();
         buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
         buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
@@ -137,6 +160,44 @@ public class BasicCompletionTest extends AbstractTestCase {
         buffer.append("</po:purchaseOrder>\n");
         setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
         List<CompletionResultItem> items = query(239);
+        String[] expectedResult = null;
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Tests end tag completion.
+     */
+    public void testEndtagCompletion2() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
+        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
+        buffer.append("  <po:billTo>\n"); //offset=14
+        buffer.append("    <po:name>Samaresh</po:name\n"); //offset=32
+        buffer.append("  </"); //offset=5
+        buffer.append("</po:purchaseOrder>");
+        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(274);
+        String[] expectedResult = null;
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Tests end tag completion.
+     */
+    public void testEndtagCompletion3() throws Exception {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"); //offset=39
+        buffer.append("<po:purchaseOrder xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"); //offset=72
+        buffer.append("  xmlns:po=\"http://xml.netbeans.org/schema/PO\"\n"); //offset=47
+        buffer.append("  xsi:schemaLocation=\"http://xml.netbeans.org/schema/PO PO.xsd\">\n"); //offset=65
+        buffer.append("  <po:billTo>\n"); //offset=14
+        buffer.append("    <po:name>Samaresh</\n"); //offset=25
+        buffer.append("  </po:billTo>\n"); //offset=14
+        buffer.append("</po:purchaseOrder>");
+        setupCompletion(PO_INSTANCE_DOCUMENT, buffer);
+        List<CompletionResultItem> items = query(252);
         String[] expectedResult = null;
         assertResult(items, expectedResult);
     }

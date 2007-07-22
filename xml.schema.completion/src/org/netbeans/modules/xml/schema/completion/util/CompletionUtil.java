@@ -239,6 +239,11 @@ public class CompletionUtil {
         return results;
     }
     
+    public static List<CompletionResultItem> getElementValues(
+            CompletionContextImpl context) {
+        return null;
+    }    
+    
     private static void addNSAwareCompletionItems(AXIComponent axi, CompletionContextImpl context,
             CompletionModel cm, List<CompletionResultItem> results) {
         String typedChars = context.getTypedChars();

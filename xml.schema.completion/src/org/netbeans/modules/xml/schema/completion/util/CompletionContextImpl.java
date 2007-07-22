@@ -183,7 +183,7 @@ public class CompletionContextImpl extends CompletionContext {
                     String chars = token.getImage().trim();
                     if(chars != null && chars.equals("") &&
                        token.getPrevious().getImage().trim().equals(">")) {
-                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        completionType = CompletionType.COMPLETION_TYPE_VALUE;
                         break;
                     }
                     if(chars != null && !chars.equals("<") &&
@@ -200,10 +200,6 @@ public class CompletionContextImpl extends CompletionContext {
                 //start tag of an element
                 case XMLDefaultTokenContext.TAG_ID:
                     if(element instanceof EndTag) {
-                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
-                        break;
-                    }
-                    if(lastTypedChar == '>') {
                         completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
                         break;
                     }
@@ -233,6 +229,10 @@ public class CompletionContextImpl extends CompletionContext {
                             StartTag tag = (StartTag)element;
                             typedChars = tag.getTagName();
                         }
+                    }
+                    if(lastTypedChar == '>') {
+                        completionType = CompletionType.COMPLETION_TYPE_VALUE;
+                        break;
                     }
                     completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
                     pathFromRoot = getPathFromRoot(element.getPrevious());

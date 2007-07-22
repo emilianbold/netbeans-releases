@@ -86,6 +86,7 @@ public class CompletionQuery extends AsyncCompletionQuery {
                 break;
             
             case COMPLETION_TYPE_VALUE:
+                completionItems = CompletionUtil.getElementValues(context);
                 break;            
             
             case COMPLETION_TYPE_ENTITY:
