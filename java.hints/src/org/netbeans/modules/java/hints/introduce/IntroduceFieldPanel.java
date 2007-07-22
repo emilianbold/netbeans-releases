@@ -192,6 +192,7 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
         accessPrivate = new javax.swing.JRadioButton();
         errLabel = createErrorLabel();
 
+        lblName.setLabelFor(name);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getBundle(IntroduceFieldPanel.class).getString("LBL_Name")); // NOI18N
 
         name.setColumns(20);
@@ -280,7 +281,7 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(errLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                    .add(errLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 483, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblAccess)
@@ -338,6 +339,19 @@ public class IntroduceFieldPanel extends javax.swing.JPanel {
                 .add(errLabel)
                 .addContainerGap())
         );
+
+        lblName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_Name")); // NOI18N
+        replaceAll.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_ReplaceAllOccurences")); // NOI18N
+        declareFinal.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_DeclareFinal")); // NOI18N
+        initMethod.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_CurrentMethod")); // NOI18N
+        initField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_Field")); // NOI18N
+        initConstructors.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_Constructors")); // NOI18N
+        accessPublic.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_Public")); // NOI18N
+        accessProtected.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_Protected")); // NOI18N
+        accessDefault.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_Default")); // NOI18N
+        accessPrivate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_Private")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(IntroduceFieldPanel.class, "AD_IntrFld_Dialog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void declareFinalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_declareFinalActionPerformed

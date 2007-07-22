@@ -1129,7 +1129,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         
         public ChangeInfo implement() throws IOException, BadLocationException {
             JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
+            btnOk.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroduceHint.class, "AD_IntrHint_OK"));
             JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
+            btnCancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IntroduceHint.class, "AD_IntrHint_Cancel"));
             IntroduceFieldPanel panel = new IntroduceFieldPanel(guessedName, initilizeIn, numDuplicates, allowFinalInCurrentMethod);
             panel.setOkButton( btnOk );
             String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceField");
