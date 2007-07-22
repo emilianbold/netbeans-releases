@@ -129,17 +129,17 @@ public class UMLNewAction extends NodeAction
    /** Utility method, creates name for action depending on specified new types. */
    private static String createName(NewType[] newTypes)
    {
-      if ((newTypes != null) && (newTypes.length == 1))
-      {
-         return NbBundle.getMessage(UMLNewAction.class, 
-               "LBL_New_Menu",  // NOI18N
-               newTypes[0].getName());
-      }
-      else
-      {
+//      if ((newTypes != null) && (newTypes.length == 1))
+//      {
+//         return NbBundle.getMessage(UMLNewAction.class, 
+//               "LBL_New_Menu",  // NOI18N
+//               newTypes[0].getName());
+//      }
+//      else
+//      {
          return NbBundle.getMessage(UMLNewAction.class, 
                "LBL_New_Menu", "");  // NOI18N
-      }
+//      }
    }
    
 
