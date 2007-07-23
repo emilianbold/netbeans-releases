@@ -163,7 +163,7 @@ public class Converter {
         ArrayList<ConverterItem> components = new ArrayList<ConverterItem> ();
         Node documentNode = XMLUtil.getChild (rootNode, "DesignDocument"); // NOI18N
         for (Node componentNode : XMLUtil.getChildren (documentNode, "DesignComponent")) { // NOI18N
-            String typeid = XMLUtil.getAttributeValue (componentNode, "typeid");
+            String typeid = XMLUtil.getAttributeValue (componentNode, "typeid"); // NOI18N
             typeid = convertTypeIDFromString (typeid);
             ConverterItem item = new ConverterItem (
                     XMLUtil.getAttributeValue (componentNode, "uid"), // NOI18N

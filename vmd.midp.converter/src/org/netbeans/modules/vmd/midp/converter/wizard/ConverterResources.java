@@ -42,9 +42,9 @@ public class ConverterResources {
         MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (font);
 
         String specifier = item.getPropertyValue ("specifier"); // NOI18N
-        if ("FONT_INPUT_TEXT".equals (specifier)) {
+        if ("FONT_INPUT_TEXT".equals (specifier)) { // NOI18N
             font.writeProperty (FontCD.PROP_FONT_KIND, MidpTypes.createIntegerValue (FontCD.VALUE_KIND_INPUT));
-        } else if ("FONT_STATIC_TEXT".equals (specifier)) {
+        } else if ("FONT_STATIC_TEXT".equals (specifier)) { // NOI18N
             font.writeProperty (FontCD.PROP_FONT_KIND, MidpTypes.createIntegerValue (FontCD.VALUE_KIND_STATIC));
         } else {
             ConverterUtil.convertInteger (font, FontCD.PROP_STYLE, item.getPropertyValue ("style")); // NOI18N
@@ -76,7 +76,7 @@ public class ConverterResources {
         Converter.convertClass (item, image);
         MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (image);
 
-        ConverterUtil.convertString (image, ImageCD.PROP_RESOURCE_PATH, item.getPropertyValue ("imageResourcePath"));
+        ConverterUtil.convertString (image, ImageCD.PROP_RESOURCE_PATH, item.getPropertyValue ("imageResourcePath")); // NOI18N
     }
 
     // Created: YES, Adds: YES

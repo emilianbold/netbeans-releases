@@ -23,6 +23,7 @@ import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -33,9 +34,9 @@ import java.awt.event.ActionListener;
  */
 public final class ConvertPanel extends javax.swing.JPanel implements ActionListener, Runnable {
     
-    private DialogDescriptor descriptor = new DialogDescriptor (this, "Convert old Visual Mobile Designer file");
-    private JButton startButton = new JButton ("Start");
-    private JButton finishButton = new JButton ("Close");
+    private DialogDescriptor descriptor = new DialogDescriptor (this, NbBundle.getMessage (ConvertPanel.class, "TITLE_ConvertPanel")); // NOI18N
+    private JButton startButton = new JButton (NbBundle.getMessage (ConvertPanel.class, "DISP_Start")); // NOI18N
+    private JButton finishButton = new JButton (NbBundle.getMessage (ConvertPanel.class, "DISP_Close")); // NOI18N
     private FileObject inputPrimaryFile;
     private FileObject inputSecondaryFile;
 
@@ -56,7 +57,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         this.inputPrimaryFile = inputPrimaryFile;
         this.inputSecondaryFile = inputSecondaryFile;
         this.inputFileName.setText (inputPrimaryFile.getName ());
-        outputFileName.setText ("Converted" + inputPrimaryFile.getName ());
+        outputFileName.setText ("Converted" + inputPrimaryFile.getName ()); // NOI18N
         outputFileName.setEditable(true);
         progress.setIndeterminate(false);
         finishMessage.setVisible(false);

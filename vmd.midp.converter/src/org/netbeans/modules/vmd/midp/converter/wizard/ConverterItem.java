@@ -106,7 +106,7 @@ class ConverterItem {
 
 
     public String toString () {
-        return "ConverterItem: UID: "+ uid + ", ID: " + id + ", TypeID: " + typeid;
+        return "ConverterItem: UID: "+ uid + ", ID: " + id + ", TypeID: " + typeid; // NOI18N
     }
 
     public Set<String> getPropertyNames () {

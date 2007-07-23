@@ -89,7 +89,7 @@ public class ConverterSVG {
             for (String elementValue : elementsList) {
                 DesignComponent menuElement = Converter.convertConverterItemComponent (id2item, elementValue, document);
                 if (menuElement == null) {
-                    Debug.warning ("MenuElement not found", elementValue);
+                    Debug.warning ("MenuElement not found", elementValue); // NOI18N
                     continue;
                 }
                 menu.addComponent (menuElement);

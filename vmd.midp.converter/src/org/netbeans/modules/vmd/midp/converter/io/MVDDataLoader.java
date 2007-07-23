@@ -25,6 +25,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -41,7 +42,7 @@ public final class MVDDataLoader extends J2MEDataLoader {
     }
 
     protected String defaultDisplayName () {
-        return "Visual Mobile Design - old version";
+        return NbBundle.getMessage (MVDDataLoader.class, "DISP_DefaultName"); // NOI18N
     }
 
     protected FileObject findPrimaryFile (FileObject fileObject) {
