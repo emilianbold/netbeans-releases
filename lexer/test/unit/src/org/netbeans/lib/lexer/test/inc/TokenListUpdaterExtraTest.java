@@ -19,6 +19,7 @@
 
 package org.netbeans.lib.lexer.test.inc;
 
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.Language;
@@ -27,6 +28,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.lexer.lang.TestSaveTokensInLATokenId;
+import org.netbeans.lib.lexer.lang.TestTokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
 
@@ -56,6 +58,31 @@ public class TokenListUpdaterExtraTest extends TestCase {
         TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
         TokenChange<?> change = evt.tokenChange();
         assertEquals(1, change.addedTokenCount());
+    }
+
+    public void testEmbeddedModInStartSkipLength() throws Exception {
+        Document doc = commentDoc();
+        doc.insertString(1, "*", null);
+    }
+    
+    public void testEmbeddedModInEndSkipLength()  throws Exception {
+        Document doc = commentDoc();
+        doc.insertString(7, "*", null);
+    }
+    
+    private Document commentDoc() throws BadLocationException {
+        Document doc = new ModificationTextDocument();
+        // Assign a language to the document
+        String text = "/**abc*/";
+        doc.insertString(0, text, null);
+        
+        doc.putProperty(Language.class,TestTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        assertNotNull(ts.embedded());
+        return doc;
     }
 
 }
