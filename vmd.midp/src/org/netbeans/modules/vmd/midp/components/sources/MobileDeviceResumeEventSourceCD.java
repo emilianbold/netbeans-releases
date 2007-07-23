@@ -76,7 +76,7 @@ public final class MobileDeviceResumeEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic (NbBundle.getMessage (MobileDeviceCD.class, "DISP_MIDletResumed"), NbBundle.getMessage (MobileDeviceCD.class, "DISP_Event"), MobileDeviceCD.ICON_PATH), // NOI18N
+            InfoPresenter.createStatic (NbBundle.getMessage (MobileDeviceResumeEventSourceCD.class, "DISP_MIDletResumed"), NbBundle.getMessage (MobileDeviceResumeEventSourceCD.class, "DISP_Event"), MobileDeviceCD.ICON_PATH), // NOI18N
             // general
             new GoToSourcePresenter() {
                 protected boolean matches (GuardedSection section) {
@@ -89,7 +89,7 @@ public final class MobileDeviceResumeEventSourceCD extends ComponentDescriptor {
                     return getMobileDeviceComponent (getComponent ());
                 }
                 protected String getDisplayName () {
-                    return NbBundle.getMessage (MobileDeviceCD.class, "DISP_FlowPin_MIDletResumed"); // NOI18N
+                    return NbBundle.getMessage (MobileDeviceResumeEventSourceCD.class, "DISP_FlowPin_MIDletResumed"); // NOI18N
                 }
                 protected String getOrder () {
                     return FlowMobileDevicePinOrderPresenter.CATEGORY_ID;
