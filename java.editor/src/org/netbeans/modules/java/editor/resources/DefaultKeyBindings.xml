@@ -31,12 +31,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <bind actionName="goto-super-implementation" key="DS-P"/>
     <bind actionName="goto-declaration" key="D-B"/>    
-    <bind actionName="comment" key="D-SLASH"/>
+    <bind actionName="toggle-comment" key="D-SLASH"/>
     <bind actionName="goto-help" key="O-F1"/>
 <!--    <bind actionName="make-is" key="O-U$I"/> -->
 <!--    <bind actionName="make-getter" key="O-U$G"/> -->
 <!--    <bind actionName="macro-debug-var" key="D-J$D"/> -->
-    <bind actionName="uncomment" key="DS-SLASH"/>
 <!--    <bind actionName="make-setter" key="O-U$S"/> -->
     <bind actionName="select-element-next" key="OS-PERIOD"/>
     <bind actionName="select-element-previous" key="OS-COMMA"/>

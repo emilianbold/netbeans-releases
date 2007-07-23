@@ -217,8 +217,7 @@ public class JavaKit extends NbEditorKit {
                                    new PrefixMakerAction(makeSetterAction, "set", getSetIsPrefixes), // NOI18N
                                    new PrefixMakerAction(makeIsAction, "is", getSetIsPrefixes), // NOI18N
                                    new AbbrevDebugLineAction(),
-                                   new CommentAction("//"), // NOI18N
-                                   new UncommentAction("//"), // NOI18N
+                                   new ToggleCommentAction("//"), // NOI18N
                                    new JavaGenerateGoToPopupAction(),
 				   new JavaInsertBreakAction(),
 				   new JavaDeleteCharAction(deletePrevCharAction, false),
