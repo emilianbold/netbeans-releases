@@ -124,19 +124,7 @@ public class MigrateActionTest extends RubyProjectTestBase {
         writer.close();
         
         // Create the db folders!
-        File taskFile = new File(getDataDir(), dbtaskFile);
-        assertTrue(taskFile.exists());
-        BufferedReader br = new BufferedReader(new FileReader(taskFile));
-        while (true) {
-            String line = br.readLine();
-            if (line == null || line.trim().length() == 0) {
-                break;
-            }
-            
-            String path = line;
-            FileObject f = FileUtil.createData(dir, path);
-            assertNotNull(f);
-        }
+        createFilesFromDesc(dir, dbtaskFile);
         
         Project p = FileOwnerQuery.getOwner(dir);
         assertNotNull(p);
