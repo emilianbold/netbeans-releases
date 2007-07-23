@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.midp.palette.wizard;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
@@ -50,8 +51,8 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
 
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Add from Project Wizard");
+        wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
+        wizardDescriptor.setTitle(NbBundle.getMessage (AddToPaletteWizardAction.class, "TITLE_AddToPaletteWizard")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
@@ -85,15 +86,15 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
                 if (c instanceof JComponent) { // assume Swing components
                     JComponent jc = (JComponent) c;
                     // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
                     // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
+                    jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
                     // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
                     // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
                     // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
+                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
                 }
             }
         }
@@ -101,7 +102,7 @@ public final class AddToPaletteWizardAction extends CallableSystemAction {
     }
 
     public String getName() {
-        return "Add to Palette Wizard";
+        return NbBundle.getMessage (AddToPaletteWizardAction.class, "DISP_AddToPaletteWizard"); // NOI18N
     }
 
     public String iconResource() {

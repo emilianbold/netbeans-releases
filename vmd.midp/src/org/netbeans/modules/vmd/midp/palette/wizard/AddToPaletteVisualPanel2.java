@@ -37,7 +37,7 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
     }
 
     public String getName() {
-        return "Select Classes";
+        return NbBundle.getMessage(AddToPaletteVisualPanel2.class, "TITLE_SelectClasses"); // NOI18N
     }
 
     public void setItems (Collection<ComponentInstaller.Item> items) {
@@ -90,25 +90,25 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
         bDeselectAll = new javax.swing.JButton();
         cLibraries = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "&Found MIDP Classes - select those you want to add:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(AddToPaletteVisualPanel2.class, "LBL_FoundClasses")); // NOI18N
 
         jScrollPane1.setViewportView(list);
 
-        org.openide.awt.Mnemonics.setLocalizedText(bSelectAll, "&Select All");
+        org.openide.awt.Mnemonics.setLocalizedText(bSelectAll, NbBundle.getMessage(AddToPaletteVisualPanel2.class, "LBL_SelectAll")); // NOI18N
         bSelectAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bSelectAllActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(bDeselectAll, "&Deselect All");
+        org.openide.awt.Mnemonics.setLocalizedText(bDeselectAll, NbBundle.getMessage(AddToPaletteVisualPanel2.class, "LBL_DeselectAll")); // NOI18N
         bDeselectAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bDeselectAllActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(cLibraries, "Show Components from &Libraries");
+        org.openide.awt.Mnemonics.setLocalizedText(cLibraries, NbBundle.getMessage(AddToPaletteVisualPanel2.class, "LBL_ShowAll")); // NOI18N
         cLibraries.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cLibraries.setMargin(new java.awt.Insets(0, 0, 0, 0));
         cLibraries.addActionListener(new java.awt.event.ActionListener() {
@@ -121,19 +121,21 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 340, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addContainerGap(22, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(bSelectAll)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(bDeselectAll))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, cLibraries))
-                .addContainerGap())
+                        .add(bDeselectAll)
+                        .add(10, 10, 10))
+                    .add(cLibraries)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -141,7 +143,7 @@ public final class AddToPaletteVisualPanel2 extends JPanel {
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(cLibraries)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)

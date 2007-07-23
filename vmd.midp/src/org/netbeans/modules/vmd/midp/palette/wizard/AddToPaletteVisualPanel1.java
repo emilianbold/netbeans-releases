@@ -27,6 +27,7 @@ import org.netbeans.modules.vmd.api.io.javame.MidpProjectPropertiesSupport;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Vector;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -42,7 +43,7 @@ public final class AddToPaletteVisualPanel1 extends JPanel {
     }
 
     public String getName() {
-        return "Select Project";
+        return NbBundle.getMessage(AddToPaletteVisualPanel1.class, "TITLE_SelectProject"); // NOI18N
     }
 
     public Project getActiveProject () {
@@ -83,7 +84,7 @@ public final class AddToPaletteVisualPanel1 extends JPanel {
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Select Project:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(AddToPaletteVisualPanel1.class, "DISP_SelectProject")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
