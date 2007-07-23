@@ -117,7 +117,9 @@ public class Utilities {
     public static boolean isJavaContext(final JTextComponent component, final int offset) {        
         TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(component.getDocument()), offset);
         if (ts == null)
-            return false;
+            return false;        
+        if (!ts.moveNext() && !ts.movePrevious())
+            return true;
         switch(ts.token().id()) {
             case DOUBLE_LITERAL:
                 if (ts.token().text().charAt(0) == '.')
@@ -135,22 +137,6 @@ public class Utilities {
                 return false;
         }
         return true;
-    }
-    
-    public static TokenSequence<JavaTokenId> getJavaTokenSequence(final JTextComponent component, final int offset) {
-        TokenHierarchy hierarchy = TokenHierarchy.get(component.getDocument());
-        if (hierarchy != null) {
-            TokenSequence<? extends TokenId> ts = hierarchy.tokenSequence();
-            while(ts != null && ts.moveNext()) {
-                ts.move(offset);
-                if (!ts.moveNext())
-                    ts.movePrevious();
-                if (ts.language() == JavaTokenId.language())
-                    return (TokenSequence<JavaTokenId>)ts;
-                ts = ts.embedded();
-            }
-        }
-        return null;
     }
     
     public static CharSequence getTypeName(TypeMirror type, boolean fqn) {

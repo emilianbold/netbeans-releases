@@ -260,7 +260,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
                 TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
-                if (sequence == null) {
+                if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
                     text += toAdd;
                     toAdd = null;
                 }
@@ -376,7 +376,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
                 TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
-                if (sequence == null) {
+                if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
                     text.append(toAdd);
                     toAdd = null;
                 }
@@ -593,7 +593,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
                 TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
-                if (sequence == null) {
+                if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
                     text.append(toAdd);
                     toAdd = null;
                 }
@@ -1218,7 +1218,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (semiPos > -2)
                     add = add.length() > 1 ? add.substring(0, add.length() - 1) : null;
                 TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
-                if (sequence == null) {
+                if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
                     text += add;
                     add = null;
                 }
@@ -1540,7 +1540,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             BaseDocument doc = (BaseDocument)c.getDocument();
             TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-            if (sequence != null) {
+            if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
                 sequence.movePrevious();
                 if (sequence.token().id() == JavaTokenId.THIS || sequence.token().id() == JavaTokenId.SUPER) {
                     isAbstract = false;
@@ -1712,7 +1712,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             BaseDocument doc = (BaseDocument) c.getDocument();
             TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-            if (sequence != null) {
+            if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
                 sequence.movePrevious();
                 if (sequence.token().id() == JavaTokenId.THIS || sequence.token().id() == JavaTokenId.SUPER) {
                     isAbstract = false;
@@ -1813,7 +1813,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             if (toAdd != null && !toAdd.equals("\n")) {//NOI18N
                 TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
-                if (sequence == null) {
+                if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
                     text.append(toAdd);
                     toAdd = null;
                 }
@@ -2123,7 +2123,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 toAdd = toAdd.length() > 1 ? toAdd.substring(0, toAdd.length() - 1) : null;
             if (toAdd != null && !toAdd.equals("\n")) { //NOI18N
                 TokenSequence<JavaTokenId> sequence = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset + len);
-                if (sequence == null) {
+                if (sequence == null || !sequence.moveNext() && !sequence.movePrevious()) {
                     text.append(toAdd);
                     toAdd = null;
                 }
