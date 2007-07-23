@@ -36,6 +36,14 @@ Microsystems, Inc. All Rights Reserved.
                     </folder>
                 </folder>
                 
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-editor-properties-keybindings.xml" url="DefaultKeyBindings.xml"/> 
+                        </folder>
+                    </folder>
+                </folder>
+                
                 <file name="Settings.settings" url="PropertiesOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.properties.syntax.PropertiesKit"/>

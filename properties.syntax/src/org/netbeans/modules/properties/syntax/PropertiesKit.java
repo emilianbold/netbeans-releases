@@ -19,9 +19,11 @@
 
 package org.netbeans.modules.properties.syntax;
 
+import javax.swing.Action;
 import org.netbeans.editor.Syntax;
 import org.netbeans.modules.editor.NbEditorKit;
 import javax.swing.text.Document;
+import javax.swing.text.TextAction;
 
 /**
 * Editor kit implementation for text/properties content type
@@ -34,7 +36,7 @@ public class PropertiesKit extends NbEditorKit {
 
     public static final String PROPERTIES_MIME_TYPE = "text/x-properties"; // NOI18N
 
-    static final long serialVersionUID =3229768447965508461L;
+    static final long serialVersionUID = 3229768447965508461L;
 
     public String getContentType() {
         return PROPERTIES_MIME_TYPE;
@@ -45,19 +47,11 @@ public class PropertiesKit extends NbEditorKit {
         return new PropertiesSyntax();
     }
 
+    protected Action[] createActions() {
+        Action[]  actions = new Action[] {
+            new ToggleCommentAction("#"), //NOI18N
+        };
+        return TextAction.augmentList(super.createActions(), actions);
+    }
+    
 }
-
-/*
- * <<Log>>
- *  6    Jaga      1.4.1.0     3/15/00  Miloslav Metelka Structural change
- *  5    Gandalf   1.4         1/12/00  Petr Jiricka    Syntax coloring API 
- *       fixes
- *  4    Gandalf   1.3         11/27/99 Patrik Knakal   
- *  3    Gandalf   1.2         11/12/99 Miloslav Metelka NbEditorBaseKit as 
- *       parent
- *  2    Gandalf   1.1         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         9/13/99  Petr Jiricka    
- * $
- */
-
