@@ -100,6 +100,7 @@ Microsystems, Inc. All Rights Reserved.
       <file name="CascadeStyleSheet.css" url="nbresloc:/org/netbeans/modules/css/resources/CascadeStyleSheet.css.template">
          <attr name="position" intvalue="650"/>
                 <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/css/resources/CSS_template.html"/>
          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/css/resources/css.gif"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
