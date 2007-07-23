@@ -38,9 +38,9 @@ import org.openide.util.NbBundle;
  */
 final class Manager {
     
-    /** */
-    private static final String LATE_PROMOTION_SWITCH
-            = "org.netbeans.modules.junit.lateResultsActivation";       //NOI18N
+//    /** */
+//    private static final String LATE_PROMOTION_SWITCH
+//            = "org.netbeans.modules.junit.lateResultsActivation";       //NOI18N
     
     /**
      * reference to the singleton of this class.
@@ -90,14 +90,15 @@ final class Manager {
     }
     
     private Manager() {
-        String value = System.getProperty(LATE_PROMOTION_SWITCH);
-        if (value != null) {
-            lateWindowPromotion = value.equalsIgnoreCase("true")
-                                  || value.equalsIgnoreCase("yes")
-                                  || value.equals("1");
-        } else {
-            lateWindowPromotion = false;
-        }
+        lateWindowPromotion = true;
+//        String value = System.getProperty(LATE_PROMOTION_SWITCH);
+//        if (value != null) {
+//            lateWindowPromotion = value.equalsIgnoreCase("true")
+//                                  || value.equalsIgnoreCase("yes")
+//                                  || value.equals("1");
+//        } else {
+//            lateWindowPromotion = false;
+//        }
     }
     
     /**
