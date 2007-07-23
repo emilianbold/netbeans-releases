@@ -47,23 +47,21 @@ import org.openide.util.NbBundle;
  */
 public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     private WhereUsedQuery refactoring;
-    private TreePathHandle treePathHandle;
     
     /** Creates a new instance of WhereUsedQuery */
     public JavaWhereUsedQueryPlugin(WhereUsedQuery refactoring) {
         this.refactoring = refactoring;
-        this.treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
     
     protected JavaSource getJavaSource(Phase p) {
         switch (p) {
         default: 
-            return JavaSource.forFileObject(treePathHandle.getFileObject());
+            return JavaSource.forFileObject(refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject());
         }
     }
     
     public Problem preCheck() {
-        if (!treePathHandle.getFileObject().isValid()) {
+        if (!refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject().isValid()) {
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
         }
         return null;
@@ -177,7 +175,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     //@Override
     public Problem prepare(final RefactoringElementsBag elements) {
-        Set<FileObject> a = getRelevantFiles(treePathHandle);
+        Set<FileObject> a = getRelevantFiles(refactoring.getRefactoringSource().lookup(TreePathHandle.class));
         fireProgressListenerStart(ProgressEvent.START, a.size());
         processFiles(a, new FindTask(elements));
         fireProgressListenerStop();
@@ -186,7 +184,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     //@Override
     protected Problem fastCheckParameters(CompilationController info) {
-        if (treePathHandle.getKind() == Tree.Kind.METHOD) {
+        if (refactoring.getRefactoringSource().lookup(TreePathHandle.class).getKind() == Tree.Kind.METHOD) {
             return checkParametersForMethod(isFindOverridingMethods(), isFindUsages());
         } 
         return null;
@@ -258,7 +256,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
                 ErrorManager.getDefault().log(ErrorManager.ERROR, "compiler.getCompilationUnit() is null " + compiler);
                 return;
             }
-            Element element = treePathHandle.resolveElement(compiler);
+            Element element = refactoring.getRefactoringSource().lookup(TreePathHandle.class).resolveElement(compiler);
             assert element != null;
             Collection<TreePath> result = new ArrayList();
             if (isFindUsages()) {
