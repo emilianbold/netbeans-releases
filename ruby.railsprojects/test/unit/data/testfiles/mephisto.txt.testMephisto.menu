@@ -1,7 +1,7 @@
 To Current Version
+To Version 0 - Clear
 --------------------
-Versions 0 through 7
-        To Version 0 
+Versions 1 through 8
         To Version 1 - AddCommentsCount
         To Version 2 - AddCachedPage
         To Version 3 - AddTagType
@@ -9,8 +9,8 @@ Versions 0 through 7
         To Version 5 - RenameArticleFields
         To Version 6 - AddSettings
         To Version 7 - AddAssetsAndResources
-Versions 8 through 15
         To Version 8 - AddAttachable
+Versions 9 through 16
         To Version 9 - RenameArticlesToContent
         To Version 10 - UnderscoresToDashes
         To Version 11 - AddSessionTable
@@ -18,8 +18,8 @@ Versions 8 through 15
         To Version 13 - AddSectionAttributes
         To Version 14 - SetDefaultFilters
         To Version 15 - AddArticleVersions
-Versions 16 through 23
         To Version 16 - AddEvents
+Versions 17 through 24
         To Version 17 - FixFilters
         To Version 18 - AddEventField
         To Version 19 - RemoveEventUserAssociation
@@ -27,8 +27,8 @@ Versions 16 through 23
         To Version 21 - AddArticleDraft
         To Version 22 - HostBasedSites
         To Version 23 - RemoveLayoutTemplateClass
-Versions 24 through 31
         To Version 24 - AddCommentModeration
+Versions 25 through 32
         To Version 25 - AddEventCommentId
         To Version 26 - ResetCommentCounts
         To Version 27 - AddSiteToEvents
@@ -36,8 +36,8 @@ Versions 24 through 31
         To Version 29 - AddCorrectCommentLifetime
         To Version 30 - SetCommentSiteId
         To Version 31 - AddTzToSite
-Versions 32 through 39
         To Version 32 - RemoveDraft
+Versions 33 through 40
         To Version 33 - UserHostileTemplateMigration
         To Version 34 - AddActsAsParanoid
         To Version 35 - AddSectionPermalink
@@ -45,8 +45,8 @@ Versions 32 through 39
         To Version 37 - AddMacroFilterOption
         To Version 38 - AddCookieToken
         To Version 39 - CacheSectionArticlesCount
-Versions 40 through 47
         To Version 40 - TweakCommentOptions
+Versions 41 through 48
         To Version 41 - CreateAssets
         To Version 42 - RenameDefaultSiteHosts
         To Version 43 - RemoveParseMacros
@@ -54,8 +54,8 @@ Versions 40 through 47
         To Version 45 - CreateTags
         To Version 46 - CreateTaggings
         To Version 47 - FixCommentEventBug
-Versions 48 through 55
         To Version 48 - RemoveAttachmentsOnceAndForAll
+Versions 49 through 56
         To Version 49 - SetHomeSectionTemplate
         To Version 50 - AddAssetsThumbnailCount
         To Version 51 - ChangeHomeSectionPath
@@ -63,8 +63,8 @@ Versions 48 through 55
         To Version 53 - CreateMemberships
         To Version 54 - MakeUsersFullAdmins
         To Version 55 - AddSiteIdToCachedPages
-Versions 56 through 63
         To Version 56 - MoveToScopedCachedPages
+Versions 57 through 64
         To Version 57 - AddCustomSettings
         To Version 58 - ChangeSearchAndTagTemplatesToLayouts
         To Version 59 - AddPasswordResetCode
@@ -72,8 +72,8 @@ Versions 56 through 63
         To Version 61 - CacheArticleAttributesInComments
         To Version 62 - AddSectionPosition
         To Version 63 - AddSiteHostIndex
-Versions 64 through 67
         To Version 64 - StoreCommentReferrerAndUserAgent
+Versions 65 through 67
         To Version 65 - AddNewCommentFieldsToVersioned
         To Version 66 - AddUserIdToAssets
         To Version 67 - AddThemePath

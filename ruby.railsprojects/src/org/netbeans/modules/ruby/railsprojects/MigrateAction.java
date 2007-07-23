@@ -99,6 +99,13 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
         //menuitem.setToolTipText(target.getDescription());
         menu.add(menuitem);
 
+        // Also hardcode in version 0 - drop everything
+        menuitem = new JMenuItem(NbBundle.getMessage(MigrateAction.class,
+                      "Version0", 0));
+        menuitem.addActionListener(new MigrateMenuItemHandler(project, 0));
+        //menuitem.setToolTipText(target.getDescription());
+        menu.add(menuitem);
+
         Map<Integer,String> versions = getVersions(project);
 
         if (!versions.isEmpty()) {
@@ -176,9 +183,6 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
         Map<Integer,String> versions = new HashMap<Integer,String>();
         // NOTE - FileObject.getFileObject wants / as a path separator, not File.separator!
         FileObject migrate = projectDir.getFileObject("db/migrate"); // NOI18N
-
-        // Allow VERSION=0 to clear database
-        versions.put(Integer.valueOf(0), "");
 
         if (migrate == null) {
             return Collections.emptyMap();
