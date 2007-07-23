@@ -45,6 +45,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/netbeans/core/windows/services/DialogDisplayer50960Test.class"/>
                 <include name="org/netbeans/core/windows/view/ui/StatusLineElementProviderTest.class"/>
+                <include name="org/netbeans/core/windows/view/ui/CustomMenuBarTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -55,6 +56,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/windows/services/*Test.class"/>
                 <include name="org/netbeans/core/windows/view/ui/*Test.class"/>
                 <exclude name="org/netbeans/core/windows/view/ui/StatusLineElementProviderTest.class"/>
+                <exclude name="org/netbeans/core/windows/view/ui/CustomMenuBarTest.class"/>
             </patternset>
         </testset>
     </testbag>
