@@ -2876,6 +2876,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     } else {
                         dtde.rejectDrag();
                     }
+                } else {
+                    dtde.rejectDrag();
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
