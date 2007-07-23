@@ -22,6 +22,7 @@ package org.netbeans.modules.xml.wsdlextui.template.http;
 import java.io.InputStream;
 
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider;
+import org.netbeans.modules.xml.wsdl.model.Port;
 import org.openide.util.NbBundle;
 
 public class TemplateProvider extends ExtensibilityElementTemplateProvider {
@@ -36,5 +37,10 @@ public class TemplateProvider extends ExtensibilityElementTemplateProvider {
     
     public String getLocalizedMessage(String str, Object[] objects) {
         return NbBundle.getMessage(TemplateProvider.class, str, objects);
+    }
+    
+    public void postProcess(String wsdlTargetNamespace, Port port) {
+        HttpBindingPostProcessor processor = new HttpBindingPostProcessor();
+        processor.postProcess(wsdlTargetNamespace, port);
     }
 }
