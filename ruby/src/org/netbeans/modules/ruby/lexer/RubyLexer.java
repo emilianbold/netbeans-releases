@@ -273,6 +273,12 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
             inSymbol = (token == Tokens.tSYMBEG);
         }
 
+        if (tokenLength <= 0) {
+            // XXX this is not right but better than asserting in the lexer!
+            // Just assign some default text attributes to unexpected text, one character at a time
+            return token(GsfTokenId.IDENTIFIER, 1);
+        }
+
         return token(id, tokenLength);
     }
 
