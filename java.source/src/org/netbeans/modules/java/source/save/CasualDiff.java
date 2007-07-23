@@ -825,6 +825,7 @@ public class CasualDiff {
         } else if (oldT.elsepart != null && newT.elsepart == null) {
             // remove else part
             copyTo(localPointer, partBounds[1]);
+            copyTo(getBounds(oldT.elsepart)[1], bounds[1]);
             return bounds[1];
         } else {
             if (oldT.elsepart != null) {
