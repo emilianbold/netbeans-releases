@@ -20,9 +20,10 @@
     <mapID target="svn_diff" url="svnmodule/svn_diff.html" />
     <mapID target="svn_commit" url="svnmodule/svn_commit.html" />
     <mapID target="svn_projects" url="svnmodule/svn_project-system.html" />
-
+    <mapID target="svn_status" url="svnmodule/svn_status.html" />
     <mapID target="svn_merge" url="svnmodule/svn_merge.html" />
     <mapID target="svn_mergeresolve" url="svnmodule/svn_mergeresolve.html" />
+
 
 <!-- ========================== -->
 <!--CSH topics-->

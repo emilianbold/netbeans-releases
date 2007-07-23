@@ -8,11 +8,12 @@
 
 <toc version="2.0">
     <tocitem text="IDE Basics">
+        <tocitem text="Version Control"> 
         <tocitem text="Working with Subversion">
             <tocitem text="About the IDE's Subversion Support" target="svn_about" />
             <tocitem text="Working with Subversion" target="svn_overview" /> 
             <tocitem text="Subversion Tasks: Quick Reference" target="svn_quickref" /> 
-<!--            <tocitem text="Viewing File Status Information" target="svn_status" />-->
+            <tocitem text="Viewing File Status Information" target="svn_status" />
  <!--           <tocitem text="Working with Version Histories" target="svn_histories" />-->
             <tocitem text="Setting Up Subversion" target="svn_setup" />
 
@@ -29,6 +30,7 @@
             <tocitem text="Resolving Merge Conflicts" target="svn_mergeresolve" /> 
 <!--            <tocitem text="Creating and Applying a Patch" target="svn_patch" />-->
 
+        </tocitem>
         </tocitem>
     </tocitem>
     
