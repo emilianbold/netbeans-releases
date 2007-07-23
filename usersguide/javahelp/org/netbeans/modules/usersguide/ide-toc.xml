@@ -57,12 +57,13 @@
       <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
     </tocitem>
 
-<tocitem text="Managing Modules" >
-      <tocitem text="About Managing Modules" target="managing_a_module" />
+<tocitem text="Managing Plugins" >
+      <tocitem text="About Managing Plugin" target="managing_a_module" />
       <tocitem text="Updating the IDE" target="ide.autoupdate" />
-      <tocitem text="Installing Modules Offline" target="update.offline" />
+      <tocitem text="Managing IDE Update Centers" target="managing_updatecenters" />
+      <tocitem text="Installing Plugins Offline" target="update.offline" />
       <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />
-      <tocitem text="Enabling or Disabling a Module" target="configure.enable.module" />
+      <tocitem text="Activating and Deactivating a Plugin" target="configure.enable.module" />
     </tocitem>
   </tocitem>
 

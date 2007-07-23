@@ -149,13 +149,23 @@
 <mapID target="configure.tbcustomize" url="configure/workspace/toolbar_customize.html" />
 <mapID target="configure.tbcommands" url="configure/workspace/toolbar_commands.html" />
 
+<!-- TODO -- plugin manager TOC topics -->
 <mapID target="ide.autoupdate" url="configure/modules/autoupdate.html" />
-<mapID target="managing_a_module" url="configure/modules/managing_a_module.html" />
 <mapID target="update.offline" url="configure/modules/updateoffline.html" />
 <mapID target="update.globally" url="configure/modules/updateglobally.html" />
 <mapID target="configure.enable.module" url="configure/modules/enablemodule.html" />
 
+<mapID target="managing_a_module" url="configure/modules/managing_a_module.html" />
+<mapID target="managing_updatecenters" url="configure/modules/updatecenters.html" />
 
+<!-- TODO -- these plugin manager csh topics need to be mapped with help ids from plugin manager -->
+<!--
+<mapID target="" url="configure/modules/csh_plug_settings.html" />
+<mapID target="" url="configure/modules/csh_plug_updates.html" />
+<mapID target="" url="configure/modules/csh_plug_newplugs.html" />
+<mapID target="" url="configure/modules/csh_plug_installed.html" />
+<mapID target="" url="configure/modules/csh_plug_downloaded.html" />
+-->
 
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
 <mapID target="shortcuts.menus" url="shortcuts/menucuts.html" />
@@ -332,10 +342,6 @@
 <!--ID for Waiting For Tasks to Finish dialog box:-->
     <mapID target="org.netbeans.core.execution.Install.pending" url="misc-general/waiting.html" />
 
-<!-- The Module Manager dialog box: -->
-<mapID target="org.netbeans.modules.autoupdate.catalog.ModuleSelectionPanel" url="configure/modules/ModuleSelectionPanel.html" />
-    
-
     
 <!--remove ID issue 54601:-->
     <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
@@ -453,8 +459,6 @@
   <!--ID for action as listed in Options | IDE Configuration | Look and Feel | Actions:--> 
   <mapID target="org.netbeans.modules.j2ee.impl.DeployAction" url="pending.html" />
 
-  <!--ID for Options | IDE Configuration | Server and External Tool Setting | PDF Settings -->
-  <mapID target="org.netbeans.modules.pdf.PDFSettings" url="configure/options_pdfsettings_classic.html" />
 
  <!--Options | Source Creation and Management | Templates:-->  
  <!--TODO: future; create topic on meaning of node + notes on the fact that some templates aren't meant to be manipulated:-->
