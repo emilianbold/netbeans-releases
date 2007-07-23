@@ -155,24 +155,20 @@ public class DeploymentPanels extends javax.swing.JPanel
         sambaConfigPanelLayout.setHorizontalGroup(
             sambaConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(sambaConfigPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(sambaConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sambaConfigPanelLayout.createSequentialGroup()
-                        .add(jLabel21)
-                        .add(337, 337, 337))
-                    .add(sambaConfigPanelLayout.createSequentialGroup()
-                        .add(jLabel7)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(smbRemotePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jLabel6)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(smbRemotePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+                .add(jLabel21)
+                .add(327, 327, 327))
+            .add(sambaConfigPanelLayout.createSequentialGroup()
+                .add(jLabel7)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(smbRemotePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabel6)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(smbRemotePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
         sambaConfigPanelLayout.setVerticalGroup(
             sambaConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, sambaConfigPanelLayout.createSequentialGroup()
+            .add(sambaConfigPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(jLabel21)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -183,7 +179,7 @@ public class DeploymentPanels extends javax.swing.JPanel
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, sambaConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(jLabel6)
                         .add(smbRemotePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .add(0, 0, Short.MAX_VALUE))
         );
         org.openide.awt.Mnemonics.setLocalizedText(jLabel9, java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/deployment/ricoh/Bundle").getString("LBL_ScpRemotePort"));
 
@@ -224,29 +220,24 @@ public class DeploymentPanels extends javax.swing.JPanel
         scpConfigPanel.setLayout(scpConfigPanelLayout);
         scpConfigPanelLayout.setHorizontalGroup(
             scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(scpConfigPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel22)
-                    .add(scpConfigPanelLayout.createSequentialGroup()
-                        .add(scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(scpConfigPanelLayout.createSequentialGroup()
-                                .add(scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel13)
-                                    .add(jLabel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                .add(28, 28, 28)
-                                .add(scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(sshKeyFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
-                                    .add(sshRemotePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                    .add(scpConfigPanelLayout.createSequentialGroup()
-                                        .add(jLabel9)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(sshRemotePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                    .add(browseSSHKeyFileButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, getSSHKeyButton))
-                        .addContainerGap())))
+            .add(jLabel22)
+            .add(scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(scpConfigPanelLayout.createSequentialGroup()
+                    .add(scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(jLabel13)
+                        .add(jLabel10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 71, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(28, 28, 28)
+                    .add(scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(sshKeyFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                        .add(sshRemotePathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE))
+                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                        .add(scpConfigPanelLayout.createSequentialGroup()
+                            .add(jLabel9)
+                            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(sshRemotePortTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(browseSSHKeyFileButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 86, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .add(org.jdesktop.layout.GroupLayout.TRAILING, getSSHKeyButton))
         );
         scpConfigPanelLayout.setVerticalGroup(
             scpConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -266,7 +257,7 @@ public class DeploymentPanels extends javax.swing.JPanel
                     .add(browseSSHKeyFileButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(getSSHKeyButton)
-                .addContainerGap(43, Short.MAX_VALUE))
+                .add(0, 0, Short.MAX_VALUE))
         );
 
         scpConfigPanelLayout.linkSize(new java.awt.Component[] {sshKeyFileTextField, sshRemotePathTextField}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -289,13 +280,11 @@ public class DeploymentPanels extends javax.swing.JPanel
         sdCardConfigPanelLayout.setHorizontalGroup(
             sdCardConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(sdCardConfigPanelLayout.createSequentialGroup()
-                .addContainerGap()
                 .add(jLabel15)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sdPathField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(sdPathBrowse)
-                .addContainerGap())
+                .add(sdPathBrowse))
         );
         sdCardConfigPanelLayout.setVerticalGroup(
             sdCardConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -329,7 +318,6 @@ public class DeploymentPanels extends javax.swing.JPanel
         httpPostConfigPanelLayout.setHorizontalGroup(
             httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(httpPostConfigPanelLayout.createSequentialGroup()
-                .addContainerGap()
                 .add(httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(httpPostConfigPanelLayout.createSequentialGroup()
                         .add(jLabel30)
@@ -337,11 +325,10 @@ public class DeploymentPanels extends javax.swing.JPanel
                         .add(httpServerPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(jLabel16)
                     .add(httpPostConfigPanelLayout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sdkjV1_4RadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(sdkjV2_0RadioButton)))
-                .addContainerGap(182, Short.MAX_VALUE))
+                .addContainerGap(192, Short.MAX_VALUE))
         );
         httpPostConfigPanelLayout.setVerticalGroup(
             httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -356,7 +343,7 @@ public class DeploymentPanels extends javax.swing.JPanel
                 .add(httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(sdkjV1_4RadioButton)
                     .add(sdkjV2_0RadioButton))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(0, 0, Short.MAX_VALUE))
         );
 
         setLayout(new java.awt.CardLayout());
