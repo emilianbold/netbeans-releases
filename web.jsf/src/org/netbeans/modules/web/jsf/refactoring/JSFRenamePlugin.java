@@ -119,8 +119,10 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                                     public void run(CompilationController co) throws Exception {
                                         co.toPhase(JavaSource.Phase.RESOLVED);
                                         CompilationUnitTree cut = co.getCompilationUnit();
-                                        treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
-                                        refactoring.getContext().add(co);
+                                        if(!cut.getTypeDecls().isEmpty()){
+                                            treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
+                                            refactoring.getContext().add(co);
+                                        }
                                     }
                                 }, false);
                             } catch (IllegalArgumentException ex) {
