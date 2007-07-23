@@ -106,8 +106,6 @@ public class MigrateActionTest extends RubyProjectTestBase {
         assertNotNull(parentDir);
         FileObject dir = parentDir.createFolder(projectName);
         assertNotNull(dir);
-        FileObject nbproject = dir.createFolder("nbproject");
-        FileObject projectXml = nbproject.createData("project", "xml");
         String xml =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n" +
@@ -118,10 +116,7 @@ public class MigrateActionTest extends RubyProjectTestBase {
 "        </data>\n" +
 "    </configuration>\n" +
 "</project>\n";
-        OutputStream os = projectXml.getOutputStream();
-        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-        writer.write(xml);
-        writer.close();
+        createFile(dir, "nbproject/project.xml", xml);
         
         // Create the db folders!
         createFilesFromDesc(dir, dbtaskFile);
