@@ -26,7 +26,6 @@ import java.util.*;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
-import javax.swing.text.Document;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.source.ui.DialogBinding;
 import org.netbeans.editor.EditorUI;
@@ -45,6 +44,7 @@ import org.openide.windows.*;
 
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  * Form editor.
@@ -923,10 +923,10 @@ public class FormEditor {
         codeGen.regenerateCode();
 
         JEditorPane codePane = new JEditorPane();
+        codePane.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-java")); // NOI18N
         SimpleSection sec = dobj.getFormEditorSupport().getInitComponentSection();
         int pos = sec.getText().indexOf('{') + 2 + sec.getStartPosition().getOffset();
         DialogBinding.bindComponentToFile(dobj.getPrimaryFile(), pos, 0, codePane);
-        codePane.setContentType("text/x-java");  // NOI18N
 //        codePane.getDocument().putProperty(Document.StreamDescriptionProperty, dobj);
         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(codePane);
         eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
