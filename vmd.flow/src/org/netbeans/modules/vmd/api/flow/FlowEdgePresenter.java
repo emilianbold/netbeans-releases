@@ -133,13 +133,13 @@ public abstract class FlowEdgePresenter extends FlowPresenter implements FlowPre
                     FlowPinDescriptor original = pin;
                     pin = (FlowPinDescriptor) scene.findStoredObject (pin);
                     if (pin == null)
-                        Debug.warning ("Source pin not found", edge, original);
+                        Debug.warning ("Source pin not found", edge, original); // NOI18N
                 }
             } else {
                 FlowPinDescriptor original = pin;
                 pin = (FlowPinDescriptor) scene.findStoredObject (pin);
                 if (pin == null)
-                    Debug.warning ("Source pin not found", edge, original);
+                    Debug.warning ("Source pin not found", edge, original); // NOI18N
             }
         }
         scene.setEdgeSource (edge, pin);
@@ -159,13 +159,13 @@ public abstract class FlowEdgePresenter extends FlowPresenter implements FlowPre
                     FlowPinDescriptor original = pin;
                     pin = (FlowPinDescriptor) scene.findStoredObject (pin);
                     if (pin == null)
-                        Debug.warning ("Target pin not found", edge, original);
+                        Debug.warning ("Target pin not found", edge, original); // NOI18N
                 }
             } else {
                 FlowPinDescriptor original = pin;
                 pin = (FlowPinDescriptor) scene.findStoredObject (pin);
                 if (pin == null)
-                    Debug.warning ("Target pin not found", edge, original);
+                    Debug.warning ("Target pin not found", edge, original); // NOI18N
             }
         }
         scene.setEdgeTarget (edge, pin);

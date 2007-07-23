@@ -22,6 +22,7 @@ import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -70,7 +71,7 @@ public class FlowEditorView implements DataEditorView {
     }
 
     public String getDisplayName () {
-        return "Flow";
+        return NbBundle.getMessage (FlowEditorView.class, "DISP_FlowView"); // NOI18N
     }
 
     public HelpCtx getHelpCtx () {
@@ -126,7 +127,7 @@ public class FlowEditorView implements DataEditorView {
     private void readObject (java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         Object object = in.readObject ();
         if (! (object instanceof DataObjectContext))
-            throw new ClassNotFoundException ("DataObjectContext expected but not found");
+            throw new ClassNotFoundException ("DataObjectContext expected but not found"); // NOI18N
         context = (DataObjectContext) object;
         init ();
     }

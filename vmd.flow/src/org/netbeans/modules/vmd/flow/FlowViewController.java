@@ -26,6 +26,7 @@ import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.vmd.VMDMinimizeAbility;
 import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,25 +62,25 @@ public class FlowViewController implements DesignDocumentAwareness {
         separator.setOrientation(JSeparator.VERTICAL);
         toolbar.add (separator);
 
-        addToolbarButton ("layout", "Layout", new ActionListener() {
+        addToolbarButton ("layout", NbBundle.getMessage (FlowViewController.class, "TTIP_Layout"), new ActionListener() { // NOI18N
             public void actionPerformed (ActionEvent e) {
                 layout ();
             }
         });
 
-        overviewButton = addToolbarButton ("overview", "Overview", new ActionListener() {
+        overviewButton = addToolbarButton ("overview", NbBundle.getMessage (FlowViewController.class, "TTIP_Overview"), new ActionListener() { // NOI18N
             public void actionPerformed (ActionEvent e) {
                 overview ();
             }
         });
 
-        addToolbarButton ("collapse-all", "Collapse All", new ActionListener () {
+        addToolbarButton ("collapse-all", NbBundle.getMessage (FlowViewController.class, "TTIP_CollapseAll"), new ActionListener () { // NOI18N
             public void actionPerformed (ActionEvent e) {
                 collapseAll ();
             }
         });
 
-        addToolbarButton ("expand-all", "Expand All", new ActionListener() {
+        addToolbarButton ("expand-all", NbBundle.getMessage (FlowViewController.class, "TTIP_ExpandAll"), new ActionListener() { // NOI18N
             public void actionPerformed (ActionEvent e) {
                 expandAll ();
             }

@@ -59,7 +59,7 @@ public abstract class FlowDescriptor {
     }
 
     public String toString () {
-        return getClass ().getSimpleName () + ":" + representedComponent.getComponentID () + ":" + descriptorID;
+        return getClass ().getSimpleName () + ":" + representedComponent.getComponentID () + ":" + descriptorID; // NOI18N
     }
 
     public interface Decorator {
