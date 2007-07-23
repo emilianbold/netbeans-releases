@@ -19,6 +19,8 @@
 
 package org.netbeans.lib.lexer.inc;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.LanguageOperation;
@@ -85,6 +87,9 @@ import org.netbeans.spi.lexer.TokenValidator;
 
 public final class TokenListUpdater {
 
+    // -J-Dorg.netbeans.lib.lexer.inc.TokenListUpdater.level=FINE
+    private static final Logger LOG = Logger.getLogger(TokenListUpdater.class.getName());
+
     /**
      * Use incremental algorithm to update the list of tokens
      * after a modification done in the underlying storage.
@@ -119,9 +124,20 @@ public final class TokenListUpdater {
         // index points to the modified token
         int index;
 
+        boolean loggable = LOG.isLoggable(Level.FINE);
+        if (loggable) {
+            LOG.log(Level.FINE, "TokenListUpdater.update() STARTED\nmodOffset=" + modOffset
+                    + ", insertedLength=" + eventInfo.insertedLength()
+                    + ", removedLength=" + eventInfo.removedLength()
+                    + ", tokenCount=" + tokenCount + "\n");
+        }
+
         if (tokenCount == 0) { // no tokens yet or all removed
             if (!tokenList.isFullyLexed()) {
                 // No tokens created yet (they get created lazily).
+                if (loggable) {
+                    LOG.log(Level.FINE, "TokenListUpdater.update() FINISHED: Not fully lexed yet.\n");
+                }
                 return; // Do nothing in this case
             }
             // If fully lexed and no tokens then the tokens should start
@@ -149,8 +165,13 @@ public final class TokenListUpdater {
                     // token has zero lookahead).
                     if (!tokenList.isFullyLexed()
                         && modOffset >= modTokenEndOffset + tokenList.lookahead(index)
-                    )
+                    ) {
+                        if (loggable) {
+                            LOG.log(Level.FINE, "TokenListUpdater.update() FINISHED: Not fully lexed yet. modTokenOffset="
+                                    + modTokenOffset + ", modToken.length()=" + modToken.length() + "\n");
+                        }
                         return; // not affected at all
+                    }
 
                     index++;
                     modToken = null;
@@ -179,6 +200,11 @@ public final class TokenListUpdater {
                     modTokenOffset = tokenList.tokenOffset(index);
                 }
                 modToken = token(tokenList, index);
+                if (loggable) {
+                    LOG.log(Level.FINE, "BIN-SEARCH: index=" + index
+                            + ", modTokenOffset=" + modTokenOffset
+                            + ", modToken.id()=" + modToken.id() + "\n");
+                }
             }
         }
 
@@ -319,6 +345,14 @@ public final class TokenListUpdater {
             relex = (lookahead > token(tokenList, index + 1).length()); // check next token
         }
 
+        if (loggable) {
+            LOG.log(Level.FINE, "BEFORE-RELEX: index=" + index + ", modTokenOffset=" + modTokenOffset
+                    + ", relexIndex=" + relexIndex + ", relexOffset=" + relexOffset
+                    + ", relexState=" + relexState
+                    + ", matchOffset=" + matchOffset
+                    + ", perform relex: " + relex + "\n");
+        }
+        
         if (relex) { // Start relexing
             LexerInputOperation<T> lexerInputOperation
                     = tokenList.createLexerInputOperation(relexIndex, relexOffset, relexState);
@@ -332,6 +366,13 @@ public final class TokenListUpdater {
 
                 lookahead = lexerInputOperation.lookahead();
                 Object state = lexerInputOperation.lexerState();
+                if (loggable) {
+                    LOG.log(Level.FINE, "LEXED-TOKEN: id=" + token.id()
+                            + ", length=" + token.length()
+                            + ", lookahead=" + lookahead
+                            + ", state=" + state + "\n");
+                }
+                
                 change.addToken(token, lookahead, state);
 
                 relexOffset += token.length();
@@ -404,6 +445,10 @@ public final class TokenListUpdater {
                                     || matchTokenLookahead > 0
                             ) {
                                 // This token must be relexed
+                                if (loggable) {
+                                    LOG.log(Level.FINE, "EXTRA-RELEX: index=" + index + ", lookahead=" + lookahead
+                                            + ", tokenLength=" + tokenLength + "\n");
+                                }
                                 index = i;
                                 matchOffset += tokenLength;
                                 relex = true;
@@ -441,9 +486,7 @@ public final class TokenListUpdater {
             // the addition of the last token should be 'undone'.
             // This all may happen due to the fact that for larger lookaheads
             // the algorithm must relex the token(s) within lookahead (see the code above).
-            int lastAddedTokenIndex = (change.addedTokensOrBranches() != null)
-                    ? (change.addedTokensOrBranches().size() - 1)
-                    : 0;
+            int lastAddedTokenIndex = change.addedTokensOrBranchesCount() - 1;
             // There should remain at least one added token since that one
             // may not be the same like the original removed one because
             // token lengths would differ because of the input source modification.
@@ -456,9 +499,13 @@ public final class TokenListUpdater {
                     || change.laState().lookahead(lastAddedTokenIndex) != tokenList.lookahead(index)
                     || !LexerUtilsConstants.statesEqual(change.laState().state(lastAddedTokenIndex),
                         tokenList.state(index))
-                )
+                ) {
                     break;
+                }
                 // Last removed and added tokens are the same so undo the addition
+                if (loggable) {
+                    LOG.log(Level.FINE, "RETAIN-ORIGINAL: index=" + index + ", id=" + removedToken.id() + "\n");
+                }
                 lastAddedTokenIndex--;
                 index--;
                 relexOffset -= addedToken.length();
@@ -467,10 +514,14 @@ public final class TokenListUpdater {
         }
 
         // Now ensure that the original tokens will be replaced by the relexed ones.
+        int removedTokenCount = (modToken != null) ? (index - relexIndex + 1) : (index - relexIndex);
+        if (loggable) {
+            LOG.log(Level.FINE, "TokenListUpdater.update() FINISHED: Removed:"
+                    + removedTokenCount + ", Added:" + change.addedTokensOrBranchesCount() + " tokens.\n");
+        }
         change.setIndex(relexIndex);
         change.setAddedEndOffset(relexOffset);
-        tokenList.replaceTokens(eventInfo, change,
-            (modToken != null) ? (index - relexIndex + 1) : (index - relexIndex));
+        tokenList.replaceTokens(eventInfo, change, removedTokenCount);
     }
     
     private static <T extends TokenId> AbstractToken<T> token(MutableTokenList<T> tokenList, int index) {

@@ -48,6 +48,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.editor.util.ArrayUtilities;
+import org.netbeans.lib.lexer.inc.OriginalText;
 import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.lib.lexer.inc.TokenListChange;
 import org.netbeans.lib.lexer.token.AbstractToken;
@@ -274,7 +275,23 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
             IncTokenList<T> incTokenList = (IncTokenList<T>)tokenList;
             incTokenList.incrementModCount();
             TokenListChange<T> change = new TokenListChange<T>(incTokenList);
+
+            if (LOG.isLoggable(Level.FINEST)) {
+                // Display current state of the hierarchy by faking its text
+                // through original text
+                if (tokenList != null) {
+                    CharSequence text = incTokenList.text();
+                    assert (text != null);
+                    incTokenList.setText(new OriginalText(text, offset, removedText, insertedLength));
+                    // Dump all contents
+                    LOG.log(Level.FINEST, toString());
+                    // Return the original text
+                    incTokenList.setText(text);
+                }
+            }
+
             TokenListUpdater.update(incTokenList, eventInfo, change);
+            
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("<<<<<<<<<<<<<<<<<< LEXER CHANGE START ------------------\n"); // NOI18N
                 LOG.fine("ROOT CHANGE: " + change.toString(0) + "\n"); // NOI18N
@@ -345,6 +362,10 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         EmbeddedTokenList<? extends TokenId> etl = EmbeddingContainer.getEmbeddingIfExists(
                 change.tokenChangeInfo().removedTokenList().tokenOrEmbeddingContainer(0));
         if (etl != null) {
+            int tokenOffset = change.tokenList().tokenOffset(change.index());
+            int modRelOffset = eventInfo.modificationOffset() - tokenOffset;
+            int beyondModLength = (tokenOffset + LexerUtilsConstants.token(change.tokenList(), change.index()).length()) 
+                    - (modRelOffset + Math.max(0, eventInfo.insertedLength() - eventInfo.removedLength()));
             // All embedded token lists need to be re-routed to a new embedding container
             // and then updated by the incremental algorithm
             @SuppressWarnings("unchecked")
@@ -352,32 +373,48 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
                     (AbstractToken<TX>)change.addedTokensOrBranches().get(0));
             newEC.setFirstEmbeddedTokenList(etl);
             change.tokenList().wrapToken(change.index(), newEC);
+            EmbeddedTokenList<? extends TokenId> prevEtl = null;
             do {
-                etl.setEmbeddingContainer(newEC);
-                @SuppressWarnings("unchecked")
-                TokenListChange<TokenId> nestedChange = new TokenListChange<TokenId>(
-                        (EmbeddedTokenList<TokenId>)etl);
-                @SuppressWarnings("unchecked")
-                EmbeddedTokenList<TokenId> etlT = (EmbeddedTokenList<TokenId>)etl;
-                TokenListUpdater.update(etlT, eventInfo, nestedChange);
-                if (LOG.isLoggable(Level.FINE)) {
-                    StringBuilder sb = new StringBuilder();
-                    ArrayUtilities.appendSpaces(sb, level << 2);
-                    sb.append("NESTED CHANGE at level="); // NOI18N
-                    sb.append(level);
-                    sb.append(": ");
-                    sb.append(nestedChange.toString(level << 2));
-                    sb.append('\n');
-                    LOG.fine(sb.toString());
+                // Check whether the change was not in the start or end skip lengths
+                if (modRelOffset >= etl.embedding().startSkipLength()
+                        && beyondModLength >= etl.embedding().endSkipLength()
+                ) {
+                    etl.setEmbeddingContainer(newEC);
+
+                    @SuppressWarnings("unchecked")
+                    TokenListChange<TokenId> nestedChange = new TokenListChange<TokenId>(
+                            (EmbeddedTokenList<TokenId>)etl);
+                    @SuppressWarnings("unchecked")
+                    EmbeddedTokenList<TokenId> etlT = (EmbeddedTokenList<TokenId>)etl;
+                    TokenListUpdater.update(etlT, eventInfo, nestedChange);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        StringBuilder sb = new StringBuilder();
+                        ArrayUtilities.appendSpaces(sb, level << 2);
+                        sb.append("NESTED CHANGE at level="); // NOI18N
+                        sb.append(level);
+                        sb.append(": ");
+                        sb.append(nestedChange.toString(level << 2));
+                        sb.append('\n');
+                        LOG.fine(sb.toString());
+                    }
+                    change.tokenChangeInfo().addEmbeddedChange(nestedChange.tokenChangeInfo());
+                    if (nestedChange.isBoundsChange()) { // Attempt to find more nested
+                        addNestedChanges(eventInfo, nestedChange, level + 1);
+                    } else { // Not a bounds change
+                        eventInfo.setMinAffectedStartOffset(nestedChange.offset());
+                        eventInfo.setMaxAffectedEndOffset(nestedChange.addedEndOffset());
+                    }
+                    prevEtl = etl;
+                    etl = etl.nextEmbeddedTokenList();
+
+                } else { // Mod in skip lengths => Remove the etl from chain
+                    etl = etl.nextEmbeddedTokenList();
+                    if (prevEtl == null) {
+                        newEC.setFirstEmbeddedTokenList(etl);
+                    } else {
+                        prevEtl.setNextEmbeddedTokenList(etl);
+                    }
                 }
-                change.tokenChangeInfo().addEmbeddedChange(nestedChange.tokenChangeInfo());
-                if (nestedChange.isBoundsChange()) { // Attempt to find more nested
-                    addNestedChanges(eventInfo, nestedChange, level + 1);
-                } else { // Not a bounds change
-                    eventInfo.setMinAffectedStartOffset(nestedChange.offset());
-                    eventInfo.setMaxAffectedEndOffset(nestedChange.addedEndOffset());
-                }
-                etl = etl.nextEmbeddedTokenList();
             } while (etl != null);
         } 
     }
@@ -539,6 +576,10 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         return isSnapshot() ? ((SnapshotTokenList)tokenList).tokenShiftEndOffset() : -1;
     }
     
+    public String toString() {
+        return "TOKEN HIERARCHY:\n" + LexerUtilsConstants.appendTokenList(null, tokenList, -1).toString(); // NOI18N
+    }
+    
     /**
      * Check consistency of the whole token hierarchy.
      * @return string describing the problem or null if the hierarchy is consistent.
@@ -594,7 +635,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         sb.append(" of tokens of language "); // NOI18N
         sb.append(tokenList.languagePath().innerLanguage().mimeType());
         sb.append('\n');
-        LexerUtilsConstants.appendTokenList(sb, tokenList, index, index - 2, index + 3);
+        LexerUtilsConstants.appendTokenList(sb, tokenList, index, index - 2, index + 3, false, 0);
         sb.append("\nParents:\n"); // NOI18N
         sb.append(tracePath(parentIndexes, tokenList.languagePath()));
         return sb.toString();
@@ -604,7 +645,8 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         StringBuilder sb  = new StringBuilder();
         TokenList<?> tokenList = checkedTokenList();
         for (int i = 0; i < indexes.length; i++) {
-            LexerUtilsConstants.appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(i), tokenHierarchy());
+            LexerUtilsConstants.appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(i),
+                    tokenHierarchy(), false, 0);
             tokenList = EmbeddingContainer.getEmbedding(tokenList, indexes[i], languagePath.language(i));
         }
         return sb.toString();

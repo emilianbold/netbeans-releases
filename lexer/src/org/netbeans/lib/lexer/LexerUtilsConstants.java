@@ -25,9 +25,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.lib.editor.util.ArrayUtilities;
-import org.netbeans.lib.lexer.EmbeddingContainer;
 import org.netbeans.lib.lexer.inc.FilterSnapshotTokenList;
 import org.netbeans.lib.lexer.inc.SnapshotTokenList;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -215,28 +213,29 @@ public final class LexerUtilsConstants {
 
     public static <T extends TokenId> StringBuilder appendTokenList(StringBuilder sb,
     TokenList<T> tokenList, int currentIndex) {
-        return appendTokenList(sb, tokenList, currentIndex, 0, Integer.MAX_VALUE);
+        return appendTokenList(sb, tokenList, currentIndex, 0, Integer.MAX_VALUE, true, 0);
     }
 
     public static <T extends TokenId> StringBuilder appendTokenList(StringBuilder sb,
-    TokenList<T> tokenList, int currentIndex, int startIndex, int endIndex) {
+    TokenList<T> tokenList, int currentIndex, int startIndex, int endIndex, boolean appendEmbedded, int indent) {
         if (sb == null) {
             sb = new StringBuilder();
         }
         TokenHierarchy<?> tokenHierarchy;
         if (tokenList instanceof SnapshotTokenList) {
                 tokenHierarchy = ((SnapshotTokenList<T>)tokenList).snapshot().tokenHierarchy();
-                sb.append(tokenList).append('\n');
         } else {
                 tokenHierarchy = null;
         }
 
-        int tokenCount = Math.min(tokenList.tokenCountCurrent(), endIndex);
-        int digitCount = ArrayUtilities.digitCount(tokenCount);
-        for (int i = Math.max(startIndex, 0); i < tokenCount; i++) {
+        endIndex = Math.min(tokenList.tokenCountCurrent(), endIndex);
+        int digitCount = ArrayUtilities.digitCount(endIndex);
+        for (int i = Math.max(startIndex, 0); i < endIndex; i++) {
+            ArrayUtilities.appendSpaces(sb, indent);
             sb.append((i == currentIndex) ? '*' : ' ');
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
-            appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(i), tokenHierarchy);
+            appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(i), tokenHierarchy,
+                    appendEmbedded, indent + 4);
             appendLAState(sb, tokenList, i);
             sb.append('\n');
         }
@@ -277,7 +276,7 @@ public final class LexerUtilsConstants {
     }
 
     public static void appendTokenInfo(StringBuilder sb, Object tokenOrEmbeddingContainer,
-    TokenHierarchy<?> tokenHierarchy) {
+    TokenHierarchy<?> tokenHierarchy, boolean appendEmbedded, int embeddedIndent) {
         if (tokenOrEmbeddingContainer == null) {
             sb.append("<NULL-TOKEN>");
         } else if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
@@ -288,16 +287,21 @@ public final class LexerUtilsConstants {
             boolean first = true;
             while (etl != null) {
                 sb.append('"').append(etl.languagePath().mimePath()).append('"');
-                if (first)
-                    first = false;
-                else
-                    sb.append(',');
+                if (appendEmbedded) {
+                    sb.append('\n');
+                    appendTokenList(sb, etl, -1, 0, Integer.MAX_VALUE, appendEmbedded, embeddedIndent);
+                } else {
+                    if (first)
+                        first = false;
+                    else
+                        sb.append(',');
+                }
                 etl = etl.nextEmbeddedTokenList();
             }
             sb.append("] ");
             appendIdentityHashCode(sb, ec);
             sb.append(": ");
-            appendTokenInfo(sb, ec.token(), tokenHierarchy);
+            appendTokenInfo(sb, ec.token(), tokenHierarchy, false, embeddedIndent);
 
         } else { // regular token
             Token<? extends TokenId> token = (Token<? extends TokenId>)tokenOrEmbeddingContainer;

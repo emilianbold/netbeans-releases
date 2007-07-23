@@ -480,5 +480,10 @@ public final class TokenHierarchy<I> { // "I" stands for mutable input source
     TokenHierarchyOperation<I,?> operation() {
         return operation;
     }
+    
+    @Override
+    public String toString() {
+        return operation.toString();
+    }
 
 }

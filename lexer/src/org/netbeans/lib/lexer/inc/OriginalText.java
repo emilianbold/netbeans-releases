@@ -19,9 +19,7 @@
 
 package org.netbeans.lib.lexer.inc;
 
-import javax.swing.BoundedRangeModel;
 import org.netbeans.lib.editor.util.AbstractCharSequence;
-import org.netbeans.lib.editor.util.CharSubSequence;
 
 /**
  * Character sequence emulating state of a mutable input source

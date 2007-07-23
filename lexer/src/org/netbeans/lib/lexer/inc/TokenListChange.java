@@ -113,6 +113,10 @@ public final class TokenListChange<T extends TokenId> {
         return addedTokensOrBranches;
     }
     
+    public int addedTokensOrBranchesCount() {
+        return (addedTokensOrBranches != null) ? addedTokensOrBranches.size() : 0;
+    }
+    
     public void removeLastAddedToken() {
         int lastIndex = addedTokensOrBranches.size() - 1;
         addedTokensOrBranches.remove(lastIndex);
@@ -181,7 +185,8 @@ public final class TokenListChange<T extends TokenId> {
                 sb.append("R[");
                 ArrayUtilities.appendIndex(sb, i, digitCount);
                 sb.append("]: ");
-                LexerUtilsConstants.appendTokenInfo(sb, removedTL.tokenOrEmbeddingContainer(i), null);
+                LexerUtilsConstants.appendTokenInfo(sb, removedTL.tokenOrEmbeddingContainer(i),
+                        null, false, 0);
             }
         }
         if (addedTokensOrBranches() != null) {
@@ -192,7 +197,8 @@ public final class TokenListChange<T extends TokenId> {
                 sb.append("A[");
                 ArrayUtilities.appendIndex(sb, i, digitCount);
                 sb.append("]: ");
-                LexerUtilsConstants.appendTokenInfo(sb, addedTokensOrBranches.get(i), null);
+                LexerUtilsConstants.appendTokenInfo(sb, addedTokensOrBranches.get(i),
+                        null, false, 0);
             }
         }
         return sb.toString();
