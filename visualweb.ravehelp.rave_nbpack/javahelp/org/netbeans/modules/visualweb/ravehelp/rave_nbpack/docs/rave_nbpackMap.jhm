@@ -221,7 +221,6 @@
 	<mapID target="projrave_projects_howtoprojects_clean_project" url="projects/howtoprojects/clean_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_compile_file" url="projects/howtoprojects/compile_file.html"/>
 	<mapID target="projrave_projects_howtoprojects_copy_project" url="projects/howtoprojects/copy_project.html"/>
-	<mapID target="projrave_projects_howtoprojects_create_project" url="projects/howtoprojects/create_project.html"/>
 	<mapID target="projrave_projects_howtoprojects_create_sample_app" url="projects/howtoprojects/create_sample_app.html"/>
 	<mapID target="projrave_projects_howtoprojects_delete_lib_ref" url="projects/howtoprojects/delete_lib_ref.html"/>
 	<mapID target="projrave_projects_howtoprojects_delete_proj_item" url="projects/howtoprojects/delete_proj_item.html"/>
@@ -650,10 +649,4 @@
 	<mapID target="projrave_ui_elements_navigator_win_navigator_win_popup" url="ui_elements/navigator_win/navigator_win_popup.html"/>
 	<mapID target="projrave_ui_elements_navigator_win_request_bean_node" url="ui_elements/navigator_win/request_bean_node.html"/>
 	<mapID target="projrave_ui_elements_navigator_win_session_bean_node" url="ui_elements/navigator_win/session_bean_node.html"/>
-	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_common_task" url="ui_elements/palette/wdstk-jsf1_2/common_task.html"/>
-	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_common_tasks_group" url="ui_elements/palette/wdstk-jsf1_2/common_tasks_group.html"/>
-	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_common_tasks_section" url="ui_elements/palette/wdstk-jsf1_2/common_tasks_section.html"/>
-	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_propsheets_common_task_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/common_task_props.html"/>
-	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_propsheets_common_tasks_group_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/common_tasks_group_props.html"/>
-	<mapID target="nbruby_ui_elements_palette_wdstk-jsf1_2_propsheets_common_tasks_section_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/common_tasks_section_props.html"/>
 </map>
