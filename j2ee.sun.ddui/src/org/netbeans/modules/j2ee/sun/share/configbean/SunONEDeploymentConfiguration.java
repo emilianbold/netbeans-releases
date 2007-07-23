@@ -28,6 +28,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -92,6 +93,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NotImplementedException;
 import org.openide.util.RequestProcessor;
@@ -831,7 +833,48 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return result;
     }
 
+    public void saveConfiguration(OutputStream outputStream) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        try {
+            if (this.module.getModuleType().equals(ModuleType.WAR)) {
+                // copy sun-web.xml to stream directly.
+                FileObject configFO = FileUtil.toFileObject(configFiles[0]);
+                if(configFO != null) {
+                    RootInterface rootDD = DDProvider.getDefault().getDDRoot(configFO);
+                    rootDD.write(outputStream);
+                }
+            } else {
+                DeploymentPlan dp = new DeploymentPlan();
+                // write all existing config files to stream
 
+                for(int i = 0; i < configFiles.length; i++) {
+                    FileObject configFO = FileUtil.toFileObject(configFiles[i]);
+                    if(configFO != null) {
+                        try {
+                            FileEntry fe = new FileEntry();
+                            fe.setName(configFO.getNameExt());
+                            long estimate = configFO.getSize() * 2;
+                            RootInterface rootDD = DDProvider.getDefault().getDDRoot(configFO);
+                            StringWriter stringWriter = new StringWriter((int) estimate);
+                            rootDD.write(stringWriter);
+                            fe.setContent(stringWriter.toString());
+                            dp.addFileEntry(fe);
+                        } catch(PropertyVetoException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+
+                dp.write(outputStream);
+            }
+//        } catch(Schema2BeansException ex) {
+//            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(ex.getMessage(), ex);
+//        } catch(IOException ex) {
+//            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(ex.getMessage(), ex);
+        } catch(Exception ex) {
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(ex.getMessage(), ex);
+        }    
+    }
+    
     /** Retrieves DConfigBeanRoot associated with the specified DDBean root.  If
      *  this DCB has already created, retrieves it from cache, otherwise creates
      *  a new DCB via factory mechanism.
