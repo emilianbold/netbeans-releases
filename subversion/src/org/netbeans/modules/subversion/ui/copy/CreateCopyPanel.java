@@ -91,6 +91,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         remoteRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         remoteRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        jLabel4.setLabelFor(copyFromRevisionTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "Revision:");
 
         searchButton.setMnemonic('s');
@@ -104,6 +105,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, "(Empty means repository HEAD)");
 
+        jLabel7.setLabelFor(previewTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel7, "Preview:");
 
         previewTextField.setEditable(false);
