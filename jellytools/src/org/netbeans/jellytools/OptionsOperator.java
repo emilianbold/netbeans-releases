@@ -389,7 +389,7 @@ public class OptionsOperator extends NbDialogOperator {
     /** Selects General category. */
     public void selectGeneral() {
         Bundle.getStringTrimmed("org.netbeans.modules.options.advanced.Bundle", "CTL_Advanced_Options");
-        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.general.Bundle",
+        selectCategory(Bundle.getStringTrimmed("org.netbeans.core.ui.options.general.Bundle",
                                                "CTL_General_Options"));
     }
 
