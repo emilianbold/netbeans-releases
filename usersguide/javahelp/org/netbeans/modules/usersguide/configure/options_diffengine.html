@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc. 
+ * All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+	<title>Options Window: Miscellaneous: Diff</title>
+	<link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+    <body> 
+
+	<h2>Options Window: Miscellaneous: Diff</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>You use this panel to specify the Diff Engine to use when comparing file revisions.
+        If you use an external diff engine you can set diff command options in this panel.</p> 
+        <p>You can access this panel by choosing Tools &gt; Options from the main menu, clicking the Miscellaneous category and then clicking the Diff tab.</p> 
+
+        
+	<p>You can select the following diff engine options:</p>
+	<ul>
+            <li><b>External Diff.</b> If selected, the IDE uses an external command-line diff executable.
+            You can specify any diff command options (for example, <tt>diff -b</tt>) to be used when running the diff command from a command-line executable in the IDE.
+            Diff options are not availabe when using the built-in diff engine.
+            <ul class="note">
+                <li>To use this option, you must have a command-line diff executable installed on your system if you want to compare revisions.</li>
+            </ul></li>
+            <li><b>Internal Diff Engine.</b> If selected, the IDE uses its internal diff engine.
+            When using the internal diff engine, the only available option is to ignore white spaces.
+            This option is selected by default.</li>
+        </ul>
+        
+        <!--</li>
+	    <li><b>Diff Visualizers.</b> Enables you to set properties for the Diff viewers, which display the results when comparing file revisions using the Diff command in the IDE.
+	    Expand the Diff Visualizers node to set properties to configure the following: 
+	    <ul>
+		<li><b>Textual Diff Viewer.</b> You can enable or disable Context Mode and specify the number of lines of context to display. 
+		If Context Mode is selected, the specified number of lines of context are displayed around differences in the textual diff.</li> 
+		<li><b>Graphical Diff Viewer.</b> You can modify the default background highlight colors for changed text in the graphical diff viewer.
+		Click the ellipsis button (...) to specify the color.</li>
+	    </ul></li>
+	    <li><b>Diff Services.</b> Enables you to enable or disable the service selector.
+	    Expand the Diff Services node to set properties to configure the following:
+	    <ul>
+		<li><b>Built-in Diff Service.</b> You can enable or disable the diff service selector. 
+		If Show Diff Service Selector is selected, the drop-down list to select a diff viewer is visible in the toolbar of the diff results window.
+		The service selector enables you to switch between the diff viewers.  </li>
+	    </ul></li>
+	    <li><b>Merge Visualizers.</b> Enables you to set the display properties for the Graphical Merge Conflicts Resolver.
+	    Expand the Merge Visualizers node to set properties to configure the following:
+	    <ul>
+		<li><b>Graphical Merge Conflicts Resolver.</b> You can modify the default background highlight colors for changed text in the Graphical Merge Conflicts Resolver.
+		Click the ellipsis (...) button to specify the color.</li>
+	    </ul></li>
+	</ul>
+-->
+        
+        
+        
+	<dl>
+	    <dt><a name="seealso">See Also</a></dt>
+	    <dd><a href="nbdocs://org.netbeans.modules.versioning.system.cvss/org/netbeans/modules/versioning/system/cvss/docs/cvsmodule/cvs-lite_diff.html">Comparing File Revisions in CVS</a></dd>
+	    <dd><a href="nbdocs://org.netbeans.modules.versioning.system.cvss/org/netbeans/modules/versioning/system/cvss/docs/cvsmodule/cvs-lite_mergeresolve.html">Resolving Merge Conflicts</a></dd>
+	    <dd><a href="../files/files_diff.html">Comparing Two Files in the IDE</a></dd>
+	    <dd><a href="configure_options.html">Using the Options Window</a></dd>
+	</dl>
+	<hr>
+	<small><a href="../credits.html">Legal Notices</a></small> 
+	<table cellpadding="50" border="0">
+	    <tr>
+		<td>&nbsp;</td>
+	    </tr>
+	</table> 
+    </body>
+</html>

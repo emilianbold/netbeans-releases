@@ -1,19 +1,19 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright ï¿½ 2007 Sun Microsystems, Inc. 
+ * Copyright © 2007 Sun Microsystems, Inc. 
  * All rights reserved.
  * Use is subject to license terms.
 -->
 <html>
 <head>
 
-<title>Configuring Tasks: Quick Reference</title>
+<title>Configuration Tasks: Quick Reference</title>
 <link rel="stylesheet" href="../ide.css" type="text/css">
 </head>
 <body>
 <h2>Configuration Tasks: Quick Reference</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The following table describes common Configuration tasks. </p>
+<p>The following table describes common configuration tasks. </p>
 <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
    task name. The right column lists the steps to perform.">
   <tr valign="top">
@@ -23,63 +23,69 @@
   <tr valign="top">
     <td>Configure general options</td>
     <td><ol>
-        <li>Choose Tools  &gt; Options from the main menu.</li>
-        <li>Select the category you wish to edit in the left pane.</li>
-        <li>Specify the desired settings in the right pane.
-          <!--<p>The IDE applies the new values to the edited properties. For more
-            information, see <a href="configure_options.html">About the Options
-            Window</a>. -->
-        </li>
+        <li>Choose Tools &gt; Options from the main menu.</li>
+        <li>Select the category you wish to edit.</li>
+        <li>Specify the desired settings.</li>
       </ol></td>
   </tr>
   <tr valign="top">
     <td>Set the IDE's web browser</td>
     <td><ol>
         <li>Choose Tools  &gt; Options from the main menu. </li>
-        <li>In the Options window, select General in the left pane and select the desired browser from the Web Browser drop-down list.</li>
+        <li>In the Options window, select the General category and select the desired browser from the Web Browser drop-down list.</li>
       </ol></td>
   </tr>
   <tr valign="top">
     <td>Configure proxy settings</td>
     <td><ol>
-        <li>Choose Tools  &gt; Options from the main menu. </li>
-        <li>In the Options window, select General in the left pane and select the Use HTTP Proxy Server check box.</li>
-        <li>Enter the proxy host and proxy port.
-          <!--<p>The IDE directs outgoing HTTP traffic based on the current settings. -->
-        </li>
+        <li>Choose Tools &gt; Options from the main menu. </li>
+        <li>In the Options window, select the General category and select the appropriate proxy setting.
+        If necessary, enter the proxy host and proxy port. Click More to configure advanced proxy settings.</li>
       </ol></td>
   </tr>
   <tr valign="top">
     <td>Configure the Auto Update feature</td>
     <td><ol>
-        <li>Choose Tools &gt; Options from the main menu. </li>
-        <li>In the Options window, select General in the left pane.</li>
-        <li>Specify the update check frequency and if you want to be asked before the IDE checks for updates.</li>
+        <li>Choose Tools &gt; Plugins from the main menu. </li>
+        <li>In the Plugin Manager, select the Settings tab.</li>
+        <li>Use the Check Period drop-down list to choose how often the IDE should check for updates.</li>
       </ol></td>
   </tr>
   <tr valign="top">
-    <td>Install additional modules</td>
+    <td>Install manually downloaded plugins</td>
     <td><ol>
-        <li>Choose Tools  &gt; Update
-          Center from the main menu. </li>
-        <li>Designate the location of modules you want to install in the Update
-          Center wizard and click Next.</li>
-        <li>Select the modules you wish to install.</li>
-        <li>Review the licensing agreement and click Accept.
-          <!--<p>The IDE begins installation of the specified modules. -->
-        </li>
+        <li>Choose Tools &gt; Plugins from the main menu and click the Downloaded tab. </li>
+        <li>Click Add Plugins and browse to the location of plugin you want to install. Click OK.</li>
+        <li>Select the plugin in the left pane and click Install.</li>
+        <li>Review the licensing agreement and click Accept.</li>
       </ol></td>
   </tr>
   <tr valign="top">
-    <td>Customize the IDE's Menus </td>
+    <td>Update installed plugins</td>
+    <td><ol>
+        <li>Choose Tools &gt; Plugins from the main menu and click the Updates tab. </li>
+        <li>Click Reload Plugins.</li>
+        <li>Select the plugins you wish to update and click Update.</li>
+        <li>Review the licensing agreement and click Accept.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top">
+    <td>Install new plugins</td>
+    <td><ol>
+        <li>Choose Tools &gt; Plugins from the main menu and click the New Plugins tab. </li>
+        <li>Click Reload Plugins.</li>
+        <li>Select the plugins you wish to install and click Install.</li>
+        <li>Review the licensing agreement and click Accept.</li>
+      </ol></td>
+  </tr>
+  <tr valign="top">
+    <td>Customize the IDE's menus </td>
     <td><ol>
         <li>In the Options window, click Advanced Options.</li>
-        <li>In the tree in the left pane, expand IDE Configuration &gt; Look
-          and Feel. </li>
+        <li>In the tree in the left pane, expand IDE Configuration &gt; Look and Feel. </li>
         <li>Right-click the Menu Bar node and choose Add  &gt; Menu. </li>
         <li>In the New Menu dialog box, type a name for the menu and click OK.
-          <p> The IDE adds an empty menu to the main window.</p> 
-        </li>
+          <p> The IDE adds an empty menu to the main window.</p></li>
         <li>Expand the Actions node and find the command you want to add to the
           menu, then right-click the command node and choose Copy. </li>
         <li>Expand the Menu Bar node, right-click the node of the menu you just
@@ -88,21 +94,21 @@
   </tr>
 
   <tr valign="top">
-    <td>Configure Editor Settings</td>
+    <td>Configure editor settings</td>
     <td><ol>
-        <li>Choose Tools &gt; Options from the main menu and select Editor in the left pane of the Options window.</li>
+        <li>Choose Tools &gt; Options from the main menu and select the Editor category.</li>
         <li>Select the tab for the editor properties you want to edit. </li>
         <li>Set properties as desired and click OK.</li>
       </ol></td>
   </tr>
   <tr valign="top">
-    <td>Configure Java Settings</td>
+    <td>Configure IDE fonts and colors</td>
     <td><ol>
-        <li>Choose Tools  &gt; Options from the main menu and select Java Code in the left pane of the Options window.</li>
+        <li>Choose Tools &gt; Options from the main menu and select the Fonts &amp; Colors category.</li>
         <li>Select the tab for the properties that you want to edit. </li>
         <li>Set properties as desired and click OK.</li>
       </ol></td>
-  </tr> 
+  </tr>
 
 </table>
 <dl>

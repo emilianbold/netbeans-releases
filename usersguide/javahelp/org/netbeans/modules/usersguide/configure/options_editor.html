@@ -14,63 +14,66 @@
 
         <h2>Options Window: Editor</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>You use this panel to adjust the properties that control the look and behavior of the Source Editor.
-        You can modify general editor properties and properties for specific types of editors (such as the Java editor and the XML editor).</p>
-        <p>You can access this panel by choosing Tools &gt; Options from the main menu, and then clicking Editor in the left pane of the Options window.</p> 
+        <p>You use this panel to adjust some general properties that control the look and behavior of the Source Editor.</p>
+        <p>You can access this panel by choosing Tools &gt; Options from the main menu, and then clicking the Editor category.</p> 
 
-        <p>The Editor panel contains the following tabs for customizing editor behaviour:</p>
+        <p>This panel contains the following tabs where you can set editor options.</p>
+        
         <ul>
             <li><b>General.</b> This tab enables you to customize global code folding and code completion settings.</li>
-            <li><b>Indentation.</b> This tab enables you to customize global settings for text formatting, including settings
-            for tabs, spaces, and new lines.</li>
+            <li><b>Indentation.</b> This tab enables you to customize global indentation for files in the Source Editor.</li>
             <li><b>Code Templates.</b> This tab enables you to customize the abbreviations for terms that you want the editor to expand automatically.</li>
-            <li><b>Macros.</b> This tab enables you to customize Source Editor macros.</li>
+            <li><b>Macros.</b> This tab enables you to customize Source Editor macros and to set shortcuts for macros.</li>
         </ul>
  
         <h3>General tab</h3>
-        <p>This tab enables you to specify the following general editor settings:</p>
-        <ul>
-            <li><b>Code Folding.</b> If selected, you have the option of collapsing the display of code blocks.
-            You can select which types of code blocks are collapsed by default. 
-            Code folding is applied only to editor types that support code folding, such as the Java editor.
-            <li><b>Code Completion.</b> As you are typing in the Source Editor, you can use the IDE's code completion feature to find code snippets and have them filled in for you automatically. 
-            <!--You can use code completion to fill in the names of packages, classes, methods, method parameters, fields, and local variables. 
-            If you use code completion to generate a non-fully-qualified class name, the IDE generates an import statement for you.-->
-            You can set the following code completion properties:
+        <h4>Code Folding</h4>
             <ul>
-                <li><b>Auto Popup Completion Window.</b> When selected, enables the editor to display a code completion box with 
-                options for how to complete an expression.  
-                <p>This property applies only to editor types that support code completion, such as Java, HTML, and JSP. 
-                See <a href="../editing/codecompletion/intro.html">Using Code Completion</a> for details.</p></li>
-                <li><b>Insert Single Proposals Automatically.</b> When selected, the code completion box does not appear when the IDE is aware of  
-                only one possible completion for the expression. The expression is completed automatically. </li>
-                <li><b>Case Sensitive Code Completion.</b> If selected, the code completion box only displays results that match the case of the expression 
-                that you are typing. </li>
-                <li><b>Show Deprecated Members in Code Completion.</b> If selected, any depecrated class elements that are available are shown 
-                in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</li>
-                <li><b>Insert Closing Brackets Automatically.</b> When selected, the Source Editor generates the closing parenthesis, bracket, 
-                brace, or quotation mark after you type the first one.</li>
-            </ul></li>
+                <li><b>Use Code Folding.</b> If selected, you have the option of collapsing the display of code blocks.
+                    You can select which types of code blocks are collapsed by default. 
+                Code folding is applied only to editor types that support code folding, such as the Java editor.</li>
+                <li><b>Collapse by Default.</b> Select the types of code blocks that are are collapsed by default.</li>
+            </ul>
+            
+        <h4>Code Completion</h4>
+        <p>As you are typing in the Source Editor, you can use the IDE's code completion feature to find code snippets and have them filled in for you automatically. 
+        You can set the following code completion properties.</p>
+        <ul>
+            <li><b>Auto Popup Completion Window.</b> When selected, enables the editor to display a code completion box with 
+            options for how to complete an expression.  
+            <p>This property applies only to editor types that support code completion, such as Java, HTML, and JSP. 
+            See <a href="../editing/codecompletion/intro.html">Using Code Completion</a> for details.</p></li>
+            <li><b>Insert Single Proposals Automatically.</b> When selected, the code completion box does not appear when the IDE is aware of  
+            only one possible completion for the expression. The expression is completed automatically. </li>
+            <li><b>Case Sensitive Code Completion.</b> If selected, the code completion box only displays results that match the case of the expression 
+            that you are typing. </li>
+            <li><b>Show Deprecated Members in Code Completion.</b> If selected, any depecrated class elements that are available are shown 
+            in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</li>
+            <li><b>Insert Closing Brackets Automatically.</b> When selected, the Source Editor generates the closing parenthesis, bracket, 
+            brace, or quotation mark after you type the first one.</li>
+        </ul>
+            
             <!--The code completion feature works by displaying a completion box that suggests possible ways of completing the expression that you are typing. 
             In addition, a box also appears that shows the Javadoc documentation for the item currently selected in the completion box.</li>
             -->
-        </ul>
-        <h3>Indentation tab</h3>
+
+            <h3>Indentation tab</h3>
         <p>This tab enables you to specify the following Java source code formatting settings:</p>
         <ul>
             <li><b>Statement Continuation Indent.</b> Specifies the shift (in spaces) for the second and subsequent lines in a multi-line statement.</li>
             <li><b>Number of Spaces per Indent.</b> Specifies the number of spaces represented by one indentation level.</li>
-            <li><b>Expand Tabs to Spaces.</b> When selected, inserts spaces when the Tab key is typed.  
+            <li><b>Expand Tabs to Spaces.</b> When selected, inserts spaces when the Tab key is typed.
             <!--The number of spaces inserted is set in the Number of Spaces per Tab property.-->
-            When unselected, typing the Tab key inserts the tab character (<tt>\t</tt>) into the file if 
-            possible. <!--It also replaces preceding spaces with the tab character if possible.  
+           When unselected, typing the Tab key inserts the tab character (<tt>\t</tt>) into the file if 
+            possible. It also replaces preceding spaces with the tab character if possible.  
             The Source Editor calculates where to place tab characters based on the value 
-            of the Tab Size property.</p>
+            of the Tab Size property. You set the Tab Size property in the Java Code category in the Options window.</p>
             <p>If Expand Tabs to Spaces is False and the Number of Spaces per Tab is different 
             than the Tab Size property, the indentation created by typing the Tab key is 
             made up of a combination of spaces and tab characters.  It is easiest to predict 
             the location of tab characters if you set Number of Spaces per Tab to an even 
-            multiple or divisor of Tab Size.--></li>
+            multiple or divisor of Tab Size.
+            </li>
             <li><b>Add Leading Star in Comment.</b> When selected, automatically puts an asterisk (*) at the start of any line inside a block comment of a Java file.  </li>
             <li><b>Add Newline Before Brace.</b> When selected, automatically puts curly braces on the following line in generated Java code.</li>
             <li><b>Add Space Before Parenthesis.</b> When selected, adds a space before the opening parenthesis in generated Java code. </li>
@@ -90,7 +93,7 @@
         <p>You can use the Expand Template On drop-down list to change the 
         key or key combination that is used to expand the abbreviations. 
         By default, abbreviations are expanded when you press Tab. 
-The Expand Template On drop-down list also contains the options of Space, Shift-Space, and Enter.</p>
+        The Expand Template On drop-down list also contains the options of Space, Shift-Space, and Enter.</p>
        
         <h3>Macros tab</h3>
         <p>Use this tab to edit, add, and remove Source Editor macros.
@@ -103,7 +106,8 @@ The Expand Template On drop-down list also contains the options of Space, Shift-
             <li>To remove a macro, select a macro from the list and click the Remove button.</li>
         </ul>  
         <ul class="note">        
-            <li>It is generally easier to add a new macro by recording it than by adding one manually in the Macro Code editor. See <a href="../editing/macros/recording.html">Recording a Macro</a> for details.</li>
+            <li>It is generally easier to add a new macro by recording it than by adding one manually in the Macro Code editor. 
+            See <a href="../editing/macros/recording.html">Recording a Macro</a> for details.</li>
         </ul>
         
         

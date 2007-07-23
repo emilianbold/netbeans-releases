@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- * Copyright ï¿½ 2007 Sun Microsystems, Inc. 
+ * Copyright © 2007 Sun Microsystems, Inc. 
  * All rights reserved.
  * Use is subject to license terms.
 -->
@@ -17,26 +17,25 @@
         <p>The Options window enables you to change any of the IDE's configurable settings.
         The Options window offers two views for editing IDE settings. </p>
         <ul>
-            <li><b>Basic Options view (default).</b> In the Basic Options view, you select a category in the left pane to display its settings in the right pane. 
-                Depending on the category, click on the nodes or tabs in the right pane to access additional settings.
-                When you change settings in Basic Options, the changes are not applied until you click OK.
-            </li>
+            <li><b>Basic Options view (default).</b> In the Basic Options view, you select a category at the top of the window to display its settings in the lower pane. 
+            Depending on the category, you can click on the tabs in the lower pane to access additional settings.
+            When you change settings in Basic Options, the changes are not applied until you click OK.</li>
             <li><b>Advanced Options view.</b> In the Advanced Options view, select a node in the tree view in the left pane to display the property sheet in the right pane.
             The property sheet contains the names and values of the settings for the item selected in the left pane.
             When you change settings in the property sheet, the changes are applied immediately.
             The Advanced Options view enables you to access some settings not available in Basic Options.
             In the Advanced Options view you can apply specific settings globally or at the user level.</li>
-     
         </ul>
-        <p>When you open the Options window, the default view is Basic Options. To switch between views, click the Advanced Options or Basic Options buttons in the Options window.</p>
-        <!--XYZtodo task here -->
+        <p>When you open the Options window, the default view is Basic Options. 
+        To switch between views, click the Advanced Options or Basic Options buttons in the Options window.</p>
 
         <p><b>To edit IDE settings in the Options window:</b></p>
         <ol>
             <li>Open the Options window by choosing Tools &gt; Options from the main menu.</li>
             <li>If you want to edit settings in Advanced Options, click Advanced Options in the Options window.</li>
-            <li>Depending on which view you are in, select the category or node in the left pane for the settings you want to configure.</li>
-            <li>Modify the settings in the right pane.</li>
+            <li>Depending on which view you are in, select the category in the upper pane (Basic) or node in the left pane (Advanced) 
+            to display the configurable settings.</li>
+            <li>Modify the settings.</li>
             <li>Close the Options window.</p>
         </ol>
     
@@ -52,15 +51,16 @@
             click the button to open the property's editor.</li>
         </ul>
         <p>In Advanced Options, changes are applied immediately.</p>
-        <!--<h3>Levels of Settings in Advanced Options</h3>-->
         <p><b>Levels of settings</b><br>When you are in Advanced Options, you can store settings at two levels:</p>
         <ul>
-            <li><b>Default.</b> Initial settings  provided with the IDE installation.
+            <li><b>Default.</b> Initial settings provided with the IDE installation.
             The IDE's default settings cannot be altered, however, they can be overriden
-            by   defining them at the  User level. </li>
+            by defining them at the User level. </li>
             <li><b>User.</b> Settings defined at the User level
-            that override settings at the Default level.    </li>
+            that override settings at the Default level.</li>
         </ul>
+        <p>By default the columns for User and Default are hidden. To display the User and Default columns, click &lt;&lt;
+    in the column heading. To hide the columns, click &gt;&gt;.</p>
         <p>The following table defines the icons used in Advanced Options to indicate the levels at which
         settings are applied.</p>
         <table border="1" cellpadding="5" cellspacing="0">
@@ -71,28 +71,23 @@
             <tr>
                 <td><img src="images/setting-defined.gif" alt=" "></td>
                 <td>The settings for the corresponding options are defined at the level indicated
-                in the column's title. Any changes made to those settings apply at that
-                level.</td>
+                in the column's title. Any changes made to those settings apply at that level.</td>
             </tr>
             <tr>
                 <td><img src="images/setting-inherited.gif" alt=" "></td>
-                <td>The settings for the corresponding options are inherited from a higher
-                level.</td>
+                <td>The settings for the corresponding options are inherited from a higher level.</td>
             </tr>
             <tr>
                 <td><img src="images/setting-ignored.gif" alt=" "></td>
-                <td>The settings for the corresponding options are ignored at the indicated
-                level.</td>
+                <td>The settings for the corresponding options are ignored at the indicated level.</td>
             </tr>
         </table>
  
         <p><b>To define an option's value at the User level:</b></p>
         <ol>
             <li>Select the node for the option you want to configure.</li>
-            <li>Click the cell in the User column for the options node you  selected.</li>
-            <li>Choose Define Here.
-                <p>The <img src="images/setting-defined.gif" alt=" ">&nbsp;icon appears in
-                the User column.</p>
+            <li>Click the cell in the User column for the options node you selected and choose Define Here.
+                <p>The <img src="images/setting-defined.gif" alt=" "> icon appears in the User column.</p>
             </li>
             <li>In the property sheet, configure the desired settings.
                 <p>The new values for the selected options override the default values.</p>
