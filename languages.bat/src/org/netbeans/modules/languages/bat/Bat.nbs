@@ -110,3 +110,10 @@ COLOR:command: {
     color_name: "command";
     default_coloring: "keyword";
 }
+
+BUNDLE "org.netbeans.modules.languages.bat.Bundle"
+
+MARK:error: {
+    type:"Error";
+    message:"LBL_UNEXPECTED_CHARACTER";
+}
