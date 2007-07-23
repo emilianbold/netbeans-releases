@@ -110,6 +110,8 @@ public class SourceUtils {
                 ts.move(offset);
                 if (ts.language() == JavaTokenId.language())
                     return (TokenSequence<JavaTokenId>)ts;
+                if (!ts.moveNext() && !ts.movePrevious())
+                    return null;
                 ts = ts.embedded();
             }
         }
