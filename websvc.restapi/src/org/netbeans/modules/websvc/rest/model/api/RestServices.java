@@ -24,6 +24,7 @@
 
 package org.netbeans.modules.websvc.rest.model.api;
 
+import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 

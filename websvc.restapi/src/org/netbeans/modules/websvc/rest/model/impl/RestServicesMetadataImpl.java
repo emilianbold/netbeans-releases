@@ -37,7 +37,7 @@ public class RestServicesMetadataImpl implements RestServicesMetadata {
         return root;
     }
     
-    public RestServiceDescription findWebserviceByName(String wsName) {
+    public RestServiceDescription findRestServiceByName(String name) {
         return null;
     }
     

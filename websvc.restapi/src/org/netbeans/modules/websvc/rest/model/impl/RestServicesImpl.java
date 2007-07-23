@@ -26,11 +26,15 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.Element;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
@@ -38,6 +42,7 @@ import org.netbeans.modules.j2ee.dd.api.common.Icon;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
+import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHandler;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
@@ -107,21 +112,56 @@ public class RestServicesImpl implements RestServices {
     private final class RestServiceProvider implements ObjectProvider<RestServiceDescriptionImpl> {
         
         public List<RestServiceDescriptionImpl> createInitialObjects() throws InterruptedException {
-            final List<RestServiceDescriptionImpl> result = new ArrayList<RestServiceDescriptionImpl>();
-            helper.getAnnotationScanner().findAnnotatedTypes("javax.ws.rs.UriTemplate",new TypeAnnotationHandler() { // NOI18N
-                public void typeAnnotation(TypeElement type, AnnotationMirror annotation) {
-                    // don't consider interfaces (SEI classes)
-                    if (type.getKind() != ElementKind.INTERFACE)
+            final Map<TypeElement, RestServiceDescriptionImpl> result =
+                    new HashMap<TypeElement, RestServiceDescriptionImpl>();
+            
+            helper.getAnnotationScanner().findAnnotations("javax.ws.rs.UriTemplate",
+                    (Set<ElementKind>) EnumSet.of(ElementKind.CLASS),
+                    new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    System.out.println("ElementKind.CLASS type = " + type + " element = " + element +
+                             " annotation = " + annotation);
+                    if (!result.containsKey(type)) {
                         System.out.println("adding RestServiceDescImpl for " + type.getQualifiedName().toString());
-                    result.add(new RestServiceDescriptionImpl(helper, type));
+                        result.put(type, new RestServiceDescriptionImpl(helper, type));
+                    }
                 }
             });
-            return result;
+            
+            helper.getAnnotationScanner().findAnnotations("javax.ws.rs.HttpMethod",
+                    (Set<ElementKind>) EnumSet.of(ElementKind.METHOD),
+                    new AnnotationHandler() { // NOI18N
+                public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
+                    System.out.println("ElementKind.METHOD type = " + type + 
+                            " element = " + element +
+                            " annotation = " + annotation);
+                    if (!result.containsKey(type)) {
+                        System.out.println("adding RestServiceDescImpl for " + type.getQualifiedName().toString());
+                        result.put(type, new RestServiceDescriptionImpl(helper, type));
+                    }
+                }
+            });
+            
+            return new ArrayList<RestServiceDescriptionImpl>(result.values());
         }
         
         public List<RestServiceDescriptionImpl> createObjects(TypeElement type) {
             if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
+                boolean isRest = false;
                 if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.ws.rs.UriTemplate")) { // NOI18N
+                    isRest = true;
+                } else {
+                    for (Element element : type.getEnclosedElements()) {
+                        if (element.getKind() == ElementKind.METHOD) {
+                            if (helper.hasAnnotation(element.getAnnotationMirrors(), "javax.ws.rs.HttpMethod")) {    //NOI18N
+                                isRest = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (isRest) {
                     System.out.println("creating RestServiceDescImpl for " + type.getQualifiedName().toString());
                     return Collections.singletonList(new RestServiceDescriptionImpl(helper, type));
                 }

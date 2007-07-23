@@ -18,6 +18,9 @@
  */
 package org.netbeans.modules.websvc.rest.model.api;
 
+import org.netbeans.modules.websvc.rest.model.api.RestServices;
+import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
+
 /**
  *
  * @author mkuchtiak
@@ -26,5 +29,5 @@ public interface RestServicesMetadata {
     
     public RestServices getRoot();
     
-    public RestServiceDescription findWebserviceByName(String wsName);
+    public RestServiceDescription findRestServiceByName(String name);
 }

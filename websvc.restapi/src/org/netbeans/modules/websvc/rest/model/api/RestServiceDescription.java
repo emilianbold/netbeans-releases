@@ -26,4 +26,9 @@ package org.netbeans.modules.websvc.rest.model.api;
 
 public interface RestServiceDescription {
     
+    public String getName();
+    
+    public String getUriTemplate();
+   
+    
 }
