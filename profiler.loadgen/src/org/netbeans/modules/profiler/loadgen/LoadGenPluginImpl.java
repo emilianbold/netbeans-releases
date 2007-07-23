@@ -185,6 +185,21 @@ public class LoadGenPluginImpl implements LoadGenPlugin {
     }
   }
 
+  /**
+   * @Override
+   */
+  public Set<String> getSupportedExtensions() {
+    EngineManager manager = Lookup.getDefault().lookup(EngineManager.class);
+    if (manager == null) {
+      return new HashSet<String>();
+    }
+    Set<String> extensions = new HashSet<String>();
+    for(Engine engine : manager.findEngines()) {
+      extensions.addAll(engine.getSupportedExtensions());
+    }
+    return extensions;
+  }
+  
   private void stopProcesses(Collection<ProcessInstance> processes) {
     EngineManager manager = Lookup.getDefault().lookup(EngineManager.class);
 
