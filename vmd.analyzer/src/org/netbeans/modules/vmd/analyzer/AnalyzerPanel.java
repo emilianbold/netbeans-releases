@@ -31,7 +31,7 @@ import java.awt.geom.RoundRectangle2D;
  */
 public class AnalyzerPanel extends JPanel {
 
-    private static final Font LABEL_FONT = new Font("Dialog", Font.BOLD, 16);
+    private static final Font LABEL_FONT = new Font("Dialog", Font.BOLD, 16); // NOI18N
 //    private static final Color LABEL_COLOR = new Color (0x88A3CF);
     private static final Color LABEL_COLOR = new Color (0x868686);
     private static final Color BORDER_COLOR = new Color (0xCBC9C1);

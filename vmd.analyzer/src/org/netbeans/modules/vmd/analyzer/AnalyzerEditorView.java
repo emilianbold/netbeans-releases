@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -104,7 +105,7 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
 
         JButton refreshButton = new JButton ();
         refreshButton.setOpaque (false);
-        refreshButton.setToolTipText ("Refresh");
+        refreshButton.setToolTipText (NbBundle.getMessage(AnalyzerEditorView.class, "TTIP_Refresh")); // NOI18N
         refreshButton.setBorderPainted (false);
         refreshButton.setRolloverEnabled (true);
         refreshButton.setSize (14, 14);
@@ -138,7 +139,7 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
     }
 
     public String getDisplayName () {
-        return "Analyzer";
+        return NbBundle.getMessage(AnalyzerEditorView.class, "DISP_AnalyzerView"); // NOI18N
     }
 
     public HelpCtx getHelpCtx () {
