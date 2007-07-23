@@ -280,7 +280,6 @@ public class GotoTest extends AbstractAction implements EditorAction {
     
     private DeclarationLocation find(FileObject fileObject, int caretOffset, boolean findTest) {
         FileObject matching = findMatchingFile(fileObject, findTest);
-        DeclarationLocation location = null;
 
         if (matching != null) {
             // TODO - look up file offsets by peeking inside the file
@@ -290,14 +289,17 @@ public class GotoTest extends AbstractAction implements EditorAction {
             
             return new DeclarationLocation(matching, 0);
         } else {
-            location = findTestPair(fileObject, caretOffset, findTest);
-
-            if (location != DeclarationLocation.NONE) {
-                matching = location.getFileObject();
-                int offset = location.getOffset();
+            if (caretOffset != -1) {
+                DeclarationLocation location = findTestPair(fileObject, caretOffset, findTest);
                 
-                return new DeclarationLocation(matching, offset);
+                if (location != DeclarationLocation.NONE) {
+                    matching = location.getFileObject();
+                    int offset = location.getOffset();
+
+                    return new DeclarationLocation(matching, offset);
+                }
             }
+
         }
 
         return DeclarationLocation.NONE;

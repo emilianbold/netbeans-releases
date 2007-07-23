@@ -31,17 +31,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
-import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassWarning;
@@ -60,7 +59,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -96,7 +94,7 @@ public class RubyActionProvider implements ActionProvider {
         COMMAND_DEBUG_SINGLE,
         //        COMMAND_TEST,
         COMMAND_TEST_SINGLE,
-        //        COMMAND_DEBUG_TEST_SINGLE,
+        COMMAND_DEBUG_TEST_SINGLE,
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
@@ -243,6 +241,41 @@ public class RubyActionProvider implements ActionProvider {
         }
         return target;
     }
+
+    private FileObject getCurrentFile(Lookup context) {
+        FileObject[] fos = findSources(context);
+        if (fos == null) {
+            fos = findTestSources(context, false);
+        }
+        if (fos == null || fos.length == 0) {
+            for (DataObject d : context.lookupAll(DataObject.class)) {
+                FileObject fo = d.getPrimaryFile();
+                if (fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
+                    return fo;
+                }
+            }
+            return null;
+        }
+        
+        return fos[0];
+    }
+
+    private void saveFile(FileObject file) {
+        // Save the file
+        try {
+            DataObject dobj = DataObject.find(file);
+            if (dobj != null) {
+                SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
+                if (saveCookie != null) {
+                    saveCookie.save();
+                }
+            }
+        } catch (DataObjectNotFoundException donfe) {
+            ErrorManager.getDefault().notify(donfe);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+    }
     
     public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
         // Initialize the configuration: find a way to pass this to the launched child process!
@@ -352,14 +385,7 @@ public class RubyActionProvider implements ActionProvider {
                 return;
             }
 
-            FileObject[] fos = findSources(context);
-            if (fos == null) {
-                fos = findTestSources(context, false);
-            }
-            if (fos == null || fos.length == 0) {
-                return;
-            }
-            FileObject file = fos[0];
+            FileObject file = getCurrentFile(context);
 
             if (RakeSupport.isRakeFile(file)) {
                 if (!RubyInstallation.getInstance().isValidRake(true)) {
@@ -382,20 +408,7 @@ public class RubyActionProvider implements ActionProvider {
                 return;
             }
             
-            // Save the file
-            try {
-                DataObject dobj = DataObject.find(file);
-                if (dobj != null) {
-                    SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
-                    if (saveCookie != null) {
-                        saveCookie.save();
-                    }
-                }
-            } catch (DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            }
+            saveFile(file);
             
             //String target = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
             runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
@@ -495,7 +508,7 @@ public class RubyActionProvider implements ActionProvider {
                             }
                             catch (MalformedURLException ex) {
                                 ErrorManager.getDefault().notify(ex);
-                            };
+                            }
                         }
                     }
                 }
@@ -524,44 +537,27 @@ public class RubyActionProvider implements ActionProvider {
             return;
         }
         
-        if (COMMAND_TEST_SINGLE.equals(command)) {
-            if (!RubyInstallation.getInstance().isValidRuby(true)) {
+        if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
+            // Run test normally - don't pop up browser
+            FileObject file = getCurrentFile(context);
+            
+            if (file == null) {
                 return;
             }
-            FileObject[] files = findTestSourcesForSources(context);
 
-            FileObject file = findSources(context)[0];
-            
-            // Save the file
-            try {
-                DataObject dobj = DataObject.find(file);
-                if (dobj != null) {
-                    SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
-                    if (saveCookie != null) {
-                        saveCookie.save();
-                    }
-                }
-            } catch (DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
+            saveFile(file);
+
+            // If we try to "test" a file that has a corresponding test file,
+            // run/debug the test file instead
+            DeclarationLocation location = new GotoTest().findTest(file, -1);
+            if (location != DeclarationLocation.NONE) {
+                file = location.getFileObject();
+                // Save the test file too
+                saveFile(file);
             }
-            
-            String target = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
-            String displayName = file.getNameExt();
-            File pwd = getSourceFolder();
-            String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
-            new RubyExecution(new ExecutionDescriptor(displayName, pwd, target).
-                    showSuspended(true).
-                    allowInput().
-                    classPath(classPath).
-                    fileLocator(new RubyFileLocator(context, project)).
-                    addOutputRecognizer(RubyExecution.RUBY_COMPILER),
-                    project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)
-                    ).
-                    run();
 
-            return;
+            runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
+                    file.getNameExt(), context, COMMAND_DEBUG_TEST_SINGLE.equals(command));
         }
 
         // XXX TODO
@@ -671,13 +667,13 @@ public class RubyActionProvider implements ActionProvider {
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findSourcesAndPackages( context, project.getSourceRoots().getRoots()) != null
                     || findSourcesAndPackages( context, project.getTestSourceRoots().getRoots()) != null;
-        }
-        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-            return findTestSourcesForSources(context) != null;
-        }
-        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-            FileObject[] files = findTestSourcesForSources(context);
-            return files != null && files.length == 1;
+//        }
+//        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+//            return findTestSourcesForSources(context) != null;
+//        }
+//        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+//            FileObject[] files = findTestSourcesForSources(context);
+//            return files != null && files.length == 1;
         } else if (command.equals(COMMAND_RUN_SINGLE) || 
                         command.equals(COMMAND_DEBUG_SINGLE)) {
             FileObject fos[] = findSources(context);
@@ -699,6 +695,7 @@ public class RubyActionProvider implements ActionProvider {
     
     /** Find selected sources, the sources has to be under single source root,
      *  @param context the lookup in which files should be found
+     * @return The file objects in the sources folder
      */
     private FileObject[] findSources(Lookup context) {
         FileObject[] srcPath = project.getSourceRoots().getRoots();

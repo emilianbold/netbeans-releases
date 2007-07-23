@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.JEditorPane;
+import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServer;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -40,6 +41,7 @@ import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
+import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
@@ -93,7 +95,7 @@ public class RailsActionProvider implements ActionProvider {
         COMMAND_DEBUG_SINGLE,
 //        COMMAND_TEST, 
         COMMAND_TEST_SINGLE, 
-//        COMMAND_DEBUG_TEST_SINGLE, 
+        COMMAND_DEBUG_TEST_SINGLE, 
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
@@ -148,6 +150,41 @@ public class RailsActionProvider implements ActionProvider {
         return file.getName().matches("\\d\\d\\d_.*"); // NOI18N
     }
     
+    private FileObject getCurrentFile(Lookup context) {
+        FileObject file = null;
+        FileObject[] files = findSources(context);
+        if (files != null && files.length > 0) {
+            file = files[0];
+        } else {
+            for (DataObject d : context.lookupAll(DataObject.class)) {
+                FileObject fo = d.getPrimaryFile();
+                if (fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
+                    file = fo;
+                    break;
+                }
+            }
+        }
+        
+        return file;
+    }
+    
+    private void saveFile(FileObject file) {
+        // Save the file
+        try {
+            DataObject dobj = DataObject.find(file);
+            if (dobj != null) {
+                SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
+                if (saveCookie != null) {
+                    saveCookie.save();
+                }
+            }
+        } catch (DataObjectNotFoundException donfe) {
+            ErrorManager.getDefault().notify(donfe);
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        }
+    }
+    
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
         // TODO Check for valid installation of Ruby and Rake
         boolean debugCommand = COMMAND_DEBUG.equals(command);
@@ -157,24 +194,36 @@ public class RailsActionProvider implements ActionProvider {
             LifecycleManager.getDefault().saveAll();
             runServer("", debugCommand);
             return;
-        } else if (COMMAND_RUN_SINGLE.equals(command) || debugSingleCommand) {
-            FileObject file = null;
-            FileObject[] files = findSources(context);
-            if (files != null && files.length > 0) {
-                file = files[0];
-            } else {
-                for (DataObject d : context.lookupAll(DataObject.class)) {
-                    FileObject fo = d.getPrimaryFile();
-                    if (fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
-                        file = fo;
-                        break;
-                    }
-                }
-            }
+        } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
+            // Run test normally - don't pop up browser
+            FileObject file = getCurrentFile(context);
+            
             if (file == null) {
                 return;
             }
 
+            saveFile(file);
+
+            // If we try to "test" a file that has a corresponding test file,
+            // run/debug the test file instead
+            DeclarationLocation location = new GotoTest().findTest(file, -1);
+            if (location != DeclarationLocation.NONE) {
+                file = location.getFileObject();
+                // Save the test file too
+                saveFile(file);
+            }
+
+            runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, 
+                    COMMAND_DEBUG_TEST_SINGLE.equals(command));
+            
+            return;
+
+        } else if (COMMAND_RUN_SINGLE.equals(command) || debugSingleCommand) {
+            FileObject file = getCurrentFile(context);
+
+            if (file == null) {
+                return;
+            }
             
             if (RakeSupport.isRakeFile(file)) {
                 // Save all files first - this rake file could be accessing other files
@@ -193,20 +242,7 @@ public class RailsActionProvider implements ActionProvider {
                 return;
             }
             
-            // Save the file
-            try {
-                DataObject dobj = DataObject.find(file);
-                if (dobj != null) {
-                    SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
-                    if (saveCookie != null) {
-                        saveCookie.save();
-                    }
-                }
-            } catch (DataObjectNotFoundException donfe) {
-                ErrorManager.getDefault().notify(donfe);
-            } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            }
+            saveFile(file);
             
             if (isMigrationFile(file)) {
                 String name = file.getName();
