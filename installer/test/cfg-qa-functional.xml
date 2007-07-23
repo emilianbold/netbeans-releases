@@ -32,14 +32,29 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- testbag with all MyModule tests running in jvm mode (i.e. in standard JVM)
          use ant runtests -Dxtest.attribs=all,jvm to run this testbag  -->
-    <testbag testattribs="all" executor="installer-executor" name="installer tests (no ide)">
+    <testbag testattribs="all or basic" executor="installer-executor" name="installer tests (no ide)">
         <testset dir=".">
             <patternset>
-	        <include name="org/netbeans/test/installer/TestInstallerAndUninstaller.class"/>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerBasic.class"/>
            </patternset>
         </testset>
     </testbag>
 
+    <testbag testattribs="all or standard" executor="installer-executor" name="installer tests (no ide)">
+        <testset dir=".">
+            <patternset>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerStandard.class"/>
+           </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="all or full" executor="installer-executor" name="installer tests (no ide)">
+        <testset dir=".">
+            <patternset>
+	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerFull.class"/>
+           </patternset>
+        </testset>
+    </testbag>
 
     <executor name="installer-executor" antfile="build-qa-functional.xml" target="run-installer-test"/>
     

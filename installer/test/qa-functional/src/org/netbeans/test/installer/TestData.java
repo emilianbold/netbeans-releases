@@ -40,18 +40,16 @@ public class TestData implements Serializable {
     }
 
     public String getInstallerFileName() {
-        return "E:/pub/Netbeans/6.0/netbeans-6.0-nightly-200707100000-basic-windows.exe";
+        return "E:/pub/Netbeans/6.0/netbeans-6.0-nightly-200707221200-standard-windows.exe";
 //        return "C:/work/test/TestInstaller/netbeans-6.0-nightly-200707100000-basic-windows.exe";
     }
 
-    public String getInstallerURL() {
+    public String getInstallerURL(String type) {
         String val = System.getProperty("installer.url.prefix");
         String prefix = (val == null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/200707120000/bundles/netbeans-6.0-nightly-200707120000" : val;
 
-        val = System.getProperty("installer.url.bundle.type");
-        String bundleType = (val == null) ? "basic" : val;
-
-        String sufix = "windows.exe";
+        //val = System.getProperty("installer.url.bundle.type");
+        String bundleType = (type == null) ? "basic" : type;
 
         return prefix + "-" + bundleType + "-" + platformName + "." + platformExt;
     }
