@@ -92,7 +92,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         remoteRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         jLabel4.setLabelFor(copyFromRevisionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, "Revision:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_Revision")); // NOI18N
 
         searchButton.setMnemonic('s');
         org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_Search")); // NOI18N
@@ -106,7 +106,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, "(Empty means repository HEAD)");
 
         jLabel7.setLabelFor(previewTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, "Preview:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "CTL_CopyForm_Preview")); // NOI18N
 
         previewTextField.setEditable(false);
 
@@ -135,6 +135,7 @@ public class CreateCopyPanel extends javax.swing.JPanel {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
+                                .add(12, 12, 12)
                                 .add(copyFromRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 117, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(searchButton))
@@ -177,9 +178,9 @@ public class CreateCopyPanel extends javax.swing.JPanel {
                         .add(copyFromRemoteTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(copyFromRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(searchButton)
-                    .add(jLabel4))
+                    .add(jLabel4)
+                    .add(copyFromRevisionTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel6)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -211,14 +212,22 @@ public class CreateCopyPanel extends javax.swing.JPanel {
         jLabel1.getAccessibleContext().setAccessibleDescription("Copy Description");
         browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Folders");
         switchToCheckBox.getAccessibleContext().setAccessibleDescription("Switch to new copy after creation");
+        copyFromLocalTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSN_CopyForm_fromLocalPath_Preview")); // NOI18N
+        copyFromLocalTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSD_CopyForm_fromLocalPath_Preview")); // NOI18N
         localRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSN_LocalFolder")); // NOI18N
         localRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSD_LocalFolder")); // NOI18N
+        copyFromRemoteTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSN_CopyForm_fromRemotePath_Preview")); // NOI18N
+        copyFromRemoteTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSD_CopyForm_fromRemotePath_Preview")); // NOI18N
         remoteRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSN_RemoteFolder")); // NOI18N
         remoteRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSD_RemoteFolder")); // NOI18N
+        copyFromRevisionTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSN_Revision")); // NOI18N
+        copyFromRevisionTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSD_Revision")); // NOI18N
         searchButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSN_Search")); // NOI18N
         searchButton.getAccessibleContext().setAccessibleDescription("Searches for previous Revisions");
         skipCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSN_Skip")); // NOI18N
         skipCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSD_Skip")); // NOI18N
+        previewTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSN_CopyForm_Preview")); // NOI18N
+        previewTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CreateCopyPanel.class, "ACSD_CopyForm_Preview")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
