@@ -101,8 +101,6 @@ public class FacesRenamePanel extends JPanel implements CustomRefactoringPanel {
         add(nameField, gridBagConstraints);
         nameField.getAccessibleContext().setAccessibleDescription(null);
 
-        jPanel1.setMinimumSize(new java.awt.Dimension(0, 0));
-        jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
