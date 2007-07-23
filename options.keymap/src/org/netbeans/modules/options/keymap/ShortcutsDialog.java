@@ -40,7 +40,11 @@ public class ShortcutsDialog extends javax.swing.JPanel {
         loc (lShortcut, "Shortcut");
         lConflict.setForeground (Color.red);
         loc (bTab, "CTL_Tab");
+        bTab.getAccessibleContext().setAccessibleName(loc("AN_Tab")); //NOI18N
+        bTab.getAccessibleContext().setAccessibleDescription(loc("AD_Tab")); //NOI18N
         loc (bClear, "CTL_Clear");
+        bClear.getAccessibleContext().setAccessibleName(loc("AN_Clear")); //NOI18N
+        bClear.getAccessibleContext().setAccessibleDescription(loc("AD_Clear")); //NOI18N
         tfShortcut.setFocusTraversalKeys (
             KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, 
             Collections.<AWTKeyStroke>emptySet()
@@ -49,6 +53,8 @@ public class ShortcutsDialog extends javax.swing.JPanel {
             KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS, 
             Collections.<AWTKeyStroke>emptySet()
         );
+        tfShortcut.getAccessibleContext().setAccessibleName(loc("AN_Shortcut")); //NOI18N
+        tfShortcut.getAccessibleContext().setAccessibleDescription(loc("AD_Shortcut")); //NOI18N
 //        tfShortcut.setFocusTraversalKeys (
 //            KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, 
 //            Collections.EMPTY_SET
@@ -102,10 +108,12 @@ public class ShortcutsDialog extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         lShortcut = new javax.swing.JLabel();
         tfShortcut = new javax.swing.JTextField();
         lConflict = new javax.swing.JLabel();
 
+        lShortcut.setLabelFor(tfShortcut);
         lShortcut.setText("Shortcut:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -115,7 +123,7 @@ public class ShortcutsDialog extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lConflict, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)
+                    .add(lConflict, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 467, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(lShortcut)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
