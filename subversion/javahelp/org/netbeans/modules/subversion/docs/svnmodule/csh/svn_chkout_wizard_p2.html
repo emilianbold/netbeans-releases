@@ -15,19 +15,27 @@
         <h2>Subversion Checkout Wizard: Folders to Checkout</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>The Folders to Checkout page of the Subversion Checkout wizard enables you to
-            choose the folders and branches you want to checkout, as well as specify the
+            choose the folders and revisions you want to checkout, as well as specify the
         location of your local working directory.</p>
         <p>When checking out files from the repository, you specify the following:</p>
         <ul>
-            <li><b>Module.</b> Enter the name of the module to checkout. 
-                You can click the Browse button to open the Browse Modules dialog box to search 
-                for available modules. If you do not specify a module, all modules in the repository 
-            are checked out.</li>
-            <li><b>Branch.</b> Enter the name of the branch to checkout. You can click the Browse 
-                button to open the Browse Branches dialog box to search for available branches and tags.
-            If you do not specify a branch or tag, the trunk is checked out.</li>
+            <li><b>Repository Folder(s).</b> Enter the name of the repository folder to checkout. 
+                You can click the Browse button to open the <a href="svn_browse_rep_folders_dialog.html">Browse 
+                Repository Folders dialog box</a> to peruse existing folders in the repository. If you do not 
+            specify a folder, all folders in the repository are checked out.</li>
+            <li><b>Repository Revision.</b> Enter the name of the revision to checkout. You can click the 
+                Search button to open the <a href="svn_search_rev_dialog.html">Search Revisions dialog 
+                box</a> to view existing revisions for the selected repository folder.
+            If you do not specify a revision, the repository head (latest revision) is checked out.</li>
             <li><b>Local Folder.</b> Enter the location of your local working directory or click the 
             Browse button to locate the directory on your computer.</li>
+        </ul>
+        <ul class="note">
+            <li>You can specify whether to checkout only the content of the repository folder
+            you have selected. To do so, select the Skip "trunk" and checkout only its content option.</li>
+            <li>You can specify whether to permit the IDE to scan the checked out files for NetBeans 
+            projects upon completing the wizard. To do so, select the Scan for NetBeans Projects after 
+            Checkout option.</li>
         </ul>
         <dl>
             <dt>
