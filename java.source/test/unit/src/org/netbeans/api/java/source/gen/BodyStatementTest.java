@@ -2212,7 +2212,7 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
             "    public boolean method(int i) {\n" +
             "        int y = 0;\n" +
             "        if (method(null)) {return true;\n" + 
-            "}" +
+            "}\n" +
             "        return y == 8;\n" +
             "    }\n" +
             "}\n";
