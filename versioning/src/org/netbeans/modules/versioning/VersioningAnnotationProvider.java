@@ -321,12 +321,13 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             synchronized(parentsToRefresh) {
                 Set<FileSystem> fileSystems = parentsToRefresh.keySet();
                 for (FileSystem fs : fileSystems) {            
-                    Set<FileObject> files = parentsToRefresh.get(fs);
-                    parentEvents.add(new FileStatusEvent(fs, files, true, false));                    
-                    files.clear();
+                    Set<FileObject> set = parentsToRefresh.get(fs);
+                    Set<FileObject> files = new HashSet<FileObject>(set);
+                    parentEvents.add(new FileStatusEvent(fs, files, true, false));                                        
+                    set.clear();                    
                 }                                
             }       
-            fireFileStatusEvents(parentEvents);
+            fireFileStatusEvents(parentEvents);            
         }    
         
         private void fireFileStatusEvents(Collection<FileStatusEvent> events) {
