@@ -248,14 +248,17 @@ public class EjbJaxWsLookupProvider implements LookupProvider {
         FileObject jaxws_build = prj.getProjectDirectory().getFileObject(TransformerUtils.JAXWS_BUILD_XML_PATH);
         assert jaxws_build!=null;
         AntBuildExtender.Extension extension = ext.getExtension(JAXWS_EXTENSION);
+        
+        boolean needToSave = false;
         boolean extensionCreated = false;
+        
         if (extension==null) {
             extension = ext.addExtension(JAXWS_EXTENSION, jaxws_build);
             extensionCreated = true;
+            needToSave = true;
         }
         
         // adding/removing dependencies
-        boolean needToSave = false;
         if (clientsLength > 0) {
             extension.addDependency("-pre-pre-compile", "wsimport-client-generate"); //NOI18N
             extension.addDependency("-do-compile", "wsimport-client-compile"); //NOI18N
