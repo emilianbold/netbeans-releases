@@ -44,6 +44,7 @@ public class InstallerTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
@@ -309,7 +310,20 @@ public class InstallerTest extends NbTestCase {
     <input type="radio" name="group1" value="Milk"> Milk<br>
       */
     
-    
+    public void testNoFormMeansNoButtons() throws Exception {
+        String page = 
+            "<html><body></body></html>";
+        
+        InputStream is = new ByteArrayInputStream(page.getBytes());
+        DialogDescriptor dd = new DialogDescriptor(null, null);
+        Installer.parseButtons(is, null, dd);
+        is.close();
+        
+        Object[] buttons = dd.getOptions();
+        assertNotNull("buttons not parsed: ", buttons);
+        assertEquals("But empty", 0, buttons.length);
+    }
+        
     public void testLeftAligned() throws Exception {
         String page = 
             "<html><body><form action='http://xyz.cz' method='POST'>" +
