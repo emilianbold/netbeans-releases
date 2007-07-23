@@ -125,6 +125,8 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
         messageTextArea.setWrapStyleWord(true);
         messageTextArea.setMinimumSize(new java.awt.Dimension(100, 18));
         jScrollPane1.setViewportView(messageTextArea);
+        messageTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitPanel.class, "ACSN_CommitForm_Message")); // NOI18N
+        messageTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitPanel.class, "ACSD_CommitForm_Message")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(filesLabel, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CTL_CommitForm_FilesToCommit")); // NOI18N
 
@@ -178,6 +180,9 @@ public class CommitPanel extends javax.swing.JPanel implements PreferenceChangeL
                 .add(jLabel2)
                 .addContainerGap())
         );
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitPanel.class, "ACSN_CommitDialog")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitPanel.class, "ACSD_CommitDialog")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     ListenersSupport listenerSupport = new ListenersSupport(this);
