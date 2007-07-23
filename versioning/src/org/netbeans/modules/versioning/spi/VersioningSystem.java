@@ -62,7 +62,7 @@ public abstract class VersioningSystem {
      * system with these properties:
      * 
      * - there is only one local history module active at any one time, the first encoutered module wins
-     * - local history module is not exclusive with other regsitered 'normal' versioning systems. This means that 
+     * - local history module is not exclusive with other registered 'normal' versioning systems. This means that 
      *   filesystems events may be processed both by Local history module and by some other versioning system module
      * 
      * NOTE: Local History is implemented by default, use this only if you are writing a replacement module 
