@@ -39,7 +39,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaAttribute;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.JarCatalogModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.impl.CasaModelImpl;
 import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
@@ -1841,7 +1840,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         List<DataObject> dataObjects = getRelatedDataObjects();
         
         for (DataObject dataObject : dataObjects) {
-            SaveCookie saveCookie = (SaveCookie) dataObject.getCookie(SaveCookie.class);
+            SaveCookie saveCookie = dataObject.getCookie(SaveCookie.class);
             if (saveCookie != null) {
                 try {
                     saveCookie.save();
@@ -1891,7 +1890,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     
     private static DataObject getDataObject(final Model model) {
         Lookup lookup = model.getModelSource().getLookup();
-        FileObject fileObject = (FileObject) lookup.lookup(FileObject.class);
+        FileObject fileObject = lookup.lookup(FileObject.class);
         try {
             DataObject dataObject = DataObject.find(fileObject);
             return dataObject;
@@ -2012,8 +2011,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             for (String key : new HashSet<String>(mAddProjects.keySet())) {
                 Project project = mAddProjects.get(key);
                 AntArtifactProvider antArtifactProvider =
-                        (AntArtifactProvider) project.getLookup().
-                        lookup(AntArtifactProvider.class);
+                        project.getLookup().lookup(AntArtifactProvider.class);
                 assert antArtifactProvider != null;
                 
                 AntArtifact[] artifacts =
@@ -2037,7 +2035,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             Project jbiProject = getJBIProject();
             
             DeleteModuleAction deleteModuleAction =
-                    (DeleteModuleAction) SystemAction.get(DeleteModuleAction.class);
+                    SystemAction.get(DeleteModuleAction.class);
                 
             for (String key : new HashSet<String>(mDeleteProjects.keySet())) {
                 String artifactName = mDeleteProjects.get(key);
@@ -2094,8 +2092,6 @@ public class CasaWrapperModel extends CasaModelImpl {
                 mDeleteProjects.put(projectName, seSU.getArtifactsZip());
             }
         }
-        
-        CasaServiceUnits sus = getRootComponent().getServiceUnits();
         
         Set<CasaPort> connectingCasaPorts = new HashSet<CasaPort>();
         
@@ -2168,7 +2164,7 @@ public class CasaWrapperModel extends CasaModelImpl {
      */
     public Project getJBIProject() throws IOException {
         Lookup lookup = getModelSource().getLookup();
-        FileObject casaFO = (FileObject) lookup.lookup(FileObject.class);
+        FileObject casaFO = lookup.lookup(FileObject.class);
         FileObject projectFO = casaFO.getParent().getParent().getParent();
         return ProjectManager.getDefault().findProject(projectFO);
     }      
@@ -2289,7 +2285,7 @@ public class CasaWrapperModel extends CasaModelImpl {
         
         ModelSource modelSource = getModelSource();
         Lookup lookup = modelSource.getLookup();
-        CatalogModel catalogModel = (CatalogModel) lookup.lookup(CatalogModel.class);
+        CatalogModel catalogModel = lookup.lookup(CatalogModel.class);
         
         ModelSource wsdlModelSource = null;
         try {
@@ -2307,15 +2303,21 @@ public class CasaWrapperModel extends CasaModelImpl {
             System.out.println("WARNING: getWSDLModel() == null, uriString is " + uriString); // NOI18N
             return null;
         }
-    }
+    } 
+    
+    WSDLModel compappWSDLModel = null;
     
     private WSDLModel getCompAppWSDLModel(boolean create) {
+        // TODO: use cache?
+//        if (compappWSDLModel != null) {
+//            return compappWSDLModel;
+//        }
         String compAppWSDLFileName = getCompAppWSDLFileName();
         
         ModelSource modelSource = getModelSource();
         Lookup lookup = modelSource.getLookup();
-        CatalogModel catalogModel = (CatalogModel) lookup.lookup(CatalogModel.class);
-        FileObject fo = (FileObject) lookup.lookup(FileObject.class);
+        CatalogModel catalogModel = lookup.lookup(CatalogModel.class);
+        FileObject fo = lookup.lookup(FileObject.class);
         URI uri = null;
         try {
             uri = new URI(CASA_WSDL_RELATIVE_LOCATION + compAppWSDLFileName);
@@ -2335,14 +2337,13 @@ public class CasaWrapperModel extends CasaModelImpl {
                     fo.getParent().getParent().getFileObject("jbiasa"); // NOI18N
             File file = new File(FileUtil.toFile(compAppWSDLDirFO), compAppWSDLFileName);
             createEmptyCompAppWSDLFile(file);
-            FileObject fileObject = FileUtil.toFileObject(file);
             // try again
             try {
                 wsdlModelSource = catalogModel.getModelSource(uri, modelSource);
             } catch (CatalogModelException ex) {
                 ex.printStackTrace();
             }
-        }
+        } 
         
         if (wsdlModelSource != null) {
             WSDLModel wsdlModel = WSDLModelFactory.getDefault().getModel(wsdlModelSource);
@@ -2369,7 +2370,7 @@ public class CasaWrapperModel extends CasaModelImpl {
                 });
 //            }
              */
-            
+            compappWSDLModel = wsdlModel;
             return wsdlModel;
         } else {
             return null;
@@ -2397,10 +2398,14 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     private void createEmptyCompAppWSDLFile(File file) {
+        FileWriter fileWriter = null;
+        BufferedWriter out = null;
+                
         try {
             String tns = getCompAppWSDLTargetNamespace();
             
-            BufferedWriter out = new BufferedWriter(new FileWriter(file));
+            fileWriter = new FileWriter(file);
+            out = new BufferedWriter(fileWriter);
             out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18M
             out.write(NEWLINE);
             out.write("<definitions xmlns=\"http://schemas.xmlsoap.org/wsdl/\""); // NOI18M
@@ -2415,9 +2420,24 @@ public class CasaWrapperModel extends CasaModelImpl {
             out.write(NEWLINE);
             out.write("</definitions>"); // NOI18M
             out.write(NEWLINE);
-            out.close();
+            out.close(); 
         } catch (IOException ex) {
             ex.printStackTrace();
+        } finally {
+            if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            if (fileWriter != null) {
+                try {
+                    fileWriter.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }                
+            }
         }
     }
     
@@ -2854,7 +2874,7 @@ public class CasaWrapperModel extends CasaModelImpl {
             return JbiProjectConstants.JAVA_EE_SE_COMPONENT_NAME;
         }
         
-        AntArtifactProvider prov = (AntArtifactProvider)p.getLookup().lookup(AntArtifactProvider.class);
+        AntArtifactProvider prov = p.getLookup().lookup(AntArtifactProvider.class);
         if (prov != null) {
             AntArtifact[] artifacts = prov.getBuildArtifacts();
             Iterator<String> artifactTypeItr = null;
