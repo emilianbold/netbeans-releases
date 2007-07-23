@@ -20,6 +20,7 @@
 package org.netbeans.modules.iep.model;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.iep.model.impl.IEPModelImpl;
 
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.AbstractModelFactory;
@@ -56,7 +57,6 @@ public class IEPModelFactory extends AbstractModelFactory<IEPModel> {
     }
     
     protected IEPModel createModel(ModelSource source) {
-        //return new WLMModelImpl(source);
-        return null;
+        return new IEPModelImpl(source);
     }
 }
