@@ -102,7 +102,7 @@ heap_size () {
         mem=`expr $mem / 4096`
         ;;
     SunOS*)
-        mem=`/usr/sbin/prtconf | grep Memory | /usr/xpg4/bin/tr -dc '[:digit:]'`
+        mem=`/usr/sbin/prtconf | grep Memory | tr -dc '[0-9]'`
         mem=`expr $mem / 4`
         ;;
 # Disable the heuristics on Mac until we resolve #106965
