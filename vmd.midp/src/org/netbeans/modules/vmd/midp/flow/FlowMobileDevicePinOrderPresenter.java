@@ -22,6 +22,7 @@ import org.netbeans.modules.vmd.api.flow.FlowPinOrderPresenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class FlowMobileDevicePinOrderPresenter extends FlowPinOrderPresenter {
     }
 
     public String getCategoryDisplayName () {
-        return "MIDlet";
+        return NbBundle.getMessage (FlowMobileDevicePinOrderPresenter.class, "DISP_FlowCategory_MIDlet"); // NOI18N
     }
 
     public List<FlowPinDescriptor> sortCategory (ArrayList<FlowPinDescriptor> descriptors) {

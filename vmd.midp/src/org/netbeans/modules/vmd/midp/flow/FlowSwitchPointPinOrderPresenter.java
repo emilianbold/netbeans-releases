@@ -23,6 +23,7 @@ import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.points.SwitchPointCD;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class FlowSwitchPointPinOrderPresenter extends FlowPinOrderPresenter {
     }
 
     public String getCategoryDisplayName () {
-        return "Switch Cases";
+        return NbBundle.getMessage (FlowSwitchPointPinOrderPresenter.class, "DISP_FlowCategory_SwitchCases"); // NOI18N
     }
 
     public List<FlowPinDescriptor> sortCategory (ArrayList<FlowPinDescriptor> descriptors) {

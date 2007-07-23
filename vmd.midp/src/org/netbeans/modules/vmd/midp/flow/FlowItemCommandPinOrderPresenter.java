@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.displayables.FormCD;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +41,7 @@ public class FlowItemCommandPinOrderPresenter extends FlowPinOrderPresenter {
     }
 
     public String getCategoryDisplayName () {
-        return "Item Commands";
+        return NbBundle.getMessage (FlowItemCommandPinOrderPresenter.class, "DISP_FlowCategory_ItemCommands"); // NOI18N
     }
 
     public List<FlowPinDescriptor> sortCategory (ArrayList<FlowPinDescriptor> descriptors) {

@@ -2,6 +2,7 @@ package org.netbeans.modules.vmd.midp.flow;
 
 import org.netbeans.modules.vmd.api.flow.FlowPinOrderPresenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +21,7 @@ public class FlowAlertViaPinOrderPresenter extends FlowPinOrderPresenter {
     }
 
     public String getCategoryDisplayName () {
-        return "Vias";
+        return NbBundle.getMessage (FlowAlertViaPinOrderPresenter.class, "DISP_FlowCategory_Vias"); // NOI18N
     }
 
     public List<FlowPinDescriptor> sortCategory (ArrayList<FlowPinDescriptor> descriptors) {

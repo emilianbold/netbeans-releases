@@ -22,6 +22,7 @@ import org.netbeans.modules.vmd.api.flow.FlowPinOrderPresenter;
 import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.midp.components.points.IfPointCD;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class FlowIfPointPinOrderPresenter extends FlowPinOrderPresenter {
     }
 
     public String getCategoryDisplayName () {
-        return "Condition Result";
+        return NbBundle.getMessage (FlowIfPointPinOrderPresenter.class, "DISP_FlowCategory_ConditionResult"); // NOI18N
     }
 
     public List<FlowPinDescriptor> sortCategory (ArrayList<FlowPinDescriptor> descriptors) {
