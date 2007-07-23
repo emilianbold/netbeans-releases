@@ -34,8 +34,6 @@ import java.awt.event.ActionEvent;
  */
 public final class DeleteAction extends SystemAction {
 
-    public static final String DISPLAY_NAME = NbBundle.getMessage(DeleteAction.class, "NAME_DeleteAction");
-    
     public void actionPerformed(ActionEvent e) {
         final DesignDocument activeDocument = ActiveDocumentSupport.getDefault ().getActiveDocument ();
         if (activeDocument == null)
@@ -70,7 +68,7 @@ public final class DeleteAction extends SystemAction {
     }
 
     public String getName() {
-        return DISPLAY_NAME;
+        return NbBundle.getMessage(DeleteAction.class, "NAME_DeleteAction"); // NOI18N
     }
 
 }

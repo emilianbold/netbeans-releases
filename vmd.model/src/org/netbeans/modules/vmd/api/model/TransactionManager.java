@@ -172,7 +172,7 @@ public final class TransactionManager {
 
     private void rollbackCore () {
         if (discardAllEdits) {
-            ErrorManager.getDefault ().log (ErrorManager.ERROR, "Cannot rollback operation");
+            ErrorManager.getDefault ().log (ErrorManager.ERROR, "Cannot rollback operation"); // NOI18N
             return;
         }
         // TODO - implement rollback

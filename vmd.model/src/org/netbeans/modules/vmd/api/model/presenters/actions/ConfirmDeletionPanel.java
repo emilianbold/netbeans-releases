@@ -52,7 +52,7 @@ class ConfirmDeletionPanel extends javax.swing.JPanel {
         Collections.sort (names);
         model = new DefaultListModel ();
         for (String name : names)
-            model.addElement ("<html>" + name);
+            model.addElement ("<html>" + name); // NOI18N
         panel.selected.setModel (model);
 
         names = new ArrayList<String> ();
@@ -68,7 +68,7 @@ class ConfirmDeletionPanel extends javax.swing.JPanel {
         Collections.sort (names);
         model = new DefaultListModel ();
         for (String name : names)
-            model.addElement ("<html>" + name);
+            model.addElement ("<html>" + name); // NOI18N
         panel.dependent.setModel (model);
 
         panel.jLabel3.setVisible (model.size () > 0);

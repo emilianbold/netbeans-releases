@@ -61,7 +61,7 @@ public class AccessControllerTest extends TestCase {
         
         document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-                System.out.println("Document dump:");
+                System.out.println("Document dump:"); // NOI18N
                 Debug.dumpDocument(document);
                 for (int i=0;i<componentsNumber;i++){
                     document.createComponent(FirstCD.TYPEID_CLASS);
@@ -85,7 +85,7 @@ public class AccessControllerTest extends TestCase {
     //TODO not ready
     public void testNotifyEventFired() {
         
-        System.out.println("Notify Event Fire Test "); // NOI18
+        System.out.println("Notify Event Fire Test "); // NOI18N
         
         document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {

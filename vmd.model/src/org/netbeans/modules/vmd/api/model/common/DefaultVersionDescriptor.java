@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.api.model.common;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.VersionDescriptor;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.*;
 
@@ -115,8 +116,8 @@ public abstract class DefaultVersionDescriptor implements VersionDescriptor {
             return null;
         String htmlDisplayName = InfoPresenter.getHtmlDisplayName (component);
         if (htmlDisplayName == null)
-            htmlDisplayName = "#" + component.getComponentID ();
-        return Collections.singleton ("Component " + htmlDisplayName + " is going to be removed because it is incompatible with the new project abilities.");
+            htmlDisplayName = "#" + component.getComponentID (); // NOI18N
+        return Collections.singleton (NbBundle.getMessage (DefaultVersionDescriptor.class, "MSG_Convertion_RemoveComponent", htmlDisplayName)); // NOI18N
     }
 
     /**

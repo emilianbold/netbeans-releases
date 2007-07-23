@@ -67,7 +67,7 @@ public class Debug {
         if (stackTraceFriendIndex < stack.length)
             sb.append ("         ").append (stack[stackTraceFriendIndex]).append ('\n'); // NOI18N
         for (Object message : messages)
-            sb.append (" | ").append (message);
+            sb.append (" | ").append (message); // NOI18N
         System.err.println (sb.toString ());
     }
 
@@ -125,7 +125,7 @@ public class Debug {
             if (stackTraceFriendIndex < stack.length)
                 sb.append ("       ").append (stack[stackTraceFriendIndex]).append ('\n'); // NOI18N
             for (Object message : messages)
-                sb.append (" | ").append (message);
+                sb.append (" | ").append (message); // NOI18N
 
             exception = new RuntimeException (sb.toString ());
         }
@@ -146,11 +146,11 @@ public class Debug {
         if (messages.length == 1 && messages[0] instanceof Throwable) {
             exception = (Throwable) messages[0];
         } else {
-            StringBuilder sb = new StringBuilder ("ILLEGAL STATE: ");
+            StringBuilder sb = new StringBuilder ("ILLEGAL STATE: "); // NOI18N
             sb.append (Thread.currentThread ().getStackTrace ()[stackTraceFriendIndex - 1]);
             sb.append ('\n');
             for (Object message : messages)
-                sb.append (" | ").append (message);
+                sb.append (" | ").append (message); // NOI18N
 
             exception = new IllegalStateException (sb.toString ());
         }
@@ -171,11 +171,11 @@ public class Debug {
         if (messages.length == 1 && messages[0] instanceof Throwable) {
             exception = (Throwable) messages[0];
         } else {
-            StringBuilder sb = new StringBuilder ("ILLEGAL ARGUMENT: ");
+            StringBuilder sb = new StringBuilder ("ILLEGAL ARGUMENT: "); // NOI18N
             sb.append (Thread.currentThread ().getStackTrace ()[stackTraceFriendIndex - 1]);
             sb.append ('\n');
             for (Object message : messages)
-                sb.append (" | ").append (message);
+                sb.append (" | ").append (message); // NOI18N
 
             exception = new IllegalArgumentException (sb.toString ());
         }
@@ -198,11 +198,11 @@ public class Debug {
      */
     public static void dumpComponent (DesignComponent component) {
         if (component == null) {
-            System.out.println ("No component to dump");
+            System.out.println ("No component to dump"); // NOI18N
             return;
         }
-        System.out.println ("Dumping component: " + component.getComponentID ());
-        component.dumpComponent ("");
+        System.out.println ("Dumping component: " + component.getComponentID ()); // NOI18N
+        component.dumpComponent (""); // NOI18N
     }
 
     /**

@@ -102,7 +102,7 @@ public final class ActiveDocumentSupport {
         if (deactivatedDocument != activatedDocument) {
             if (deactivatedDocument != null) {
                 if (selectionListener == null)
-                    Debug.warning ("SelectionListener does not exist but it should");
+                    Debug.warning ("SelectionListener does not exist but it should"); // NOI18N
                 else
                     deactivatedDocument.getListenerManager ().removeDesignListener (selectionListener);
             }

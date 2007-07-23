@@ -59,7 +59,7 @@ public class DestructiveTest extends TestCase {
     
     public void testLotComponents(){
         System.out.println("This test tries to create 1000 document components so please be patience" + // NOI18N
-                " and check output for more results"); // NOI18
+                " and check output for more results"); // NOI18N
         System.out.println("It shouldn't take longer then 10s to 1 min"); // NOI18N
         
         document.getTransactionManager().writeAccess(new Runnable() {
@@ -105,22 +105,22 @@ public class DestructiveTest extends TestCase {
     private class Read implements Runnable {
         public void run() {
             int i=0;
-            System.out.println("Start trying obtain read access to the document"); // NOI18
+            System.out.println("Start trying obtain read access to the document"); // NOI18N
             do{
                 i++;
-                System.out.println("Trying obtaian read access to the document "+ i); // NOI18
+                System.out.println("Trying obtaian read access to the document "+ i); // NOI18N
                 DestructiveTest.this.document.getTransactionManager().readAccess(new Runnable() {
                     public void run() {
                         if (DestructiveTest.this.document.getTransactionManager().isWriteAccess()){
-                            System.out.println("!!!Read access obtained while isWriteAccess() == TRUE!!!"); // NOI18
+                            System.out.println("!!!Read access obtained while isWriteAccess() == TRUE!!!"); // NOI18N
                             fail(); // If test fail in this line it means that it was able obtain read access while writing lock was active!
                         } else{
-                            System.out.println("Read access obtain when document isWriteAccess()= FALSE"); // NOI18
+                            System.out.println("Read access obtain when document isWriteAccess()= FALSE"); // NOI18N
                         }
                     }
                 });
             }while(writeContinuously.isAlive() || writeShortly.isAlive());
-            System.out.println("Stop trying obtaian read access to the document"); // NOI18
+            System.out.println("Stop trying obtaian read access to the document"); // NOI18N
         }
     }
     
@@ -130,12 +130,12 @@ public class DestructiveTest extends TestCase {
             DestructiveTest.this.document.getTransactionManager().writeAccess(new Runnable() {
                 int i=0;
                 public void run() {
-                    System.out.println("Start writing to the document"); // NOI18
+                    System.out.println("Start writing to the document"); // NOI18N
                     do {
                         i++;
                         DestructiveTest.this.document.createComponent(FirstCD.TYPEID_CLASS);
                     } while(i<1000);
-                    System.out.println("Stop writing to the document"); // NOI18
+                    System.out.println("Stop writing to the document"); // NOI18N
                 }
             });
         }
@@ -148,9 +148,9 @@ public class DestructiveTest extends TestCase {
             do {
                 DestructiveTest.this.document.getTransactionManager().writeAccess(new Runnable() {
                     public void run() {
-                        System.out.println("Start writing to the document"); // NOI18
+                        System.out.println("Start writing to the document"); // NOI18N
                         DestructiveTest.this.document.createComponent(FirstCD.TYPEID_CLASS);
-                        System.out.println("Stop writing to the document"); // NOI18
+                        System.out.println("Stop writing to the document"); // NOI18N
                     }
                 });
                 i++;

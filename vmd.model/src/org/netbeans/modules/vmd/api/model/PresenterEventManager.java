@@ -108,8 +108,8 @@ final class PresenterEventManager implements PresenterEvent {
             this.dependencyMap = dependencyMap;
         } catch (TopologicalSortException e) {
             Debug.warning (e);
-            System.err.println ("TopologicalSortException: Topological Sets:" + Arrays.toString (e.topologicalSets ()));
-            System.err.println ("TopologicalSortException: Unsortable Set:" + Arrays.toString (e.unsortableSets ()));
+            System.err.println ("TopologicalSortException: Topological Sets:" + Arrays.toString (e.topologicalSets ())); // NOI18N
+            System.err.println ("TopologicalSortException: Unsortable Set:" + Arrays.toString (e.unsortableSets ())); // NOI18N
             this.topology = Collections.emptyList ();
             this.dependencyMap = Collections.emptyMap ();
         }

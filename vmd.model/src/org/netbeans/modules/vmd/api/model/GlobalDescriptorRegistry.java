@@ -73,7 +73,7 @@ final class GlobalDescriptorRegistry {
         assert projectType != null  && projectType.length () > 0 : "Invalid project-type: " + projectType; // NOI18N
         this.projectType = projectType;
 
-        FileObject registryFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/components");
+        FileObject registryFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/components"); // NOI18N
         if (registryFileObject != null) {
             registryFolder = DataFolder.findFolder (registryFileObject);
             registryFolder.getPrimaryFile ().addFileChangeListener (new FileChangeListener() {
@@ -87,7 +87,7 @@ final class GlobalDescriptorRegistry {
         } else
             registryFolder = null;
 
-        FileObject producersFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/producers");
+        FileObject producersFileObject = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/producers"); // NOI18N
         if (producersFileObject != null) {
             producersFolder = DataFolder.findFolder (producersFileObject);
             producersFolder.getPrimaryFile ().addFileChangeListener (new FileChangeListener() {
@@ -158,18 +158,18 @@ final class GlobalDescriptorRegistry {
                 ComponentDescriptor descriptor = dao2descriptor (dataObject);
 
                 if (descriptor == null) {
-                    Debug.warning ("No descriptor", dataObject.getPrimaryFile ().getNameExt ());
+                    Debug.warning ("No descriptor", dataObject.getPrimaryFile ().getNameExt ()); // NOI18N
                     continue;
                 }
                 TypeDescriptor typeDescriptor = descriptor.getTypeDescriptor ();
                 if (typeDescriptor == null) {
-                    Debug.warning ("Null type descriptor", descriptor);
+                    Debug.warning ("Null type descriptor", descriptor); // NOI18N
                     continue;
                 }
 
                 final TypeID thisType = typeDescriptor.getThisType ();
                 if (tempDescriptors.containsKey (thisType)) {
-                    Debug.warning ("Duplicate descriptor", thisType);
+                    Debug.warning ("Duplicate descriptor", thisType); // NOI18N
                     continue;
                 }
 
@@ -191,7 +191,7 @@ final class GlobalDescriptorRegistry {
         for (ComponentDescriptor descriptor : descriptorsList) {
             TypeDescriptor typeDescriptor = descriptor.getTypeDescriptor ();
             if (typeDescriptor.getSuperType () != null  &&  descriptor.getSuperDescriptor () == null) {
-                Debug.warning ("Unresolved super descriptor", descriptor);
+                Debug.warning ("Unresolved super descriptor", descriptor); // NOI18N
                 continue;
             }
             tempDescriptors.put (typeDescriptor.getThisType (), descriptor);
@@ -203,7 +203,7 @@ final class GlobalDescriptorRegistry {
                 DataObject dataObject = enumeration.nextElement ();
                 ComponentProducer producer = dao2producer (dataObject);
                 if (producer == null) {
-                    Debug.warning ("No producer", dataObject.getPrimaryFile ().getNameExt ());
+                    Debug.warning ("No producer", dataObject.getPrimaryFile ().getNameExt ()); // NOI18N
                     continue;
                 }
 
@@ -227,11 +227,11 @@ final class GlobalDescriptorRegistry {
 
         TypeID thisType = descriptor.getTypeDescriptor ().getThisType ();
         if (thisType == null) {
-            Debug.warning ("Null TypeID", descriptor);
+            Debug.warning ("Null TypeID", descriptor); // NOI18N
             return;
         }
         if (resolvingDescriptors.contains (thisType)) {
-            Debug.warning ("There is inheritance-loop in CD registry - cannot resolve descriptor", descriptor);
+            Debug.warning ("There is inheritance-loop in CD registry - cannot resolve descriptor", descriptor); // NOI18N
             return;
         }
         resolvingDescriptors.add (thisType);
@@ -247,19 +247,19 @@ final class GlobalDescriptorRegistry {
         if (superType != null) {
             superDescriptor = allDescriptors.get (superType);
             if (superDescriptor == null) {
-                Debug.warning ("Cannot find super descriptor for TypeID", superType);
+                Debug.warning ("Cannot find super descriptor for TypeID", superType); // NOI18N
                 return;
             }
             resolveDescriptor (projectType, allDescriptors, superDescriptor);
 
             if (! superDescriptor.getTypeDescriptor ().isCanDerive ()) {
-                Debug.warning ("Cannot derive from descriptor", superDescriptor);
+                Debug.warning ("Cannot derive from descriptor", superDescriptor); // NOI18N
                 return;
             }
 
             Collection<PropertyDescriptor> superPropertyDescriptors = superDescriptor.getPropertyDescriptors ();
             if (superPropertyDescriptors == null) {
-                Debug.warning ("Missing super property descriptors - cannot resolve descriptor", descriptor);
+                Debug.warning ("Missing super property descriptors - cannot resolve descriptor", descriptor); // NOI18N
                 return;
             }
 
@@ -285,13 +285,13 @@ final class GlobalDescriptorRegistry {
                 PropertyDescriptor declaredDescriptor = declaredDescriptors.get (i);
 
                 if (declaredDescriptor == null) {
-                    Debug.warning ("Null declared property descriptor", descriptor);
+                    Debug.warning ("Null declared property descriptor", descriptor); // NOI18N
                     continue;
                 }
 
                 String name = declaredDescriptor.getName ();
                 if (name == null) {
-                    Debug.warning ("Null declared property descriptor name", name);
+                    Debug.warning ("Null declared property descriptor name", name); // NOI18N
                     continue;
                 }
 
@@ -370,7 +370,7 @@ final class GlobalDescriptorRegistry {
         XMLComponentDescriptor descriptor = new XMLComponentDescriptor ();
         if (descriptor.deserialize (projectType, document))
             return descriptor;
-        Debug.warning ("Error during deserialization", xmlDataObject.getPrimaryFile ());
+        Debug.warning ("Error during deserialization", xmlDataObject.getPrimaryFile ()); // NOI18N
         return null;
     }
 
@@ -390,7 +390,7 @@ final class GlobalDescriptorRegistry {
         XMLComponentProducer producer = XMLComponentProducer.deserialize (projectType, document);
         if (producer != null)
             return producer;
-        Debug.warning ("Error during deserialization", xmlDataObject.getPrimaryFile ());
+        Debug.warning ("Error during deserialization", xmlDataObject.getPrimaryFile ()); // NOI18N
         return null;
     }
 

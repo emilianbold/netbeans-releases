@@ -145,7 +145,7 @@ public class PropertyValueTest extends TestCase {
                 return true;
             }
             public String serialize(Object value) {
-                return "array";
+                return "array"; // NOI18N
             }
         };
         
@@ -256,7 +256,7 @@ public class PropertyValueTest extends TestCase {
         
         PropertyValue result;
         TypeID type = new TypeID(TypeID.Kind.PRIMITIVE, "javacode");// NOI18N
-        String value = "Test value";
+        String value = "Test value"; // NOI18N
         
         result = PropertyValue.createValue(primitveDescritor, type, value);
         

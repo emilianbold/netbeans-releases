@@ -27,6 +27,6 @@ import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
  */
 public class PaletteSupport {
     public static PaletteDescriptor create() {
-        return new PaletteDescriptor("testCategoryID", "PaletteDisplyName", "testToolTip", null, null);
+        return new PaletteDescriptor("testCategoryID", "PaletteDisplyName", "testToolTip", null, null); // NOI18N
     }
 }

@@ -97,7 +97,7 @@ public final class DesignComponent {
                 if (propertyValue == null  ||  ! propertyValue.isCompatible(propertyDescriptor.getType())) {
                     propertyValue = propertyDescriptor.createDefaultValue(this, propertyName);
                     if (! propertyValue.isCompatible(propertyDescriptor))
-                        Debug.warning("Default property value is not compatible", componentID, propertyName, propertyValue);
+                        Debug.warning("Default property value is not compatible", componentID, propertyName, propertyValue); // NOI18N
                     defaultProperties.put(propertyName, propertyValue);
                     if (properties.get(propertyName) != null)
                         writeProperty(propertyName, propertyValue);
@@ -310,26 +310,26 @@ public final class DesignComponent {
      * @return the string
      */
     public String toString() {
-        return componentID + ":" + type;
+        return componentID + ":" + type; // NOI18N
     }
     
     void dumpComponent(String indent) {
         assert document.getTransactionManager().isAccess();
         
-        System.out.println(indent + componentID + " : " + componentDescriptor);
-        indent += "    ";
+        System.out.println(indent + componentID + " : " + componentDescriptor); // NOI18N
+        indent += "    "; // NOI18N
         
         HashSet<String> undefinedProperties = new HashSet<String> (properties.keySet());
         Collection<PropertyDescriptor> propertyDescriptors = componentDescriptor.getPropertyDescriptors();
         for (PropertyDescriptor property : propertyDescriptors) {
             String name = property.getName();
-            System.out.println(indent + (properties.get(name) == defaultProperties.get(name) ? "## " : ":: ") + name + " = " + properties.get(name));
+            System.out.println(indent + (properties.get(name) == defaultProperties.get(name) ? "## " : ":: ") + name + " = " + properties.get(name)); // NOI18N
             undefinedProperties.remove(name);
         }
         for (String name : undefinedProperties)
-            System.out.println(indent + "?? " + name + " = " + properties.get(name));
+            System.out.println(indent + "?? " + name + " = " + properties.get(name)); // NOI18N
         for (Object presenter : presenters.lookupAll(Object.class))
-            System.out.println(indent + ">>" + presenter);
+            System.out.println(indent + ">>" + presenter); // NOI18N
         
         for (DesignComponent child : children)
             child.dumpComponent(indent);

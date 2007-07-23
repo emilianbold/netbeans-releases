@@ -114,7 +114,7 @@ public final class ListenerManager {
      * @param controllerClass the access controller class
      * @return the access controller
      */
-    @SuppressWarnings ("unchecked")
+    @SuppressWarnings ("unchecked") // NOI18N
     public <T extends AccessController> T getAccessController (Class<T> controllerClass) {
         if (controllerClass != null)
             for (AccessController controller : controllers)
@@ -234,7 +234,7 @@ public final class ListenerManager {
         exec[0] = new Runnable() {
             public void run () {
                 if (runStatus[0]) {
-                    Debug.warning ("AccessController.writeAccess must run the runnable no more than once", controllers.get (index[0] - 1));
+                    Debug.warning ("AccessController.writeAccess must run the runnable no more than once", controllers.get (index[0] - 1)); // NOI18N
                     return;
                 }
                 if (index[0] >= controllers.size ()) {
@@ -252,7 +252,7 @@ public final class ListenerManager {
                     ErrorManager.getDefault ().notify (th);
                 }
                 if (! runStatus[0]) {
-                    Debug.warning ("AccessController.writeAccess must run the runnable once", current);
+                    Debug.warning ("AccessController.writeAccess must run the runnable once", current); // NOI18N
                     index[0] ++;
                     run ();
                 }

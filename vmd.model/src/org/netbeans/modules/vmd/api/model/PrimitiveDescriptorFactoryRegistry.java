@@ -40,7 +40,7 @@ final class PrimitiveDescriptorFactoryRegistry {
                 return descriptor;
         }
 
-        throw Debug.error ("No PrimitiveDescriptorFactory found", type);
+        throw Debug.error ("No PrimitiveDescriptorFactory found", type); // NOI18N
     }
 
 }

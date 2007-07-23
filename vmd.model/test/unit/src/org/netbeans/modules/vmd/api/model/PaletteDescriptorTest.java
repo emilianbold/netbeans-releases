@@ -56,8 +56,8 @@ public class PaletteDescriptorTest extends TestCase {
         String toolTip = "Test tool tip"; //NOI18N
         
         //Implementation of java.awt.image
-        String smallIcon =  "small_image";
-        String largeIcon = "large_image";
+        String smallIcon =  "small_image"; // NOI18N
+        String largeIcon = "large_image"; // NOI18N
         PaletteDescriptor instance = new PaletteDescriptor(categotyID, displayName, toolTip, smallIcon, largeIcon);
         assertEquals(displayName, instance.getDisplayName());
         assertEquals(largeIcon, instance.getLargeIcon());

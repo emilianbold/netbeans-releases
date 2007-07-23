@@ -32,7 +32,7 @@ import org.netbeans.modules.vmd.api.model.DesignEvent;
  */
 public class TestAccessController implements AccessController {
 
-    public static final String CONTROLER_ID = "TEST_CONTROLLER_ID";
+    public static final String CONTROLER_ID = "TEST_CONTROLLER_ID";  // NOI18N
     private boolean notifyEventFiringFlag = false;
     private boolean notifyEventFiredFlag = false;
     private boolean notifyComponentsCreated = false;

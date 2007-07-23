@@ -141,7 +141,7 @@ public abstract class ComponentDescriptor {
                 if (presenter != null)
                     presenters.add (presenter);
                 else
-                    Debug.warning ("Null presenter", this);
+                    Debug.warning ("Null presenter", this); // NOI18N
             }
     }
 

@@ -196,7 +196,7 @@ public final class DesignDocument {
         assert transactionManager.isWriteAccess ();
 
         ComponentDescriptor componentDescriptor = descriptorRegistry.getComponentDescriptor (componentType);
-        assert componentDescriptor != null : "Missing component descriptor for " + componentType;
+        assert componentDescriptor != null : "Missing component descriptor for " + componentType; // NOI18N
         assert componentDescriptor.getTypeDescriptor ().isCanInstantiate ();
 
         DesignComponent component = new DesignComponent (this, componentIDCounter ++, componentDescriptor);
@@ -235,7 +235,7 @@ public final class DesignDocument {
             setSelectedComponents ("deleteComponent", selected); // NOI18N
         }
 
-        assert ! Debug.isComponentReferencedInRootTree (component) : "Component (" + component + ") is referenced still after deletion";
+        assert ! Debug.isComponentReferencedInRootTree (component) : "Component (" + component + ") is referenced still after deletion"; // NOI18N
     }
 
     /**
@@ -287,7 +287,7 @@ public final class DesignDocument {
 
     private boolean deleteComponentsPostAssert (Collection<DesignComponent> components) {
         for (DesignComponent component : components)
-            assert ! Debug.isComponentReferencedInRootTree (component) : "Component (" + component + ") is referenced still after deletion";
+            assert ! Debug.isComponentReferencedInRootTree (component) : "Component (" + component + ") is referenced still after deletion"; // NOI18N
         return true;
     }
 

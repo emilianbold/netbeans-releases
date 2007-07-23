@@ -452,7 +452,7 @@ public final class PropertyValue {
                 return createArray (componentType, propertyValues);
             }
         }
-        throw Debug.error ("Cannot deserialize property value", type, serialized);
+        throw Debug.error ("Cannot deserialize property value", type, serialized); // NOI18N
     }
 
     /**
