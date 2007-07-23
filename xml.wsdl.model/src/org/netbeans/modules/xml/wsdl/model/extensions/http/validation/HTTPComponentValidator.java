@@ -144,6 +144,9 @@ public class HTTPComponentValidator
                             for (HTTPUrlEncoded encodingElem: bindingInput.getExtensibilityElements(HTTPUrlEncoded.class)) {
                                 encodingElem.accept(this);
                             }
+                            for (HTTPUrlReplacement encodingElem: bindingInput.getExtensibilityElements(HTTPUrlReplacement.class)) {
+                                encodingElem.accept(this);
+                            }
                         }
                     }
                 }
