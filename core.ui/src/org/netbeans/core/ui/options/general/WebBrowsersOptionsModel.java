@@ -224,7 +224,13 @@ public class WebBrowsersOptionsModel extends DefaultListModel {
                 InstanceCookie cookie = browserSettings.getCookie(InstanceCookie.class);
                 PropertyDescriptor[] propDesc = Introspector.getBeanInfo(cookie.instanceClass()).getPropertyDescriptors();
                 
+                PropertyDescriptor fallbackProp = null;
+                
                 for (PropertyDescriptor pd : propDesc ) {
+                    
+                    if (fallbackProp == null && !pd.isExpert() && !pd.isHidden()) {
+                        fallbackProp = pd;
+                    }
                     
                     if (pd.isPreferred() && !pd.isExpert() && !pd.isHidden()) {
                         propertyPanel = new WebBrowsersPropertyPanel(cookie.instanceCreate(), 
@@ -233,6 +239,12 @@ public class WebBrowsersOptionsModel extends DefaultListModel {
                         break;
                     }
                     
+                }
+                
+                if (propertyPanel == null) {
+                    propertyPanel = new WebBrowsersPropertyPanel(cookie.instanceCreate(), 
+                            fallbackProp.getName(), PropertyPanel.PREF_CUSTOM_EDITOR);
+                    propertyPanelID = "PROPERTY_PANEL_" + propertyPanelIDCounter++;
                 }
                 
             } catch (Exception ex) {
