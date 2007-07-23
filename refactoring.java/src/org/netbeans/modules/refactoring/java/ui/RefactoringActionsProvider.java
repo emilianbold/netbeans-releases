@@ -304,6 +304,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     Element selected = selectedElement.resolveElement(info);
                     if (selected.getKind() == ElementKind.PACKAGE || selected.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
                         FileObject file = SourceUtils.getFile(selected, info.getClasspathInfo());
+                        if (file==null) {
+                            return null;
+                        }
                         if (file.getName().equals(selected.getSimpleName().toString())) {
                             return new SafeDeleteUI(new FileObject[]{file}, Collections.singleton(selectedElement), b!=null && b==true);
                         }
