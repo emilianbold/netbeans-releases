@@ -154,11 +154,11 @@ public class PaletteKit implements Runnable {
             
             if (catFO == null) { // if category folder was not initialized - create folder
                 // only creation is not enough, should be set NB attributes, see MidpPaletteProvider for example
-                Debug.warning(catID + " should be initialized! See MidpPaletteProvider.");
+                Debug.warning(catID + " should be initialized! See MidpPaletteProvider."); // NOI18N
                 try {
                     catFO = DataFolder.create(rootFolder, catID).getPrimaryFile();
                 } catch (IOException ex) {
-                    Debug.error("Can't create folder for palette category: " + ex);
+                    Debug.error("Can't create folder for palette category: " + ex); // NOI18N
                 }
             }
             
@@ -199,7 +199,7 @@ public class PaletteKit implements Runnable {
                         lock.releaseLock();
                     }
                 } catch (IOException e) {
-                    Debug.error("Can't create file for palette item: " + e);
+                    Debug.error("Can't create file for palette item: " + e); // NOI18N
                 }
             }
         }
