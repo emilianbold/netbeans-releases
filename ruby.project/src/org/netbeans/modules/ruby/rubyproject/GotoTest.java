@@ -71,7 +71,7 @@ public class GotoTest extends AbstractAction implements EditorAction {
         };
     private final String[] RSPEC_PATTERNS =
         {
-            "app/models/" + FILE + "\\.rb", "spec/models." + FILE + "_spec\\.rb", // NOI18N
+            "app/models/" + FILE + "\\.rb", "spec/models/" + FILE + "_spec\\.rb", // NOI18N
             "app/controllers/" + FILE + "\\.rb", "spec/controllers/" + FILE + "_spec\\.rb", // NOI18N
             "app/views/" + FILE + "\\.rb", "spec/views/" + FILE + "_spec\\.rb", // NOI18N
             "app/helpers/" + FILE + "\\.rb", "spec/helpers/" + FILE + "_spec\\.rb", // NOI18N
@@ -183,16 +183,18 @@ public class GotoTest extends AbstractAction implements EditorAction {
         return null;
     }
 
-    private File findMatching(String[] patternPairs, File file) {
+    private File findMatching(String[] patternPairs, File file, boolean findTest) {
         int index = 0;
 
         while (index < patternPairs.length) {
             String pattern1 = patternPairs[index];
             String pattern2 = patternPairs[index + 1];
 
-            File matching = findMatching(file, pattern1, pattern2);
+            File matching = null;
 
-            if (matching == null) {
+            if (findTest) {
+                matching = findMatching(file, pattern1, pattern2);
+            } else {
                 matching = findMatching(file, pattern2, pattern1);
             }
 
@@ -206,13 +208,13 @@ public class GotoTest extends AbstractAction implements EditorAction {
         return null;
     }
 
-    private FileObject findMatchingFile(FileObject fo) {
+    private FileObject findMatchingFile(FileObject fo, boolean findTest) {
         // Test zen test paths
         File file = FileUtil.toFile(fo);
         // Absolute paths are needed to do prefix path matching
         file = file.getAbsoluteFile();
 
-        File matching = findMatchingFile(file);
+        File matching = findMatchingFile(file, findTest);
 
         if (matching != null) {
             return FileUtil.toFileObject(matching);
@@ -221,9 +223,9 @@ public class GotoTest extends AbstractAction implements EditorAction {
         return null;
     }
 
-    private File findMatchingFile(File file) {
+    private File findMatchingFile(File file, boolean findTest) {
         if (isZenTestInstalled()) {
-            File matching = findMatching(ZENTEST_PATTERNS, file);
+            File matching = findMatching(ZENTEST_PATTERNS, file, findTest);
 
             if (matching != null) {
                 return matching;
@@ -244,7 +246,7 @@ public class GotoTest extends AbstractAction implements EditorAction {
         FileObject projectFo = (projectDir != null) ? FileUtil.toFileObject(projectDir) : null;
 
         if (isRSpecInstalled(projectFo)) {
-            File matching = findMatching(RSPEC_PATTERNS, file);
+            File matching = findMatching(RSPEC_PATTERNS, file, findTest);
 
             if (matching != null) {
                 return matching;
@@ -252,14 +254,14 @@ public class GotoTest extends AbstractAction implements EditorAction {
         }
 
         if (isRailsInstalled()) {
-            File matching = findMatching(RAILS_PATTERNS, file);
+            File matching = findMatching(RAILS_PATTERNS, file, findTest);
 
             if (matching != null) {
                 return matching;
             }
         }
 
-        File matching = findMatching(RUBYTEST_PATTERNS, file);
+        File matching = findMatching(RUBYTEST_PATTERNS, file, findTest);
 
         if (matching != null) {
             return matching;
@@ -275,43 +277,91 @@ public class GotoTest extends AbstractAction implements EditorAction {
             actionPerformed(ev, pane);
         }
     }
+    
+    private DeclarationLocation find(FileObject fileObject, int caretOffset, boolean findTest) {
+        FileObject matching = findMatchingFile(fileObject, findTest);
+        DeclarationLocation location = null;
 
+        if (matching != null) {
+            // TODO - look up file offsets by peeking inside the file
+            // so that we can jump to the test declaration itself?
+            // Or better yet, the test case method corresponding to
+            // the method you're in, or vice versa
+            
+            return new DeclarationLocation(matching, 0);
+        } else {
+            location = findTestPair(fileObject, caretOffset, findTest);
+
+            if (location != DeclarationLocation.NONE) {
+                matching = location.getFileObject();
+                int offset = location.getOffset();
+                
+                return new DeclarationLocation(matching, offset);
+            }
+        }
+
+        return DeclarationLocation.NONE;
+    }
+
+    /**
+     * Find the test for the given file, if any
+     * @param fileObject The file whose test we want to find
+     * @param caretOffset The current caret offset, or -1 if not known. The caret offset
+     *    can be used to look into the file and see if we're inside a class, and if so
+     *    look for a class that is named say Test+name or name+Test.
+     * @return The declaration location for the test, or {@link DeclarationLocation.NONE} if
+     *   not found.
+     */
+    public DeclarationLocation findTest(FileObject fileObject, int caretOffset) {
+        return find(fileObject, caretOffset, true);
+    }
+    
+    /**
+     * Find the file being tested by the given test, if any
+     * @param fileObject The test file whose tested file we want to find
+     * @param caretOffset The current caret offset, or -1 if not known. The caret offset
+     *    can be used to look into the file and see if we're inside a class, and if so
+     *    look for a class that is named say Test+name or name+Test.
+     * @return The declaration location for the tested file, or {@link DeclarationLocation.NONE} if
+     *   not found.
+     */
+    public DeclarationLocation findTested(FileObject fileObject, int caretOffset) {
+        return find(fileObject, caretOffset, false);
+    }
+
+    /**
+     * Find the "opposite" file from the given file; if it's a test, find the
+     * tested file and if it's a tested file, find the test.
+     * @param fileObject The file we want to find the opposite file for
+     * @param caretOffset The current caret offset, or -1 if not known. The caret offset
+     *    can be used to look into the file and see if we're inside a class, and if so
+     *    look for a class that is named say Test+name or name+Test.
+     * @return The declaration location for the opposite file, or {@link DeclarationLocation.NONE} if
+     *   not found.
+     */
+    public DeclarationLocation findOpposite(FileObject fileObject, int caretOffset) {
+        DeclarationLocation location = findTest(fileObject, caretOffset);
+
+        if (location == DeclarationLocation.NONE) {
+            location = findTested(fileObject, caretOffset);
+        }
+
+        return location;
+    }
+    
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         FileObject fo = NbUtilities.findFileObject(target);
 
         if (fo != null) {
-            // Guess test file from filename
-            int offset = 0;
-            FileObject matching = findMatchingFile(fo);
-            DeclarationLocation location = null;
-
-            if (matching == null) {
-                // Guess test name from parse info
-                int caretOffset = 0;
-
-                // Find the offset of the file we're in, if any
-                if (target.getCaret() != null) {
-                    caretOffset = target.getCaret().getDot();
-                }
-
-                location = findTestPair(fo, caretOffset);
-
-                if (location != DeclarationLocation.NONE) {
-                    matching = location.getFileObject();
-                    offset = location.getOffset();
-                }
-            } else {
-                // TODO - look up file offsets by peeking inside the file
-                // so that we can jump to the test declaration itself?
-                // Or better yet, the test case method corresponding to
-                // the method you're in, or vice versa
+            int caretOffset = -1;
+            if (target.getCaret() != null) {
+                caretOffset = target.getCaret().getDot();
             }
+            
+            DeclarationLocation location = findOpposite(fo, caretOffset);
 
-            if (matching != null) {
-                // I don't know how to locate the actual test yet... just use
-                // offset = -1
-                offset = -1;
-                NbUtilities.open(matching, offset, null);
+            if (location != DeclarationLocation.NONE) {
+                NbUtilities.open(location.getFileObject(), location.getOffset(), null);
             } else {
                 notFound(target);
             }
@@ -322,11 +372,11 @@ public class GotoTest extends AbstractAction implements EditorAction {
         Utilities.setStatusBoldText(target, "Opposite file not found");
     }
 
-    private DeclarationLocation findTestPair(FileObject fo, final int offset) {
+    private DeclarationLocation findTestPair(FileObject fo, final int offset, final boolean findTest) {
         SourceModel js = SourceModelFactory.getInstance().getModel(fo);
 
         if (js == null) {
-            return null;
+            return DeclarationLocation.NONE;
         }
 
         if (js.isScanInProgress()) {
@@ -383,10 +433,9 @@ public class GotoTest extends AbstractAction implements EditorAction {
 
                                 String TEST = "Test"; // NOI18N
 
-                                // FooTest => Foo
-                                if (className.endsWith(TEST)) {
-                                    String name =
-                                        className.substring(0, className.length() - TEST.length());
+                                if (findTest) {
+                                    // Foo => FooTest
+                                    String name = className + TEST;
                                     DeclarationLocation location = findClass(name, index);
 
                                     if (location != DeclarationLocation.NONE) {
@@ -394,38 +443,41 @@ public class GotoTest extends AbstractAction implements EditorAction {
 
                                         return;
                                     }
-                                }
 
-                                // TestFoo => Foo
-                                if (className.startsWith(TEST)) {
-                                    String name = className.substring(TEST.length());
-                                    DeclarationLocation location = findClass(name, index);
+                                    // Foo => TestFoo
+                                    name = TEST + className;
+                                    location = findClass(name, index);
 
                                     if (location != DeclarationLocation.NONE) {
                                         result[0] = location;
 
                                         return;
                                     }
-                                }
+                                } else {
+                                    // FooTest => Foo
+                                    if (className.endsWith(TEST)) {
+                                        String name =
+                                            className.substring(0, className.length() - TEST.length());
+                                        DeclarationLocation location = findClass(name, index);
 
-                                // Foo => FooTest
-                                String name = className + TEST;
-                                DeclarationLocation location = findClass(name, index);
+                                        if (location != DeclarationLocation.NONE) {
+                                            result[0] = location;
 
-                                if (location != DeclarationLocation.NONE) {
-                                    result[0] = location;
+                                            return;
+                                        }
+                                    }
 
-                                    return;
-                                }
+                                    // TestFoo => Foo
+                                    if (className.startsWith(TEST)) {
+                                        String name = className.substring(TEST.length());
+                                        DeclarationLocation location = findClass(name, index);
 
-                                // Foo => TestFoo
-                                name = TEST + className;
-                                location = findClass(name, index);
+                                        if (location != DeclarationLocation.NONE) {
+                                            result[0] = location;
 
-                                if (location != DeclarationLocation.NONE) {
-                                    result[0] = location;
-
-                                    return;
+                                            return;
+                                        }
+                                    }
                                 }
                             }
                         }

@@ -16,8 +16,10 @@
  */
 package org.netbeans.modules.ruby.rubyproject;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -52,10 +54,30 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         
         return (RubyProject)p;
     }
+    
+    protected void createFilesFromDesc(FileObject folder, String descFile) throws Exception {
+        File taskFile = new File(getDataDir(), descFile);
+        assertTrue(taskFile.exists());
+        BufferedReader br = new BufferedReader(new FileReader(taskFile));
+        while (true) {
+            String line = br.readLine();
+            if (line == null || line.trim().length() == 0) {
+                break;
+            }
+            
+            String path = line;
+            FileObject f = FileUtil.createData(folder, path);
+            assertNotNull(f);
+        }
+    }
 
     protected RubyProject createTestProject() throws Exception {
         String projectName = "RubyProject_" + getName();
         
+        return createTestProject(projectName);
+    }
+
+    protected RubyProject createTestProject(String projectName) throws Exception {
         File dataDir = getDataDir();
         if (!dataDir.exists()) {
             dataDir.mkdirs();

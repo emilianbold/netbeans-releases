@@ -1,0 +1,10 @@
+lib/foo.rb
+test/test_foo.rb
+lib/bar.rb
+test/tc_bar.rb
+app/controllers/my_controller.rb
+test/controllers/my_controller_test.rb
+app/models/whatever.rb
+spec/models/whatever_spec.rb
+app/models/mymodel.rb
+test/unit/mymodel_test.rb
