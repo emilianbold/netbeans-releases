@@ -37,7 +37,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Projects">
         <folder name="org-netbeans-modules-ant-freeform">
             <folder name="Lookup">
-                <file name="org-netbeans-modules-java-freeform-LookupProviderImpl.instance"/>
+                <file name="org-netbeans-modules-java-freeform-LookupProviderImpl.instance">
+                    <attr name="position" intvalue="400"/>
+                </file>
             </folder>
             <folder name="Customizer">
                 <file name="org-netbeans-modules-java-freeform-ui-SourceFoldersCategoryProvider.instance">
