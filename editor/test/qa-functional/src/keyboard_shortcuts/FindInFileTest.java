@@ -31,6 +31,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import lib.EditorTestCase;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jemmy.EventTool;
 
 
 /**
@@ -56,6 +57,8 @@ public class FindInFileTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
 
             JEditorPaneOperator txtOper = editor.txtEditorPane();
+            txtOper.pushKey(keyCode, modifiers);
+            new EventTool().waitNoEvent(1000);
             txtOper.pushKey(keyCode, modifiers);
             closeDialog(dialogTitle);
 
