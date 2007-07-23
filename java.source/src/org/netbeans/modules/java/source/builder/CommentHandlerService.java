@@ -19,17 +19,13 @@
 
 package org.netbeans.modules.java.source.builder;
 
-import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.tree.JCTree;
 
 import com.sun.tools.javac.tree.JCTree.*;
-import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Context;
 
 import java.util.*;
@@ -122,154 +118,5 @@ public class CommentHandlerService implements CommentHandler {
             }
             set.addPrecedingComment(c);
         }
-    }
-
-    /**
-     * Associates comment texts with their respective trees.
-     */
-    public void mapComments(final CompilationUnitTree compilationUnit, CharSequence sbuf, BufferRunQueue runs) {
-        final JCCompilationUnit toplevel = (JCCompilationUnit)compilationUnit;
-        final SortedMap<Integer, JCTree> positions = getPositions(toplevel);
-        if (positions.size() == 0)
-            return;
-        JCTree lastTree = null;
-        LineColMapper lineCol = new LineColMapper() {
-            public int getColumn(int offset) {
-                return toplevel.lineMap.getColumnNumber(offset);
-            }
-            public int getLine(int offset) {
-                return toplevel.lineMap.getLineNumber(offset);
-            }
-        };
-        
-        // handle TopLevel comments separately
-        CommentSetImpl topComments = (CommentSetImpl)getComments(toplevel);
-        for (Iterator<BufferRun> iter = runs.iterator(); iter.hasNext();) {
-            BufferRun run = iter.next();
-            if (run.getKind() == TOKEN)
-                break;
-            else if (run.getKind() == COMMENT) {
-                CommentRun cr = (CommentRun)run;
-                if (cr.getStyle() == JAVADOC)
-                    break;  // Javadoc comments belong to classdef
-                Comment c = cr.toComment(cr.getString(sbuf), lineCol.getColumn(cr.getStart()));
-                topComments.addPrecedingComment(c);
-            }
-        }
-
-        for (int pos : positions.keySet()) {
-            JCTree tree = positions.get(pos);
-            int start = runs.findRunStartingAt(model.getStartPos(tree));
-            if (start == (-1)) //see CommentHandlerServiceTest.testBrokenFile1
-                continue;
-            mapComments(start, tree, lastTree, sbuf, runs, lineCol);
-            int endPos = model.getEndPos(tree, toplevel);
-            int tail = runs.findRunEndingWith(endPos);
-            if (tail == (-1))
-                continue;
-            BufferRun br = runs.get(tail);
-            if (br.getKind() == TOKEN && ((TokenRun)br).getToken() == RBRACE)
-                mapTrailingBlockComments(start, tail, tree, getComments(tree), sbuf, runs, lineCol);
-            lastTree = tree;
-        }
-
-        // append any final comments, such as revision history
-        int tail = runs.findRunEndingWith(model.getEndPos(toplevel, toplevel)) + 1;
-        while (tail < runs.size()) {
-            if (runs.get(tail).getKind() == COMMENT) {
-                CommentRun cr = (CommentRun)runs.get(tail);
-                Comment c = cr.toComment(cr.getString(sbuf), lineCol.getColumn(cr.getStart()));
-                topComments.addTrailingComment(c);
-            }
-            tail++;
-        }
-    }
-    
-    private void mapTrailingBlockComments(int begin, int end, JCTree tree, CommentSet comments, CharSequence sbuf, 
-                                          BufferRunQueue runs, LineColMapper lineCol) {
-        while (--end > begin && runs.get(end).getKind() != TOKEN) {
-            BufferRun br = runs.get(end);
-            if (br.getKind() == COMMENT) {
-                CommentRun cr = (CommentRun)br;
-                Comment c = cr.toComment(cr.getString(sbuf), lineCol.getColumn(cr.getStart()));
-                comments.addTrailingComment(c);
-            }
-        }
-    }
-    
-    private interface LineColMapper {
-        int getColumn(int offset);
-        int getLine(int offset);
-    }
-    
-    private void mapComments(int startRun, JCTree tree, JCTree lastTree, CharSequence sbuf, BufferRunQueue runs, LineColMapper lineCol) {
-        assert startRun != -1;
-        int i = startRun - 1;
-        int lastEOL = -1;
-        while (i >= 0 && runs.get(i).getKind() != TOKEN) {
-            if (runs.get(i).getKind() == LINE_ENDING)
-                lastEOL = lineCol.getLine(runs.get(i).getStart());
-            i--;
-        }
-
-        while (++i < startRun) {
-            if (runs.get(i).getKind() == COMMENT) {
-                CommentRun cr = (CommentRun)runs.get(i);
-                Comment c = cr.toComment(cr.getString(sbuf), lineCol.getColumn(cr.getStart()));
-                if (lastTree != null && lineCol.getLine(cr.getEnd()) == lastEOL) {
-                    // Add comments on the same line as the previous tree to that tree.
-                    CommentSetImpl cs = (CommentSetImpl)getComments(lastTree);
-                    cs.addTrailingComment(c);
-                } else 
-                    addComment(tree, c);
-            }
-        }
-    }
-    
-    /**
-     * Move the comments stored in a comment set to the top CommentSet as trailing
-     * comments.
-     */
-    private CommentSetImpl flushTrailingComments(CommentSetImpl comments, CommentSetImpl lastComments) {
-        List<Comment> cmts = comments.getPrecedingComments();
-        if (cmts.isEmpty())
-            return comments;
-       for (Comment c : cmts)
-            lastComments.addTrailingComment(c);
-        return new CommentSetImpl(); // equivalent to resetting it
-    }
-
-    /** Create map of trees, indexed by position.  Because a depth-first scan
-     * is used, parent trees which have the same start position as child
-     * trees overwrite their children.  For example, the start position of
-     * "public void foo {...}" returns a MethodDef, not Modifiers.  
-     *
-     * Note:  the TopLevel is handled separately, since a TopLevel without
-     * a package or import statements has the same start position as its
-     * ClassDef.
-     */
-    private SortedMap<Integer, JCTree> getPositions(JCCompilationUnit tree) {
-        final SortedMap<Integer, JCTree> positions = new TreeMap<Integer, JCTree>();
-        tree.accept(new TreeScanner() {
-            @Override
-            public void scan(JCTree tree) {
-                if (tree != null) {
-                    // scan children first
-                    tree.accept(this);
-                    int pos = model.getStartPos(tree);
-                    if (pos != com.sun.tools.javac.util.Position.NOPOS)
-                        positions.put(pos, tree);
-                }
-            }
-            @Override
-            public void visitTypeIdent(JCPrimitiveTypeTree tree) {
-                super.visitTypeIdent(tree);
-            }
-            @Override
-            public void visitMethodDef(JCMethodDecl tree) {
-                super.visitMethodDef(tree);
-            }
-        });
-        return positions;
     }
 }
