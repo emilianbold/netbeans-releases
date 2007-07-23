@@ -100,7 +100,7 @@ public class DocumentSave {
 
         for (DesignComponent component : referencedComponents)
             if (! componentsInTree.contains (component))
-                Debug.warning ("Saving", "Referenced component is not in the tree", component);
+                Debug.warning ("Saving", "Referenced component is not in the tree", component); // NOI18N
 
     }
 

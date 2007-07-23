@@ -27,6 +27,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -96,10 +97,7 @@ public class CodeResolver implements DesignDocumentAwareness {
                         public void run () {
                             String lckFile = ".LCK" + context.getDataObject ().getPrimaryFile ().getNameExt () + "~"; // NOI18N
                             DialogDisplayer.getDefault ().notifyLater (new NotifyDescriptor.Message (
-                                    "<html>Cannot update the source code. Please, checked whether the file is write-able and unlocked.<br>" +
-                                    "<i>If <b>" + lckFile + "</b> file still exists even after the IDE is closed, then the file is locked.<br>" +
-                                    "Deleting this <b>" + lckFile + "</b> file unlocks the source file.</i><br>" +
-                                    "Then you can start the IDE and continue your work again."
+                                    NbBundle.getMessage (CodeResolver.class, "CodeResolver.locked", lckFile) // NOI18N
                             ));
                         }
                     });

@@ -33,11 +33,11 @@ public final class PopupUtil  {
     
     // private static MyFocusListener mfl = new MyFocusListener();
     
-    private static final String CLOSE_KEY = "CloseKey";
+    private static final String CLOSE_KEY = "CloseKey"; // NOI18N
     private static final Action CLOSE_ACTION = new CloseAction();
     private static final KeyStroke ESC_KEY_STROKE = KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ); 
         
-    private static final String POPUP_NAME = "popupComponent";
+    private static final String POPUP_NAME = "popupComponent"; // NOI18N
     private static JDialog popupWindow;
     private static HideAWTListener hideListener = new HideAWTListener();
     

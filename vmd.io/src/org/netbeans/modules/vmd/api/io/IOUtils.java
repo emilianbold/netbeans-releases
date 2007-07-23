@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.api.io;
 
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -52,7 +53,7 @@ public final class IOUtils {
     public static JComponent createLoadingPanel () {
         JPanel panel = new JPanel ();
         panel.setLayout (new GridBagLayout ());
-        JLabel label = new JLabel ("Loading Document");
+        JLabel label = new JLabel (NbBundle.getMessage (IOUtils.class, "DISP_LoadingDocument")); // NOI18N
         label.setFont (new Font ("Dialog", Font.BOLD, 16)); // NOI18N
         Color background = panel.getBackground ();
         Color foreground = background.darker ();

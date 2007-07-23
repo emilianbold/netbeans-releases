@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.api.io.providers.IOSupport;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
@@ -35,7 +36,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.WeakHashMap;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * @author David Kaspar
@@ -148,11 +148,11 @@ public class EditorViewElement implements MultiViewElement, Serializable {
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         Object object = in.readObject();
         if (! (object instanceof DataObjectContext))
-            throw new ClassNotFoundException("DataObjectContext expected but not found");
+            throw new ClassNotFoundException("DataObjectContext expected but not found"); // NOI18N
         context = (DataObjectContext) object;
         object = in.readObject();
         if (! (object instanceof DataEditorView))
-            throw new ClassNotFoundException("DataEditorView expected but not found");
+            throw new ClassNotFoundException("DataEditorView expected but not found"); // NOI18N
         view = (DataEditorView) object;
         init();
     }

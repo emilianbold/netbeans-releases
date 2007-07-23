@@ -173,7 +173,7 @@ public class DocumentLoad {
             for (PropertyElement propertyElement : propertyElements) {
                 String propertyName = propertyElement.getPropertyName ();
                 if (descriptor.getPropertyDescriptor (propertyName) == null) {
-                    Debug.warning  ("Missing property descriptor", component, propertyName);
+                    Debug.warning  ("Missing property descriptor", component, propertyName); // NOI18N
                 }
                 PropertyValue value;
                 try {
