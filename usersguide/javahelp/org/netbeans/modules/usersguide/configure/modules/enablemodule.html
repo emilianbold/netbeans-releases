@@ -6,44 +6,65 @@
 -->
 <html>
 <head>
-<title>Enabling or Disabling a Module</title>
+<title>Activating and Deactivating a Plugin</title>
 <link rel="StyleSheet" href="../../ide.css" type="text/css">
 </head>
 <body>
-<h2>Enabling or Disabling a Module</h2>
+<h2>Activating and Deactivating a Plugin</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p> The IDE enables you to disable the modules you do not need to minimize startup
-  time and save memory. Disabled modules are not deleted from your installation
-  directory, but are simply ignored by the IDE. You can re-enable disabled modules
-  at any time.</p>
-<p> <b>To enable or disable a module:</b> </p>
+<p> The IDE enables you to deactivate plugins that you do not need to minimize startup
+  time and save memory. Deactivated plugins and modules are not deleted from your installation
+  directory, but are simply ignored by the IDE. You can re-activate them at any time.</p>
+<p><b>To activate or deactivate a plugin:</b> </p>
 <ol>
-  <li>From the Tools menu, choose Module Manager.</li>
-  <li>Select the module you wish to enable
-    or disable and click the check box in the Active column. </li>
-  <li>Click Close to exit the Module Manager.<!--<p>The IDE changes the status of the selected module.-->
-  </li>
+  <li>Choose Tools &gt; Plugins from the main menu and then click the Installed tab in the Plugin Manager.</li>
+    <li>In the left pane, select the plugin you wish to activate or deactivate.
+    <p>The icon in the Active column indicates the status of the plugin.</p></li>
+    <li>In the right pane, click Activate or Deactivate to activate or deactivate the plugin. 
+    <p>The icon for the plugin in the left pane reflects the new status of the plugin.</p></li>
+  <li>Click Close to exit the Plugin Manager.</li>
 </ol>
+<ul class="note">
+    <li>Some plugins may require you to restart the IDE.</li>
+</ul>
+
+ <p>The following table defines the icons used in the Plugin Manager to indicate the status of plugins.</p>
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr>
+                <th scope="col"><b>Icon</b></th>
+                <th scope="col"><b>Description</b></th>
+            </tr>
+            <tr>
+                <td><img src="images/active.png" alt=" "></td>
+                <td>The plugin is installed and activated.</td>
+            </tr>
+            <tr>
+                <td><img src="images/active2.png" alt=" "></td>
+                <td>The plugin is installed but is not yet activated.</td>
+            </tr>
+            <tr>
+                <td><img src="images/inactive.png" alt=" "></td>
+                <td>The plugin is installed but deactivated.</td>
+            </tr>
+ <!-- TODO -- need to check on these icons -->
+<!--            <tr>
+                <td><img src="images/inactive2.png" alt=" "></td>
+                <td>The module is installed but is not yet activated.</td>
+            </tr>
+-->
+            </table>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="../modules/autoupdate.html">Updating the IDE</a></dd>
-    <dd><a href="../modules/updateoffline.html">Installing Modules Offline</a></dd>
+    <dd><a href="../modules/updateoffline.html">Installing Plugins Offline</a></dd>
     <dd><a href="../modules/updateglobally.html">Updating a Multi-User IDE Installation</a></dd> 
 </dl>
 
 <hr>
 <small><a href="../../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
+<table border="0" cellpadding="50">
+  <tr><td>&nbsp;</td></tr>
 </table>
 </body>
 </html>

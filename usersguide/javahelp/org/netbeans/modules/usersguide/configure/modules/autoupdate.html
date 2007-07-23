@@ -13,61 +13,47 @@
 <body>
 <h2>Updating the IDE</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The IDE's Update Center wizard enables you  to update your IDE's
-  installed modules dynamically. When you connect to the Update Center, the IDE
-  checks to see if there are new modules or new versions of already installed
-  modules available. If new or updated modules are available, you can select,
-  download, and install the modules you need.</p>
-<p>You can also choose from several Update Centers that offer different types
-  of modules, like experimental new modules or old modules that are no longer
-in regular distribution. </p>
-<p><b></b>To add modules from the Update Center:</b></p>
-<ol>
-  <li>Choose Tools  &gt; Update
-     Center from the main menu to open the Update Center wizard. </li>
-  <li>Select the update centers 
-    that you wish to check for  modules and click Next to connect
-    to them. </li>
-  <li>In the Select Modules to Install panel, select the modules that
-     you require. Version information and a module description are displayed
-    for the selected  modules in the pane below.</li>
-  <li>Click the  &gt;  button
-     to add the desired modules to the Include in Install panel. Then click Next.</li>
-  <li>Complete  the remaining pages of the wizard to install the module.</li>
-</ol>
+    <p>The IDE's Plugin Manager enables you to update your IDE's installed plugins dynamically. 
+    When you use the Plugin Manager to update the IDE, the IDE checks the registered update centers 
+    to see if there are new plugins or new versions of already installed plugins available. 
+    If new or updated plugins are available, you can select, download, and install the plugins using the Plugin Manager.</p>
+  
+    <p>In addition to the default IDE Update Center, you can choose from several update centers that offer different types
+    of plugins, such as experimental new plugins or old plugins that are no longer in regular distribution. </p>
 
+    <p><b>To update plugins from the Update Center:</b></p>
+        <ol>
+            <li>Choose Tools &gt; Plugins from the main menu to open the Plugin Manager.</li>
+            <li>Click the Updates tab to display available updates of installed plugins.</li>
+            <li>In the left pane, select the plugins you wish to update and click Update.</li>
+            <li>Complete the pages in the installer to download and install the update.</li>
+        </ol>
+        <ul class="note">
+            <li>Some plugins may require you to restart the IDE to complete the update process.</li>
+        </ul>
+          
+        <p>The left pane of the Updates tab displays the installed plugins which have updates available from the update centers.
+        By default, the IDE regularly checks the registered update centers for available updates of installed plugins.
+        If no plugins are displayed in the left pane, it means that no updates were available the last time the IDE
+        checked the update center. 
+        You can set the frequency that the IDE checks for updates in the Settings tab of the Plugin Manager.
+        You can click Reload Catalog to check the update centers immediately. </p>
+    <!-- TODO -- check this button label -->
+    
+<!--
 <ul class="note">
     <li> If you receive the Unable to Connect to the Update Center Server error
       message,  click OK in the dialog box to close it. Then click the Proxy
       Configuration button in the wizard and enter a proxy host and port number.
       After entering the proxy information, click OK to set the values and continue
     	with your update.</li>
-</ul>
-
-<h3>Setting the Update Frequency</h3>
-<p>By default, the IDE periodically asks checks the Update Center for new updates.
- You can set the interval or disable the auto-update in the Options window.</p>
-<p><b>To set the frequency with which the IDE checks for updates:</b></p>
-<ol>
-  <li>Choose Tools &gt; Options from the main menu and do one of the following:
-  <ul>
-      <li>Click General in the left pane of the Options window.</li>
-      <li>Click Advanced Options in the Options window, expand IDE Configuration &gt; System and select Update Center in the left pane.</li>
-</ul></li>
-<li>Select the update frequency from the Check Period drop-down list.</li>
-</ul>
-
-<p>You can also set the following auto-update properties in the Options window:</p>
-<ul>
-    <li><b>Ask Before Check.</b> When selected, the IDE asks whether you want to connect to the Update Center to check for new updates.</li>
-    <li><b>Show Negative Results (in Advanced Options view).</b> When selected, the IDE indicates when there are no updates available.</li>
-</ul>
+</ul>-->
 
 <dl>
 <dt>
 <a name="seealso">See Also</a></dt>
-<dd>	  <a href="enablemodule.html">Enabling or Disabling a Module</a></dd>
-<dd>      <a href="updateoffline.html">Installing a Module Offline</a></dd>
+<dd>	  <a href="enablemodule.html">Activating and Deactivating a Plugin</a></dd>
+<dd>      <a href="updateoffline.html">Installing a Plugin Offline</a></dd>
 <dd>      <a href="updateglobally.html">Updating a Multi-User IDE Installation</a></dd>
 </dl>
 <hr>

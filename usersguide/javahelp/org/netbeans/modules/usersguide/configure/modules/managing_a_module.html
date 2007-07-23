@@ -8,49 +8,37 @@
 	<meta name="lastupdated" content="13Sep05">
 <!-- p2 -->
 
-<title>About Managing Modules</title>
+<title>About Managing Modules and Plugins</title>
 <link rel="StyleSheet" href="../../ide.css" type="text/css">
 </head>
 <body>
 
-<h2>About Managing Modules</h2>
-<p><small> 
-<a href="#seealso">See Also</a> 
-</small></p>
-<p>The IDE's Update Center wizard enables you to update your IDE's installed modules 
-dynamically. When you connect to the Update Center, the IDE checks to see if there 
-are new modules or new versions of already installed modules available. If new or 
-updated modules are available, you can select, download, and install the modules you need.
+<h2>About Managing Modules and Plugins</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The IDE's Plugin Manager enables you to update and manage your IDE's modules and plugins dynamically.
+    The IDE enables you to deactivate the plugins that you do not need to minimize startup
+    time and save memory. Deactivated plugins are not deleted from your installation
+    directory, but are simply ignored by the IDE. You can re-activate them at any time.</p>
+    
+    <p>You can also choose to uninstall plugins from the IDE. Uninstalled plugins are removed from
+    your installation directory. To use an uninstalled plugins, you need to install it again.</p>
+  
+    <p>You use the Plugin Manager to connect to the update centers to check if there 
+    are new plugins or new versions of already installed plugins available. 
+    If new or updated plugins are available, you can select, download, and install them using the Plugin Manager.</p>
 
-<p>The IDE enables you to disable the modules you do not need to minimize startup
-  time and save memory. Disabled modules are not deleted from your installation
-  directory, but are simply ignored by the IDE. You can re-enable disabled modules
-  at any time.</p>
+    <p>A plugin generally consists of a group of dependent modules.
+    When you update a plugin, the update usually consists of updating one or more of the modules that make up the plugin.
+    Deactivating a plugin usually consists of deactivating the individual modules that make up the plugin.</p>
 
-<p>To install, enable, disable, and uninstall modules, use the Module
-Manager. </p>
-<p><b>To use the Module Manager:</b></p>
-<ol>
-  <li>From the main menu, choose 
-  Tools &gt; Module Manager.</li>
-  <li>In the Module Manager dialog box, click Update.</li>
-  <li>In the Update Center wizard, do one of the following:
-  <ul>
-	  <li>Specify that you want to check the web for available updates and new modules.
-	  <li>Specify that you want to install manually downloaded modules.
-	 </ul></li>
-	 <li>Click Next and complete the wizard.
-	 <p>After a module is installed, you can do the following in the Module Manager:
-	 <ul><li>Select a module and select Active to disable the module. If disabling a module
-		  will also disable other modules, you will be prompted to accept this.
-		<li>Select a module and click Uninstall to remove the module from your installation directory.
-		</li>
-	</ul>
- 	</ol>
+    <ul class="note">
+        <li>Some plugins may be dependent on modules in other plugins in order for the functionality to be implemented.
+        The Plugin Manager warns you when this is the case.</li>
+    </ul>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
-    <dd><a href="enablemodule.html">Enabling or Disabling a Module</a></dd>
+    <dd><a href="enablemodule.html">Activating and Deactivating a Plugin</a></dd>
     <dd><a href="autoupdate.html">Updating the IDE</a></dd>
     <dd><a href="updateglobally.html">Updating a Multi-User IDE Installation</a></dd>
     <dd><a href="updateoffline.html">Installing Modules Offline</a></dd>
@@ -58,9 +46,7 @@ Manager. </p>
 
 <hr>
 <small><a href="../../credits.html">Legal Notices</a></small>
-<table cellpadding="20" border="0"> 
-<tr><td>&nbsp;</td></tr> 
-<tr><td>&nbsp;</td></tr> 
+<table cellpadding="50" border="0"> 
 <tr><td>&nbsp;</td></tr> 
 </table> 
 
