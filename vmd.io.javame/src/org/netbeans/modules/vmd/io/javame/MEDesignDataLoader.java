@@ -25,6 +25,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.NbBundle;
 import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.netbeans.modules.mobility.editor.pub.J2MEDataLoader;
 
@@ -55,7 +56,7 @@ public final class MEDesignDataLoader extends J2MEDataLoader {
     }
 
     protected String defaultDisplayName () {
-        return "Visual Mobile Design";
+        return NbBundle.getMessage (MEDesignDataLoader.class, "DISP_DefaultName"); // NOI18N
     }
 
     protected FileObject findPrimaryFile (FileObject fileObject) {

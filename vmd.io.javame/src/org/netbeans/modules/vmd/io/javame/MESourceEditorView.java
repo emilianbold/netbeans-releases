@@ -24,6 +24,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditor;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import javax.swing.text.Document;
@@ -76,7 +77,7 @@ public final class MESourceEditorView implements DataEditorView {
     }
 
     public String getDisplayName () {
-        return "Source";
+        return NbBundle.getMessage (MESourceEditorView.class, "TITLE_SourceView"); // NOI18N
     }
 
     public HelpCtx getHelpCtx () {
@@ -142,7 +143,7 @@ public final class MESourceEditorView implements DataEditorView {
     private void readObject (java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         Object object = in.readObject ();
         if (! (object instanceof DataObjectContext))
-            throw new ClassNotFoundException ("DataObjectContext expected but not found");
+            throw new ClassNotFoundException ("DataObjectContext expected but not found"); // NOI18N
         context = (DataObjectContext) object;
         init ();
     }

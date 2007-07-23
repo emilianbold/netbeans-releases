@@ -29,6 +29,7 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
@@ -143,7 +144,9 @@ public final class MEDesignDataObject extends J2MEDataObject implements DataObje
         SwingUtilities.invokeLater (new Runnable() {
             public void run () {
                 dirty.set (false);
-                NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation ("File " + designFile.getPath () + " was modified externally. Reload it?", NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
+                NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation (
+                        NbBundle.getMessage (MEDesignDataObject.class, "MSG_ConfirmReload", designFile.getPath ()), // NOI18N
+                        NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
                 if (DialogDisplayer.getDefault ().notify (confirmation) != NotifyDescriptor.YES_OPTION)
                     return;
                 DocumentSerializer documentSerializer = IOSupport.getDocumentSerializer (MEDesignDataObject.this);
