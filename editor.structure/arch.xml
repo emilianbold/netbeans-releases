@@ -189,6 +189,8 @@ Microsystems, Inc. All Rights Reserved.
     <answer id="arch-what">
         <p>
            The API allow clients to get a structural model of a document and listen on changes of the model. 
+           It is also possible to listen to the state of the model itself - when the model starts scannig of the document,
+           when it starts update of the model data and when the update finishes.
            The model is read-only and is incrementally updated based on changes of the document content (e.g. when user edits the document).
            A provider has to implement an SPI (DocumentModelProvider) for a particullar 
            document type (e.g. XML or JSP) and then register itself into the system. 

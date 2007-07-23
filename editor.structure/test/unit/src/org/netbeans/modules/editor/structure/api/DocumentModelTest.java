@@ -31,6 +31,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.structure.api.DocumentModel.DocumentChange;
 import org.netbeans.modules.editor.structure.api.DocumentModel.DocumentModelTransactionCancelledException;
 import org.netbeans.modules.editor.structure.spi.DocumentModelProvider;
+import org.openide.util.Exceptions;
 
 
 /** DocumentModel unit tests
@@ -88,7 +89,8 @@ public class DocumentModelTest extends NbTestCase {
     
     public void testAddElementEvent() throws DocumentModelException, BadLocationException, InterruptedException {
         Document doc = new BaseDocument(DefaultEditorKit.class, false);
-        DocumentModel model = new DocumentModel(doc, dmProvider);
+        final DocumentModel model = new DocumentModel(doc, dmProvider);
+        
         
         //listen to model
         final Vector addedElements = new Vector();
@@ -106,14 +108,16 @@ public class DocumentModelTest extends NbTestCase {
             }
         });
         
+        model.addDocumentModelStateListener(new DocumentModelStateListenerAdapter() {
+            public void updateFinished() {
+                assertEquals(4, addedElements.size());
+                assertEquals(4, addedElements2.size());
+                assertEquals(4, model.getRootElement().getElementCount());
+            }
+        });
+        
         doc.insertString(0,"abcde|fgh|ij|k",null); //4 elements should be created
-        Thread.sleep(1000); //wait for the model update (started after 500ms)
-        
-        assertEquals(4, addedElements.size());
-        assertEquals(4, addedElements2.size());
-        
-        assertEquals(4, model.getRootElement().getElementCount());
-        
+        model.forceUpdate();
     }
     
      public void testMoreDocumentElementListeners() throws DocumentModelException, BadLocationException, InterruptedException {
@@ -165,7 +169,7 @@ public class DocumentModelTest extends NbTestCase {
     public void testRemoveElementEvent() throws DocumentModelException, BadLocationException, InterruptedException {
         Document doc = new BaseDocument(DefaultEditorKit.class, false);
         doc.insertString(0,"abcde|fgh|ij|k",null); //4 elements should be created
-        DocumentModel model = new DocumentModel(doc, dmProvider);
+        final DocumentModel model = new DocumentModel(doc, dmProvider);
         
         DocumentModelUtils.dumpModelElements(model);
         DocumentModelUtils.dumpElementStructure(model.getRootElement());
@@ -186,14 +190,59 @@ public class DocumentModelTest extends NbTestCase {
             }
         });
         
+        model.addDocumentModelStateListener(new DocumentModelStateListenerAdapter() {
+            public void updateFinished() {
+                assertEquals(4,removedElements2.size());
+                assertEquals(4, removedElements.size());
+                assertEquals(0, model.getRootElement().getElementCount());
+            }
+        });
+        
         doc.remove(0,doc.getLength());
-        Thread.sleep(1000); //wait for the model update (started after 500ms)
-        
+        model.forceUpdate();
+    }
+    
+    public void testDocumentModelStateListener() throws DocumentModelException, BadLocationException {
+        Document doc = new BaseDocument(DefaultEditorKit.class, false);
+        final DocumentModel model = new DocumentModel(doc, dmProvider);
+        final State s = new State();
+        s.value = -1;
 
-        assertEquals(4,removedElements2.size());
-        assertEquals(4, removedElements.size());
+        model.addDocumentModelStateListener(new DocumentModelStateListener() {
+            public void sourceChanged() {
+                assert s.value == -1;
+                s.value = 0;
+            }
+            public void scanningStarted() {
+                assert s.value == 0;
+                s.value = 1;
+            }
+            public void updateStarted() {
+                assert s.value == 1;
+                s.value = 2;
+            }
+            public void updateFinished() {
+                assert s.value == 2;
+                s.value = 3;
+                synchronized (s) {
+                    s.notifyAll();
+                }
+            }
+        });
         
-        assertEquals(0, model.getRootElement().getElementCount());
+        doc.insertString(0, "blabla", null);
+        model.forceUpdate();
+        
+        synchronized (s) {
+            try {
+                s.wait(10 * 1000); //10 sec 
+            } catch (InterruptedException ex) {
+                assert false : "DocumentModelStateListener doesn't work properly";
+            }
+        }
+        
+        assert s.value == 3;
+        
     }
     
     /**
@@ -267,6 +316,26 @@ public class DocumentModelTest extends NbTestCase {
         }
         public void elementRemoved(DocumentElementEvent e) {
         }
+    }
+    
+    private static class DocumentModelStateListenerAdapter implements DocumentModelStateListener {
+
+        public void sourceChanged() {
+        }
+
+        public void scanningStarted() {
+        }
+
+        public void updateStarted() {
+        }
+
+        public void updateFinished() {
+        }
+        
+    }
+    
+    private static class State {
+        public int value;
     }
     
 }

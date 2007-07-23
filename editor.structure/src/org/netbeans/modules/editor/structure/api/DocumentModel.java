@@ -24,15 +24,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.WeakHashMap;
 import javax.swing.SwingUtilities;
@@ -142,6 +138,8 @@ public final class DocumentModel {
     
     //stores DocumentModel listeners
     private HashSet<DocumentModelListener> dmListeners = new HashSet<DocumentModelListener>();
+    private HashSet<DocumentModelStateListener> dmsListeners = new HashSet<DocumentModelStateListener>();
+    
     private static final int ELEMENT_ADDED = 1;
     private static final int ELEMENT_REMOVED = 2;
     private static final int ELEMENT_CHANGED = 3;
@@ -268,6 +266,22 @@ public final class DocumentModel {
         dmListeners.remove(dml);
     }
     
+    /** Adds an instance of {@link DocumentModelStateListener} to the model.
+     * 
+     *  @since 1.14
+     */
+    public void addDocumentModelStateListener(DocumentModelStateListener dml) {
+        dmsListeners.add(dml);
+    }
+    
+    /** Removes an instance of {@link DocumentModelStateListener} from the model.
+     * 
+     *  @since 1.14
+     */
+    public void removeDocumentModelStateListener(DocumentModelStateListener dml) {
+        dmsListeners.remove(dml);
+    }
+    
     /** Decides whether the elements are in ancestor - descendant relationship.
      * The relationship is defined as follows:
      * isDescendant = ((ancestor.getStartOffset() < descendant.getStartOffset()) &&
@@ -347,6 +361,15 @@ public final class DocumentModel {
         }
     }
     
+    /** Forces the model to start update immediately. The call is non-blocking, client is supposed to listen
+     * on DocumentModelStateListener.updateFinished() before using the model.
+     * 
+     *  @since 1.14
+     */
+    public void forceUpdate() {
+        requestModelUpdate(true);
+    }
+    
     // ---- private methods -----
     static void setModelUpdateTimout(int timeout) {
         MODEL_UPDATE_TIMEOUT = timeout;
@@ -416,22 +439,23 @@ public final class DocumentModel {
         }
     }
     
-    private void requestModelUpdate() {
+    private void requestModelUpdate(boolean updateImmediately) {
         //test whether there is an already running model update and if so cancel it
         if(modelUpdateTransaction != null) {
             modelUpdateTransaction.setTransactionCancelled();
         }
-        task.schedule(MODEL_UPDATE_TIMEOUT);
+        task.schedule(updateImmediately ? 0 : MODEL_UPDATE_TIMEOUT);
     }
-    
+       
     private void updateModel() {
-        //create a new transaction
-        modelUpdateTransaction = createTransaction(false);
-        DocumentChange[] changes = changesWatcher.getDocumentChanges();
-        
-        if(debug) debugElements();
-        
+        fireScanningStarted();
         try {
+            //create a new transaction
+            modelUpdateTransaction = createTransaction(false);
+            DocumentChange[] changes = changesWatcher.getDocumentChanges();
+
+            if(debug) debugElements();
+        
             //let the model provider to decide what has changed and what to regenerate
             provider.updateModel(modelUpdateTransaction, this, changes);
             //commit all changes => update the model and fire events
@@ -442,6 +466,7 @@ public final class DocumentModel {
                     public void run() {
                         try {
                             writeLock(); //lock the model for reading
+                            fireUpdateStarted();
                             DocumentModel.this.modelUpdateTransaction.commit();
                             //clear document changes cache -> if the transaction has been cancelled
                             //the cache is not cleared so next time the changes will be taken into account.
@@ -453,6 +478,7 @@ public final class DocumentModel {
                             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
                         }finally{
                             writeUnlock(); //unlock the model
+                            fireUpdateFinished();
                         }
                     }
                 });
@@ -639,6 +665,31 @@ public final class DocumentModel {
             }
         }
     }
+    
+    private void fireSourceChanged() {
+        for (DocumentModelStateListener cl: dmsListeners) {
+            cl.sourceChanged();
+        }
+    }
+
+    private void fireScanningStarted() {
+        for (DocumentModelStateListener cl: dmsListeners) {
+            cl.scanningStarted();
+        }
+    }
+    
+    private void fireUpdateStarted() {
+        for (DocumentModelStateListener cl: dmsListeners) {
+            cl.updateStarted();
+        }
+    }
+    
+    private void fireUpdateFinished() {
+        for (DocumentModelStateListener cl: dmsListeners) {
+            cl.updateFinished();
+        }
+    }
+
     
     //-------------------------------------
     // ------ model synchronization -------
@@ -1084,6 +1135,9 @@ public final class DocumentModel {
         
         //assumption: this method contains no locking AFAIK
         private void documentChanged(DocumentEvent documentEvent) {
+            if(!documentDirty) {
+                fireSourceChanged();
+            }
             //indicate that the synchronization between document content and the element may be broken
             //not used by the model logic itself but by the "resortElements" method.
             documentDirty = true;
@@ -1108,7 +1162,7 @@ public final class DocumentModel {
                 e.printStackTrace();
             }
             
-            requestModelUpdate();
+            requestModelUpdate(false);
         }
         
         public DocumentChange[] getDocumentChanges() {
