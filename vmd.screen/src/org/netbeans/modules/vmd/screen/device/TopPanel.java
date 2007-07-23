@@ -24,16 +24,21 @@ import org.netbeans.modules.vmd.api.io.PopupUtil;
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.screen.display.injector.ScreenInjectorPresenter;
 import org.netbeans.modules.vmd.screen.MainPanel;
 import org.netbeans.modules.vmd.screen.ScreenAccessController;
 import org.netbeans.modules.vmd.screen.ScreenViewController;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
@@ -43,18 +48,14 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.List;
-import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayDataFlavorSupport;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -487,7 +488,7 @@ public class TopPanel extends JPanel {
             pane.add(view, new GridBagConstraints(GridBagConstraints.REMAINDER, 0, 1, 1, 1.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 6));
         
         Point screen = getLocationOnScreen();
-        PopupUtil.showPopup(pane, "Actions", screen.x + x, screen.y + y, true); //NOI18N
+        PopupUtil.showPopup(pane, NbBundle.getMessage (TopPanel.class, "TITLE_ActionsMenu"), screen.x + x, screen.y + y, true); // NOI18N
     }
     
     private void editProperty(final MouseEvent e) {
@@ -520,7 +521,7 @@ public class TopPanel extends JPanel {
                         editorView.setPreferredSize(bounds.getSize());
                         Point relatedViewLocationOnScreen = relatedView.getLocationOnScreen();
                         bounds.translate(relatedViewLocationOnScreen.x, relatedViewLocationOnScreen.y);
-                        PopupUtil.showPopup(editorView, "Editor", bounds.x, bounds.y, true);
+                        PopupUtil.showPopup(editorView, NbBundle.getMessage (TopPanel.class, "TITLE_EditorMenu"), bounds.x, bounds.y, true); // NOI18N
                     }
                 }
             }

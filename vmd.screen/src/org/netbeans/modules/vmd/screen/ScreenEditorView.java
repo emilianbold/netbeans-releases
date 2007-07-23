@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.io.javame.DeviceListener;
 import org.netbeans.modules.vmd.api.io.javame.MidpProjectPropertiesSupport;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -38,7 +39,7 @@ public class ScreenEditorView implements DataEditorView, DeviceListener {
 
     private static final long serialVersionUID = -1;
 
-    public static final String SCREEN_EDITOR_VIEW_DISPLAY_NAME = "Screen";
+    public static final String SCREEN_EDITOR_VIEW_DISPLAY_NAME = NbBundle.getMessage (ScreenEditorView.class, "TITLE_ScreenView"); // NOI18N
 
     private DataObjectContext context;
     private transient ScreenViewController controller;
@@ -136,7 +137,7 @@ public class ScreenEditorView implements DataEditorView, DeviceListener {
     private void readObject (java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         Object object = in.readObject ();
         if (! (object instanceof DataObjectContext))
-            throw new ClassNotFoundException ("DataObjectContext expected but not found");
+            throw new ClassNotFoundException ("DataObjectContext expected but not found"); // NOI18N
         context = (DataObjectContext) object;
         init ();
     }

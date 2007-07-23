@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.screen.device.DevicePanel;
 import org.netbeans.modules.vmd.screen.resource.ResourcePanel;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,7 +44,7 @@ public class MainPanel extends JPanel {
     public static final Color SELECT_COLOR = new Color (0xFF8500);
     public static final Color HOVER_COLOR = new Color (0x5B67B0);
     
-    private static final Font LABEL_FONT = new Font("Dialog", Font.BOLD, 16);
+    private static final Font LABEL_FONT = new Font("Dialog", Font.BOLD, 16); // NOI18N
     private static final Color LABEL_COLOR = new Color (0x88A3CF);
     
     private DevicePanel devicePanel;
@@ -63,7 +64,7 @@ public class MainPanel extends JPanel {
         constraints.gridx = 0;
         constraints.gridy = 0;
         constraints.anchor = GridBagConstraints.NORTHWEST;
-        JLabel devLabel = new JLabel("Device Screen");
+        JLabel devLabel = new JLabel(NbBundle.getMessage (MainPanel.class, "DISP_DeviceScreen")); // NOI18N
         devLabel.setForeground(LABEL_COLOR);
         devLabel.setHorizontalAlignment(JLabel.CENTER);
         devLabel.setFont(LABEL_FONT);
@@ -78,7 +79,7 @@ public class MainPanel extends JPanel {
         constraints.gridy = 0;
         constraints.weighty = 0.0;
         constraints.insets = new Insets(12, 6, 6, 12);
-        JLabel resLabel = new JLabel("Assigned Resources");
+        JLabel resLabel = new JLabel(NbBundle.getMessage (MainPanel.class, "DISP_AssignedResources")); // NOI18N
         resLabel.setForeground(LABEL_COLOR);
         resLabel.setHorizontalAlignment(JLabel.CENTER);
         resLabel.setFont(LABEL_FONT);
