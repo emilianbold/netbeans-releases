@@ -38,7 +38,8 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">
                 <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
                     <target name="wsgen-init" depends="init">
-                        <mkdir dir="${{build.generated.dir}}/wsgen/service"/>                        
+                        <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
+                        <mkdir dir="${{build.generated.dir}}/wsgen/binaries"/>
                         <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
                             <classpath path="${{j2ee.platform.wsgen.classpath}}"/>
                         </taskdef>
@@ -67,6 +68,7 @@ Microsystems, Inc. All Rights Reserved.
                              <wsgen
                                  xendorsed="true"
                                  fork="true"
+                                 destdir="${{build.generated.dir}}/wsgen/binaries"
                                  sourcedestdir="${{build.generated.dir}}/wsgen/service"
                                  resourcedestdir="${{build.generated.dir}}/wsgen/service"
                                  keep="false"
@@ -79,6 +81,7 @@ Microsystems, Inc. All Rights Reserved.
                          <xsl:otherwise>
                              <wsgen
                                  fork="true"
+                                 destdir="${{build.generated.dir}}/wsgen/binaries"
                                  sourcedestdir="${{build.generated.dir}}/wsgen/service"
                                  resourcedestdir="${{build.generated.dir}}/wsgen/service"
                                  keep="false"
