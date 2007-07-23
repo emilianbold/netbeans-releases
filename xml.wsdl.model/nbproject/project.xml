@@ -57,14 +57,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     <run-dependency/>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.xml.wsdl.model</package>
-                <package>org.netbeans.modules.xml.wsdl.model.extensions.soap</package>
-                <package>org.netbeans.modules.xml.wsdl.model.extensions.xsd</package>
-                <package>org.netbeans.modules.xml.wsdl.model.spi</package>
-                <package>org.netbeans.modules.xml.wsdl.model.visitor</package>
-                <package>org.netbeans.modules.xml.wsdl.validator.spi</package>
-            </public-packages>
             <test-dependencies>
                 <!-- Dependencies for a source root with tests: -->
                 <test-type>
@@ -97,6 +89,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
                     </test-dependency>
                 </test-type>
             </test-dependencies>
+            <public-packages>
+                <package>org.netbeans.modules.xml.wsdl.model</package>
+                <package>org.netbeans.modules.xml.wsdl.model.extensions.http</package>
+                <package>org.netbeans.modules.xml.wsdl.model.extensions.soap</package>
+                <package>org.netbeans.modules.xml.wsdl.model.extensions.xsd</package>
+                <package>org.netbeans.modules.xml.wsdl.model.spi</package>
+                <package>org.netbeans.modules.xml.wsdl.model.visitor</package>
+                <package>org.netbeans.modules.xml.wsdl.validator.spi</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
