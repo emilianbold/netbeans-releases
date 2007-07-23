@@ -464,6 +464,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
             }
         }
+        // set default variable modifiers for ther form
+        FormSettings settings = formModel.getSettings();
+        boolean local = settings.getVariablesLocal();
+        int modifiers = settings.getVariablesModifier();
+        int type = local ? (CodeVariable.LOCAL | (modifiers & CodeVariable.FINAL)
+            | CodeVariable.EXPLICIT_DECLARATION) : modifiers | CodeVariable.FIELD;
+        formModel.getCodeStructure().setDefaultVariableType(type);
 
         if (bindingProperties != null) {
             setBindingProperties();
@@ -2894,14 +2901,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
         // we must care about some aux values specially ...
 
-        // Default variable modifiers for form
         if (comp == formModel.getTopRADComponent()) {
-            FormSettings settings = formModel.getSettings();
-            boolean local = settings.getVariablesLocal();
-            int modifiers = settings.getVariablesModifier();
-            int type = local ? (CodeVariable.LOCAL | (modifiers & CodeVariable.FINAL)
-                | CodeVariable.EXPLICIT_DECLARATION) : modifiers | CodeVariable.FIELD;
-            formModel.getCodeStructure().setDefaultVariableType(type);
             return;
         }
 
