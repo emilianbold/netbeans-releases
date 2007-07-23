@@ -79,11 +79,14 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ErrorType;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.tools.DiagnosticListener;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CancellableTask;
@@ -918,7 +921,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                     final URL rootURL = it.previous();
                                     it.remove();
-                                    updateFolder (rootURL,rootURL, mw.getForceClean(), handle);
+                                    updateFolder (rootURL,rootURL, true, mw.getForceClean(), handle);
                                 }                                
                             } catch (final TopologicalSortException tse) {
                                     final IllegalStateException ise = new IllegalStateException ();                                
@@ -1061,6 +1064,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 cim.removeRoot(oldRoot);
                                 cap.removeArchive(oldRoot);
                             }
+                            final JTextComponent editor = EditorRegistry.lastFocusedComponent();
+                            if (editor != null) {
+                                final Document doc = editor.getDocument();
+                                JavaSource js = doc == null ? null : JavaSource.forDocument(doc);
+                                if (js != null) {
+                                    JavaSourceAccessor.INSTANCE.revalidate(js);
+                                }
+                            }
                             break;
                         case COMPILE:
                         {
@@ -1072,7 +1083,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Updating"));
                                     handle.start();
                                     try {
-                                        updateFolder (file, root, false, handle);
+                                        updateFolder (file, root, false, false, handle);
                                     } finally {
                                         handle.finish();
                                     }
@@ -1265,7 +1276,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     it.remove();                                                                                
                     if (!oldRoots.remove(rootURL) && !RepositoryUpdater.this.scannedRoots.contains(rootURL)) {
                         long startT = System.currentTimeMillis();                        
-                        updateFolder (rootURL,rootURL, false, handle);
+                        updateFolder (rootURL,rootURL, true, false, handle);
                         long endT = System.currentTimeMillis();
                         if (PERF_TEST) {
                             try {
@@ -1449,7 +1460,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             }
         
-        private void updateFolder(final URL folder, final URL root, boolean clean, final ProgressHandle handle) throws IOException {
+        private void updateFolder(final URL folder, final URL root, final boolean isInitialCompilation, boolean clean, final ProgressHandle handle) throws IOException {
             final FileObject rootFo = URLMapper.findFileObject(root);
             if (rootFo == null) {
                 return;
@@ -1474,7 +1485,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 compilePath.addPropertyChangeListener(RepositoryUpdater.this);
                 classPath2Root.put(compilePath, root);
             }
-            final boolean isInitialCompilation = folder.equals(root);            
             try {                                
                 final File rootFile = FileUtil.toFile(rootFo);
                 if (rootFile == null) {
@@ -1921,7 +1931,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 while (!toDo.isEmpty()) {
                     File f = toDo.remove (0);   
                     final String name = f.getName();
-                    if (f.isDirectory() && !ignoredDirectories.contains(name) && Utilities.isJavaIdentifier(name)) {
+                    if (f.isDirectory() && !ignoredDirectories.contains(name)) {
                         File[] content = f.listFiles();
                             for (int i=0,j=0;i<content.length;i++) {
                                 f = content[i];
