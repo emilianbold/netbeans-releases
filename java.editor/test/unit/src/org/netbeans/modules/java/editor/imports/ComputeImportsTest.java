@@ -106,7 +106,7 @@ public class ComputeImportsTest extends NbTestCase {
                 ProgressHandle handle = ProgressHandleFactory.createHandle("cache creation");
                 BinaryAnalyser ba = ci.getBinaryAnalyser();
                 
-                ba.start(u, handle, new AtomicBoolean(false));
+                ba.start(u, handle, new AtomicBoolean(false), new AtomicBoolean(false));
                 ba.finish();
             }
         }

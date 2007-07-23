@@ -133,7 +133,7 @@ public class CompletionTestBase extends NbTestCase {
             ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
             BinaryAnalyser ba = cii.getBinaryAnalyser();
             
-            ba.start(url, null, new AtomicBoolean(false));
+            ba.start(url, null, new AtomicBoolean(false), new AtomicBoolean(false));
             ba.finish();
         }                
         ClassPathProvider cpp = new ClassPathProvider() {
