@@ -71,7 +71,7 @@ public class DocumentEditorView implements DataEditorView {
     }
 
     public String getDisplayName () {
-        return NbBundle.getMessage (DataEditorView.class, "TITLE_DocumentView"); // NOI18N
+        return NbBundle.getMessage (DocumentEditorView.class, "TITLE_DocumentView"); // NOI18N
     }
 
     public HelpCtx getHelpCtx () {
