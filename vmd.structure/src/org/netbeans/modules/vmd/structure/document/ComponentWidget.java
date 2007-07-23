@@ -78,7 +78,7 @@ public class ComponentWidget extends Widget {
         descriptionWidget.setLayout (LAYOUT_LABEL);
         addChild (descriptionWidget);
 
-        LabelWidget idWidget = new LabelWidget (scene, component.getComponentID () + " : " + (descriptor != null ? descriptor.getTypeDescriptor ().getThisType ().toString () : "<Unknown>"));
+        LabelWidget idWidget = new LabelWidget (scene, component.getComponentID () + " : " + (descriptor != null ? descriptor.getTypeDescriptor ().getThisType ().toString () : "<Unknown>")); // NOI18N
         idWidget.setFont (scene.getDefaultFont ().deriveFont (Font.BOLD));
         descriptionWidget.addChild (idWidget);
 
@@ -86,7 +86,7 @@ public class ComponentWidget extends Widget {
             for (PropertyDescriptor propertyDescriptor : descriptor.getPropertyDescriptors ()) {
                 String name = propertyDescriptor.getName ();
                 PropertyValue value = component.readProperty (name);
-                descriptionWidget.addChild (new LabelWidget (scene, name + "=" + value.serialize ()));
+                descriptionWidget.addChild (new LabelWidget (scene, name + "=" + value.serialize ())); // NOI18N
             }
 
         components = new Widget (scene);

@@ -27,6 +27,7 @@ import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.openide.util.NbBundle;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class DocumentScene extends ObjectScene {
         getActions ().addAction (ActionFactory.createPanAction ());
         getActions ().addAction (hoverAction);
 
-        labelWidget = new LabelWidget (this, "Loading Document ...");
+        labelWidget = new LabelWidget (this, NbBundle.getMessage (DocumentScene.class, "MSG_Loading")); // NOI18N
         labelWidget.setFont (getDefaultFont ().deriveFont (Font.BOLD, 24));
 //        labelWidget.setForeground (Color.DARK_GRAY);
     }

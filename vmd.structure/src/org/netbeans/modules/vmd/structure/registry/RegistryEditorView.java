@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -85,7 +86,7 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
     }
 
     public String getDisplayName () {
-        return "Registry";
+        return NbBundle.getMessage (RegistryEditorView.class, "TITLE_RegistryView"); // NOI18N
     }
 
     public HelpCtx getHelpCtx () {
@@ -147,14 +148,14 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
     private void update () {
         registry.readAccess (new Runnable() {
             public void run () {
-                RegistryWidget widget = new RegistryWidget (scene, false, null, "Descriptors");
+                RegistryWidget widget = new RegistryWidget (scene, false, null, NbBundle.getMessage (RegistryEditorView.class, "DISP_Descriptors")); // NOI18N
                 Collection<ComponentDescriptor> descriptors = registry.getComponentDescriptors ();
                 scene.clear ();
-                scene.addRootNode ("descriptors", widget);
+                scene.addRootNode ("descriptors", widget); // NOI18N
                 updateForSuper (descriptors, null, widget);
 
-                widget = new RegistryWidget (scene, false, null, "Producers");
-                scene.addRootNode ("producers", widget);
+                widget = new RegistryWidget (scene, false, null, NbBundle.getMessage (RegistryEditorView.class, "DISP_Producers")); // NOI18N
+                scene.addRootNode ("producers", widget); // NOI18N
                 for (ComponentProducer producer : registry.getComponentProducers ()) {
                     PaletteDescriptor paletteDescriptor = producer.getPaletteDescriptor ();
                     Widget sub;
@@ -164,7 +165,7 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
                         sub = new RegistryWidget (scene, true, image, paletteDescriptor.getDisplayName ());
                     } else
                         sub = new RegistryWidget (scene, false, null, producer.getMainComponentTypeID ().toString ());
-                    widget.addSub ("producer:" + producer.getProducerID (), sub);
+                    widget.addSub ("producer:" + producer.getProducerID (), sub); // NOI18N
                 }
 
                 scene.validate ();
@@ -197,7 +198,7 @@ public class RegistryEditorView implements DataEditorView, DescriptorRegistryLis
     private void readObject (java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         Object object = in.readObject ();
         if (! (object instanceof DataObjectContext))
-            throw new ClassNotFoundException ("DataObjectContext expected but not found");
+            throw new ClassNotFoundException ("DataObjectContext expected but not found"); // NOI18N
         context = (DataObjectContext) object;
         init ();
     }
