@@ -20,6 +20,7 @@
 package org.netbeans.modules.refactoring.java.api.ui;
 
 import org.netbeans.modules.refactoring.java.ui.ChangeParametersAction;
+import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldAction;
 import org.netbeans.modules.refactoring.java.ui.ExtractInterfaceAction;
 import org.netbeans.modules.refactoring.java.ui.ExtractSuperclassAction;
 import org.netbeans.modules.refactoring.java.ui.InnerToOuterAction;
@@ -53,8 +54,7 @@ public final class JavaRefactoringActionsFactory {
      * @return an instance of EncapsulateFieldsAction
      */
     public static ContextAwareAction encapsulateFieldsAction() {
-        throw new UnsupportedOperationException("Not supported yet.");
-//        return (EncapsulateFieldAction) EncapsulateFieldAction.findObject(EncapsulateFieldAction.class, true);
+        return EncapsulateFieldAction.findObject(EncapsulateFieldAction.class, true);
     }
     
     /**

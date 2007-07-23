@@ -29,6 +29,10 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.changeParametersAction"/>
                 <attr name="position" intvalue="430"/>
             </file>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-EncapsulateFieldAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.encapsulateFieldsAction"/>
+                <attr name="position" intvalue="450"/>
+            </file>
             <file name="separator-in-java-refactoring.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="470"/>
@@ -120,6 +124,9 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="org-netbeans-modules-refactoring-java-api-ui-ExtractSuperclassAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.extractSuperclassAction"/>
+            </file>
+            <file name="org-netbeans-modules-refactoring-java-api-ui-EncapsulateFieldAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.java.api.ui.JavaRefactoringActionsFactory.encapsulateFieldsAction"/>
             </file>
         </folder>
     </folder>  

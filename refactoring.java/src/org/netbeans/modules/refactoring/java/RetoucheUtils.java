@@ -494,6 +494,10 @@ public class RetoucheUtils {
     }
     
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
+        return getClasspathInfoFor(true, files);
+    }
+    
+    public static ClasspathInfo getClasspathInfoFor(boolean dependencies, FileObject ... files) {
         assert files.length >0;
         Set<URL> dependentRoots = new HashSet();
         for (FileObject fo: files) {
@@ -502,7 +506,11 @@ public class RetoucheUtils {
                 p=FileOwnerQuery.getOwner(fo);
             if (p!=null) {
                 URL sourceRoot = URLMapper.findURL(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo), URLMapper.INTERNAL);
-                dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+                if (dependencies) {
+                    dependentRoots.addAll(SourceUtils.getDependentRoots(sourceRoot));
+                } else {
+                    dependentRoots.add(sourceRoot);
+                }
                 for (SourceGroup root:ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                     dependentRoots.add(URLMapper.findURL(root.getRootFolder(), URLMapper.INTERNAL));
                 }

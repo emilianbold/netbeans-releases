@@ -24,12 +24,14 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring;
+import org.netbeans.modules.refactoring.java.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
+import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.refactoring.spi.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -85,6 +87,10 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
             return new InnerToOuterRefactoringPlugin((InnerToOuterRefactoring) refactoring);
         } else if (refactoring instanceof ChangeParametersRefactoring) {
             return new ChangeParametersPlugin((ChangeParametersRefactoring) refactoring);
+        } else if (refactoring instanceof EncapsulateFieldRefactoring) {
+            return new EncapsulateFieldRefactoringPlugin((EncapsulateFieldRefactoring) refactoring);
+        } else if (refactoring instanceof EncapsulateFieldsRefactoring) {
+            return new EncapsulateFieldsPlugin((EncapsulateFieldsRefactoring) refactoring);
         }
         return null;
     }

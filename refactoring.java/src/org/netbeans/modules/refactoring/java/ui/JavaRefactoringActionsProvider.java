@@ -339,5 +339,46 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
             }
         };
         RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.innerToOuterAction()));
-    }    
+    }
+
+    @Override
+    public boolean canEncapsulateFields(Lookup lookup) {
+        Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
+        if (nodes.size() != 1) {
+            return false;
+        }
+        Node n = nodes.iterator().next();
+        DataObject dob = n.getCookie(DataObject.class);
+        if (dob==null) {
+            return false;
+        }
+        FileObject fo = dob.getPrimaryFile();
+        if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void doEncapsulateFields(Lookup lookup) {
+        Runnable task;
+        EditorCookie ec = lookup.lookup(EditorCookie.class);
+        if (RefactoringActionsProvider.isFromEditor(ec)) {
+            task = new RefactoringActionsProvider.TextComponentTask(ec) {
+                @Override
+                protected RefactoringUI createRefactoringUI(TreePathHandle selectedElement,int startOffset,int endOffset, CompilationInfo info) {
+                    return new EncapsulateFieldUI(selectedElement, info);
+                }
+            };
+        } else {
+            task = new NodeToFileObjectTask(lookup.lookupAll(Node.class)) {
+                @Override
+                protected RefactoringUI createRefactoringUI(FileObject[] selectedElements, Collection<TreePathHandle> handles) {
+                    TreePathHandle tph = handles.iterator().next();
+                    return new EncapsulateFieldUI(tph, cinfo.get());
+                }
+            };
+        }
+        RetoucheUtils.invokeAfterScanFinished(task, RefactoringActionsProvider.getActionName(JavaRefactoringActionsFactory.encapsulateFieldsAction()));
+    }
 }
