@@ -1142,14 +1142,15 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected int diffIdent(JCIdent oldT, JCIdent newT, int lastPrinted) {
+    protected int diffIdent(JCIdent oldT, JCIdent newT, int[] bounds) {
         if (nameChanged(oldT.name, newT.name)) {
-            copyTo(lastPrinted, oldT.pos);
+            copyTo(bounds[0], oldT.pos);
             printer.print(newT.name);
             diffInfo.put(oldT.pos, "Update reference to " + oldT.name);
-            return endPos(oldT);
+        } else {
+            copyTo(bounds[0], bounds[1]);
         }
-        return lastPrinted;
+        return bounds[1];
     }
 
     protected int diffLiteral(JCLiteral oldT, JCLiteral newT, int[] bounds) {
@@ -1699,7 +1700,7 @@ public class CasualDiff {
                     tokenSequence.moveNext();
                     int start = tokenSequence.offset();
                     copyTo(start, bounds[0], printer);
-                        diffTree(tree, item.element, bounds);
+                    diffTree(tree, item.element, bounds);
                     tokenSequence.move(bounds[1]);
                     PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                     copyTo(bounds[1], pos = tokenSequence.offset(), printer);
@@ -2320,7 +2321,7 @@ public class CasualDiff {
               retVal = diffSelect((JCFieldAccess)oldT, (JCFieldAccess)newT, elementBounds);
               break;
           case JCTree.IDENT:
-              retVal = diffIdent((JCIdent)oldT, (JCIdent)newT, elementBounds[0]);
+              retVal = diffIdent((JCIdent)oldT, (JCIdent)newT, elementBounds);
               break;
           case JCTree.LITERAL:
               retVal = diffLiteral((JCLiteral)oldT, (JCLiteral)newT, elementBounds);
