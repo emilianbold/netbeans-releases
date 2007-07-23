@@ -24,6 +24,8 @@ import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import junit.framework.*;
@@ -86,9 +88,14 @@ public class InstallerReadPageTest extends NbTestCase {
     public void testURLInNoEncoding() throws Exception {
         doEncodingTest("utf-8", "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'></meta>");
     }
+
+    public void testURLInUTF8Encoding() throws Exception {
+        doEncodingTest("UTF-8", "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'></meta>");
+    }
     
     private void doEncodingTest(String encoding, String metaTag) throws Exception {
-        String kun = "Žluťoučký kůň";
+        //String kun = "Žluťoučký kůň";
+        String kun = "\u017Dlu\u0165ou\u010Dky k\u016F\u0148";
         String utf8 = 
             "<html><head>" +
             metaTag +
@@ -106,7 +113,8 @@ public class InstallerReadPageTest extends NbTestCase {
         assertFalse("Close options was pressed", res);
         assertNotNull("DD.d assigned", DD.d);
         
-        assertEquals("Two objects", 2, DD.d.getOptions().length);
+        List<Object> data = Arrays.asList(DD.d.getOptions());
+        assertEquals("Two objects: " + data, 2, DD.d.getOptions().length);
         assertEquals("First is jbutton", JButton.class, DD.d.getOptions()[0].getClass());
         JButton b = (JButton)DD.d.getOptions()[0];
         
