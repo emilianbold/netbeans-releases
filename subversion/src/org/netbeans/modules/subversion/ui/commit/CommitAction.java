@@ -48,7 +48,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
-import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
@@ -242,15 +241,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
                         loc.getString("MSG_CommitForm_ErrorRemoteChanges");
                 panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
-            }         
-            
-            ISVNStatus svnStatus = fileNode.getInformation().getEntry(fileNode.getFile());
-            if(svnStatus.isCopied() && fileNode.getFile().isDirectory()) {
-                 panel.setErrorLabel("<html><font color=\"#002080\">BLOOD</font></html>");  // NOI18N
-                
-                
-            }
-            
+            }            
         }
         
         if (stickyTags.size() > 1) {
