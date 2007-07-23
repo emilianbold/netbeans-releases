@@ -305,6 +305,11 @@ public class InstallerTest extends NbTestCase {
         }
     }
 
+    /*
+    <input type="radio" name="group1" value="Milk"> Milk<br>
+      */
+    
+    
     public void testLeftAligned() throws Exception {
         String page = 
             "<html><body><form action='http://xyz.cz' method='POST'>" +
