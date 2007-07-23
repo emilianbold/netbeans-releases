@@ -127,7 +127,7 @@ public final class MultiGuardedSection {
 
         int size = guardedSections.size ();
         if (size > 0)
-            editableSectionIDs.set (size - 1, "");
+            editableSectionIDs.set (size - 1, ""); // NOI18N
         for (int a = 0; a < size; a ++)
             try {
                 guardedSections.get (a).setName (createSectionID (a, editableSectionIDs.get (a)));
@@ -183,7 +183,7 @@ public final class MultiGuardedSection {
     }
 
     public static boolean isPartOfMultiGuardedSection (GuardedSection section) {
-        return section.getName ().startsWith ("|");
+        return section.getName ().startsWith ("|"); // NOI18N
     }
 
     /**
@@ -241,7 +241,7 @@ public final class MultiGuardedSection {
             int nextIndex = (Integer) MultiGuardedSection.parsePartOfMultiGuardedSection (nextSection)[1];
             if (lastIndex + 1 != nextIndex) {
                 removeSectionsBlock (document, sectionsBlock);
-                Debug.warning ("Broken multi-guarded-section", "Missing sections between", lastIndex, nextIndex);
+                Debug.warning ("Broken multi-guarded-section", "Missing sections between", lastIndex, nextIndex); // NOI18N
             }
             sectionsBlock.add (nextSection);
             lastIndex = nextIndex;

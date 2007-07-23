@@ -91,7 +91,7 @@ public final class CodeWriter {
                     writer.close ();
                     text = memory.getBuffer ().toString ();
                 } else
-                    text = "";
+                    text = ""; // NOI18N
             }
 
             if (section != null)

@@ -120,12 +120,12 @@ public final class JavaCodeGenerator {
 
     String getUserCode (StyledDocument document, String multiGuardedID, String editableID) {
         HashMap<String, String> editableUserCodes = getEditableUserCodes (document);
-        return editableUserCodes.get (multiGuardedID + "|" + editableID);
+        return editableUserCodes.get (multiGuardedID + "|" + editableID); // NOI18N
     }
 
     public void putUserCode (StyledDocument document, String multiGuardedID, String editableID, String userCode) {
         HashMap<String, String> editableUserCodes = getEditableUserCodes (document);
-        editableUserCodes.put (multiGuardedID + "|" + editableID, userCode);
+        editableUserCodes.put (multiGuardedID + "|" + editableID, userCode); // NOI18N
     }
 
     private void updateUserCodesFromEditorCore (StyledDocument document) {

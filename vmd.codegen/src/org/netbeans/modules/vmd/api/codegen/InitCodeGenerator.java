@@ -50,7 +50,7 @@ public final class InitCodeGenerator {
                     int priority = parameter.getParameterPriority ();
                     if (currentPriority >= priority) {
                         if (currentPriority == priority)
-                            Debug.warning ("Duplicate parameter found", component, parameterName);
+                            Debug.warning ("Duplicate parameter found", component, parameterName); // NOI18N
                         continue;
                     }
                     requiredToBeSet.remove (parameterName);
@@ -88,7 +88,7 @@ public final class InitCodeGenerator {
         }
         unusedParameters.remove (Parameter.PARAM_INDEX);
         if (! unusedParameters.isEmpty ())
-            Debug.warning ("Unused parameters", component, unusedParameters);
+            Debug.warning ("Unused parameters", component, unusedParameters); // NOI18N
 
 
         // TODO - static instance of SetterComparator
