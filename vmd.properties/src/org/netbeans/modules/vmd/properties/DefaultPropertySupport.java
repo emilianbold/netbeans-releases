@@ -37,6 +37,7 @@ public abstract class DefaultPropertySupport extends PropertySupport {
     public static final String PROPERTY_VALUE_NULL = "PROPERTY_NULL_VALUE_FOR_FEATURE_DESCRIPTOR"; //NOI18N //work around for hashmap which cant accept null
     public static final String PROPERYT_INPLACE_EDITOR = "inplaceEditor"; //NOI18N
     public static final String PROPERTY_CUSTOM_EDITOR_TITLE = "title"; //NOI18N
+    
     private PropertyValue propertyValue;
     private PropertyEditor propertyEditor;
     private List<String> propertyNames;

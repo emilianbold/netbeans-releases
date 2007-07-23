@@ -34,6 +34,7 @@ import java.util.List;
 public final class DefaultPropertiesPresenter extends PropertiesPresenter {
 
     private static final String NULL_DEFAULT = "Null DefaultPropertyEditorSupport not allowed"; //NOI18N
+    
     private List<DesignPropertyDescriptor> descriptors;
     private List<String> categories;
     private String category;
