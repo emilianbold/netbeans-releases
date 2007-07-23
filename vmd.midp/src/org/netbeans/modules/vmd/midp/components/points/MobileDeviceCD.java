@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.midp.components.sources.MobileDeviceResumeEventS
 import org.netbeans.modules.vmd.midp.components.sources.MobileDeviceStartEventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowMobileDevicePinOrderPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.*;
 
@@ -65,7 +66,7 @@ public final class MobileDeviceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // info
-            InfoPresenter.createStatic("Mobile Device", null, ICON_PATH),
+            InfoPresenter.createStatic(NbBundle.getMessage (MobileDeviceCD.class, "DISP_MobileDevice"), null, ICON_PATH), // NOI18N
             // flow
             new FlowInfoNodePresenter(),
             new FlowMobileDevicePinOrderPresenter(),

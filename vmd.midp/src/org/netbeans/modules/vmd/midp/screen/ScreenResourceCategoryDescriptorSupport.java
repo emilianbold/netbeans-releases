@@ -22,6 +22,7 @@ import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceCategoryDescri
 import org.netbeans.modules.vmd.api.screen.resource.ScreenResourceOrderingController;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 /**
  * @author breh
@@ -29,26 +30,27 @@ import org.openide.util.Utilities;
 public class ScreenResourceCategoryDescriptorSupport {
 
     public static ScreenResourceCategoryDescriptor ASSIGNED_COMMANDS = new ScreenResourceCategoryDescriptor (
-            "Assigned Commands",
-            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"),
-            "Commands assigned to the edited displayable",
-            -100,
+            NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "DISP_AssignedCommands"), // NOI18N
+            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"), // NOI18N
+            NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "TTIP_AssignedCommands"), // NOI18N
+            100,
             ScreenResourceOrderingController.getArrayOrdering(DisplayableCD.PROP_COMMANDS)
     );
 
+    public static ScreenResourceCategoryDescriptor ASSIGNED_ITEM_COMMANDS = new ScreenResourceCategoryDescriptor (
+            NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "DISP_AssignedItemCommands"), // NOI18N
+            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"), // NOI18N
+            NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "TTIP_AssignedItemCommands"), // NOI18N
+            200,
+            ScreenResourceOrderingController.getDefaultOrdering()
+    );
+
     public static ScreenResourceCategoryDescriptor OTHER_DESIGN_RESOURCES = new ScreenResourceCategoryDescriptor (
-            "Resources",
-            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/resource_16.png"),
-            "Resources available in the design",
-            100,
+            NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "DISP_Resources"), // NOI18N
+            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/resource_16.png"), // NOI18N
+            NbBundle.getMessage (ScreenResourceCategoryDescriptorSupport.class, "TTIP_Resources"), // NOI18N
+            300,
             ScreenResourceOrderingController.getDefaultOrdering()
     );
     
-    public static ScreenResourceCategoryDescriptor ASSIGNED_ITEM_COMMANDS = new ScreenResourceCategoryDescriptor (
-            "Assigned Item Commands",
-            Utilities.loadImage ("org/netbeans/modules/vmd/midp/resources/components/command_16.png"),
-            "Assigned Item Commands",
-            50,
-            ScreenResourceOrderingController.getDefaultOrdering()
-    );
 }

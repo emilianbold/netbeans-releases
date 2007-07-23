@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowMobileDevicePinOrderPresenter;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.api.editor.guards.GuardedSection;
+import org.openide.util.NbBundle;
 
 import javax.swing.text.StyledDocument;
 import java.util.Arrays;
@@ -75,11 +76,11 @@ public final class MobileDeviceResumeEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("MIDlet Resumed", "Event", MobileDeviceCD.ICON_PATH),
+            InfoPresenter.createStatic (NbBundle.getMessage (MobileDeviceCD.class, "DISP_MIDletResumed"), NbBundle.getMessage (MobileDeviceCD.class, "DISP_Event"), MobileDeviceCD.ICON_PATH), // NOI18N
             // general
             new GoToSourcePresenter() {
                 protected boolean matches (GuardedSection section) {
-                    return MultiGuardedSection.matches (section, getComponent ().getComponentID () + "-resumeMIDlet", 0);
+                    return MultiGuardedSection.matches (section, getComponent ().getComponentID () + "-resumeMIDlet", 0); // NOI18N
                 }
             },
             // flow
@@ -88,7 +89,7 @@ public final class MobileDeviceResumeEventSourceCD extends ComponentDescriptor {
                     return getMobileDeviceComponent (getComponent ());
                 }
                 protected String getDisplayName () {
-                    return "Resumed";
+                    return NbBundle.getMessage (MobileDeviceCD.class, "DISP_FlowPin_MIDletResumed"); // NOI18N
                 }
                 protected String getOrder () {
                     return FlowMobileDevicePinOrderPresenter.CATEGORY_ID;
@@ -112,7 +113,7 @@ public final class MobileDeviceResumeEventSourceCD extends ComponentDescriptor {
                     section.close ();
                 }
             },
-            CodeNamePresenter.fixed ("resumeMIDlet"),
+            CodeNamePresenter.fixed ("resumeMIDlet"), // NOI18N
             // delete
             DeletePresenter.createIndeliblePresenter (),
             DeleteDependencyPresenter.createDependentOnParentComponentPresenter ()
