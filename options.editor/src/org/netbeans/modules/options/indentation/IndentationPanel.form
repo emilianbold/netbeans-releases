@@ -27,11 +27,11 @@
               </Group>
               <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="cbExpandTabsToSpaces" alignment="0" min="-2" pref="233" max="-2" attributes="0"/>
                   <Component id="sNumberOfSpacesPerIndent" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="sTabSize" min="-2" max="-2" attributes="0"/>
+                  <Component id="cbExpandTabsToSpaces" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="61" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="266" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
