@@ -61,6 +61,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
         return suite;
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         testFile = getFile(getSourceDir(), getSourcePckg() + "MethodBodyText.java");
@@ -69,7 +70,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     public void testSetBodyText() throws java.io.IOException, FileStateInvalidException {
         System.err.println("testSetBodyText");
         JavaSource src = getJavaSource(testFile);
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -98,7 +99,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     public void testCreateWithBodyText() throws java.io.IOException, FileStateInvalidException {
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -114,9 +115,9 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                             make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
                             "method2",
                             make.PrimitiveType(TypeKind.VOID),
-                            Collections.EMPTY_LIST,
-                            Collections.EMPTY_LIST,
-                            Collections.EMPTY_LIST,
+                            Collections.<TypeParameterTree>emptyList(),
+                            Collections.<VariableTree>emptyList(),
+                            Collections.<ExpressionTree>emptyList(),
                             body.toString(),
                             null
                         );
@@ -137,7 +138,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
     
     public void testCreateReturnBooleanBodyText() throws java.io.IOException, FileStateInvalidException {
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -149,9 +150,9 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                         make.Modifiers(Collections.singleton(Modifier.PUBLIC)),
                         "equals",
                         make.PrimitiveType(TypeKind.BOOLEAN),
-                        Collections.EMPTY_LIST,
-                        Collections.EMPTY_LIST,
-                        Collections.EMPTY_LIST,
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
                         body.toString(),
                         null
                         );
@@ -173,7 +174,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
         System.err.println("testModifyBodyText");
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -234,7 +235,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                  
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -310,7 +311,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                  
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -366,7 +367,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                  
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -422,7 +423,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                  
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
@@ -481,7 +482,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
       
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
