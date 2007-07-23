@@ -162,7 +162,9 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
                             result[0] = false;
                         } else {
                             Element element = treePathHandle.resolveElement(info);
-                            result[0] = element.getKind() == ElementKind.CLASS;
+                            if (element != null){
+                                result[0] = element.getKind() == ElementKind.CLASS;
+                            }
                         }
                     }
                 }, true);
