@@ -224,8 +224,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
      * @throws ConfigurationException if an error
      */
     public void save(OutputStream outputStream) throws ConfigurationException {
-        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
-                new UnsupportedOperationException());
+        config.saveConfiguration(outputStream);
     }
     
     public void bindDatasourceReference(String referenceName, String jndiName) throws ConfigurationException {
