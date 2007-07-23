@@ -206,7 +206,7 @@ public class WebBrowsersOptionsModel extends DefaultListModel {
         private static int propertyPanelIDCounter = 0;
         
         public WebBrowserDesc() {
-            newName = NbBundle.getBundle(WebBrowsersModel.class).getString("LBL_ExternalBrowser_Name");
+            newName = NbBundle.getBundle(WebBrowsersOptionsModel.class).getString("LBL_ExternalBrowser_Name");
             browserSettings = createNewBrowserSettings(newName);
             findPropertyPanel();
         }
