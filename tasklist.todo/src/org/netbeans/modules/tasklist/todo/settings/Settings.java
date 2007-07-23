@@ -65,6 +65,7 @@ final public class Settings {
         ext2comments.put( "JSP", new CommentTags( "<%--", "--%>")  ); //NOI18N //NOI18N //NOI18N
         ext2comments.put( "PROPERTIES", new CommentTags("#") ); //NOI18N //NOI18N
         ext2comments.put( "SH", new CommentTags("#") ); //NOI18N //NOI18N
+        ext2comments.put( "RB", new CommentTags("#") ); //NOI18N //NOI18N
     }
     
     public static final Settings getDefault() {
