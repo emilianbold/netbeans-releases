@@ -148,7 +148,7 @@ public final class ArrayUtilities {
     }
 
     public static int digitCount(int number) {
-        return String.valueOf(number).length();
+        return String.valueOf(Math.abs(number)).length();
     }
 
     public static void appendIndex(StringBuilder sb, int index, int maxDigitCount) {

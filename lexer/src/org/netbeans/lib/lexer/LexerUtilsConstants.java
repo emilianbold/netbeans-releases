@@ -229,14 +229,13 @@ public final class LexerUtilsConstants {
         }
 
         endIndex = Math.min(tokenList.tokenCountCurrent(), endIndex);
-        int digitCount = ArrayUtilities.digitCount(endIndex);
+        int digitCount = ArrayUtilities.digitCount(endIndex - 1);
         for (int i = Math.max(startIndex, 0); i < endIndex; i++) {
             ArrayUtilities.appendSpaces(sb, indent);
-            sb.append((i == currentIndex) ? '*' : ' ');
+            sb.append((i == currentIndex) ? '*' : 'T');
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
-            appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(i), tokenHierarchy,
-                    appendEmbedded, indent + 4);
-            appendLAState(sb, tokenList, i);
+            appendTokenInfo(sb, tokenList, i, tokenHierarchy,
+                    appendEmbedded, indent);
             sb.append('\n');
         }
         return sb;
@@ -274,56 +273,72 @@ public final class LexerUtilsConstants {
         }
         return null;
     }
+    
+    public static void appendTokenInfo(StringBuilder sb, TokenList tokenList, int index,
+            TokenHierarchy tokenHierarchy, boolean appendEmbedded, int indent
+    ) {
+        appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(index),
+                tokenList.lookahead(index), tokenList.state(index),
+                tokenHierarchy, appendEmbedded, indent);
+    }
 
     public static void appendTokenInfo(StringBuilder sb, Object tokenOrEmbeddingContainer,
-    TokenHierarchy<?> tokenHierarchy, boolean appendEmbedded, int embeddedIndent) {
+            int lookahead, Object state,
+            TokenHierarchy<?> tokenHierarchy, boolean appendEmbedded, int indent
+    ) {
         if (tokenOrEmbeddingContainer == null) {
             sb.append("<NULL-TOKEN>");
-        } else if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
-            EmbeddingContainer<? extends TokenId> ec
-                    = (EmbeddingContainer<? extends TokenId>)tokenOrEmbeddingContainer;
-            sb.append("E[");
-            EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
-            boolean first = true;
-            while (etl != null) {
-                sb.append('"').append(etl.languagePath().mimePath()).append('"');
-                if (appendEmbedded) {
-                    sb.append('\n');
-                    appendTokenList(sb, etl, -1, 0, Integer.MAX_VALUE, appendEmbedded, embeddedIndent);
-                } else {
-                    if (first)
-                        first = false;
-                    else
-                        sb.append(',');
-                }
-                etl = etl.nextEmbeddedTokenList();
-            }
-            sb.append("] ");
-            appendIdentityHashCode(sb, ec);
-            sb.append(": ");
-            appendTokenInfo(sb, ec.token(), tokenHierarchy, false, embeddedIndent);
-
         } else { // regular token
-            Token<? extends TokenId> token = (Token<? extends TokenId>)tokenOrEmbeddingContainer;
+            Token<?> token; 
+            EmbeddingContainer<?> ec;
+            if (tokenOrEmbeddingContainer.getClass() == EmbeddingContainer.class) {
+                ec = (EmbeddingContainer<?>)tokenOrEmbeddingContainer;
+                token = ec.token();
+            } else {
+                ec = null;
+                token = (Token<?>)tokenOrEmbeddingContainer;
+            }
             sb.append(((AbstractToken<? extends TokenId>)token).dumpInfo(tokenHierarchy));
-            sb.append(' ');
+            appendLAState(sb, lookahead, state);
+            sb.append(", ");
             appendIdentityHashCode(sb, token);
+
+            // Check for embedding and if there is one dump it
+            if (ec != null) {
+                indent += 4;
+                // Append EC's IHC
+                sb.append("; EC-");
+                appendIdentityHashCode(sb, ec);
+                EmbeddedTokenList<? extends TokenId> etl = ec.firstEmbeddedTokenList();
+                int index = 0;
+                while (etl != null) {
+                    sb.append('\n');
+                    ArrayUtilities.appendSpaces(sb, indent);
+                    sb.append("Embedding[").append(index).append("]: \"").append(etl.languagePath().mimePath()).append("\"\n");
+                    if (appendEmbedded) {
+                        appendTokenList(sb, etl, -1, 0, Integer.MAX_VALUE, appendEmbedded, indent);
+                    }
+                    etl = etl.nextEmbeddedTokenList();
+                    index++;
+                }
+            } 
         }
     }
     
     public static void appendIdentityHashCode(StringBuilder sb, Object o) {
-        sb.append("IHC(");
+        sb.append("IHC=");
         sb.append(System.identityHashCode(o));
-        sb.append(')');
     }
     
     public static void appendLAState(StringBuilder sb, TokenList<? extends TokenId> tokenList, int index) {
-        int lookahead = tokenList.lookahead(index);
+        appendLAState(sb, tokenList.lookahead(index), tokenList.state(index));
+    }
+
+    public static void appendLAState(StringBuilder sb, int lookahead, Object state) {
         if (lookahead > 0) {
             sb.append(", la=");
             sb.append(lookahead);
         }
-        Object state = tokenList.state(index);
         if (state != null) {
             sb.append(", st=");
             sb.append(state);

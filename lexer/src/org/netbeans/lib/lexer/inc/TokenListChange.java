@@ -185,8 +185,7 @@ public final class TokenListChange<T extends TokenId> {
                 sb.append("R[");
                 ArrayUtilities.appendIndex(sb, i, digitCount);
                 sb.append("]: ");
-                LexerUtilsConstants.appendTokenInfo(sb, removedTL.tokenOrEmbeddingContainer(i),
-                        null, false, 0);
+                LexerUtilsConstants.appendTokenInfo(sb, removedTL, i, null, false, 0);
             }
         }
         if (addedTokensOrBranches() != null) {
@@ -198,7 +197,7 @@ public final class TokenListChange<T extends TokenId> {
                 ArrayUtilities.appendIndex(sb, i, digitCount);
                 sb.append("]: ");
                 LexerUtilsConstants.appendTokenInfo(sb, addedTokensOrBranches.get(i),
-                        null, false, 0);
+                        laState.lookahead(i), laState.state(i), null, false, 0);
             }
         }
         return sb.toString();

@@ -233,8 +233,6 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
      */
     public String dumpInfo(TokenHierarchy<?> tokenHierarchy) {
         StringBuilder sb = new StringBuilder();
-        sb.append(dumpInfoTokenType());
-        sb.append('(').append(id()).append(", "); // NOI18N
         CharSequence text = text();
         if (text != null) {
             sb.append('"');
@@ -251,8 +249,10 @@ public abstract class AbstractToken<T extends TokenId> extends Token<T> implemen
         } else {
             sb.append("<null-text>"); // NOI18N
         }
-        sb.append(", ").append(offset(tokenHierarchy));
-        sb.append(", ").append(length()).append(')'); // NOI18N
+        sb.append(", ").append(id != null ? id.name() + '[' + id.ordinal() + ']' : "<null-id>"); // NOI18N
+        sb.append(", ").append(offset(tokenHierarchy)); // NOI18N
+        sb.append(", ").append(length()); // NOI18N
+        sb.append(", ").append(dumpInfoTokenType());
         return sb.toString();
     }
     

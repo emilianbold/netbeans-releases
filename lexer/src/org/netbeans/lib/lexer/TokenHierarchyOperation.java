@@ -577,7 +577,11 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     }
     
     public String toString() {
-        return "TOKEN HIERARCHY:\n" + LexerUtilsConstants.appendTokenList(null, tokenList, -1).toString(); // NOI18N
+        return "TOKEN HIERARCHY" // NOI18N
+                + (mutableInputSource() != null ? " for " + mutableInputSource() : "") // NOI18N
+                + ":\n" // NOI18N
+                + LexerUtilsConstants.appendTokenList(null, tokenList, -1).toString()
+                + '\n';
     }
     
     /**
@@ -645,7 +649,7 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         StringBuilder sb  = new StringBuilder();
         TokenList<?> tokenList = checkedTokenList();
         for (int i = 0; i < indexes.length; i++) {
-            LexerUtilsConstants.appendTokenInfo(sb, tokenList.tokenOrEmbeddingContainer(i),
+            LexerUtilsConstants.appendTokenInfo(sb, tokenList, i,
                     tokenHierarchy(), false, 0);
             tokenList = EmbeddingContainer.getEmbedding(tokenList, indexes[i], languagePath.language(i));
         }
