@@ -18,48 +18,44 @@
  */
 package org.netbeans.modules.versioning.spi.testvcs;
 
-import org.netbeans.modules.versioning.spi.VersioningSystem;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
-import java.io.File;
+import javax.swing.*;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
 
 /**
- * Test versioning system.
+ * Annotator for TestVCS.
  * 
  * @author Maros Sandor
  */
-public class TestVCS extends VersioningSystem {
+public class TestVCSAnnotator extends VCSAnnotator {
+    
+    public TestVCSAnnotator() {
+    }
 
-    private static TestVCS instance;
-    private VCSInterceptor interceptor;
-    private VCSAnnotator annotator;
+    public String annotateName(String name, VCSContext context) {
+        if (name.equals("annotate-me")) {
+            return "annotated";
+        }
+        return name;
+    }
 
-    public static TestVCS getInstance() {
-        return instance;
+    public Image annotateIcon(Image icon, VCSContext context) {
+        return icon;
+    }
+
+    public Action[] getActions(VCSContext context, ActionDestination destination) {
+        return new Action[] {
+            new DummyAction()
+        };
     }
     
-    public TestVCS() {
-        instance = this;
-        interceptor = new TestVCSInterceptor();
-        annotator = new TestVCSAnnotator();
-    }
+    private static class DummyAction extends AbstractAction {
 
-    public File getTopmostManagedAncestor(File file) {
-        File topmost = null;
-        for (; file != null; file = file.getParentFile()) {
-            if (file.getName().endsWith("-test-versioned")) {
-                topmost = file;
-            }
+        public void actionPerformed(ActionEvent e) {
+            // do nothing
         }
-        return topmost;
-    }
-
-    public VCSInterceptor getVCSInterceptor() {
-        return interceptor;
-    }
-
-    public VCSAnnotator getVCSAnnotator() {
-        return annotator;
     }
 }

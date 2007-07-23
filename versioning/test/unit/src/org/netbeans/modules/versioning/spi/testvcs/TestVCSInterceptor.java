@@ -21,6 +21,7 @@ package org.netbeans.modules.versioning.spi.testvcs;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -28,18 +29,137 @@ import java.util.*;
  */
 public class TestVCSInterceptor extends VCSInterceptor {
 
-    private final TestVCS       vcs;
+    private final List<File>    beforeCreateFiles = new ArrayList<File>();
+    private final List<File>    doCreateFiles = new ArrayList<File>();
     private final List<File>    createdFiles = new ArrayList<File>();
+    private final List<File>    beforeDeleteFiles = new ArrayList<File>();
+    private final List<File>    doDeleteFiles = new ArrayList<File>();
+    private final List<File>    deletedFiles = new ArrayList<File>();
+    private final List<File>    beforeMoveFiles = new ArrayList<File>();
+    private final List<File>    afterMoveFiles = new ArrayList<File>();
+    private final List<File>    beforeEditFiles = new ArrayList<File>();
+    private final List<File>    beforeChangeFiles = new ArrayList<File>();
+    private final List<File>    afterChangeFiles = new ArrayList<File>();
 
-    public TestVCSInterceptor(TestVCS vcs) {
-        this.vcs = vcs;
+    public TestVCSInterceptor() {
+    }
+
+    public boolean beforeCreate(File file, boolean isDirectory) {
+        beforeCreateFiles.add(file);
+        return true;
+    }
+
+    public void beforeChange(File file) {
+        beforeChangeFiles.add(file);
+    }
+
+    public void afterChange(File file) {
+        afterChangeFiles.add(file);
+    }
+
+    public void doCreate(File file, boolean isDirectory) throws IOException {
+        doCreateFiles.add(file);
+        if (!file.exists()) {
+            if (isDirectory) {
+                file.mkdirs();
+            } else {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+        }
+    }
+
+    public void afterCreate(File file) {
+        createdFiles.add(file);
+    }
+
+    public boolean beforeDelete(File file) {
+        beforeDeleteFiles.add(file);
+        return true;
+    }
+
+    public void doDelete(File file) throws IOException {
+        doDeleteFiles.add(file);
+        if (file.getName().endsWith("do-not-delete")) return;
+        file.delete();
+    }
+
+    public void afterDelete(File file) {
+        deletedFiles.add(file);
+    }
+
+    public boolean beforeMove(File from, File to) {
+        beforeMoveFiles.add(from);
+        return true;
+    }
+
+    public void doMove(File from, File to) throws IOException {
+        from.renameTo(to);
+    }
+
+    public void afterMove(File from, File to) {
+        afterMoveFiles.add(from);
+    }
+
+    public void beforeEdit(File file) {
+        beforeEditFiles.add(file);
+    }
+
+    public List<File> getBeforeCreateFiles() {
+        return beforeCreateFiles;
+    }
+
+    public List<File> getDoCreateFiles() {
+        return doCreateFiles;
     }
 
     public List<File> getCreatedFiles() {
         return createdFiles;
     }
 
-    public void afterCreate(File file) {
-        createdFiles.add(file);
+    public List<File> getBeforeDeleteFiles() {
+        return beforeDeleteFiles;
+    }
+
+    public List<File> getDoDeleteFiles() {
+        return doDeleteFiles;
+    }
+
+    public List<File> getDeletedFiles() {
+        return deletedFiles;
+    }
+
+    public List<File> getBeforeMoveFiles() {
+        return beforeMoveFiles;
+    }
+
+    public List<File> getAfterMoveFiles() {
+        return afterMoveFiles;
+    }
+
+    public List<File> getBeforeEditFiles() {
+        return beforeEditFiles;
+    }
+
+    public List<File> getBeforeChangeFiles() {
+        return beforeChangeFiles;
+    }
+
+    public List<File> getAfterChangeFiles() {
+        return afterChangeFiles;
+    }
+
+    public void clearTestData() {
+        beforeCreateFiles.clear();
+        doCreateFiles.clear();
+        createdFiles.clear();
+        beforeDeleteFiles.clear();
+        doDeleteFiles.clear();
+        deletedFiles.clear();
+        beforeMoveFiles.clear();
+        afterMoveFiles.clear();
+        beforeEditFiles.clear();
+        beforeChangeFiles.clear();
+        afterChangeFiles.clear();
     }
 }

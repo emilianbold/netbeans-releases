@@ -22,9 +22,12 @@ import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileLock;
+import org.openide.util.Lookup;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSInterceptor;
 
@@ -36,6 +39,7 @@ import org.netbeans.modules.versioning.spi.testvcs.TestVCSInterceptor;
 public class VCSInterceptorTest extends TestCase {
     
     private File dataRootDir;
+    private TestVCSInterceptor inteceptor;
 
     public VCSInterceptorTest(String testName) {
         super(testName);
@@ -44,14 +48,63 @@ public class VCSInterceptorTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         dataRootDir = new File(System.getProperty("data.root.dir"));
+        Lookup.getDefault().lookupAll(VersioningSystem.class);
+        inteceptor = (TestVCSInterceptor) TestVCS.getInstance().getVCSInterceptor();
+        File f = new File(dataRootDir, "workdir/root-test-versioned/deleteme.txt");
+        FileObject fo = FileUtil.toFileObject(f);
+        if (fo != null) {
+            fo.delete();
+        }
+        inteceptor.clearTestData();
     }
 
-    public void testFileCreated() throws IOException {
+    public void testChangedFile() throws IOException {
         File f = new File(dataRootDir, "workdir/root-test-versioned");
         FileObject fo = FileUtil.toFileObject(f);
         fo = fo.createData("deleteme.txt");
         File file = FileUtil.toFile(fo);
-        TestVCSInterceptor inteceptor = (TestVCSInterceptor) TestVCS.getInstance().getVCSInterceptor();
+        OutputStream os = fo.getOutputStream();
+        os.close();
+        assertTrue(inteceptor.getBeforeCreateFiles().contains(file));
+        assertTrue(inteceptor.getDoCreateFiles().contains(file));
         assertTrue(inteceptor.getCreatedFiles().contains(file));
+        assertTrue(inteceptor.getBeforeChangeFiles().contains(file));
+        assertTrue(inteceptor.getAfterChangeFiles().contains(file));
+    }
+    
+    public void testFileProtectedAndNotDeleted() throws IOException {
+        File f = new File(dataRootDir, "workdir/root-test-versioned");
+        FileObject fo = FileUtil.toFileObject(f);
+        fo = fo.createData("deleteme.txt-do-not-delete");
+        File file = FileUtil.toFile(fo);
+        fo.delete();
+        assertTrue(file.isFile());
+        assertTrue(inteceptor.getBeforeCreateFiles().contains(file));
+        assertTrue(inteceptor.getDoCreateFiles().contains(file));
+        assertTrue(inteceptor.getCreatedFiles().contains(file));
+        assertTrue(inteceptor.getBeforeDeleteFiles().contains(file));
+        assertTrue(inteceptor.getDoDeleteFiles().contains(file));
+        assertTrue(inteceptor.getDeletedFiles().contains(file));
+    }
+
+    public void testFileCreatedLockedRenamedDeleted() throws IOException {
+        File f = new File(dataRootDir, "workdir/root-test-versioned");
+        FileObject fo = FileUtil.toFileObject(f);
+        fo = fo.createData("deleteme.txt");
+        File file = FileUtil.toFile(fo);
+        FileLock lock = fo.lock();
+        fo.rename(lock, "deleteme", "now");
+        lock.releaseLock();
+        File file2 = FileUtil.toFile(fo);
+        fo.delete();
+        assertTrue(inteceptor.getBeforeCreateFiles().contains(file));
+        assertTrue(inteceptor.getDoCreateFiles().contains(file));
+        assertTrue(inteceptor.getCreatedFiles().contains(file));
+        assertTrue(inteceptor.getBeforeEditFiles().contains(file));
+        assertTrue(inteceptor.getBeforeMoveFiles().contains(file));
+        assertTrue(inteceptor.getAfterMoveFiles().contains(file));
+        assertTrue(inteceptor.getBeforeDeleteFiles().contains(file2));
+        assertTrue(inteceptor.getDoDeleteFiles().contains(file2));
+        assertTrue(inteceptor.getDeletedFiles().contains(file2));
     }
 }
