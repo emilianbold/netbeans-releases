@@ -19,6 +19,8 @@
  */
 package org.netbeans.modules.vmd.midp.palette.wizard;
 
+import org.openide.util.NbBundle;
+
 import javax.swing.*;
 import java.util.*;
 import java.util.List;

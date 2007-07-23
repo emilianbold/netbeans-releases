@@ -35,6 +35,7 @@ import org.netbeans.modules.vmd.midp.serialization.MidpSetterPresenterSerializer
 import org.netbeans.modules.vmd.midp.serialization.MidpTypesConvertor;
 import org.netbeans.modules.vmd.midp.serialization.MidpAddImportPresenterSerializer;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -206,10 +207,10 @@ public final class ComponentInstaller {
                 ArrayList<String> properties = new ArrayList<String> ();
                 int index = 1;
                 for (VariableElement parameter : method.getParameters ()) {
-                    PropertyDescriptor property = MidpTypesConvertor.createPropertyDescriptorForParameter (fqn + "#" + constructorIndex + "#" + index, true, parameter);
+                    PropertyDescriptor property = MidpTypesConvertor.createPropertyDescriptorForParameter (fqn + "#" + constructorIndex + "#" + index, true, parameter); // NOI18N
                     item.addProperty (property);
                     properties.add (property.getName ());
-                    String displayName = parameter.getSimpleName () + " (" + constructorIndex + ". constructor - " + index + ". parameter defined in " + fqn + "class)";
+                    String displayName = NbBundle.getMessage (ComponentInstaller.class, "NAME_ConstructorParam", new Object[] { parameter.getSimpleName (), constructorIndex, index, fqn }); // NOI18N
                     item.addPresenter (new MidpPropertyPresenterSerializer (displayName, property));
                     index ++;
                 }
@@ -218,7 +219,7 @@ public final class ComponentInstaller {
             } else if (el.getKind () == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) el;
                 String name = method.getSimpleName ().toString ();
-                if (! name.startsWith ("set")  ||  name.length () < 4  ||  ! Character.isUpperCase (name.charAt (3)))
+                if (! name.startsWith ("set")  ||  name.length () < 4  ||  ! Character.isUpperCase (name.charAt (3))) // NOI18N
                     continue;
                 ArrayList<String> properties = new ArrayList<String> ();
                 List<? extends VariableElement> parameters = method.getParameters ();
@@ -226,10 +227,10 @@ public final class ComponentInstaller {
                     continue;
                 VariableElement parameter = parameters.iterator ().next ();
 
-                PropertyDescriptor property = MidpTypesConvertor.createPropertyDescriptorForParameter (fqn + "#" + name, false, parameter);
+                PropertyDescriptor property = MidpTypesConvertor.createPropertyDescriptorForParameter (fqn + "#" + name, false, parameter); // NOI18N
                 item.addProperty (property);
                 properties.add (property.getName ());
-                String displayName = parameter.getSimpleName () + " (" + name + " method parameter defined in " + fqn + "class)";
+                String displayName = NbBundle.getMessage (ComponentInstaller.class, "NAME_SetterParam", parameter.getSimpleName (), name, fqn); // NOI18N
                 item.addPresenter (new MidpPropertyPresenterSerializer (displayName, property));
 
                 item.addPresenter (new MidpSetterPresenterSerializer (name, properties));
