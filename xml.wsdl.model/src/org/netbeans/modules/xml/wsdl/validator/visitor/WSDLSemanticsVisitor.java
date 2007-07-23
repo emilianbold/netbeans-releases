@@ -892,40 +892,40 @@ public class WSDLSemanticsVisitor  implements WSDLVisitor {
      * @see WSDLVisitor#visit(ExtensibilityElement)
      */
     public void visit(ExtensibilityElement ext) {
-        if (ext instanceof WSDLSchema) {
-          /* R2105 All xsd:schema elements contained in a wsdl:types element of a
-           * DESCRIPTION MUST have a targetNamespace attribute with a valid and non-null
-           * value, UNLESS the xsd:schema element has xsd:import and/or xsd:annotation as
-           * its only child element(s).
-           */
-            SchemaModel model = ((WSDLSchema)ext).getSchemaModel();
-            if (model != null && model.getSchema() != null) {
-                String targetNamespace = model.getSchema().getTargetNamespace();
-                if (targetNamespace == null || targetNamespace.length() == 0) {
-                    Schema schema = model.getSchema();
-                    Collection<SchemaComponent> allTopLevelElements = schema.getChildren();
-                    for (SchemaComponent sc : allTopLevelElements) {
-                        if (!(sc instanceof Annotation ||
-                                sc instanceof org.netbeans.modules.xml.schema.model.Import)) {
-                            getValidateSupport().fireToDo
-                                    (Validator.ResultType.ERROR, ext,
-                                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST),
-                                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST));
-                            break;
-                        }
-                    }
-                }
-                
-                SchemaSemanticsVisitor v = new SchemaSemanticsVisitor(ext.getModel(), mValidator, mValidation, mValidatedModels);
-                model.getSchema().accept(v);
-                
-                List<ResultItem> r =  v.getResultItems();
-                if(r != null) {
-                    mResultItems.addAll(r);
-                }
-            }
-           
-        }
+//        if (ext instanceof WSDLSchema) {
+//          /* R2105 All xsd:schema elements contained in a wsdl:types element of a
+//           * DESCRIPTION MUST have a targetNamespace attribute with a valid and non-null
+//           * value, UNLESS the xsd:schema element has xsd:import and/or xsd:annotation as
+//           * its only child element(s).
+//           */
+//            SchemaModel model = ((WSDLSchema)ext).getSchemaModel();
+//            if (model != null && model.getSchema() != null) {
+//                String targetNamespace = model.getSchema().getTargetNamespace();
+//                if (targetNamespace == null || targetNamespace.length() == 0) {
+//                    Schema schema = model.getSchema();
+//                    Collection<SchemaComponent> allTopLevelElements = schema.getChildren();
+//                    for (SchemaComponent sc : allTopLevelElements) {
+//                        if (!(sc instanceof Annotation ||
+//                                sc instanceof org.netbeans.modules.xml.schema.model.Import)) {
+//                            getValidateSupport().fireToDo
+//                                    (Validator.ResultType.ERROR, ext,
+//                                    NbBundle.getMessage(WSDLSemanticsVisitor.class, VAL_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST),
+//                                    NbBundle.getMessage(WSDLSemanticsVisitor.class, FIX_SCHEMA_TARGETNAMESPACE_DOES_NOT_EXIST));
+//                            break;
+//                        }
+//                    }
+//                }
+//                
+//                SchemaSemanticsVisitor v = new SchemaSemanticsVisitor(ext.getModel(), mValidator, mValidation, mValidatedModels);
+//                model.getSchema().accept(v);
+//                
+//                List<ResultItem> r =  v.getResultItems();
+//                if(r != null) {
+//                    mResultItems.addAll(r);
+//                }
+//            }
+//           
+//        }
     }
     
     private void visitChildren(WSDLComponent w) {
