@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import org.openide.util.RequestProcessor;
 
 /**
  * Plugs into IDE filesystem and delegates annotation work to registered versioning systems.
@@ -198,79 +199,170 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             instance.refreshAnnotations(null);
         }
     }
-    
-    public void refreshAllAnnotations(boolean icon, boolean text) {
-        Set<FileSystem> filesystems = new HashSet<FileSystem>(1);
-        File[] allRoots = File.listRoots();
-        for (int i = 0; i < allRoots.length; i++) {
-            File root = allRoots[i];
-            FileObject fo = FileUtil.toFileObject(root);
-            if (fo != null) {
-                try {
-                    filesystems.add(fo.getFileSystem());
-                } catch (FileStateInvalidException e) {
-                    // ignore invalid filesystems
-                }
-            }
-        }
-        for (Iterator<FileSystem> i = filesystems.iterator(); i.hasNext();) {
-            FileSystem fileSystem = i.next();
-            fireFileStatusChanged(new FileStatusEvent(fileSystem, icon, text));                
-        }
-    }
-    
+                   
     /**
      * Refreshes annotations for all given files and all parent folders of those files.
      * 
      * @param filesToRefresh files to refresh
      */
-    void refreshAnnotations(Set<File> filesToRefresh) {
-        if (filesToRefresh == null) {
-            refreshAllAnnotations(true, true);
+    void refreshAnnotations(Set<File> files) {
+        if (files == null) {            
+            refreshAllAnnotationsTask.schedule(3000);
             return;
         }
-        Map<FileSystem, Set<FileObject>> folders = new HashMap<FileSystem, Set<FileObject>>();
-        for (File file : filesToRefresh) {
+        
+        for (File file : files) {             
+            // collect files parents and store them for the refresh
             for (File parent = file.getParentFile(); parent != null; parent = parent.getParentFile()) {
+                FileObject fo;
+                // TODO: #73233 diagnostics: remove afterwards 
                 try {
-                    FileObject fo;
-                    // TODO: #73233 diagnostics: remove afterwards 
+                    fo = FileUtil.toFileObject(parent);                        
+                } catch (IllegalArgumentException e) {
+                    Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Issue #73233 log begins:");
+                    Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Original File: " + file.getAbsolutePath());
+                    Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Illegal file: " + parent.getAbsolutePath());
+                    RuntimeException ex = new RuntimeException("Please report this and append your messages.log file to issue http://www.netbeans.org/issues/show_bug.cgi?id=73233");
+                    ex.initCause(e);
+                    throw ex;
+                }
+                addToMap(parentsToRefresh, fo);                
+            }   
+            
+            // store file for the refresh
+            FileObject fo = FileUtil.toFileObject(file);            
+            addToMap(filesToRefresh, fo);                                                    
+        }
+        
+        fireFileStatusChangedTask.schedule(3000);
+    }    
+    
+    /**
+     * Stores all files which have to be refreshed 
+     */
+    private Map<FileSystem, Set<FileObject>> filesToRefresh = new HashMap<FileSystem, Set<FileObject>>();
+    
+    /**
+     * Stores all parents from files which have to be refreshed 
+     */
+    private Map<FileSystem, Set<FileObject>> parentsToRefresh = new HashMap<FileSystem, Set<FileObject>>();        
+    
+    private RequestProcessor rp = new RequestProcessor("Versioning fire FileStatusChanged", 1, true);
+    
+    /**
+     * Refreshes all annotations and clears the maps holding all files and their parents which have to be refreshed
+     */
+    private RequestProcessor.Task refreshAllAnnotationsTask = rp.create(new Runnable() {        
+        public void run() {            
+            clearMap(filesToRefresh);
+            clearMap(parentsToRefresh);            
+            
+            Set<FileSystem> filesystems = new HashSet<FileSystem>(1);
+            File[] allRoots = File.listRoots();
+            for (int i = 0; i < allRoots.length; i++) {
+                File root = allRoots[i];
+                FileObject fo = FileUtil.toFileObject(root);
+                if (fo != null) {
                     try {
-                        fo = FileUtil.toFileObject(parent);                        
-                    } catch (IllegalArgumentException e) {
-                        Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Issue #73233 log begins:");
-                        Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Original File: " + file.getAbsolutePath());
-                        Logger.getLogger(VersioningAnnotationProvider.class.getName()).log(Level.INFO, "Illegal file: " + parent.getAbsolutePath());
-                        RuntimeException ex = new RuntimeException("Please report this and append your messages.log file to issue http://www.netbeans.org/issues/show_bug.cgi?id=73233");
-                        ex.initCause(e);
-                        throw ex;
+                        filesystems.add(fo.getFileSystem());
+                    } catch (FileStateInvalidException e) {
+                        // ignore invalid filesystems
                     }
-                    if (fo != null) {
-                        FileSystem fs = fo.getFileSystem();
-                        Set<FileObject> fsFolders = folders.get(fs);
-                        if (fsFolders == null) {
-                            fsFolders = new HashSet<FileObject>();
-                            folders.put(fs, fsFolders);
+                }
+            }
+            for (Iterator<FileSystem> i = filesystems.iterator(); i.hasNext();) {
+                FileSystem fileSystem = i.next();
+                fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));                
+            }            
+        }
+    });    
+    
+    /**
+     * Refreshes all files stored in filesToRefresh and parentsToRefresh
+     */ 
+    private RequestProcessor.Task fireFileStatusChangedTask = rp.create(new Runnable() {        
+        public void run() {
+            
+            // create and fire for all files which have to be refreshed
+            List<FileStatusEvent> fileEvents = new ArrayList<FileStatusEvent>(); 
+            List<FileStatusEvent> folderEvents = new ArrayList<FileStatusEvent>(); 
+
+            synchronized(filesToRefresh) {
+                Set<FileSystem> fileSystems = filesToRefresh.keySet();                
+                if(fileSystems == null || fileSystems.size() == 0) {
+                    return;
+                }
+                for (FileSystem fs : fileSystems) {
+                    Set<FileObject> files = new HashSet<FileObject>();
+                    Set<FileObject> folders = new HashSet<FileObject>();
+                    Set<FileObject> set = filesToRefresh.get(fs);
+                    for(FileObject fo : set) {
+                        if(fo.isFolder()) {
+                            folders.add(fo);
+                        } else {
+                            files.add(fo);
                         }
-                        fsFolders.add(fo);
+                    }        
+                    set.clear();
+                    if(files.size() > 0) {
+                        fileEvents.add(new FileStatusEvent(fs, files, false, true));
                     }
-                } catch (FileStateInvalidException e) {
-                    // ignore files in invalid filesystems
-                }
+                    if(folders.size() > 0) {
+                        folderEvents.add(new FileStatusEvent(fs, folders, true,  true));
+                    }
+                }        
+            }    
+
+            fireFileStatusEvents(fileEvents);
+            fireFileStatusEvents(folderEvents);
+
+            // create and fire events for all parent from each file which has to be refreshed
+            List<FileStatusEvent> parentEvents = new ArrayList<FileStatusEvent>(); 
+            synchronized(parentsToRefresh) {
+                Set<FileSystem> fileSystems = parentsToRefresh.keySet();
+                for (FileSystem fs : fileSystems) {            
+                    Set<FileObject> files = parentsToRefresh.get(fs);
+                    parentEvents.add(new FileStatusEvent(fs, files, true, false));                    
+                    files.clear();
+                }                                
+            }       
+            fireFileStatusEvents(parentEvents);
+        }    
+        
+        private void fireFileStatusEvents(Collection<FileStatusEvent> events) {
+            for(FileStatusEvent event : events) {
+                fireFileStatusChanged(event);
             }
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo != null) {
-                try {
-                    fireFileStatusChanged(new FileStatusEvent(fo.getFileSystem(), fo, fo.isFolder(), true));
-                } catch (FileStateInvalidException e) {
-                    // ignore files in invalid filesystems
-                }
+        }          
+    });    
+    
+    private void clearMap(Map<FileSystem, Set<FileObject>> map)  {
+        synchronized(map) {
+            if(map.size() > 0) {                
+                map.clear();
             }
-        }
-        for (Iterator i = folders.keySet().iterator(); i.hasNext();) {
-            FileSystem fs = (FileSystem) i.next();
-            Set files = folders.get(fs);
-            fireFileStatusChanged(new FileStatusEvent(fs, files, true, false));
-        }
+        }                    
     }
+    
+    private void addToMap(Map<FileSystem, Set<FileObject>> map, FileObject fo) {
+        if(fo == null) {
+            return;
+        }
+        FileSystem fs;
+        try {
+            fs = fo.getFileSystem();
+        } catch (FileStateInvalidException e) {
+            // ignore files in invalid filesystems
+            return;
+        }        
+        synchronized (map) {                        
+            Set<FileObject> set = map.get(fs);
+            if(set == null) {
+                set = new HashSet<FileObject>();
+                map.put(fs, set);
+            }
+            set.add(fo);
+        }
+    }               
+    
 }
