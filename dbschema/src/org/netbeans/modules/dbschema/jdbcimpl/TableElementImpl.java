@@ -299,6 +299,10 @@ public class TableElementImpl extends DBElementImpl implements TableElement.Impl
                                 columnName = columnName.trim();
                             unq = rs.getBoolean("NON_UNIQUE"); //NOI18N
                         }
+                        // hack for PostgreSQL bug 3480: the driver returns quotes around quoted column names
+                        if (columnName.length() >= 2 && columnName.startsWith("\"") && columnName.endsWith("\"")) { // NOI18N
+                            columnName = columnName.substring(1, columnName.length() - 1);
+                        }
                         
                         if (name == null)
                             continue;
