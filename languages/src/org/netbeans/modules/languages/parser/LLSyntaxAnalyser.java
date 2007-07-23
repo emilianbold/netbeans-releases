@@ -107,9 +107,11 @@ public class LLSyntaxAnalyser {
         cancel = false;
         Map<String,List<ASTItem>> embeddings = new HashMap<String, List<ASTItem>> ();
         ASTNode root;
-        if (rules.isEmpty () || input.eof ())
+        if (rules.isEmpty () || input.eof ()) {
             root = readNoGrammar (input, skipErrors, embeddings);
-        root = read2 (input, skipErrors, embeddings);
+        } else {
+            root = read2 (input, skipErrors, embeddings);
+        }
         if (embeddings.isEmpty ())
             return root;
         List<ASTItem> roots = new ArrayList<ASTItem> ();
@@ -152,9 +154,13 @@ public class LLSyntaxAnalyser {
         Stack<Object> stack = new Stack<Object> ();
         Node root = null, node = null;
         Iterator it = Collections.singleton ("S").iterator ();
+        boolean firstLine = true;
         do {
             int offset = input.getOffset ();
             List whitespaces = readWhitespaces (node, input, skipErrors, embeddings);
+            if (firstLine && input.eof() && whitespaces != null) {
+                return readNoGrammar(whitespaces, offset, skipErrors, embeddings);
+            }
             if (node != null)
                 offset = input.getOffset ();
             while (!it.hasNext ()) {
@@ -374,6 +380,20 @@ public class LLSyntaxAnalyser {
         Node root = new Node ("S", -1, input.getIndex (), null);
         while (!input.eof ()) {
             ASTToken token = input.read ();
+            root.addItem (readEmbeddings (token, skipErrors, embeddings));
+        }
+        return root.createASTNode ();
+    }
+    
+    private ASTNode readNoGrammar (
+        List tokens,
+        int offset,
+        boolean skipErrors,
+        Map<String,List<ASTItem>> embeddings
+    ) throws ParseException {
+        Node root = new Node ("S", -1, offset, null);
+        for (Iterator iter = tokens.iterator(); iter.hasNext(); ) {
+            ASTToken token = (ASTToken) iter.next();
             root.addItem (readEmbeddings (token, skipErrors, embeddings));
         }
         return root.createASTNode ();
