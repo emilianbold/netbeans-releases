@@ -562,7 +562,8 @@ public class SpinnerModelEditor extends PropertyEditorSupport
 
         FormListener formListener = new FormListener();
 
-        modelTypeLabel.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_ModelType")); // NOI18N
+        modelTypeLabel.setLabelFor(modelTypeCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(modelTypeLabel, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_ModelType")); // NOI18N
 
         modelTypeCombo.addActionListener(formListener);
 
@@ -570,7 +571,8 @@ public class SpinnerModelEditor extends PropertyEditorSupport
 
         modelTypePanel.setLayout(new java.awt.CardLayout());
 
-        initialDateLabel.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_InitialDate")); // NOI18N
+        initialDateLabel.setLabelFor(initialDateSpinner);
+        org.openide.awt.Mnemonics.setLocalizedText(initialDateLabel, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_InitialDate")); // NOI18N
 
         initialDateSpinner.setEnabled(false);
         initialDateSpinner.addChangeListener(formListener);
@@ -581,7 +583,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         initialNowCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         initialNowCheckBox.addActionListener(formListener);
 
-        minimumDateCheckBox.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumDate")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(minimumDateCheckBox, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumDate")); // NOI18N
         minimumDateCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         minimumDateCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         minimumDateCheckBox.addActionListener(formListener);
@@ -595,7 +597,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         minimumNowCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         minimumNowCheckBox.addActionListener(formListener);
 
-        maximumDateCheckBox.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumDate")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(maximumDateCheckBox, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumDate")); // NOI18N
         maximumDateCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         maximumDateCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         maximumDateCheckBox.addActionListener(formListener);
@@ -609,7 +611,8 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         maximumNowCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         maximumNowCheckBox.addActionListener(formListener);
 
-        calendarFieldLabel.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_CalendarField")); // NOI18N
+        calendarFieldLabel.setLabelFor(calendarFieldCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(calendarFieldLabel, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_CalendarField")); // NOI18N
 
         calendarFieldCombo.addActionListener(formListener);
 
@@ -641,7 +644,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, datePanelLayout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(initialNowCheckBox)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         datePanelLayout.setVerticalGroup(
             datePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -665,18 +668,33 @@ public class SpinnerModelEditor extends PropertyEditorSupport
                 .add(datePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(calendarFieldLabel)
                     .add(calendarFieldCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addContainerGap(45, Short.MAX_VALUE))
         );
+
+        initialDateSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_InitialDate_ACSD")); // NOI18N
+        initialNowCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_InitialNow_ACSD")); // NOI18N
+        minimumDateCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumDate_ACSD")); // NOI18N
+        minimumDateSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumDate_ACSN")); // NOI18N
+        minimumDateSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumDate_ACSD")); // NOI18N
+        minimumNowCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumNow_ACSD")); // NOI18N
+        maximumDateCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumDate_ACSD")); // NOI18N
+        maximumDateSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumDate_ACSN")); // NOI18N
+        maximumDateSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumDate_ACSD")); // NOI18N
+        maximumNowCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumNow_ACSD")); // NOI18N
+        calendarFieldCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_StepSize_ACSD")); // NOI18N
 
         modelTypePanel.add(datePanel, "date");
 
-        listItemsLabel.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_ListItems")); // NOI18N
+        listItemsLabel.setLabelFor(listItemsArea);
+        org.openide.awt.Mnemonics.setLocalizedText(listItemsLabel, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_ListItems")); // NOI18N
 
         listItemsArea.setRows(4);
         listItemsArea.addFocusListener(formListener);
         scrollPane.setViewportView(listItemsArea);
+        listItemsArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_ListItems")); // NOI18N
 
-        initialListLabel.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_InitialList")); // NOI18N
+        initialListLabel.setLabelFor(initialListCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(initialListLabel, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_InitialList")); // NOI18N
 
         initialListCombo.addActionListener(formListener);
 
@@ -687,12 +705,12 @@ public class SpinnerModelEditor extends PropertyEditorSupport
             .add(listPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(listPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)
+                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)
                     .add(listItemsLabel)
                     .add(listPanelLayout.createSequentialGroup()
                         .add(initialListLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(initialListCombo, 0, 80, Short.MAX_VALUE)))
+                        .add(initialListCombo, 0, 84, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         listPanelLayout.setVerticalGroup(
@@ -709,17 +727,21 @@ public class SpinnerModelEditor extends PropertyEditorSupport
                 .addContainerGap(13, Short.MAX_VALUE))
         );
 
+        initialListCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_InitialList_ACSD")); // NOI18N
+
         modelTypePanel.add(listPanel, "list");
 
-        numberTypeLabel.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_NumberType")); // NOI18N
+        numberTypeLabel.setLabelFor(numberTypeCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(numberTypeLabel, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_NumberType")); // NOI18N
 
         numberTypeCombo.addActionListener(formListener);
 
-        initialNumberLabel.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_InitialNumber")); // NOI18N
+        initialNumberLabel.setLabelFor(initialNumberSpinner);
+        org.openide.awt.Mnemonics.setLocalizedText(initialNumberLabel, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_InitialNumber")); // NOI18N
 
         initialNumberSpinner.addChangeListener(formListener);
 
-        minimumNumberCheckBox.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumNumber")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(minimumNumberCheckBox, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumNumber")); // NOI18N
         minimumNumberCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         minimumNumberCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         minimumNumberCheckBox.addActionListener(formListener);
@@ -727,7 +749,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         minimumNumberSpinner.setEnabled(false);
         minimumNumberSpinner.addChangeListener(formListener);
 
-        maximumNumberCheckBox.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumNumber")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(maximumNumberCheckBox, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumNumber")); // NOI18N
         maximumNumberCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         maximumNumberCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         maximumNumberCheckBox.addActionListener(formListener);
@@ -735,7 +757,8 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         maximumNumberSpinner.setEnabled(false);
         maximumNumberSpinner.addChangeListener(formListener);
 
-        stepSizeLabel.setText(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_StepSize")); // NOI18N
+        stepSizeLabel.setLabelFor(stepSizeSpinner);
+        org.openide.awt.Mnemonics.setLocalizedText(stepSizeLabel, org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_StepSize")); // NOI18N
 
         stepSizeSpinner.addChangeListener(formListener);
 
@@ -758,7 +781,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
                     .add(minimumNumberSpinner)
                     .add(maximumNumberSpinner)
                     .add(stepSizeSpinner))
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addContainerGap(56, Short.MAX_VALUE))
         );
         numberPanelLayout.setVerticalGroup(
             numberPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -783,8 +806,18 @@ public class SpinnerModelEditor extends PropertyEditorSupport
                 .add(numberPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(stepSizeLabel)
                     .add(stepSizeSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
+
+        numberTypeCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_NumberType_ACSD")); // NOI18N
+        initialNumberSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_InitialNumber_ACSD")); // NOI18N
+        minimumNumberCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumNumber_ACSD")); // NOI18N
+        minimumNumberSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumNumber_ACSN")); // NOI18N
+        minimumNumberSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MinimumNumber_ACSD")); // NOI18N
+        maximumNumberCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumNumber_ACSD")); // NOI18N
+        maximumNumberSpinner.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumNumber_ACSN")); // NOI18N
+        maximumNumberSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_MaximumNumber_ACSD")); // NOI18N
+        stepSizeSpinner.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_StepSize_ACSD")); // NOI18N
 
         modelTypePanel.add(numberPanel, "number");
 
@@ -792,11 +825,11 @@ public class SpinnerModelEditor extends PropertyEditorSupport
         defaultPanel.setLayout(defaultPanelLayout);
         defaultPanelLayout.setHorizontalGroup(
             defaultPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 163, Short.MAX_VALUE)
+            .add(0, 167, Short.MAX_VALUE)
         );
         defaultPanelLayout.setVerticalGroup(
             defaultPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 148, Short.MAX_VALUE)
+            .add(0, 150, Short.MAX_VALUE)
         );
 
         modelTypePanel.add(defaultPanel, "default");
@@ -816,7 +849,7 @@ public class SpinnerModelEditor extends PropertyEditorSupport
                     .add(org.jdesktop.layout.GroupLayout.LEADING, customizerPanelLayout.createSequentialGroup()
                         .add(modelPropertiesLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)))
+                        .add(separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         customizerPanelLayout.setVerticalGroup(
@@ -834,6 +867,8 @@ public class SpinnerModelEditor extends PropertyEditorSupport
                 .add(modelTypePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        modelTypeCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SpinnerModelEditor.class, "SpinnerModelEditor_ModelType_ACSD")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.
@@ -862,6 +897,9 @@ public class SpinnerModelEditor extends PropertyEditorSupport
             else if (evt.getSource() == calendarFieldCombo) {
                 SpinnerModelEditor.this.calendarFieldComboActionPerformed(evt);
             }
+            else if (evt.getSource() == initialListCombo) {
+                SpinnerModelEditor.this.initialListComboActionPerformed(evt);
+            }
             else if (evt.getSource() == numberTypeCombo) {
                 SpinnerModelEditor.this.numberTypeComboActionPerformed(evt);
             }
@@ -870,9 +908,6 @@ public class SpinnerModelEditor extends PropertyEditorSupport
             }
             else if (evt.getSource() == maximumNumberCheckBox) {
                 SpinnerModelEditor.this.maximumNumberCheckBoxActionPerformed(evt);
-            }
-            else if (evt.getSource() == initialListCombo) {
-                SpinnerModelEditor.this.initialListComboActionPerformed(evt);
             }
         }
 
