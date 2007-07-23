@@ -123,6 +123,7 @@ public class GenerateJBIDescriptor extends org.apache.tools.ant.Task {
         }
 
         File sourceDirectory = new File(this.mSourceDirectory);
+        File buildDirectory = new File(this.mBuildDirectory);
 
         //read project classpath
         //TODO: refactor this to use wsdl classpath
@@ -149,6 +150,10 @@ public class GenerateJBIDescriptor extends org.apache.tools.ant.Task {
         if(sourceDirectory != null) {
             List<File> srcList = new ArrayList<File>();
             srcList.add(sourceDirectory);
+            if (buildDirectory != null) {
+                srcList.add(buildDirectory);
+            }
+
             CommandlineXsltProjectXmlCatalogProvider.getInstance().setSourceDirectory(this.mSourceDirectory);
             JBIGenerator generator = new JBIGenerator(projectDirs, srcList, mSourceDirectory, mBuildDirectory);
             generator.generate();

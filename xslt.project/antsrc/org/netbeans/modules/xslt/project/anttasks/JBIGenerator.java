@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.Iterator;
 import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xslt.tmap.model.spi.ExternalModelRetriever;
@@ -48,7 +47,6 @@ public class JBIGenerator extends AbstractJBIGenerator {
     public JBIGenerator(List<File> depedentProjectDirs , List<File> sourceDirs, String srcDir, String buildDir) {
         super(srcDir, buildDir);
         myDependentProjectDirs = depedentProjectDirs;
-
         mySourceDirs = sourceDirs;
         
         Result<ExternalModelRetriever> result = Lookup.getDefault().lookup(
