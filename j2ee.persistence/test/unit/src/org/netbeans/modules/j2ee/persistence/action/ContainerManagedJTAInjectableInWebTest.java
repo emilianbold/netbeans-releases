@@ -36,6 +36,16 @@ public class ContainerManagedJTAInjectableInWebTest extends EntityManagerGenerat
     public ContainerManagedJTAInjectableInWebTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        File javaxAnnotation = new File(getWorkDir(), "javax" + File.separator + "annotation");
+        javaxAnnotation.mkdirs();
+        TestUtilities.copyStringToFile(
+                new File(javaxAnnotation, "Resource.java"), 
+                "package javax.annotation; public @interface Resource{}");
+    }
     
     public void testGenerate() throws Exception{
         
