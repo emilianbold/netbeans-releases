@@ -1,64 +1,1 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!--       
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
-*     Use is subject to license terms.
--->
-<html>
-<head>
-<title>web.xml Visual Editor: Security Constraints</title>
-<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h2><tt>web.xml</tt> Visual Editor: Security Constraints</h2>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p>Use the Security Constraints section of the <tt>web.xml</tt> Visual Editor to add and configure security constraints for your web application.</p>
-<p>The following fields appear in a <i>constraint</i> section when you create a new constraint or edit an existing one:</p>
-<ul>
-<li><b>Display Name.</b> A unique name that identifies the security constraint.</li>
-<li><b>Web Resource Collection.</b> A list of URL patterns and HTTP methods that describe a set of Web resources to be protected.
-<ul>
-<li><b>Name.</b> A unique name that identifies the web resource.</li>
-<li><b>URL Pattern.</b> URL patterns separated by commas.</li>
-<li><b>HTTP Method.</b> The HTTP method or methods used for this web resource.</li>
-<li><b>Description.</b> An optional description of the web resource.</li>
-</ul></li>
-<li><b>Enable Authentication Constraint.</b> An authorization rule that determines who belong to a particular role is permitted to access a Web resource collection.
-<ul>
-<li><b>Description.</b> An optional description of the authentication constraint.</li>
-<li><b>Role Name(s).</b> List of roles separated by commas. These roles must match the roles defined in the Security Roles table.</li>
-</ul></li>
-<li><b>Enable User Data Constraint.</b> Indicates how data between a client and a Web container should be protected. The protection can be the prevention of tampering with the data or prevention of eavesdropping on the data.
-<ul>
-<li><b>Description.</b> An optional description of the user data constraint.</li>
-<li><b>Transport Guarantee.</b> The type of guarantee for the transport: NONE, INTEGRAL, or CONFIDENTIAL.
-<ul>
-<li><b>INTEGRAL</b> ensures that communication between entities is not being tampered with by another party, especially one that can intercept and modify their communications. Integrity mechanisms can also be used to ensure that messages can only be used once.</li>
-<li><b>CONFIDENTIAL</b> ensures private communication between entities. Privacy is achieved by encrypting the message contents. </li>
-</ul>
-</li>
-</ul></li>
-</ul>
-<p>After you add a security constraint, a Remove button appears at the top of the constraint section. Click the Remove button to remove the constraint.</p>
-<dl>
-<dt><a name="seealso">See Also</a></dt>
-<dd><a href="dd_multiview_security_loginconfigNode.html"><tt>web.xml</tt> Visual Editor: Login Configuration</a></dd>
-<dd><a href="dd_multiview_security_securityrolesNode.html"><tt>web.xml</tt> Visual Editor: Security Roles</a></dd>
-<dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
-<dd><a href="../../configure/about_webapp_configure.html">About Configuring Web Applications</a></dd>
-<dd><a href="../../configure/configure_webapp_dd.html">Configuring Web Application Deployment Descriptors</a></dd>
-</dl>
-<hr>
-<small><a href="../../../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr>
-<td>&nbsp;</td>
-</tr>
-<tr>
-<td>&nbsp;</td>
-</tr>
-<tr>
-<td>&nbsp;</td>
-</tr>
-</table>
-</body>
-</html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!--       *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.*     Use is subject to license terms.--><html><head><title>web.xml Visual Editor: Security Constraints</title><link rel="StyleSheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css"></head><body><h2><tt>web.xml</tt> Visual Editor: Security Constraints</h2><p><small><a href="#seealso">See Also</a></small></p><p>Use the Security Constraints section of the <tt>web.xml</tt> Visual Editor to add and configure security constraints for your web application.</p><p>The following fields appear in a <i>constraint</i> section when you create a new constraint or edit an existing one:</p><ul><li><b>Display Name.</b> A unique name that identifies the security constraint.</li><li><b>Web Resource Collection.</b> A list of URL patterns and HTTP methods that describe a set of Web resources to be protected.<ul><li><b>Name.</b> A unique name that identifies the web resource.</li><li><b>URL Pattern.</b> URL patterns separated by commas.</li><li><b>HTTP Method.</b> The HTTP method or methods used for this web resource.</li><li><b>Description.</b> An optional description of the web resource.</li></ul></li><li><b>Enable Authentication Constraint.</b> An authorization rule that determines who belong to a particular role is permitted to access a Web resource collection.<ul><li><b>Description.</b> An optional description of the authentication constraint.</li><li><b>Role Name(s).</b> List of roles separated by commas. These roles must match the roles defined in the Security Roles table.</li></ul></li><li><b>Enable User Data Constraint.</b> Indicates how data between a client and a Web container should be protected. The protection can be the prevention of tampering with the data or prevention of eavesdropping on the data.<ul><li><b>Description.</b> An optional description of the user data constraint.</li><li><b>Transport Guarantee.</b> The type of guarantee for the transport: NONE, INTEGRAL, or CONFIDENTIAL.<ul><li><b>INTEGRAL</b> ensures that communication between entities is not being tampered with by another party, especially one that can intercept and modify their communications. Integrity mechanisms can also be used to ensure that messages can only be used once.</li><li><b>CONFIDENTIAL</b> ensures private communication between entities. Privacy is achieved by encrypting the message contents. </li></ul></li></ul></li></ul><p>After you add a security constraint, a Remove button appears at the top of the constraint section. Click the Remove button to remove the constraint.</p><dl><dt><a name="seealso">See Also</a></dt><dd><a href="dd_multiview_security_loginconfigNode.html"><tt>web.xml</tt> Visual Editor: Login Configuration</a></dd><dd><a href="dd_multiview_security_securityrolesNode.html"><tt>web.xml</tt> Visual Editor: Security Roles</a></dd><dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd><dd><a href="../../configure/about_webapp_configure.html">About Configuring Web Applications</a></dd><dd><a href="../../configure/configure_webapp_dd.html">Configuring Web Application Deployment Descriptors</a></dd></dl><hr><small><a href="../../../credits.html">Legal Notices</a></small><table border="0" cellpadding="20"><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr></table></body></html>

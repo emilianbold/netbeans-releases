@@ -1,87 +1,1 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!--       
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
-*     Use is subject to license terms.
--->
-<html>
-<head>
-<title>web.xml Visual Editor: Resource References</title>
-<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h2><tt>web.xml</tt> Visual Editor: Resource References</h2>
-<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
-<p>Use the Resource References section to add, remove, and
- view the web application's resource references.</p>
-
- <p>To access a data source, a JMS connection factory, a JavaMail session, or a URL link
-  from a web application, you must 
- declare a resource reference in the application's web application
- deployment descriptor. The resource reference specifies a JNDI name, 
- the object type, and the kind of authentication used when the resource is accessed.
- To connect the resource reference to the resource, you must map the 
- JNDI name of the former to the latter. This mapping is done in the server-specific
- deployment descriptor file, such as the <tt>sun-web.xml</tt> file for
- the Sun Java System Application Server.
-
- <p>You use the resource reference in your code to to extract the resource you need. For example,
- a resource reference defined in the <tt>web.xml</tt> file is used to extract data from a data source as follows:
-
-<pre>public BookDBAO () throws Exception {
-  try  { 
-    Context initCtx = new InitialContext();
-    Context envCtx = (Context)
-      initCtx.lookup("java:comp/env");
-    <b>DataSource ds = (DataSource) envCtx.lookup("jdbc/BookDB");</b>
-    con =  ds.getConnection();
-    System.out.println("Created connection to database.");
-  } catch (Exception ex) {
-    System.out.println("Couldn't create connection." + 
-      ex.getMessage());
-    throw new 
-      Exception("Couldn't open connection to database: "
-      + ex.getMessage());
-}</pre>  
-
- 
- <p>To declare a resource reference, you must register it in the <tt>web.xml</tt> file.
- When you do this, you provide information needed by the server to use the resource reference.</p>
- <p>You open the <tt>web.xml</tt> Visual Editor 
- from the Projects window by 
-expanding the Web Pages node, then the WEB-INF node, and then double-clicking
-the <tt>web.xml</tt> file. Click References at the top of the editor
-to open the References section, then click the Resource References header
-to open the Resource References section. 
- <p>Click Add to define a resource reference element with the following properties:
-</p><ul>
-<li><b>Resource Name.</b> Specifies the resource reference's name, such as <tt>myDataSource</tt>.</li>
-<li><b>Resource Type.</b> Specifies the variable's name for validation, such as <tt>java.lang.String</tt>.</li>
-<li><b>Authentification.</b> Specifies the source of the authentification credentials:
-<ul><li><tt>Application.</tt> Programmatic authentification, provided by the application.
-	<li><tt>Container.</tt> (Default) Provided by the caller who logged in to the server and created the component instance.</ul>
-<li><b>Sharing Scope.</b> By default, connections to a resource manager are shareable across web components in an application
- that use the same resource in the same transaction context.</li>
-<li><b>Description.</b> Specifies a description, such as <tt>Resource Reference for My Data Source</tt>.</li>
-</ul>
-<dl>
-    <dt><a name="seealso">See Also</a></dt>
-	   <dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
-	   	   <dd><a href="../../configure/about_webapp_configure.html">About Configuring Web Applications</a></dd>     
-		   	   <dd><a href="../../configure/configure_webapp_dd.html">Configuring Web Application Deployment Descriptors</a></dd>     
-      </dl> 
-<hr>
-<font size=-2><a href="../../../credits.html">Legal Notices</a></font> 
-<table border="0" cellpadding="20">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-</table>
-</body>
-</html>
-
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!--       *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.*     Use is subject to license terms.--><html><head><title>web.xml Visual Editor: Resource References</title><link rel="StyleSheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css"></head><body><h2><tt>web.xml</tt> Visual Editor: Resource References</h2><p> <small><a href="#seealso">See Also</a>&nbsp; </small> <p>Use the Resource References section to add, remove, and view the web application's resource references.</p> <p>To access a data source, a JMS connection factory, a JavaMail session, or a URL link  from a web application, you must  declare a resource reference in the application's web application deployment descriptor. The resource reference specifies a JNDI name,  the object type, and the kind of authentication used when the resource is accessed. To connect the resource reference to the resource, you must map the  JNDI name of the former to the latter. This mapping is done in the server-specific deployment descriptor file, such as the <tt>sun-web.xml</tt> file for the Sun Java System Application Server. <p>You use the resource reference in your code to to extract the resource you need. For example, a resource reference defined in the <tt>web.xml</tt> file is used to extract data from a data source as follows:<pre>public BookDBAO () throws Exception {  try  {     Context initCtx = new InitialContext();    Context envCtx = (Context)      initCtx.lookup("java:comp/env");    <b>DataSource ds = (DataSource) envCtx.lookup("jdbc/BookDB");</b>    con =  ds.getConnection();    System.out.println("Created connection to database.");  } catch (Exception ex) {    System.out.println("Couldn't create connection." +       ex.getMessage());    throw new       Exception("Couldn't open connection to database: "      + ex.getMessage());}</pre>    <p>To declare a resource reference, you must register it in the <tt>web.xml</tt> file. When you do this, you provide information needed by the server to use the resource reference.</p> <p>You open the <tt>web.xml</tt> Visual Editor  from the Projects window by expanding the Web Pages node, then the WEB-INF node, and then double-clickingthe <tt>web.xml</tt> file. Click References at the top of the editorto open the References section, then click the Resource References headerto open the Resource References section.  <p>Click Add to define a resource reference element with the following properties:</p><ul><li><b>Resource Name.</b> Specifies the resource reference's name, such as <tt>myDataSource</tt>.</li><li><b>Resource Type.</b> Specifies the variable's name for validation, such as <tt>java.lang.String</tt>.</li><li><b>Authentification.</b> Specifies the source of the authentification credentials:<ul><li><tt>Application.</tt> Programmatic authentification, provided by the application.	<li><tt>Container.</tt> (Default) Provided by the caller who logged in to the server and created the component instance.</ul><li><b>Sharing Scope.</b> By default, connections to a resource manager are shareable across web components in an application that use the same resource in the same transaction context.</li><li><b>Description.</b> Specifies a description, such as <tt>Resource Reference for My Data Source</tt>.</li></ul><dl>    <dt><a name="seealso">See Also</a></dt>	   <dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>	   	   <dd><a href="../../configure/about_webapp_configure.html">About Configuring Web Applications</a></dd>     		   	   <dd><a href="../../configure/configure_webapp_dd.html">Configuring Web Application Deployment Descriptors</a></dd>           </dl> <hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font> <table border="0" cellpadding="20">  <tr>    <td>&nbsp;</td>  </tr>  <tr>    <td>&nbsp;</td>  </tr>  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
