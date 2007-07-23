@@ -18,6 +18,7 @@
  */
 package org.netbeans.api.visual.widget;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.event.ComponentEvent;
@@ -149,6 +150,9 @@ public class ComponentWidget extends Widget {
      */
     protected final void paintWidget () {
         if (getScene ().isPaintEverything ()  ||  ! componentVisible) {
+            boolean isDoubleBuffered = component instanceof JComponent  &&  component.isDoubleBuffered ();
+            if (isDoubleBuffered)
+                ((JComponent) component).setDoubleBuffered (false);
             Graphics2D graphics = getGraphics ();
             Rectangle bounds = getClientArea ();
             AffineTransform previousTransform = graphics.getTransform ();
@@ -157,6 +161,8 @@ public class ComponentWidget extends Widget {
             graphics.scale (1 / zoomFactor, 1 / zoomFactor);
             component.paint (graphics);
             graphics.setTransform (previousTransform);
+            if (isDoubleBuffered)
+                ((JComponent) component).setDoubleBuffered (isDoubleBuffered);
         }
     }
 
