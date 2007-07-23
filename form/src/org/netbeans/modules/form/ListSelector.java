@@ -90,7 +90,8 @@ public class ListSelector extends javax.swing.JPanel {
         downButton = new javax.swing.JButton();
         selectedLabel = new javax.swing.JLabel();
 
-        availableLabel.setText(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Available")); // NOI18N
+        availableLabel.setLabelFor(availableList);
+        org.openide.awt.Mnemonics.setLocalizedText(availableLabel, org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Available")); // NOI18N
 
         availableList.setModel(new DefaultListModel());
         availableList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -99,6 +100,7 @@ public class ListSelector extends javax.swing.JPanel {
             }
         });
         availableScrollPane.setViewportView(availableList);
+        availableList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Available_ACSD")); // NOI18N
 
         addButton.setText(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Add")); // NOI18N
         addButton.setEnabled(false);
@@ -139,9 +141,10 @@ public class ListSelector extends javax.swing.JPanel {
             }
         });
         selectedScrollPane.setViewportView(selectedList);
+        selectedList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Selected_ACSD")); // NOI18N
 
         upButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/resources/up.gif"))); // NOI18N
-        upButton.setText(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Up")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Up")); // NOI18N
         upButton.setEnabled(false);
         upButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
         upButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
@@ -152,7 +155,7 @@ public class ListSelector extends javax.swing.JPanel {
         });
 
         downButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/resources/down.gif"))); // NOI18N
-        downButton.setText(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Down")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Down")); // NOI18N
         downButton.setEnabled(false);
         downButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
         downButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
@@ -162,7 +165,8 @@ public class ListSelector extends javax.swing.JPanel {
             }
         });
 
-        selectedLabel.setText(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Selected")); // NOI18N
+        selectedLabel.setLabelFor(selectedList);
+        org.openide.awt.Mnemonics.setLocalizedText(selectedLabel, org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Selected")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -214,6 +218,13 @@ public class ListSelector extends javax.swing.JPanel {
                     .add(availableScrollPane)
                     .add(selectedScrollPane)))
         );
+
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Add_ACSD")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Remove_ACSD")); // NOI18N
+        addAllButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_AddAll_ACSD")); // NOI18N
+        removeAllButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_RemoveAll_ACSD")); // NOI18N
+        upButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Up_ACSD")); // NOI18N
+        downButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Down_ACSD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void downButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonActionPerformed

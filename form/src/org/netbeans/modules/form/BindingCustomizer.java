@@ -116,6 +116,9 @@ public class BindingCustomizer extends JPanel {
         initExpressionCombo();
         initComponents();
         
+        expressionLabel.setLabelFor(expressionCombo);
+        displayExpressionLabel.setLabelFor(displayExpressionCombo);
+        
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         model.addElement(FormUtils.getBundleString("MSG_BindingCustomizer_UpdateMode1")); // NOI18N
         model.addElement(FormUtils.getBundleString("MSG_BindingCustomizer_UpdateMode2")); // NOI18N
@@ -601,6 +604,7 @@ public class BindingCustomizer extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(infoLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Bind")); // NOI18N
 
+        sourceLabel.setLabelFor(sourceCombo);
         org.openide.awt.Mnemonics.setLocalizedText(sourceLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Source")); // NOI18N
 
         sourceCombo.addActionListener(formListener);
@@ -672,12 +676,19 @@ public class BindingCustomizer extends JPanel {
                 .addContainerGap())
         );
 
+        sourceCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Source_ACSD")); // NOI18N
+        treeCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Expression_ACSD")); // NOI18N
+        importDataButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_ImportData_ACSD")); // NOI18N
+        treeCombo2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_DisplayExpression_ACSD")); // NOI18N
+
         tabbedPane.addTab(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_BindingTab"), bindingPanel); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(updatePropertiesLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_UpdateProperties")); // NOI18N
 
+        updateModeLabel.setLabelFor(updateModeCombo);
         org.openide.awt.Mnemonics.setLocalizedText(updateModeLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_UpdateMode")); // NOI18N
 
+        updateWhenLabel.setLabelFor(updateWhenCombo);
         org.openide.awt.Mnemonics.setLocalizedText(updateWhenLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_UpdateWhen")); // NOI18N
 
         nullValuePanel.setEnabled(false);
@@ -724,8 +735,10 @@ public class BindingCustomizer extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(validationLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Validation")); // NOI18N
 
+        validatorLabel.setLabelFor(validatorPanel);
         org.openide.awt.Mnemonics.setLocalizedText(validatorLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Validator")); // NOI18N
 
+        converterLabel.setLabelFor(converterPanel);
         org.openide.awt.Mnemonics.setLocalizedText(converterLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Converter")); // NOI18N
 
         if (false) {
@@ -770,6 +783,7 @@ public class BindingCustomizer extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(identificationLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Identification")); // NOI18N
 
+        nameLabel.setLabelFor(namePanel);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Name")); // NOI18N
 
         if (false) {
@@ -913,6 +927,16 @@ public class BindingCustomizer extends JPanel {
                 .addContainerGap(21, Short.MAX_VALUE))
         );
 
+        updateModeCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_UpdateMode_ACSD")); // NOI18N
+        updateWhenCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_UpdateWhen_ACSD")); // NOI18N
+        nullValuePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_NullValue_ACSD")); // NOI18N
+        incompletePathValuePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_IncompletePathValue_ACSD")); // NOI18N
+        nullValueCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_NullValue_ACSD")); // NOI18N
+        incompletePathValueCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_IncompletePathValue_ACSD")); // NOI18N
+        converterPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Converter_ACSD")); // NOI18N
+        validatorPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Validator_ACSD")); // NOI18N
+        namePanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_Name_ACSD")); // NOI18N
+
         tabbedPane.addTab(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_AdvancedTab"), advancedPanel); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -925,6 +949,8 @@ public class BindingCustomizer extends JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(tabbedPane)
         );
+
+        tabbedPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_ACSD")); // NOI18N
     }
 
     // Code for dispatching events from components to event handlers.
