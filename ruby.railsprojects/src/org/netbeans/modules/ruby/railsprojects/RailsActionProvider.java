@@ -213,8 +213,17 @@ public class RailsActionProvider implements ActionProvider {
                 saveFile(file);
             }
 
+            boolean isDebug = COMMAND_DEBUG_TEST_SINGLE.equals(command);
+ 
+            RSpecSupport rspec = new RSpecSupport(project.getProjectDirectory(),
+                    project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+            if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
+                rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context), true, isDebug);
+                return;
+            }
+            
             runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, 
-                    COMMAND_DEBUG_TEST_SINGLE.equals(command));
+                    isDebug);
             
             return;
 
