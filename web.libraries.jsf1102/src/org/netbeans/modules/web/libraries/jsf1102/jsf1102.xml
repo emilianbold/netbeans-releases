@@ -20,9 +20,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
 <library version="1.0">
-    <name>jsf1101</name>
+    <name>jsf1102</name>
     <type>j2se</type>
-    <localizing-bundle>org/netbeans/modules/web/libraries/jsf1101/Bundle</localizing-bundle>
+    <localizing-bundle>org/netbeans/modules/web/libraries/jsf1102/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
 	<resource>jar:nbinst://org.netbeans.modules.web.jsf/modules/ext/jsf-1_1_02/commons-beanutils.jar!/</resource>
