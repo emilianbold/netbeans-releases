@@ -22,6 +22,7 @@ package org.netbeans.modules.iep.model.impl;
 
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPVisitor;
+import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.ComponentUpdater;
@@ -94,5 +95,14 @@ public class ChildComponentUpdateVisitor<T extends IEPComponent> implements
 		}
 	}
 
-	
+    public void visit(org.netbeans.modules.iep.model.Component component) {
+    
+    }
+
+    public void visit(Property property) {
+    
+    }
+
+    
+        
 }

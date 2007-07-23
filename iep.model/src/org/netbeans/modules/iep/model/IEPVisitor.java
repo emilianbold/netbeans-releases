@@ -8,6 +8,11 @@ package org.netbeans.modules.iep.model;
  * 
  */
 public interface IEPVisitor {
+        
+        void visit(Component component);
+        
+        void visit(Property property);
+        
 	/*void visitTasks (TTasks tasks);
 	void visitTask (TTask task);
 	void visitImport (TImport importEl);
