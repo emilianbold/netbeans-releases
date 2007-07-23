@@ -2640,7 +2640,12 @@ public class ConfiguredTest extends TestCase {
         boolean result=false;
         try {
             List diffs = xdmUtil.compareXML(controlStr, actualStr, aCriteria);
-            this.filterNSAttrDiffs(diffs);
+            
+            // Note: XDMUtil has already filtered out unnecessary ns attribute 
+            // differences. The rest of ns attribute differences are important 
+            // and therefore should no longer be filtered out. See #108234.
+            // this.filterNSAttrDiffs(diffs);
+            
             this.filterNSPrefixDiffs(diffs);
             this.filterAttrWhitespaceDiffs(diffs);
             this.filterAttributeOrderChange(diffs);
@@ -2907,6 +2912,7 @@ public class ConfiguredTest extends TestCase {
                 /*
                  * filters or removes diffs that are ns attr "xmlns:prefix='some url'"
                  */
+    /*
     private void filterNSAttrDiffs(final List diffs) {
         List removeDiffs = new ArrayList();
         Iterator itr = diffs.iterator();
@@ -2927,7 +2933,7 @@ public class ConfiguredTest extends TestCase {
             diffs.remove((Difference) removeItr.next());
         }
     }
-    
+    */
     
     
                 /*
