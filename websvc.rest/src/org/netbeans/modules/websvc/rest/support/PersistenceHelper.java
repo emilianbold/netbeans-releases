@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -71,13 +72,8 @@ public class PersistenceHelper {
         return null;
     }
     
-    public static void addEntityClasses(Project project, ResourceBeanModel model) throws IOException {
-        List<String> classNames = new ArrayList<String>();
-        
-        for (EntityClassInfo entityClass : model.getEntityClassInfos()) {
-            classNames.add(entityClass.getType());
-        }
-        
+    public static void addEntityClasses(Project project, Collection<String> classNames) throws IOException {
+        List<String> toAdd = new ArrayList<String>(classNames);
         FileObject fobj = getPersistenceXML(project);
         Document document = getDocument(fobj);
         Element puElement = getPersistenceUnitElement(document);
@@ -85,12 +81,12 @@ public class PersistenceHelper {
         int length = nodes.getLength();
         
         for (int i = 0; i < length; i++) {
-            classNames.remove(getValue((Element) nodes.item(i)));
+            toAdd.remove(getValue((Element) nodes.item(i)));
         }
         
         Element propElement = getPropertiesElement(document);
         
-        for (String className : classNames) {   
+        for (String className : toAdd) {   
             puElement.insertBefore(createElement(document, CLASS_TAG, className),
                     propElement);
         }

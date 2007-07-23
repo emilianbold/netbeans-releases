@@ -14,7 +14,9 @@ import com.sun.source.tree.ClassTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
@@ -36,7 +38,7 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
  * @author PeterLiu
  */
 public class EntityClassInfo {
-    
+    private ModelBuilder builder;
     private Entity entity;
     private String name;
     private String type;
@@ -46,9 +48,10 @@ public class EntityClassInfo {
     
     
     /** Creates a new instance of ClassInfo */
-    public EntityClassInfo(Entity entity, Project project) {
+    public EntityClassInfo(Entity entity, Project project, ModelBuilder builder) {
+        this.entity = entity;
         this.fieldInfos = new ArrayList<FieldInfo>();
-        
+        this.builder = builder;
         try {
             final JavaSource source = SourceGroupSupport.getJavaSourceFromClassName(entity.getClass2(), project);
             source.runUserActionTask(new AbstractTask<CompilationController>() {
@@ -100,6 +103,10 @@ public class EntityClassInfo {
         }
     }
     
+    public Entity getEntity() {
+        return entity;
+    }
+    
     public String getName() {
         return name;
     }
@@ -118,6 +125,36 @@ public class EntityClassInfo {
     
     public Collection<FieldInfo> getFieldInfos() {
         return fieldInfos;
+    }
+    
+    public Set<EntityClassInfo> getEntityClosure(Set<EntityClassInfo> result) {
+        if (result.contains(this)) {
+            return result;
+        }
+        result.add(this);
+        for (EntityClassInfo info : getRelatedEntities()) {
+            result.addAll(info.getEntityClosure(result));
+        }
+        return result;
+    }
+    
+    private  Set<EntityClassInfo> relatedEntities;
+    public Set<EntityClassInfo> getRelatedEntities() {
+        if (relatedEntities != null) {
+            return relatedEntities;
+        }
+        relatedEntities = new HashSet<EntityClassInfo>();
+        Set<String> allEntityNames = builder.getAllEntityNames();
+        for (FieldInfo fi : fieldInfos) {
+            String type = fi.getType();
+            String typeArg = fi.getTypeArg();
+            if (type != null && allEntityNames.contains(type)) {
+                relatedEntities.add(builder.getEntityClassInfo(type));
+            } else if (typeArg != null && allEntityNames.contains(typeArg)) {
+                relatedEntities.add(builder.getEntityClassInfo(typeArg));
+            }
+        }
+        return relatedEntities;
     }
     
     public class FieldInfo {
