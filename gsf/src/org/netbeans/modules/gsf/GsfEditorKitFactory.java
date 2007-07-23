@@ -23,7 +23,9 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JEditorPane;
@@ -39,6 +41,8 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import javax.swing.text.TextAction;
+//import org.netbeans.api.editor.fold.FoldHierarchy;
+//import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.gsf.BracketCompletion;
 import org.netbeans.api.gsf.CancellableTask;
 import org.netbeans.api.gsf.EditorAction;
@@ -73,7 +77,7 @@ import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.NbEditorKit.NbGenerateGoToPopupAction;
 import org.netbeans.modules.editor.retouche.InstantRenameAction;
-import org.netbeans.modules.retouche.editor.GsfFormatter;
+import org.netbeans.modules.retouche.editor.fold.GsfFoldManager;
 import org.netbeans.modules.retouche.editor.hyperlink.GoToSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -98,8 +102,16 @@ import org.openide.util.NbBundle;
 public class GsfEditorKitFactory {
     private final static boolean PRETTY_PRINT_AVAILABLE = Boolean.getBoolean("ruby.prettyprint");
 
-    public static final String selectNextElementAction = "select-element-next"; //NOI18N
-    public static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
+    private static final String selectNextElementAction = "select-element-next"; //NOI18N
+    private static final String selectPreviousElementAction = "select-element-previous"; //NOI18N
+    private static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
+    private static final String nextCamelCasePosition = "next-camel-case-position"; //NOI18N
+    private static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
+    private static final String selectNextCamelCasePosition = "select-next-camel-case-position"; //NOI18N
+    private static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
+    private static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
+    private static final String expandAllCodeBlockFolds = "expand-all-code-block-folds"; //NOI18N
+    private static final String collapseAllCodeBlockFolds = "collapse-all-code-block-folds"; //NOI18N
 
     Language language;
     String mimeType;
@@ -170,11 +182,6 @@ public class GsfEditorKitFactory {
             return language.getMimeType();
         }
 
-        //        @Override
-        //        public String updateColoringName(String coloringName) {
-        //            return coloringName;
-        //        }
-
         @Override
         public Document createDefaultDocument() {
             Document doc = new GsfDocument(this.getClass(), language);
@@ -207,35 +214,8 @@ public class GsfEditorKitFactory {
             };
         }
 
-        
-
         @Override
         protected void initDocument(BaseDocument doc) {
-            //        doc.addLayer(new JavaDrawLayerFactory.JavaLayer(),
-            //                JavaDrawLayerFactory.JAVA_LAYER_VISIBILITY);
-            //    doc.addDocumentListener(new JavaDrawLayerFactory.LParenWatcher());
-            
-            // Support for custom code folding markers on line comment lines
-            //doc.putProperty(SyntaxUpdateTokens.class,
-            //    new SyntaxUpdateTokens() {
-            //        private List tokenList = new ArrayList();
-            //
-            //        public void syntaxUpdateStart() {
-            //            tokenList.clear();
-            //        }
-            //
-            //        public List syntaxUpdateEnd() {
-            //            return tokenList;
-            //        }
-            //
-            //        public void syntaxUpdateToken(TokenID id, TokenContextPath contextPath,
-            //            int offset, int length) {
-            //            if (GsfTokenId.LINE_COMMENT == id) {
-            //                tokenList.add(new TokenInfo(id, contextPath, offset, length));
-            //            }
-            //        }
-            //    });
-
             // XXX This appears in JavaKit, not sure why, but doing it just in case.
             //do not ask why, fire bug in the IZ:
             CodeTemplateManager.get(doc);
@@ -247,24 +227,6 @@ public class GsfEditorKitFactory {
             return null;
         }
 
-        /** Create the formatter appropriate for this kit */
-        @Override
-        public Formatter createFormatter() {
-            throw new RuntimeException("Not yet implemented");
-
-            //        return new GsfFormatter(this.getClass(), language, doc);
-        }
-
-        @Override
-        public void install(JEditorPane c) {
-            super.install(c);
-        }
-
-        @Override
-        public void deinstall(JEditorPane c) {
-            super.deinstall(c);
-        }
-
         @Override
         public Object clone() {
             return new GsfEditorKit();
@@ -272,6 +234,7 @@ public class GsfEditorKitFactory {
 
         @Override
         protected Action[] createActions() {
+            Action[] superActions = super.createActions();
             GsfLanguage gsfLanguage = language.getGsfLanguage();
 
             ArrayList<Action> actions = new ArrayList(10);
@@ -281,11 +244,12 @@ public class GsfEditorKitFactory {
             actions.add(new GsfDeleteCharAction(deletePrevCharAction, false));
 
             String lineCommentPrefix = (gsfLanguage != null) ? gsfLanguage.getLineCommentPrefix() : null;
-
             if (lineCommentPrefix != null) {
                 actions.add(new CommentAction(lineCommentPrefix));
                 actions.add(new UncommentAction(lineCommentPrefix));
+                actions.add(new ToggleCommentAction(lineCommentPrefix));
             }
+
             Collection<? extends EditorAction> extraActions = Lookup.getDefault().lookupAll(EditorAction.class);
             for (EditorAction action : extraActions) {
                 actions.add(new EditorActionWrapper(action));
@@ -295,15 +259,31 @@ public class GsfEditorKitFactory {
             actions.add(new PrettyPrintAction());
             actions.add(new GenericGoToDeclarationAction());
             actions.add(new GenericGenerateGoToPopupAction());
-
             actions.add(new SelectCodeElementAction(selectNextElementAction, true));
             actions.add(new SelectCodeElementAction(selectPreviousElementAction, false));
-
-
-            return TextAction.augmentList(super.createActions(),
+            //actions.add(new ExpandAllCodeBlockFolds());
+            //actions.add(new CollapseAllCodeBlockFolds());
+            actions.add(new NextCamelCasePosition(findAction(superActions, nextWordAction), language));
+            actions.add(new PreviousCamelCasePosition(findAction(superActions, previousWordAction), language));
+            actions.add(new SelectNextCamelCasePosition(findAction(superActions, selectionNextWordAction), language));
+            actions.add(new SelectPreviousCamelCasePosition(findAction(superActions, selectionPreviousWordAction), language));
+            actions.add(new DeleteToNextCamelCasePosition(findAction(superActions, removeNextWordAction), language));
+            actions.add(new DeleteToPreviousCamelCasePosition(findAction(superActions, removePreviousWordAction), language));
+            
+            return TextAction.augmentList(superActions,
                 actions.toArray(new Action[actions.size()]));
         }
         
+        private Action findAction(Action [] actions, String name) {
+            for(Action a : actions) {
+                Object nameObj = a.getValue(Action.NAME);
+                if (nameObj instanceof String && name.equals(nameObj)) {
+                    return a;
+                }
+            }
+            return null;
+        }
+
         public class PrettyPrintAction extends BaseAction {
 
             static final long serialVersionUID =-1L;
@@ -349,7 +329,7 @@ public class GsfEditorKitFactory {
                                     return;
                                 }
 
-                                FormattingPreferences preferences = new GsfFormatter.GenericFormattingPreferences(language.getFormatter().indentSize(),
+                                FormattingPreferences preferences = new GsfFormattingPreferences(language.getFormatter().indentSize(),
                                         language.getFormatter().hangingIndentSize());
                                 ParserResult result = controller.getParserResult();
                                 Caret caret = target.getCaret();
@@ -505,9 +485,6 @@ public class GsfEditorKitFactory {
                                 int nowDotPos = caret.getDot();
                                 caret.setDot(nowDotPos + 1);
                             }
-                        } else {
-//                            int nowDotPos = caret.getDot();
-//                            caret.setDot(nowDotPos + 1);
                         }
                     }
                 }
@@ -539,10 +516,6 @@ public class GsfEditorKitFactory {
 
                         if (bracketCompletion != null) {
                             boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
-
-//                            if (offset >= 0) {
-//                                caret.setDot(offset);
-//                            }
                         }
                     }
                 }
@@ -663,7 +636,6 @@ public class GsfEditorKitFactory {
                 JMenu jm = new JMenu(menuText);
                 //addAction(target, jm, ExtKit.gotoSourceAction);
                 addAction(target, jm, ExtKit.gotoDeclarationAction);
-
                 //addAction(target, jm, gotoSuperImplementationAction);
                 //addAction(target, jm, ExtKit.gotoAction);
                 return jm;
@@ -690,6 +662,202 @@ public class GsfEditorKitFactory {
         @Override
         protected Class getShortDescriptionBundleClass() {
             return gotoAction.getShortDescriptionBundleClass();
+        }
+    }
+
+    //public static class ExpandAllCodeBlockFolds extends BaseAction{
+    //    public ExpandAllCodeBlockFolds(){
+    //        super(expandAllCodeBlockFolds);
+    //        putValue(SHORT_DESCRIPTION, NbBundle.getBundle(GsfEditorKitFactory.class).getString("expand-all-code-block-folds"));
+    //        putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(GsfEditorKitFactory.class).getString("popup-expand-all-code-block-folds"));
+    //    }
+    //
+    //    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+    //        FoldHierarchy hierarchy = FoldHierarchy.get(target);
+    //        // Hierarchy locking done in the utility method
+    //        List types = new ArrayList();
+    //        types.add(GsfFoldManager.CODE_BLOCK_FOLD_TYPE);
+    //        //types.add(GsfFoldManager.IMPORTS_FOLD_TYPE);
+    //        FoldUtilities.expand(hierarchy, types);
+    //    }
+    //}
+    //
+    //public static class CollapseAllCodeBlockFolds extends BaseAction{
+    //    public CollapseAllCodeBlockFolds(){
+    //        super(collapseAllCodeBlockFolds);
+    //        putValue(SHORT_DESCRIPTION, NbBundle.getBundle(GsfEditorKitFactory.class).getString("collapse-all-code-block-folds"));
+    //        putValue(BaseAction.POPUP_MENU_TEXT, NbBundle.getBundle(GsfEditorKitFactory.class).getString("popup-collapse-all-code-block-folds"));
+    //    }
+    //
+    //    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+    //        FoldHierarchy hierarchy = FoldHierarchy.get(target);
+    //        // Hierarchy locking done in the utility method
+    //        List types = new ArrayList();
+    //        types.add(GsfFoldManager.CODE_BLOCK_FOLD_TYPE);
+    //        ///types.add(GsfFoldManager.IMPORTS_FOLD_TYPE);
+    //        FoldUtilities.collapse(hierarchy, types);
+    //    }
+    //}
+    
+    /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
+    static abstract class AbstractCamelCasePosition extends BaseAction {
+
+        private Action originalAction;
+        protected Language language;
+
+        public AbstractCamelCasePosition(String name, Action originalAction, Language language) {
+            super(name);
+            this.language = language;
+
+            if (originalAction != null) {
+                Object nameObj = originalAction.getValue(Action.NAME);
+                if (nameObj instanceof String) {
+                    // We will be wrapping around the original action, use its name
+                    putValue(NAME, nameObj);
+                    this.originalAction = originalAction;
+                }
+            }
+
+            String desc = getShortDescription();
+            if (desc != null) {
+                putValue(SHORT_DESCRIPTION, desc);
+            }
+        }
+
+        public final void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target != null) {
+                if (originalAction != null && !isUsingCamelCase()) {
+                    if (originalAction instanceof BaseAction) {
+                        ((BaseAction) originalAction).actionPerformed(evt, target);
+                    } else {
+                        originalAction.actionPerformed(evt);
+                    }
+                } else {
+                    int offset = newOffset(target);
+                    if (offset != -1) {
+                        moveToNewOffset(target, offset);
+                    }
+                }
+            }
+        }
+
+        protected abstract int newOffset(JTextComponent textComponent);
+        protected abstract void moveToNewOffset(JTextComponent textComponent, int offset);
+
+        public String getShortDescription(){
+            String name = (String)getValue(Action.NAME);
+            if (name == null) {
+                return null;
+            }
+            String shortDesc;
+            try {
+                shortDesc = NbBundle.getBundle(GsfEditorKitFactory.class).getString(name); // NOI18N
+            }catch (MissingResourceException mre){
+                shortDesc = name;
+            }
+            return shortDesc;
+        }
+
+        private boolean isUsingCamelCase() {
+            return !Boolean.getBoolean("no-ruby-camel-case-style-navigation");
+        }
+    }
+    
+    /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
+    final static class DeleteToPreviousCamelCasePosition extends SelectPreviousCamelCasePosition {
+
+        public DeleteToPreviousCamelCasePosition(Action originalAction, Language language) {
+            // XXX Why does this get called so many times?        
+            super(GsfEditorKitFactory.deletePreviousCamelCasePosition, originalAction, language);
+        }
+        protected void moveToNewOffset(JTextComponent textComponent, int offset) {
+            super.moveToNewOffset(textComponent, offset);
+            textComponent.replaceSelection("");
+        }
+    }
+    
+    /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
+    final static class DeleteToNextCamelCasePosition extends SelectNextCamelCasePosition {
+
+        public DeleteToNextCamelCasePosition(Action originalAction, Language language) {
+            super(GsfEditorKitFactory.deleteNextCamelCasePosition, originalAction, language);
+        }
+
+        protected void moveToNewOffset(JTextComponent textComponent, int offset) {
+            super.moveToNewOffset(textComponent, offset);
+            textComponent.replaceSelection("");
+        }
+    }
+    
+    /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
+    static class NextCamelCasePosition extends AbstractCamelCasePosition {
+
+        public NextCamelCasePosition(Action originalAction, Language language) {
+            this(GsfEditorKitFactory.nextCamelCasePosition, originalAction, language);
+        }
+
+        protected NextCamelCasePosition(String name, Action originalAction, Language language) {
+            super(name, originalAction, language);
+        }
+
+        protected int newOffset(JTextComponent textComponent) {
+            return CamelCaseOperations.nextCamelCasePosition(textComponent, language);
+        }
+
+        protected void moveToNewOffset(JTextComponent textComponent, int offset) {
+            textComponent.setCaretPosition(offset);
+        }
+    }
+    
+    /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
+    static class PreviousCamelCasePosition extends AbstractCamelCasePosition {
+
+        public PreviousCamelCasePosition(Action originalAction, Language language) {
+            this(GsfEditorKitFactory.previousCamelCasePosition, originalAction, language);
+        }
+
+        protected PreviousCamelCasePosition(String name, Action originalAction, Language language) {
+            super(name, originalAction, language);
+        }
+
+        protected int newOffset(JTextComponent textComponent) {
+            return CamelCaseOperations.previousCamelCasePosition(textComponent, language);
+        }
+
+        protected void moveToNewOffset(JTextComponent textComponent, int offset) {
+            textComponent.setCaretPosition(offset);
+        }
+    }
+    
+    /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
+    static class SelectNextCamelCasePosition extends NextCamelCasePosition {
+
+        public SelectNextCamelCasePosition(Action originalAction, Language language) {
+            this(GsfEditorKitFactory.selectNextCamelCasePosition, originalAction, language);
+        }
+
+        protected SelectNextCamelCasePosition(String name, Action originalAction, Language language) {
+            super(name, originalAction, language);
+        }
+
+        protected void moveToNewOffset(JTextComponent textComponent, int offset) {
+            textComponent.getCaret().moveDot(offset);
+        }
+    }
+    
+    /** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
+    static class SelectPreviousCamelCasePosition extends PreviousCamelCasePosition {
+
+        public SelectPreviousCamelCasePosition(Action originalAction, Language language) {
+            this(GsfEditorKitFactory.selectPreviousCamelCasePosition, originalAction, language);
+        }
+
+        protected SelectPreviousCamelCasePosition(String name, Action originalAction, Language language) {
+            super(name, originalAction, language);
+        }
+
+        protected void moveToNewOffset(JTextComponent textComponent, int offset) {
+            textComponent.getCaret().moveDot(offset);
         }
     }
 }

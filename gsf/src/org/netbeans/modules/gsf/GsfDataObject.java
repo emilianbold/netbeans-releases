@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
 import org.netbeans.modules.gsf.Language;
-import org.netbeans.spi.palette.PaletteController;
+//import org.netbeans.spi.palette.PaletteController;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -141,8 +141,7 @@ public class GsfDataObject extends MultiDataObject {
             }
             
             protected FileLock takeLock() throws java.io.IOException {
-                //return ((MultiDataObject)this.getDataObject()).getPrimaryEntry().takeLock();
-                return this.getFile().lock();
+                return ((MultiDataObject)this.getDataObject()).getPrimaryEntry().takeLock();
             }
             
             public @Override CloneableOpenSupport findCloneableOpenSupport() {
@@ -189,9 +188,9 @@ public class GsfDataObject extends MultiDataObject {
             ((Environment)this.env).removeSaveCookie();
         }
 
-        protected @Override CloneableEditor createCloneableEditor() {
-            return new GsfEditor(this);
-        }
+//        protected @Override CloneableEditor createCloneableEditor() {
+//            return new GsfEditor(this);
+//        }
         
         public @Override boolean close(boolean ask) {
             return super.close(ask);
@@ -207,44 +206,40 @@ public class GsfDataObject extends MultiDataObject {
         
         public GsfEditor(GenericEditorSupport sup) {
             super(sup);
-            initialize();
+ //           initialize();
         }
         
-        void associatePalette(GenericEditorSupport s) {
-            DataObject dataObject = s.getDataObject();
-            if (!(dataObject instanceof GsfDataObject)) {
-                return;
-            }
-
-            GsfDataObject gdo = (GsfDataObject)s.getDataObject();
-            PaletteController pc = gdo.language.getPalette();
-            if (pc == null) {
-                return;
-            }
-
-            Node nodes[] = { gdo.getNodeDelegate() };
-            InstanceContent instanceContent = new InstanceContent();
-            associateLookup(new ProxyLookup(new Lookup[] { new AbstractLookup(instanceContent), nodes[0].getLookup()}));
-            instanceContent.add(getActionMap());
-
-            setActivatedNodes(nodes);
-
-            instanceContent.add(pc);
-        }
-        
-        private void initialize() {
-            associatePalette((GenericEditorSupport)cloneableEditorSupport());
-        }
-
-        @Override
-        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-            super.readExternal(in);
-            initialize();
-        }
-        
-        
-        
-        
+//        void associatePalette(GenericEditorSupport s) {
+//            DataObject dataObject = s.getDataObject();
+//            if (!(dataObject instanceof GsfDataObject)) {
+//                return;
+//            }
+//
+//            GsfDataObject gdo = (GsfDataObject)s.getDataObject();
+//            PaletteController pc = gdo.language.getPalette();
+//            if (pc == null) {
+//                return;
+//            }
+//
+//            Node nodes[] = { gdo.getNodeDelegate() };
+//            InstanceContent instanceContent = new InstanceContent();
+//            associateLookup(new ProxyLookup(new Lookup[] { new AbstractLookup(instanceContent), nodes[0].getLookup()}));
+//            instanceContent.add(getActionMap());
+//
+//            setActivatedNodes(nodes);
+//
+//            instanceContent.add(pc);
+//        }
+//        
+//        private void initialize() {
+//            associatePalette((GenericEditorSupport)cloneableEditorSupport());
+//        }
+//
+//        @Override
+//        public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+//            super.readExternal(in);
+//            //initialize();
+//        }
     }
 
 //    private static ClassPath getClassPath( Document doc, String type ) {

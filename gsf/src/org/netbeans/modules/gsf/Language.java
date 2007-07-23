@@ -31,7 +31,7 @@ import org.netbeans.api.gsf.BracketCompletion;
 import org.netbeans.api.gsf.Formatter;
 import org.netbeans.api.gsf.Indexer;
 import org.netbeans.api.gsf.StructureScanner;
-import org.netbeans.spi.palette.PaletteController;
+//import org.netbeans.spi.palette.PaletteController;
 
 
 /**
@@ -139,8 +139,10 @@ public interface Language {
     /**
      * Get an associated palette controller, if any
      */
+/*
     @CheckForNull
     PaletteController getPalette();
+*/
 
     /**
      * Get an associated indexer, if any

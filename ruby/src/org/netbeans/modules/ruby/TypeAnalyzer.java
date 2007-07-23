@@ -70,6 +70,8 @@ import org.openide.filesystems.FileObject;
  * @todo A reference to "foo." in a method is an alias to "@foo" if the method
  *    has not been defined explicitly. Attributes are especially clear, but an
  *    index lookup from type analyzer may be too expensive.
+ * @todo Use some statistical results to improve this; .to_s => String, .to_f => float,
+ *   etc.
  *
  * @author Tor Norbye
  */
@@ -79,13 +81,13 @@ public class TypeAnalyzer {
 
     /** Map from variable or field(etc) name to type. */
     private Map<String, String> types;
-    private int astOffset;
-    private int lexOffset;
-    private Node root;
+    private final int astOffset;
+    private final int lexOffset;
+    private final Node root;
     /** Node we are looking for;  */
     private Node target;
-    private BaseDocument doc;
-    private FileObject fileObject;
+    private final BaseDocument doc;
+    private final FileObject fileObject;
 
     /** Creates a new instance of TypeAnalyzer for a given position.
      * The {@link #analyze} method will do the rest. */
@@ -233,7 +235,7 @@ public class TypeAnalyzer {
     }
     
     
-    private static String[] RAILS_CONTROLLER_VARS = new String[] {
+    private static final String[] RAILS_CONTROLLER_VARS = new String[] {
         // This is a bit of a trick. I really know the types of the
         // builtin fields here - @action_name, @assigns, @cookies,.
         // However, this usage is deprecated; people should be using

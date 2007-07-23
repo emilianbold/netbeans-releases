@@ -24,9 +24,6 @@ import org.netbeans.editor.DrawLayer;
 import org.netbeans.editor.DrawLayerFactory;
 import org.netbeans.editor.Formatter;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.gsf.Language;
-import org.netbeans.modules.retouche.editor.GsfFormatter;
 
 /**
  *
@@ -62,14 +59,5 @@ public class GsfDocument extends NbEditorDocument {
             return false;
         
         return super.addLayer(layer, visibility);
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        if (formatter == null) {
-            formatter = new GsfFormatter(getKitClass(), language, this);
-        }
-        
-        return formatter;
     }
 }

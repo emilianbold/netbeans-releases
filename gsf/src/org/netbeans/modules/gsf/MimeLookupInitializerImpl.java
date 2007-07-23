@@ -20,8 +20,7 @@ package org.netbeans.modules.gsf;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.netbeans.modules.gsf.Language;
+import org.netbeans.modules.gsf.GsfIndentTaskFactory;
 import org.netbeans.spi.editor.mimelookup.MimeLookupInitializer;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
@@ -39,6 +38,11 @@ import org.openide.util.lookup.Lookups;
  * @author Tor Norbye
  */
 public class MimeLookupInitializerImpl implements MimeLookupInitializer {
+
+    private static final int EDITOR_KIT_ID = 1;
+    private static final int INDENT_ID = 2;
+    private static final int BRACES_ID = 3;
+
     private String[] mimeTypes;
     private Map<String, Lookup.Result> children = new HashMap(); //<mimetype, child Lookup.Result>
     private Lookup lookup;
@@ -69,11 +73,10 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
             System.arraycopy(mimeTypes, 0, newMimeType, 0, mimeTypes.length);
             newMimeType[mimeTypes.length] = mimeType;
 
-            Lookup.Result child = (Lookup.Result)children.get(mimeType);
+            Lookup.Result child = children.get(mimeType);
 
             if (child == null) {
-                child = Lookups.fixed(new Object[] { new MimeLookupInitializerImpl(newMimeType) })
-                               .lookup(new Lookup.Template(MimeLookupInitializerImpl.class));
+                child = Lookups.fixed(new Object[]{new MimeLookupInitializerImpl(newMimeType)}).lookup(new Lookup.Template(MimeLookupInitializerImpl.class));
                 children.put(mimeType, child);
             }
 
@@ -96,47 +99,60 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
             }
 
             if (LanguageRegistry.getInstance().isSupported(mimeTypes[0])) {
-                final Language language =
-                    LanguageRegistry.getInstance().getLanguageByMimeType(mimeTypes[0]);
+                final Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeTypes[0]);
                 assert language != null;
 
                 // TODO - finer granularity. What is really initialized here is layer stuff
                 // related to the language.
                 LanguageRegistry.getInstance().initializeLanguageForEditor(language);
 
-                lookup =
-                    Lookups.fixed(new Integer[] { Integer.valueOf(1) },
-                        new InstanceContent.Convertor() {
-                            public Object convert(Object obj) {
-                                switch (((Integer)obj).intValue()) {
-                                case 1:
+                lookup = Lookups.fixed(new Integer[]{Integer.valueOf(EDITOR_KIT_ID), Integer.valueOf(INDENT_ID)}, new InstanceContent.Convertor<Integer, Object>() {
 
-                                    GsfEditorKitFactory outer =
-                                        new GsfEditorKitFactory(language);
+                    public Object convert(Integer i) {
+                        switch (i.intValue()) {
+                            case EDITOR_KIT_ID:
+                                {
+                                    GsfEditorKitFactory outer = new GsfEditorKitFactory(language);
 
                                     return outer.kit();
                                 }
+                                //case BRACES_ID: {
+                                //    return new BraceHighlighting(mimeTypes[0]);
+                                //}
+                                case INDENT_ID: {
+                                    return new GsfIndentTaskFactory();
+                                }
+                        }
 
-                                return null;
-                            }
+                        return null;
+                    }
 
-                            public Class type(Object obj) {
-                                switch (((Integer)obj).intValue()) {
-                                case 1:
+                    public Class<? extends Object> type(Integer i) {
+                        switch (i.intValue()) {
+                            case EDITOR_KIT_ID:
+                                {
                                     return GsfEditorKitFactory.GsfEditorKit.class;
                                 }
+                                case INDENT_ID: {
+                                    return GsfIndentTaskFactory.class;
+                                }
+                                //case BRACES_ID: {
+                                //    return BracesMatcherFactory.class;
+                                //}
+                        }
 
-                                return null;
-                            }
 
-                            public String id(Object obj) {
-                                return obj.toString();
-                            }
+                        return null;
+                    }
 
-                            public String displayName(Object obj) {
-                                return obj.toString();
-                            }
-                        });
+                    public String id(Integer i) {
+                        return i.toString();
+                    }
+
+                    public String displayName(Integer i) {
+                        return i.toString();
+                    }
+                });
             }
         }
 

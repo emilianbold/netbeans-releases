@@ -59,6 +59,16 @@ import org.openide.xml.XMLUtil;
  * @todo Add italics around class names in the callseqs
  * @todo Swing Text often breaks up symbols in tables where it's on the left side; try 
  *   wrapping these in &lt;nobr&gt; tags. (Look at ClassMethods.paginate for example)
+ * @todo When syntax highlighting potential ruby snippets, look for the common "=>" pattern
+ *   and only attempt to tokenize the left hand side (and POSSIBLY) the right hand side)
+ *   Look at the abbrev methods for example. It contains:
+ *    <pre>
+ *    #   %w{ car cone }.abbrev   #=> { "ca" => "car", "car" => "car",
+ *    #                                 "co" => "cone", "con" => cone",
+ *    #                                 "cone" => "cone" }
+ *    </pre>
+ *   Here I should tokenize the LHS and the RHS separately
+ *  
  *
  * @author Tor Norbye
  */

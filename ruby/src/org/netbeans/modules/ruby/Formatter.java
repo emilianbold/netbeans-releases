@@ -40,9 +40,12 @@ import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
@@ -52,6 +55,9 @@ import org.openide.util.Exceptions;
 
 /**
  * Formatting and indentation for Ruby.
+ * 
+ * @todo Handle RHTML!
+ * 
  * WARNING! This is ugly, hacky code. I've recently switched over to the Lexer,
  * and I want to make this token based; it's currently just document character based.
  *
@@ -75,79 +81,9 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
     }
     
 
-    /** Compute the line indent used for newly inserted lines */
-    public int getLineIndent(Document document, int origOffset, FormattingPreferences preferences) {
-        try {
-            BaseDocument doc = (BaseDocument)document;
-
-            int lineStart = Utilities.getRowStart(doc, origOffset);
-            int initialBalance = 0;
-            int initialIndent = 0;
-            int initialOffset = 0;
-            if (lineStart > 0) {
-                initialOffset = getFormatStableStart(doc, Utilities.getRowStart(doc, lineStart-1));
-                if (initialOffset < lineStart) {
-                    initialBalance = getBracketBalance(doc, initialOffset, lineStart);
-                    initialIndent = LexUtilities.getLineIndent(doc, initialOffset);
-                }
-            }
-            
-            int endOffset = Utilities.getRowEnd(doc, origOffset);
-            
-            // The offset we're looking for may be it
-            boolean indentEmptyLines = true;
-
-            // Build up a set of offsets and indents for lines where I know I need
-            // to adjust the offset. I will then go back over the document and adjust
-            // lines that are different from the intended indent. By doing piecemeal
-            // replacements in the document rather than replacing the whole thing,
-            // a lot of things will work better: breakpoints and other line annotations
-            // will be left in place, semantic coloring info will not be temporarily
-            // damaged, and the caret will stay roughly where it belongs.
-            List<Integer> offsets = new ArrayList<Integer>();
-            List<Integer> indents = new ArrayList<Integer>();
-
-            computeIndents(doc, initialBalance, initialIndent, initialOffset, endOffset, null, preferences, offsets, indents, indentEmptyLines);
-            
-            // Iterate in reverse order such that offsets are not affected by our edits
-            assert indents.size() == offsets.size();
-
-            for (int i = 0, n = indents.size(); i < n; i++) {
-                int indent = indents.get(i);
-                int lineBegin = offsets.get(i);
-
-                if (lineBegin == lineStart) {
-                    // Look at the previous line, and see how it's indented
-                    // in the buffer.  If it differs from the computed position,
-                    // offset my computed position (thus, I'm only going to adjust
-                    // the new line position relative to the existing editing.
-                    // This avoids the situation where you're inserting a newline
-                    // in the middle of "incorrectly" indented code (e.g. different
-                    // size than the IDE is using) and the newline position ending
-                    // up "out of sync"
-                    if (i > 0) {
-                        int prevOffset = offsets.get(i-1);
-                        int prevIndent = indents.get(i-1);
-                        int actualPrevIndent = LexUtilities.getLineIndent(doc, prevOffset);
-                        
-                        return actualPrevIndent + (indent-prevIndent);
-                    }
-                    
-                    return indent;
-                }
-            }
-
-            return LexUtilities.getLineIndent(doc, origOffset);
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-        }
-        
-        return 0;
-    }
-        
-    // TODO - preserve caret position
     public void reformat(Document document, ParserResult result, FormattingPreferences preferences,
         Caret caret) {
+        // TODO - preserve caret position
         RubyParseResult parseResult = (RubyParseResult)result;
 
         if ((parseResult == null) || (parseResult.getRealRoot() == null)) {
@@ -445,7 +381,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 token = LexUtilities.getToken(doc, Utilities.getRowFirstNonWhite(doc, offset));
                 if (token != null) {
                     id = token.id();
-                    if (id == RubyTokenId.DEF || id == RubyTokenId.ANY_KEYWORD && token.text().toString().equals("alias")) {
+                    if (id == RubyTokenId.DEF || id == RubyTokenId.ANY_KEYWORD && token.text().toString().equals("alias")) { // NOI18N
                         return false;
                     }
                 }
@@ -462,21 +398,27 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         return false;
     }
 
+    /** @todo Rewrite to handleposition inside adef to be way off.
+     * This needs to be working to pass in handing indents as well!!!
+     *  I need to 
+     */
     public void reindent(Document document, int startOffset, int endOffset, ParserResult result,
         FormattingPreferences preferences) {
         try {
-            BaseDocument doc = (BaseDocument)document;
+            BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
-           startOffset = Utilities.getRowStart(doc, startOffset);
-            int initialBalance = 0;
+            if (endOffset > doc.getLength()) {
+                endOffset = doc.getLength();
+            }
+            
+            startOffset = Utilities.getRowStart(doc, startOffset);
+            int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
+            int initialOffset = 0;
             int initialIndent = 0;
             if (startOffset > 0) {
                 int prevOffset = Utilities.getRowStart(doc, startOffset-1);
-                int initialOffset = getFormatStableStart(doc, prevOffset);
-                if (initialOffset < prevOffset) {
-                    initialBalance = getBracketBalance(doc, initialOffset, prevOffset);
-                    initialIndent = LexUtilities.getLineIndent(doc, initialOffset);
-                }
+                initialOffset = getFormatStableStart(doc, prevOffset);
+                initialIndent = LexUtilities.getLineIndent(doc, initialOffset);
             }
             
             // Build up a set of offsets and indents for lines where I know I need
@@ -493,8 +435,14 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // is used during live code template insertions for example. However, when
             // wholesale formatting a whole document, leave these lines alone.
             boolean indentEmptyLines = (startOffset != 0 || endOffset != doc.getLength());
+            boolean inRhtml = RubyUtils.isRhtmlDocument(document);
+            TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
 
-            computeIndents(doc, initialBalance, initialIndent, startOffset, endOffset, result, preferences, offsets, indents, indentEmptyLines);
+            boolean includeEnd = endOffset == doc.getLength();
+            
+            // TODO - remove initialbalance etc.
+            computeIndents(doc, initialIndent, initialOffset, endOffset, result, preferences, 
+                    offsets, indents, indentEmptyLines, includeEnd);
             
             try {
                 doc.atomicLock();
@@ -505,11 +453,53 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 for (int i = indents.size() - 1; i >= 0; i--) {
                     int indent = indents.get(i);
                     int lineBegin = offsets.get(i);
+                    
+                    if (lineBegin < lineStart) {
+                        // We're now outside the region that the user wanted reformatting;
+                        // these offsets were computed to get the correct continuation context etc.
+                        // for the formatter
+                        break;
+                    }
+                    
+                    if (lineBegin == lineStart && i > 0) {
+                        // Look at the previous line, and see how it's indented
+                        // in the buffer.  If it differs from the computed position,
+                        // offset my computed position (thus, I'm only going to adjust
+                        // the new line position relative to the existing editing.
+                        // This avoids the situation where you're inserting a newline
+                        // in the middle of "incorrectly" indented code (e.g. different
+                        // size than the IDE is using) and the newline position ending
+                        // up "out of sync"
+                        int prevOffset = offsets.get(i-1);
+                        int prevIndent = indents.get(i-1);
+                        int actualPrevIndent = LexUtilities.getLineIndent(doc, prevOffset);
+
+                        indent = actualPrevIndent + (indent-prevIndent);
+                    }
 
                     // Adjust the indent at the given line (specified by offset) to the given indent
                     int currentIndent = LexUtilities.getLineIndent(doc, lineBegin);
 
                     if (currentIndent != indent) {
+                        if (inRhtml) {
+                            // Don't mess with lines that aren't in Ruby blocks, or that start with
+                            // HTML stuff
+                            TokenSequence<?extends GsfTokenId> ts = th.tokenSequence(RubyTokenId.language());
+                            if (ts != null) {
+                                ts.move(lineStart);
+                                if (ts.moveNext()) {
+                                    // Look at the language at this location
+                                    LanguagePath path = ts.languagePath();
+                                    if (!(path.innerLanguage() == RubyTokenId.language() ||
+                                            path.innerLanguage().mimeType().equals(RubyInstallation.RHTML_MIME_TYPE))) {
+                                        // HTML etc. - skip
+                                        continue;
+                                    }
+                                }
+                            }
+                        }
+                        // In RHTML files 
+                        
                         doc.getFormatter().changeRowIndent(doc, lineBegin, indent);
                     }
                 }
@@ -521,11 +511,11 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         }
     }
 
-    public void computeIndents(BaseDocument doc, int initialBalance, int initialIndent, int startOffset, int endOffset, ParserResult result,
+    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, ParserResult result,
         FormattingPreferences preferences,
             List<Integer> offsets,
             List<Integer> indents,
-            boolean indentEmptyLines
+            boolean indentEmptyLines, boolean includeEnd
         ) {
         // PENDING:
         // The reformatting APIs in NetBeans should be lexer based. They are still
@@ -547,7 +537,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
             // State:
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
-            int end = Utilities.getRowEnd(doc, endOffset); // The line's end
+            int end = endOffset; //Utilities.getRowEnd(doc, endOffset); // The line's end
             
             int indentSize = preferences != null ? preferences.getIndentation() : 2;
             int hangingIndentSize = preferences != null ? preferences.getHangingIndentation() : indentSize;
@@ -561,10 +551,10 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             // damaged, and the caret will stay roughly where it belongs.
 
             // The token balance at the offset
-            int balance = initialBalance;
+            int balance = 0;
             boolean continued = false;
 
-            while (offset <= end) {
+            while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
                 int indent; // The indentation to be used for the current line
 
                 int hangingIndent = continued ? (hangingIndentSize) : 0;

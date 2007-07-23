@@ -18,8 +18,13 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 
 /**
- * TODO: test that if you insert x="" and then DELETE the ", it wipes out BOTH of them!
- *
+ * @todo Test that if you insert x="" and then DELETE the ", it wipes out BOTH of them!
+ * @todo Try typing in whole source files and other than tracking missing end and } closure
+ *   statements the buffer should be identical - both in terms of quotes to the rhs not having
+ *   accumulated as well as indentation being correct.
+ * 
+ * 
+ * 
  * @author Tor Norbye
  */
 public class BracketCompleterTest extends RubyTestBase {
@@ -92,8 +97,13 @@ public class BracketCompleterTest extends RubyTestBase {
             Formatter formatter = new Formatter();
             FormattingPreferences preferences = new IndentPrefs(2,2);
             //ParserResult result = parse(fo);
-            int indent = formatter.getLineIndent(doc, insertOffset+1, preferences);
-            doc.getFormatter().changeRowIndent(doc, Utilities.getRowStart(doc, insertOffset+1), indent);
+
+            int startPos = caret.getDot()+1;
+            int endPos = startPos+1;
+
+            //ParserResult result = parse(fo);
+            formatter.reindent(doc, startPos, endPos, null, preferences);
+            int indent = LexUtilities.getLineIndent(doc, insertOffset+1);
 
             //bc.afterBreak(doc, insertOffset, caret);
             String formatted = doc.getText(0, doc.getLength());

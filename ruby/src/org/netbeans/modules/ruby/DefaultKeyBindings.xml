@@ -23,8 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 copy of this file in ide/applemenu. Check whether I need to do something there!
 -->
 <bindings>
-    <bind actionName="comment" key="D-SLASH"/>
-    <bind actionName="uncomment" key="DS-SLASH"/>
+    <bind actionName="toggle-comment" key="D-SLASH"/>
     <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="goto-help" key="O-F1"/>
     <bind actionName="goto-declaration" key="O-G"/>

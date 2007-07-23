@@ -20,7 +20,8 @@ class RubyOptions {
     // Whitespace around CONTENTS of a paren expression: optional
     
     // NO space between methods and parens, SPACE between keywords and parens!
-    
+
+    // Make comment-action put comments at the left margin or at the indented position
     
 }
 

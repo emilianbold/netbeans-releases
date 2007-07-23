@@ -35,7 +35,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="**/**Test.class"/>
-<exclude name="org/netbeans/modules/ruby/FormattingTest.class/testReformatAll"/>
 <exclude name="org/netbeans/modules/ruby/RubyLexerTest.class/testDefRegexp"/>
 <exclude name="org/netbeans/modules/ruby/RubyLexerRandomTest.class"/>
             </patternset>

@@ -32,8 +32,6 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.ruby.RubyMimeResolver;
-import org.netbeans.modules.ruby.lexer.RubyLexer;
-import org.netbeans.modules.ruby.lexer.RubyStringTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
 import org.netbeans.spi.lexer.Lexer;
@@ -41,7 +39,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 
 /**
- *
+ * @todo I should handle embeddings of =begin/=end token pairs such that they
+ *   get comment/rdoc highlighting!
+ * 
  * @author Tor Norbye
  */
 public class RubyTokenId extends GsfTokenId {

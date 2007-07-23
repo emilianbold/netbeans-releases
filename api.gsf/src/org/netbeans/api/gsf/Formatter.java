@@ -33,19 +33,6 @@ import org.netbeans.api.gsf.ParserResult;
  */
 public interface Formatter {
     /**
-     * The line at the given offset has been entered (e.g. a newline pressed);
-     * process it if you want. Some implementations may want to for example
-     * change capitalization of tokens on the line.
-     */
-
-    //void processLine(Document doc, int offset);
-
-    /**
-     * Compute the desired indent (in spaces) for the line containing the given offset.
-     */
-    int getLineIndent(Document doc, int offset, FormattingPreferences preferences);
-
-    /**
      * Reformat the given portion of source code from startOffset to endOffset in the document.
      * You may use the provided parse tree information, if available, to guide formatting decisions.
      * The caret (if any) should be updated to the corresponding position that it was at before formatting.     * 

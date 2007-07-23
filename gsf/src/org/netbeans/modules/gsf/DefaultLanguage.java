@@ -34,7 +34,7 @@ import org.netbeans.api.gsf.Parser;
 import org.netbeans.api.gsf.GsfLanguage;
 import org.netbeans.api.gsf.HintsProvider;
 import org.netbeans.api.gsf.StructureScanner;
-import org.netbeans.spi.palette.PaletteController;
+//import org.netbeans.spi.palette.PaletteController;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -61,7 +61,7 @@ public class DefaultLanguage implements Language {
     private Indexer indexer;
     private StructureScanner structure;
     private HintsProvider hintsProvider;;
-    private PaletteController palette;
+    //private PaletteController palette;
     private FileObject parserFile;
     private FileObject languageFile;
     private FileObject navigationFilterFile;
@@ -84,7 +84,7 @@ public class DefaultLanguage implements Language {
     public DefaultLanguage(String displayName, String iconBase, String mime, List<String> extensions, List<Action> actions,
             GsfLanguage gsfLanguage, Parser parser, Completable completionProvider, InstantRenamer renamer,
             DeclarationFinder declarationFinder, Formatter formatter, BracketCompletion bracketcompletion, Indexer indexer,
-            StructureScanner structure, PaletteController palette) {
+            StructureScanner structure, /*PaletteController*/Object palette) {
         this.displayName = displayName;
         this.iconBase = iconBase;
         this.mime = mime;
@@ -99,7 +99,7 @@ public class DefaultLanguage implements Language {
         this.bracketCompletion = bracketCompletion;
         this.indexer = indexer;
         this.structure = structure;
-        this.palette = palette;
+//        this.palette = palette;
     }
 
     public String getDisplayName() {
@@ -350,16 +350,16 @@ public class DefaultLanguage implements Language {
         this.hintsProviderFile = hintsProviderFile;
     }
     
-    public PaletteController getPalette() {
-        if (palette == null && paletteFile != null) {
-            palette = (PaletteController)createInstance(paletteFile);
-            if (palette == null) {
-                // Don't keep trying
-                paletteFile = null;
-            }
-        }
-        return palette;
-    }
+//    public PaletteController getPalette() {
+//        if (palette == null && paletteFile != null) {
+//            palette = (PaletteController)createInstance(paletteFile);
+//            if (palette == null) {
+//                // Don't keep trying
+//                paletteFile = null;
+//            }
+//        }
+//        return palette;
+//    }
 
     public void setPaletteFile(FileObject paletteFile) {
         this.paletteFile = paletteFile;

@@ -81,6 +81,9 @@ import org.openide.util.Exceptions;
  *   I should make the "indentation tokens" list into a map and associate them
  *   with their corresponding tokens, such that an else is only lined up with an if,
  *   etc.
+ * @todo Pressing newline in a parameter list doesn't work well if it's on a blockdefining
+ *    line - e.g. def foo(a,b => it will insert the end BEFORE the closing paren!
+ * @todo Pressing "/" after a number shouldn't introduce regexp bracket matching
  *
  * @author Tor Norbye
  */
