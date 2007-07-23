@@ -30,18 +30,16 @@ import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorResourcesComboBox;
 import org.openide.util.NbBundle;
-
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.TaskEditorElement;
 
 /**
+ * 
  * @author Karol Harezlak
  */
-
 public final class WaitScreenCD extends ComponentDescriptor {
     
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.WaitScreen"); // NOI18N
@@ -72,8 +70,9 @@ public final class WaitScreenCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(PropertiesCategories.CATEGORY_TASK) // TODO
-//                   .addProperty("Task", PropertyEditorResourcesComboBox.create(CancellableTaskCD.TYPEID, NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); //NOI18N
-                   .addProperty("Task", PropertyEditorResource.createInstance(new TaskEditorElement(), NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); //NOI18N
+                   .addProperty("Task", PropertyEditorResource.createInstance(new TaskEditorElement(), // NOI18N
+                        NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), // NOI18N
+                        NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); // NOI18N
     }
 
     private Presenter createSetterPresenter () {
@@ -82,7 +81,7 @@ public final class WaitScreenCD extends ComponentDescriptor {
             .addParameters (MidpParameter.create (PROP_TASK))
             .addParameters (MidpCustomCodePresenterSupport.createWaitScreenCommandParameter ())
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY))
-            .addSetters (MidpSetter.createSetter ("setTask", MidpVersionable.MIDP_2).addParameters (PROP_TASK)); //NOI18N
+            .addSetters (MidpSetter.createSetter ("setTask", MidpVersionable.MIDP_2).addParameters (PROP_TASK)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {

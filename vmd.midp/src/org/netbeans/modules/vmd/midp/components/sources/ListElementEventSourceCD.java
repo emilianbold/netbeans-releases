@@ -43,13 +43,12 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 
 /**
@@ -85,12 +84,13 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
             .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-            .addProperty ("String", PropertyEditorString.createInstance (), PROP_STRING)
-            .addProperty ("Image", PropertyEditorResourcesComboBox.createImagePropertyEditor (), PROP_IMAGE)
-            .addProperty("Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_FONT)
-            .addProperty ("Selected", PropertyEditorBooleanUC.createInstance(), PROP_SELECTED);
+            .addProperty ("String", PropertyEditorString.createInstance (), PROP_STRING) // NOI18N
+            .addProperty ("Image", PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
+            .addProperty("Font", PropertyEditorResource.createFontPropertyEditor(), PROP_FONT) // NOI18N
+            .addProperty ("Selected", PropertyEditorBooleanUC.createInstance(), PROP_SELECTED); // NOI18N
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, InspectorPositionPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, ActionsPresenter.class);
@@ -104,21 +104,21 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            
-            // info
             InfoPresenter.create (ElementSupport.createListElementInfoResolver ()),
             // properties
             createPropertiesPresenter (),
             // inspector
             InspectorPositionPresenter.create(new ComponentsCategoryPC(MidpInspectorSupport.TYPEID_ELEMENTS)),new ScreenMoveArrayAcceptPresenter(ListCD.PROP_ELEMENTS, ListElementEventSourceCD.TYPEID),
-            new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"),
+            new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"), // NOI18N
             MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter(),
             MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter(),
             new AcceptTypePresenter(EventHandlerCD.TYPEID) {
+                @Override
                 protected boolean notifyAccepting (TypeID producerTypeID) {
                     DescriptorRegistry registry = getComponent().getDocument().getDescriptorRegistry();
                     return ! registry.isInHierarchy (ListEventHandlerCD.TYPEID, producerTypeID);
                 }
+                @Override
                 protected void notifyCreated (DesignComponent component) {
                     MidpDocumentSupport.updateEventHandlerWithNew (getComponent (), component);
                 }
@@ -137,18 +137,22 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
                     return FlowListElementPinOrderPresenter.CATEGORY_ID;
                 }
 
+                @Override
                 protected boolean canRename () {
                     return getComponent () != null;
                 }
 
+                @Override
                 protected String getRenameName () {
                     return (String) getComponent ().readProperty (PROP_STRING).getPrimitiveValue ();
                 }
 
+                @Override
                 protected void setRenameName (String name) {
                     getComponent ().writeProperty (PROP_STRING, MidpTypes.createStringValue (name));
                 }
 
+                @Override
                 protected DesignEventFilter getEventFilter () {
                     return super.getEventFilter ().addParentFilter (getComponent (), 1, false);
                 }
@@ -166,7 +170,6 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
             },
             // screen
             new ListElementEventSourceDisplayPresenter()
-        
         );
     }
 

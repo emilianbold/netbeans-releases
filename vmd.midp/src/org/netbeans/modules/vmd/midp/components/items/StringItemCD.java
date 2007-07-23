@@ -31,7 +31,6 @@ import org.netbeans.modules.vmd.midp.components.*;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.StringItemDisplayPresenter;
@@ -68,6 +67,7 @@ public class StringItemCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);
@@ -76,9 +76,9 @@ public class StringItemCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Text", PropertyEditorString.createInstance(), PROP_TEXT) 
-                .addProperty("Appearance", PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID), ItemCD.PROP_APPEARANCE_MODE)
-                .addProperty("Font", PropertyEditorResource.createFontPropertyEditor(), PROP_FONT);
+                .addProperty("Text", PropertyEditorString.createInstance(), PROP_TEXT) // NOI18N
+                .addProperty("Appearance", PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID), ItemCD.PROP_APPEARANCE_MODE) // NOI18N
+                .addProperty("Font", PropertyEditorResource.createFontPropertyEditor(), PROP_FONT); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {
@@ -87,8 +87,8 @@ public class StringItemCD extends ComponentDescriptor {
                 .addParameters (ItemCode.createAppearanceModeParameter ())
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, PROP_TEXT))
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2).addParameters(ItemCD.PROP_LABEL, PROP_TEXT, ItemCode.PARAM_APPEARANCE_MODE))
-                .addSetters(MidpSetter.createSetter("setText", MidpVersionable.MIDP).addParameters(PROP_TEXT))
-                .addSetters(MidpSetter.createSetter("setFont", MidpVersionable.MIDP_2).addParameters(PROP_FONT));
+                .addSetters(MidpSetter.createSetter("setText", MidpVersionable.MIDP).addParameters(PROP_TEXT)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setFont", MidpVersionable.MIDP_2).addParameters(PROP_FONT)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {

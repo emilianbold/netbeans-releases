@@ -35,10 +35,8 @@ import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midpnb.screen.display.AbstractInfoDisplayPresenter;
-
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
@@ -46,6 +44,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptProducerKindPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 
 /**
  *
@@ -55,11 +54,11 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.AbstractInfoScreen"); // NOI18N
 
-    public static final String PROP_IMAGE = "image"; //NOI18N
-    public static final String PROP_TEXT = "text"; //NOI18N
-    public static final String PROP_TEXT_FONT = "textFont"; //NOI18N
+    public static final String PROP_IMAGE = "image"; // NOI18N
+    public static final String PROP_TEXT = "text"; // NOI18N
+    public static final String PROP_TEXT_FONT = "textFont"; // NOI18N
 
-    public static final String[] MIDP_NB_LIBRARY = {"NetBeans MIDP Components"}; //NOI18N
+    public static final String[] MIDP_NB_LIBRARY = {"NetBeans MIDP Components"}; // NOI18N
 
     public AbstractInfoScreenCD () {
     }
@@ -72,6 +71,7 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP_2;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         MidpProjectSupport.addLibraryToProject (component.getDocument (), MIDP_NB_LIBRARY);
     }
@@ -84,6 +84,7 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);
@@ -92,17 +93,17 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Text", PropertyEditorString.createInstance(), PROP_TEXT)
-                .addProperty("Image", PropertyEditorResourcesComboBox.createImagePropertyEditor(), PROP_IMAGE)
-                .addProperty("Text Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_TEXT_FONT);
+                .addProperty("Text", PropertyEditorString.createInstance(), PROP_TEXT) // NOI18N
+                .addProperty("Image", PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
+                .addProperty("Text Font", PropertyEditorResource.createFontPropertyEditor(), PROP_TEXT_FONT); // NOI18N
     }
 
     private Presenter createSetterPresenter () {
         return new CodeSetterPresenter ()
             .addParameters (MidpParameter.create (PROP_TEXT, PROP_IMAGE, PROP_TEXT_FONT))
-            .addSetters (MidpSetter.createSetter ("setImage", MidpVersionable.MIDP_2).addParameters (PROP_IMAGE))
-            .addSetters (MidpSetter.createSetter ("setText", MidpVersionable.MIDP_2).addParameters (PROP_TEXT))
-            .addSetters (MidpSetter.createSetter ("setTextFont", MidpVersionable.MIDP_2).addParameters (PROP_TEXT_FONT));
+            .addSetters (MidpSetter.createSetter ("setImage", MidpVersionable.MIDP_2).addParameters (PROP_IMAGE)) // NOI18N
+            .addSetters (MidpSetter.createSetter ("setText", MidpVersionable.MIDP_2).addParameters (PROP_TEXT)) // NOI18N
+            .addSetters (MidpSetter.createSetter ("setTextFont", MidpVersionable.MIDP_2).addParameters (PROP_TEXT_FONT)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {

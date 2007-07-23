@@ -34,11 +34,9 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.ImageItemDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.ImageItemInjectorPresenter;
-
 import java.util.*;
 import org.netbeans.modules.vmd.midp.components.MidpAcceptTrensferableKindPresenter;
 import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
@@ -65,6 +63,7 @@ public class ImageItemCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_ALT_TEXT, MidpTypes.createStringValue ("<Missing Image>")); // TODO - should it be here?
     }
@@ -77,6 +76,7 @@ public class ImageItemCD extends ComponentDescriptor {
         );
     }
     
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);
@@ -85,9 +85,9 @@ public class ImageItemCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Alternate Text", PropertyEditorString.createInstance(), PROP_ALT_TEXT)
-                .addProperty("Appearance", PropertyEditorComboBox.createInstance(getAppearanceValues(), TYPEID), ItemCD.PROP_APPEARANCE_MODE)
-                .addProperty("Image", PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE);
+                .addProperty("Alternate Text", PropertyEditorString.createInstance(), PROP_ALT_TEXT) // NOI18N
+                .addProperty("Appearance", PropertyEditorComboBox.createInstance(getAppearanceValues(), TYPEID), ItemCD.PROP_APPEARANCE_MODE) // NOI18N
+                .addProperty("Image", PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE); // NOI18N
     }
     
     private static Presenter createSetterPresenter() {
@@ -96,8 +96,8 @@ public class ImageItemCD extends ComponentDescriptor {
                 .addParameters (ItemCode.createAppearanceModeParameter ())
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, PROP_IMAGE, ItemCD.PROP_LAYOUT, PROP_ALT_TEXT))
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2).addParameters(ItemCD.PROP_LABEL, PROP_IMAGE, ItemCD.PROP_LAYOUT, PROP_ALT_TEXT, ItemCode.PARAM_APPEARANCE_MODE))
-                .addSetters(MidpSetter.createSetter("setAltText", MidpVersionable.MIDP).addParameters(PROP_ALT_TEXT))
-                .addSetters(MidpSetter.createSetter("setImage", MidpVersionable.MIDP).addParameters(PROP_IMAGE));
+                .addSetters(MidpSetter.createSetter("setAltText", MidpVersionable.MIDP).addParameters(PROP_ALT_TEXT)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setImage", MidpVersionable.MIDP).addParameters(PROP_IMAGE)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {

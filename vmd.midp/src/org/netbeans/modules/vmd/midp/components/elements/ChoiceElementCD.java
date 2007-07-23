@@ -41,13 +41,12 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.ChoiceElementDisplayPresenter;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 
 /**
@@ -64,7 +63,7 @@ public final class ChoiceElementCD extends ComponentDescriptor {
     public static final String PROP_STRING = "string"; // NOI18N
     public static final String PROP_IMAGE = ImageCD.PROP_IMAGE;
     public static final String PROP_SELECTED = "selected"; // NOI18N
-    public static final String PROP_FONT = "font" ;  // NOI18N
+    public static final String PROP_FONT = "font"; // NOI18N
     
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(null, TYPEID, true, true);
@@ -86,10 +85,10 @@ public final class ChoiceElementCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING)
-                .addProperty("Image", PropertyEditorResourcesComboBox.createImagePropertyEditor(), PROP_IMAGE)
-                .addProperty("Selected", PropertyEditorBooleanUC.createInstance(), PROP_SELECTED)
-                .addProperty("Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_FONT);
+                .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING) // NOI18N
+                .addProperty("Image", PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
+                .addProperty("Selected", PropertyEditorBooleanUC.createInstance(), PROP_SELECTED) // NOI18N
+                .addProperty("Font", PropertyEditorResource.createFontPropertyEditor(), PROP_FONT); // NOI18N
     }
     
     @Override

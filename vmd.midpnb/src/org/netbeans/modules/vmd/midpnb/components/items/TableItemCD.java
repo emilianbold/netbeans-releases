@@ -34,7 +34,6 @@ import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorResourcesComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
@@ -42,7 +41,6 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.AbstractInfoScree
 import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
 import org.netbeans.modules.vmd.midpnb.screen.display.TableItemDisplayPresenter;
 import org.openide.util.NbBundle;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -109,9 +107,9 @@ public class TableItemCD extends ComponentDescriptor {
                         NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NEW"), //NOI18N
                         NbBundle.getMessage(TableItemCD.class, "LBL_TABLEMODEL_NONE")), PROP_MODEL) //NOI18N
                     .addProperty("Show Borders", PropertyEditorBooleanUC.createInstance(false), PROP_BORDERS) //NOI18N   
-                    .addProperty("Title Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_TITLE_FONT) //NOI18N
-                    .addProperty("Headers Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_HEADERS_FONT) //NOI18N
-                    .addProperty("Values Font", PropertyEditorResourcesComboBox.createFontPropertyEditor(), PROP_VALUES_FONT); //NOI18N
+                    .addProperty("Title Font", PropertyEditorResource.createFontPropertyEditor(), PROP_TITLE_FONT) //NOI18N
+                    .addProperty("Headers Font", PropertyEditorResource.createFontPropertyEditor(), PROP_HEADERS_FONT) //NOI18N
+                    .addProperty("Values Font", PropertyEditorResource.createFontPropertyEditor(), PROP_VALUES_FONT); //NOI18N
     }
 
     private Presenter createSetterPresenter () {

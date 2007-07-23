@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midp.components.displayables;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
@@ -39,11 +38,10 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowAlertViaPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
-import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
 import org.netbeans.modules.vmd.midp.screen.display.AlertDisplayPresenter;
-
 import java.util.*;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 
 /**
  * @author Karol Harezlak
@@ -62,7 +60,7 @@ public final class AlertCD extends ComponentDescriptor {
     public static final String PROP_TIMEOUT = "timeout"; // NOI18N
     public static final String PROP_IMAGE = ImageCD.PROP_IMAGE; // NOI18N
     public static final String PROP_ALERT_TYPE = "type"; // NOI18N
-    public static final String PROP_INDICATOR = "indicator";  // NOI18N
+    public static final String PROP_INDICATOR = "indicator"; // NOI18N
 
     private static Map<String, PropertyValue> alertTypes;
 
@@ -96,11 +94,11 @@ public final class AlertCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Image", PropertyEditorResourcesComboBox.createImagePropertyEditor(), PROP_IMAGE)
-                    .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING)
-                    .addProperty("Type", PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_ALERT_TYPE)
-                    .addProperty("Use Indicator", PropertyEditorAlertIndicator.createInstance(), PROP_INDICATOR)
-                    .addProperty("Timeout", PropertyEditorTimeout.createInstance(), PROP_TIMEOUT);
+                    .addProperty("Image",  PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
+                    .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING) // NOI18N
+                    .addProperty("Type", PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_ALERT_TYPE) // NOI18N
+                    .addProperty("Use Indicator", PropertyEditorAlertIndicator.createInstance(), PROP_INDICATOR) // NOI18N
+                    .addProperty("Timeout", PropertyEditorTimeout.createInstance(), PROP_TIMEOUT); // NOI18N
     }
 
     // TODO override Displayable.addCommand, see DesignerMIDP document
