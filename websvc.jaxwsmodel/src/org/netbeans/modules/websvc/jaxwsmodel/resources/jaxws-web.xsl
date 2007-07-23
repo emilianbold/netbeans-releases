@@ -33,88 +33,51 @@ Microsystems, Inc. All Rights Reserved.
                 ===================
                 JAX-WS WSIMPORT SECTION
                 ===================
-            </xsl:comment>
-            
-            
-            <!-- WS from java - support for WSDL generation -->
-            <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">
-                <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
-                    <target name="wsgen-init" depends="init">
-                        <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
-                        <mkdir dir="${{build.classes.dir.real}}"/>
-                        <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
-                            <classpath path="${{j2ee.platform.wsgen.classpath}}"/>
-                        </taskdef>
-                    </target>
-                </xsl:if>
-            </xsl:if>
-            <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service">
-                <xsl:if test="not(jaxws:wsdl-url)">
-                    <xsl:variable name="wsname" select="@name"/>
-                    <xsl:variable name="seiclass" select="jaxws:implementation-class"/>
-                    <target name="wsgen-{$wsname}" depends="wsgen-init, compile">
-                        <wsgen
-                            sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                            resourcedestdir="${{build.generated.dir}}/wsgen/service"
-                            keep="false"
-                            genwsdl="true"
-                            sei="{$seiclass}"
-                        >
-                            <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                        </wsgen>
-                    </target>
-                </xsl:if>
-            </xsl:for-each>
-            <!-- END WS from Java -->            
+            </xsl:comment>           
             
             <!-- START: Invoke wsgen if web service is not JSR 109 and not from wsdl-->
             <xsl:if test="/jaxws:jax-ws/jaxws:services/jaxws:service">
-                <xsl:variable name="isJSR109">
-                    <xsl:value-of select="/jaxws:jax-ws/jaxws:jsr109"/>
-                </xsl:variable>
-                <xsl:if test="$isJSR109 = 'false'">
-                    <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
-                        <target name="wsgen-init-nonJSR109" depends="init, -do-compile">
-                            <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
-                            <mkdir dir="${{build.generated.dir}}/wsgen/binaries"/>
-                            <mkdir dir="${{build.classes.dir.real}}"/>
-                            <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+                <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">
+                    <target name="wsgen-init" depends="init, -do-compile">
+                        <mkdir dir="${{build.generated.dir}}/wsgen/service"/>
+                        <mkdir dir="${{build.generated.dir}}/wsgen/binaries"/>
+                        <mkdir dir="${{build.classes.dir.real}}"/>
+                        <taskdef name="wsgen" classname="com.sun.tools.ws.ant.WsGen">
+                            <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
+                        </taskdef>
+                    </target>
+                </xsl:if>
+                <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service">
+                    <xsl:if test="not(jaxws:wsdl-url)">
+                        <xsl:variable name="wsname" select="@name"/>
+                        <xsl:variable name="seiclass" select="jaxws:implementation-class"/>                      
+                        <target name="wsgen-{$wsname}" depends="wsgen-init">
+                            <wsgen
+                                fork="true"
+                                xendorsed="true"
+                                sourcedestdir="${{build.generated.dir}}/wsgen/service"
+                                resourcedestdir="${{build.generated.dir}}/wsgen/service"
+                                destdir="${{build.generated.dir}}/wsgen/binaries"
+                                keep="true"
+                                genwsdl="true"
+                                sei="{$seiclass}"
+                            >   
                                 <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                            </taskdef>
+                                <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
+                            </wsgen>
                         </target>
                     </xsl:if>
-                    <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service">
-                        <xsl:if test="not(jaxws:wsdl-url)">
-                            <xsl:variable name="wsname" select="@name"/>
-                            <xsl:variable name="seiclass" select="jaxws:implementation-class"/>                      
-                            <target name="wsgen-{$wsname}-nonJSR109" depends="wsgen-init-nonJSR109">
-                                <wsgen
-                                    fork="true"
-                                    xendorsed="true"
-                                    sourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                    resourcedestdir="${{build.generated.dir}}/wsgen/service"
-                                    destdir="${{build.generated.dir}}/wsgen/binaries"
-                                    keep="true"
-                                    genwsdl="true"
-                                    sei="{$seiclass}"
-                                >   
-                                    <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir.real}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                                    <jvmarg value="-Djava.endorsed.dirs=${{jaxws.endorsed.dir}}"/>
-                                </wsgen>
-                            </target>
-                        </xsl:if>
-                    </xsl:for-each>
-                    <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">   
-                        <target name="wsgen-service-compile">
-                            <xsl:attribute name="depends">
-                                <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]">
-                                    <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                                    <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/><xsl:text>-nonJSR109</xsl:text>
-                                </xsl:for-each>
-                            </xsl:attribute>
-                            <webproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
-                        </target>
-                    </xsl:if>
+                </xsl:for-each>
+                <xsl:if test="count(/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]) > 0">   
+                    <target name="wsgen-service-compile">
+                        <xsl:attribute name="depends">
+                            <xsl:for-each select="/jaxws:jax-ws/jaxws:services/jaxws:service[not(jaxws:wsdl-url)]">
+                                <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+                                <xsl:text>wsgen-</xsl:text><xsl:value-of select="@name"/>
+                            </xsl:for-each>
+                        </xsl:attribute>
+                        <webproject2:javac srcdir="${{build.generated.dir}}/wsgen/service" classpath="${{j2ee.platform.wsimport.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir.real}}" javac.compilerargs.jaxws="-Djava.endorsed.dirs='${{jaxws.endorsed.dir}}'"/>
+                    </target>
                 </xsl:if>
             </xsl:if>
             <!-- END: Invoke wsgen if web service is not JSR 109 -->
