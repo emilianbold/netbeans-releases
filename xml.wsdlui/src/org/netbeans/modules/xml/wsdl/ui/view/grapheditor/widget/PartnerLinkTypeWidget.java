@@ -162,6 +162,10 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
         mContentWidget.setVisible(false);
     }
     
+    public void expandWidget() {
+        expander.setExpanded(true);
+    }
+    
     public void collapseWidget() {
         expander.setExpanded(false);
     }

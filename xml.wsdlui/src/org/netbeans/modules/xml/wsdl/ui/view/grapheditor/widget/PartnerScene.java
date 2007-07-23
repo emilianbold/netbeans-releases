@@ -250,10 +250,8 @@ public class PartnerScene extends ObjectScene implements ComponentListener, DnDH
                 //Expand all the widgets before it.
                 Widget parent = widget.getParentWidget();
                 while (parent != null) {
-                    
-
                     if (parent instanceof ExpandableWidget) {
-                        ExpandableWidget.class.cast(parent).expandWidget(null);
+                        ExpandableWidget.class.cast(parent).expandWidget();
                         //There are only two expandable widgets, Partnerlinktype and Message widgets.
                         //so break the loop, once any one is found.
                         break;

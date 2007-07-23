@@ -440,10 +440,20 @@ public class MessageWidget extends AbstractWidget<Message>
     public void expandWidget(ExpanderWidget expander) {
         contentWidget.setVisible(true);
     }
+    
+    public void expandWidget() {
+        expanderWidget.setExpanded(true);
+    }
+    
+    public void collapseWidget() {
+        expanderWidget.setExpanded(false);
+    }
 
     public boolean isCollapsed() {
         return contentWidget.isVisible();
     }
+    
+    
 
     @Override
     protected Shape createSelectionShape() {

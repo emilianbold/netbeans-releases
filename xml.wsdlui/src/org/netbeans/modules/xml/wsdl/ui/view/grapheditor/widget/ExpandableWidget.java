@@ -56,4 +56,19 @@ public interface ExpandableWidget {
      * @return  hashtable key.
      */
     Object hashKey();
+    
+    
+    /**
+     * Utility method to programmatically expand the widget.
+     * This should be called when a widget needs to be expanded.
+     *
+     */
+    void expandWidget();
+
+    /**
+     * Utility method to programmatically collapse the widget.
+     * This should be called when a widget needs to be collapsed.
+     *
+     */
+    void collapseWidget();
 }
