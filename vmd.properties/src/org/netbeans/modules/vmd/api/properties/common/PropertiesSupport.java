@@ -43,6 +43,10 @@ import org.openide.util.lookup.InstanceContent;
  * @author Karol Harezlak
  */
 public final class PropertiesSupport {
+    /**
+     * DataEditorView Tag. This tag hides Netbeans Property Window
+     */ 
+    public static final String DO_NOT_OPEN_PROPERTIES_WINDOW_TAG = "DO_NOT_OPEN_PROPERTIES_WINDOW"; //NOI18N
     
     private PropertiesSupport() {
     }

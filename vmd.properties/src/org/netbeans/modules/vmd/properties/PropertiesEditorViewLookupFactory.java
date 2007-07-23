@@ -32,7 +32,7 @@ import org.openide.util.lookup.InstanceContent;
 
 /**
  *
- * @author Karol HarezlakPR
+ * @author Karol Harezlak
  */
 public class PropertiesEditorViewLookupFactory implements DataEditorViewLookupFactory {
     
@@ -41,8 +41,8 @@ public class PropertiesEditorViewLookupFactory implements DataEditorViewLookupFa
     }
     
     public Collection<? extends Lookup> getLookups(DataObjectContext context, DataEditorView view) {
+        PropertiesWindowManager.register();
         if (view.getKind() == DataEditorView.Kind.MODEL) {
-            PropertiesWindowManager.register();
             InstanceContent ic = new InstanceContent();
             ic.add(context.getDataObject().getLookup());
             PropertiesSupport.addInstanceContent(view, ic);

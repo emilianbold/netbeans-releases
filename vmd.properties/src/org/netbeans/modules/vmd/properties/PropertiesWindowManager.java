@@ -25,6 +25,8 @@ import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
 import javax.swing.*;
+import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
+
 
 /**
  * @author Karol Harezlak
@@ -51,9 +53,11 @@ public class PropertiesWindowManager implements ActiveViewSupport.Listener {
             public void run() {
                 TopComponentGroup tcg = WindowManager.getDefault().findTopComponentGroup(TC_GROUP);
                 assert tcg != null;
-                if (activatedView == null || activatedView.getKind() != DataEditorView.Kind.MODEL) {
-                    tcg.close();
-                    return;
+                if (activatedView == null 
+                    || activatedView.getKind() != DataEditorView.Kind.MODEL 
+                    || activatedView.getTags().contains(PropertiesSupport.DO_NOT_OPEN_PROPERTIES_WINDOW_TAG)) {
+                        tcg.close();
+                        return;
                 }
                 tcg.open();
             }

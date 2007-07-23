@@ -58,7 +58,6 @@ public final class PropertiesNodesManager implements DesignDocumentAwareness,
 
     private static final WeakHashMap<DataEditorView, PropertiesNodesManager> INSTANCES = new WeakHashMap<DataEditorView, PropertiesNodesManager>();
     private static Comparator<DesignPropertyDescriptor> compareByDisplayName = new Comparator<DesignPropertyDescriptor>() {
-
         public int compare(DesignPropertyDescriptor descriptor1, DesignPropertyDescriptor descriptor2) {
             return descriptor1.getPropertyDisplayName().compareTo(descriptor2.getPropertyDisplayName());
         }
