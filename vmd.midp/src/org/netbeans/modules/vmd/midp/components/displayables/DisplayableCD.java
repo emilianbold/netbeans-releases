@@ -51,6 +51,7 @@ import java.util.*;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 
+
 /**
  * 
  * @author David Kaspar
@@ -139,7 +140,7 @@ public final class DisplayableCD extends ComponentDescriptor {
             // accept
             new DisplayableAccept.DisplayableCommandsAcceptPresenter (),
             MidpAcceptTrensferableKindPresenter.createTickerAcceptPresenter(),
-            //            new DisplayableAccept.DisplayableCommandsEventHandlerAcceptPresenter (),
+            new MidpAcceptProducerKindPresenter().addType(TickerCD.TYPEID, PROP_TICKER),
             // flow
             new FlowInfoNodePresenter (),
             new FlowDisplayableCommandPinOrderPresenter (),
