@@ -73,8 +73,11 @@ public class MoveTransformer extends RefactoringVisitor {
                 FileObject fo = SourceUtils.getFile(el, workingCopy.getClasspathInfo());
                 if (isElementMoving(el)) {
                     elementsAlreadyImported.add(el);
-                    Tree nju = make.MemberSelect(make.Identifier(move.getTargetPackageName(move.filesToMove.get(index))), el);
-                    rewrite(node, nju);
+                    String newPackageName = move.getTargetPackageName(move.filesToMove.get(index));
+                    if (!"".equals(newPackageName)) {
+                        Tree nju = make.MemberSelect(make.Identifier(newPackageName), el);
+                        rewrite(node, nju);
+                    }
                 }
                 if (isThisFileMoving && !isElementMoving(el)) {
                     if (el.getKind()!=ElementKind.PACKAGE && 
@@ -212,12 +215,21 @@ public class MoveTransformer extends RefactoringVisitor {
             }
             if (isThisFileReferencingOldPackage) {
                 //add import to old package
-                cut = insertImport(cut, cut.getPackageName().toString() + ".*", null);
+                ExpressionTree newPackageName = cut.getPackageName();
+                if (newPackageName != null) {
+                    cut = insertImport(cut, newPackageName.toString() + ".*", null);
+                } else {
+                    problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));
+                }
+                      
             }
         }
         for (Element el:elementsToImport) {
             FileObject fo = SourceUtils.getFile(el, workingCopy.getClasspathInfo());
-            cut = insertImport(cut, move.getTargetPackageName(fo) + "." +el.getSimpleName(), el);
+            String newPackageName = move.getTargetPackageName(fo);
+            if (!"".equals(newPackageName)) {
+                cut = insertImport(cut, newPackageName + "." +el.getSimpleName(), el);
+            }
         }
         rewrite(node, cut);
         return result;
