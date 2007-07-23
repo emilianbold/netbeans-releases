@@ -20,10 +20,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
     <folder name="OptionsDialog">
-        <file name="General.instance">
-            <attr name="instanceClass" stringvalue="org.netbeans.modules.options.general.GeneralOptions"/>
-            <attr name="position" intvalue="100"/>
-        </file>
         <file name="Editor.instance">
             <attr name="instanceClass" stringvalue="org.netbeans.modules.options.editor.Editor"/>
             <attr name="position" intvalue="200"/>

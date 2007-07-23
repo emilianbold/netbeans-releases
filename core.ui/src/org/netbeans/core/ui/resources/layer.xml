@@ -412,12 +412,9 @@ Microsystems, Inc. All Rights Reserved.
                 </folder> <!-- System -->
 
                 <folder name="ServerAndExternalToolSettings">
+
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
-                    
-                    <!-- link to HTML browsers -->
-                    <file name="Browsers.shadow">
-                        <attr name="originalFile" stringvalue="Services/Browsers"/>
-                    </file>
+
                 </folder> <!-- ServerAndExternalToolSettings -->
             </folder> <!-- IDEConfiguration -->
             
@@ -720,6 +717,13 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         
+    </folder>
+    
+    <folder name="OptionsDialog">
+        <file name="General.instance">
+            <attr name="instanceClass" stringvalue="org.netbeans.core.ui.options.general.GeneralOptions"/>
+            <attr name="position" intvalue="100"/>
+        </file>
     </folder>
     
 </filesystem>

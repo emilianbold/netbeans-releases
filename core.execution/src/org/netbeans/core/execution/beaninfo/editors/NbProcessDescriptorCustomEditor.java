@@ -38,8 +38,8 @@ public class NbProcessDescriptorCustomEditor extends javax.swing.JPanel
 implements PropertyChangeListener {
     private NbProcessDescriptorEditor editor;
 
-    private static int DEFAULT_WIDTH = 530;
-    private static int DEFAULT_HEIGHT = 400;
+    private static int DEFAULT_WIDTH = 400;
+    private static int DEFAULT_HEIGHT = 250;
 
     static final long serialVersionUID =-2766277953540349247L;
     /** Creates new NbProcessDescriptorCustomEditor
@@ -111,7 +111,6 @@ implements PropertyChangeListener {
         jScrollPane1 = new javax.swing.JScrollPane();
         hintArea = new javax.swing.JTextArea();
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 0, 11));
         setLayout(new java.awt.GridBagLayout());
 
         processLabel.setLabelFor(processField);
@@ -120,6 +119,8 @@ implements PropertyChangeListener {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
         add(processLabel, gridBagConstraints);
+        processLabel.getAccessibleContext().setAccessibleDescription("Process");
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -137,6 +138,7 @@ implements PropertyChangeListener {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jButton1, gridBagConstraints);
+        jButton1.getAccessibleContext().setAccessibleDescription("Browse");
 
         argumentsLabel.setLabelFor(argumentsArea);
         org.openide.awt.Mnemonics.setLocalizedText(argumentsLabel, org.openide.util.NbBundle.getMessage(NbProcessDescriptorCustomEditor.class, "CTL_NbProcessDescriptorCustomEditor.argumentsLabel.text")); // NOI18N
@@ -146,6 +148,7 @@ implements PropertyChangeListener {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 12);
         add(argumentsLabel, gridBagConstraints);
+        argumentsLabel.getAccessibleContext().setAccessibleDescription("Process arguments");
 
         argumentsScrollPane.setMinimumSize(new java.awt.Dimension(22, 35));
         argumentsScrollPane.setViewportView(argumentsArea);
@@ -165,10 +168,11 @@ implements PropertyChangeListener {
         argumentKeyLabel.setLabelFor(hintArea);
         org.openide.awt.Mnemonics.setLocalizedText(argumentKeyLabel, getString("CTL_NbProcessDescriptorCustomEditor.argumentKeyLabel.text")); // NOI18N
         jPanel1.add(argumentKeyLabel, java.awt.BorderLayout.NORTH);
+        argumentKeyLabel.getAccessibleContext().setAccessibleDescription("Arguments hint");
 
-        hintArea.setLineWrap(true);
-        hintArea.setEditable(false);
         hintArea.setBackground((java.awt.Color) javax.swing.UIManager.getDefaults ().get ("Label.background"));
+        hintArea.setEditable(false);
+        hintArea.setLineWrap(true);
         jScrollPane1.setViewportView(hintArea);
 
         jPanel1.add(jScrollPane1, java.awt.BorderLayout.CENTER);

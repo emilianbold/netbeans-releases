@@ -49,6 +49,7 @@ public class SystemDefaultBrowserBeanInfo extends SimpleBeanInfo {
 
             properties[0].setDisplayName (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "PROP_browserExecutable"));
             properties[0].setShortDescription (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "HINT_browserExecutable"));
+            properties[0].setPreferred(true);
 
 //            properties[1].setDisplayName (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "PROP_BROWSER_START_TIMEOUT"));
 //            properties[1].setShortDescription (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "HINT_BROWSER_START_TIMEOUT"));
