@@ -212,6 +212,13 @@ public class SOAPComponentValidator
                         while (bindingFaults.hasNext()) {
                             BindingFault bindingFault = bindingFaults.next();
                             int numSoapFaults = bindingFault.getExtensibilityElements(SOAPFault.class).size();
+                            if (numSoapFaults == 0) {
+                                results.add(
+                                        new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        bindingFault,
+                                        NbBundle.getMessage(SOAPComponentValidator.class, "SOAPFaultValidator.No_soap_fault_defined")));
+                            }
                             if (numSoapFaults > 0 && numSoapFaults != 1) {
                                 
                                 results.add(
