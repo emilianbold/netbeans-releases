@@ -328,7 +328,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 //inputState != currentState means, that panels changed and dialog will not be closed
                 if (inputState == currentState) {
                     try {
-                          if (!previewAll) {
+                          if (!previewAll && result!=null) {
                             UndoWatcher.watch(result, ParametersPanel.this);
                             result.addProgressListener(ParametersPanel.this);
                             result.doRefactoring(true);
