@@ -19,7 +19,6 @@
 package org.netbeans.api.java.source;
 
 import com.sun.source.tree.*;
-import java.io.File;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
 import static com.sun.source.tree.Tree.*;
@@ -2259,7 +2258,8 @@ public final class TreeMaker {
      * @return         node's copy with new extends clause
      */
     public ClassTree setExtends(final ClassTree node, final ExpressionTree extendz) {
-        ClassTree copy = Class(
+        @SuppressWarnings("unchecked")
+        ClassTree result = Class(
                 node.getModifiers(),
                 node.getSimpleName(),
                 node.getTypeParameters(),
@@ -2267,7 +2267,7 @@ public final class TreeMaker {
                 (List<ExpressionTree>) node.getImplementsClause(), // bug
                 node.getMembers()
         );
-        return copy;
+        return result;
     }
     
     /**
@@ -2310,6 +2310,7 @@ public final class TreeMaker {
         switch (node.getKind()) {
             case VARIABLE: {
                 VariableTree t = (VariableTree) node;
+                @SuppressWarnings("unchecked")
                 N clone = (N) Variable(
                     t.getModifiers(),
                     t.getName(),
@@ -2320,6 +2321,7 @@ public final class TreeMaker {
             }
             case METHOD: {
                 MethodTree t = (MethodTree) node;
+                @SuppressWarnings("unchecked")
                 N clone = (N) Method(
                     t.getModifiers(),
                     t.getName(),
