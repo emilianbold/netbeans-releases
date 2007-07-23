@@ -38,6 +38,10 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertNotNull(dir);
         createFilesFromDesc(dir, "testfiles/gototestfiles");
         
+        // Create some data files where the class -contents- are used to locate the test
+        createFile(dir, "lib/hello.rb", "class Hello\ndef foo\nend\nend\n");
+        createFile(dir, "test/world.rb", "class HelloTest\ndef foobar\nend\nend\n");
+        
         gotoTest = new GotoTest();
     }
     
@@ -156,8 +160,16 @@ public class GotoTestTest extends RubyProjectTestBase {
         assertIsProjFile("app/models/mymodel.rb", loc.getFileObject());
     }
 
+    // The code index doesn't yet work at test time so the index search for HelloTest won't work
+    //public void testGotoTestedClass() {
+    //    assertNotNull(project);
+    //
+    //    DeclarationLocation loc = gotoTest.findTested(getProjFile("lib/hello.rb"), -1);
+    //    assertNotSame(DeclarationLocation.NONE, loc);
+    //    assertIsProjFile("test/world.rb", loc.getFileObject());
+    //}
 
-    String[] files = {
+    private String[] FILES = {
         "lib/foo.rb",
         "test/test_foo.rb",
         
@@ -176,9 +188,9 @@ public class GotoTestTest extends RubyProjectTestBase {
     
     public void testFindOpposite() {
         int index = 0;
-        for (; index < files.length; index += 2) {
-            FileObject source = getProjFile(files[index]);
-            FileObject test = getProjFile(files[index+1]);
+        for (; index < FILES.length; index += 2) {
+            FileObject source = getProjFile(FILES[index]);
+            FileObject test = getProjFile(FILES[index+1]);
             
             DeclarationLocation loc = gotoTest.findTest(source, -1);
             assertEquals(test, loc.getFileObject());

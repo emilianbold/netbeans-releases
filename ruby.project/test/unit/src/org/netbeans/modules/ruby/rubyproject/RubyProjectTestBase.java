@@ -76,6 +76,14 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         
         return createTestProject(projectName);
     }
+    
+    protected void createFile(FileObject dir, String relative, String contents) throws Exception {
+        FileObject datafile = FileUtil.createData(dir, relative);
+        OutputStream os = datafile.getOutputStream();
+        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
+        writer.write(contents);
+        writer.close();
+    }
 
     protected RubyProject createTestProject(String projectName) throws Exception {
         File dataDir = getDataDir();
@@ -99,8 +107,6 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
         assertNotNull(parentDir);
         FileObject dir = parentDir.createFolder(projectName);
         assertNotNull(dir);
-        FileObject nbproject = dir.createFolder("nbproject");
-        FileObject projectXml = nbproject.createData("project", "xml");
         String xml =
 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 "<project xmlns=\"http://www.netbeans.org/ns/project/1\">\n" +
@@ -111,10 +117,7 @@ public abstract class RubyProjectTestBase extends RubyTestBase {
 "        </data>\n" +
 "    </configuration>\n" +
 "</project>\n";
-        OutputStream os = projectXml.getOutputStream();
-        Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-        writer.write(xml);
-        writer.close();
+        createFile(dir, "nbproject/project.xml", xml);
 
         // Create the source folders
         FileUtil.createFolder(dir, "lib");
