@@ -890,7 +890,12 @@ public final class Models {
             if (filter instanceof ExtendedNodeModelFilter) {
                 return ((ExtendedNodeModelFilter) filter).getIconBaseWithExtension(model, node);
             } else {
-                return model.getIconBaseWithExtension(node);
+                String base = filter.getIconBase(model, node);
+                if (base != null) {
+                    base += ".gif";
+                }
+                return base;
+                //return model.getIconBaseWithExtension(node);
             }
         }
     }
