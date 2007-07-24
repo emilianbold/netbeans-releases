@@ -19,7 +19,6 @@
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
 import org.openide.util.NbBundle;
-import org.netbeans.modules.vmd.midpnb.components.displayables.LoginScreenCD;
 
 /**
  *
@@ -28,7 +27,7 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.LoginScreenCD;
 public final class MidpNbPropertiesCategories {
     
     public static final String CATEGORY_TASK = NbBundle.getMessage(MidpNbPropertiesCategories.class, "CTG_TASK");  // NOI18N
-    public static final String CATEGORY_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginProperties"); //NOI18N
+    public static final String CATEGORY_LOGIN = NbBundle.getMessage(MidpNbPropertiesCategories.class, "DISP_LoginProperties"); //NOI18N
 
     private MidpNbPropertiesCategories () {
     }
