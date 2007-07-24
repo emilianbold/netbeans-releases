@@ -41,7 +41,7 @@
     <target name="ricoh-build-dalp-with-icon" depends="ricoh-add-app-icon" if="ricoh-platform.trigger" unless="ricoh.icon.invalid">
         <mkdir dir="${{build.dir}}/dalp/"/>
         <taskIf if="ricoh.dalp.is-managed" value="true">
-            <dalp file="${{dalp.dist}}" iconname="${{icon.name}}" execmode="true">
+            <dalp file="${{dalp.dist}}" iconname="${{icon.name}}">
                 <fileset dir="${{dist.dir}}/lib"/>
             </dalp>
             <echo message="Managed dalp file ${{dalp.dist}} created w/ icon"/>
@@ -57,7 +57,7 @@
     <target name="ricoh-build-dalp-without-icon" if="ricoh.icon.invalid">
         <mkdir dir="${{build.dir}}/dalp/"/>
         <taskIf if="ricoh.dalp.is-managed" value="true">
-            <dalp file="${{dalp.dist}}" execmode="true">
+            <dalp file="${{dalp.dist}}">
                 <fileset dir="${{dist.dir}}/lib"/>
             </dalp>
             <echo message="Managed dalp file ${{dalp.dist}} created w/o icon"/>

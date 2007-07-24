@@ -45,5 +45,13 @@
         </jar>
     </target>
 
-    <target name="netbeans-extra" depends="ext"/>
+    <target name="release" depends="init">
+        <echo message="releasing..."/>
+        <mkdir dir="${cluster}/external"/>    
+        <copy todir="${cluster}/external">
+            <fileset dir="release/external" excludes="*.txt"/>
+        </copy>
+    </target>	
+
+    <target name="netbeans-extra" depends="ext,release"/>
 </project>

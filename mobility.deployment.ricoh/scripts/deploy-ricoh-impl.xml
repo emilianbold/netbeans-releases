@@ -18,7 +18,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project default="deploy-ricoh">
-    <target name="sign-jar" depends="update-dalp-index" unless="no.application.uid">
+    <target name="sign-jar" unless="no.application.uid">
         <condition property="no.keystore.manifest">
             <or>
                 <equals arg1="${ricoh.deployment.keystore.manifest}" arg2="" trim="true"/>
@@ -112,71 +112,45 @@ Microsystems, Inc. All Rights Reserved.
             </copy>
         </taskIf>
         
-        <!--
+        
         <taskIf if="ricoh.deployment.deploy.method" value="httppost">
             <echo message="Installing directly to MFD:"/>
-            <echo message="Host:        ${ricoh.http.install-server.host}"/>
-            <echo message="Port:        ${ricoh.http.install-server.port}"/>
+            <echo message="Host:        ${ricoh.deployment.server.name}"/>
+            <echo message="Port:        ${ricoh.deployment.http.port}"/>
             <echo message="Deploy Type: ${ricoh.application.type}, Java ME Ricoh MFD (SDK/J) version ${ricoh.platform.target.version}"/>
-            <taskdef name="post" classname="ricoh.ant.http.PostTask" classpath="${libs.AntContrib.classpath}"/>
+            <taskdef name="post" classname="ricoh.ant.http.PostTask" classpath="${libs.ricoh-ant-utils.classpath}"/>
             <condition property="no.ricoh.http.install-server.username" value="true">
                 <or>
-                    <equals arg1="${ricoh.http.install-server.username}" arg2="" trim="true"/>
-                    <contains string="${ricoh.http.install-server.username}" substring="$${ricoh.http.install-server.username"/>
+                    <equals arg1="${ricoh.deployment.server.user}" arg2="" trim="true"/>
+                    <contains string="${ricoh.deployment.server.user}" substring="$${ricoh.http.install-server.username"/>
                 </or>
             </condition>
             <fail if="no.ricoh.http.install-server.username">Username for HTTP post unspecified.</fail>
             <property name="ricoh.http.install-server.password" value=""/>
             <taskIf if="ricoh.application.type" value="xlet">
-                <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/GetInfoServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                <post to="http://${ricoh.deployment.server.name}:${ricoh.deployment.http.port}/dsdk/GetInfoServlet" verbose="true" user="${ricoh.deployment.server.user}" password="${ricoh.deployment.server.password}">
                     <prop name="Type" value="xlet"/>
                 </post>
                 <echo message="Uploading ${rideploy.zip}..."/>
-                <taskIf if="ricoh.platform.target.version" value="1.4">
-                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/FileUploadServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                <taskIf if="ricoh.deployment.http.platform" value="SDK/J 1.4+">
+                    <post to="http://${ricoh.deployment.server.name}:${ricoh.deployment.http.port}/dsdk/FileUploadServlet" verbose="true" user="${ricoh.deployment.server.user}" password="${ricoh.deployment.server.password}">
                         <prop name="Type" value="xlet"/>
                         <prop name="File" file="${rideploy.zip}"/>
                     </post>
-                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/EndServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                    <post to="http://${ricoh.deployment.server.name}:${ricoh.deployment.http.port}/dsdk/EndServlet" verbose="true" user="${ricoh.deployment.server.user}" password="${ricoh.deployment.server.password}">
                         <prop name="restart" value="true"/>
                     </post>
                     <echo message="Upload complete."/>
                 </taskIf>
-                <taskIf if="ricoh.platform.target.version" value="2.0">
-                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/InstallServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
+                <taskIf if="ricoh.deployment.http.platform" value="SDK/J 2.0+">
+                    <post to="http://${ricoh.deployment.server.name}:${ricoh.deployment.http.port}/dsdk/InstallServlet" verbose="true" user="${ricoh.deployment.server.user}" password="${ricoh.deployment.server.password}">
                         <prop name="Type" value="xlet"/>
                         <prop name="File" file="${rideploy.zip}"/>
+                        <prop name="FailOnError" value="true"/>
                     </post>
                     <echo message="Upload complete."/>
                 </taskIf>
             </taskIf>
-            <taskIf if="ricoh.application.type" value="server">
-                <echo message="Exporting ZIP package to ${ricoh.application.export-path}/${ricoh.application.uid}.zip"/>
-                <copy todir="${ricoh.application.export-path}">
-                    <fileset file="${rideploy.zip}"/>
-                </copy>
-                <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/GetInfoServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
-                    <prop name="Type" value="server"/>
-                </post>
-                <taskIf if="ricoh.platform.target.version" value="1.4">
-                    <echo message="Uploading ${rideploy.zip }"/>
-                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/InstallServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
-                        <prop name="File" file="${rideploy.zip}"/>
-                    </post>
-                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/EndServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
-                        <prop name="restart" value="false"/>
-                    </post>
-                    <echo message="Upload complete."/>
-                </taskIf>
-                <taskIf if="ricoh.platform.target.version" value="2.0">
-                    <echo message="Uploading ${rideploy.zip}"/>
-                    <post to="http://${ricoh.http.install-server.host}:${ricoh.http.install-server.port}/dsdk/InstallServlet" verbose="true" user="${ricoh.http.install-server.username}" password="${ricoh.http.install-server.password}">
-                        <prop name="File" file="${rideploy.zip}"/>
-                    </post>
-                    <echo message="Upload complete."/>
-                </taskIf>
-            </taskIf>
-        </taskIf>
-        -->
+        </taskIf>     
     </target>
 </project>

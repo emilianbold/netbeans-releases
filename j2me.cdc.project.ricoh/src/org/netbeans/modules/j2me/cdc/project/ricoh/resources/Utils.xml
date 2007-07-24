@@ -26,9 +26,10 @@
         <type>classpath</type>
         <resource>jar:nbinst:///modules/ext/org-netbeans-modules-j2me-cdc-project-ricoh.jar!/</resource>
         <resource>jar:nbinst:///external/RicohAntTasks.jar!/</resource>
-        <resource>jar:nbinst:///external/jcifs-1.2.13.jar!/</resource>
-        <resource>jar:nbinst:///external/commons-httpclient.jar!/</resource>
-        <resource>jar:nbinst:///external/commons-logging.jar!/</resource>
+        <resource>jar:nbinst:///external/jcifs-1.2.11.jar!/</resource>
+        <resource>jar:nbinst:///external/commons-httpclient-3.0.1.jar!/</resource>
+        <resource>jar:nbinst:///external/commons-logging-1.0.4.jar!/</resource>
+        <resource>jar:nbinst:///external/commons-codec-1.3.jar!/</resource>
     </volume>
     <volume>
         <type>src</type>        

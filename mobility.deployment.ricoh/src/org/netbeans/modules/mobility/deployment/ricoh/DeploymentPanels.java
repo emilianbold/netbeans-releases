@@ -32,8 +32,6 @@ public class DeploymentPanels extends javax.swing.JPanel
         //input verification
         PortVerifier verifier = new PortVerifier();
         httpServerPort.setInputVerifier(verifier);
-        sdkGroup.add(sdkjV1_4RadioButton);
-        sdkGroup.add(sdkjV2_0RadioButton);
     }
     
     
@@ -122,11 +120,13 @@ public class DeploymentPanels extends javax.swing.JPanel
 
         jLabel16.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/deployment/ricoh/Bundle").getString("LBL_HttpPlatformType"));
 
+        sdkGroup.add(sdkjV1_4RadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(sdkjV1_4RadioButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/deployment/ricoh/Bundle").getString("RADIO_SDKJ_1.X"));
         sdkjV1_4RadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         sdkjV1_4RadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         sdkjV1_4RadioButton.setName(RicohDeploymentProperties.PROP_RICOH_DEPLOY_HTTP_PLATFORM);
 
+        sdkGroup.add(sdkjV2_0RadioButton);
         sdkjV2_0RadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(sdkjV2_0RadioButton, java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/deployment/ricoh/Bundle").getString("RADIO_SDKJ_2.X"));
         sdkjV2_0RadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
