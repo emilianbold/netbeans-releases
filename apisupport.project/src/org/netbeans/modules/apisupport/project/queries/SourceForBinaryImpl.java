@@ -22,10 +22,8 @@ package org.netbeans.modules.apisupport.project.queries;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
@@ -47,7 +45,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     private String clusterPath;
     private URL classesUrl;
     private URL testClassesUrl;
-    private Map<URL, SourceForBinaryQuery.Result> cache = new HashMap ();
+    private Map<URL,SourceForBinaryQuery.Result> cache = new HashMap<URL,SourceForBinaryQuery.Result>();
     
     public SourceForBinaryImpl(NbModuleProject project) {
         this.project = project;
@@ -55,7 +53,7 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
         //System.err.println("findSourceRoot: " + binaryRoot);
-        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) cache.get(binaryRoot);
+        SourceForBinaryQuery.Result res = cache.get(binaryRoot);
         if (res == null) {
             URL binaryJar = FileUtil.getArchiveFile(binaryRoot);
             if (binaryJar != null) {
@@ -72,29 +70,24 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
                     }
                 }
                 if (srcDir != null) {
-                    res = new Result(new FileObject[] {srcDir});
+                    res = new Result(srcDir);
                     return res;
                 }
             }
             if (binaryRoot.equals(getClassesUrl())) {
                 FileObject srcDir = project.getSourceDirectory();
                 if (srcDir != null) {
-                    res = new Result(new FileObject[] {srcDir});
+                    res = new Result(srcDir);
                 }
             } else if (binaryRoot.equals(getTestClassesUrl())) {
                 FileObject testSrcDir = project.getTestSourceDirectory();
                 if (testSrcDir != null) {
-                    res = new Result (new FileObject[] {testSrcDir});
+                    res = new Result(testSrcDir);
                 }
             } else {
                 // Check extra compilation units.
-                Iterator<Map.Entry<FileObject,Element>> ecus = project.getExtraCompilationUnits().entrySet().iterator();
-                ECUS: while (ecus.hasNext()) {
-                    Map.Entry entry = (Map.Entry) ecus.next();
-                    Element pkgrootEl = (Element) entry.getValue();
-                    Iterator<Element> pkgrootKids = Util.findSubElements(pkgrootEl).iterator();
-                    while (pkgrootKids.hasNext()) {
-                        Element kid = (Element) pkgrootKids.next();
+                ECUS: for (Map.Entry<FileObject,Element> entry : project.getExtraCompilationUnits().entrySet()) {
+                    for (Element kid : Util.findSubElements(entry.getValue())) {
                         if (!kid.getLocalName().equals("built-to")) { // NOI18N
                             continue;
                         }
@@ -107,14 +100,14 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
                         File loc = project.getHelper().resolveFile(text);
                         URL u = Util.urlForDirOrJar(loc);
                         if (u.equals(binaryRoot)) {
-                            res = new Result(new FileObject[] {(FileObject) entry.getKey()});
+                            res = new Result(entry.getKey());
                             break ECUS;
                         }
                     }
                 }
             }
             if (res != null) {
-                this.cache.put(binaryRoot,res);
+                cache.put(binaryRoot,res);
             }
         }
         return res;
@@ -148,15 +141,15 @@ public final class SourceForBinaryImpl implements SourceForBinaryQueryImplementa
     
     private static class Result implements SourceForBinaryQuery.Result {
                
-        private FileObject[] res;
+        private FileObject res;
         
-        public Result (FileObject[] res) {
+        public Result(FileObject res) {
+            assert res != null;
             this.res = res;
-            assert res != null && !Arrays.asList(res).contains(null);
         }
         
         public FileObject[] getRoots () {
-            return this.res;
+            return new FileObject[] {res};
         }
         
         public void addChangeListener (ChangeListener l) {

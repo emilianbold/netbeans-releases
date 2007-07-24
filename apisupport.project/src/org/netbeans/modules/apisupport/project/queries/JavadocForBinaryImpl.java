@@ -58,14 +58,13 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
         }
         String cnbdashes = project.getCodeNameBase().replace('.', '-');
         try {
-            final List<URL> candidates = new ArrayList();
+            final List<URL> candidates = new ArrayList<URL>();
             NbPlatform platform = project.getPlatform(false);
             if (platform == null) {
                 return null;
             }
-            URL[] roots = platform.getJavadocRoots();
-            for (int i = 0; i < roots.length; i++) {
-                candidates.add(new URL(roots[i], cnbdashes + "/")); // NOI18N
+            for (URL root : platform.getJavadocRoots()) {
+                candidates.add(new URL(root, cnbdashes + "/")); // NOI18N
             }
             File dir;
             NbModuleProvider.NbModuleType type = Util.getModuleType(project);
@@ -76,9 +75,9 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
             }
             candidates.add(Util.urlForDir(dir));
             if (ignoreNonexistentRoots) {
-                Iterator it = candidates.iterator();
+                Iterator<URL> it = candidates.iterator();
                 while (it.hasNext()) {
-                    URL u = (URL) it.next();
+                    URL u = it.next();
                     if (URLMapper.findFileObject(u) == null) {
                         it.remove();
                     }
@@ -86,7 +85,7 @@ public final class JavadocForBinaryImpl implements JavadocForBinaryQueryImplemen
             }
             return new JavadocForBinaryQuery.Result() {
                 public URL[] getRoots() {
-                    return (URL[]) candidates.toArray(new URL[candidates.size()]);
+                    return candidates.toArray(new URL[candidates.size()]);
                 }
                 public void addChangeListener(ChangeListener l) {}
                 public void removeChangeListener(ChangeListener l) {}
