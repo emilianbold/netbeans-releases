@@ -160,6 +160,10 @@ public class DiffStreamSource extends StreamSource {
                     boolean isBase = file.equals(baseFile);
                     try {
                         File rf = VersionsCache.getInstance().getRemoteFile(file, revision, group);
+                        if (rf == null && !isBase) {
+                            // this is not critical if the file is not the base file: it may not exist in this revision
+                            rf = VersionsCache.getInstance().getRemoteFile(file, VersionsCache.REVISION_BASE, group);
+                        }
                         if (rf != null) {
                             File newRemoteFile = new File(tempFolder, file.getName());
                             newRemoteFile.deleteOnExit();
