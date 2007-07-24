@@ -154,7 +154,7 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
     }
     
     public String getName() {
-        return jTextFieldName.getText();
+        return jTextFieldName == null ? "" : jTextFieldName.getText(); //NOI18N
     }
     
     public ConfigurationTemplateDescriptor getTemplate() {
