@@ -85,13 +85,9 @@ public final class ModuleActions implements ActionProvider {
         }
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG, NbBundle.getMessage(ModuleActions.class, "ACTION_debug"), null));
         addFromLayers(actions, "Projects/Profiler_Actions_temporary"); //NOI18N
-        actions.add(null);
         if (project.supportsUnitTests()) {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST, NbBundle.getMessage(ModuleActions.class, "ACTION_test"), null));
-            actions.add(null);
         }
-        actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, NbBundle.getMessage(ModuleActions.class, "ACTION_javadoc"), null));
-        actions.add(createArchAction(project));
         actions.add(null);
         if (isNetBeansOrg) {
             actions.add(createCheckBundleAction(project, NbBundle.getMessage(ModuleActions.class, "ACTION_unused_bundle_keys")));
@@ -100,6 +96,9 @@ public final class ModuleActions implements ActionProvider {
         actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, NbBundle.getMessage(ModuleActions.class, "ACTION_reload"), null));
         actions.add(createReloadInIDEAction(project, new String[] {"reload-in-ide"}, NbBundle.getMessage(ModuleActions.class, "ACTION_reload_in_ide")));
         actions.add(createSimpleAction(project, new String[] {"nbm"}, NbBundle.getMessage(ModuleActions.class, "ACTION_nbm")));
+        actions.add(null);
+        actions.add(ProjectSensitiveActions.projectCommandAction(JavaProjectConstants.COMMAND_JAVADOC, NbBundle.getMessage(ModuleActions.class, "ACTION_javadoc"), null));
+        actions.add(createArchAction(project));
         actions.add(null);
         actions.add(CommonProjectActions.setAsMainProjectAction());
         actions.add(CommonProjectActions.openSubprojectsAction());
