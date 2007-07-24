@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+ Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Refactoring: Quick Reference</title>
+        <link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Refactoring: Quick Reference</h2>
+
+<p>When you use the IDE's refactoring operations, you can change the structure of your 
+code and have the rest of your code updated to reflect the changes you have made.</p>
+        
+        <p>This topic provides short descriptions of the <a href="aboutRefactoring.html">refactoring</a> 
+        operations that are available in the IDE. Click the hyperlinked name 
+        of the refactoring operation for a full description on how to use 
+        the operation.</p>
+
+        <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+            refactoring  operation. The right column provides a short description of the 
+            refactoring.">
+            <tr valign="top"> 
+                <th scope="col" align="left">Refactoring Operation</th>
+                <th scope="col" align="left">Description</th>
+            </tr>
+ 
+            <tr valign="top"> 
+                <td><b><a href="renameClass.html">Rename</a></b></td>
+                <td>Enables you to change the name of a class, variable, or method 
+                    to something more meaningful. In addition, it updates all source code in your project 
+                    to reference the element by its new name.
+                </td>
+                <tr valign="top"> 
+                    <td><b><a href="extractMethod.html">Extract Method</a></b></td>
+                    <td>Enables you to generate a method based on the selected code 
+                        and replace that block of code with a call to the method. 
+                    </td>
+                </tr>
+                <tr valign="top"> 
+                    <td><b><a href="changeParameters.html">Change Method Parameters</a></b></td>
+                    <td> Enables you to add parameters to a method 
+                        and change the access modifier.
+                    </td>
+                </tr>          
+            </tr>
+            <tr valign="top"> 
+                <td><b><a href="encapsulateField.html">Encapsulate Fields</a></b></td>
+                <td> Generates a getter method and and a setter method 
+                    for a field and optionally updates all referencing code to access the field 
+                    using the getter and setter methods.
+                </td>
+            </tr>
+            </tr>
+            <tr valign="top"> 
+                <td><b><a href="pullUp.html">Pull Up</a></b></td>
+                <td>Moves methods and fields to a class that their 
+                    current class inherits from.
+                </td>
+            </tr>
+            </tr>
+            <tr valign="top"> 
+                <td><b><a href="pushDown.html">Push Down</a></b></td>
+                <td>Moves inner classes, methods, fields to a subclass of 
+                    their current class.
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td><b><a href="moveClass.html">Move Class</a></b></td>
+                <td>Moves a class to another package or into another 
+                    class. In addition, all source code in your project is updated 
+                    to reference the class in its new location.
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td><b><a href="moveClass.html">Move Inner to Outer Level</a></b></td>
+                <td>Moves an inner class 
+                    one level up in hierarchy.
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td><b><a href="convertAnonymous.html">Convert Anonymous Class to Inner</a></b></td>
+                <td>Converts an anonymous class to an inner class that contains 
+                    a name and constructor. The anonymous inner class is replaced with a call to the new inner class.
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td><b><a href="extractInterface.html">Extract Interface</a></b></td>
+                <td>Creates a new interface from the selected 
+                    public non-static methods in a class or interface.
+	
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td><b><a href="extractSuperclass.html">Extract Superclass</a></b></td>
+                <td>Creates a new abstract class, changes the current class to 
+                    extend the new class, and moves the selected methods and fields to the new class. 
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td><b><a href="useSupertype.html">Use Supertype Where Possible</a></b></td>
+                <td>Changes code that references the selected class (or other type) 
+                    to instead use a supertype of that type.
+                </td>
+            </tr>
+            <tr valign="top"> 
+                <td><b><a href="safeDelete.html">Safely Delete</a></b></td>
+                <td>Checks for references to a code 
+                    element and then automatically deletes that element if no other code references it.
+                </td>
+            </tr>
+            <!--                       <tr valign="top"> 
+            <td></td>
+            <td>Finds where classes, variables, and methods are used 
+            throughout the source code in your project.
+            </td>
+            </tr>
+            -->
+
+            
+        </table>
+
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="aboutRefactoring.html">About Refactoring</a></dd>
+            <dd><a href="../editing/find.html">Finding and Replacing Text</a></dd>
+            <dd><a href="../files/files_search.html">Searching Files</a></dd>
+            <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/editing/refactor_ejb.html">Refactoring an Enterprise Bean</a></dd>
+        </dl>
+
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small> 
+    </body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Change Method Parameters Dialog Box</title>
+        <link rel="StyleSheet" href="../../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Change Method Parameters Dialog Box</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+        <p>Use this dialog box to specify options for the Change Method Parameters refactoring command.
+        You can use the Change Method Parameters command to alter the signature of a 
+        method and have those changes propagated in all of the code that calls this method. 
+        Specifically, you can:</p>
+        <ul><li>Add parameters to a method.</li>
+            <li>Reorder the parameters in a method signature.</li>
+            <li>Change the access modifier for the method.</li>
+        </ul>
+        <p>You can open the Change Method Parameters 
+        dialog box from the Source Editor, Projects window, or Files window. In one 
+        of these windows, right-click a field and choose Refactor &gt; Change Method Parameters.</p>
+
+        <p>The dialog box has the following fields:</p>
+        <ul>
+            <li><b>Parameters.</b> Table that contains a list of parameters for the 
+                method. Use the Add, Move Up, and Move Down buttons 
+                to add and rearrange the order of parameters.</p> 
+                <p>Use the Remove button to remove any parameters that you have added 
+                in the dialog box but that you do not want to keep. 
+                You can not remove parameters that were in the method 
+                before you opened the dialog box.</p>
+                <p>The Parameters table has columns for the method name, 
+                type, and default value. Double-click in a cell to edit a value. </p>
+                </p>
+            </li>
+            <li><b>Access Modifier.</b>  Drop-down list containing the four 
+                possible accessibility modifiers (<tt>public</tt>, <tt>protected</tt>, 
+                <tt>&lt;default&gt;</tt>, and <tt>private</tt>). Select the accessibility 
+                modifier that you want the method to have.
+            </li>
+            <li><b>Method Signature Preview.</b> Read-only field that displays 
+                what the method signature will look like if you apply the changes 
+                that you have specified in the dialog box.
+            </li>
+            <li><b>Preview All Changes.</b> If selected, a list of all 
+                parts of your code to be affected by the refactoring is displayed in the 
+                <a href="previewWindow.html">Refactoring window</a> after you click Next. You can then clear any occurrences of 
+                the name that you do not want changed.
+                <p>If Preview All Changes is not selected, the refactoring is done immediately after you 
+                click Next.</p>
+            </li>
+        </ul>
+
+        <p>Unless you clear the Preview All Changes checkbox, you need to follow these steps 
+        to complete the refactoring:</p>
+        <ol>
+            <li>Click Next. 
+                <p>The Refactoring 
+                window opens and displays a tree view of the code to be affected by the refactoring.</p>
+            </li>
+            <li>Check the items displayed in the Refactoring window to make sure that you want them 
+            all changed. Clear the checkbox next to any parts of the code that 
+            you do not want changed.
+            <li>Click Do Refactoring.</li>
+        </ol>
+        
+        <ul class="note">
+            <li>You should always perform a clean build after completing
+                any refactoring commands. You can do a clean build by right-clicking the project's 
+                node in the Projects window and choosing Clean and Build Project.
+            </li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../aboutRefactoring.html">About Refactoring</a></dd>
+            <dd><a href="../refactorQuickRef.html">Refactoring: Quick Reference</a>
+            <dd><a href="../undo.html">Undoing Refactoring Changes</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

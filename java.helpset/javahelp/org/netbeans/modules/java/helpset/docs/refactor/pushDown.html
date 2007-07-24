@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Moving a Class Member to a Subclass</title>
+        <link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+
+    <body>
+    <h2>Moving a Class Member to a Subclass</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+
+    <p>You can use the Push Down command to move inner classes, methods, fields to a subclass of 
+    their current class.</p>
+    <p><b>To initiate the Push Down operation:</b></p>
+    <ol>
+        <li>In the Source Editor or Projects window, select the class member or class members 
+        that you want to move.</li>
+        <li>Choose Refactor &gt; Push Down.
+        <p>The Push Down dialog box appears and displays a list of the class's members. Make sure the checkbox 
+        for the member that you want to move is selected.</p></li>
+        <li>(Optional) Select the Keep Abstract checkbox 
+            for any abstract methods that you want to keep defined in the current class 
+            and have implemented in the subclass. The checkbox in the left column 
+            must also be checked for the class definition to be copied to the subclass.
+        </li>
+        <li>(Optional) If you do not want to review the changes before they are made, 
+        clear the Preview All Changes checkbox.</li>
+        <li>Click Next. If you have cleared the Preview All Changes checkbox, the IDE applies 
+        the changes automatically and skips the remaining steps.</li>
+        <li>The Refactoring window displays the lines of code that will be changed. Review 
+            the list and clear the checkbox of any code that you do not want changed. If the 
+            class that you are pushing members from has multiple subclasses and you do not 
+            want the members to be pushed to all of them, be sure to clear the checkboxes 
+            for the corresponding subclasses.
+        </li>
+        <li>(Optional) Double-click a file name in the Refactoring window to open the file, 
+        or double-click a line of code to open the source file and to position the 
+        cursor on that line of code.</li>
+        <li>Click Do Refactoring to apply the selected changes.</li>
+    </ol>
+
+
+    <dl>
+	<dt><a name="seealso">See Also</a></dt>
+        <dd><a href="refactorQuickRef.html">Refactoring: Quick Reference</a>
+        <dd><a href="pullUp.html">Moving a Class Member to a Superclass</a></dd>
+        <dd><a href="moveClass.html">Moving a Class to Another Java Package</a></dd>
+        <dd><a href="renameClass.html">Renaming a Class or Interface</a></dd>
+        <dd><a href="undo.html">Undoing Refactoring Changes</a></dd>
+    </dl>
+
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small>
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

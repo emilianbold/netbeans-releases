@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Rename Dialog Box</title>
+<link rel="StyleSheet" href="../../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Rename Dialog Box</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+        <p>Use this dialog box to specify options for the Rename refactoring command. 
+        You can use the Rename command to give a new name to a Java identifier 
+        and have references to that identifier updated with the new name throughout your code. 
+        You can rename classes, methods, and fields. </p>
+        <p>The Rename dialog box appears after you have done one of the following actions:</p>
+        <ul>
+            <li>Chosen the Refactor &gt; Rename (Alt-Shift-R) command while having a Java 
+identifier selected in the Source Editor, Projects window, or Files window.</li>
+            <li>Done an in-place rename of a file 
+        in the Projects window or the Files window.</li>
+        </ul>
+
+        <p>The Rename dialog box has the following fields:</p>
+        <ul>
+            <li><b>New Name.</b> Contains the name of the Java identifier to be renamed. 
+                Specify the new name of the class by modifying this field. 
+            </li>
+            <li><b>Apply Rename on Comments.</b> If selected, the rename is also 
+                applied on all occurrences of the name in comments. 
+            </li>
+                   <li><b>Rename Without Refactoring.</b> If selected, no code is changed 
+            to correspond with the name change. This option only appears when you have 
+            renamed a class inline in the Projects window or the Files window.
+                   </li>
+      
+            <li><b>Preview All Changes.</b> If selected, a list of all 
+                parts of your code to be affected by the refactoring is displayed in the 
+                <a href="previewWindow.html">Refactoring window</a> after you click Next. You can then clear any occurrences of 
+                the name that you do not want changed.
+                <p>If Preview All Changes is not selected, the refactoring is done immediately after you 
+                click Next.</p>
+            </li>
+        </ul>
+
+        <p>Unless you clear the Preview All Changes checkbox, you need to follow these steps 
+        to complete the refactoring:</p>
+        <ol>
+            <li>Click Next. 
+                <p>The Refactoring 
+                window opens and displays a tree view of the code to be affected by the refactoring.</p>
+            </li>
+            <li>Check the items displayed in the Refactoring window to make sure that you want them 
+            all changed. Clear the checkbox next to any parts of the code that 
+            you do not want changed.
+            <li>Click Do Refactoring.</li>
+        </ol>
+        
+        <ul class="note">
+            <li>You should always perform a clean build after completing
+                any refactoring commands. You can do a clean build by right-clicking the project's 
+                node in the Projects window and choosing Clean and Build Project.
+            </li>
+        </ul>
+
+
+
+        <dl>
+	<dt><a name="seealso">See Also</a></dt>
+        <dd><a href="../refactorQuickRef.html">Refactoring: Quick Reference</a>
+	<dd><a href="../renameClass.html">Renaming a Class or Interface</a></dd>
+        <dd><a href="../renameField.html">Renaming a Field or Method</a></dd>
+        <dd><a href="../moveClass.html">Moving a Class to Another Java Package</a></dd>
+        <dd><a href="../undo.html">Undoing Refactoring Changes</dd> 
+         </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

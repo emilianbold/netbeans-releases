@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Encapsulate Fields Dialog Box</title>
+        <link rel="StyleSheet" href="../../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Encapsulate Fields Dialog Box</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+        <p>Use this dialog box to specify options for the Encapsulate Fields refactoring command.
+        You can use the Encapsulate Fields command to create accessor methods for fields 
+        in a class. With the Encapsulate Fields command, you can also have direct references 
+        to those fields replaced with calls to the newly created accessor methods. 
+        Accessor methods are also referred to as getters and setters or read/write 
+        methods.</p>
+       
+        <p>You can open the Encapsulate Fields
+        dialog box from the Source Editor, Projects window, or Files window. In one 
+        of these windows, right-click a field (or a reference to the field elsewhere in 
+        your code) and choose Refactor &gt; Encapsulate Fields.</p>
+
+        <p>The dialog box has the following fields:</p>
+        <ul>
+            <li><b>List of Fields to Encapsulate.</b> Contains a list of fields 
+                in the class. Select the checkbox for each field that you want to 
+                encapsulate.
+            </li>
+            <li><b>Fields' Visibility.</b> Drop-down list containing the four 
+                possible accessibility modifiers (<tt>public</tt>, <tt>protected</tt>, 
+                <tt>&lt;default&gt;</tt>, and <tt>private</tt>). Select the accessibility 
+                modifier that you want the field or fields to have.
+            </li>
+            <li><b>Accessor's Visibility.</b> Drop-down list containing the four 
+                possible accessibility modifiers (<tt>public</tt>, <tt>protected</tt>, 
+                <tt>&lt;default&gt;</tt>, and <tt>private</tt>). Select the accessibility 
+                modifier that you want the accessor (getter and setter) methods to have.
+            </li>
+            <li><b>Use Accessors Even When Field Is Accessible.</b> If selected, any 
+                direct references in your code to the field are updated to use the accessor methods instead. 
+                If not selected, any direct references to the fields that you already have in 
+                your code are not replaced. 
+                <p>This option only has an impact if both of the following are true:</p>
+                <ul>
+                    <li>You have direct references to the field in your 
+                    code.</li>
+                    <li>You have set the field's accessor modifier so that the field is visible 
+                    to the classes with these references.</li>
+                </ul>
+            </li>
+            <li><b>Preview All Changes.</b> If selected, a list of all 
+                parts of your code to be affected by the refactoring is displayed in the 
+                <a href="previewWindow.html">Refactoring window</a> after you click Next. You can then clear any occurrences of 
+                the name that you do not want changed.
+                <p>If Preview All Changes is not selected, the refactoring is done immediately after you 
+                click Next.</p>
+            </li>
+        </ul>
+
+        <p>Unless you clear the Preview All Changes checkbox, you need to follow these steps 
+        to complete the refactoring:</p>
+        <ol>
+            <li>Click Next. 
+                <p>The Refactoring 
+                window opens and displays a tree view of the code to be affected by the refactoring.</p>
+            </li>
+            <li>Check the items displayed in the Refactoring window to make sure that you want them 
+            all changed. Clear the checkbox next to any parts of the code that 
+            you do not want changed.
+            <li>Click Do Refactoring.</li>
+        </ol>        
+        
+        <ul class="note">
+            <li>You should always perform a clean build after completing
+                any refactoring commands. You can do a clean build by right-clicking the project's 
+                node in the Projects window and choosing Clean and Build Project.
+            </li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../aboutRefactoring.html">About Refactoring</a></dd>
+            <dd><a href="../refactorQuickRef.html">Refactoring: Quick Reference</a>
+            <dd><a href="../undo.html">Undoing Refactoring Changes</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

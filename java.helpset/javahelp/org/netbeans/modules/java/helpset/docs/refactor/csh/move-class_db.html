@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Move Class Dialog Box</title>
+        <link rel="StyleSheet" href="../../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Move Class Dialog Box</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+        <p>Use the Move Class dialog box to specify where to move classes 
+        and to specify whether other code is updated to reflect the new location of the class. 
+        The Move Class dialog box appears after you have done one of the following actions:</p>
+
+        <ul>
+            <li>Chosen the Refactor &gt; Move Classes refactoring command.</li>
+            <li>Cut and pasted Java files in the Projects window or in the Files window.
+            </li>
+            <li>Dragged and dropped files in the Projects window or in the Files window.
+            </li>
+        </ul>
+
+        <p>The dialog box has the following fields:</p>
+        <ul>
+            <li><b>Project.</b> The name of the project to which you are moving the classes.
+            </li>
+            <li><b>Location.</b> The part of the project to which you are moving the classes. 
+                The appropriate value here is generally Source Packages, but it is also 
+                possible to have other source roots represented in this field.
+            </li>
+            <li><b>To Package.</b> The package to which you are moving the classes. 
+            </li>
+            <li><b>List of Classes.</b> Displays the 
+            name of the moved classes. This field is not displayed if only one 
+            class is being moved.</li>
+            <li><b>Move Without Refactoring.</b> If selected, no code is changed 
+            to correspond with the file's new location. This option appears when you have 
+            manually moved a class.</li>
+
+            <li><b>Preview All Changes.</b> If selected, a list of all 
+                parts of your code to be affected by the package rename 
+                or moving of classes is displayed in the 
+                <a href="previewWindow.html">Refactoring window</a> after you click Next. You can then clear any occurrences of 
+                the name that you do not want changed.
+                <p>If Preview All Changes is not selected, the refactoring is done immediately after you 
+                click Next.</p>
+            </li>
+        </ul>
+        <p>If you do not want the class to be moved, click Cancel.</p>
+        <p>If you want to proceed with the refactoring, follow these steps:</p>
+        <ol>
+            <li>Click Next. 
+                <p>The Refactoring 
+                window opens and displays a tree view of the code to be affected by the refactoring.</p>
+            </li>
+            <li>Check the items displayed in the Refactoring window to make sure that you want them 
+            all changed. Clear the checkbox next to any parts of the code that 
+            you do not want changed.
+            <li>Click Do Refactoring.</li>
+        </ol>
+        
+        <ul class="note">
+            <li>You should always perform a clean build after completing
+                any refactoring commands. You can do a clean build by right-clicking the project's 
+                node in the Projects window and choosing Clean and Build Project.
+            </li>
+        </ul>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../refactorQuickRef.html">Refactoring: Quick Reference</a>
+            <dd><a href="../renameClass.html">Renaming a Class or Interface</a></dd>
+            <dd><a href="../renameField.html">Renaming a Field or Method</a></dd>
+            <dd><a href="../moveClass.html">Moving a Class to Another Java Package</a></dd>
+            <dd><a href="../undo.html">Undoing Refactoring Changes</dd> 
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

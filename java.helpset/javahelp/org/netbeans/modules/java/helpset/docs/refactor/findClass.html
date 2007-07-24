@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Finding Class, Method, and Field Usages</title>
+        <link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Finding Class, Method, and Field Usages</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+        <p>You can use the Find Usages command to determine everywhere a class,
+        method, or field is used in your project's source code.</p>
+        <p><b>To find where a class, interface, method, or field is used in your project:</b></p>
+        <ol>
+            <li>In the Projects window or the Source Editor window, right-click the code element 
+            and choose Find Usages (Alt-F7).</li>
+            <li>In the <a href="csh/findUsages-CSH.html">Find Usages dialog box</a>, select options for the scope of the 
+            search.
+            <p>See the following sections of this topic for more information on the Find Usages command and its options.</p>
+            <ul><li><a href="#classes">Classes and Interfaces</a></li>
+            <li><a href="#methods">Methods</a></li>
+            <li><a href="#fields">Fields</a></li></ul></li>
+            <li>Click Next.
+                <p>The <a href="csh/usagesWindow.html">Usages window</a> 
+                displays the file name and the line of code for each usage found in that file.</p>
+            </li>
+        </ol>
+        <p><b>To jump to a specific occurrence of the code element, do one of the following actions:</b></p>
+        <ul>
+            <li>Double-click a file name in the Usages window to open the file.</li> 
+            <li>Double-click a line of code to open the file and to position the cursor 
+            on that line of code.</li>
+        </ul>
+        <a name="classes"><h3>Classes and Interfaces</h3></a>
+        <p>For classes and interfaces, the Find Usages command displays all the code 
+        lines that:</p>
+        <ul>
+            <li>Declare the type</li>
+            <li>Declare a variable or method to that type</li>
+            <li>Use the type, such as creating a new instance, importing, extending, implementing, 
+            casting, or throwing</li>
+            <li>Use the type's members and static variables</li>
+        </ul>
+        <p>After you choose the Find Usages command on a class or interface, the Find Usages dialog box might 
+        give you additional options:</p>  
+        <ul><li><b>Find All Subtypes</b> checkbox. If selected, only usages of subtypes of the class are displayed.</li>
+            <li><b>Find Direct Subtypes Only</b> checkbox. If selected, only usages of direct subtypes 
+            are displayed. Subtypes of those subtypes are ignored. </li>
+        </ul>
+
+        <a name="methods"><h3>Methods</h3></a>  
+        <p>For methods, the Find Usages command displays 
+        the code lines that:</p>
+        <ul><li>declare the method</li>
+            <li>call the method</li>
+            <li>override the method</li>
+        </ul>
+        <p>After you choose the Find Usages command on a method, the Find Usages dialog box might 
+        give you additional options:</p>
+        <ul> <li><b>Find Overriding Methods</b> checkbox. If selected, any occurrences of methods that override 
+            the selected method will be displayed.</li>
+            <li><b>Search from Base Class</b> checkbox. If selected, the output 
+            shows every usage of that base method. This option only appears if the method 
+            that you are finding usages for overrides another method. </li>
+        </ul>
+
+        <a name="fields"><h3>Fields</h3></a> 
+        <p>For fields, the Find Usages command displays 
+        all the code lines that:</p> 
+        <ul><li>declare the field</li>
+            <li>set the field to a value</li>
+            <li>get the value of the field</li>
+        </ul>
+
+        <h3>Additional IDE Find Mechanisms</h3>
+        <p>The other IDE   tools that enable you to search for all
+        the places where specific text is used in a project include: 
+        <ul>
+            <li><b><a href="../editing/find.html">Finding and Replacing Text</a></b>. 
+            Searches for all the places where specific text is
+            used in a source file that is open in the Java Editor. Choose Edit &gt; Find
+            to open the Find dialog box, or choose Edit &gt; Replace to open the Replace dialog box.
+            These commands finds all matching strings, regardless
+            of whether the string is a Java element.
+            <li><b><a href="../files/files_search.html">Find in Projects</a></b>. As with the Find command, 
+            the Find in Projects command searches for matching strings, regardless
+            of whether the string is a class name.
+            Choose Edit &gt; Find
+            in Projects to open the Find in Projects dialog box and then type the string
+            of text that you are looking for.
+        </ul>
+        <ul class="note">
+            <li>To find where a method is declared in a source file, you can either
+            double-click  the method in the Projects window or Navigator window.
+            If the method is declared in a different source file, right-click the method
+            and choose Go To &gt; Declaration
+            from the contextual menu.
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="refactorQuickRef.html">Refactoring: Quick Reference</a>
+            <dd><a href="renameClass.html">Renaming a Class or Interface</a></dd>
+            <dd><a href="renameField.html">Renaming a Field or Method</a></dd>
+            <dd><a href="safeDelete.html">Safely Deleting Java Code</a></dd>            
+            <dd><a href="undo.html">Undoing Refactoring Changes</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

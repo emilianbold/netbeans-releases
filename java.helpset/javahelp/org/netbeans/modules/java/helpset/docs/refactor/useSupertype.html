@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Using a Supertype Where Possible</title>
+        <link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+
+    <body>
+    <h2>Using a Supertype Where Possible</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+
+    <p>You can use the Use Supertype Where Possible command to 
+replace references to a type with references to one of the type's supertypes. 
+    Before replacing those references, the IDE checks to make sure that supertype
+and its members are accessible to all of the code that would be changed to reference them.</p>
+    <p><b>To initiate the Use Supertype Where Possible operation:</b></p>
+    <ol>
+    <li>In the Source Editor or Projects window, select the type to which you 
+    want to apply the operation. The type can be a class, interface, or enumeration.</li>
+    <li>Choose Refactor &gt; Use Supertype Where Possible.</li>
+<li>In the Select Supertype to Use list, select the supertype that you want to be 
+referenced in place of the type your code currently uses.</li>
+    <li>(Optional) If you do not want to review the changes before they are made, 
+    clear the Preview All Changes checkbox.</li>
+    <li>Click Next. If you have cleared the Preview All Changes checkbox, the IDE applies 
+    the changes automatically and skips the remaining steps.</li>
+    <li>The Refactoring window displays the lines of code that will be changed. Review 
+    the list and clear the checkbox of any code that you do not want changed. If the 
+    class that you are pushing members from has multiple subclasses and you do not 
+    want the members to be pushed to all of them, be sure to clear the checkboxes 
+    for the corresponding subclasses.
+    </li>
+    <li>(Optional) Double-click a file name in the Refactoring window to open the file, 
+    or double-click a line of code to open the source file and to position the 
+    cursor on that line of code.</li>
+    <li>Click Do Refactoring to apply the selected changes.</li>
+    </ol>
+
+    <!--(E.g. when certain type is public and selected supertype is not public.)
+I.e. consider
+class A;
+public class B extends A;
+Class A is not public, there are usages of B which could be replaced by A 
+(they use only methods from A). But these usages aren't in the same package as A, 
+so they cannot be accessed.
+
+2. Check the access modifiers on supertype features.
+Similar scenario as in 1), but represents method. In class B, 
+you can have 'public void method()', but in class A the method is declared with 
+weaker access modifier, e.g. 'protected void method()'. Then refactoring has 
+to check, that all usages which should replace B to A can access the method.
+
+    -->
+    
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="refactorQuickRef.html">Refactoring: Quick Reference</a>
+        <dd><a href="extractSuperclass.html">Extracting a Superclass</a></dd>
+        <dd><a href="extractInterface.html">Extracting an Interface</a></dd>
+        <dd><a href="pullUp.html">Moving a Class Member to a Superclass</a></dd>
+        <dd><a href="moveClass.html">Moving a Class to Another Java Package</a></dd>
+        <dd><a href="renameClass.html">Renaming a Class or Interface</a></dd>
+        <dd><a href="undo.html">Undoing Refactoring Changes</a></dd>
+    </dl>
+
+
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small>
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

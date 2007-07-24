@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Find Usages Dialog Box</title>
+        <link rel="StyleSheet" href="../../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Find Usages Dialog Box</h2>
+        <p>Use this dialog box to specify search options for the Find Usages command.
+You can use the Find Usages command to determine all of the places a class, method,
+        or field is used in your project's source code. </p>
+        
+        <p>You can open the Find Usages 
+        dialog box from the Source Editor, Projects window, or Files window. In one 
+of these windows, right-click a 
+        class, method, or field and choose Find Usages (Alt-F7).</p>
+	
+
+        <p>The Find Usages dialog box displays the following option for all types of identifiers:</p>
+        <ul>
+            <li><b>Show in Comments.</b> If selected, occurrences of the identifier that 
+            appear in code comments are also displayed.</li>
+        </ul>
+        <p>For classes and interfaces, the Find Usages dialog box displays the following 
+        additional options:</p>
+        <ul>
+            <li><b>Find Usages.</b> If selected, all usages of the class are displayed.</li>
+            <li><b>Find All Subtypes.</b> If selected, usages of all subtypes of the class, 
+including subtypes of subtypes, are displayed. Usages of the class itself are not displayed.</li>
+            <li><b>Find Direct Subtypes Only.</b> If selected, only usages of direct subtypes 
+            are displayed. Subtypes of those subtypes are ignored. </li>
+        </ul>
+
+        <p>For methods, the Find Usages dialog box sometimes displays the following additional options:</p>
+        <ul><li><b>Find Usages.</b> If selected, all usages of that 
+        specific method in your project are displayed.</li>
+        <li><b>Find Overriding Methods.</b> If selected, the output will show every usage 
+        of a method that overrides this method in your project.</li>
+        <li><b>Search from Base Class.</b> This option is only relevant if the method for which you 
+are finding usages overrides another method. If selected, the output 
+        will show every usage of that base method.</li></ul>
+        <ul class="note">
+            <li>The Find Usages command is 
+            distinct from the Find command, because Find Usages returns only occurrences of 
+            the specified identifier in Java code. The Find command returns any matching string 
+            that you specify in any type of file.</li>
+        </ul>
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../refactorQuickRef.html">Refactoring: Quick Reference</a>
+            <dd><a href="../../editing/find.html">Finding and Replacing Text</a></dd>
+            <dd><a href="../../files/files_search.html">Searching Files</a></dd>
+            <dd><a href="../safeDelete.html">Safely Deleting Java Code</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small> 
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+    </body>
+</html>

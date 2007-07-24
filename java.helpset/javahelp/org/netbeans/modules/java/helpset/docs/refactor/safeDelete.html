@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Safely Deleting Java Code</title>
+        <link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+
+    <body>
+    <h2>Safely Deleting Java Code</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+
+    <p>You can use the Safely Delete command to have the IDE check for references to a code 
+    element before you delete that code element. You can use the Safely Delete command on 
+    classes, methods, and fields.</p>
+    <p>When you choose the Safely Delete command on a code element, the Safe Delete 
+    dialog box opens and helps walk you through the process.</p>
+    <p><b>To initiate the Safely Delete operation:</b></p>
+    <ol>
+        <li>Select the code element that you want to delete and choose Refactor &gt; Safely Delete.
+        <p>You can select the code element by clicking the element's node in the Projects window 
+        or by placing the insertion point in an identifier for the code element in the Source Editor.</p></li>
+        <li>In the Safe Delete dialog box, make sure that the IDE has identified the right element to 
+        be deleted and click Next.
+        <ul>
+            <li>If the code element is not referenced by other code, the Safe Delete dialog box closes 
+and the code element is deleted.</li>
+            <li>If the code element to be deleted is referenced by other code, a warning and a 
+            Show Usages button appear in the Safely Delete dialog box. See the 
+ section below for information on completing or canceling the operation.</li>
+        </ul>
+    </ol>
+
+    <h3>Handling Deletions When The Code Element is Referenced</h3>    
+    <p>When the message beginning with <tt>References to selected elements were found</tt> 
+    appears in the Safely Delete window, you can proceed in one of the following ways:</p>
+
+    <ul>
+
+        <li>Remove the references to the code to be deleted and then continue 
+            the Safely Delete operation. 
+        </li>
+        <li>Click Cancel to cancel the command.</li>
+    </ul>
+    <ul class="note">
+        <li>If you mistakenly delete a code element that is still referenced by 
+        other code, you can reverse the deletion with the Refactor &gt; Undo command.</li>
+    </ul>
+    <p><b>To remove references to code and continue with the deletion of the class element:</b></p>
+    <ol>
+        <li>In the Safely Delete dialog box, click Show Usages.
+        <p>The <a href="csh/usagesWindow.html">Usages window</a> opens with a list of the references 
+        to the code that you want to delete.</p></li>
+        <li>Double-click a node for code that references the class to be deleted. 
+        <p>The referencing class opens in the Source Editor.</p></li>
+        <li>Remove the reference to the code that you want to delete.
+        <p>You can use the Safely Delete command to remove this reference. If there are references 
+        to that code as well, you can click Show Usages to open a new tab in the Usages 
+        window.</p></li>
+        <li>Repeat steps 2 and 3 until all references to the code that you want to delete 
+        are removed.</li>
+        <li>In the Usages window, click Rerun Safe Delete.
+        <p>The Safely Delete command will be run again. 
+        If there are any references that you have not removed, a warning will appear and 
+        you can click Show Usages to resume the process of resolving the references.</p></li>
+    </ol>
+
+
+    <ul class="note">
+        <li>In the Projects window, you can select multiple code elements for deletion 
+        at the same time. You can access fields and methods for selection by expanding 
+        the hierarchy of the class's node.</li>
+        <li>If you select the Preview All Changes checkbox in the Safe Delete window, the 
+Refactoring window appears after you click Next. Click Do Refactoring to proceed with the 
+deletion.</li>
+    </ul>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+        <dd><a href="refactorQuickRef.html">Refactoring: Quick Reference</a>
+        <dd><a href="findClass.html">Finding Class, Method, and Field Usages</a></dd>
+	<dd><a href="renameClass.html">Renaming a Class or Interface</a></dd>
+	<dd><a href="undo.html">Undoing Refactoring Changes</a></dd>
+</dl>
+
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small>
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Extracting a Method</title>
+        <link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Extracting a Method</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+        <p>When you extract a method in the IDE you change a selected code fragment into a method.
+        Typically you extract a method when you want to separate a method into smaller, more meaningful methods.
+        Creating smaller fragments can increase the reusability of your code as you can separate the parts of your code that may need to be updated more often.  
+        By giving your new method a meaningful name, you can increase the comprehensibility of your code.</p>
+	    
+        <p>When you extract a method in the IDE, you replace statements in a class with a call to a method. 
+            Before statements are replaced, the IDE opens the Extract Method dialog box where you specify the parameters and modifiers for the method.
+            The IDE searches your open projects for occurrences of the statements you specified and replaces the occurrences with the method call. 
+        </p> 
+        <!--<ul class="note">
+        <li>You can preview the files that will be changed  by selecting Preview All Changes in the Extract Method dialog box.
+        If Preview All Changes is selected, a list of the files to be modified is displayed in the Refactoring window.
+        If you do not want certain occurrences to be changed, you can clear the checkbox for that occurrence in the Refactoring window.
+        Double-clicking on an occurrence opens that file in the Source editor, and the caret is placed in the line containing the occurrence.</li>
+        </ul>-->      
+
+        
+        <p><b>To extract a method:</b></a></p>
+        <ol>
+            <li>In the Source Editor, select the the statements you want to extract.</li> 
+            <li>Right-click in the highlighted statements and choose Refactor &gt; Extract Method. 
+            <p>The Extract Method dialog box opens.</p></li>
+            <li>Type the name for your method in the Method Name text field and choose the access type from the drop-down list.</li>
+            <li>Select the Declare Static checkbox if you want the new method to be static.</li>
+            <li>(Optional) Change the order of the parameters by selecting a parameter and using the Move Up and Move Down buttons.
+                <p>The parameters listed in the dialog box are those you initially selected.
+                <ul class="note"><li>Look at the Method Signature Preview in the dialog box to check that the signature is how you expect.</li></ul>  
+            </li>
+            <li>(Optional) Clear the checkbox if you do not want to preview the changes before they are made.
+            If Preview All Changes is not selected, the IDE applies the changes automatically and skips the remaining steps.</li>
+            <li>Click Next. 
+            If Preview All Changes is selected, the Refactoring window opens and displays all occurences that will be affected by the change.
+            Review the list and clear the checkbox of any code that you do not want changed. </li>
+            <li>Click Do Refactoring in the Refactoring window to apply the changes to the selected files.</li>
+        </ol>
+        
+        <h3>Troubleshooting</h3>
+        <p>If you encounter an error message when extracting a method, check to see that the statements you selected meet the following criteria:</p>	
+        <ul>
+            <li>Selections cannot have more than one output parameter.</li>
+            <li>Selections cannot contain a <tt>break</tt> or <tt>continue</tt> statement if the corresponding target is not part of the selection.</li>
+            <li>Selections cannot contain a <tt>return</tt> statement that is not the last statement of the selection. 
+            The selected code is not allowed to return conditionally.</li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="refactorQuickRef.html">Refactoring: Quick Reference</a>
+            <dd><a href="extractSuperclass.html">Extracting a Superclass</a></dd>
+            <dd><a href="extractInterface.html">Extracting an Interface</a></dd>
+            <dd><a href="renameField.html">Renaming a Field or Method</a></dd>
+            <dd><a href="undo.html">Undoing Refactoring Changes</a></dd>
+        </dl>  
+
+        <hr>
+        <p><small><a href="../credits.html">Legal Notices</a></small> </p>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

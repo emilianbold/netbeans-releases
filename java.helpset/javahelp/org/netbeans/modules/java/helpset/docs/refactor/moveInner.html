@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Moving an Inner Class One Level Up</title>
+        <link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+
+    <body>
+    <h2>Moving an Inner Class One Level Up</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+
+<p>You can use the Move Inner to Outer Level command to do move an inner class 
+one level up in hierarchy.</p>
+<p>For example, if the selected class is directly nested in a top-level class, 
+a new top-level class is created. If the selected class is nested in an inner class, 
+the selected class is moved to the level of the inner class that it was nested in.
+</p>
+
+    <p><b>To use the Move Inner to Outer Level operation:</b></p>
+    <ol>
+       <li>In the Source Editor, place the insertion point in the inner class that you 
+want to convert.</li>
+         <li>Choose Refactor &gt; Move Inner to Outer Level.
+        <p>The Move Inner to Outer Level dialog box appears.</p></li>
+        <li>In the Class Name field, change the name of the class, if necessary.</li>
+        <li>(Optional) Select the Declare Field for the Current Outer Class field 
+ if you want to generate an instance field for the current outer class and pass the outer class to 
+the constructor. If you select this checkbox, type a name for the the outer class' instance field.<!--TODO - post50 - explain better--></li>
+        <li>(Optional) If you do not want to review the changes before they are made, 
+        clear the Preview All Changes checkbox.</li>
+        <li>Click Next. If you have cleared the Preview All Changes checkbox, the IDE applies 
+        the changes automatically and skips the remaining steps.</li>
+        <li>If you have selected the Preview All Changes checkbox, the Refactoring window displays the lines of code that will be changed. Review 
+            the list and clear the checkbox of any code that you do not want changed. 
+        </li>
+        <li>(Optional) Double-click a file name in the Refactoring window to open the file, 
+        or double-click a line of code to open the source file and to position the 
+        cursor on that line of code.</li>
+        <li>Click Do Refactoring to apply the selected changes.
+        </li>
+    </ol>
+
+
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+        <dd><a href="refactorQuickRef.html">Refactoring: Quick Reference</a>
+        <dd><a href="pullUp.html">Moving a Class Member to a Superclass</a></dd>
+        <dd><a href="pushDown.html">Moving a Class Member to a Subclass</a></dd>
+        <dd><a href="convertAnonymous.html">Converting an Anonymous Inner Class to a Regular Inner Class</a></dd>
+        <dd><a href="moveClass.html">Moving a Class to Another Java Package</a></dd>
+	<dd><a href="renameClass.html">Renaming a Class or Interface</a></dd>
+	<dd><a href="undo.html">Undoing Refactoring Changes</a></dd>
+</dl>
+
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small>
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

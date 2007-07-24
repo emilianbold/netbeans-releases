@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+ *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Moving a Class Member to a Superclass</title>
+        <link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+
+    <body>
+    <h2>Moving a Class Member to a Superclass</h2>
+    <p><small><a href="#seealso">See Also</a></small></p>
+
+    <p>You can use the Pull Up command to move methods and fields to a class that their 
+    current class inherits from.</p>
+    <p><b>To initiate the Pull Up operation:</b></p>
+    <ol>
+        <li>In the Source Editor or Projects window, select the class that contains members 
+        that you want to move.</li>
+        <li>Choose Refactor &gt; Pull Up.
+        <p>The Pull Up dialog box appears and displays a list of the class's members and 
+        any interfaces that the class implements.</li>
+        <li>In the Destination Supertype drop-down list, select the class that you want to move the 
+        members to.</li>
+        <li>Select the checkbox for the member or members that you want to move.
+        <p>If the current class implements any interfaces, there are checkboxes 
+        for these interfaces. If you select a checkbox for an interface, the <tt>implements</tt> 
+        statement for that interface is moved to the superclass.</p></li>
+        <li>(Optional) If you want to make a method abstract, select the Make Abstract checkbox 
+        for the method. If you select this checkbox, the method will be declared in the 
+        superclass as an abstract method and overridden in the current class. The method 
+        will be assigned the <tt>protected</tt> access modifier.</li>
+        <li>(Optional) If you do not want to review the changes before they are made, 
+        clear the Preview All Changes checkbox.</li>
+        <li>Click Next. If you have cleared the Preview All Changes checkbox, the IDE applies 
+        the changes automatically and skips the remaining steps.</li>
+        <li>The Refactoring window displays the lines of code that will be changed. Review 
+            the list and clear the checkbox of any code that you do not want changed. 
+        </li>
+        <li>(Optional) Double-click a file name in the Refactoring window to open the file, 
+        or double-click a line of code to open the source file and to position the 
+        cursor on that line of code.</li>
+        <li>Click Do Refactoring to apply the selected changes.
+        </li>
+    </ol>
+
+
+    <dl>
+        <dt><a name="seealso">See Also</a></dt>
+        <dd><a href="refactorQuickRef.html">Refactoring: Quick Reference</a>
+        <dd><a href="moveInner.html">Moving an Inner Class One Level Up</a></dd>
+        <dd><a href="pushDown.html">Moving a Class Member to a Subclass</a></dd>
+        <dd><a href="moveClass.html">Moving a Class to Another Java Package</a></dd>
+        <dd><a href="extractSuperclass.html">Extracting a Superclass</a></dd>
+        <dd><a href="renameClass.html">Renaming a Class or Interface</a></dd>
+        <dd><a href="undo.html">Undoing Refactoring Changes</a></dd>
+    </dl>
+
+    <hr>
+    <small><a href="../credits.html">Legal Notices</a></small>
+    <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+    </table></body>
+</html>

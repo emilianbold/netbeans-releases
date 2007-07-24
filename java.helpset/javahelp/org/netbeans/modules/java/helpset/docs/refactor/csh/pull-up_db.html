@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Pull Up Dialog Box</title>
+        <link rel="StyleSheet" href="../../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Pull Up Dialog Box</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+
+        <p>Use this dialog box to specify options for the Pull Up refactoring command.
+        You can use the Pull Up command to move one or more members from 
+        the selected class to a superclass. </p>
+       
+        <p>You can open the Pull Up dialog box by choosing Refactor &gt; Pull Up  
+            after you have selected a class in the Source Editor, Projects window, or Files window. 
+        </p>
+
+        <p>The dialog box has the following fields:</p>
+        <ul>
+            <li><b>Destination Supertype.</b> Drop-down list that contains the names of the superclasses for the 
+current class. Select the class that you want to move class members to.
+            </li>
+           <li><b>Members to Pull Up.</b> Contains the list of inner classes, methods, and fields in 
+                the current class. 
+                <p>Select the checkbox to the left of each member that you want to have 
+                moved to the selected superclass.</p>
+                <p>Select the Make Abstract checkbox for any methods that you have selected to 
+                pull up for which you would like to have the declaration in the superclass but keep the 
+                implementation in the current class. </p>
+            </li>
+
+            <li><b>Preview All Changes.</b> If selected, a list of all 
+                parts of your code to be affected by the refactoring is displayed in the 
+                <a href="previewWindow.html">Refactoring window</a> after you click Next. You can then clear any occurrences of 
+                the name that you do not want changed.
+                <p>If Preview All Changes is not selected, the refactoring is done immediately after you 
+                click Next.</p>
+            </li>
+        </ul>
+
+        <p>Unless you clear the Preview All Changes checkbox, you need to follow these steps 
+        to complete the refactoring:</p>
+        <ol>
+            <li>Click Next. 
+                <p>The Refactoring 
+                window opens and displays a tree view of the code to be affected by the refactoring.</p>
+            </li>
+            <li>Check the items displayed in the Refactoring window to make sure that you want them 
+            all changed. Clear the checkbox next to any parts of the code that 
+            you do not want changed.
+            <li>Click Do Refactoring.</li>
+        </ol>        
+        
+        <ul class="note">
+            <li>You should always perform a clean build after completing
+                any refactoring commands. You can do a clean build by right-clicking the project's 
+                node in the Projects window and choosing Clean and Build Project.
+            </li>
+        </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../aboutRefactoring.html">About Refactoring</a></dd>
+            <dd><a href="../refactorQuickRef.html">Refactoring: Quick Reference</a>
+            <dd><a href="../undo.html">Undoing Refactoring Changes</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Extracting an Interface</title>
+        <link rel="StyleSheet" href="../ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Extracting an Interface</h2>
+        <p><small> <a href="#seealso">See Also</a> </small></p>
+        <p>When you use the Extract Interface command, the 
+IDE creates a new interface from the selected public non-static methods in a class or interface.
+	
+        <!-- TODO post50 why create interface: Typically you create an interface when you want to  -->
+
+        Because an interface does not restrict how its methods are implemented, interfaces can be used in classes that have different functions.
+        Creating interfaces can increase the reusability of your code as you can have multiple classes implementing the same interface.
+        If necessary, you can then modify the interface instead of making modifications in multiple classes.</p>
+	    
+        <p>When you extract an interface, the IDE does the following things:</p>
+        <ul>
+            <li>Creates a new interface with the selected methods in the same package as the current class or interface.</li>
+            <li>Updates the <tt>implements</tt> or <tt>extends</tt> clause of the current class or interface to include the new interface. 
+            Any interfaces that the new interface extends are excluded.</li>
+        </ul>
+	
+        <p><b>To extract an interface:</b></a></p>
+        <ol>
+            <li>Open the class or interface containing the methods you want to move to an interface.</li>
+            <li>In the Source editor, right-click in the file and choose Refactor &gt; Extract Interface.</li> 
+            <p>The Extract Interface dialog box opens.</p></li>
+            <li>Type the name for your interface in the Interface Name text field.</li>
+            <li>In the Members to Extract list, select the members that you want to extract to the new interface.
+            <p>If the class from which you are extracting an interface already implements an interface, there 
+            is also an item for that implemented interface. If you select the checkbox 
+            for that interface, the <tt>implements</tt> clause for that new interface 
+            is moved to the new interface that you are extracting.</p></li>
+            <li>(Optional) Clear the Preview All Changes checkbox if you do not want to preview the changes before they are made.
+            If Preview All Changes is not selected, the IDE applies the changes automatically and skips the remaining steps.</li>
+            <li>Click Next. 
+            If Preview All Changes was selected, the Refactoring window opens and displays all occurrences that will be affected by the change.
+            Review the list and clear the checkbox of any code that you do not want changed. </li>
+            <li>Click Do Refactoring in the Refactoring window to apply the changes to the selected files.</li>
+        </ol>
+
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="refactorQuickRef.html">Refactoring: Quick Reference</a>
+            <dd><a href="extractSuperclass.html">Extracting a Superclass</a></dd>
+            <dd><a href="extractMethod.html">Extracting a Method</a></dd>
+            <dd><a href="renameField.html">Renaming a Field or Method</a></dd>
+            <dd><a href="undo.html">Undoing Refactoring Changes</a></dd>
+        </dl>  
+
+        <hr>
+        <p><small><a href="../credits.html">Legal Notices</a></small> </p>
+        <table cellpadding="50" border="0">
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </body>
+</html>
