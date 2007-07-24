@@ -41,7 +41,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(MethodParametersTest.class);
+//        suite.addTestSuite(MethodParametersTest.class);
 //        suite.addTest(new MethodParametersTest("testAddInsertReplaceParameters"));
 //        suite.addTest(new MethodParametersTest("testAddFirst"));
 //        suite.addTest(new MethodParametersTest("testAddToIndex0"));
@@ -53,6 +53,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new MethodParametersTest("testRenameInTypePar"));
 //        suite.addTest(new MethodParametersTest("testRenameInParameterizedType"));
 //        suite.addTest(new MethodParametersTest("testRenameInParameterInvocation"));
+        suite.addTest(new MethodParametersTest("testAddFirstParameterAndInvocArgument"));
         return suite;
     }
 
@@ -76,7 +77,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -157,7 +158,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -212,7 +213,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -267,7 +268,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -313,7 +314,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -359,7 +360,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -404,7 +405,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -449,7 +450,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -498,7 +499,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -547,7 +548,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -599,7 +600,7 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -627,11 +628,69 @@ public class MethodParametersTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-        testFile = getFile(getSourceDir(), getSourcePckg() + "Test.java");
-    }
+    /**
+     * #109470: [Change parameters]  The default values is misplaced
+     */
+    public void testAddFirstParameterAndInvocArgument() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "public class Title {\n" +
+            "   \n" +
+            "    public void method(List l) {\n " +
+            "        ((Title)l.get(0)).akce();\n " +
+            "    }\n" +
+            "    void akce() {\n" +
+            "        throw new UnsupportedOperationException(\"Not yet implemented\");\n" +
+            "    }\n" +
+            "\n" +
+            "}\n"
+        );
+        String golden =
+            "public class Title {\n" +
+            "   \n" +
+            "    public void method(List l) {\n " +
+            "        ((Title)l.get(0)).akce(0);\n " +
+            "    }\n" +
+            "    void akce(final Integer elaborada) {\n" +
+            "        throw new UnsupportedOperationException(\"Not yet implemented\");\n" +
+            "    }\n" +
+            "\n" +
+            "}\n";
 
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method1 = (MethodTree) clazz.getMembers().get(1);
+                ExpressionStatementTree statement = (ExpressionStatementTree) method1.getBody().getStatements().get(0);
+                MethodInvocationTree invocation = (MethodInvocationTree) statement.getExpression();
+                workingCopy.rewrite(invocation, make.addMethodInvocationArgument(invocation, make.Literal(0), null));
+                MemberSelectTree mst = (MemberSelectTree) invocation.getMethodSelect();
+                MethodTree method2 = (MethodTree) clazz.getMembers().get(2);
+                VariableTree var = make.Variable(
+                        make.Modifiers(
+                        Collections.singleton(Modifier.FINAL),
+                        Collections.<AnnotationTree>emptyList()
+                        ),
+                        "elaborada",
+                        make.Identifier("Integer"),
+                        null
+                );
+                workingCopy.rewrite(method2, make.addMethodParameter(method2, var));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
