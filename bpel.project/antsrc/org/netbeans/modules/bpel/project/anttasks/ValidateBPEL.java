@@ -19,11 +19,8 @@
 package org.netbeans.modules.bpel.project.anttasks;
 
 import java.io.File;
-
 import java.net.URI;
-
 import java.util.Collection;
-
 import java.util.Iterator;
 
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
@@ -43,32 +40,20 @@ import org.openide.util.lookup.Lookups;
  * @author Sreenivasan Genipudi
  */
 public class ValidateBPEL {
-    /**
-     * Constructor
-     */
-    public ValidateBPEL() {
-       
-    }
+    public ValidateBPEL() {}
     
-    /**
-     * Validate the BPEL
-     * @param bpelFileUri Bpel File URI
-     * @return Collection of results
-     */
     public Collection validate(URI bpelFileUri) {
-        
         BpelModel model = null;
         try {
             model = BPELCatalogModel.getDefault().getBPELModel(bpelFileUri);
         }catch (Exception ex) {
             ex.printStackTrace();
-            throw new RuntimeException(" Error while trying to create BPEL Model ",ex);
+            throw new RuntimeException("Error while trying to create BPEL Model ",ex);
         }
-        //Validator validator = (Validator) Lookups.metaInfServices(getClass().getClassLoader()).lookup(Validator.class);
-         Validation validation = new Validation();
-         validation.validate((org.netbeans.modules.xml.xam.Model)model,  ValidationType.COMPLETE);
+        Validation validation = new Validation();
+        validation.validate((org.netbeans.modules.xml.xam.Model)model,  ValidationType.COMPLETE);
         Collection col  =validation.getValidationResult();
-        //Collection col = validation.getValidationResult();
+
         for (Iterator itr = col.iterator(); itr.hasNext();) {
            ResultItem resultItem = (ResultItem) itr.next();
         }

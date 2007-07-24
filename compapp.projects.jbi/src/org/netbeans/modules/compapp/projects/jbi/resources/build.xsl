@@ -108,7 +108,7 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:attribute name="if">no.netbeans.home</xsl:attribute>
 
                 <property file="${{basedir}}/nbproject/private/private.properties"/>
-                <property name="netbeans.home" value="${{caps.netbeans.home}}/platform6"/>
+                <property name="netbeans.home" value="${{caps.netbeans.home}}/platform7"/>
                 <property name="netbeans.user" value="${{caps.netbeans.user}}"/>
                 <property name="from.commandline" value="true"/>
             </target>

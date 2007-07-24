@@ -23,9 +23,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import java.lang.reflect.Method;
-
 import java.net.URI;
-
 import java.util.List;
 
 import org.apache.tools.ant.AntClassLoader;
@@ -35,53 +33,24 @@ import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 /**
  * Ant task wrapper invokes Validate BPEL Model
  * @author Sreenivasan Genipudi
  */
 public class ValidateBPELProjectTask extends Task {
-    /**
-     * Constructor
-     */
-    public ValidateBPELProjectTask() {
-    }
+    public ValidateBPELProjectTask() {}
     
-    /**
-     * Constants
-     */
     private static final String BPEL_EXT = ".bpel";
     private static final String WSDL_EXT = ".wsdl";
     private static final String XSD_EXT = ".xsd";
-    /**
-     * Logger instance
-     */
+
     private Logger logger = Logger.getLogger(ValidateBPELProjectTask.class.getName());
-    // Member variable representing source directory
-    /**
-     * Source directory
-     */
     private String mSourceDirectory = null;
-    // Member variable representing build directory
-    /**
-     * Build directory
-     */
     private String mBuildDirectory = null;    
-    // Member variable representing project classpath
-    /**
-     * Project classpath
-     */
     private String mProjectClassPath= null;
-    /**
-     * Dependent project directories
-     */
     private List mDependentProjectDirs;
-    /**
-     * Custom classloader to invoke Validate BPEL
-     */
     private AntClassLoader m_myClassLoader = null;
-    /**
-     * classpath reference
-     */
     private Reference m_ref = null;
     private String mBuildDependentProjectFilesDirectory; 
     private boolean mbRunValidation = true;
@@ -90,48 +59,32 @@ public class ValidateBPELProjectTask extends Task {
     public void setBuildDependentProjectDir(String dependentProjectFilesDir) {
         this.mBuildDependentProjectFilesDirectory = dependentProjectFilesDir;
     }
+
     public void setClasspathRef(Reference ref) {
         this.m_ref = ref;
     }
+    
     public void setBuildDirectory(String buildDir) {
         mBuildDirectory = buildDir;
     }
-    /**
-     * Set the source directory
-     * @param srcDir source directory
-     */
+
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
     }
-    /**
-     * Run validation
-     * @param srcDir source directory
-     */
+
     public void setRunValidation(String flag) {
         setAllowBuildWithError(flag);
         mAllowBuildWithError = !mAllowBuildWithError;
     }
-        
-    /**
-     * Get the source directory
-     * @return String value of the source directory
-     */
+
     public String getSourceDirectory() {
         return this.mSourceDirectory;
     }
     
-    /**
-     * Set the project classpath
-     * @param projectClassPath
-     */
     public void setProjectClassPath(String projectClassPath) {
         this.mProjectClassPath = projectClassPath;
     }
            
-    /**
-     * Run validation
-     * @param srcDir source directory
-     */
     public void setAllowBuildWithError(String flag) {
         if (flag != null) {
             if (flag.equals("false")) {
@@ -142,83 +95,65 @@ public class ValidateBPELProjectTask extends Task {
         }
     }  
     
-    /**
-     * Invoke validate BPEL Model
-     */
     public void execute() throws BuildException { 
         try {
+//System.out.println("1111");
             m_myClassLoader = new AntClassLoader(); 
             initClassLoader(); 
+//System.out.println("2222");
+
             Class antTaskClass =  Class.forName("org.netbeans.modules.bpel.project.anttasks.ValidateBPELProject", true,m_myClassLoader );
             Thread.currentThread().setContextClassLoader(m_myClassLoader);
-            
             Object validateBPELObj = antTaskClass.newInstance();
+//System.out.println("3333");
             
-            
-            Method driver = antTaskClass.getMethod("setBuildDirectory",
-                           new Class[] { java.lang.String.class });
-            Object[] param = new Object[] {
-                           this.mBuildDirectory
-                       };
-            driver.invoke(validateBPELObj,
-                       param);
+            Method driver = antTaskClass.getMethod("setBuildDirectory", new Class[] { java.lang.String.class });
+            Object[] param = new Object[] { this.mBuildDirectory };
+            driver.invoke(validateBPELObj, param);
+//System.out.println("4444");
                        
-            driver = antTaskClass.getMethod("setSourceDirectory",
-                          new Class[] { java.lang.String.class });
-            param = new Object[] {
-                          this.mSourceDirectory
-                      };
-            driver.invoke(validateBPELObj,
-                      param);   
+            driver = antTaskClass.getMethod("setSourceDirectory", new Class[] { java.lang.String.class });
+            param = new Object[] { this.mSourceDirectory};
+            driver.invoke(validateBPELObj, param);
+//System.out.println("5555");
                       
-            driver = antTaskClass.getMethod("setProjectClassPath",
-                          new Class[] { java.lang.String.class });
-            param = new Object[] {
-                          this.mProjectClassPath
-                      };
-            driver.invoke(validateBPELObj,
-                      param);   
+            driver = antTaskClass.getMethod("setProjectClassPath", new Class[] { java.lang.String.class });
+            param = new Object[] { this.mProjectClassPath };
+            driver.invoke(validateBPELObj, param);
+//System.out.println("6666");
                       
-            driver = antTaskClass.getMethod("setBuildDependentProjectDir",
-                          new Class[] { java.lang.String.class });
-            param = new Object[] {
-                          this.mBuildDependentProjectFilesDirectory
-                      };
-            driver.invoke(validateBPELObj,
-                      param);                        
+            driver = antTaskClass.getMethod("setBuildDependentProjectDir", new Class[] { java.lang.String.class });
+            param = new Object[] { this.mBuildDependentProjectFilesDirectory};
+            driver.invoke(validateBPELObj, param);
+System.out.println("=========");
             
-            driver = antTaskClass.getMethod("execute",
-                            null);
+            driver = antTaskClass.getMethod("execute", null);
             driver.invoke(validateBPELObj, null);                    
+System.out.println("8888");
             
-            driver = antTaskClass.getMethod("isFoundErrors",
-                    null);
-            
+            driver = antTaskClass.getMethod("isFoundErrors", null);
             Boolean isErrors = (Boolean) driver.invoke(validateBPELObj, null);
+System.out.println("9999");
 
-            if(isErrors.booleanValue()) {
+            if (isErrors.booleanValue()) {
                 throw new BuildException("Found validation errors.");
             }
-            
-        }catch (Throwable ex) {
-         //   ex.printStackTrace();
-            if (!mAllowBuildWithError ) {
+        }
+        catch (Throwable ex) {
+ex.printStackTrace();
+            if ( !mAllowBuildWithError) {
                 logger.log(Level.FINE, "Validation has errors!!",ex );
-                throw new BuildException("Found compilation errors.");
+                throw new BuildException("!!! Found compilation errors.");
             }
         }
     }
     
-    /**
-     * Create custom classloader ( Ant classloader) with 
-     * parentFirst = false
-     */
     private void initClassLoader() {
         Path path = new Path(getProject());
         path.setRefid(m_ref);
-        
         Path parentPath = new Path(getProject());
         ClassLoader cl = this.getClass().getClassLoader();
+
         if (cl instanceof AntClassLoader) {
             parentPath.setPath(((AntClassLoader)cl).getClasspath());
             ((AntClassLoader)cl).setParent(null);
