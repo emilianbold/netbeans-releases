@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>-->
     <folder name="Editors">
+    <file name="org-netbeans-modules-editor-hints-HighlightsLayerFactoryImpl.instance" />
     <folder name="AnnotationTypes">
       <file name="org-netbeans-spi-java-parser_annotation_err.xml" url="parser_annotation_err.xml"/>
       <file name="org-netbeans-spi-java-parser_annotation_err_fixable.xml" url="parser_annotation_err_fixable.xml"/>

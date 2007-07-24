@@ -21,6 +21,7 @@ package org.netbeans.modules.editor.hints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.text.Annotation;
@@ -35,20 +36,20 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
     private final Severity severity;
     private final LazyFixList fixes;
     private final String description;
-    //XXX: should hold Position to handle changes in the document correctly:
-    private final int lineNumber;
+    private final Position lineStart;
     private final AnnotationHolder holder;
     
     /** Creates a new instance of ParseErrorAnnotation */
-    public ParseErrorAnnotation(Severity severity, LazyFixList fixes, String description, int lineNumber, AnnotationHolder holder) {
+    public ParseErrorAnnotation(Severity severity, LazyFixList fixes, String description, Position lineStart, AnnotationHolder holder) {
         this.severity = severity;
         this.fixes = fixes;
         this.description = description;
-        this.lineNumber = lineNumber;
+        this.lineStart = lineStart;
         this.holder = holder;
         
-        if (fixes.probablyContainsFixes() && !fixes.isComputed())
+        if (fixes.probablyContainsFixes() && !fixes.isComputed()) {
             fixes.addPropertyChangeListener(WeakListeners.propertyChange(this, fixes));
+        }
     }
 
     public String getAnnotationType() {
@@ -94,7 +95,7 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
         if (fixes.isComputed()) {
             try {
                 holder.detachAnnotation(this);
-                holder.attachAnnotation(lineNumber, this);
+                holder.attachAnnotation(lineStart, this);
             } catch (BadLocationException ex) {
                 throw new IllegalStateException(ex);
             }
@@ -110,7 +111,7 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
     }
     
     public int getLineNumber() {
-        return lineNumber;
+        return holder.lineNumber(lineStart);
     }
     
     Severity getSeverity() {
