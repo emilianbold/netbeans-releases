@@ -1615,6 +1615,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <layerindex output="${generated.files.dir}/layers.txt">
           <modules dir="${build}">
               <include name="**/*.jar"/>
+              <exclude name="testtools/"/>
           </modules>
       </layerindex>
   </target>
