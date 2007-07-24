@@ -85,6 +85,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
      * @param folder folder where copy
      * @param suffix suffix to use
      * @exception IOException when error happens */
+    @Override
     public FileObject copy(FileObject folder, String suffix) throws IOException {
         String pasteSuffix = ((PropertiesDataObject)getDataObject()).getPasteSuffix();
         
@@ -100,6 +101,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
     }
     
     /** Deletes file. Overrides superclass method. */
+    @Override
     public void delete() throws IOException {
         getHandler().stopParsing();
 
@@ -115,6 +117,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
      * @param folder folder where copy
      * @param suffix suffix to use 
      * @exception IOException when error happens */
+    @Override
     public FileObject move(FileObject folder, String suffix) throws IOException {
         String pasteSuffix = ((PropertiesDataObject)getDataObject()).getPasteSuffix();
 
@@ -191,6 +194,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
      * @param name new base name of the bundle
      * @return file object with renamed file
      */
+    @Override
     public FileObject rename (String name) throws IOException {
     
         if (!getFile().getName().startsWith(basicName))
@@ -207,6 +211,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
      * @param name full name of the file represented by this entry
      * @return file object with renamed file
      */
+    @Override
     public FileObject renameEntry (String name) throws IOException {
 
         if (!getFile().getName().startsWith(basicName))
@@ -229,6 +234,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
         return fo;
     }
 
+    @Override
     public FileObject createFromTemplate (FileObject folder, String name) throws IOException {
         if (!getFile().getName().startsWith(basicName))
             throw new IllegalStateException("Resource Bundles: error in Properties createFromTemplate"); // NOI18N
@@ -371,6 +377,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
         /** Called to notify that the children has been asked for children
          * after and that they should set its keys. Overrides superclass method.
          */
+        @Override
         protected void addNotify () {
             mySetKeys();
 
@@ -397,6 +404,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
          * its nodes associated to keys and that the keys could be cleared without
          * affecting any nodes (because nobody listens to that nodes). Overrides superclass method.
          */
+        @Override
         protected void removeNotify () {
             bundleStructure().removePropertyBundleListener(bundleListener);
             setKeys(new ArrayList<String>());
