@@ -992,29 +992,31 @@ public abstract class AbstractJsfTopComponent extends TopComponent implements Cl
                 return;
             }
 
-            boolean pastable = false;
+            // XXX #110353 Incorrect check for allowing cut/copy.
+//            boolean pastable = false;
+//
+//            //Check if a non-pastable component is selected, if so, pretend nothing was selected
+////            DndHandler dndHandler = webform.getPane().getDndHandler();
+//
+////            for (DesignBean parent = getPasteParent(); parent != null;
+////                    parent = parent.getBeanParent()) {
+//            for (Element parentComponentRootElement = getPasteParentComponent(); parentComponentRootElement != null;
+////            parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(parentComponentRootElement)) {
+//            parentComponentRootElement = JsfSupportUtilities.getParentComponent(parentComponentRootElement)) {
+////                int allowed = dndHandler.computeActions(parent, t, false, /*DropSupport.CENTER*/DROP_CENTER);
+////                int allowed = dndHandler.computeActions(parentComponentRootElement, t, false, /*DropSupport.CENTER*/DROP_CENTER);
+////                int allowed = webform.computeActions(parentComponentRootElement, t);
+//                int allowed = jsfForm.computeActions(parentComponentRootElement, t);
+//
+//                if ((allowed & DnDConstants.ACTION_COPY_OR_MOVE) != 0) {
+//                    pastable = true;
+//
+//                    break;
+//                }
+//            }
 
-            //Check if a non-pastable component is selected, if so, pretend nothing was selected
-//            DndHandler dndHandler = webform.getPane().getDndHandler();
-
-//            for (DesignBean parent = getPasteParent(); parent != null;
-//                    parent = parent.getBeanParent()) {
-            for (Element parentComponentRootElement = getPasteParentComponent(); parentComponentRootElement != null;
-//            parentComponentRootElement = WebForm.getDomProviderService().getParentComponent(parentComponentRootElement)) {
-            parentComponentRootElement = JsfSupportUtilities.getParentComponent(parentComponentRootElement)) {
-//                int allowed = dndHandler.computeActions(parent, t, false, /*DropSupport.CENTER*/DROP_CENTER);
-//                int allowed = dndHandler.computeActions(parentComponentRootElement, t, false, /*DropSupport.CENTER*/DROP_CENTER);
-//                int allowed = webform.computeActions(parentComponentRootElement, t);
-                int allowed = jsfForm.computeActions(parentComponentRootElement, t);
-
-                if ((allowed & DnDConstants.ACTION_COPY_OR_MOVE) != 0) {
-                    pastable = true;
-
-                    break;
-                }
-            }
-
-            if ((t != null) && pastable) {
+//            if ((t != null) && pastable) {
+            if (t != null) {
                 // XXX why the string selection??
 //                getClipboard().setContents(t, SelectionTopComp.this);
                 getClipboard().setContents(t, AbstractJsfTopComponent.this);
