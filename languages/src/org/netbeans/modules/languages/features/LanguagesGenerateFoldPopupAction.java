@@ -39,6 +39,9 @@ import org.netbeans.modules.languages.LanguagesManager;
  */
 public class LanguagesGenerateFoldPopupAction extends GenerateFoldPopupAction {
 
+    public static final String EXPAND_PREFIX = "Expand:";
+    public static final String COLLAPSE_PREFIX = "Collapse:";
+    
     protected void addAdditionalItems (JTextComponent target, JMenu menu) {
         try {
             String mimeType = (java.lang.String) target.getDocument ().getProperty ("mimeType");
@@ -64,8 +67,8 @@ public class LanguagesGenerateFoldPopupAction extends GenerateFoldPopupAction {
             expands.add (expand);
             String collapse = l.localize((String) fold.getValue ("collapse_type_action_name"));
             if (collapse == null) continue;
-            addAction (target, menu, expand);
-            addAction (target, menu, collapse);
+            addAction (target, menu, EXPAND_PREFIX + expand);
+            addAction (target, menu, COLLAPSE_PREFIX + collapse);
             setAddSeparatorBeforeNextAction (true);
         }
     }

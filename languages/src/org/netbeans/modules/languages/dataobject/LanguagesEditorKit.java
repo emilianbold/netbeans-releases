@@ -192,10 +192,14 @@ public class LanguagesEditorKit extends NbEditorKit {
     public Action getActionByName(String name) {
         if (name == null)
             return super.getActionByName (name);
-        if (name.startsWith("Expand"))
+        if (name.startsWith(LanguagesGenerateFoldPopupAction.EXPAND_PREFIX)) {
+            name = name.substring(LanguagesGenerateFoldPopupAction.EXPAND_PREFIX.length(), name.length());
             return new ExpandFoldTypeAction (name);
-        if (name.startsWith("Collapse"))
+        }
+        if (name.startsWith(LanguagesGenerateFoldPopupAction.COLLAPSE_PREFIX)) {
+            name = name.substring(LanguagesGenerateFoldPopupAction.COLLAPSE_PREFIX.length(), name.length());
             return new CollapseFoldTypeAction (name);
+        }
         return super.getActionByName (name);
     }
     
