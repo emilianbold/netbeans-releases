@@ -129,7 +129,7 @@
 
 
 
-<tocitem text="Servers and Databases">
+<tocitem text="Servers and Databases" expand="false">
 
    <tocitem text="Web Browsers" >
       <tocitem text="Opening a Web Browser From the IDE" target="webbrowser"/>
