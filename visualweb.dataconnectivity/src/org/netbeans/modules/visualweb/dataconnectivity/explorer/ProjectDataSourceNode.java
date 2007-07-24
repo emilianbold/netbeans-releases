@@ -20,7 +20,6 @@ package org.netbeans.modules.visualweb.dataconnectivity.explorer;
 
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.BrokenDataSourceSupport;
 import javax.swing.Action;
-import org.netbeans.modules.visualweb.insync.Model;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.visualweb.dataconnectivity.actions.ResolveProjectDataSourceAction;
@@ -29,15 +28,11 @@ import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.Projec
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourcesChangeEvent;
 import java.awt.Image;
 import java.io.CharConversionException;
-import javax.naming.NamingException;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.modules.visualweb.dataconnectivity.actions.RefreshProjectDataSourceAction;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
-import org.netbeans.modules.visualweb.insync.ModelSet;
-import org.netbeans.modules.visualweb.insync.ModelSetListener;
-import org.netbeans.modules.visualweb.insync.ModelSetsListener;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -55,7 +50,6 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     org.netbeans.api.project.Project nbProject = null ;
     private static Image brokenDsReferenceBadge = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/disconnected.png" ); // NOI18N
     private static Image dSContainerImage = Utilities.loadImage( "org/netbeans/modules/visualweb/dataconnectivity/resources/datasource_container.png" ); // NOI18N
-    protected WaitForModelingListener modelingListener = new WaitForModelingListener() ;
     private volatile boolean firstTimeShowAlert = false;
 
     public ProjectDataSourceNode(org.netbeans.api.project.Project project) {
@@ -142,12 +136,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
                     }
                 }
             });
-        }    
-                
-        // Mark node as broken if the legacy project hasn't been modeled
-        if (ImportDataSource.isLegacyProject(nbProject)) {            
-            isBroken = !ProjectDataSourceTracker.isProjectModeled(nbProject);
-        }
+        }                            
         
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
         if (this.getChildren().getNodes().length > 0) {
@@ -174,13 +163,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
             // ignore
         }
        
-        boolean isBroken = false;
-        
-         // Mark display name as broken if the legacy project hasn't been modeled
-        if (ImportDataSource.isLegacyProject(nbProject)) {            
-            isBroken = !ProjectDataSourceTracker.isProjectModeled(nbProject);
-        }
-        
+        boolean isBroken = false;                       
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
         if (this.getChildren().getNodes().length > 0) {
             if (BrokenDataSourceSupport.isBroken(nbProject)) {
@@ -201,40 +184,5 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     public void connectionsChanged() {
         fireIconChange(); 
         fireDisplayNameChange(null, null);
-    }
-    
-    public class WaitForModelingListener implements ModelSetsListener, ModelSetListener {
-        
-        /*---------- ModelSetsListener------------*/
-        
-        public void modelSetAdded(ModelSet modelSet) {
-            modelSet.addModelSetListener(modelingListener) ;                      
-        }
-        
-        public void modelSetRemoved(ModelSet modelSet) {
-            modelSet.removeModelSetListener(modelingListener) ;            
-        }
-        
-        public void modelProjectChanged() {
-            // not implemented 
-        }        
-        
-        /*---------- ModelSetListener------------*/
-        public void modelAdded(Model model) {
-            fireIconChange();
-            fireDisplayNameChange(null, null);
-        }
-        
-        public void modelChanged(Model model) {
-            fireIconChange();
-            fireDisplayNameChange(null, null);
-        }
-        
-        public void modelRemoved(Model model) {
-            ModelSet.removeModelSetsListener(this) ;
-        }
-                       
-        /*---------- end of interface implements ------------*/
-        
-    }
+    }        
 }
