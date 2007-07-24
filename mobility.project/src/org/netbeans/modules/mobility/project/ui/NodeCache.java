@@ -43,6 +43,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.actions.PasteAction;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -185,12 +186,12 @@ class NodeCache implements PropertyChangeListener
                     resNode.getChildren().add(nodes);
                     if (gray)
                     {
-                        resNode.setDisplayName("Resources - Inherited from "+project.getConfigurationHelper().getDefaultConfiguration().getDisplayName());
+                        resNode.setDisplayName(NbBundle.getMessage(NodeCache.class, "LBL_NodeCache_InheritedResources", project.getConfigurationHelper().getDefaultConfiguration().getDisplayName()));                        resNode.setDisplayName(NbBundle.getMessage(NodeCache.class, "LBL_NodeCache_InheritedResource", project.getConfigurationHelper().getDefaultConfiguration().getDisplayName()));                        resNode.setDisplayName(NbBundle.getMessage(NodeCache.class, "LBL_NodeCache_InheritedResource", project.getConfigurationHelper().getDefaultConfiguration().getDisplayName())); //NOI18N
                         ((NodeFactory.ActionNode)resNode).setActions(null);
                     }
                     else
                     {
-                        resNode.setDisplayName("Resources");
+                        resNode.setDisplayName(NbBundle.getMessage(NodeCache.class, "LBL_NodeCache_Resources")); //NOI18N
                         ((NodeFactory.ActionNode)resNode).setActions(pActions);
                     }
                     resNode.setValue("gray",gray);
