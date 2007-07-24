@@ -40,6 +40,7 @@ public final class VersioningOutputManager {
      * Adds a component to the Versioning Output window and brings it to front.
      * Only one component with a given key can be displayed in the output window at any one time so if a component
      * added with the same key already exists in the Versioning Output window, it is removed. 
+     * The supplied component's name, obtained by getName(), is used as a title for the component. 
      * 
      * @param key category key of the component or null if the component should be independent
      * @param component component to display in the Versioning Output window
