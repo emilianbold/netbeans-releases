@@ -282,7 +282,7 @@ public class MyProvider extends ActionsImplementationProvider {
       return fals;
  }
 
-  public Runnable renameImpl(Lookup selectedNodes) {
+  public void doRename(Lookup selectedNodes) {
     Node[] nodes = lookup.lookupAll(Node.class);
     final FileObject fo = getFileFromNode(nodes[0]);
     return new Runnable() {

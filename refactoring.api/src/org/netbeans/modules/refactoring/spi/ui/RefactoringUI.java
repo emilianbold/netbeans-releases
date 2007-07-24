@@ -46,14 +46,11 @@ public interface RefactoringUI {
     boolean isQuery();
     
     /** Returns refactoring-specific panel containing input fields for 
-     * refactoring parameters. This method is called by ParametersPanel
-     * which is responsible for displaying refactoring parameters dialog.
+     * refactoring parameters. 
      * Name of the panel returned from this method will be used as the dialog
-     * name. This panel can use setPreviewEnabled method of the passed
-     * ParametersPanel to enable/disable Preview button of the refactoring
-     * parameters dialog.
+     * name. 
      * this method might return null if hasParameters return false.
-     * @param parent ParametersPanel that the returned panel will be displayed in.
+     * @param parent dialog in which that the returned panel will be displayed in.
      * @see #hasParameters
      * @return Refactoring-specific parameters panel.
      */
