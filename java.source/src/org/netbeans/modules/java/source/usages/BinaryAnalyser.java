@@ -127,12 +127,12 @@ public class BinaryAnalyser implements LowMemoryListener {
                     File archive = new File (URI.create(innerURL.toExternalForm()));
                     if (archive.exists() && archive.canRead()) {
                         if (handle != null) {
-                            handle.setDisplayName(String.format (NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig"),archive.getAbsolutePath()));
+                            handle.setDisplayName(NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig",archive.getAbsolutePath()));
                         }
                         if (!isUpToDate(null,archive.lastModified())) {
                             index.clear();
                             if (handle != null) { //Tests don't provide handle
-                                handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),archive.getAbsolutePath()));
+                                handle.setDisplayName (NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing",archive.getAbsolutePath()));
                             }
                             final ZipFile zipFile = new ZipFile(archive);
                             prebuildArgs(zipFile, root);
@@ -146,12 +146,12 @@ public class BinaryAnalyser implements LowMemoryListener {
                     FileObject rootFo =  URLMapper.findFileObject(root);
                     if (rootFo != null) {
                         if (handle != null) {
-                            handle.setDisplayName(String.format (NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig"),FileUtil.getFileDisplayName(rootFo)));
+                            handle.setDisplayName(NbBundle.getMessage(BinaryAnalyser.class,"MSG_Scannig",FileUtil.getFileDisplayName(rootFo)));
                         }
                         if (!isUpToDate(null,rootFo.lastModified().getTime())) {
                             index.clear();
                             if (handle != null) { //Tests don't provide handle
-                                handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),FileUtil.getFileDisplayName(rootFo)));
+                                handle.setDisplayName (NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing",FileUtil.getFileDisplayName(rootFo)));
                             }
                             Enumeration<? extends FileObject> todo = rootFo.getData(true);
                             cont = new FileObjectContinuation (todo,cancel,closed);
@@ -169,7 +169,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                         path = path + File.separatorChar;
                     }
                     if (handle != null) { //Tests don't provide handle
-                        handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),rootFile.getAbsolutePath()));
+                        handle.setDisplayName (NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing",rootFile.getAbsolutePath()));
                     }
                     LinkedList<File> todo = new LinkedList<File> ();
                     if (rootFile.isDirectory() && rootFile.canRead()) {
@@ -186,7 +186,7 @@ public class BinaryAnalyser implements LowMemoryListener {
                 FileObject rootFo =  URLMapper.findFileObject(root);
                 if (rootFo != null) {
                     if (handle != null) { //Tests don't provide handle
-                        handle.setDisplayName (String.format(NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing"),FileUtil.getFileDisplayName(rootFo)));
+                        handle.setDisplayName (NbBundle.getMessage(RepositoryUpdater.class,"MSG_Analyzing",FileUtil.getFileDisplayName(rootFo)));
                     }
                     index.clear();
                     Enumeration<? extends FileObject> todo = rootFo.getData(true);

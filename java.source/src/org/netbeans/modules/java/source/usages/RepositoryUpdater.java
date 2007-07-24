@@ -1423,7 +1423,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
             if (!toCompile.isEmpty()) {
                 if (handle != null) {
-                    final String message = String.format (NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile"),rootFile.getAbsolutePath());
+                    final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompile",rootFile.getAbsolutePath());
                     handle.setDisplayName(message);
                 }
                 errorBadgesToRefresh.addAll(batchCompile(toCompile, rootFo, cpInfo, sa, dirtyCrossFiles,
@@ -1492,7 +1492,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
                 final File folderFile = isInitialCompilation ? rootFile : FileUtil.normalizeFile(new File (URI.create(folder.toExternalForm())));
                 if (handle != null) {
-                    final String message = String.format (NbBundle.getMessage(RepositoryUpdater.class,"MSG_Scannig"),rootFile.getAbsolutePath());
+                    final String message = NbBundle.getMessage(RepositoryUpdater.class,"MSG_Scannig",rootFile.getAbsolutePath());
                     handle.setDisplayName(message);
                 }
                 //Preprocessor support
