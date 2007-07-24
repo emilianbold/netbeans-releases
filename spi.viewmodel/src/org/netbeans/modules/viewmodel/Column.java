@@ -13,13 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.viewmodel;
 
 import java.beans.PropertyEditor;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.openide.nodes.PropertySupport;
 
@@ -32,7 +33,6 @@ public class Column extends PropertySupport.ReadWrite {
     private PropertyEditor propertyEditor;
     private ColumnModel columnModel;
     private TreeTable treeTable;
-
 
     Column (
         ColumnModel columnModel,
@@ -92,9 +92,13 @@ public class Column extends PropertySupport.ReadWrite {
 
     public Object getValue (String propertyName) {
         if ("OrderNumberTTV".equals (propertyName)) {
+            if (!columnModel.isVisible()) return -1;
             int index = columnModel.getCurrentOrderNumber();
-            if (index != -1)
-                return new Integer(index);
+            if (index != -1) {
+                index = treeTable.getColumnVisibleIndex(this, index);
+            }
+            //System.err.println("Get order of "+this.getDisplayName()+" => "+index);
+            return new Integer(index);
         }
         if ("InvisibleInTreeTableView".equals (propertyName)) 
             return Boolean.valueOf (!columnModel.isVisible ());
@@ -108,17 +112,21 @@ public class Column extends PropertySupport.ReadWrite {
     public void setValue (String propertyName, Object newValue) {
         if ("OrderNumberTTV".equals (propertyName)) {
             int index = ((Integer) newValue).intValue();
-            if (treeTable.isCustomizedColumnIndex(this, index)) {
+            //System.err.println("Set order of "+this.getDisplayName()+" <= "+newValue);
+            if (index != -1) {
+                index = treeTable.getColumnGlobalIndex(this, index);
                 columnModel.setCurrentOrderNumber(index);
-            } else if (index != -1 && columnModel.getCurrentOrderNumber() != -1) {
-                columnModel.setCurrentOrderNumber(-1);
             }
         } else
         if ("InvisibleInTreeTableView".equals (propertyName)) {
             columnModel.setVisible (
                 !((Boolean) newValue).booleanValue ()
             );
-            treeTable.updateColumnWidths ();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    treeTable.updateColumnWidths ();
+                }
+            });
         } else
         if ("SortingColumnTTV".equals (propertyName)) 
             columnModel.setSorted (

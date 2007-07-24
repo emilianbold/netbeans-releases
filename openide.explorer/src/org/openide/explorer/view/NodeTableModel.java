@@ -755,9 +755,6 @@ public class NodeTableModel extends AbstractTableModel {
         /** Preferred width of column */
         private int width;
 
-        /** Column index in table, if it's visible */
-        private int visibleIndex;
-
         ArrayColumn() {
         }
 
@@ -793,14 +790,15 @@ public class NodeTableModel extends AbstractTableModel {
          * @return Value of property visibleIndex.
          */
         public int getVisibleIndex() {
-            return this.visibleIndex;
+            Integer order = (Integer) property.getValue(ATTR_ORDER_NUMBER);
+            if (order == null) return -1;
+            else return order.intValue();
         }
 
         /** Setter for property visibleIndex.
          * @param visibleIndex New value of property visibleIndex.
          */
         public void setVisibleIndex(int visibleIndex) {
-            this.visibleIndex = visibleIndex;
             property.setValue(ATTR_ORDER_NUMBER, new Integer(visibleIndex));
         }
     }

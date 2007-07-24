@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,6 +35,7 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TableModelEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.table.TableColumn;
@@ -80,6 +81,8 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     private ExplorerManager     explorerManager;
     private MyTreeTable         treeTable;
     Node.Property[]             columns; // Accessed from tests
+    private IndexedColumn[]     icolumns;
+    private boolean             isDefaultColumnAdded;
     //private List                expandedPaths = new ArrayList ();
     private TreeModelRoot       currentTreeModelRoot;
     private Models.CompoundModel model;
@@ -226,6 +229,10 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             if (cs [i].getType () == null)
                 addDefaultColumn = false;
         }
+        icolumns = new IndexedColumn[columns.length];
+        for (i = 0; i < icolumns.length; i++) {
+            icolumns[i] = new IndexedColumn(columns[i], i, cs[i].getCurrentOrderNumber());
+        }
         if (!addDefaultColumn) {
             return columns;
         }
@@ -233,21 +240,49 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             new PropertySupport.ReadWrite [columns.length + 1];
         System.arraycopy (columns, 0, columns2, 1, columns.length);
         columns2 [0] = new DefaultColumn ();
+        isDefaultColumnAdded = true;
         return columns2;
     }
     
-    boolean isCustomizedColumnIndex(Column c, int index) {
-        if (index == -1) return false;
-        int ci = 0, k = columns.length;
-        for (int i = 0; i < k; i++, ci++) {
-            if (Boolean.TRUE.equals (columns [i].getValue 
-                ("InvisibleInTreeTableView"))
-            ) continue;
-            if (c == columns[i]) {
-                break;
+    /** @return visible index >= globalIndex */
+    int getColumnVisibleIndex(Column c, int globalIndex) {
+        int a = (isDefaultColumnAdded) ? 1 : 0;
+        int visibleIndex = 0;
+        ColumnModel[] cs = model.getColumns ();
+        if (cs.length == 0) return -1;
+        for (int i = 0; i < columns.length - a; i++) {
+            if (!Boolean.TRUE.equals(columns[i].getValue("InvisibleInTreeTableView"))) {
+                int gi = cs[i].getCurrentOrderNumber();
+                //System.err.println("   CurrentOrderNumber("+cs[i].getDisplayName()+") = "+gi);
+                if (gi >= 0 && gi < globalIndex) {
+                    visibleIndex++;
+                }
             }
         }
-        return ci != index;
+        //System.err.println("getColumnVisibleIndex("+c.getDisplayName()+", "+globalIndex+") = "+visibleIndex);
+        return visibleIndex;
+    }
+    
+    /** @return global index >= visibleIndex */
+    int getColumnGlobalIndex(Column c, int visibleIndex) {
+        ColumnModel[] models = model.getColumns();
+        if (models.length == 0) return -1;
+        for (int i = 0; i < icolumns.length; i++) {
+            icolumns[i].order = models[icolumns[i].index].getCurrentOrderNumber();
+        }
+        Arrays.sort(icolumns, new IndexedColumn.Cmp());
+        //System.err.print("getColumnGlobalIndex("+c.getDisplayName()+", "+visibleIndex+") = ");
+        for (int i = 0; i < icolumns.length; i++) {
+            if (!Boolean.TRUE.equals(icolumns[i].getColumn().getValue("InvisibleInTreeTableView"))) {
+                if (visibleIndex <= 0) {
+                    //System.err.println(i);
+                    return i;
+                }
+                visibleIndex--;
+            }
+        }
+        //System.err.println(icolumns.length+" (END)");
+        return icolumns.length;
     }
     
     void updateColumnWidths () {
@@ -262,10 +297,8 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
                     int width = column.getColumnWidth ();
                     treeTable.setTreePreferredWidth (width);
                 } else {
-                    int order = column.getOrderNumber ();
-                    if (order == -1) continue;
                     int width = column.getColumnWidth ();
-                    treeTable.setTableColumnPreferredWidth (order, width);
+                    treeTable.setTableColumnPreferredWidth (i, width);
                 }
             }
         }
@@ -460,6 +493,36 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
             } else {
                 return super.get(keyStroke);
             }
+        }
+    }
+    
+    private static class IndexedColumn extends Object {
+        private Node.Property column;
+        public int index;
+        public int order;
+        
+        public IndexedColumn(Node.Property column, int index, int order) {
+            this.column = column;
+            this.index = index;
+            this.order = order;
+        }
+        
+        public Node.Property getColumn() {
+            return column;
+        }
+        
+        public static class Cmp implements Comparator<IndexedColumn> {
+
+            public int compare(IndexedColumn ic1, IndexedColumn ic2) {
+                if (ic1.order == -1 && ic2.order >= 0) {
+                    return +1;
+                }
+                if (ic2.order == -1 && ic1.order >= 0) {
+                    return -1;
+                }
+                return ic1.order - ic2.order;
+            }
+            
         }
     }
 }
