@@ -25,6 +25,7 @@ import com.sun.source.tree.*;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import org.netbeans.api.java.source.GeneratorUtilities;
 
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -58,6 +59,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
         suite.addTest(new MethodBodyTextTest("testReplaceMethodBody1"));
         suite.addTest(new MethodBodyTextTest("testReplaceMethodBody2"));
         suite.addTest(new MethodBodyTextTest("testReplaceMethodBody3"));
+        suite.addTest(new MethodBodyTextTest("testReplaceMethodBodyImports"));
         return suite;
     }
 
@@ -501,6 +503,69 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                         (ExpressionTree) meth.getDefaultValue()
                 );
                 workingCopy.rewrite(meth.getBody(), newMeth.getBody());
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testReplaceMethodBodyImports() throws Exception {
+        System.err.println("testReplaceMethodBody3");
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package personal;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public float method() {\n" +
+            "    }\n" +
+            "}\n");
+        
+         String golden = 
+            "package personal;\n" +
+            "\n" +
+            "import java.util.ArrayList;\n" +
+            "import java.util.List;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    \n" +
+            "    public float method() {\n" +
+            "        List list = new ArrayList();\n" +
+            "        int hash;\n" +
+            "        hash += 2;\n" +
+            "        return hash;\n" +
+            "    }\n" +
+            "}\n";
+      
+        JavaSource src = getJavaSource(testFile);
+        
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree meth = (MethodTree) clazz.getMembers().get(1);
+                String bodyText = "{ java.util.List list = new java.util.ArrayList(); int hash; hash += 2; return hash; }";
+                MethodTree newMeth = make.Method(
+                        meth.getModifiers(),
+                        meth.getName(),
+                        meth.getReturnType(),
+                        meth.getTypeParameters(),
+                        meth.getParameters(),
+                        meth.getThrows(),
+                        bodyText,
+                        (ExpressionTree) meth.getDefaultValue()
+                );
+                workingCopy.rewrite(meth.getBody(), GeneratorUtilities.get(workingCopy).importFQNs(newMeth.getBody()));
+                
             }
 
         };
