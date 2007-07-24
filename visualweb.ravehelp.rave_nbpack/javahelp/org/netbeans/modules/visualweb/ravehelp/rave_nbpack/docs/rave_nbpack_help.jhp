@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="C:/!MySunProjects/Rave/cvstree/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
+		<directory title="/Users/james/VisWebCVS/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
 			<directory title="a11y">
 				<directory title="CVS">
 					<file title="Entries"/>
@@ -416,7 +416,6 @@
 					<file title="view_zoom_image.html"/>
 				</directory>
 				<file title="about_lib_refs.html"/>
-				<file title="aboutprojects.html"/>
 				<file title="project_process.html"/>
 			</directory>
 			<directory title="ui_elements">
