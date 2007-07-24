@@ -372,8 +372,18 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             public void run() {
                 synchronized (this) {
                     try {
-                        int startLine = Utilities.getRowStart(doc, startPosition < doc.getLength() ? startPosition : (doc.getLength() - 1));
-                        int endLine = Utilities.getRowEnd(doc, endPosition < doc.getLength() ? endPosition : (doc.getLength() - 1)) + 1;
+                        if (doc.getLength() == 0) {
+                            return ;
+                        }
+                        
+                        int start = startPosition < doc.getLength() ? startPosition : (doc.getLength() - 1);
+                        int end   = endPosition < doc.getLength() ? endPosition : (doc.getLength() - 1);
+                        
+                        if (start < 0) start = 0;
+                        if (end < 0) end = 0;
+                        
+                        int startLine = Utilities.getRowStart(doc, start);
+                        int endLine = Utilities.getRowEnd(doc, end) + 1;
                         
                         int index = findPositionGE(startLine);
                         
