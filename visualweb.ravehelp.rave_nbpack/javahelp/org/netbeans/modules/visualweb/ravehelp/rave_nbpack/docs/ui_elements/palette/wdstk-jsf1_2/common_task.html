@@ -14,20 +14,18 @@
 <h1>Common Task Component</h1>
 <p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
 <p>The Common Task component 
-<img src="../../../images/bh_tab_set_icon.gif" alt="tab set icon">&nbsp;is typically a link to a page describing a task the user can perform in the web application. It can be added to a <a href="common_tasks_section.html">Common Tasks Section</a> or grouped with other like tasks in a <a href="common_tasks_group.html">Command Task Group</a>.</p>
-   <ul class="note">
-      <li>
-        This component is a JavaServer Faces 1.2 component. You see components that use this
-        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,
-        see:<br>
-         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-          <param name="content" value=
-          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
-          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
-      </li>
+<img src="../../../images/bh_tab_set_icon.gif" alt="tab set icon">&nbsp;is typically a link to a page in your application where a user can perform a task. It can be added to a <a href="common_tasks_section.html">Common Tasks Section</a> or grouped with other like tasks in a <a href="common_tasks_group.html">Common Tasks Group</a>.
+</p>
+<p>Each Common Task is an action that users might typically perform in the web application. Putting the task in a Common Tasks section, optionally grouped with other, similar tasks, provides a single area where users can perform the main actions in the web application. Tasks can be used for a number of purposes, such as: </p>
+<ul>
+  <li>Invoking simple actions</li>
+  <li>Starting a wizard to aid in performing a complex action</li>
+  <li>Navigating directly to an area of the application</li>
 </ul>
-
-<p>Typical uses of a Common Task are:</p>
+<p>Minimally, a Common Task would be some text that links to a page or starts a task in your application. You set it up by setting properties in the <a href="propsheets/common_task_props.html">Common Task Properties Window</a>.</p>
+<p>For the basic configuration, you can display text by setting the <code>text</code> property, and you can specify a page to navigate to by using the <code>action </code>property or by using one of the client side JavaScript attributes such as <code>onClick</code>. A link that displays the specified <code>text</code> value is created to invoke the action.</p>
+<p> You can provide information about the task that the user can access by clicking an information icon, which opens an information box  below the task. If you set one or both of the <code>infoText</code> and <code>infoTitle</code> properties, the information icon appears automatically, and the contents of the two properties appear in the information box. If there is more information about the task that might be too much to put in the information box, you can specify the <code>infoLinkText</code> and <code>infoLinkUrl</code> properties and display a link to the additional information  at the bottom of the information box. </p>
+<p>You can display a graphic image in front of the task by using the <code>icon</code> attribute to specify a theme image key. For example, the key <code>CTS_OVERVIEW</code>  generates an image intended to designate overview information about the task. You can also use the <code>imageUrl</code> attribute to specify the  path to an image.</p>
 <dl>
   <dt><a name="seealso">See Also</a></dt>  
 <dd><a href="propsheets/common_task_props.html">Common Task Properties Window</a></dd>

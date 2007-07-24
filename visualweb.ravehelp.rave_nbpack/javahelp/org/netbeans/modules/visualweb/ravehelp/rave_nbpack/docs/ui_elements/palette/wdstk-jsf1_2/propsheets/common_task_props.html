@@ -35,17 +35,17 @@
   <li><b>icon.</b><code> Type: String</code><br>
   Enables you to pick an image from the theme rather than specifying your own image file. If you want the icon to be used, make sure that the <code>imageURL</code> property is not set. The key <code>CTS_OVERVIEW</code>  provides an image that can be used to indicate overview information about the task.</li>
   <li><b>imageHeight.</b><code> Type: int </code><br>
-Sets the height of the image in pixels if you want to override the actual height of the displayed image. In HTML, this equivalent is the <code>height</code> attribute of the <code>&lt;img&gt;</code> tag. Not all browsers respond to this setting.</li>
+Sets the height of the image in pixels if you want to override the actual height of the displayed image. This property is equivalent to the <code>height</code> attribute of the HTML <code>&lt;img&gt;</code> tag. Not all browsers respond to this setting.</li>
   <li><b>imageURL.</b><code> Type: String</code><br> 
     The relative path to an image file. This property has precedence over the <code>icon</code> property if both properties have values set for them. If you click the ellipsis button (...), you can type in a URL for an image file on the Web, or you can navigate to an image file and import it into the project, or you can bind this property to a JavaBeans property that determines the URL, as described in <a href="../../../propeditors/imageurl_prop_ed.html">imageURL Property Editor</a>. </li>
   <li><b>imageWidth.</b><code> Type: int </code><br>
-Sets the width of the image in pixels if you want to override the actual width of the displayed image. In HTML, this equivalent is the <code>width</code> attribute of the <code>&lt;img&gt;</code> tag. Not all browsers respond to this setting. </li>
+Sets the width of the image in pixels if you want to override the actual width of the displayed image. This property is equivalent to the <code>width</code> attribute of the HTML <code>&lt;img&gt;</code> tag. Not all browsers respond to this setting. </li>
   <li><b>infoLinkText.</b><code> Type: String </code><br> 
-    Provides a short description of  the information link that appears at the bottom of the help panel  dispays the contents of the <code>infoText</code> property. The text appears only if the <code>infoLinkUrl</code> property is defined. If you want the user to see the link, this property must be set. Typically this link is used to provide more information about the task than can be displayed in the infoText box. </li>
+    Provides a short description of  an information link that appears at the bottom of the information box. The text appears only if the <code>infoLinkUrl</code> property is defined. If you want the user to see the link, this property must be set. Typically this link is used to provide more information about the task than can be displayed in the information box. </li>
   <li><b>infoText.</b><code> Type: String </code><br>
-Provides information about the task that the user can display by clicking the information link icon [add image]. If this property is set, it causes the information link icon to be displayed in the top right corner of the Common Task component, which displays this text in an information box below the component. </li>
+Provides information about the task that the user can display by clicking the information link icon <img src="../../../../images/wdstk_info_icon.gif" alt="Information Link Icon" align="baseline">. This text is displayed in an information box below the component. If this property is set, it causes the information link icon to be displayed in the top right corner of the Common Task component. </li>
   <li><b>infoTitle.</b><code> Type: String </code><br>
-Provides a title for the information box displayed when the user clicks the information link icon. If this property is set, it causes the information link icon to be displayed in the top right corner of the Common Task component, which displays this title in an information box below the component. </li>
+Provides a title for the information box displayed when the user clicks the information link icon <img src="../../../../images/wdstk_info_icon.gif" alt="Information Link Icon" align="baseline">. The title is displayed in an information box below the component. If this property is set, it causes the information link icon to be displayed in the top right corner of the Common Task component.</li>
   <li><b>style.</b><code> Type: String</code><br>
 	  Cascading Style Sheet rules (CSS level 2) to be applied to the component.  For example:
 	  <p><code>&nbsp;&nbsp;&nbsp;position: absolute; left: 288px; top: 312px</code></p>
@@ -81,7 +81,7 @@ If you right-click the component, you can choose Edit action Event Handler to de
 <h3>Behavior</h3>
 <ul>
   <li><b>infoLinkUrl.</b><code> Type: String </code><br>
-    A URL for the link at the bottom of the help panel that dsiplays the contents of the <code>infoText</code> property. Usually this URL  links to a page that provides more information about the task. The displayed text for this URL is specified in the <code>infoLinkText</code> property. You must set that property for the link to be seen by the user. </li>
+    A URL for a link at the bottom of the information box. Usually this URL  links to a page that provides more information about the task than is appropriate for the size of the information box. The link text  is specified in the <code>infoLinkText</code> property. You must set that property for the link to be seen by the user. </li>
   <li><b>target.</b><code> Type: String</code><br>
     The frame in which the action performed by this component is to be opened. If a frame with this name does not exist, the response is rendered in a new window unless overridden by the user. The following frame names have special meaning:
       <ul>
@@ -142,7 +142,7 @@ JavaScript to be executed when the user double-clicks the component.</li>
   <li><b>actionListenerExpression.</b><code> Type: MethodExpression</code><br>
     A method expression representing  an action listener method that is notified when this component is activated by the user. The value must be a valid JSF method  expression, such as <code>#{Page1.action_method}</code>, and it must evaluate to the name of a public method that takes an <code>ActionEvent</code> parameter with a return type of void.</li>
   <li><b>rendered.</b><code> Type: boolean</code><br>
-  If selected, the hyperlink is to be rendered and processed on any subsequent page submission. If not selected, the hyperlink does not appear on the page at all, not even as a hidden component. </li>
+  If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the component does not appear on the page at all, not even as a hidden component. </li>
 </ul>
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
