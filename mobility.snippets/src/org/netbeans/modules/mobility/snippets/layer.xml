@@ -3,6 +3,7 @@
 <filesystem>
     <folder name="MobilityPalette">
         <folder name="Mobility">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.snippets.Bundle"/>
             <file name="FORM.xml" url="resources/FORM.xml"/>
             <file name="IMAGE.xml" url="resources/IMAGE.xml"/>
         </folder>
