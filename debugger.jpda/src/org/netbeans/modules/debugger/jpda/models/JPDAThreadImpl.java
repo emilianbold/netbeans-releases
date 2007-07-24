@@ -312,6 +312,9 @@ public final class JPDAThreadImpl implements JPDAThread {
             if (from < 0) {
                 throw new IndexOutOfBoundsException("from = "+from);
             }
+            if (from == to) {
+                return new CallStackFrame[0];
+            }
             if (from >= max) {
                 throw new IndexOutOfBoundsException("from = "+from+" is too high, frame count = "+max);
             }
