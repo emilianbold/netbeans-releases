@@ -83,7 +83,11 @@ public class DesignTimeInitialContextFactory implements InitialContextFactory {
         else
             currentProj = CurrentProject.getInstance().getProject();
         
-                
+        // Handle IDE startup use case
+        if (currentProj == null) {
+            currentProj = CurrentProject.getInstance().getOpenedProject();
+        }
+        
         //Setup cache of projects per context
         ProjectContextManager prjCtxManager = ProjectContextManager.getInstance();
                
