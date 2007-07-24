@@ -27,9 +27,13 @@ package org.netbeans.modules.j2me.cdc.project.ricoh;
 //     <pathelement location="${ant.home}/lib/ant.jar"/>
 // </classpath>
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -38,7 +42,13 @@ import java.util.StringTokenizer;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.types.*;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.util.DOMElementWriter;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 /**
  * @author suchys
@@ -46,8 +56,6 @@ import org.apache.tools.ant.BuildException;
 public class DalpBuilder extends Task {
     
     private List filesets = new LinkedList(); // List<FileSet>
-    
-    private boolean execMode = false;
     
     public void addFileset(FileSet fs) {
         filesets.add(fs);
@@ -81,7 +89,7 @@ public class DalpBuilder extends Task {
             pw.println("    <telephone>"                   + getProject().getProperty("ricoh.application.telephone")    + "</telephone>");
             pw.println("    <fax>"                         + getProject().getProperty("ricoh.application.fax")          + "</fax>");
             pw.println("    <e-mail>"                      + getProject().getProperty("ricoh.application.email")        + "</e-mail>");
-            pw.println("    <application-ver>"             + getProject().getProperty("deployment.number")            + "</application-ver>");
+            pw.println("    <application-ver>"             + getProject().getProperty("application.version")            + "</application-ver>");
             pw.println("    <offline-allowed/>");
             pw.println("  </information>");
             
@@ -92,22 +100,14 @@ public class DalpBuilder extends Task {
             pw.println("  <resources>");
             //pw.println("    <dsdk version=\"1.0\"/>");
             pw.println("    <dsdk version=\"" + getProject().getProperty("ricoh.dalp.resources.dsdk.version") + "\"/>");
-            if (execMode || "sdcard".equals(getProject().getProperty("ricoh.install-server.deploy-method")) || "httppost".equals(getProject().getProperty("ricoh.install-server.deploy-method")))
+            
+            // we support just local installation
             {
                 pw.println("    <jar href=\"./"   + getProject().getProperty("dist.jar") + 
-                                 "\" version=\""  + getProject().getProperty("deployment.number") + 
+                                 "\" version=\""  + getProject().getProperty("application.version") + 
                                  "\" basepath=\"current\" main=\"true\" />");
             }
-            else
-            {  
-                pw.println("    <jar href=\"http://" + getProject().getProperty("ricoh.install-server") + 
-                                    ":" + getProject().getProperty("ricoh.install-server.web-port") + 
-                                          getProject().getProperty("ricoh.install-server.path") + 
-                                    "/" + getProject().getProperty("dist.jar") +
-                                    "\" version=\""  + getProject().getProperty("deployment.number") + 
-                                    "\" basepath=\"current\" main=\"true\" />");
-            }
-            
+
             addLibraries(pw);
             if ((getProject().getProperty("main.class") != null) || ("".equals(getProject().getProperty("main.class")) == false))
                 pw.println("    <encode-file>" + getProject().getProperty("main.class").toLowerCase() + "</encode-file>");
@@ -115,17 +115,9 @@ public class DalpBuilder extends Task {
             
             String appTypeStr, mainClassStr, visibleStr;
             appTypeStr = getProject().getProperty("ricoh.application.type");
-            if ("xlet".equals(appTypeStr))
-            {
-                mainClassStr = getProject().getProperty("main.class");
-                visibleStr   = getProject().getProperty("ricoh.dalp.application-desc.visible");
-            }
-            else
-            {
-                appTypeStr = "server";
-                mainClassStr = "";
-                visibleStr   = "false";
-            }
+            //We support just xlets
+            mainClassStr = getProject().getProperty("main.class");
+            visibleStr   = getProject().getProperty("ricoh.dalp.application-desc.visible");
             
             pw.println("  <application-desc type=\""       + appTypeStr +
                                         "\" main-class=\"" + mainClassStr + 
@@ -154,6 +146,8 @@ public class DalpBuilder extends Task {
                                    "\" work-dir=\""     + getProject().getProperty("ricoh.dalp.install.work-dir") + "\"/>");
             }
             
+            addDisplayModes(pw);
+            
             pw.println("</dalp>");
         }
         catch (Exception e)
@@ -178,10 +172,6 @@ public class DalpBuilder extends Task {
         this.file = file;
     }
     
-    public void setExecMode(boolean execMode) {
-        this.execMode = execMode;
-    }
-    
     public String getIconName(){
         return iconName;
     }
@@ -197,18 +187,47 @@ public class DalpBuilder extends Task {
             DirectoryScanner ds = fs.getDirectoryScanner(project);
             File basedir = ds.getBasedir();
             String[] files = ds.getIncludedFiles();
-            String depMethod=getProject().getProperty("ricoh.install-server.deploy-method");
-            boolean isRemoteDeploy = !(depMethod==null || "sdcard".equals(depMethod) || "httppost".equals(getProject().getProperty(depMethod)));
+
             for (int i = 0; i < files.length; i++)
             {
-                if (isRemoteDeploy)
-                    pw.println("    <jar href=\"http://" + getProject().getProperty("ricoh.install-server") + 
-                                    ":" + getProject().getProperty("ricoh.install-server.web-port") + 
-                                          getProject().getProperty("ricoh.install-server.path") + 
-                                                "/" + files[i] + "\" version=\"" + getProject().getProperty("deployment.number") + "\" basepath=\"current\" />");                
-                else
-                    pw.println("    <jar href=\"./" + files[i] + "\" version=\"" + getProject().getProperty("deployment.number") + "\" basepath=\"current\" />");                
+                pw.println("    <jar href=\"./" + files[i] + "\" version=\"" + getProject().getProperty("application.version") + "\" basepath=\"current\" />");                
             }
         }        
+    }
+       
+    private void addDisplayModes(PrintWriter pw)
+    {
+        if ("COLOR".equals(getProject().getProperty("ricoh.dalp.display-mode.type")))
+        {
+            if (getProject().getProperty("ricoh.dalp.display-mode.is-hvga-support").equals("true"))
+                pw.println("<display-mode size=\"HVGA\" type=\"COLOR\"/>");
+            else
+            if (getProject().getProperty("ricoh.dalp.display-mode.is-vga-support").equals("true"))
+                pw.println("<display-mode size=\"VGA\" type=\"COLOR\"/>");
+            else
+            if (getProject().getProperty("ricoh.dalp.display-mode.is-wvga-support").equals("true"))
+                pw.println("<display-mode size=\"WVGA\" type=\"COLOR\"/>");
+            else
+            if (getProject().getProperty("ricoh.dalp.display-mode.is-4line-support").equals("true"))
+                pw.println("<display-mode size=\"4LINE\" type=\"COLOR\"/>");
+        }
+        else
+        if ("MONO".equals(getProject().getProperty("ricoh.dalp.display-mode.type")))
+        {
+            if (getProject().getProperty("ricoh.dalp.display-mode.is-hvga-support").equals("true"))
+                pw.println("<display-mode size=\"HVGA\" type=\"MONO\"/>");
+            else
+            if (getProject().getProperty("ricoh.dalp.display-mode.is-vga-support").equals("true"))
+                pw.println("<display-mode size=\"VGA\" type=\"MONO\"/>");
+            else
+            if (getProject().getProperty("ricoh.dalp.display-mode.is-wvga-support").equals("true"))
+                pw.println("<display-mode size=\"WVGA\" type=\"MONO\"/>");
+            else
+            if (getProject().getProperty("ricoh.dalp.display-mode.is-4line-support").equals("true"))
+                pw.println("<display-mode size=\"4LINE\" type=\"MONO\"/>");
+        }            
+        else
+        //default supports HVGA
+            pw.println("<display-mode size=\"HVGA\" type=\"MONO\"/>");
     }
 }
