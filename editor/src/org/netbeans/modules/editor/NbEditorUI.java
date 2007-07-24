@@ -58,6 +58,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import org.netbeans.modules.editor.impl.CustomizableSideBar;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
+import org.netbeans.modules.editor.impl.SearchBar;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -131,7 +132,7 @@ public class NbEditorUI extends ExtEditorUI {
         super.installUI(c);
 
         if (!attached){
-            attachSystemActionPerformer(ExtKit.findAction);
+            attachSystemActionPerformer(SearchBar.IncrementalSearchForwardAction.NAME);
             attachSystemActionPerformer(ExtKit.replaceAction);
             attachSystemActionPerformer(ExtKit.gotoAction);
             attachSystemActionPerformer(ExtKit.showPopupMenuAction);

@@ -43,12 +43,14 @@ import java.awt.event.MouseListener;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -74,6 +76,8 @@ import org.openide.util.Utilities;
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
 public final class SearchBar extends JToolBar {
+    
+    private static final Logger LOG = Logger.getLogger(SearchBar.class.getName());
 
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
     private static final Color NOT_FOUND = new Color(220, 90, 90, 255);
@@ -137,7 +141,7 @@ public final class SearchBar extends JToolBar {
         addMouseListener(sharedMouseListener);
 
         Keymap keymap = component.getKeymap();
-
+        
         if (keymap instanceof MultiKeymap) {
             MultiKeymap multiKeymap = (MultiKeymap) keymap;
 
@@ -148,8 +152,11 @@ public final class SearchBar extends JToolBar {
                     Action incrementalSearchForwardAction = action;
                     KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchForwardAction);
                     if (keyStrokes != null) {
-                        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                            .put(keyStrokes[0], IncrementalSearchForwardAction.NAME);
+                        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                        for(KeyStroke ks : keyStrokes) {
+                            LOG.fine("found IncrementalSearchForwardAction, " + ks); //NOI18N
+                            inputMap.put(ks, IncrementalSearchForwardAction.NAME);
+                        }
                         getActionMap().put(IncrementalSearchForwardAction.NAME,
                             new AbstractAction() {
                                 public void actionPerformed(ActionEvent e) {
@@ -162,8 +169,11 @@ public final class SearchBar extends JToolBar {
                     Action incrementalSearchBackwardAction = action;
                     KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchBackwardAction);
                     if (keyStrokes != null) {
-                        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                            .put(keyStrokes[0], IncrementalSearchBackwardAction.NAME);
+                        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                        for(KeyStroke ks : keyStrokes) {
+                            LOG.fine("found IncrementalSearchBackwardAction, " + ks); //NOI18N
+                            inputMap.put(ks, IncrementalSearchBackwardAction.NAME);
+                        }
                         getActionMap().put(IncrementalSearchBackwardAction.NAME,
                             new AbstractAction() {
                                 public void actionPerformed(ActionEvent e) {
@@ -613,11 +623,14 @@ public final class SearchBar extends JToolBar {
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                JComponent comp = org.netbeans.editor.Utilities.getEditorUI(target).getExtComponent();
-                if (comp != null) {
-                    SearchBar issb = findComponent(comp,SearchBar.class, 5);
-                    if (issb != null) {
-                        issb.gainFocus();
+                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+                if (eui != null) {
+                    JComponent comp = eui.getExtComponent();
+                    if (comp != null) {
+                        SearchBar issb = findComponent(comp,SearchBar.class, 5);
+                        if (issb != null) {
+                            issb.gainFocus();
+                        }
                     }
                 }
             }
@@ -637,11 +650,14 @@ public final class SearchBar extends JToolBar {
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
-                JComponent comp = org.netbeans.editor.Utilities.getEditorUI(target).getExtComponent();
-                if (comp != null) {
-                    SearchBar issb = findComponent(comp,SearchBar.class, 5);
-                    if (issb != null) {
-                        issb.gainFocus();
+                EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(target);
+                if (eui != null) {
+                    JComponent comp = eui.getExtComponent();
+                    if (comp != null) {
+                        SearchBar issb = findComponent(comp,SearchBar.class, 5);
+                        if (issb != null) {
+                            issb.gainFocus();
+                        }
                     }
                 }
             }
