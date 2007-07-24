@@ -918,8 +918,11 @@ public class CasualDiff {
             if (oldT.args.nonEmpty()) {
                 copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
             } else {
-                int rParen = TokenUtilities.moveFwdToToken(tokenSequence, getOldPos(oldT.meth), JavaTokenId.RPAREN);
-                copyTo(localPointer, localPointer = rParen);
+                copyTo(localPointer, localPointer = methBounds[1]);
+                tokenSequence.move(localPointer);
+                PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                tokenSequence.moveNext();
+                copyTo(localPointer, localPointer = tokenSequence.offset());
             }
             localPointer = diffParameterList(oldT.args, newT.args, null, localPointer, Measure.ARGUMENT);
         }
