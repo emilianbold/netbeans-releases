@@ -94,8 +94,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
      * present accessibility of field
      */
     private Set<Modifier> fieldAccessibility;
-//    private ElementHandle<ExecutableElement> currentGetter;
-//    private ElementHandle<ExecutableElement> currentSetter;
+    private ElementHandle<ExecutableElement> currentGetter;
+    private ElementHandle<ExecutableElement> currentSetter;
     private static Set<Modifier> accessModifiers = EnumSet.of(Modifier.PRIVATE, Modifier.PROTECTED, Modifier.PUBLIC);
     private static List<Modifier> MODIFIERS = Arrays.asList(Modifier.PRIVATE, null, Modifier.PROTECTED, Modifier.PUBLIC);
     private final EncapsulateFieldRefactoring refactoring;
@@ -164,14 +164,45 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         throw new UnsupportedOperationException();
     }
     
-    @Override
-    public Problem checkParameters() {
-        // XXX no one checks if getter/setter names exist in class hierarchy => findMethod()
-        return setParameters(refactoring.getGetterName(), refactoring.getSetterName(), refactoring.getMethodModifiers(), refactoring.getFieldModifiers(), refactoring.isAlwaysUseAccessors());
-    }
-
     protected Problem checkParameters(CompilationController javac) throws IOException {
-        throw new UnsupportedOperationException();
+        Problem p = null;
+        Element field = sourceType.resolveElement(javac);
+        TypeElement clazz = (TypeElement) field.getEnclosingElement();
+        String getname = refactoring.getGetterName();
+        String setname = refactoring.getSetterName();
+        ExecutableElement getter = null;
+        ExecutableElement setter = null;
+        
+        if (getname != null) {
+            getter = findMethod(javac, clazz, getname, Collections.<VariableElement>emptyList(), true);
+        }
+        
+        if (getter != null) {
+            if (field.asType() != getter.getReturnType()) {
+                p = createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongGetter", null));
+            }
+            if (getter.getEnclosingElement() != field.getEnclosingElement()) {
+                p = createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateGetterExists"));
+            } else {
+                currentGetter = ElementHandle.create(getter);
+            }
+        }
+        
+        if (setname != null) {
+            setter = findMethod(javac, clazz, setname, Collections.singletonList((VariableElement) field), true);
+        }
+        
+        if (setter != null) {
+            if (TypeKind.VOID != setter.getReturnType().getKind()) {
+                p = createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongSetter", null));
+            }
+            if (setter.getEnclosingElement() != field.getEnclosingElement()) {
+                p = createProblem(p, false, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "MSG_EncapsulateSetterExists"));
+            } else {
+                currentSetter = ElementHandle.create(setter);
+            }
+        }
+        return p;
     }
     
     private Problem fastCheckParameters(String getter, String setter,
@@ -249,20 +280,25 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
     }
 
     private static ExecutableElement findMethod(CompilationInfo javac, TypeElement clazz, String name, List<? extends VariableElement> params, boolean includeSupertypes) {
-        List<? extends Element> elms = includeSupertypes
-                ? javac.getElements().getAllMembers(clazz)
-                : clazz.getEnclosedElements();
-        for (Element elm : elms) {
-            if (ElementKind.METHOD == elm.getKind()) {
-                ExecutableElement m = (ExecutableElement) elm;
-                if (name.contentEquals(m.getSimpleName())
-                        && compareParams(params, m.getParameters())
-                        && isAccessible(javac, clazz, m)) {
-                    return m;
+        TypeElement c = clazz;
+        while (true) {
+            for (Element elm : c.getEnclosedElements()) {
+                if (ElementKind.METHOD == elm.getKind()) {
+                    ExecutableElement m = (ExecutableElement) elm;
+                    if (name.contentEquals(m.getSimpleName())
+                            && compareParams(params, m.getParameters())
+                            && isAccessible(javac, clazz, m)) {
+                        return m;
+                    }
                 }
             }
+            
+            TypeMirror superType = c.getSuperclass();
+            if (!includeSupertypes || superType.getKind() == TypeKind.NONE) {
+                return null;
+            }
+            c = (TypeElement) ((DeclaredType) superType).asElement();
         }
-        return null;
     }
 
     /**
@@ -294,19 +330,6 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             return true;
         }
         return false;
-    }
-    
-    private Problem setParameters(String getter, String setter,
-            Set<Modifier> methodModifier, Set<Modifier> fieldModifier,
-            boolean alwaysUseAccessors) {
-
-        fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, 8);
-        
-        try {
-        } finally {
-            fireProgressListenerStop();
-        }
-        return null;
     }
     
     /**
@@ -384,7 +407,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 p = createProblem(p, false, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateMethodsDefaultAccess"));
             }
             
-            Encapsulator encapsulator = new Encapsulator(refactoring, sourceType.getFileObject());
+            Encapsulator encapsulator = new Encapsulator(refactoring, sourceType.getFileObject(), currentGetter, currentSetter);
             createAndAddElements(refs, new TransformTask(encapsulator, sourceType), bag, refactoring);
             
             if (encapsulator.getProblem() != null) {
@@ -450,10 +473,15 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         private final FileObject sourceFile;
         private Problem problem;
         private boolean useAccessors;
+        private final ElementHandle<ExecutableElement> currentGetter;
+        private final ElementHandle<ExecutableElement> currentSetter;
 
-        public Encapsulator(EncapsulateFieldRefactoring refactoring, FileObject src) {
+        public Encapsulator(EncapsulateFieldRefactoring refactoring, FileObject src,
+                ElementHandle<ExecutableElement> currentGetter, ElementHandle<ExecutableElement> currentSetter) {
             this.refactoring = refactoring;
             this.sourceFile = src;
+            this.currentGetter = currentGetter;
+            this.currentSetter = currentSetter;
         }
 
         public Problem getProblem() {
@@ -511,7 +539,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             if (el == field && refactoring.getSetterName() != null
                     // check (field = 3) == 3
                     && (isArray || checkAssignmentInsideExpression())
-                    && !isInConstructorOfFieldClass(getCurrentPath(), field)) {
+                    && !isInConstructorOfFieldClass(getCurrentPath(), field)
+                    && !isInGetterSetter(getCurrentPath())) {
                 if (isArray) {
                     ExpressionTree invkgetter = createGetterInvokation(variable);
                     rewrite(variable, invkgetter);
@@ -544,7 +573,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             if (el == field && refactoring.getSetterName() != null
                     // check (field += 3) == 3
                     && (isArray || checkAssignmentInsideExpression())
-                    && !isInConstructorOfFieldClass(getCurrentPath(), field)) {
+                    && !isInConstructorOfFieldClass(getCurrentPath(), field)
+                    && !isInGetterSetter(getCurrentPath())) {
                 if (isArray) {
                     ExpressionTree invkgetter = createGetterInvokation(variable);
                     rewrite(variable, invkgetter);
@@ -581,7 +611,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 }
                 Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), t));
                 if (el == field && (isArray || checkAssignmentInsideExpression())
-                        && !isInConstructorOfFieldClass(getCurrentPath(), field)) {
+                        && !isInConstructorOfFieldClass(getCurrentPath(), field)
+                        && !isInGetterSetter(getCurrentPath())) {
                     // check (++field + 3)
                     ExpressionTree invkgetter = createGetterInvokation(t);
                     if (isArray) {
@@ -609,7 +640,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 return null;
             }
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            if (el == field && !isInConstructorOfFieldClass(getCurrentPath(), field)) {
+            if (el == field && !isInConstructorOfFieldClass(getCurrentPath(), field)
+                    && !isInGetterSetter(getCurrentPath())) {
                 ExpressionTree nodeNew = createGetterInvokation(node);
                 rewrite(node, nodeNew);
             }
@@ -622,7 +654,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 return null;
             }
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            if (el == field && !isInConstructorOfFieldClass(getCurrentPath(), field)) {
+            if (el == field && !isInConstructorOfFieldClass(getCurrentPath(), field)
+                    && !isInGetterSetter(getCurrentPath())) {
                 ExpressionTree nodeNew = createGetterInvokation(node);
                 rewrite(node, nodeNew);
             }
@@ -801,13 +834,38 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 case COMPILATION_UNIT:
                 case CLASS:
                 case NEW_CLASS:
-                    path = null;
-                    break;
-                default:
-                    path = path.getParentPath();
-                    leaf = path.getLeaf();
-                    kind = leaf.getKind();
+                    return false;
                 }
+                path = path.getParentPath();
+                leaf = path.getLeaf();
+                kind = leaf.getKind();
+            }
+        }
+
+        private boolean isInGetterSetter(TreePath path) {
+            if (sourceFile != workingCopy.getFileObject()) {
+                return false;
+            }
+            
+            Tree leaf = path.getLeaf();
+            Kind kind = leaf.getKind();
+            while (true) {
+                switch (kind) {
+                case METHOD:
+                    if (workingCopy.getTreeUtilities().isSynthetic(path)) {
+                        return false;
+                    }
+                    Element m = workingCopy.getTrees().getElement(path);
+                    return currentGetter != null && m == currentGetter.resolve(workingCopy)
+                            || currentSetter != null && m == currentSetter.resolve(workingCopy);
+                case COMPILATION_UNIT:
+                case CLASS:
+                case NEW_CLASS:
+                    return false;
+                }
+                path = path.getParentPath();
+                leaf = path.getLeaf();
+                kind = leaf.getKind();
             }
         }
         
