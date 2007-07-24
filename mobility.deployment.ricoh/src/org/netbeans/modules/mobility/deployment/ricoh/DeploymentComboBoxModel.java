@@ -13,8 +13,6 @@ import org.openide.util.NbBundle;
 //handles mapping of deployment methods
 class DeploymentComboBoxModel extends AbstractListModel implements MutableComboBoxModel, ListDataListener {
     
-    static String SSH_DEPLOY     = "scp"; //NOI18N
-    static String SMB_DEPLOY     = "samba"; //NOI18N
     static String SD_CARD_DEPLOY = "sdcard"; //NOI18N
     static String HTTP_DEPLOY    = "httppost"; //NOI18N
     
@@ -54,8 +52,6 @@ class DeploymentComboBoxModel extends AbstractListModel implements MutableComboB
     static private DeployType[] methods = 
     {
         new DeployType(NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + SD_CARD_DEPLOY), SD_CARD_DEPLOY),
-        new DeployType(NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + SMB_DEPLOY), SMB_DEPLOY),
-        new DeployType(NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + SSH_DEPLOY), SSH_DEPLOY),
         new DeployType(NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_Deploy_" + HTTP_DEPLOY), HTTP_DEPLOY),
     };
     

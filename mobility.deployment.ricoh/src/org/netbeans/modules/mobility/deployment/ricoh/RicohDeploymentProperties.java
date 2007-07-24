@@ -60,25 +60,14 @@ public class RicohDeploymentProperties
      static String PROP_RICOH_DEPLOY_PASSWORD = "ricoh.deployment.server.password"; //NOI18N
     
     //SD card property
-     static String PROP_RICOH_DEPLOY_SDCARD_PATH = "ricoh.deployment.sdcard.path"; //NOI18N
-    
-    //SMB properties
-     static String PROP_RICOH_DEPLOY_SMB_PORT     = "ricoh.deployment.smb.smbport"; //NOI18N
-     static String PROP_RICOH_DEPLOY_SMB_PATH     = "ricoh.deployment.smb.dir"; //NOI18N    
-    
-    //SSH (via SCP) properties
-     static String PROP_RICOH_DEPLOY_SSH_PORT     = "ricoh.deployment.scp.sshport"; //NOI18N
-     static String PROP_RICOH_DEPLOY_SSH_PATH     = "ricoh.deployment.scp.dir"; //NOI18N
-     static String PROP_RICOH_DEPLOY_SSH_KEYFILE  = "ricoh.deployment.scp.keyfile"; //NOI18N
+     static String PROP_RICOH_DEPLOY_SDCARD_PATH = "ricoh.deployment.sdcard.path"; //NOI18N    
 
     //HTTP POST property
      static String PROP_RICOH_DEPLOY_HTTP_PORT      = "ricoh.deployment.http.port"; //NOI18N
      static String PROP_RICOH_DEPLOY_HTTP_PLATFORM  = "ricoh.deployment.http.platform"; //NOI18N
      
     //Constants
-    private static final String DEFAULT_SSH_PORT  = "22";
-    private static final String DEFAULT_SMB_PORT  = "139";
-    private static final String DEFAULT_HTTP_PORT = "80";
+    
     private static final String DEFAULT_OSGI_PORT = "8080";
     private static final String DEFAULT_SSHKEY_EXT  = File.separator + ".ssh" + File.separator + "known_hosts"; //NOI18N
     //tries to find a "good" default ssh path; either ~/.ssh for unix systems or %USERPROFILE%/.ssh for windows systems, or the default home directory for each
@@ -106,13 +95,6 @@ public class RicohDeploymentProperties
         globalProp.put(PROP_RICOH_DEPLOY_PASSWORD,"");
         
         globalProp.put(PROP_RICOH_DEPLOY_SDCARD_PATH,"");
-        
-        globalProp.put(PROP_RICOH_DEPLOY_SMB_PORT,DEFAULT_SMB_PORT);
-        globalProp.put(PROP_RICOH_DEPLOY_SMB_PATH,"");
-        
-        globalProp.put(PROP_RICOH_DEPLOY_SSH_PORT,DEFAULT_SSH_PORT);
-        globalProp.put(PROP_RICOH_DEPLOY_SSH_PATH,"");
-        globalProp.put(PROP_RICOH_DEPLOY_SSH_KEYFILE,DEFAULT_SSHKEY_PATH);
         
         globalProp.put(PROP_RICOH_DEPLOY_HTTP_PORT,DEFAULT_OSGI_PORT);
         globalProp.put(PROP_RICOH_DEPLOY_HTTP_PLATFORM,"SDK/J &2.0+");        
