@@ -5546,8 +5546,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 || value instanceof Boolean || value instanceof Character)
             return value.toString();
 
-        if (value instanceof String)
-            return (String)value;
+        if (value instanceof String) {
+            try {
+                XMLUtil.toAttributeValue((String)value);
+                return (String) value;
+            } catch (CharConversionException ex) {
+                // can't be stored in XML document, needs to be encoded as bytes
+                return null;
+            }
+        }
 
         if (value instanceof Class)
             return ((Class)value).getName();
