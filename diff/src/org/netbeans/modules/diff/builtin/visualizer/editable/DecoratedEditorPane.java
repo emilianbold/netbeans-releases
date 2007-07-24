@@ -181,7 +181,11 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
     
     private class RepaintPaneTask implements Runnable {
         public void run() {
-            repaint();
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    repaint();
+                }
+            });
         }
     }
 }
