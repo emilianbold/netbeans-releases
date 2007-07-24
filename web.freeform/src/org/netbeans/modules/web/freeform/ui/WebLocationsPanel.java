@@ -155,6 +155,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         });
 
         jLabelWebInf.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/freeform/ui/Bundle").getString("MNE_DeploymentDescriptorFolder").charAt(0));
+        jLabelWebInf.setLabelFor(jTextFieldWebInf);
         jLabelWebInf.setText(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_DeploymentDescriptorFolder_Label")); // NOI18N
 
         jButtonWebInf.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/freeform/ui/Bundle").getString("MNE_BrowseWebInfLocation").charAt(0));
@@ -220,6 +221,8 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
 
         jTextFieldWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_WebPagesLocation_A11YDesc")); // NOI18N
         jButtonWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_WebPagesLocationBrowse_A11YDesc")); // NOI18N
+        jTextFieldWebInf.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACSD_WEBINF_TEXTFIELD")); // NOI18N
+        jButtonWebInf.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACSD_WEBINF_BROWSE")); // NOI18N
         jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_ContextPath_A11YDesc")); // NOI18N
         jComboBoxJ2eeLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_J2EESpecLevel_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
