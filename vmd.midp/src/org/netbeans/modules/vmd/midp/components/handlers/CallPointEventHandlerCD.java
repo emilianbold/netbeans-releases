@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.points.CallPointCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerEdgePresenter;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
@@ -60,7 +61,7 @@ public final class CallPointEventHandlerCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("Execute Code", "Action", CallPointCD.ICON_PATH),
+            InfoPresenter.createStatic (NbBundle.getMessage(CallPointEventHandlerCD.class, "NAME_CallPointEventHandler"), NbBundle.getMessage(CallPointEventHandlerCD.class, "TYPE_Action"), CallPointCD.ICON_PATH), // NOI18N
             // flow
             new FlowEventHandlerEdgePresenter () {
                 protected DesignComponent getTargetComponent () {

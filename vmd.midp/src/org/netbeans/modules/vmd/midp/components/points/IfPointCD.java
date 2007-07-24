@@ -36,6 +36,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowIfPointPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 import javax.swing.text.StyledDocument;
 import java.util.ArrayList;
@@ -75,7 +76,7 @@ public class IfPointCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Condition Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CONDITION); // NOI18N
+                    .addProperty (NbBundle.getMessage(IfPointCD.class, "DISP_IfPoint_Condition_Code"), PropertyEditorJavaString.createInstance(TYPEID), PROP_CONDITION);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class IfPointCD extends ComponentDescriptor {
             // flow
             new FlowIfPointPinOrderPresenter (),
             // general
-            InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, "If")),
+            InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, NbBundle.getMessage(IfPointCD.class, "TYPE_IfPoint"))),
             // properties
             createPropertiesPresenter (),
             // code

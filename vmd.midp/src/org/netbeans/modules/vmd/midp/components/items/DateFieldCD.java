@@ -36,6 +36,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.date.PropertyEditorDate;
 import org.netbeans.modules.vmd.midp.propertyeditors.timezone.PropertyEditorTimeZone;
 import org.netbeans.modules.vmd.midp.screen.display.DateFieldDisplayPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.*;
 
@@ -67,7 +68,7 @@ public class DateFieldCD extends ComponentDescriptor {
     }
 
     public void postInitialize (DesignComponent component) {
-        component.writeProperty (PROP_DATE, PropertyValue.createUserCode ("new java.util.Date (System.currentTimeMillis ())"));
+        component.writeProperty (PROP_DATE, PropertyValue.createUserCode ("new java.util.Date (System.currentTimeMillis ())")); // NOI18N
         component.writeProperty (PROP_INPUT_MODE, MidpTypes.createIntegerValue (VALUE_DATE_TIME));
     }
 
@@ -87,9 +88,9 @@ public class DateFieldCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Date", "dd.mm.yyyy hh:mm:ss", PropertyEditorDate.createInstance(), PROP_DATE)
-                .addProperty("Time Zone", PropertyEditorTimeZone.createInstance(), PROP_TIME_ZONE)
-                .addProperty("Input Mode", PropertyEditorComboBox.createInstance(getInputModeValues(), TYPEID), PROP_INPUT_MODE);
+                .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Date"), "dd.mm.yyyy hh:mm:ss", PropertyEditorDate.createInstance(), PROP_DATE) // NOI18N
+                .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Time_Zone"), PropertyEditorTimeZone.createInstance(), PROP_TIME_ZONE) // NOI18N
+                .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Input_Mode"), PropertyEditorComboBox.createInstance(getInputModeValues(), TYPEID), PROP_INPUT_MODE); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {
@@ -99,8 +100,8 @@ public class DateFieldCD extends ComponentDescriptor {
                 .addParameters (new InputModeParameter ())
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, InputModeParameter.PARAM_INPUT_MODE))
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, InputModeParameter.PARAM_INPUT_MODE, TimeZoneParameter.PARAM_TIME_ZONE))
-                .addSetters(MidpSetter.createSetter("setDate", MidpVersionable.MIDP).addParameters(PROP_DATE))
-                .addSetters(MidpSetter.createSetter("setInputMode", MidpVersionable.MIDP).addParameters(PROP_INPUT_MODE));
+                .addSetters(MidpSetter.createSetter("setDate", MidpVersionable.MIDP).addParameters(PROP_DATE)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setInputMode", MidpVersionable.MIDP).addParameters(PROP_INPUT_MODE)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {
@@ -117,9 +118,9 @@ public class DateFieldCD extends ComponentDescriptor {
     public static Map<String, PropertyValue> getInputModeValues() {
         if (inputModeValues == null) {
             inputModeValues = new TreeMap<String, PropertyValue>();
-            inputModeValues.put("DATE", MidpTypes.createIntegerValue(DateFieldCD.VALUE_DATE));           // NOI18N
+            inputModeValues.put("DATE", MidpTypes.createIntegerValue(DateFieldCD.VALUE_DATE)); // NOI18N
             inputModeValues.put("DATE_TIME", MidpTypes.createIntegerValue(DateFieldCD.VALUE_DATE_TIME)); // NOI18N
-            inputModeValues.put("TIME", MidpTypes.createIntegerValue(DateFieldCD.VALUE_TIME));            // NOI18N
+            inputModeValues.put("TIME", MidpTypes.createIntegerValue(DateFieldCD.VALUE_TIME)); // NOI18N
         }
 
         return inputModeValues;
@@ -138,7 +139,7 @@ public class DateFieldCD extends ComponentDescriptor {
             PropertyValue propertyValue = component.readProperty (PROP_DATE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
                 long date = MidpTypes.getLong (propertyValue);
-                section.getWriter ().write ("new java.util.Date (" + date + "l)");
+                section.getWriter ().write ("new java.util.Date (" + date + "l)"); // NOI18N
             } else
                 super.generateParameterCode (component, section, index);
         }
@@ -158,13 +159,13 @@ public class DateFieldCD extends ComponentDescriptor {
                 int value = MidpTypes.getInteger (propertyValue);
                 switch (value) {
                     case VALUE_DATE:
-                        section.getWriter ().write ("DateField.DATE");
+                        section.getWriter ().write ("DateField.DATE"); // NOI18N
                         return;
                     case VALUE_DATE_TIME:
-                        section.getWriter ().write ("DateField.DATE_TIME");
+                        section.getWriter ().write ("DateField.DATE_TIME"); // NOI18N
                         return;
                     case VALUE_TIME:
-                        section.getWriter ().write ("DateField.TIME");
+                        section.getWriter ().write ("DateField.TIME"); // NOI18N
                         return;
                     default:
                         throw Debug.illegalState ();

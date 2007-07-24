@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,14 +53,14 @@ public final class TickerCD extends ComponentDescriptor {
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
         return Arrays.asList (
-            new PropertyDescriptor(PROP_STRING, MidpTypes.TYPEID_JAVA_LANG_STRING, MidpTypes.createStringValue (""), false, true, MidpVersionable.MIDP)
+            new PropertyDescriptor(PROP_STRING, MidpTypes.TYPEID_JAVA_LANG_STRING, MidpTypes.createStringValue (""), false, true, MidpVersionable.MIDP) // NOI18N
         );
     }
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING);
+                    .addProperty(NbBundle.getMessage(TickerCD.class, "DISP_Ticker_String"), PropertyEditorString.createInstance(), PROP_STRING); // NOI18N
     }
 
     private static Presenter createSetterPresenter () {

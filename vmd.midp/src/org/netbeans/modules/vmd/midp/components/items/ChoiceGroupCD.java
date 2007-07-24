@@ -39,6 +39,7 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.screen.display.ChoiceGroupDisplayPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,8 +83,8 @@ public class ChoiceGroupCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Type", PropertyEditorComboBox.createInstance(ChoiceSupport.getChoiceGroupTypes(), TYPEID), PROP_CHOICE_TYPE)
-                    .addProperty("Fit Policy", "Sets the application's preferred policy for fitting Choice element contents to the available screen space.",
+                    .addProperty(NbBundle.getMessage(ChoiceGroupCD.class, "DISP_ChoiceGroup_Type"), PropertyEditorComboBox.createInstance(ChoiceSupport.getChoiceGroupTypes(), TYPEID), PROP_CHOICE_TYPE) // NOI18N
+                    .addProperty(NbBundle.getMessage(ChoiceGroupCD.class, "DISP_ChoiceGroup_Fit_Policy"), NbBundle.getMessage(ChoiceGroupCD.class, "TTIP_ChoiceGroup_Fit_Policy"), // NOI18N
                                   PropertyEditorComboBox.createInstance(ChoiceSupport.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY);
     }
     
@@ -96,10 +97,10 @@ public class ChoiceGroupCD extends ComponentDescriptor {
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, ChoiceGroupCode.PARAM_CHOICE_TYPE))
 //                .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, ChoiceGroupCode.PARAM_CHOICE_TYPE, ChoiceGroupCode.PARAM_STRING_ARRAY, ChoiceGroupCode.PARAM_IMAGE_ARRAY))
 //                .addSetters(MidpSetter.createSetter("insert", MidpVersionable.MIDP).setArrayParameter(ChoiceGroupCode.PARAM_STRING).addParameters(Parameter.PARAM_INDEX, ChoiceGroupCode.PARAM_STRING, ChoiceGroupCode.PARAM_IMAGE))
-                .addSetters(MidpSetter.createSetter("append", MidpVersionable.MIDP).setArrayParameter(ChoiceGroupCode.PARAM_STRING).addParameters(ChoiceGroupCode.PARAM_STRING, ChoiceGroupCode.PARAM_IMAGE))
-                .addSetters(MidpSetter.createSetter("setFitPolicy", MidpVersionable.MIDP_2).addParameters(ChoiceGroupCode.PARAM_FIT_POLICY))
-                .addSetters(MidpSetter.createSetter("setFont", MidpVersionable.MIDP_2).setArrayParameter (ChoiceGroupCode.PARAM_FONT).addParameters (Parameter.PARAM_INDEX, ChoiceGroupCode.PARAM_FONT))
-                .addSetters(MidpSetter.createSetter("setSelectedFlags", MidpVersionable.MIDP).addParameters(ChoiceGroupCode.PARAM_SELECTED_ARRAY));
+                .addSetters(MidpSetter.createSetter("append", MidpVersionable.MIDP).setArrayParameter(ChoiceGroupCode.PARAM_STRING).addParameters(ChoiceGroupCode.PARAM_STRING, ChoiceGroupCode.PARAM_IMAGE)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setFitPolicy", MidpVersionable.MIDP_2).addParameters(ChoiceGroupCode.PARAM_FIT_POLICY)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setFont", MidpVersionable.MIDP_2).setArrayParameter (ChoiceGroupCode.PARAM_FONT).addParameters (Parameter.PARAM_INDEX, ChoiceGroupCode.PARAM_FONT)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setSelectedFlags", MidpVersionable.MIDP).addParameters(ChoiceGroupCode.PARAM_SELECTED_ARRAY)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {
@@ -107,7 +108,7 @@ public class ChoiceGroupCD extends ComponentDescriptor {
                 // properties
                 createPropertiesPresenter(),
                 // code
-                createSetterPresenter(),MidpInspectorSupport.createComponentElementsCategory("Elements",getInspectorOrderingControllers(), ChoiceElementCD.TYPEID), //NOI18N
+                createSetterPresenter(),MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage (ChoiceGroupCD.class, "DISP_InspectorCategory_ChoiceElements"),getInspectorOrderingControllers(), ChoiceElementCD.TYPEID), //NOI18N
                 //actions
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ChoiceElementCD.TYPEID),
                 //accept
@@ -119,7 +120,7 @@ public class ChoiceGroupCD extends ComponentDescriptor {
                         if (choiceElement.isDefaultValue(ChoiceElementCD.PROP_STRING)) {
                             PropertyValue value = getComponent ().readProperty(PROP_ELEMENTS);
                             List<PropertyValue> list = value.getArray ();
-                            choiceElement.writeProperty (ChoiceElementCD.PROP_STRING, MidpTypes.createStringValue ("Choice Element " + list.size())); //NOI18N
+                            choiceElement.writeProperty (ChoiceElementCD.PROP_STRING, MidpTypes.createStringValue (NbBundle.getMessage(ChoiceGroupCD.class, "DISP_New_Choice_Element", list.size()))); // NOI18N
                         }
                     }
                 },

@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.sources.EntryStartEventSourceCD;
 import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 import javax.swing.text.StyledDocument;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class EntryPointCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
-            InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, "Entry")),
+            InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, NbBundle.getMessage (EntryPointCD.class, "TYPE_EntryPoint"))), // NOI18N
             // code
             new CodeClassLevelPresenter.Adapter () {
                 @Override

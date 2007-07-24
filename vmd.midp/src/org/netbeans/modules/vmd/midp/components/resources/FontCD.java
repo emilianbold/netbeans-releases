@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 
 import java.util.*;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -107,10 +108,10 @@ public final class FontCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Kind", PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_FONT_KIND)
-                    .addProperty("Face", PropertyEditorComboBox.createInstance(getFaceTypes(), TYPEID, TYPEID), PROP_FACE)
-                    .addProperty("Size", PropertyEditorComboBox.createInstance(getSizeTypes(), TYPEID, TYPEID), PROP_SIZE)
-                    .addProperty("Style", PropertyEditorComboBox.createInstance(getStyleTypes(), TYPEID, TYPEID), PROP_STYLE);
+                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Kind"), PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_FONT_KIND) // NOI18N
+                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Face"), PropertyEditorComboBox.createInstance(getFaceTypes(), TYPEID, TYPEID), PROP_FACE) // NOI18N
+                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Size"), PropertyEditorComboBox.createInstance(getSizeTypes(), TYPEID, TYPEID), PROP_SIZE) // NOI18N
+                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Style"), PropertyEditorComboBox.createInstance(getStyleTypes(), TYPEID, TYPEID), PROP_STYLE); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {
@@ -280,7 +281,7 @@ public final class FontCD extends ComponentDescriptor {
         }
 
         public int getPriority() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return 0;
         }
 
         public String getSetterName () {

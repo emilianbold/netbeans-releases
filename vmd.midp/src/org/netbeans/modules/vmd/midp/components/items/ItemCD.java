@@ -55,6 +55,7 @@ import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresent
 import org.netbeans.modules.vmd.midp.screen.display.ItemDisplayPresenter;
 
 import java.util.*;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -135,10 +136,10 @@ public class ItemCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Label", PropertyEditorString.createInstance(), PROP_LABEL)
-                    .addProperty("Default Command", PropertyEditorDefaultCommand.createInstance(), PROP_DEFAULT_COMMAND)
-                    .addProperty("Layout", PropertyEditorLayout.createInstance(), PROP_LAYOUT)
-                    .addProperty("Preferred Size", PropertyEditorArrayInteger.create(), PROP_PREFERRED_WIDTH, PROP_PREFERRED_HEIGHT);
+                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), PropertyEditorString.createInstance(), PROP_LABEL) // NOI18N
+                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"), PropertyEditorDefaultCommand.createInstance(), PROP_DEFAULT_COMMAND) // NOI18N
+                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"), PropertyEditorLayout.createInstance(), PROP_LAYOUT) // NOI18N
+                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Size"), PropertyEditorArrayInteger.create(), PROP_PREFERRED_WIDTH, PROP_PREFERRED_HEIGHT); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {

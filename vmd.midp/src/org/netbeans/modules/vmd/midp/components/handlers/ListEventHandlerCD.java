@@ -26,6 +26,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.displayables.ListCode;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import java.util.Arrays;
@@ -56,13 +57,13 @@ public class ListEventHandlerCD extends ComponentDescriptor {
     }
 
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "List Action", "List Action", ICON_PATH, LARGE_ICON_PATH);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(ListEventHandlerCD.class, "DISP_ListEventHandler"), NbBundle.getMessage(ListEventHandlerCD.class, "TTIP_ListEventHandler"), ICON_PATH, LARGE_ICON_PATH); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
                 // info
-                InfoPresenter.createStatic ("Process List", "Action", ICON_PATH),
+                InfoPresenter.createStatic (NbBundle.getMessage(ListEventHandlerCD.class, "NAME_ListEventHandler"), NbBundle.getMessage(ListEventHandlerCD.class, "TYPE_Action"), ICON_PATH), // NOI18N
                 // flow
                 new FlowEventHandlerPinBadgePresenter (Utilities.loadImage (ICON_PATH), 0) {
                     protected DesignEventFilter getEventFilter () {
@@ -81,7 +82,7 @@ public class ListEventHandlerCD extends ComponentDescriptor {
                         DesignComponent list = commandEventSource.getParentComponent ();
                         String code = ListCode.getListActionMethodAccessCode (list);
                         if (code != null)
-                            section.getWriter ().write (code + " ();\n");
+                            section.getWriter ().write (code + " ();\n"); // NOI18N
                     }
                 }
         );

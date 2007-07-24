@@ -36,6 +36,7 @@ import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.openide.actions.PropertiesAction;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -86,14 +87,14 @@ public final class EventSourceSupport {
                 case PRIMARY:
                     return resolveName (component);
                 case SECONDARY:
-                    return "Command";
+                    return NbBundle.getMessage(EventSourceSupport.class, "TYPE_Command"); // NOI18N
                 case TERTIARY:
                     StringBuffer nameWithParent = new StringBuffer();
                     nameWithParent.append("<HTML>"); //NOI18N
                     nameWithParent.append(resolveName(component));
-                    nameWithParent.append(" <font color=\"#808080\">["); 
+                    nameWithParent.append(" <font color=\"#808080\">["); // NOI18N
                     nameWithParent.append(component.getParentComponent().getPresenter(InfoPresenter.class).getEditableName());
-                    nameWithParent.append("]");
+                    nameWithParent.append("]"); // NOI18N
                     return nameWithParent.toString();
                 default:
                     throw Debug.illegalState ();
@@ -108,7 +109,7 @@ public final class EventSourceSupport {
             PropertyValue value = component.readProperty (ClassCD.PROP_INSTANCE_NAME);
             if (value.getKind () == PropertyValue.Kind.VALUE && MidpTypes.TYPEID_JAVA_LANG_STRING.equals (value.getType ()))
                 return (String) value.getPrimitiveValue ();
-            throw new IllegalStateException ("Invalid instance name (" + value + ") for component: " + component);
+            throw Debug.error ("Invalid instance name", value, "for component", component); // NOI18N
         }
 
         public boolean isEditable (DesignComponent component) {

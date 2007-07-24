@@ -18,9 +18,8 @@
  */
 package org.netbeans.modules.vmd.midp.components.resources;
 
-import java.awt.Image;
-
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
@@ -29,6 +28,8 @@ import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
+
+import java.awt.*;
 
 
 /**
@@ -70,13 +71,13 @@ public final class ResourcesSupport {
         
         public String getEditableName(DesignComponent component) {
             if (component == null)
-                throw new IllegalArgumentException("Component cannot be null"); // NOI18N
+                throw Debug.error ("Component cannot be null"); // NOI18N
             return (String) component.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
         }
         
         public void setEditableName(DesignComponent component, String name) {
             if (component == null || name == null)
-                throw new IllegalArgumentException("Component or name cannot be null"); // NOI18N
+                throw Debug.error ("Component or name cannot be null"); // NOI18N
             component.writeProperty(ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested(component, name));
         }
         

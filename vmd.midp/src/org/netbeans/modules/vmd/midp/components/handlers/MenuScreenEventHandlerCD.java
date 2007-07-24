@@ -23,6 +23,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import java.util.Arrays;
@@ -51,13 +52,13 @@ public class MenuScreenEventHandlerCD extends ComponentDescriptor {
     }
 
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Menu Screen Action", "Menu Screen Action", MenuScreenEventHandlerCD.ICON_PATH, MenuScreenEventHandlerCD.LARGE_ICON_PATH);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(MenuScreenEventHandlerCD.class, "DISP_MenuScreenEventHandler"), NbBundle.getMessage(MenuScreenEventHandlerCD.class, "TTIP_MenuScreenEventHandler"), MenuScreenEventHandlerCD.ICON_PATH, MenuScreenEventHandlerCD.LARGE_ICON_PATH); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("Go to Menu Displayable", "Action", ICON_PATH),
+            InfoPresenter.createStatic (NbBundle.getMessage(MenuScreenEventHandlerCD.class, "NAME_MenuScreenEventHandler"), NbBundle.getMessage(MenuScreenEventHandlerCD.class, "TYPE_Action"), ICON_PATH), // NOI18N
             // flow
             new FlowEventHandlerPinBadgePresenter (Utilities.loadImage (ICON_PATH), 0)
         );

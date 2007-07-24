@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * TODO - CodeClassLevelPresenter
@@ -56,7 +57,7 @@ public final class EntryStartEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("Entry Called", "Event", EntryPointCD.ICON_PATH),
+            InfoPresenter.createStatic (NbBundle.getMessage(EntryStartEventSourceCD.class, "NAME_EntryStartEventSource_Entry_Called"), NbBundle.getMessage(EntryStartEventSourceCD.class, "TYPE_Event"), EntryPointCD.ICON_PATH), // NOI18N
             // flow
             new FlowEventSourcePinPresenter() {
                 protected DesignComponent getComponentForAttachingPin () {
@@ -64,7 +65,7 @@ public final class EntryStartEventSourceCD extends ComponentDescriptor {
                 }
 
                 protected String getDisplayName () {
-                    return "Entry Called";
+                    return NbBundle.getMessage(EntryStartEventSourceCD.class, "DISP_EntryStartEventSource_FlowPin"); // NOI18N
                 }
 
                 protected String getOrder () {

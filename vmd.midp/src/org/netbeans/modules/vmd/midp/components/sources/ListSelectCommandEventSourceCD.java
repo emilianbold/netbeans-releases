@@ -37,6 +37,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -64,9 +65,8 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
-            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES) // TODO - its is not a code property
-                .addProperty ("Show Select Command", PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND);
+            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES) // TODO - maybe it should be another category
+                .addProperty (NbBundle.getMessage(ListSelectCommandEventSourceCD.class, "DISP_ListSelectCommandEventSource_Show_Select_Command"), PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND); // NOI18N
     }
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {

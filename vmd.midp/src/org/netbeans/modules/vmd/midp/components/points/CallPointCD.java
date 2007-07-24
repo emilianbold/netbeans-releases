@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -67,14 +68,14 @@ public class CallPointCD extends ComponentDescriptor {
 
     @Override
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Call Point", "Call Point", ICON_PATH, LARGE_ICON_PATH);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(CallPointCD.class, "DISP_CallPoint"), NbBundle.getMessage(CallPointCD.class, "TTIP_CallPoint"), ICON_PATH, LARGE_ICON_PATH); // NOI18N
     }
 
     public DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Call Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_ACCESS_CODE);
+                    .addProperty (NbBundle.getMessage(CallPointCD.class, "DISP_CallPoint_Call_Code"), PropertyEditorJavaString.createInstance(TYPEID), PROP_ACCESS_CODE); // NOI18N
     }
 
     @Override

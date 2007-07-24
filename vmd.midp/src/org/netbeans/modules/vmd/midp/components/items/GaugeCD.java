@@ -19,12 +19,13 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
-import java.util.ArrayList;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -32,14 +33,15 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.displayables.AlertCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorGaugeMaxValue;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 import org.netbeans.modules.vmd.midp.screen.display.GaugeDisplayPresenter;
+import org.openide.util.NbBundle;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -92,9 +94,9 @@ public class GaugeCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                     .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                        .addProperty("Is Interactive", PropertyEditorBooleanUC.createInstance(), PROP_INTERACTIVE)
-                        .addProperty("Maximum Value", PropertyEditorGaugeMaxValue.createInstance(), PROP_MAX_VALUE)
-                        .addProperty("Value", PropertyEditorNumber.createIntegerInstance(), PROP_VALUE );
+                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Is_Interactive"), PropertyEditorBooleanUC.createInstance(), PROP_INTERACTIVE) // NOI18N
+                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Maximum_Value"), PropertyEditorGaugeMaxValue.createInstance(), PROP_MAX_VALUE) // NOI18N
+                        .addProperty(NbBundle.getMessage(GaugeCD.class, "DISP_Gauge_Value"), PropertyEditorNumber.createIntegerInstance(), PROP_VALUE ); // NOI18N
     }
     
     private static Presenter createSetterPresenter() {
@@ -102,8 +104,8 @@ public class GaugeCD extends ComponentDescriptor {
                 .addParameters(MidpParameter.create(PROP_INTERACTIVE))
                 .addParameters(new GaugeValueParameter (), new GaugeMaxValueParameter ())
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, PROP_INTERACTIVE, GaugeMaxValueParameter.PARAM_MAX_VALUE, GaugeValueParameter.PARAM_VALUE))
-                .addSetters(MidpSetter.createSetter("setValue", MidpVersionable.MIDP).addParameters(GaugeValueParameter.PARAM_VALUE))
-                .addSetters(MidpSetter.createSetter("setMaxValue", MidpVersionable.MIDP).addParameters(GaugeMaxValueParameter.PARAM_MAX_VALUE));
+                .addSetters(MidpSetter.createSetter("setValue", MidpVersionable.MIDP).addParameters(GaugeValueParameter.PARAM_VALUE)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setMaxValue", MidpVersionable.MIDP).addParameters(GaugeMaxValueParameter.PARAM_MAX_VALUE)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {
@@ -144,10 +146,10 @@ public class GaugeCD extends ComponentDescriptor {
                     if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
                         value = MidpTypes.getInteger (propertyValue);
                         switch (value) {
-                            case VALUE_CONTINUOUS_IDLE: section.getWriter ().write ("Gauge.CONTINUOUS_IDLE"); return;
-                            case VALUE_INCREMENTAL_IDLE: section.getWriter ().write ("Gauge.INCREMENTAL_IDLE"); return;
-                            case VALUE_CONTINUOUS_RUNNING: section.getWriter ().write ("Gauge.CONTINUOUS_RUNNING"); return;
-                            case VALUE_INCREMENTAL_UPDATING: section.getWriter ().write ("Gauge.INCREMENTAL_UPDATING"); return;
+                            case VALUE_CONTINUOUS_IDLE: section.getWriter ().write ("Gauge.CONTINUOUS_IDLE"); return; // NOI18N
+                            case VALUE_INCREMENTAL_IDLE: section.getWriter ().write ("Gauge.INCREMENTAL_IDLE"); return; // NOI18N
+                            case VALUE_CONTINUOUS_RUNNING: section.getWriter ().write ("Gauge.CONTINUOUS_RUNNING"); return; // NOI18N
+                            case VALUE_INCREMENTAL_UPDATING: section.getWriter ().write ("Gauge.INCREMENTAL_UPDATING"); return; // NOI18N
                             default: throw Debug.illegalState ();
                         }
                     }

@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
 import org.netbeans.modules.vmd.midp.screen.display.TextFieldDisplayPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -97,10 +98,10 @@ public class TextFieldCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Maximum Size", PropertyEditorNumber.createIntegerInstance(), PROP_MAX_SIZE)
-                .addProperty("Text", PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_FIELD), PROP_TEXT)
-                .addProperty("Initial Input Mode", PropertyEditorInputMode.createInstance(), PROP_INITIAL_INPUT_MODE)
-                .addProperty("Input Constraints", PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS);
+                .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Maximum_Size"), PropertyEditorNumber.createIntegerInstance(), PROP_MAX_SIZE) // NOI18N
+                .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Text"), PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_FIELD), PROP_TEXT) // NOI18N
+                .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Initial_Input_Mode"), PropertyEditorInputMode.createInstance(), PROP_INITIAL_INPUT_MODE) // NOI18N
+                .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Input_Constraints"), PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {
@@ -108,10 +109,10 @@ public class TextFieldCD extends ComponentDescriptor {
                 .addParameters(MidpParameter.create(PROP_TEXT, PROP_MAX_SIZE, PROP_INITIAL_INPUT_MODE))
                 .addParameters (new TextFieldConstraintsParameter ())
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP).addParameters(ItemCD.PROP_LABEL, PROP_TEXT, PROP_MAX_SIZE, TextFieldConstraintsParameter.PARAM_CONSTRAINTS))
-                .addSetters(MidpSetter.createSetter("setString", MidpVersionable.MIDP).addParameters(PROP_TEXT))
-                .addSetters(MidpSetter.createSetter("setConstraints", MidpVersionable.MIDP).addParameters(TextFieldConstraintsParameter.PARAM_CONSTRAINTS))
-                .addSetters(MidpSetter.createSetter("setInitialInputMode", MidpVersionable.MIDP_2).addParameters(PROP_INITIAL_INPUT_MODE))
-                .addSetters(MidpSetter.createSetter("setMaxSize", MidpVersionable.MIDP).addParameters(PROP_MAX_SIZE));
+                .addSetters(MidpSetter.createSetter("setString", MidpVersionable.MIDP).addParameters(PROP_TEXT)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setConstraints", MidpVersionable.MIDP).addParameters(TextFieldConstraintsParameter.PARAM_CONSTRAINTS)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setInitialInputMode", MidpVersionable.MIDP_2).addParameters(PROP_INITIAL_INPUT_MODE)) // NOI18N
+                .addSetters(MidpSetter.createSetter("setMaxSize", MidpVersionable.MIDP).addParameters(PROP_MAX_SIZE)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {

@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowIfPointPinOrderPresenter;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -56,7 +57,7 @@ public final class IfTrueEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("True", "Case", IfPointCD.ICON_PATH),
+            InfoPresenter.createStatic (NbBundle.getMessage(IfTrueEventSourceCD.class, "NAME_IfTrueEventSource"), NbBundle.getMessage(IfTrueEventSourceCD.class, "TYPE_IfTrueEventSource"), IfPointCD.ICON_PATH), // NOI18N
             // flow
             new FlowEventSourcePinPresenter () {
                 protected DesignComponent getComponentForAttachingPin () {
@@ -64,7 +65,7 @@ public final class IfTrueEventSourceCD extends ComponentDescriptor {
                 }
 
                 protected String getDisplayName () {
-                    return "True";
+                    return NbBundle.getMessage(IfTrueEventSourceCD.class, "DISP_IfTrueEventSource_FlowPin"); // NOI18N
                 }
 
                 protected String getOrder () {

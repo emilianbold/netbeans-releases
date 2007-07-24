@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.points.MethodPointCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerEdgePresenter;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
@@ -59,7 +60,7 @@ public final class MethodPointEventHandlerCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("Call Method", "Action", MethodPointCD.ICON_PATH),
+            InfoPresenter.createStatic (NbBundle.getMessage(MethodPointEventHandlerCD.class, "NAME_MethodPointEventHandler"), NbBundle.getMessage(MethodPointEventHandlerCD.class, "TYPE_Action"), MethodPointCD.ICON_PATH), // NOI18N
             // flow
             new FlowEventHandlerEdgePresenter () {
                 protected DesignComponent getTargetComponent () {

@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.openide.util.Utilities;
+import org.openide.util.NbBundle;
 
 import java.awt.*;
 
@@ -84,7 +85,7 @@ public final class PointSupport {
                             code = code.substring (0, 7) + "..."; // NOI18N
                         return code;
                     case SECONDARY:
-                        return "Call";
+                        return NbBundle.getMessage (PointSupport.class, "TYPE_Call"); // NOI18N
                     case TERTIARY:
                         return null;
                     default:

@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.components.handlers.MethodPointEventHandler
 import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
+import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
@@ -72,7 +73,7 @@ public class MethodPointCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Method Name", PropertyEditorInstanceName.createInstance(TYPEID), PROP_METHOD_NAME);
+                    .addProperty (NbBundle.getMessage(MethodPointCD.class, "DISP_MethodPoint_Method_Name"), PropertyEditorInstanceName.createInstance(TYPEID), PROP_METHOD_NAME); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {

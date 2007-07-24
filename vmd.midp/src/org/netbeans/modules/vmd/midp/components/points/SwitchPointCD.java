@@ -45,6 +45,7 @@ import javax.swing.text.StyledDocument;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -69,7 +70,7 @@ public class SwitchPointCD extends ComponentDescriptor {
 
     @Override
     public void postInitialize (DesignComponent component) {
-        component.writeProperty (PROP_OPERAND, MidpTypes.createJavaCodeValue ("0"));
+        component.writeProperty (PROP_OPERAND, MidpTypes.createJavaCodeValue ("0")); // NOI18N
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors () {
@@ -81,14 +82,14 @@ public class SwitchPointCD extends ComponentDescriptor {
 
     @Override
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Switch", "Switch", ICON_PATH, LARGE_ICON_PATH);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(SwitchPointCD.class, "DISP_SwitchPoint"), NbBundle.getMessage(SwitchPointCD.class, "TTIP_SwitchPoint"), ICON_PATH, LARGE_ICON_PATH); // NOI18N
     }
 
     public DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Switch Operand", PropertyEditorJavaString.createInstance(TYPEID), PROP_OPERAND);
+                    .addProperty (NbBundle.getMessage(SwitchPointCD.class, "DISP_SwitchPoint_Switch_Operand"), PropertyEditorJavaString.createInstance(TYPEID), PROP_OPERAND); // NOI18N
     }
 
     
@@ -101,12 +102,6 @@ public class SwitchPointCD extends ComponentDescriptor {
     
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
-            // general
-            
-            // general
-            
-            // general
-            
             // general
             InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, "Switch")),
             //inspector

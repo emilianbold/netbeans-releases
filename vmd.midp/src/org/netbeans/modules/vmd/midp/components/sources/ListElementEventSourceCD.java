@@ -44,12 +44,14 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
-import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -84,10 +86,10 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
-            .addProperty ("String", PropertyEditorString.createInstance (), PROP_STRING) // NOI18N
-            .addProperty ("Image", PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
-            .addProperty("Font", PropertyEditorResource.createFontPropertyEditor(), PROP_FONT) // NOI18N
-            .addProperty ("Selected", PropertyEditorBooleanUC.createInstance(), PROP_SELECTED); // NOI18N
+            .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_String"), PropertyEditorString.createInstance (), PROP_STRING) // NOI18N
+            .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Image"), PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
+            .addProperty(NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Font"), PropertyEditorResource.createFontPropertyEditor(), PROP_FONT) // NOI18N
+            .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Selected"), PropertyEditorBooleanUC.createInstance(), PROP_SELECTED); // NOI18N
     }
 
     @Override

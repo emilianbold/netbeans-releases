@@ -34,6 +34,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowSwitchPointPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -68,7 +69,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
     }
 
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Switch Case", "Switch Case", ICON_PATH, LARGE_ICON_PATH);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(SwitchCaseEventSourceCD.class, "DISP_SwitchCaseEventSource"), NbBundle.getMessage(SwitchCaseEventSourceCD.class, "TTIP_SwitchCaseEventSource"), ICON_PATH, LARGE_ICON_PATH); // NOI18N
     }
 
     public static DesignComponent getSwitchPointComponent (DesignComponent switchCaseEventSourceComponent) {
@@ -79,7 +80,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty ("Switch Case Option", PropertyEditorJavaString.createInstance(TYPEID), PROP_OPTION);
+                    .addProperty (NbBundle.getMessage(SwitchCaseEventSourceCD.class, "DISP_SwitchCaseEventSource_Switch_Case_Option"), PropertyEditorJavaString.createInstance(TYPEID), PROP_OPTION); // NOI18N
     }
     
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
@@ -102,7 +103,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
                         case PRIMARY:
                             return MidpValueSupport.getHumanReadableString (component.readProperty (SwitchCaseEventSourceCD.PROP_OPTION));
                         case SECONDARY:
-                            return "Case";
+                            return NbBundle.getMessage(SwitchCaseEventSourceCD.class, "TYPE_SwitchCaseEventSource"); // NOI18N
                         case TERTIARY:
                             return null;
                         default:
@@ -128,7 +129,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
                     return SwitchCaseEventSourceCD.getSwitchPointComponent (getComponent ());
                 }
                 protected String getDisplayName () {
-                    return "Case: " + MidpValueSupport.getHumanReadableString (getComponent ().readProperty (PROP_OPTION));
+                    return NbBundle.getMessage(SwitchCaseEventSourceCD.class, "DISP_SwitchCaseEventSource_FlowPin", MidpValueSupport.getHumanReadableString (getComponent ().readProperty (PROP_OPTION))); // NOI18N
                 }
                 protected String getOrder () {
                     return FlowSwitchPointPinOrderPresenter.CATEGORY_ID;

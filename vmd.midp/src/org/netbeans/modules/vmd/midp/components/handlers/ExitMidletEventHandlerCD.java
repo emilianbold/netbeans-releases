@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerEdgePresenter;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
@@ -59,7 +60,7 @@ public final class ExitMidletEventHandlerCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("Exit MIDlet", "Action", MobileDeviceCD.ICON_PATH),
+            InfoPresenter.createStatic (NbBundle.getMessage(ExitMidletEventHandlerCD.class, "NAME_ExitMIDletEventHandler"), NbBundle.getMessage(ExitMidletEventHandlerCD.class, "TYPE_Action"), MobileDeviceCD.ICON_PATH), // NOI18N
             // flow
             new FlowEventHandlerEdgePresenter () {
                 protected DesignComponent getTargetComponent () {

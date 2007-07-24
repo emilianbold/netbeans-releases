@@ -26,6 +26,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import java.util.Arrays;
@@ -54,13 +55,13 @@ public class PreviousScreenEventHandlerCD extends ComponentDescriptor {
     }
 
     public PaletteDescriptor getPaletteDescriptor () {
-        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Previous Screen Action", "Previous Screen Action", ICON_PATH, LARGE_ICON_PATH);
+        return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(PreviousScreenEventHandlerCD.class, "DISP_PreviousScreenEventHandler"), NbBundle.getMessage(PreviousScreenEventHandlerCD.class, "TTIP_PreviousScreenEventHandler"), ICON_PATH, LARGE_ICON_PATH); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("Go to Previous Displayable", "Action", DisplayableCD.ICON_PATH),
+            InfoPresenter.createStatic (NbBundle.getMessage(PreviousScreenEventHandlerCD.class, "NAME_PreviousScreenEventHandler"), NbBundle.getMessage(PreviousScreenEventHandlerCD.class, "TYPE_Action"), DisplayableCD.ICON_PATH), // NOI18N
             // flow
             new FlowEventHandlerPinBadgePresenter (Utilities.loadImage (ICON_PATH), 0),
             // code

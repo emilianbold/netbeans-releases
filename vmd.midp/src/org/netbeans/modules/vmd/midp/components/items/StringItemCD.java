@@ -38,6 +38,7 @@ import org.netbeans.modules.vmd.midp.screen.display.StringItemDisplayPresenter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -76,9 +77,9 @@ public class StringItemCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Text", PropertyEditorString.createInstance(), PROP_TEXT) // NOI18N
-                .addProperty("Appearance", PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID), ItemCD.PROP_APPEARANCE_MODE) // NOI18N
-                .addProperty("Font", PropertyEditorResource.createFontPropertyEditor(), PROP_FONT); // NOI18N
+                .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Text"), PropertyEditorString.createInstance(), PROP_TEXT) // NOI18N
+                .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Appearance"), PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID), ItemCD.PROP_APPEARANCE_MODE) // NOI18N
+                .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Font"), PropertyEditorResource.createFontPropertyEditor(), PROP_FONT); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {

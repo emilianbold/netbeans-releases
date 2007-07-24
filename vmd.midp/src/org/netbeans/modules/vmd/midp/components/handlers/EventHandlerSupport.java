@@ -18,12 +18,13 @@
  */
 package org.netbeans.modules.vmd.midp.components.handlers;
 
-import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
-import org.netbeans.modules.vmd.api.model.DesignEventFilter;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Debug;
-import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
+import org.netbeans.modules.vmd.api.model.DesignComponent;
+import org.netbeans.modules.vmd.api.model.DesignEventFilter;
+import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
+import org.netbeans.modules.vmd.midp.components.general.ClassSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -51,16 +52,16 @@ public class EventHandlerSupport {
                     DesignComponent displayable = component.readProperty (SwitchDisplayableEventHandlerCD.PROP_DISPLAYABLE).getComponent ();
                     DesignComponent alert = component.readProperty (SwitchDisplayableEventHandlerCD.PROP_ALERT).getComponent ();
                     if (displayable == null)
-                        return "Clear Display";
+                        return NbBundle.getMessage(EventHandlerSupport.class, "DISP_Handler_Clear_Display"); // NOI18N
 
                     String displayableName = ClassSupport.resolveDisplayName (displayable);
                     String alertName = alert != null ? ClassSupport.resolveDisplayName (alert) : null;
                     if (alertName != null)
-                        return "Go to " + displayableName + " throught " + alertName;
+                        return NbBundle.getMessage(EventHandlerSupport.class, "DISP_Handler_Go_to_displayable_alert", displayableName, alertName); // NOI18N
                     else
-                        return "Go to " + displayableName;
+                        return NbBundle.getMessage(EventHandlerSupport.class, "DISP_Handler_Go_to_displayable", displayableName); // NOI18N
                 case SECONDARY:
-                    return "Action";
+                    return NbBundle.getMessage(EventHandlerSupport.class, "TYPE_Action"); // NOI18N
                 case TERTIARY:
                     return null;
                 default:

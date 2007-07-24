@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -69,7 +70,7 @@ public final class EventSourceCD extends ComponentDescriptor {
     public DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_ACTION_PROPERTIES)
-                .addProperty("Action", PropertyEditorEventHandler.createInstance(), PROP_EVENT_HANDLER)
+                .addProperty(NbBundle.getMessage(EventSourceCD.class, "DISP_EventSource_Action"), PropertyEditorEventHandler.createInstance(), PROP_EVENT_HANDLER) // NOI18N
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES);
     }
