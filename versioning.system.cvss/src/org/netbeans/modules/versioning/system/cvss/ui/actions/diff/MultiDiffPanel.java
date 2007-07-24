@@ -137,6 +137,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         allToggle.setVisible(false);
         fileTable.getComponent().setVisible(false);
         commitButton.setVisible(false);
+        refreshButton.setVisible(false);
+        updateButton.setVisible(false);
 
         // mimics refreshSetups()
         setups = new Setup[] {
