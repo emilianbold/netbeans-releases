@@ -59,7 +59,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 getClass().getClassLoader());
     }
     
-    public void install(Progress progress) throws InstallationException {
+    public void install(final Progress progress) throws InstallationException {
         final Product product = getProduct();
         final File installLocation = product.getInstallationLocation();
         final FilesList filesList = product.getInstalledFiles();
@@ -273,7 +273,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     if (gfLocation != null) {
                         NetBeansUtils.setJvmOption(
                                 installLocation,
-                                JVM_OPTION_NAME,
+                                GLASSFISH_JVM_OPTION_NAME,
                                 gfLocation.getAbsolutePath(),
                                 true);
                         break;
@@ -287,10 +287,41 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
         
         /////////////////////////////////////////////////////////////////////////////
+        try {
+            progress.setDetail(getString("CL.install.tomcat.integration")); // NOI18N
+            
+            final List<Product> tomcats =
+                    Registry.getInstance().getProducts("tomcat");
+            for (Product tomcat: tomcats) {
+                if (tomcat.getStatus() == Status.INSTALLED) {
+                    final File tcLocation = tomcat.getInstallationLocation();
+                    
+                    if (tcLocation != null) {
+                        NetBeansUtils.setJvmOption(
+                                installLocation,
+                                TOMCAT_JVM_OPTION_NAME_HOME,
+                                tcLocation.getAbsolutePath(),
+                                true);
+                        NetBeansUtils.setJvmOption(
+                                installLocation,
+                                TOMCAT_JVM_OPTION_NAME_TOKEN,
+                                "" + System.currentTimeMillis(),
+                                true);
+                        break;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.tomcat.integration"), // NOI18N
+                    e);
+        }
+        
+        /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
     
-    public void uninstall(Progress progress) throws UninstallationException {
+    public void uninstall(final Progress progress) throws UninstallationException {
         final Product product = getProduct();
         final File installLocation = product.getInstallationLocation();
         
@@ -494,8 +525,14 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         "Development" // NOI18N
     };
     
-    public static final String JVM_OPTION_NAME =
+    public static final String GLASSFISH_JVM_OPTION_NAME =
             "-Dcom.sun.aas.installRoot"; // NOI18N
+    
+    public static final String TOMCAT_JVM_OPTION_NAME_TOKEN =
+            "-Dorg.netbeans.modules.tomcat.autoregister.token"; // NOI18N
+    
+    public static final String TOMCAT_JVM_OPTION_NAME_HOME =
+            "-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome"; // NOI18N
     
     public static final long REQUIRED_XMX_VALUE =
             192 * NetBeansUtils.M;
