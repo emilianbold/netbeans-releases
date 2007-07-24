@@ -27,7 +27,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.subversion.Annotator;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -170,6 +169,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
             this.variable = variable;
         }
          
+        @Override
         public String toString() {
             return description;
         }
@@ -206,6 +206,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         dialog.getAccessibleContext().setAccessibleDescription(acsd);
         
         labelsPanel.labelsList.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if(e.getClickCount() == 2) {
                     dialog.setVisible(false);
@@ -217,7 +218,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         
         if(DialogDescriptor.OK_OPTION.equals(dialogDescriptor.getValue())) {
             
-            Object[] selection = (Object[])labelsPanel.labelsList.getSelectedValues();
+            Object[] selection = labelsPanel.labelsList.getSelectedValues();
             
             String variable = "";
             for (int i = 0; i < selection.length; i++) {
