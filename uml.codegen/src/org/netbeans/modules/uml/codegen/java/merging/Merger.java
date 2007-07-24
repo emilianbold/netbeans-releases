@@ -147,6 +147,8 @@ public class Merger implements IUMLParserEventsSink {
 	this.newFile = newFile;
 	this.oldFile = oldFile;
 	this.targetFile = targetFile;
+	this.parsedOld = parsedOld;
+	this.parsedNew = parsedNew;
 
 	fileBuilder = new FileBuilder(newFile, oldFile, targetFile);
 			    	

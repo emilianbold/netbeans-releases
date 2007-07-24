@@ -733,7 +733,7 @@ public class JavaCodegen implements ICodeGenerator
         
         public boolean accept(File dir, String name)
         {
-            return name.contains(searchName);
+            return name.toLowerCase().contains(searchName.toLowerCase());
         }
     }
 
