@@ -312,7 +312,6 @@ public final class SearchBar extends JToolBar {
         regexpCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Switch other checkbozes on/off
-                matchCaseCheckBox.setEnabled(!regexpCheckBox.isSelected());
                 wholeWordsCheckBox.setEnabled(!regexpCheckBox.isSelected());
                 // Put focus back in the incremental search textField
                 incrementalSearch();
