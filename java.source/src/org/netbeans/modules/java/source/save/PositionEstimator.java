@@ -829,6 +829,13 @@ public abstract class PositionEstimator {
                         seq.moveNext();
                         treeEnd = seq.offset();
                     }
+                } else {
+                    seq.move(treeEnd);
+                    if (seq.movePrevious() && nonRelevant.contains(seq.token().id())) {
+                        moveToSrcRelevant(seq, Direction.BACKWARD);
+                        seq.moveNext();
+                        treeEnd = seq.offset();
+                    };
                 }
                 
                 seq.move(treeStart);
