@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
@@ -164,11 +163,6 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
         add(txtPrjName, gridBagConstraints);
         txtPrjName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "A11Y_Desc_txt_Project")); // NOI18N
 
-        txtFilePath.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fireChangeEvent(evt);
-            }
-        });
         txtFilePath.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 JAXBBindingInfoPnl.this.focusLost(evt);
@@ -222,11 +216,6 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
 
         txtURL.setEditable(false);
         txtURL.setText(org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, "LBL_URL_Filler")); // NOI18N
-        txtURL.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fireChangeEvent(evt);
-            }
-        });
         txtURL.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 JAXBBindingInfoPnl.this.focusLost(evt);
@@ -405,6 +394,26 @@ public class JAXBBindingInfoPnl extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void focusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_focusLost
+    if (evt.getSource() == this.txtFilePath){
+        String str = this.txtFilePath.getText();
+        if ((this.prevSchemaPath != null) && (this.prevSchemaPath.equals(str))){
+            //Field has not changed, skip guessing 
+        } else {
+            guessSchemaType(str);
+            this.prevSchemaPath = str;
+        }        
+    }
+    
+    if (evt.getSource() == this.txtURL){
+        String str = this.txtURL.getText();
+        if ((this.prevSchemaURL != null) && (this.prevSchemaURL.equals(str))){
+            //Field has not changed, skip guessing 
+        } else {
+            guessSchemaType(str);
+            this.prevSchemaURL = str;
+        }        
+    }
+    
     this.wizPanel.fireChangeEvent();
 }//GEN-LAST:event_focusLost
 
@@ -562,7 +571,8 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
             files.addAll(getBindingFiles());
             FileListPanel flp = new FileListPanel();
             flp.setFiles(files);
-            DialogDescriptor dd = new DialogDescriptor(flp, "Binding Files");
+            DialogDescriptor dd = new DialogDescriptor(flp, 
+                    getMsg("LBL_DD_TTL_BindingFile")); //NOI18N
             Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
             dlg.setVisible(true);
             if (dd.getValue() == DialogDescriptor.OK_OPTION){
@@ -584,6 +594,27 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         this.wizPanel.fireChangeEvent();
 }//GEN-LAST:event_btnSelectionHandler
 
+    private void guessSchemaType(String str){
+        if (str != null){
+            str = str.toLowerCase();
+            if (str.endsWith("wsdl")){ //NOI18N
+                this.cmbSchemaType.setSelectedItem(SCHEMA_TYPE_WSDL);
+            }
+
+            if (str.endsWith("xsd")){ //NOI18N
+                this.cmbSchemaType.setSelectedItem(SCHEMA_TYPE_XML);
+            }
+
+            if (str.endsWith("dtd")){ //NOI18N
+                this.cmbSchemaType.setSelectedItem(SCHEMA_TYPE_DTD);
+            }
+
+            if ( str.endsWith("rng") || str.endsWith("relaxng")){ //NOI18N
+                this.cmbSchemaType.setSelectedItem(SCHEMA_TYPE_RELAXNG);
+            }                
+        }        
+    }
+    
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -624,36 +655,49 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     private javax.swing.Box optionsBox;
 
     // Custom variables
-    private static java.util.Vector<ComboElement<String, String>> schemaTypes = null;
+    private static java.util.Vector<ComboElement<String, String>> SCHEMA_TYPES = null;
+    private static ComboElement<String, String> SCHEMA_TYPE_WSDL = 
+            new JAXBBindingInfoPnl.ComboElement<String, String>(getMessage(
+            "LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_WSDL), //NOI18N
+            JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_WSDL) ;
+    private static ComboElement<String, String> SCHEMA_TYPE_XML = 
+            new JAXBBindingInfoPnl.ComboElement<String, String>(getMessage(
+            "LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_XML_SCHEMA), //NOI18N
+            JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_XML_SCHEMA);
+    private static ComboElement<String, String> SCHEMA_TYPE_RELAXNG = 
+            new JAXBBindingInfoPnl.ComboElement<String, String>(getMessage(
+            "LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG), //NOI18N
+            JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG);
+    private static ComboElement<String, String> SCHEMA_TYPE_RELAXNG_CMPCT = 
+            new JAXBBindingInfoPnl.ComboElement<String, String>(getMessage(
+            "LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG_COMPACT), //NOI18N
+            JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG_COMPACT);
+    private static ComboElement<String, String> SCHEMA_TYPE_DTD = 
+            new JAXBBindingInfoPnl.ComboElement<String, String>(getMessage(
+            "LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD), //NOI18N
+            JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD) ;
+            
     private static java.util.Map<String, String> LAST_BROWSED_DIRS = new java.util.HashMap<String, String>();
     private JAXBWizBindingCfgPanel wizPanel = null;
     private Vector<String> origBindingFiles = new Vector<String>();
-
+    private String prevSchemaPath = null;
+    private String prevSchemaURL = null;    
+    
     private static String getMessage(String key){
         return org.openide.util.NbBundle.getMessage(JAXBBindingInfoPnl.class, key);
     }
 
     private static synchronized java.util.Vector<ComboElement<String, String>>
             getSchemaTypes(){
-        if (schemaTypes == null){
-            schemaTypes = new java.util.Vector<ComboElement<String, String>>();
-        schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
-                getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_XML_SCHEMA), //NOI18N
-                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_XML_SCHEMA));
-        schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
-                getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG), //NOI18N
-                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG));
-        schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
-                getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG_COMPACT), //NOI18N
-                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_RELAX_NG_COMPACT));
-        schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
-                getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD), //NOI18N
-                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_DTD));
-        schemaTypes.add(new JAXBBindingInfoPnl.ComboElement<String, String>(
-                getMessage("LBL_" + JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_WSDL), //NOI18N
-                JAXBWizModuleConstants.JAXB_SCHEMA_TYPE_WSDL));
+        if (SCHEMA_TYPES == null){
+            SCHEMA_TYPES = new java.util.Vector<ComboElement<String, String>>();
+            SCHEMA_TYPES.add(SCHEMA_TYPE_XML);
+            SCHEMA_TYPES.add(SCHEMA_TYPE_RELAXNG);
+            SCHEMA_TYPES.add(SCHEMA_TYPE_RELAXNG_CMPCT);
+            SCHEMA_TYPES.add(SCHEMA_TYPE_DTD);
+            SCHEMA_TYPES.add(SCHEMA_TYPE_WSDL);
         }
-        return schemaTypes;
+        return SCHEMA_TYPES;
     }
 
     private static synchronized String getLastBrowsedDir(String type){
@@ -719,6 +763,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     public void setSchemaURL(String url){
         this.txtURL.setText(url);
         this.rdoSelectURL.setSelected(true);
+        this.prevSchemaURL = url;
     }
 
     public void setPackageName(String pkgName){
@@ -767,6 +812,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
 
     public void setSchemaFile(String schemaFile){
         this.txtFilePath.setText(schemaFile);
+        this.prevSchemaPath = schemaFile;
     }
 
     public void setBindingFiles(List<String> files){
