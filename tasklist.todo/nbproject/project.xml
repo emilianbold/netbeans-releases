@@ -136,9 +136,6 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.websvc.clientapi</code-name-base>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.modules.xml.catalog</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
