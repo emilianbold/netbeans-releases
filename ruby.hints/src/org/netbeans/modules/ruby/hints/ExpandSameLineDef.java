@@ -86,6 +86,12 @@ public class ExpandSameLineDef implements AstRule {
             ISourcePosition pos = node.getPosition();
             try {
                 BaseDocument doc = (BaseDocument)info.getDocument();
+                
+                if (doc == null) {
+                    // Run on a file that was just closed
+                    return;
+                }
+                
                 if (Utilities.getRowEnd(doc, pos.getStartOffset()) == Utilities.getRowEnd(doc, pos.getEndOffset())) {
                     // Block is on a single line
                     // TODO - add a hint to turn off this hint?
