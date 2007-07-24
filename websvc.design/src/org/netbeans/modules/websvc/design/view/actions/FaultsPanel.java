@@ -47,6 +47,7 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.util.NbBundle;
 
@@ -159,7 +160,7 @@ public final class FaultsPanel extends javax.swing.JPanel {
     private void populateWithElements(WSDLModel wsdlModel, SchemaModel schemaModel, List<ReferenceableSchemaComponent> schemaTypes) {
         Collection<GlobalElement> elements = schemaModel.getSchema().getElements();
         for(GlobalElement element : elements) {
-            if (!isUsedInOperation(wsdlModel, element)) {
+            if (!Utils.isUsedInOperation(wsdlModel, element)) {
                 schemaTypes.add(element);
             }
         }
@@ -172,19 +173,6 @@ public final class FaultsPanel extends javax.swing.JPanel {
             schemaTypes.add(type);
         }
         
-    }
-    
-    private boolean isUsedInOperation(WSDLModel wsdlModel, GlobalElement element) {
-        Collection<Message> messages = wsdlModel.getDefinitions().getMessages();
-        for (Message message:messages) {
-            Collection<Part> parts = message.getParts();
-            for (Part part:parts) {
-                if (element.equals(part.getElement().get())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
     
     public List<ParamModel> getFaults() {

@@ -36,6 +36,7 @@ import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.Types;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 
 /**
@@ -142,12 +143,13 @@ public class Utils {
         
      }
     
-    private static boolean isUsedInOperation(WSDLModel wsdlModel, GlobalElement element) {
+    public static boolean isUsedInOperation(WSDLModel wsdlModel, GlobalElement element) {
         Collection<Message> messages = wsdlModel.getDefinitions().getMessages();
         for (Message message:messages) {
             Collection<Part> parts = message.getParts();
             for (Part part:parts) {
-                if (element.equals(part.getElement().get())) {
+                NamedComponentReference<GlobalElement> partElement = part.getElement();
+                if (partElement != null && element.equals(partElement.get())) {
                     return true;
                 }
             } 
