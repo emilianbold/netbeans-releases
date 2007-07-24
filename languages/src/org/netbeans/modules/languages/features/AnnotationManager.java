@@ -28,6 +28,7 @@ import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
@@ -41,6 +42,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.languages.EditorParser;
 
 
@@ -122,11 +125,22 @@ public class AnnotationManager extends ASTEvaluator {
                             (String) mark.getValue ("type"),
                             message
                         );
-                        doc.addAnnotation (
-                            doc.createPosition (item.getOffset ()),
-                            item.getLength (),
-                            la
-                        );
+   
+                        if (item.getLength() == 0) {
+                            //when the ASTItem length is zero we need to find an appropriate token to signal the error 
+                            TokenHierarchy hi = TokenHierarchy.get(doc);
+                            TokenSequence ts = hi.tokenSequence();
+                            ts.move(item.getOffset());
+                            //test if next token contains the ASTItem's language embedding
+                            if(!(ts.moveNext() && testCreateAnnotation(hi, ts, item, la)))
+                                //if not, do the same with previous token
+                              if(!(ts.movePrevious() && testCreateAnnotation(hi, ts, item, la))) {
+                                  //give up - use default annotation location
+                                  doc.addAnnotation(doc.createPosition(item.getOffset()), item.getLength(), la);
+                              }
+                        } else {
+                            doc.addAnnotation(doc.createPosition(item.getOffset()), item.getLength(), la);
+                        }
                         annotations.add (la);
                     }
                 } catch (BadLocationException ex) {
@@ -137,6 +151,22 @@ public class AnnotationManager extends ASTEvaluator {
         });
     }
 
+    private boolean testCreateAnnotation(TokenHierarchy hi, TokenSequence ts, ASTItem item, LanguagesAnnotation la) throws BadLocationException {
+        if (ts.language().mimeType().equals(item.getMimeType())) {
+                Token t = ts.token();
+                doc.addAnnotation(doc.createPosition(t.offset(hi)), t.length(), la);
+                return true;
+            } else {
+                ts = ts.embedded();
+                if(ts == null) {
+                    return false;
+                } else {
+                    ts.moveNext();
+                    return testCreateAnnotation(hi, ts, item, la);
+                }
+            }
+    }
+    
     
     // innerclasses ............................................................
     
