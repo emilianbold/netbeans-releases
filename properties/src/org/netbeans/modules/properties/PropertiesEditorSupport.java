@@ -894,7 +894,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         /** Helper method. Removes save cookie from the entry. */
         private void removeSaveCookie() {
             // remove Save cookie from the entry
-            SaveCookie sc = (SaveCookie)entry.getCookie(SaveCookie.class);
+            SaveCookie sc = entry.getCookie(SaveCookie.class);
             
             if (sc != null && sc.equals(this)) {
                 entry.getCookieSet().remove(this);
