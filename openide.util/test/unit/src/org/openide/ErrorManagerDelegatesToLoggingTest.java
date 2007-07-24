@@ -19,16 +19,16 @@
 
 package org.openide;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringBufferInputStream;
 import java.io.StringWriter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
-import junit.framework.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.Lookup;
 
 /** Test for general ErrorManager functionality.
  *
@@ -36,18 +36,18 @@ import org.netbeans.junit.*;
  */
 public class ErrorManagerDelegatesToLoggingTest extends NbTestCase {
 
-    public ErrorManagerDelegatesToLoggingTest(java.lang.String testName) {
+    public ErrorManagerDelegatesToLoggingTest(String testName) {
         super(testName);
     }
     
     protected void setUp () throws IOException {
-        assertNull ("No ErrorManager in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrorManager.class));
+        assertNull("No ErrorManager in lookup", Lookup.getDefault().lookup(ErrorManager.class));
         
         
         String config = 
             "handlers=" + MyHandler.class.getName() + "\n" +
             ".level=50\n";
-        LogManager.getLogManager().readConfiguration(new StringBufferInputStream(config));
+        LogManager.getLogManager().readConfiguration(new ByteArrayInputStream(config.getBytes()));
 
         MyHandler.messages.setLength(0);
     }
@@ -87,8 +87,8 @@ public class ErrorManagerDelegatesToLoggingTest extends NbTestCase {
         Throwable value = ErrorManager.getDefault ().annotate(t, ErrorManager.INFORMATIONAL, null, null, null, null);
         assertEquals ("Annotate must return the same exception", t, value);
         
-        value = ErrorManager.getDefault ().copyAnnotation (t, new Throwable ());
-        assertEquals ("copyAnnotation must return the same exception", t, value);
+        @SuppressWarnings("deprecation") Throwable _value = ErrorManager.getDefault().copyAnnotation(t, new Throwable());
+        assertEquals ("copyAnnotation must return the same exception", t, _value);
         
         value = ErrorManager.getDefault ().attachAnnotations(t, new ErrorManager.Annotation[0]);
         assertEquals ("attachAnnotations must return the same exception", t, value);
