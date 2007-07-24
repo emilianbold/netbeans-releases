@@ -128,24 +128,7 @@
       <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting"/>
     </tocitem>
   </tocitem>
-  <tocitem text="Refactoring Java Source">
-    <tocitem text="About Refactoring Java Source" target="refactor.aboutRefactoring" /> 
-    <tocitem text="Undoing Refactoring Changes" target="refactor.Undo" />   
-    <tocitem text="Finding Class, Method, and Field Usages" target="refactor.findClass" /> 
-    <tocitem text="Renaming a Class or Interface" target="refactor.renameClass" />
-    <tocitem text="Renaming a Field or Method" target="refactor.renameField"/>       
-    <tocitem text="Moving a Java Object to Another Package" target="refactor.moveClass" />
-    <tocitem text="Moving an Inner Class One Level Up" target="refactor.moveInner"/>
-    <tocitem text="Moving a Class Member to a Superclass" target="refactor.pullUp"/>
-    <tocitem text="Moving a Class Member to a Subclass" target="refactor.pushDown"/>
-    <tocitem text="Encapsulating a Field" target="refactor.encapsulateField" /> 
-    <tocitem text="Changing a Method's Signature" target="refactor.changeParameters"/>
-    <tocitem text="Extracting a Method" target="refactor.extractMethod"/>
-    <tocitem text="Extracting a Superclass" target="refactor.extractSuperclass"/>
-    <tocitem text="Extracting an Interface" target="refactor.extractInterface"/>
-    <tocitem text="Using a Supertype Where Possible" target="refactor.useSupertype"/>   
-    <tocitem text="Safely Deleting Java Code" target="refactor.safeDelete"/>    
-  </tocitem>
+
 
       <tocitem text="Building Java Applications" ></tocitem>
   <tocitem text="Running Java Applications" >  </tocitem>
