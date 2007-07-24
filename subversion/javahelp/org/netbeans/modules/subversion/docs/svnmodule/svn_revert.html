@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <!--
+         * 
+         *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+         *     Use is subject to license terms.
+         *
+        -->
+        <title>Reverting Subversion Modifications</title>
+        <link rel="StyleSheet"
+              href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Reverting Subversion Modifications</h2>
+        
+        <p>Occasionally it may be necessary to revert changes that you have made in a local copy of a 
+            file so that it matches the repository version. The IDE enables you to do this using the 
+            Revert Modifications command.</p>
+            
+        <p><strong>To revert changes made in a file:</strong></p>
+        
+        <ul>
+            <li>In the Projects, Files, Favorites, or Versioning window, right-click the versioned file 
+                for which you want to revert changes, and choose Revert Modifications.
+                <br><br>
+                The <a href="csh/svn_revert_mod_dialog.html">Revert Modifications dialog box</a> opens, 
+                enabling you to specify criteria.</li>
+            <li>In the Revert Modifications dialog box, select one of three options:
+                <ul>
+                    <li><strong>Revert Local Changes.</strong> Reverts any changes made in your local 
+                        working copy to the previously committed or updated version.</li>
+                    <li><strong>Revert Modifications from Single Commit.</strong> Reverts the local 
+                        working copy to the repository revision made prior to the previous commit. (Specify 
+                        a revision number in the Revision text field.)</li>
+                    <li><strong>Revert Modifications from Previous Commits.</strong> Reverts the local 
+                        working copy to a specified revision from the repository. (Specify starting and 
+                        ending revision numbers in the corresponding text fields.)</li>
+                </ul></li>
+            <li>Click Revert. The IDE reverts any changes in the local file to a state that corresponds with
+                the repository version, according to the specified parameters.</li>
+        </ul>
+        
+        <dl>
+            <dt> <a name="seealso">See Also</a></dt>
+            <dd> <a href="svn_mergeresolve.html">Resolving Merge Conflicts</a></dd>
+            <dd> <a href="svn_merge.html">Merging File Revisions in Subversion</a></dd>
+            <dd> <a href="svn_updating.html">Updating Files in a Subversion Working Directory</a></dd>
+            
+        </dl>
+        <hr> <small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

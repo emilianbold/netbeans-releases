@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
@@ -12,17 +12,19 @@
 
     <mapID target="svn_about" url="svnmodule/svn_about.html" />
     <mapID target="svn_overview" url="svnmodule/svn_overview.html" />
-    <mapID target="svn_quickref" url="svnmodule/svn_quickref.html" />        
+    <mapID target="svn_quickref" url="svnmodule/svn_quickref.html" />
+    <mapID target="svn_status" url="svnmodule/svn_status.html" />      
+    <mapID target="svn_histories" url="svnmodule/svn_histories.html" />                  
     <mapID target="svn_setup" url="svnmodule/svn_setup.html" />        
-
     <mapID target="svn_checkout" url="svnmodule/svn_checkout.html" />
     <mapID target="svn_updating" url="svnmodule/svn_updating.html" />
     <mapID target="svn_diff" url="svnmodule/svn_diff.html" />
     <mapID target="svn_commit" url="svnmodule/svn_commit.html" />
+    <mapID target="svn_revert" url="svnmodule/svn_revert.html" />
     <mapID target="svn_projects" url="svnmodule/svn_project-system.html" />
-    <mapID target="svn_status" url="svnmodule/svn_status.html" />
     <mapID target="svn_merge" url="svnmodule/svn_merge.html" />
     <mapID target="svn_mergeresolve" url="svnmodule/svn_mergeresolve.html" />
+    <mapID target="svn_patch" url="svnmodule/svn_patch.html" />
 
 
 <!-- ========================== -->

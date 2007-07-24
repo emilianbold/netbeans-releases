@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 <!--
-*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
@@ -14,22 +14,19 @@
             <tocitem text="Working with Subversion" target="svn_overview" /> 
             <tocitem text="Subversion Tasks: Quick Reference" target="svn_quickref" /> 
             <tocitem text="Viewing File Status Information" target="svn_status" />
- <!--           <tocitem text="Working with Version Histories" target="svn_histories" />-->
+            <tocitem text="Working with Version Histories" target="svn_histories" />
             <tocitem text="Setting Up Subversion" target="svn_setup" />
-
             <tocitem text="Checking Out Files from a Subversion Repository" target="svn_checkout" /> 
             <tocitem text="Updating Files in a Subversion Working Directory" target="svn_updating" />
             <tocitem text="Comparing File Revisions in Subversion" target="svn_diff" /> 
             <tocitem text="Committing Local Changes to a Remote Repository" target="svn_commit" /> 
-<!--            <tocitem text="Reverting Subversion Modifications" target="svn_revert" />     -->       
-            <tocitem text="Placing Project Metadata Into Subversion" target="svn_projects" />               
-
+            <tocitem text="Reverting Subversion Modifications" target="svn_revert" />       
+            <tocitem text="Placing Project Metadata Into Subversion" target="svn_projects" />
 <!--            <tocitem text="Working with Tags" target="svn_tagging" />  -->
 <!--            <tocitem text="Working with Branches" target="svn_branches" />  -->
             <tocitem text="Merging File Revisions in Subversion" target="svn_merge" /> 
             <tocitem text="Resolving Merge Conflicts" target="svn_mergeresolve" /> 
-<!--            <tocitem text="Creating and Applying a Patch" target="svn_patch" />-->
-
+            <tocitem text="Creating and Applying a Patch" target="svn_patch" />
         </tocitem>
         </tocitem>
     </tocitem>

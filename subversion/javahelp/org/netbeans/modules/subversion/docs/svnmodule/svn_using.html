@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+    <head>
+        <!--
+        *
+        *     Copyright �  2006 Sun Microsystems, Inc. All rights reserved.
+        *     Use is subject to license terms.
+        *
+        -->
+        <title>Using Subversion in the IDE</title>
+        <link rel="StyleSheet"
+              href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Using Subversion in the IDE</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The IDE's Subversion support enables you to manage the evolution of changes
+            in version-controlled files by displaying status information directly
+            in the IDE's various windows (Projects, Files, Versioning, etc.) so
+            that you can call Subversion commands as you work.</p>
+        
+        <h3><a name="monitor"></a>Tracking Changes in the Versioning Window</h3>
+        
+        <p>The Versioning window presents a real-time view of the changes in selected 
+            directories. It opens at the bottom of the IDE whenever you view changes 
+            made in version-controlled files. By default, the Versioning window displays 
+            a list of all modified files within the selected package or folder.</p>
+        
+        <p>You can open the Versioning window by choosing Versioning &gt; Subversion &gt; 
+            Show Changes from the main menu. Alternately, you can right-click any versioned 
+            project, directory, or file and choose Subversion &gt; Show Changes.</p>        
+        
+        <p>Using the filter buttons in the toolbar, you can limit the list of displayed 
+            files to either locally or remotely modified files. The Versioning window 
+            toolbar also includes buttons that enable you to invoke the most common 
+            Subversion tasks on all files displayed in the list, such as committing, updating, 
+            refreshing status, and performing diff's.</p>
+        
+        <p>The following Subversion commands are available in the Versioning window's toolbar:</p>
+        
+        <table border="1" cellpadding="5">
+            <tr align="center">
+                <th>Icon</th>
+                <th width="20">Name</th>
+                <th>Function</th>
+            </tr>
+            <tr align="center">
+                <td><img src="images/refresh.png"></td>
+                <td><b>Refresh Status</b></td>
+                <td align="left">Refreshes the status of the selected files and folders. Files displayed in 
+                the Versioning window can be refreshed to reflect any changes you have made.</td>
+            </tr>
+            <tr align="center">
+                <td><img src="images/diff.png"></td>
+                <td><b>Diff All</b></td>
+                <td align="left">Opens a Diff window providing you with a side-by-side comparison of your local 
+                copies and the versions maintained in the repository.</td>
+            </tr>     
+            <tr align="center">
+                <td><img src="images/update.png"></td>
+                <td><b>Update All</b></td>
+                <td align="left">Updates all selected files in the repository.</td>
+            </tr>
+            <tr align="center">
+                <td><img src="images/commit.png"></td>
+                <td><b>Commit All</b></td>
+                <td align="left">Enables you to commit local changes to the repository.</td>
+            </tr>            
+        </table>
+        
+        <h3>Calling Version Control Commands</h3>
+        
+        <p>You can call Subversion commands on versioned-controlled files (those
+            existing within a registered working directory) using the Subversion menu in
+            the IDE's main window. In addition, many Subversion commands are available in
+            the context-sensitive menu for a selected file or directory.</p>
+        
+        <p>You can access the Subversion commands context-sensitive menu by right-clicking 
+            a file or directory in any of the following:</p>
+        
+        <ul>
+            <li><b>Projects window</b></li>
+            <li><b>Files window</b></li>
+            <li><b>Favorites window </b></li>
+            <li><b>Versioning window</b></li>
+            <li><b>Search Histories window </b></li>
+            <li><b>Search Results window</b></li>
+            <li><b>Source Editor</b></li>
+        </ul>
+        
+        <ul class="note">
+            <li>The IDE's status bar, located in the bottom right of the interface, displays the
+            current command's status.</li>
+        </ul>
+        
+        <dl>
+            <dt> <a name="seealso">See Also</a></dt>
+            <dd> <a href="svn_commit.html">Committing Local Changes to a Subversion Repository</a></dd>
+            <dd> <a href="svn_diff.html">Comparing File Revisions in Subversion</a></dd>
+            <dd> <a href="svn_setup.html">Setting Up Subversion</a></dd>
+        </dl>
+        <hr> <small><a href="../credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+            <tbody>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+            </tbody>
+        </table>
+    </body>
+</html>

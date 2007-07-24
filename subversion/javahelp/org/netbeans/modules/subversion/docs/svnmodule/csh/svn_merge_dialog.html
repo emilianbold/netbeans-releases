@@ -1,71 +1,76 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-    <!--
+    <head>
+        <!--
         * 
-        *     Copyright � 2006 Sun Microsystems, Inc. All rights reserved.
+        *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
         *     Use is subject to license terms.
         * 
         -->
-    <title>Subversion: Merge Dialog Box</title>
-    <link rel="StyleSheet"
-          href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-    <h2>Subversion: Merge Dialog Box</h2>
-    <p><small><a href="#seealso">See Also</a></small></p>
-    <p>The Subversion Merge dialog box enables you to incorporate changes from a 
-        specific repository revision into your local working copy of a file or folder. 
-    You can also specify changes from a given range of revisions from the repository.</p>
-    <p>The Merge dialog box can be accessed by right-clicking a version-controlled file 
-    or folder and choosing Subversion &gt; Merge Changes.
-    <p>In the Merge Changes dialog box, you must specify the following fields:</p>
-    <ul>
-        <li><b>Merge From.</b> Select one of the following types of merge:
-            <ul>
-                <li><b>One Repository Folder.</b> Port changes from one repository folder.</li>
-                <li><b>Two Repository Folders.</b> Port changes from two repository folders.</li>
-                <li><b>One Repository Folder Since Its Origin.</b> Port changes that have occurred 
-                    between the time of the folder's creation and the revision number that you specify 
-                in the Ending Revision Field.</li>
-            </ul>
-        </li>
-    </ul>
-    <p>Based on your selection above, the dialog dynamically updates to reflect the required fields.
-        For example, if you chose to merge from two repository folders, combo boxes for the first
-        and second repository folders display, and the preview is modified accordingly. Likewise, if 
-        you chose to merge from one repository folder since its origin, you need only specify the
-    location of the repository folder in the Repository Folder combo box.</p>
-    <ul>
-        <li><b>Repository Folder.</b> The folder from which you want to port changes. (If you 
-            select Two Repository Folders in the Merge From field, this field is replaced by 
-            First Repository Folder and Second Repository Folder fields.) Alternatively click 
-            Browse to open a dialog that displays all available folders in the repository.</li>
-        <li><b>Starting Revision.</b> If merging from a single revision, enter the revision 
-            number. If merging changes that occurred within a range of revisions, enter the 
-            starting point of that range.</li>
-        <li><b>Ending Revision.</b> If merging changes that occurred within a range of revisions, 
-            enter the ending point of that range.</li>
-    </ul>
-    <p>Click Merge to initiate the merge. The IDE incorporates any differences found in the selected 
-    revision to the local copy of the file. If merge conflicts occur, the file's status is updated to 
-    Merge Conflict to indicate this.</p>
-    <ul class="note">
-        <li>After merging file changes to your local working directory, you must still commit the 
-        changes using the Commit command in order for them to be added to the repository.</li>
-    </ul>
-    <dl>
-        <dt> <a name="seealso">See Also</a></dt>
-        <dd> <a href="../svn_merge.html">Merging File Revisions in Subversion</a></dd>            
-        <dd> <a href="../svn_mergeresolve.html">Resolving Merge Conflicts in Subversion</a></dd>
-    </dl>
-    <hr> <small><a href="../credits.html">Legal Notices</a></small>
-    <table border="0" cellpadding="50">
-        <tbody>
-            <tr>
-                <td>&nbsp;</td>
-            </tr>
-        </tbody>
-    </table>
-</body>
+        <title>Subversion: Merge Dialog Box</title>
+        <link href="nbdocs:/org/netbeans/modules/usersguide/ide.css" 
+              rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Subversion: Merge Dialog Box</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The Subversion Merge dialog box enables you to incorporate changes from a specific
+            repository revision into your local working copy of a file or folder. You can 
+            also specify changes from a given range of revisions from the repository.</p>
+            
+        <p>The Merge dialog box can be accessed by right-clicking a version-controlled file 
+            or folder and choosing Subversion &gt; Merge Changes.</p>
+            
+        <p>In the Merge Changes dialog box, you must specify the following fields:</p>
+        
+        <ul>
+            <li><strong>Merge From.</strong> Select one of the following types of merge:
+                <ul>
+                    <li><strong>One Repository Folder.</strong> Port changes from one repository folder.</li>
+                    <li><strong>Two Repository Folders.</strong> Port changes from two repository folders.</li>
+                    <li><strong>One Repository Folder Since Its Origin.</strong> Port changes that have 
+                        occurred between the time of the folder's creation and the revision number that 
+                        you specify in the Ending Revision Field.</li>
+                </ul>
+            </li>
+        </ul>
+        
+        <p>Based on your selection above, the dialog dynamically updates to reflect the required fields.
+            For example, if you chose to merge from two repository folders, combo boxes for the first
+            and second repository folders display, and the preview is modified accordingly. Likewise, if 
+            you chose to merge from one repository folder since its origin, you need only specify the
+        location of the repository folder in the Repository Folder combo box.</p>
+        
+        <ul>
+            <li><strong>Repository Folder.</strong> The folder from which you want to port changes. (If 
+                you select Two Repository Folders in the Merge From field, this field is replaced by 
+                First Repository Folder and Second Repository Folder fields.) Alternatively click Browse 
+                to open a dialog that displays all available folders in the repository.</li>
+            <li><strong>Starting Revision.</strong> If merging from a single revision, enter the revision 
+                number. If merging changes that occurred within a range of revisions, enter the starting
+                point of that range.</li>
+            <li><strong>Ending Revision.</strong> If merging changes that occurred within a range of 
+                revisions, enter the ending point of that range.</li>
+        </ul>
+        
+        <p>Click Merge to initiate the merge. The IDE incorporates any differences found in the selected 
+            revision to the local copy of the file. If merge conflicts occur, the file's status is updated to 
+            Merge Conflict to indicate this.</p>
+            
+        <ul class="note">
+            <li>After merging file changes to your local working directory, you must still commit the 
+            changes using the Commit command in order for them to be added to the repository.</li>
+        </ul>
+        
+        <dl>
+            <dt> <a name="seealso">See Also</a></dt>
+            <dd> <a href="../svn_merge.html">Merging File Revisions in Subversion</a></dd>            
+            <dd> <a href="../svn_mergeresolve.html">Resolving Merge Conflicts in Subversion</a></dd>
+        </dl>
+        <hr> <small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
 </html>
