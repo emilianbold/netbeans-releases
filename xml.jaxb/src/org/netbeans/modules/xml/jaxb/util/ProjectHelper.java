@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -78,6 +79,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -394,12 +396,75 @@ public class ProjectHelper {
         return result;
     }
 
-    public static Schema importResources(Project project, WizardDescriptor wiz) 
-            throws IOException {
+    private static String replace(String str, String replace,
+            String replaceWith){
+        return str.replaceFirst(replace, replaceWith);
+    }
+    
+    private static Map<String, String> getOrigNewLocationMap(Schema oSchema,
+            String newName, String schemasRootFolder){
+        Map<String, String> ret = new HashMap<String, String>();
+        String replace = schemasRootFolder + "/" + oSchema.getName(); //NOI8N
+        String replaceWith = schemasRootFolder + "/" + newName; //NOI8N
         
-        FileObject projectSchemaDir = getFOProjectSchemaDir(project);        
+        SchemaSources ss = oSchema.getSchemaSources();
+        SchemaSource[] ssArray = ss.getSchemaSource();
+        for (SchemaSource s : ssArray){
+            ret.put(s.getOrigLocation(), 
+                    replace(s.getLocation(), replace, replaceWith));
+        }
+        
+        Bindings bindings = oSchema.getBindings();
+        if (bindings != null){
+            Binding[] bs = bindings.getBinding();
+            for (Binding b : bs){
+                ret.put(b.getOrigLocation(), 
+                    replace(b.getLocation(), replace, replaceWith));
+            }
+        }
+        
+        Catalog c = oSchema.getCatalog();
+        if ((c != null) && (c.getOrigLocation() != null)){
+            ret.put(c.getOrigLocation(), 
+                    replace(c.getLocation(), replace, replaceWith));
+        }
+        return ret;
+    }
+     
+
+    private static void deleteStaleResources(Map<String, String> map, 
+            FileObject projRootFo) {
+
+        Set<String> keys = map.keySet();
+        FileObject fo = null;
+        String relPath = null;
+        for (String key: keys){
+            relPath = map.get(key);
+            fo = projRootFo.getFileObject(relPath);
+            if (fo != null){
+                try {
+                    fo.delete();
+                } catch (Exception ex){
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
+    public static Schema importResources(Project project, WizardDescriptor wiz,
+            Schema oSchema) throws IOException {
+        // If Schema name is changed rename the directory to 
+        // new name. We should not over write again Schema, 
+        // Binding and catalog files.
+        
+        Map<String, String> res2Skip = null;
+        Map<String, String> tobeRemoved = null;
+        String oSchemaName = null;
+
         FileObject projFO = project.getProjectDirectory();
+        FileObject projectSchemaDir = getFOProjectSchemaDir(project);        
         File projSchemasDir = FileUtil.toFile(projectSchemaDir);       
+
         Schema schema = new Schema();
         SchemaSources sss = new SchemaSources();
         SchemaSource ss = null;        
@@ -417,7 +482,55 @@ public class ProjectHelper {
         schema.setType((String) wiz.getProperty(
                 JAXBWizModuleConstants.SCHEMA_TYPE));
         schema.setXjcOptions(populateXjcOptions(wiz));
+                        
+        // If schema name is changed rename the old directory.
+        if (oSchema != null) {
+            //FileUtil.getRelativePath(projFO, newFileFO)
+            res2Skip = getOrigNewLocationMap(oSchema, schema.getName(),
+                    FileUtil.getRelativePath(projFO, projectSchemaDir));
+            tobeRemoved = new HashMap<String, String>();
+            tobeRemoved.putAll(res2Skip) ;
+
+            oSchemaName = oSchema.getName();
+
+            if (! oSchemaName.equals(schema.getName())){
+                File oSchemaDir = new File(projSchemasDir, oSchemaName);
+                // Do we need this?
+                if (!oSchemaDir.exists()) {
+                    oSchemaDir.mkdirs();
+                }
+
+                FileObject oSchemaDirFO = FileUtil.toFileObject(oSchemaDir);
+                FileLock fl = null;
+                try {
+                    fl = oSchemaDirFO.lock();
+                    oSchemaDirFO.rename(fl, schema.getName(), null);
+                } catch (Exception ex){
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    if (fl != null){
+                        fl.releaseLock();
+                    }
+                }
+            }
+        } else {
+            res2Skip = new HashMap<String, String>();
+            tobeRemoved = new HashMap<String, String>();
+        }
+
         
+        File schemaDir = new File(projSchemasDir, schema.getName());
+        if (!schemaDir.exists()) {
+            schemaDir.mkdirs();
+        }
+        
+        FileObject schemaDirFO = FileUtil.toFileObject(schemaDir);
+        File srcFile = null;
+        File targetFile = null;
+        FileObject newFileFO = null;
+        String url = null;
+        URL remoteSchema = null;
+
         List<String> xsdFileList = (List<String>) wiz.getProperty(
                 JAXBWizModuleConstants.XSD_FILE_LIST );
 
@@ -427,17 +540,6 @@ public class ProjectHelper {
         String catlogFile = (String) wiz.getProperty(
                 JAXBWizModuleConstants.CATALOG_FILE);
         
-        File schemaDir = new File(projSchemasDir, schema.getName());
-        if (!schemaDir.exists()) {
-            schemaDir.mkdirs();
-        }
-
-        FileObject schemaDirFO = FileUtil.toFileObject(schemaDir);
-        File srcFile = null;
-        File targetFile = null;
-        FileObject newFileFO = null;
-        String url = null;
-        URL remoteSchema = null;
         boolean srcLocTypeUrl = JAXBWizModuleConstants.SRC_LOC_TYPE_URL.equals(
                 (String) wiz.getProperty(
                 JAXBWizModuleConstants.SOURCE_LOCATION_TYPE));
@@ -447,37 +549,47 @@ public class ProjectHelper {
                 if (srcLocTypeUrl) {
                     // URL
                     url = xsdFileList.get(i);
-                    remoteSchema = new URL(url);
-                    try {
-                        newFileFO = retrieveResource(schemaDirFO, 
-                                remoteSchema.toURI());
-                    } catch (URISyntaxException ex) {
-                        throw new IOException(ex.getMessage());
-                    }
                     ss = new SchemaSource();
                     ss.setOrigLocation(url);
-                    ss.setLocation(FileUtil.getRelativePath(projFO, newFileFO));
                     ss.setOrigLocationType(
                             JAXBWizModuleConstants.SRC_LOC_TYPE_URL);
-                    sss.addSchemaSource(ss);
+                    sss.addSchemaSource(ss);                        
+                    tobeRemoved.remove(url);
+                    if (res2Skip.get(url) == null){
+                        remoteSchema = new URL(url);
+                        try {
+                            newFileFO = retrieveResource(schemaDirFO, 
+                                    remoteSchema.toURI());
+                        } catch (URISyntaxException ex) {
+                            throw new IOException(ex.getMessage());
+                        }
+                        ss.setLocation(FileUtil.getRelativePath(projFO,
+                                newFileFO));
+                    } else {
+                        ss.setLocation(res2Skip.get(url));
+                    }
                 } else {
                     // Local file
-                    srcFile = new File(xsdFileList.get(i));
-                    targetFile = new File(schemaDir, srcFile.getName());
-                    if (targetFile.exists()) {
-                        targetFile.delete();
-                    }
-
-                    newFileFO = retrieveResource(schemaDirFO, srcFile.toURI());
-
                     ss = new SchemaSource();
                     ss.setOrigLocation(xsdFileList.get(i));
-                    ss.setLocation(FileUtil.getRelativePath(projFO, newFileFO));
-                    sss.addSchemaSource(ss);
+                    sss.addSchemaSource(ss);                        
+                    tobeRemoved.remove(xsdFileList.get(i));
+                    if (res2Skip.get(xsdFileList.get(i)) == null){
+                        srcFile = new File(xsdFileList.get(i));
+                        targetFile = new File(schemaDir, srcFile.getName());
+                        if (targetFile.exists()) {
+                            targetFile.delete();
+                        }
+                        newFileFO = retrieveResource(schemaDirFO,
+                                srcFile.toURI());
+                        ss.setLocation(FileUtil.getRelativePath(projFO, 
+                                newFileFO));
+                    } else {
+                        ss.setLocation(res2Skip.get(xsdFileList.get(i)));
+                    }
                 }
             }            
         }
-
 
         if (bindingFileList != null){        
             // Binding files
@@ -485,46 +597,52 @@ public class ProjectHelper {
                 // All binding files are from local sources
                 // Assumes there is not name conflict between other binding and 
                 // Schema files.
-                srcFile = new File(bindingFileList.get(i));
+                binding = new Binding();
+                binding.setOrigLocation(bindingFileList.get(i));
+                bindings.addBinding(binding);                    
+                tobeRemoved.remove(bindingFileList.get(i));
+
+                if (res2Skip.get(bindingFileList.get(i)) == null){
+                    srcFile = new File(bindingFileList.get(i));
+                    targetFile = new File(schemaDir, srcFile.getName());
+                    if (targetFile.exists()) {
+                        targetFile.delete();
+                    }
+
+                    newFileFO = retrieveResource(schemaDirFO, srcFile.toURI());
+
+                    binding.setLocation(FileUtil.getRelativePath(projFO, 
+                            newFileFO));
+                } else {
+                    binding.setLocation(res2Skip.get(bindingFileList.get(i)));
+                }
+            }
+        }
+        
+        //Catalog file
+        if (catlogFile != null){
+            catalog.setOrigLocation(catlogFile);
+            tobeRemoved.remove(catlogFile);
+
+            if (res2Skip.get(catlogFile) == null){
+                srcFile = new File(catlogFile);
                 targetFile = new File(schemaDir, srcFile.getName());
                 if (targetFile.exists()) {
                     targetFile.delete();
                 }
 
-                newFileFO = retrieveResource(schemaDirFO, srcFile.toURI());
-
-                binding = new Binding();
-                binding.setOrigLocation(bindingFileList.get(i));
-                binding.setLocation(FileUtil.getRelativePath(projFO, 
-                        newFileFO));
-                bindings.addBinding(binding);
+                newFileFO = retrieveResource(schemaDirFO, srcFile.toURI());            
+                catalog.setLocation(FileUtil.getRelativePath(projFO,
+                    newFileFO));
+            } else {
+                catalog.setLocation(res2Skip.get(catlogFile));
             }
         }
         
-        //Catlog file
-        if (catlogFile != null){
-            srcFile = new File(catlogFile);
-            targetFile = new File(schemaDir, srcFile.getName());
-            if (targetFile.exists()) {
-                targetFile.delete();
-            }
-
-            newFileFO = retrieveResource(schemaDirFO, srcFile.toURI());            
-            catalog.setOrigLocation(catlogFile);
-            catalog.setLocation(FileUtil.getRelativePath(projFO, newFileFO));
-        }
-        
+        deleteStaleResources(tobeRemoved, projFO);
         return schema;
     }
 
-    public static Schema importResourcesIfrequired(Project project, 
-            WizardDescriptor wiz, Schema schema) throws IOException {
-        Schema newSchema = null;
-        // XXX TODO
-        return newSchema;
-    }
-    
-    
     public static AntProjectHelper getAntProjectHelper(Project project) {
         try {
             Method getAntProjectHelperMethod = project.getClass().getMethod(
@@ -635,7 +753,8 @@ public class ProjectHelper {
                 saveProjectProperty(prj, RUN_JVM_ARGS_KEY, RUN_JVM_ARGS_VAL);                    
             } else {
                 saveProjectProperty(prj, PROP_ENDORSED, endorsedDirs);
-                saveProjectProperty(prj, PROP_SYS_RUN_ENDORSED, PROP_SYS_RUN_ENDORSED_VAL);
+                saveProjectProperty(prj, PROP_SYS_RUN_ENDORSED, 
+                        PROP_SYS_RUN_ENDORSED_VAL);
             }
 
             try {
@@ -863,4 +982,17 @@ public class ProjectHelper {
             }
         }                
     }        
+
+    public static void cleanupLocalSchemaDir(Project project, Schema schema){
+        FileObject projectSchemasDir = getFOProjectSchemaDir(project);        
+        FileObject schemaDir = projectSchemasDir.getFileObject(
+                schema.getName());
+        if (schemaDir != null){
+            try {
+                schemaDir.delete();
+            } catch (Exception ex){
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
 }

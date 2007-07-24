@@ -169,10 +169,23 @@ public class JAXBWizardRootNode extends AbstractNode {
         private final class ModelListener extends JAXBWizEventListenerAdapter {
             @Override
             public void bindingAdded(JAXBWizEvent event) {
-                if (event.getSource() instanceof Schemas){
-                    
+                if (event.getSource() instanceof Schemas){                    
                     updateBindingKeys((Schemas) event.getSource());    
                 }
+            }
+
+            @Override
+            public void bindingChanged(JAXBWizEvent event) {
+                if (event.getSource() instanceof Schemas){   
+                    Schema schema = (Schema) event.getNewValue();
+                    Schema oSchema = (Schema) event.getOldValue();
+                    String nName = schema.getName();
+                    String oName = oSchema.getName();
+                    if ((nName != null) && (!nName.equals(oName))){
+                        // Name change
+                        updateBindingKeys((Schemas) event.getSource());    
+                    }
+                }                
             }
             
             @Override

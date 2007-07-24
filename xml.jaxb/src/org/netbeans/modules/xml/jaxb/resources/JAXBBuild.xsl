@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <xsl:template match="/">
         <xsl:comment>
             *** GENERATED FROM xml_binding_cfg.xml - DO NOT EDIT  ***
-            *** EDIT xml_binding_cfg.xml or better configure thru JAXB Wizard.  ***
+            *** Configure thru JAXB Wizard.                       ***
         </xsl:comment>
         <xsl:element name="project">
             <xsl:attribute name="name"><xsl:value-of select="s:schemas/@projectName"/>_jaxb</xsl:attribute>
@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:attribute name="name">jaxb-code-generation</xsl:attribute>
                 <xsl:attribute name="depends">xjc-typedef-target</xsl:attribute>            
                 <mkdir dir="build/generated/addons/jaxb"/>
+                <mkdir dir="build/generated/jaxbCache"/>
                 <mkdir dir="${{build.classes.dir}}"/>
                 <xsl:apply-templates select="s:schemas/s:schema"/>
                 <javac destdir="${{build.classes.dir}}" srcdir="build/generated/addons/jaxb" source="${{javac.source}}"  target="${{javac.target}}">
@@ -48,11 +49,15 @@ Microsystems, Inc. All Rights Reserved.
         </xsl:element>
     </xsl:template>
     <xsl:template match="s:schema">
+        <xsl:element name="mkdir">
+            <xsl:attribute name="dir">build/generated/jaxbCache/<xsl:value-of select="./@name"/></xsl:attribute>
+        </xsl:element>
+        
         <xsl:element name="xjc">
             <xsl:if test="string-length(@package) &gt; 0">
                 <xsl:attribute name="package"><xsl:value-of select="./@package"/></xsl:attribute>
             </xsl:if>
-            <xsl:attribute name="destdir"><xsl:value-of select="/s:schemas/@destdir"/></xsl:attribute>            
+            <xsl:attribute name="destdir">build/generated/jaxbCache/<xsl:value-of select="./@name"/></xsl:attribute>            
 
             <xsl:for-each select="s:catalog">
                 <xsl:if test="string-length(./@location) &gt; 0">
@@ -78,10 +83,17 @@ Microsystems, Inc. All Rights Reserved.
             </xsl:element>
 
             <xsl:element name="produces">
-                <xsl:attribute name="dir"><xsl:value-of select="/s:schemas/@destdir"/></xsl:attribute>
+                <xsl:attribute name="dir">build/generated/jaxbCache/<xsl:value-of select="./@name"/></xsl:attribute>
             </xsl:element>
-            
         </xsl:element>
+        
+        <xsl:element name="copy">
+            <xsl:attribute name="todir"><xsl:value-of select="/s:schemas/@destdir"/></xsl:attribute>
+            <xsl:element name="fileset">
+                <xsl:attribute name="dir">build/generated/jaxbCache/<xsl:value-of select="./@name"/></xsl:attribute>
+            </xsl:element>
+        </xsl:element>
+        
     </xsl:template>
     <xsl:template match="s:schema-source">
         <xsl:element name="schema">

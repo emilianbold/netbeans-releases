@@ -141,8 +141,8 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
         
         if (activatedNodes.length == 1){
             final Node theNode = activatedNodes[0];            
-            schemaNode =  (JAXBWizardSchemaNode) theNode.getLookup().lookup(
-                                                JAXBWizardSchemaNode.class );
+            schemaNode = theNode.getLookup().lookup(
+                    JAXBWizardSchemaNode.class );
             project = schemaNode.getProject();
             schema = schemaNode.getSchema();
 
@@ -150,12 +150,13 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                 JAXBWizardIterator wizardIter = new JAXBWizardIterator(project);
                 final WizardDescriptor descriptor = new WizardDescriptor(
                         wizardIter );
-                descriptor.putProperty("WizardPanel_autoWizardStyle", //NOI18N
+                descriptor.putProperty(JAXBWizModuleConstants.WIZ_STYLE_AUTO, 
                         Boolean.TRUE);                
-                //descriptor.putProperty("WizardPanel_errorMessage", null);
-                descriptor.putProperty("WizardPanel_contentDisplayed", //NOI18N
+                descriptor.putProperty(
+                        JAXBWizModuleConstants.WIZ_CONTENT_DISPLAYED,
                         Boolean.TRUE);
-                descriptor.putProperty("WizardPanel_contentNumbered", //NOI18N
+                descriptor.putProperty(
+                        JAXBWizModuleConstants.WIZ_CONTENT_NUMBERED, 
                         Boolean.TRUE);  
                 
                 List<String> schemaNames = ProjectHelper.getSchemaNames(project);                
@@ -179,19 +180,13 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
                 if ( descriptor.getValue() == WizardDescriptor.FINISH_OPTION ) {
                     String pkgName = (String) descriptor.getProperty(
                             JAXBWizModuleConstants.PACKAGE_NAME);
-                    try {
-                        // XXX TODO pass old schema so that                         
-                        // If Schema name is changed rename the directory to 
-                        // new name. We should not over write again Schema, 
-                        // Binding and catalog files.
-//                        Schema nSchema = ProjectHelper
-//                                .importResourcesIfrequired(project, descriptor, 
-//                                schema);
+                    try {                        
                         Schema nSchema = ProjectHelper.importResources(project, 
-                                descriptor);
+                                descriptor, schema);
                         
                         schemaNode.setSchema(nSchema);                        
-                        ProjectHelper.changeSchemaInModel(project, schema, nSchema);                        
+                        ProjectHelper.changeSchemaInModel(project, schema, 
+                                nSchema);                        
                         ProjectHelper.compileXSDs(project, pkgName, true);
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);

@@ -196,7 +196,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
                         JAXBWizModuleConstants.PACKAGE_NAME);
                 try {
                     Schema nSchema = ProjectHelper.importResources(project, 
-                            wiz);
+                            wiz, null);
                     ProjectHelper.addSchema2Model(project, nSchema);                    
                     ProjectHelper.compileXSDs(project, pkgName, true);
                 } catch (IOException ioe) {

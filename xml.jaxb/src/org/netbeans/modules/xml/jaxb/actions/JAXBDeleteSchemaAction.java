@@ -55,6 +55,7 @@ public class JAXBDeleteSchemaAction extends CookieAction {
             Schema schema = schemaNode.getSchema();
             Project prj = schemaNode.getProject();
             ProjectHelper.deleteSchemaFromModel(prj, schema);
+            ProjectHelper.cleanupLocalSchemaDir(prj, schema);
         }        
     }
     

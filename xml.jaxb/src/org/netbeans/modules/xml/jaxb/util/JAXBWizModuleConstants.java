@@ -27,8 +27,12 @@ public class JAXBWizModuleConstants {
     public static final String LAST_BROWSED_SCHEMA_DIR = "last.browsed.schema.dir" ;  //NOI18N
     public static final String LAST_BROWSED_BINDING_DIR = "last.browsed.binding.dir" ; //NOI18N
     public static final String LAST_BROWSED_CATALOG_DIR = "last.browsed.catalog.dir" ; //NOI18N
+    
     public static final String WIZ_ERROR_MSG = "WizardPanel_errorMessage" ; //NOI18N
-
+    public static final String WIZ_STYLE_AUTO = "WizardPanel_autoWizardStyle"; //NOI18N
+    public static final String WIZ_CONTENT_DISPLAYED = "WizardPanel_contentDisplayed" ; //NOI18N
+    public static final String WIZ_CONTENT_NUMBERED = "WizardPanel_contentNumbered"; //I18N
+    
     public static final String JAXB_SCHEMA_TYPE_XML_SCHEMA = "-xmlschema" ; //NOI18N
     public static final String JAXB_SCHEMA_TYPE_RELAX_NG = "-relaxng" ; //NOI18N
     public static final String JAXB_SCHEMA_TYPE_RELAX_NG_COMPACT = "-relaxng-compact" ; //NOI18N
@@ -57,7 +61,7 @@ public class JAXBWizModuleConstants {
     public static final String ORIG_LOCATION = "origLocation" ; // No I18N
     public static final String ORIG_LOCATION_TYPE = "orginLocationType"; //NOI18N
     public static final String LOC_SCHEMA_ROOT = "localSchemaRoot"; //NOI18N
-       
+        
     private JAXBWizModuleConstants() {
     }
 
