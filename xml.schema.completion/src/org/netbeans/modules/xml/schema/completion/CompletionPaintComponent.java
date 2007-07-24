@@ -20,10 +20,8 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import java.awt.*;
-import java.awt.font.TextAttribute;
 import java.util.Map;
 import java.util.HashMap;
-import java.text.AttributedString;
 import javax.swing.*;
 import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.Attribute;
@@ -53,17 +51,16 @@ public abstract class CompletionPaintComponent extends JPanel {
     }
     
     public void paintComponent(Graphics g) {
-        // clear background
         g.setColor(getBackground());
         java.awt.Rectangle r = g.getClipBounds();
         g.fillRect(r.x, r.y, r.width, r.height);
         draw(g);
     }
-        
+
     protected void draw(Graphics g) {
         drawIcon(g, completionItem.getIcon());
         drawString(g, completionItem.getItemText(), completionItem.getPaintColor(),
-            getDrawFont(), false);
+            getDrawFont());
     }
 
     /**
@@ -96,89 +93,33 @@ public abstract class CompletionPaintComponent extends JPanel {
         drawY += ascent;
     }
 
-    /**
-     * Draw string using the foreground color
-     */
-    protected void drawString(Graphics g, String s, boolean strike) {
-        if (g != null) {
-            g.setColor(getForeground());
-        }
-        drawStringToGraphics(g, s, null, strike);
-    }
-
-
-    /**
-     * Draw string with given color which is first possibly modified
-     * by calling getColor() method to care about selection etc.
-     */
-    protected void drawString(Graphics g, String s, Color c) {
-        if (g != null) {
-            g.setColor(getColor(s, c));
-        }
-        drawStringToGraphics(g, s, getDrawFont(), false);
-    }
-
-    protected void drawString(Graphics g, String s, Color c, Font font, boolean strike) {
+    protected void drawString(Graphics g, String s, Color c, Font font) {
         if (g != null) {
             g.setColor(getColor(s, c));
             g.setFont(font);
         }
-        drawStringToGraphics(g, s, font,  strike);
+        drawStringToGraphics(g, s, font);
         if (g != null) {
             g.setFont(drawFont);
         }
-
-    }
-    
-    protected void drawTypeName(Graphics g, String s, Color c) {
-        if (g == null) {
-            drawString(g, "   ", false); // NOI18N
-            drawString(g, s, c);
-        } else {
-            int w = getWidth() - getWidth(s) - drawX;
-            int spaceWidth = getWidth(" "); // NOI18N
-            if (w > spaceWidth * 2) {
-                drawX = getWidth() - 2 * spaceWidth - getWidth(s);
-            } else {
-                drawX = getWidth() - 2 * spaceWidth - getWidth(s) - getWidth("..   "); // NOI18N
-                g.setColor(getBackground());
-                g.fillRect(drawX, 0, getWidth() - drawX, getHeight());
-                drawString(g, "..   ", c); // NOI18N
-            }
-            drawString(g, s, c);
-        }
     }
 
-    protected void drawStringToGraphics(Graphics g, String s, Font font, boolean strike) {
+    protected void drawStringToGraphics(Graphics g, String s, Font font) {
         if (g != null) {
-            if (!strike){
-                g.drawString(s, drawX, drawY);
-            } else {
-                Graphics2D g2 = ((Graphics2D)g);
-                AttributedString strikeText = new AttributedString(s);
-                strikeText.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
-                strikeText.addAttribute(TextAttribute.FONT, g.getFont());
-                g2.drawString(strikeText.getIterator(), drawX, drawY);
-            }
+            g.drawString(s, drawX, drawY);
         }
         drawX += getWidth(s, font);
     }
 
-    protected int getWidth(String s) {
-        Integer i = (Integer)widths.get(s);
-        if (i != null) {
-            return i.intValue();
-        } else {
-            if (s == null) {
-                s = "";
-            }
-            return fontMetrics.stringWidth(s);
-        }
-    }
-
     protected int getWidth(String s, Font font) {
-        if (font == null) return getWidth(s);
-        return getFontMetrics(font).stringWidth(s);
+        if (font != null)
+            return getFontMetrics(font).stringWidth(s);
+        
+        Integer i = (Integer)widths.get(s);
+        if (i != null)
+            return i.intValue();
+        
+        return (s == null)?fontMetrics.stringWidth(""):fontMetrics.stringWidth(s);
     }
 
     protected Color getColor(String s, Color defaultColor) {
@@ -226,7 +167,7 @@ public abstract class CompletionPaintComponent extends JPanel {
         return completionItem;
     }
     
-    public static class AttributePaintComponent extends CompletionPaintComponent {        
+    public static class AttributePaintComponent extends CompletionPaintComponent {
         public AttributePaintComponent(CompletionResultItem item) {
             super(item);
         }
@@ -239,9 +180,9 @@ public abstract class CompletionPaintComponent extends JPanel {
                     return super.getDrawFont().deriveFont(Font.BOLD);
                 }
             }
-            
+
             return super.getFont();
-        }        
+        }
     }
     
     public static class ElementPaintComponent extends CompletionPaintComponent {
