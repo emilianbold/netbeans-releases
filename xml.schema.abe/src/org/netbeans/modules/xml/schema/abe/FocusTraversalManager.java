@@ -42,7 +42,7 @@ import org.netbeans.modules.xml.schema.abe.visitors.UpTraversalVisitor;
 import org.netbeans.modules.xml.schema.abe.visitors.BackTraversalVisitor;
 import org.netbeans.modules.xml.schema.abe.visitors.FrontTraversalVisitor;
 import org.netbeans.modules.xml.schema.abe.visitors.DownTraversalVisitor;
-import org.netbeans.modules.xml.schema.abe.visitors.TabTraversalVisitor;
+
 
 /**
  *
