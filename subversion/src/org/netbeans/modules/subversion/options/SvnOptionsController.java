@@ -71,7 +71,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     public void update() {
         
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault().getExecutableBinaryPath());
-        panel.annotationTextField.setText(SvnModuleConfig.getDefault().getDefaultAnnotationFormat());                   
+        panel.annotationTextField.setText(SvnModuleConfig.getDefault().getAnnotationFormat());                   
                       
         annotationSettings.update();
         repository.refreshUrlHistory();
