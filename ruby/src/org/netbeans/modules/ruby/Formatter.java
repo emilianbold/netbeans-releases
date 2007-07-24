@@ -57,10 +57,6 @@ import org.openide.util.Exceptions;
  * Formatting and indentation for Ruby.
  * 
  * @todo Handle RHTML!
- * 
- * WARNING! This is ugly, hacky code. I've recently switched over to the Lexer,
- * and I want to make this token based; it's currently just document character based.
- *
  * @todo Create unit tests
  * @todo Use in complete file reindentation, then diff with original formatted ruby source
  *    and see where I've gotta improve matters
@@ -69,7 +65,6 @@ import org.openide.util.Exceptions;
  *   and see if they are indentable.
  * @todo If you select a complete line, the endOffset is on a new line; adjust it back
  * @todo If line ends with \ I definitely have a line continuation!
- * @todo Handle comma in param lists
 
  *
  * @author Tor Norbye
@@ -231,7 +226,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         return ts.offset();
     }
     
-    private int getBracketBalance(BaseDocument doc, int begin, int end) {
+    private int getTokenBalance(BaseDocument doc, int begin, int end) {
         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
         if (ts == null) {
             return 0;
@@ -254,6 +249,38 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             } else if (id == RubyTokenId.END) {
                 balance--;
             } else if (id == RubyTokenId.LPAREN || id == RubyTokenId.LBRACKET || id == RubyTokenId.LBRACE ||
+                    // In some cases, the [ shows up as an identifier, for example in this expression:
+                    //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
+                    (id == RubyTokenId.IDENTIFIER && (token.text().toString().equals("[")))) { // NOI18N
+                balance++;
+            } else if (id == RubyTokenId.RPAREN || id == RubyTokenId.RBRACKET || id == RubyTokenId.RBRACE) {
+                balance--;
+            }
+        } while (ts.moveNext() && (ts.offset() < end));
+
+        return balance;
+    }
+
+    private int getBracketBalance(BaseDocument doc, int begin, int end) {
+        // Same as getTokenBalance, but limited to parentheses, brackets and braces
+        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, begin);
+        if (ts == null) {
+            return 0;
+        }
+
+        ts.move(begin);
+
+        if (!ts.moveNext()) {
+            return 0;
+        }
+
+        int balance = 0;
+
+        do {
+            Token<?extends GsfTokenId> token = ts.token();
+            TokenId id = token.id();
+
+            if (id == RubyTokenId.LPAREN || id == RubyTokenId.LBRACKET || id == RubyTokenId.LBRACE ||
                     // In some cases, the [ shows up as an identifier, for example in this expression:
                     //  for k, v in sort{|a1, a2| a1[0].id2name <=> a2[0].id2name}
                     (id == RubyTokenId.IDENTIFIER && (token.text().toString().equals("[")))) { // NOI18N
@@ -365,7 +392,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         return KEEP_INDENT;
     }
     
-    private boolean isLineContinued(BaseDocument doc, int offset) throws BadLocationException {
+    private boolean isLineContinued(BaseDocument doc, int offset, int bracketBalance) throws BadLocationException {
         offset = Utilities.getRowLastNonWhite(doc, offset);
         if (offset == -1) {
             return false;
@@ -375,7 +402,23 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
         if (token != null) {
             TokenId id = token.id();
-            if (id == RubyTokenId.NONUNARY_OP) {
+            
+            boolean isContinuationOperator = id == RubyTokenId.NONUNARY_OP;
+            
+            if (token.length() == 1 && id == RubyTokenId.IDENTIFIER && token.text().toString().equals(",")) {
+                // If there's a comma it's a continuation operator, but inside arrays, hashes or parentheses
+                // parameter lists we should not treat it as such since we'd "double indent" the items, and
+                // NOT the first item (where there's no comma, e.g. you'd have
+                //  foo(
+                //    firstarg,
+                //      secondarg,  # indented both by ( and hanging indent ,
+                //      thirdarg)
+                if (bracketBalance == 0) {
+                    isContinuationOperator = true;
+                }
+            }
+            
+            if (isContinuationOperator) {
                 // Make sure it's not a case like this:
                 //    alias eql? ==
                 // or
@@ -554,6 +597,8 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
             // The token balance at the offset
             int balance = 0;
+            // The bracket balance at the offset ( parens, bracket, brace )
+            int bracketBalance = 0;
             boolean continued = false;
 
             while ((!includeEnd && offset < end) || (includeEnd && offset <= end)) {
@@ -587,8 +632,9 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 int endOfLine = Utilities.getRowEnd(doc, offset) + 1;
 
                 if (lineBegin != -1) {
-                    balance += getBracketBalance(doc, lineBegin, endOfLine);
-                    continued = isLineContinued(doc, offset);
+                    balance += getTokenBalance(doc, lineBegin, endOfLine);
+                    bracketBalance += getBracketBalance(doc, lineBegin, endOfLine);
+                    continued = isLineContinued(doc, offset, bracketBalance);
                 }
 
                 offset = endOfLine;

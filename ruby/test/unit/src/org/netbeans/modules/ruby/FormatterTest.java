@@ -138,20 +138,20 @@ public class FormatterTest extends RubyTestBase {
 
 // This bug triggers #108889
 if (fo.getName().equals("action_controller_dispatcher") && fo.getParent().getName().equals("dispatcher")) {
-    System.out.println("SKIPPING known bad file " + fo.getNameExt());
+    System.err.println("SKIPPING known bad file " + fo.getNameExt());
     continue;
 }
 // This bug triggers #108889
 if (fo.getName().equals("parse_f95") && fo.getParent().getName().equals("parsers")) {
-    System.out.println("SKIPPING known bad file " + fo.getNameExt());
+    System.err.println("SKIPPING known bad file " + fo.getNameExt());
     continue;
 }
 // Tested by RubyLexerTest#testDefRegexp 
 if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick")) {
-    System.out.println("SKIPPING known bad file " + fo.getNameExt());
+    System.err.println("SKIPPING known bad file " + fo.getNameExt());
     continue;
 }
-            System.out.println("Formatting file " + count + "/" + files.size() + " : " + FileUtil.getFileDisplayName(fo));
+            System.err.println("Formatting file " + count + "/" + files.size() + " : " + FileUtil.getFileDisplayName(fo));
             
             // check that we end up at indentation level 0
             BaseDocument doc = getDocument(fo);
@@ -234,7 +234,7 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         format("x =\n1", 
                "x =\n    1", new IndentPrefs(2,4));
     }
-    
+
     public void testLineContinuation3() throws Exception {
         format("x =\n1\ny = 5", 
                "x =\n    1\ny = 5", new IndentPrefs(2,4));
@@ -250,14 +250,21 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
                "def foo\n    foo\n    if true\n        x\n    end\nend", new IndentPrefs(4,4));
     }
 
-    // Deliberately broken; in order to handle lists in arrays, methods and
-    // hashes don't treat commas as a continuation operator (see testArrayDecl,
-    // testHashDecl and testParenCommaList)
-    //public void testLineContinuationComma() throws Exception {
-    //    format("render foo,\nbar\nbaz",
-    //           "render foo,\n  bar\nbaz", null);
+    // Trigger lexer bug!
+    //public void testLineContinuationBackslash() throws Exception {
+    //    format("x\\\n= 1", 
+    //           "x\\\n  = 1", new IndentPrefs(2,4));
     //}
+    
+    public void testLineContinuationComma() throws Exception {
+        format("render foo,\nbar\nbaz",
+               "render foo,\n  bar\nbaz", null);
+    }
 
+    public void testCommaIndent() throws Exception {
+        insertNewline("puts foo,^", "puts foo,\n  ^", null);
+    }
+    
     public void testLineContinuationParens() throws Exception {
         format("foo(1,2\n3,4)\nx",
                "foo(1,2\n  3,4)\nx", null);
@@ -303,10 +310,6 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         insertNewline("      def foo^", "      def foo\n        ^", null);
     }
 
-//    public void testCommaIndent() throws Exception {
-//        insertNewline("puts foo,^", "puts foo,\n  ^", null);
-//    }
-//    
     public void testHeredoc1() throws Exception {
         format("def foo\n  s = <<EOS\n  stuff\nEOS\nend",
                "def foo\n  s = <<EOS\n  stuff\nEOS\nend", null);
