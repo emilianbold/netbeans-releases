@@ -22,12 +22,6 @@ public class RhtmlModelTest extends NbTestCase {
         super(testName);
     }
 
-    protected void setUp() throws java.lang.Exception {
-    }
-
-    protected void tearDown() throws java.lang.Exception {
-    }
-
     @SuppressWarnings(value = "unchecked")
     private static String rhtmlToRuby(String rhtml) {
         TokenHierarchy hi = TokenHierarchy.create(rhtml, RhtmlTokenId.language());
