@@ -100,19 +100,19 @@ public class Midp1CompliantAnalyzer implements Analyzer {
     }
 
     private void reportComponent (DefaultListModel list, DesignComponent component) {
-        list.addElement ("<html>Incompatible component: " + InfoPresenter.getHtmlDisplayName (component));
+        list.addElement (NbBundle.getMessage(Midp1CompliantAnalyzer.class, "MSG_IncompatibleComponent", InfoPresenter.getHtmlDisplayName (component))); // NOI18N
     }
 
     private void processComponentProperty (DefaultListModel list, DesignComponent component, PropertyDescriptor property) {
         DescriptorRegistry registry = component.getDocument ().getDescriptorRegistry ();
         if (registry.isInHierarchy (ItemCD.TYPEID, component.getType ())  &&  ItemCD.PROP_LAYOUT.equals (property.getName ())) {
             if (! registry.isInHierarchy (ImageItemCD.TYPEID, component.getType ())) {
-                list.addElement ("<html>Layout property cannot be set for: " + InfoPresenter.getHtmlDisplayName (component));
+                list.addElement (NbBundle.getMessage(Midp1CompliantAnalyzer.class, "MSG_IncompatibleItemLayout", InfoPresenter.getHtmlDisplayName (component))); // NOI18N
                 return;
             }
             int value = MidpTypes.getInteger (component.readProperty (ItemCD.PROP_LAYOUT));
             if ((value & (ItemCD.VALUE_LAYOUT_TOP | ItemCD.VALUE_LAYOUT_BOTTOM | ItemCD.VALUE_LAYOUT_VCENTER | ItemCD.VALUE_LAYOUT_SHRINK | ItemCD.VALUE_LAYOUT_VSHRINK | ItemCD.VALUE_LAYOUT_VSHRINK | ItemCD.VALUE_LAYOUT_VEXPAND | ItemCD.VALUE_LAYOUT_2)) != 0) {
-                list.addElement ("<html>Incompatible layout value set for: " + InfoPresenter.getHtmlDisplayName (component));
+                list.addElement (NbBundle.getMessage(Midp1CompliantAnalyzer.class, "MSG_IncompatibleItemLayout", InfoPresenter.getHtmlDisplayName (component))); // NOI18N
                 return;
             }
         }
@@ -124,11 +124,11 @@ public class Midp1CompliantAnalyzer implements Analyzer {
             if (ItemCD.PROP_ITEM_COMMAND_LISTENER.equals (propertyName))
                 return;
             if (ItemCD.PROP_COMMANDS.equals (propertyName)) {
-                list.addElement ("<html>Commands should not be assigned to Item: " + InfoPresenter.getHtmlDisplayName (component));
+                list.addElement (NbBundle.getMessage(Midp1CompliantAnalyzer.class, "MSG_ItemsCommandsNotAllowed", InfoPresenter.getHtmlDisplayName (component))); // NOI18N
                 return;
             }
         }
-        list.addElement ("<html>Incompatible property value set for: " + propertyName + " in " + InfoPresenter.getHtmlDisplayName (component));
+        list.addElement (NbBundle.getMessage(Midp1CompliantAnalyzer.class, "MSG_IncompatiblePropertyValue", propertyName, InfoPresenter.getHtmlDisplayName (component))); // NOI18N
     }
 
 }

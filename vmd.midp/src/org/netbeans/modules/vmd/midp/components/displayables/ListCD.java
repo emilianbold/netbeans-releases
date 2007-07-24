@@ -48,6 +48,7 @@ import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.screen.display.ListDisplayPresenter;
+import org.openide.util.NbBundle;
 
 /**
  * @author Karol Harezlak
@@ -97,11 +98,11 @@ public final class ListCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Type", PropertyEditorComboBox.createInstance( ChoiceSupport.getListTypes(), TYPEID), PROP_LIST_TYPE) //NOI18N
-                    .addProperty("Fit Policy", PropertyEditorComboBox.createInstance(ChoiceSupport.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY) //NOI18N
-                    .addProperty("Select Command", PropertyEditorListSelectCommand.create(), PROP_SELECT_COMMAND) //NOI18N
+                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Type"), PropertyEditorComboBox.createInstance( ChoiceSupport.getListTypes(), TYPEID), PROP_LIST_TYPE) // NOI18N
+                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Fit_Policy"), PropertyEditorComboBox.createInstance(ChoiceSupport.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY) // NOI18N
+                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Select_Command"), PropertyEditorListSelectCommand.create(), PROP_SELECT_COMMAND) // NOI18N
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                    .addProperty("Index Based Switch", PropertyEditorBooleanUC.createInstance(false), PROP_INDEX_BASED_SWITCH); //NOI18N
+                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Index_Based_Switch"), PropertyEditorBooleanUC.createInstance(false), PROP_INDEX_BASED_SWITCH); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {
@@ -134,7 +135,7 @@ public final class ListCD extends ComponentDescriptor {
                         if (component.isDefaultValue(ListElementEventSourceCD.PROP_STRING)) {
                             PropertyValue value = getComponent ().readProperty(ListCD.PROP_ELEMENTS);
                             List<PropertyValue> list = value.getArray ();
-                            component.writeProperty (ListElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue ("List Element " + list.size()));
+                            component.writeProperty (ListElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue (NbBundle.getMessage(ListCD.class, "NAME_New_List_Element", list.size()))); // NOI18N
                         }
                     }
                 },
@@ -145,7 +146,7 @@ public final class ListCD extends ComponentDescriptor {
                 // actions
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ListElementEventSourceCD.TYPEID),
                 // inspector
-                MidpInspectorSupport.createComponentElementsCategory("Elements", getInspectorOrderingControllers(), ListElementEventSourceCD.TYPEID), //NOI18N
+                MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage (ListCD.class, "DISP_InspectorCategory_Elements"), getInspectorOrderingControllers(), ListElementEventSourceCD.TYPEID), //NOI18N
                 // code
                 createSetterPresenter(),
                 ListCode.createListActionCodeNamePresenter (),

@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.midp.components.displayables;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderComponentPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
+import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
@@ -40,16 +41,17 @@ import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowDisplayableCommandPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
+import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.injector.TickerInjectorPresenter;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
+import org.openide.util.NbBundle;
+
 import java.util.*;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
-import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 
 
 /**
@@ -101,8 +103,8 @@ public final class DisplayableCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty ("Title", PropertyEditorString.createInstance(), PROP_TITLE)
-                    .addProperty ("Ticker", PropertyEditorResource.createTickerPropertyEditor(), PROP_TICKER);
+                    .addProperty (NbBundle.getMessage(DisplayableCD.class, "DISP_Displayable_Title"), PropertyEditorString.createInstance(), PROP_TITLE) // NOI18N
+                    .addProperty (NbBundle.getMessage(DisplayableCD.class, "DISP_Displayable_Ticker"), PropertyEditorResource.createTickerPropertyEditor(), PROP_TICKER); // NOI18N
     }
 
     private static Presenter createSetterPresenter () {
@@ -110,10 +112,10 @@ public final class DisplayableCD extends ComponentDescriptor {
                 .addParameters (MidpParameter.create (PROP_TITLE, PROP_TICKER))
                 .addParameters (DisplayableCode.createCommandParameter ())
                 .addParameters (DisplayableCode.createCommandListenerParameter ())
-                .addSetters (MidpSetter.createSetter ("setTitle", MidpVersionable.MIDP).addParameters (PROP_TITLE))
-                .addSetters (MidpSetter.createSetter ("setTicker", MidpVersionable.MIDP).addParameters (PROP_TICKER))
-                .addSetters (MidpSetter.createSetter ("addCommand", MidpVersionable.MIDP).setArrayParameter (DisplayableCode.PARAM_COMMAND).addParameters (DisplayableCode.PARAM_COMMAND))
-                .addSetters (MidpSetter.createSetter ("setCommandListener", MidpVersionable.MIDP).addParameters (PROP_COMMAND_LISTENER));
+                .addSetters (MidpSetter.createSetter ("setTitle", MidpVersionable.MIDP).addParameters (PROP_TITLE)) // NOI18N
+                .addSetters (MidpSetter.createSetter ("setTicker", MidpVersionable.MIDP).addParameters (PROP_TICKER)) // NOI18N
+                .addSetters (MidpSetter.createSetter ("addCommand", MidpVersionable.MIDP).setArrayParameter (DisplayableCode.PARAM_COMMAND).addParameters (DisplayableCode.PARAM_COMMAND)) // NOI18N
+                .addSetters (MidpSetter.createSetter ("setCommandListener", MidpVersionable.MIDP).addParameters (PROP_COMMAND_LISTENER)); // NOI18N
     }
 
     @Override

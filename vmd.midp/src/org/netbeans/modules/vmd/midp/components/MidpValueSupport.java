@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.midp.components;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -29,19 +30,19 @@ public final class MidpValueSupport {
 
     public static String getHumanReadableString (PropertyValue value) {
         if (value == null)
-            return "<not-set>";
+            return NbBundle.getMessage(MidpValueSupport.class, "LBL_not_set"); // NOI18N
         switch (value.getKind ()) {
             case ENUM:
             case VALUE:
                 return value.getPrimitiveValue ().toString ();
             case USERCODE:
-                return "<custom-code>";
+                return NbBundle.getMessage(MidpValueSupport.class, "LBL_custom_code"); // NOI18N
             case NULL:
-                return "<null>";
+                return NbBundle.getMessage(MidpValueSupport.class, "LBL_null"); // NOI18N
             case ARRAY:
-                return "<array>";
+                return NbBundle.getMessage(MidpValueSupport.class, "LBL_array"); // NOI18N
             case REFERENCE:
-                return "<component-to-" + value.getComponent ().getComponentID () + ">";
+                return NbBundle.getMessage(MidpValueSupport.class, "LBL_component", value.getComponent ().getComponentID ()); // NOI18N // TODO - use InfoPresenter
             default:
                 throw new IllegalStateException ();
         }

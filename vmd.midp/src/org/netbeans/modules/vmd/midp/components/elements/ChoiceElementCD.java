@@ -42,12 +42,14 @@ import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midp.screen.display.ChoiceElementDisplayPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
+import org.openide.util.NbBundle;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
-import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 
 /**
  * @author David Kaspar
@@ -85,10 +87,10 @@ public final class ChoiceElementCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING) // NOI18N
-                .addProperty("Image", PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
-                .addProperty("Selected", PropertyEditorBooleanUC.createInstance(), PROP_SELECTED) // NOI18N
-                .addProperty("Font", PropertyEditorResource.createFontPropertyEditor(), PROP_FONT); // NOI18N
+                .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_String"), PropertyEditorString.createInstance(), PROP_STRING) // NOI18N
+                .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Image"), PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
+                .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Selected"), PropertyEditorBooleanUC.createInstance(), PROP_SELECTED) // NOI18N
+                .addProperty(NbBundle.getMessage(ChoiceElementCD.class, "DISP_ChoiceElement_Font"), PropertyEditorResource.createFontPropertyEditor(), PROP_FONT); // NOI18N
     }
     
     @Override
@@ -101,8 +103,6 @@ public final class ChoiceElementCD extends ComponentDescriptor {
     
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
-                // general
-                
                 // general
                 InfoPresenter.create(ElementSupport.createChoiceElementInfoResolver()),
                 // inspector
@@ -126,8 +126,7 @@ public final class ChoiceElementCD extends ComponentDescriptor {
                 new ImageFileAcceptPresenter(ImageCD.PROP_IMAGE, ImageCD.TYPEID, "jpg", "png", "gif"), //NOI18N
                 MidpAcceptTrensferableKindPresenter.createImageAcceptPresenter(),
                 MidpAcceptTrensferableKindPresenter.createFontAcceptPresenter()
-                
-                );
+        );
     }
     
 }

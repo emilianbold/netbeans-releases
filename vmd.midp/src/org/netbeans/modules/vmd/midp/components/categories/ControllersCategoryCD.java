@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -52,7 +53,7 @@ public final class ControllersCategoryCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic ("Controllers", null, CategorySupport.ICON_PATH_CATEGORY_POINTS),
+            InfoPresenter.createStatic (NbBundle.getMessage(ControllersCategoryCD.class, "DISP_Controllers"), null, CategorySupport.ICON_PATH_CATEGORY_POINTS), // NOI18N
             // accept
             new AcceptTypePresenter (EventListenerCD.TYPEID),
             // inspector

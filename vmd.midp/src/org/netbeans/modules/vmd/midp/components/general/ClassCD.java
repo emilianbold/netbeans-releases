@@ -28,12 +28,13 @@ import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 
 /**
  * @author David Kaspar
@@ -73,8 +74,8 @@ public final class ClassCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                .addProperty("Instance Name", PropertyEditorInstanceName.createInstance(TYPEID), PROP_INSTANCE_NAME)
-                .addProperty("Is Lazy Initialized", PropertyEditorBooleanUC.createInstance(false), PROP_LAZY_INIT); //NOI18N
+                .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Instance_Name"), PropertyEditorInstanceName.createInstance(TYPEID), PROP_INSTANCE_NAME) // NOI18N
+                .addProperty(NbBundle.getMessage(ClassCD.class, "DISP_Class_Is_Lazy_Initialized"), PropertyEditorBooleanUC.createInstance(false), PROP_LAZY_INIT); // NOI18N
                 
     }
 

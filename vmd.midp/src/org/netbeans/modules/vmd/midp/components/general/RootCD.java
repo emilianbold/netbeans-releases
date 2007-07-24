@@ -30,8 +30,9 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.AcceptSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeletePresenter;
-import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.palette.PaletteSupport;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfoPresenter;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -40,15 +41,15 @@ import org.netbeans.modules.vmd.midp.components.categories.*;
 import org.netbeans.modules.vmd.midp.inspector.controllers.RootPC;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorVersion;
+import org.netbeans.modules.vmd.midp.screen.MidpScreenDeviceInfo;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.event.InputEvent;
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfoPresenter;
-import org.netbeans.modules.vmd.midp.screen.MidpScreenDeviceInfo;
 
 
 /**
@@ -62,6 +63,7 @@ public final class RootCD extends ComponentDescriptor {
 
     public static final String  PROP_VERSION = "version";  // NOI18N
 
+    public static final String VALUE_MIDP_PREFIX = "MIDP"; // NOI18N
     public static final String VALUE_MIDP_2_0 = "MIDP-2.0"; // NOI18N
     public static final String VALUE_MIDP_1_0 = "MIDP-1.0"; // NOI18N
 
@@ -86,7 +88,7 @@ public final class RootCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Version", "MIDP Version", PropertyEditorVersion.createInstance(), PROP_VERSION);
+                    .addProperty(NbBundle.getMessage(RootCD.class, "DISP_Root_Version"), NbBundle.getMessage(RootCD.class, "TTIP_Root_Version"), PropertyEditorVersion.createInstance(), PROP_VERSION); // NOI18N
     }
 
     private InspectorOrderingController[] creatOrderingControllers() {
@@ -102,7 +104,7 @@ public final class RootCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic("MIDP Visual Design", null, ICON_PATH),
+            InfoPresenter.createStatic(NbBundle.getMessage(RootCD.class, "NAME_Root"), null, ICON_PATH),
             // properties
             createPropertiesPresenter(),
             // validator
@@ -115,13 +117,13 @@ public final class RootCD extends ComponentDescriptor {
             FlowScenePresenter.create (new RootActionBehavior ()),
             // code
             RootCode.createInitializePresenter (),
-            CodeNamePresenter.fixed ("initialize", "exitMIDlet"),
+            CodeNamePresenter.fixed ("initialize", "exitMIDlet"), // NOI18N
             CodeNamePresenter.fixed (
-                    "abstract", "assert", "boolean", "break", "break", "byte", "case", "catch", "char", "class", "const",
-                    "continue", "default", "do", "double", "else" , "enum", "extends", "final", "finally", "float",
-                    "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long", "native",
-                    "new", "package", "private", "protected", "public", "return", "short", "static", "strictfp", "super",
-                    "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile", "while"
+                    "abstract", "assert", "boolean", "break", "break", "byte", "case", "catch", "char", "class", "const", // NOI18N
+                    "continue", "default", "do", "double", "else" , "enum", "extends", "final", "finally", "float", // NOI18N
+                    "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long", "native", // NOI18N
+                    "new", "package", "private", "protected", "public", "return", "short", "static", "strictfp", "super", // NOI18N
+                    "switch", "synchronized", "this", "throw", "throws", "transient", "try", "void", "volatile", "while" // NOI18N
             ),
             // delete
             DeletePresenter.createIndeliblePresenter (),

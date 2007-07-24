@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 /**
  * @author David Kaspar
  */
@@ -52,7 +53,7 @@ public final class CommandsCategoryCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic ("Commands", null, CategorySupport.ICON_PATH_CATEGORY_COMMANDS),
+            InfoPresenter.createStatic (NbBundle.getMessage(CommandsCategoryCD.class, "DISP_Commands"), null, CategorySupport.ICON_PATH_CATEGORY_COMMANDS), // NOI18N
             // accept
             new AcceptTypePresenter (CommandCD.TYPEID),
             // inspector

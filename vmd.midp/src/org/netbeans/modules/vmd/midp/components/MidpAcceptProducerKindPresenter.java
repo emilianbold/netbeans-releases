@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.vmd.midp.components;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
@@ -28,6 +26,9 @@ import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -61,7 +62,7 @@ public class MidpAcceptProducerKindPresenter extends AcceptPresenter {
         if (type == null || propertyName == null || propertyName.length() == 0)
             throw new IllegalArgumentException("Illegal argument type or properytName"); // NOI18N
         if (typesMap != null && typesMap.keySet().contains(type))
-            Debug.warning("TypeID: " + type.toString() + " alredy exists in presenter: " + MidpAcceptProducerKindPresenter.class + " - component: " + getComponent());
+            Debug.warning("TypeID: " + type.toString() + " alredy exists in presenter: " + MidpAcceptProducerKindPresenter.class + " - component: " + getComponent()); // NOI18N
         if (typesMap == null)
             typesMap = new HashMap<TypeID, String>();
         typesMap.put(type, propertyName);

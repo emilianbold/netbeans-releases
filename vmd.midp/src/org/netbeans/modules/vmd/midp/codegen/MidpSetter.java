@@ -64,15 +64,15 @@ public class MidpSetter implements Setter {
     }
 
     public static MidpSetter createConstructor (TypeID constructorRelatedTypeID, Versionable versionable) {
-        return new MidpSetter (constructorRelatedTypeID, " = new " + MidpTypes.getSimpleClassName (constructorRelatedTypeID), versionable);
+        return new MidpSetter (constructorRelatedTypeID, " = new " + MidpTypes.getSimpleClassName (constructorRelatedTypeID), versionable); // NOI18N
     }
 
     public static MidpSetter createFactoryMethod (TypeID constructorRelatedTypeID, String classCast, String className, String methodName, Versionable versionable) {
-        return new MidpSetter (constructorRelatedTypeID, " = " + (classCast != null ? ("(" + classCast + ") ") : "") + className + "." + methodName, versionable);
+        return new MidpSetter (constructorRelatedTypeID, " = " + (classCast != null ? ("(" + classCast + ") ") : "") + className + "." + methodName, versionable); // NOI18N
     }
 
     public static MidpSetter createSetter (String setterName, Versionable versionable) {
-        return new MidpSetter (null, "." + setterName, versionable);
+        return new MidpSetter (null, "." + setterName, versionable); // NOI18N
     }
 
     public boolean isConstructor () {

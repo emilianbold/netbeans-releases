@@ -45,7 +45,7 @@ public class ClassCode {
             DesignComponent component = getComponent();
             boolean lazyInit = MidpTypes.getBoolean(component.readProperty(ClassCD.PROP_LAZY_INIT));
             String instanceName = MidpTypes.getString(component.readProperty(ClassCD.PROP_INSTANCE_NAME));
-            return lazyInit ? createGetterNameFromInstanceName(instanceName) + " ()" : instanceName;
+            return lazyInit ? createGetterNameFromInstanceName(instanceName) + " ()" : instanceName; // NOI18N
         }
         
         protected String generateDirectAccessCode() {
@@ -67,7 +67,7 @@ public class ClassCode {
         }
         
         protected void generateFieldSectionCode(MultiGuardedSection section) {
-            section.getWriter().write("private " + CodeReferencePresenter.generateTypeCode(getComponent()) + " " + CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ";\n");
+            section.getWriter().write("private " + CodeReferencePresenter.generateTypeCode(getComponent()) + " " + CodeReferencePresenter.generateDirectAccessCode(getComponent()) + ";\n"); // NOI18N
         }
         
         protected void generateMethodSectionCode(MultiGuardedSection section) {

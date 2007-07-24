@@ -39,7 +39,7 @@ public final class InstanceNameResolver {
         assert component.getDocument ().getTransactionManager ().isAccess ();
         Collection<? extends CodeNamePresenter> presenters = component.getPresenters (CodeNamePresenter.class);
         if (presenters.isEmpty ())
-            Debug.warning ("CodeNamePresenter is missing for", component);
+            Debug.warning ("CodeNamePresenter is missing for", component); // NOI18N
         HashSet<String> names = new HashSet<String> ();
         gatherNames (component.getDocument ().getRootComponent (), component, names);
 

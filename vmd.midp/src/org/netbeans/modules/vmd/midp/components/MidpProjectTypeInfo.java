@@ -41,7 +41,7 @@ public class MidpProjectTypeInfo extends ProjectTypeInfo {
     }
 
     public String getDocumentVersion () {
-        return "2";
+        return "2"; // NOI18N
     }
 
 }

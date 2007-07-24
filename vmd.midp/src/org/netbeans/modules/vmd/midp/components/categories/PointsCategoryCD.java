@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midp.inspector.controllers.CategoryPC;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -53,7 +54,7 @@ public final class PointsCategoryCD extends ComponentDescriptor {
     protected java.util.List<? extends Presenter> createPresenters() {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic ("Points", null, CategorySupport.ICON_PATH_CATEGORY_POINTS),
+            InfoPresenter.createStatic (NbBundle.getMessage(PointsCategoryCD.class, "DISP_Points"), null, CategorySupport.ICON_PATH_CATEGORY_POINTS), // NOI18N
             // accept
             new AcceptTypePresenter (PointCD.TYPEID),
             // inspector

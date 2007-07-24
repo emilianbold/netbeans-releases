@@ -39,9 +39,11 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageFileAcceptPresent
 import org.netbeans.modules.vmd.midp.flow.FlowAlertViaPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AbstractEventHandlerCreatorPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
-import org.netbeans.modules.vmd.midp.screen.display.AlertDisplayPresenter;
-import java.util.*;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
+import org.netbeans.modules.vmd.midp.screen.display.AlertDisplayPresenter;
+import org.openide.util.NbBundle;
+
+import java.util.*;
 
 /**
  * @author Karol Harezlak
@@ -94,11 +96,11 @@ public final class AlertCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty("Image",  PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
-                    .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING) // NOI18N
-                    .addProperty("Type", PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_ALERT_TYPE) // NOI18N
-                    .addProperty("Use Indicator", PropertyEditorAlertIndicator.createInstance(), PROP_INDICATOR) // NOI18N
-                    .addProperty("Timeout", PropertyEditorTimeout.createInstance(), PROP_TIMEOUT); // NOI18N
+                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Image"), PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
+                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_String"), PropertyEditorString.createInstance(), PROP_STRING) // NOI18N
+                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Type"), PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_ALERT_TYPE) // NOI18N
+                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Use_Indicator"), PropertyEditorAlertIndicator.createInstance(), PROP_INDICATOR) // NOI18N
+                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Timeout"), PropertyEditorTimeout.createInstance(), PROP_TIMEOUT); // NOI18N
     }
 
     // TODO override Displayable.addCommand, see DesignerMIDP document
@@ -180,4 +182,5 @@ public final class AlertCD extends ComponentDescriptor {
             return true;
         }
     }
+
 }

@@ -18,16 +18,6 @@
  */
 package org.netbeans.modules.vmd.midp.actions;
 
-import java.awt.event.ActionEvent;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.Action;
-import javax.swing.ImageIcon;
-
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.Presenter;
@@ -36,6 +26,14 @@ import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionItem;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.openide.util.NbBundle;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Karol Harezlak
@@ -46,7 +44,7 @@ abstract class UnusedCommandsAddActionPresenter extends AddActionPresenter {
     
     public static final String DISPLAY_NAME_ADD = NbBundle.getMessage(UnusedCommandsAddActionPresenter.class, "NAME_UnusedCommandsAddActionPresenter"); //NOI18N
     
-    public static final Presenter createForDisplayable(String displayName, int order) {
+    public static Presenter createForDisplayable(String displayName, int order) {
         return new UnusedCommandsAddActionPresenter(displayName, order) {
             private DesignComponent selectedCommandSource;
             protected synchronized void insideActionPerformed(final DesignComponent unusedCommandComponent) {
@@ -62,7 +60,7 @@ abstract class UnusedCommandsAddActionPresenter extends AddActionPresenter {
         };
     }
     
-    public static final Presenter createForItem(String displayName, int order) {
+    public static Presenter createForItem(String displayName, int order) {
         return new UnusedCommandsAddActionPresenter(displayName, order) {
             private DesignComponent selectedCommandSource;
             protected synchronized void insideActionPerformed(final DesignComponent unusedCommandComponent) {
@@ -127,18 +125,18 @@ abstract class UnusedCommandsAddActionPresenter extends AddActionPresenter {
         return newAddActions.toArray(new AddActionItem[newAddActions.size()]);
     }
     
-    private static final AddActionItem createUnusedCommandAction(final WeakReference<DesignComponent> unusedCommandComponent,
+    private static AddActionItem createUnusedCommandAction(final WeakReference<DesignComponent> unusedCommandComponent,
             final WeakReference<InfoPresenter> infoPresenter,
             final WeakReference<UnusedCommandsAddActionPresenter> presenter) {
         
         return new AddActionItem(unusedCommandComponent.get().getType()) {
             private ImageIcon icon;
             public void actionPerformed(ActionEvent event) {
-                ((UnusedCommandsAddActionPresenter) presenter.get()).insideActionPerformed(unusedCommandComponent.get());
+                presenter.get().insideActionPerformed(unusedCommandComponent.get());
             }
             
             public void resolveAction(DesignComponent component) {
-                InfoPresenter presenter = (InfoPresenter) infoPresenter.get();
+                InfoPresenter presenter = infoPresenter.get();
                 icon = icon == null ? icon = new ImageIcon(presenter.getIcon(InfoPresenter.IconType.COLOR_16x16)) : icon;
                 putValue(Action.NAME, presenter.getDisplayName(InfoPresenter.NameType.PRIMARY));
                 putValue(Action.SMALL_ICON, icon);
@@ -146,5 +144,3 @@ abstract class UnusedCommandsAddActionPresenter extends AddActionPresenter {
         };
     }
 }
-
-

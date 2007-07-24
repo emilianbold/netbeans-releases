@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.Resolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -68,7 +69,7 @@ public final class ElementSupport {
                 case PRIMARY:
                     return resolveName (component);
                 case SECONDARY:
-                    return "Element";
+                    return NbBundle.getMessage(ElementSupport.class, "TYPE_Element"); // NOI18N
                 case TERTIARY:
                     return null;
                 default:
@@ -89,7 +90,7 @@ public final class ElementSupport {
             if (value.getKind() == PropertyValue.Kind.VALUE)
                 return MidpTypes.getString(value);
             else
-                return "";
+                return ""; // NOI18N
         }
         
         public void setEditableName(DesignComponent component, String enteredName) {

@@ -32,6 +32,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.items.TextFieldCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.*;
 import org.netbeans.modules.vmd.midp.screen.display.TextBoxDisplayPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,10 +89,10 @@ public class TextBoxCD extends ComponentDescriptor{
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Text", PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_BOX), PROP_STRING)
-                .addProperty("Maximum Size", PropertyEditorNumber.createIntegerInstance(), PROP_MAX_SIZE)
-                .addProperty("Input Constraints", PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS)
-                .addProperty("Initial Input Mode", PropertyEditorInputMode.createInstance(), PROP_INITIAL_INPUT_MODE);
+                .addProperty(NbBundle.getMessage(TextBoxCD.class, "DISP_TextBox_Text"), PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_BOX), PROP_STRING) // NOI18N
+                .addProperty(NbBundle.getMessage(TextBoxCD.class, "DISP_TextBox_Maximum_Size"), PropertyEditorNumber.createIntegerInstance(), PROP_MAX_SIZE) // NOI18N
+                .addProperty(NbBundle.getMessage(TextBoxCD.class, "DISP_TextBox_Input_Constraints"), PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS) // NOI18N
+                .addProperty(NbBundle.getMessage(TextBoxCD.class, "DISP_TextBox_Initial_Input_Mode"), PropertyEditorInputMode.createInstance(), PROP_INITIAL_INPUT_MODE); // NOI18N
     }
 
     private static Presenter createSetterPresenter () {

@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midp.components.displayables;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.inspector.common.ArrayPropertyOrderingController;
 import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
@@ -39,16 +38,16 @@ import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.listeners.ItemStateListenerCD;
 import org.netbeans.modules.vmd.midp.flow.FlowItemCommandPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
-import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
 import org.netbeans.modules.vmd.midp.screen.FormResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.FormDisplayPresenter;
+import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptPresenter;
 
 
 /**
@@ -118,8 +117,7 @@ public final class FormCD extends ComponentDescriptor {
                 // action
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ItemCD.TYPEID),
                 // inspector
-                MidpInspectorSupport.createComponentElementsCategory("Items",createOrderingArrayController() ,
-                ItemCD.TYPEID), //NOI18N //TODO
+                MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage(FormCD.class, "DISP_InspectorCategory_Items"),createOrderingArrayController() , ItemCD.TYPEID), // NOI18N
                 // code
                 createSetterPresenter(),
                 // flow
@@ -135,4 +133,5 @@ public final class FormCD extends ComponentDescriptor {
     private List<InspectorOrderingController> createOrderingArrayController() {
         return Collections.<InspectorOrderingController>singletonList(new ArrayPropertyOrderingController(PROP_ITEMS, 0, ItemCD.TYPEID));
     }
+
 }

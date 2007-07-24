@@ -25,7 +25,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.Collection;
 import java.util.Iterator;
@@ -35,15 +34,13 @@ import java.util.Iterator;
  * @author Karol Harezlak
  */
 public final class GoToSourceAction extends SystemAction {
-    
-    public static final String DISPLAY_NAME = NbBundle.getMessage(GoToSourceAction.class, "NAME_GoToSourceAction"); //NOI18N
-    
+
     public void actionPerformed(ActionEvent e) {
         GoToSourceSupport.goToSourceOfComponent(getActiveComponent());
     }
     
     public String getName() {
-        return DISPLAY_NAME;
+        return NbBundle.getMessage(GoToSourceAction.class, "NAME_GoToSourceAction"); // NOI18N
     }
     
     public HelpCtx getHelpCtx() {
@@ -72,7 +69,5 @@ public final class GoToSourceAction extends SystemAction {
         }
         return null;
     }
-    
-   
     
 }

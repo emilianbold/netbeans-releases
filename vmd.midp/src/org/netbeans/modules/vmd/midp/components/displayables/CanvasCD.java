@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -90,13 +91,13 @@ public final class CanvasCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Full Screen", "Controls whether the Canvas is in full-screen mode or in normal mode.", PropertyEditorBooleanUC.createInstance(), PROP_IS_FULL_SCREEN);
+                .addProperty(NbBundle.getMessage(CanvasCD.class, "DISP_Canvas_Full_Screen"), NbBundle.getMessage(CanvasCD.class, "TTIP_Canvas_Full_Screen"), PropertyEditorBooleanUC.createInstance(), PROP_IS_FULL_SCREEN); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {
         return new CodeSetterPresenter()
                 .addParameters(MidpParameter.create(PROP_IS_FULL_SCREEN))
-                .addSetters(MidpSetter.createSetter("setFullScreenMode", MidpVersionable.MIDP_2).addParameters(PROP_IS_FULL_SCREEN));
+                .addSetters(MidpSetter.createSetter("setFullScreenMode", MidpVersionable.MIDP_2).addParameters(PROP_IS_FULL_SCREEN)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters () {

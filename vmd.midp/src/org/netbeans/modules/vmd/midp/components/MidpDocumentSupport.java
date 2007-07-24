@@ -119,9 +119,7 @@ public final class MidpDocumentSupport {
 //    }
     
     public static boolean isCreatableEventHandlerTo(DesignComponent targetComponent) {
-        if (targetComponent == null)
-            return true;
-        return targetComponent.getPresenter(AbstractEventHandlerCreatorPresenter.class) != null;
+        return targetComponent == null || targetComponent.getPresenter (AbstractEventHandlerCreatorPresenter.class) != null;
     }
     
     public static DesignComponent updateEventHandlerFromTarget(DesignComponent eventSource, DesignComponent targetComponent) {
@@ -214,7 +212,7 @@ public final class MidpDocumentSupport {
     
     public static int getMidpVersion(DesignDocument document) {
         PropertyValue propertyValue = document.getRootComponent().readProperty(RootCD.PROP_VERSION);
-        return propertyValue.getKind() == PropertyValue.Kind.VALUE  &&  "MIDP-2.0".equals(MidpTypes.getString(propertyValue)) ? 2 : 1;
+        return propertyValue.getKind() == PropertyValue.Kind.VALUE  &&  RootCD.VALUE_MIDP_2_0.equals(MidpTypes.getString(propertyValue)) ? 2 : 1; // NOI18N
     }
 
 }

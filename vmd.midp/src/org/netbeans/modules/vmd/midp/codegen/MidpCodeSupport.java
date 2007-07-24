@@ -109,7 +109,7 @@ public class MidpCodeSupport {
     private static void generateEnumTypes (CodeWriter writer, PropertyValue value) {
         TypeID type = value.getType ();
         if (MidpTypes.TYPEID_ALERT_TYPE.equals (type))
-            writer.write ("AlertType." + value.getPrimitiveValue ().toString ());
+            writer.write ("AlertType." + value.getPrimitiveValue ().toString ()); // NOI18N
         //TODO
     }
 

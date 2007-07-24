@@ -40,7 +40,7 @@ public final class MidpVersionable {
                 return false;
             PropertyValue version = root.readProperty (RootCD.PROP_VERSION);
             String string = MidpTypes.getString (version);
-            return string != null  &&  string.startsWith ("MIDP");
+            return string != null  &&  string.startsWith (RootCD.VALUE_MIDP_PREFIX);
         }
 
     };
@@ -59,7 +59,7 @@ public final class MidpVersionable {
                 return false;
             PropertyValue version = root.readProperty (RootCD.PROP_VERSION);
             String string = MidpTypes.getString (version);
-            return "MIDP-1.0".equals (string);
+            return RootCD.VALUE_MIDP_1_0.equals (string);
         }
 
     };
@@ -78,7 +78,7 @@ public final class MidpVersionable {
                 return false;
             PropertyValue version = root.readProperty (RootCD.PROP_VERSION);
             String string = MidpTypes.getString (version);
-            return "MIDP-2.0".equals (string);
+            return RootCD.VALUE_MIDP_2_0.equals (string);
         }
 
     };
