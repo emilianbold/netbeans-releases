@@ -604,23 +604,27 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             }
             if (refactoring.getGetterName() != null && refactoring.getSetterName() != null) {
                 ExpressionTree t = node.getExpression();
-                boolean isArray = false;
+                Kind kind = node.getKind();
+                boolean isArrayOrImmutable = kind != Kind.POSTFIX_DECREMENT
+                        && kind != Kind.POSTFIX_INCREMENT
+                        && kind != Kind.PREFIX_DECREMENT
+                        && kind != Kind.PREFIX_INCREMENT;
                 while (t.getKind() == Tree.Kind.ARRAY_ACCESS) {
-                    isArray = true;
+                    isArrayOrImmutable = true;
                     t = ((ArrayAccessTree) t).getExpression();
                 }
                 Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), t));
-                if (el == field && (isArray || checkAssignmentInsideExpression())
+                if (el == field && (isArrayOrImmutable || checkAssignmentInsideExpression())
                         && !isInConstructorOfFieldClass(getCurrentPath(), field)
                         && !isInGetterSetter(getCurrentPath())) {
                     // check (++field + 3)
                     ExpressionTree invkgetter = createGetterInvokation(t);
-                    if (isArray) {
+                    if (isArrayOrImmutable) {
                         rewrite(t, invkgetter);
                     } else {
                         ExpressionTree setter = createMemberSelection(node.getExpression(), refactoring.getSetterName());
 
-                        Tree.Kind operator = node.getKind() == Tree.Kind.POSTFIX_INCREMENT || node.getKind() == Tree.Kind.PREFIX_INCREMENT
+                        Tree.Kind operator = kind == Tree.Kind.POSTFIX_INCREMENT || kind == Tree.Kind.PREFIX_INCREMENT
                                 ? Tree.Kind.PLUS
                                 : Tree.Kind.MINUS;
                         MethodInvocationTree invksetter = make.MethodInvocation(
