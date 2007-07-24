@@ -23,6 +23,8 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -191,9 +193,22 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             ExpressionTree arg = containingTopLevel != null ? 
                 make.Identifier(containingTopLevel.getSimpleName() + ".class.getName()") :
                 make.Literal("global"); // global should never happen
+            
+            // check that there isn't any Logger class imported
+            boolean useFQN = false;
+            for (ImportTree dovoz : info.getCompilationUnit().getImports()) {
+                MemberSelectTree id = (MemberSelectTree) dovoz.getQualifiedIdentifier();
+                if ("Logger".equals(id.getIdentifier()) && !"java.util.logging.Logger".equals(id.toString())) {
+                    useFQN = true;
+                }
+            }
+            // finally, make the invocation
             ExpressionTree etExpression = make.MethodInvocation(
                     Collections.<ExpressionTree>emptyList(),
-                    make.MemberSelect(make.QualIdent(logger), "getLogger"),
+                    make.MemberSelect(
+                        useFQN ? make.Identifier(logger.toString()) : make.QualIdent(logger),
+                        "getLogger"
+                    ),
                     Collections.<ExpressionTree>singletonList(arg)
             );
             ExpressionTree levelExpression = make.MemberSelect(make.QualIdent(level), "SEVERE");
