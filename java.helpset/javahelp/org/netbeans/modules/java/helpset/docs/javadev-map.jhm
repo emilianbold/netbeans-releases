@@ -83,6 +83,28 @@
 <mapID target="proj_fav_window" url="project/csh/proj_fav_window.html" />
 
 
+<!--begin Refactoring section-->
+
+<mapID target="refactor.aboutRefactoring" url="refactor/aboutRefactoring.html" />
+<mapID target="refactor.Undo" url="refactor/undo.html" />
+<mapID target="refactor.findClass" url="refactor/findClass.html" />
+<mapID target="refactor.renameClass" url="refactor/renameClass.html" />
+<mapID target="refactor.renameField" url="refactor/renameField.html" />
+<mapID target="refactor.moveClass" url="refactor/moveClass.html" />
+<mapID target="refactor.encapsulateField" url="refactor/encapsulateField.html" />
+<mapID target="refactor.changeParameters" url="refactor/changeParameters.html" />
+<mapID target="refactor.convertAnonymous" url="refactor/convertAnonymous.html" />
+<mapID target="refactor.extractInterface" url="refactor/extractInterface.html" />
+<mapID target="refactor.extractMethod" url="refactor/extractMethod.html" />
+<mapID target="refactor.extractSuperclass" url="refactor/extractSuperclass.html" />
+<mapID target="refactor.moveInner" url="refactor/moveInner.html" />
+<mapID target="refactor.pullUp" url="refactor/pullUp.html" />
+<mapID target="refactor.pushDown" url="refactor/pushDown.html" />
+<mapID target="refactor.refactorQuickRef" url="refactor/refactorQuickRef.html" />
+<mapID target="refactor.safeDelete" url="refactor/safeDelete.html" />
+<mapID target="refactor.useSupertype" url="refactor/useSupertype.html" />
+
+
 <!--begin GUI Builder section-->
 
 <mapID target="gui.about" url="gui/gui_about.html" />
@@ -206,6 +228,49 @@
     <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel.ejb.java" url="project/csh/proj_j2sefree_props_classpath.html" />
     <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel.ejb.java" url="project/csh/proj_j2sefree_props_output.html" />
     <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel.ejb.java" url="project/csh/proj_j2sefree_props_buildrun.html" />
+
+
+<!-- Refactoring CSH :-->
+<!--Find Usages dialog:-->
+<mapID target="org.netbeans.modules.refactoring.ui.WhereUsedQueryUI" url="refactor/csh/findUsages-CSH.html" /> 
+<!--Rename-->
+<!--displays Rename Class or Rename Package dialog box after in-place rename of class or package-->
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI" url="refactor/csh/rename_db.html" />  
+<!--these four display Rename dialog box when you choose Refactor | Rename on a Projects/Files node or on code element in Source Editor-->
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Method" url="refactor/csh/rename_db.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Field" url="refactor/csh/rename_db.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.JavaClass" url="refactor/csh/rename_db.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.JavaPackage" url="refactor/renameClass.html" />
+<!--Move Multiple Classes dialog box - either from Move Classes command or after manual move-->
+<mapID target="org.netbeans.modules.refactoring.ui.MoveClassesUI" url="refactor/moveClass.html" />  
+<!--Move Single Class:-->
+<mapID target="org.netbeans.modules.refactoring.ui.MoveClassUI" url="refactor/csh/move-class_db.html" /> 
+<mapID target="org.netbeans.modules.refactoring.ui.EncapsulateFieldUI" url="refactor/csh/encapsulate-fields_db.html" /> 
+<!--Change Method Parameters: -->
+<mapID target="org.netbeans.modules.refactoring.ui.ChangeParametersUI" url="refactor/csh/change-method-parameters_db.html" /> 
+<!--Extract Method: -->
+<mapID target="org.netbeans.modules.refactoring.ui.ExtractMethodRefactoringUI" url="refactor/csh/extract-method_db.html" /> 
+<!--Extract Interface dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.ExtractInterfaceRefactoringUI" url="refactor/csh/extract-interface_db.html" /> 
+<!--Extract Super Class dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.ExtractSuperClassRefactoringUI" url="refactor/csh/extract-superclass_db.html" /> 
+<!--Safely Delete dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.SafeDeleteUI" url="refactor/csh/safe-delete_db.html" /> 
+<!--Pull Up dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.PullUpRefactoringUI" url="refactor/csh/pull-up_db.html" /> 
+<!--Push Down dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.PushDownRefactoringUI" url="refactor/csh/push-down_db.html" /> 
+<!--Convert Anonymous Class to Inner dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.AnonymousToInnerRefactoringUI" url="refactor/csh/convert-anonymous_db.html" /> 
+<!--Use Supertype Where Possible dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.UseSuperTypeRefactoringUI" url="refactor/csh/use-supertype_db.html" /> 
+<!--Move Inner to Outer Level dialog box -->
+<mapID target="org.netbeans.modules.refactoring.ui.InnerToOuterRefactoringUI" url="refactor/csh/move-inner_db.html" /> 
+<!--Usages window-->
+<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer.find-usages" url="refactor/csh/usagesWindow.html" />
+<!--Refactoring window: -->
+<mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer.refactoring-preview" url="refactor/csh/previewWindow.html" />
+
 
 <!--CSH for GUI Builder:-->
 
