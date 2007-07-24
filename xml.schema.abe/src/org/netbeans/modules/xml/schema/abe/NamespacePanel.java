@@ -74,13 +74,16 @@ public class NamespacePanel extends GradientShadePanel{
         super.selectedBottomGradientColor = Color.WHITE;
         initialize();
         initKeyListener();
+        this.setFocusable(true);
+        this.requestFocusInWindow();
+        
     }
     
     
     private void initKeyListener(){
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
-                if(context.getFocusTraversalManager().isFocusChangeEvent(e))
+               if(context.getFocusTraversalManager().isFocusChangeEvent(e))
                     context.getFocusTraversalManager().handleEvent(e, NamespacePanel.this);
             }
             

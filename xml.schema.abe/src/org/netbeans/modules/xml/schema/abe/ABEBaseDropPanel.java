@@ -30,6 +30,8 @@ import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
@@ -64,6 +66,20 @@ public abstract class ABEBaseDropPanel extends JPanel {
             }
         });
         initialize();
+        initKeyList();
+    }
+      
+    private void initKeyList(){
+        addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                if( e.getKeyCode() ==  KeyEvent.VK_CONTEXT_MENU) {
+                    context.getMultiComponentActionManager().showPopupMenu(e, ABEBaseDropPanel.this);
+                    return;
+                }
+               
+            }
+            
+        });
     }
     
     

@@ -29,6 +29,7 @@
 package org.netbeans.modules.xml.schema.abe;
 
 import java.awt.Component;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.JPopupMenu;
@@ -90,6 +91,36 @@ public class MultiComponentActionManager {
             //show the Popup
             Component hostComponent = e.getComponent();
             menu.show(hostComponent, e.getX(), e.getY());
+        }
+    }
+
+    public void showPopupMenu(KeyEvent e, ABEBaseDropPanel eventSource) {
+        ArrayList<ABEBaseDropPanel> list = context.getComponentSelectionManager().getSelectedComponentList();
+
+        if(!list.contains(eventSource)){
+            //right click was performed on some other place than insde already selected items
+            //so just remove previous selections and select the current component
+            context.getComponentSelectionManager().
+                    setSelectedComponent(eventSource);
+            //now use this list for right click action
+            list = context.getComponentSelectionManager().getSelectedComponentList();
+        }
+        
+        ArrayList<Node> nodeList = new ArrayList<Node>();
+        for(Component component: list){
+            if(component instanceof ABEBaseDropPanel &&
+                    ((ABEBaseDropPanel)component).getNBNode() != null){
+                nodeList.add(((ABEBaseDropPanel)component).getNBNode());
+            }
+        }
+        if(nodeList.size() > 0){
+            //context.getTopComponent().setActivatedNodes(nodeList.toArray(new Node[0]));
+            //get the available action in a popup menu
+            //JPopupMenu menu = nodeList.get(0).getContextMenu();
+            JPopupMenu menu = NodeOp.findContextMenu(nodeList.toArray(new Node[nodeList.size()]));
+            //show the Popup
+            Component hostComponent = e.getComponent();
+            menu.show(hostComponent, hostComponent.getWidth()/3, hostComponent.getHeight()/2);
         }
     }
     

@@ -31,10 +31,14 @@ import java.util.List;
 import org.netbeans.modules.xml.schema.abe.ABEBaseDropPanel;
 import org.netbeans.modules.xml.schema.abe.AttributePanel;
 import org.netbeans.modules.xml.schema.abe.CompositorPanel;
+import org.netbeans.modules.xml.schema.abe.ElementPanel;
+import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.schema.abe.ContainerPanel;
 import org.netbeans.modules.xml.schema.abe.GlobalComplextypeContainerPanel;
 import org.netbeans.modules.xml.schema.abe.GlobalElementsContainerPanel;
 import org.netbeans.modules.xml.schema.abe.NamespacePanel;
 import org.netbeans.modules.xml.schema.abe.StartTagPanel;
+import org.netbeans.modules.xml.schema.abe.TagPanel;
 
 /**
  *
@@ -90,6 +94,34 @@ public class UpTraversalVisitor extends TraversalVisitor{
     
     public void visit(CompositorPanel panel) {
         super.visit(panel);
+    }
+
+    public void visit(ElementPanel elementPanel) {
+        elementPanel.collapseChild();
+        if(currentComponent instanceof ContainerPanel){
+            AXIComponent comp = currentComponent.getAXIComponent();
+            List list = elementPanel.getAXIContainer().getChildren(TraversalVisitor.getEnCFilterList());
+            int i = list.indexOf(comp);
+            if( i > 0) {
+                //next comp
+                result = elementPanel.getChildUIComponentFor((AXIComponent) list.get(i-1));
+                return;
+            } else {
+                StartTagPanel startPanel = (StartTagPanel)elementPanel.getStartTagPanel();
+                List<AttributePanel> attrPanels = startPanel.getAttributePanels();
+                if(attrPanels.size() > 0) {
+                    result = attrPanels.get(attrPanels.size() -1 );
+                    return;
+                } else {
+                    result = elementPanel.getStartTagPanel();
+                    return;
+                }  
+            }
+        }
+        //has to move  to prev comp. So, call parents forward
+        TraversalVisitor tv = new BackTraversalVisitor(elementPanel);
+        elementPanel.getParentContainerPanel().accept(tv);
+        result = tv.getResult();
     }
     
     

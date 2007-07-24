@@ -42,6 +42,7 @@ import org.netbeans.modules.xml.schema.abe.visitors.UpTraversalVisitor;
 import org.netbeans.modules.xml.schema.abe.visitors.BackTraversalVisitor;
 import org.netbeans.modules.xml.schema.abe.visitors.FrontTraversalVisitor;
 import org.netbeans.modules.xml.schema.abe.visitors.DownTraversalVisitor;
+import org.netbeans.modules.xml.schema.abe.visitors.TabTraversalVisitor;
 
 /**
  *
@@ -112,10 +113,10 @@ public class FocusTraversalManager{
         if(keyCode == KeyEvent.VK_RIGHT)
             return NavigationType.FRONT;
         
-        /*if(keyCode == KeyEvent.VK_LEFT)
+        if(keyCode == KeyEvent.VK_LEFT)
             return NavigationType.BACK;
-        
-        if(keyCode == KeyEvent.VK_UP)
+       
+        /* if(keyCode == KeyEvent.VK_UP)
             return NavigationType.UP;
         
         if(keyCode == KeyEvent.VK_DOWN)
