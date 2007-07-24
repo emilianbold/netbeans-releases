@@ -1,53 +1,1 @@
-<html>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<!--
- * Copyright © 2007 Sun Microsystems, Inc.
- * All rights reserved. 
- * Use is subject to license terms.
--->
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<title>Object Array Data Provider</title>
-<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
-</head>
-<body>
-<h1>Object Array Data Provider</h1>
-<p><small><a href="#seealso">See Also</a></small></p>
-<p>This <code>TableDataProvider</code> implementation wraps access to an array of JavaBeans objects. Depending on whether the class in the array is a simple Java <code>Object</code> or a JavaBeans object, the data provider's field keys correspond either to the properties of the JavaBeans object or to the public member fields of the Java <code>Object</code> in the list. If the class in the list is not a JavaBeans object, you must  set the <code>includeFields</code> property to make the class's public instance variables accessible as fields.</p>
-<p>A common use of this data provider is to  wrap an array  and then bind the Table component to it, as you can do with a database table.</p>
-<p>This data provider determines which fields are available by examining the underlying component data type of the array. If you pass in an array that is of type <code>Object[]</code>, with initialization code like the following code, the fields of your actual object type will not be available.:<br>
-</p>
-<p><code>&nbsp;&nbsp;&nbsp;Map map = ...;<br>
-  &nbsp;&nbsp;&nbsp;return new ObjectArrayDataProvider(map.values().toArray());</code><br>
-  <br>
-  If you know that your data is all of type Foo, use code simlar to the following code:<br>
-  <code>&nbsp;&nbsp;&nbsp;Map map = ...;<br>
-  &nbsp;&nbsp;&nbsp;return new ObjectArrayDataProvider<br>
-&nbsp;&nbsp;&nbsp;&nbsp;  ((Foo[]) map.values().toArray(new Foo[0]));</code></p>
-<p>This data provider is one of several <code>TableDataProvider</code> implementations that have the notion of a cursor that can be positioned at a particular row in the underlying data.&nbsp;<code>TableDataProvider</code> provides both random access, where you specify both a <code>FieldKey</code> and a <code>RowKey</code>, and cursor-based access, where you specify a <code>FieldKey</code> and the <code>RowKey</code> is determined by the current setting for the cursor.</p>
-<ul class="note">
-  <li> 
-    This data provider wraps access to an array of  Java objects.  For this data provider to remain serializable, the contained objects must also be serializable. 
-  </li>
-</ul>
-<dl>
-  <dt><a name="seealso">See Also</a></dt>
-  <dd><a href="propsheets/object_array_dp_props.html">Object Array Data Provider Properties Window</a></dd>
-  <dd><a href="../../../connect_data/aboutcompdata.html">About Components and Data</a></dd>
-  <dd><a href="../../../connect_data/about_data_binding.html">About Binding Components to Data</a></dd>
-  
-  <dd><a href="../../../components/aboutcomponents.html">About 
-    Components</a></dd>
-</dl>
-<hr>
-<dl>
-  <dt> <small><a href="../../../credits.html">Legal Notices</a></small> 
-  </dt>
-</dl>
-<table cellpadding="50" border="0">
-  <tr>
-    <td>&nbsp;</td>
-  </tr>
-</table>
-</body>
-</html>
+<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Object Array Data Provider</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Object Array Data Provider</h2><p><small><a href="#seealso">See Also</a></small></p><p>This <code>TableDataProvider</code> implementation wraps access to an array of JavaBeans objects. Depending on whether the class in the array is a simple Java <code>Object</code> or a JavaBeans object, the data provider's field keys correspond either to the properties of the JavaBeans object or to the public member fields of the Java <code>Object</code> in the list. If the class in the list is not a JavaBeans object, you must  set the <code>includeFields</code> property to make the class's public instance variables accessible as fields.</p><p>A common use of this data provider is to  wrap an array  and then bind the Table component to it, as you can do with a database table.</p><p>This data provider determines which fields are available by examining the underlying component data type of the array. If you pass in an array that is of type <code>Object[]</code>, with initialization code like the following code, the fields of your actual object type will not be available.:<br></p><p><code>&nbsp;&nbsp;&nbsp;Map map = ...;<br>  &nbsp;&nbsp;&nbsp;return new ObjectArrayDataProvider(map.values().toArray());</code><br>  <br>  If you know that your data is all of type Foo, use code simlar to the following code:<br>  <code>&nbsp;&nbsp;&nbsp;Map map = ...;<br>  &nbsp;&nbsp;&nbsp;return new ObjectArrayDataProvider<br>&nbsp;&nbsp;&nbsp;&nbsp;  ((Foo[]) map.values().toArray(new Foo[0]));</code></p><p>This data provider is one of several <code>TableDataProvider</code> implementations that have the notion of a cursor that can be positioned at a particular row in the underlying data.&nbsp;<code>TableDataProvider</code> provides both random access, where you specify both a <code>FieldKey</code> and a <code>RowKey</code>, and cursor-based access, where you specify a <code>FieldKey</code> and the <code>RowKey</code> is determined by the current setting for the cursor.</p><ul class="note">  <li>     This data provider wraps access to an array of  Java objects.  For this data provider to remain serializable, the contained objects must also be serializable.   </li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="propsheets/object_array_dp_props.html">Object Array Data Provider Properties Window</a></dd>  <dd><a href="../../../connect_data/aboutcompdata.html">About Components and Data</a></dd>  <dd><a href="../../../connect_data/about_data_binding.html">About Binding Components to Data</a></dd>    <dd><a href="../../../components/aboutcomponents.html">About     Components</a></dd></dl><hr><dl>  <dt> <small><a href="../../../credits.html">Legal Notices</a></small>   </dt></dl><table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
