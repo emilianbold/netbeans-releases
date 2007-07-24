@@ -12,18 +12,16 @@
 
 <tocitem text="Legal Notices" target="ide.credits" />
 
-<tocitem text="IDE Basics" >
+<tocitem text="IDE Basics" expand="false">
 
   <tocitem text="Getting Started" >
    <tocitem text="IDE Overview" target="gs.tour" />
     <tocitem text="Key Concepts" target="gs.key" />
   </tocitem>
   
-  <tocitem text="Working with Projects" >
 
-  </tocitem>
 
-  <tocitem text="Working with Files" >
+  <tocitem text="Basic File Features" >
     <tocitem text="Searching Files" target="files.search" />
     <tocitem text="Comparing Two Files in the IDE" target="files.diff" />
     <tocitem text="Accessing Files Outside of a Project" target="files_favorite" />
@@ -81,11 +79,10 @@
       <tocitem text="Setting Font and Color for the Help Viewer" target="accessibility.stylesheet"/>
       <tocitem text="Displaying Help in a Web Browser" target="accessibility.alternate.browser" />
   </tocitem>
-</tocitem>
 
-<tocitem text="Java Project Basics" >
-  <tocitem text="Editing Source Files" >
-    <tocitem text="Editing XML Documents" >
+
+
+    <tocitem text="XML Documents" >
       <tocitem text="About Editing XML Documents" target="xml_about" />
       <tocitem text="Working with XML Documents" target="xml_overview" />
       <tocitem text="XML Tasks: Quick Reference" target="xml_quickref" />
@@ -115,7 +112,7 @@
       </tocitem>
     </tocitem>   
 
-    <tocitem text="Editing Resource Bundles">
+    <tocitem text="Resource Bundles">
       <tocitem text="About Resource Bundles" target="propfiles.intro"/>
       <tocitem text="Creating and Deleting a Resource Bundle" target="propfiles.creating" />
       <tocitem text="Editing a Resource Bundle" target="propfiles.modifying" />
@@ -124,31 +121,13 @@
       <tocitem text="Editing a Locale" target="propfiles.editlocale" />
     </tocitem>
 
-    <tocitem text="Configuring the Source Editor" >
-      <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting"/>
-    </tocitem>
-  </tocitem>
-
-
-      <tocitem text="Building Java Applications" ></tocitem>
-  <tocitem text="Running Java Applications" >  </tocitem>
-
-
-    <tocitem text="Debugging Applications">  </tocitem>
-
-  <tocitem text="Building Java GUIs">
-  </tocitem>
-
-  <tocitem text="Working with Ant">
 
   </tocitem>
-  
-  <tocitem text="Working With Javadoc Documentation">
-  </tocitem>
 
-  <tocitem text="Testing with JUnit">
-  </tocitem>
-</tocitem>
+
+
+
+
 
 <tocitem text="Servers and Databases">
 
