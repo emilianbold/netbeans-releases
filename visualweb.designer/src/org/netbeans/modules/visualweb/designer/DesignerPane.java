@@ -762,6 +762,10 @@ public class DesignerPane extends org.netbeans.modules.visualweb.text.DesignerPa
 //        if (MarkupService.isRenderedNode(b)) {
             b = MarkupService.getSourceElementForElement(b);
 //        }
+        // XXX Possible NPE (experienced with fragment).
+        if (b == null) {
+            return false;
+        }
 
         NodeList list = b.getChildNodes();
         int len = list.getLength();
