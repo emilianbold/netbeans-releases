@@ -136,12 +136,16 @@ public class GotoActionView extends AbstractAction {
 
             if (app == null) {
                 notFound(target);
+                
+                return;
             }
 
             FileObject viewsFolder = app.getFileObject("views/" + path); // NOI18N
 
             if (viewsFolder == null) {
                 notFound(target);
+                
+                return;
             }
 
             if (methodName != null) {
@@ -171,6 +175,13 @@ public class GotoActionView extends AbstractAction {
                     }
                 }
             }
+            
+            if (viewFile == null) {
+                Utilities.setStatusBoldText(target, "View not found");
+
+                return;
+            }
+
         } catch (Exception e) {
             notFound(target);
 
@@ -231,6 +242,8 @@ public class GotoActionView extends AbstractAction {
 
             if (app == null) {
                 notFound(target);
+                
+                return;
             }
 
             controllerFile = app.getFileObject("controllers/" + path + "_controller.rb"); // NOI18N

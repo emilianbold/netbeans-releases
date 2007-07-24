@@ -238,14 +238,10 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                         <attr name="position" intvalue="800"/>
                     </file>
-                    <!--
-                    <attr name="org-netbeans-modules-project-ui-RunSingle.shadow/org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow" boolvalue="true"/>
-                    <file name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-DebugFileAction.instance"/>
+                    <file name="org-netbeans-modules-project-ui-TestSingle.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-TestSingle.instance"/>
+                        <attr name="position" intvalue="805"/>
                     </file>
-                    <attr name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow/SeparatorBeforeCut.instance" boolvalue="true"/>
-                    <attr name="org-netbeans-modules-debugger-ui-actions-DebugFileAction.shadow/org-netbeans-modules-debugger-ui-actions-AddWatchAction.instance" boolvalue="true"/>
-                    -->
                 </folder>
             </folder>
         </folder>

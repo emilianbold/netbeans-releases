@@ -406,10 +406,9 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
 
             if (exitCode != 0) {
                 try {
-                    // This shouldn't be necessary since I call
-                    // ProcessBuilder.redirectErrorStream(), but
-                    // it doesn't appear to work (at least on OSX)
-                    // so I can read out additional info here
+                    // This might not be necessary now that I'm
+                    // calling ProcessBuilder.redirectErrorStream(true)
+                    // but better safe than sorry
                     is = process.getErrorStream();
                     isr = new InputStreamReader(is);
                     br = new BufferedReader(isr);

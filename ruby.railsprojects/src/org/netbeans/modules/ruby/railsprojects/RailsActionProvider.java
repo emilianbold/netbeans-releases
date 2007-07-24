@@ -93,7 +93,7 @@ public class RailsActionProvider implements ActionProvider {
         COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
         COMMAND_DEBUG_SINGLE,
-//        COMMAND_TEST, 
+        COMMAND_TEST, 
         COMMAND_TEST_SINGLE, 
         COMMAND_DEBUG_TEST_SINGLE, 
         COMMAND_DELETE,
@@ -124,10 +124,6 @@ public class RailsActionProvider implements ActionProvider {
         this.updateHelper = updateHelper;
         this.project = project;
     }
-    
-//    private FileObject findBuildXml() {
-//        return project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-//    }
     
     public String[] getSupportedActions() {
         return supportedActions;
@@ -193,6 +189,16 @@ public class RailsActionProvider implements ActionProvider {
             // Save all files first
             LifecycleManager.getDefault().saveAll();
             runServer("", debugCommand);
+            return;
+        } else if (COMMAND_TEST.equals(command)) {
+            if (!RubyInstallation.getInstance().isValidRake(true)) {
+                return;
+            }
+            // Save all files first
+            LifecycleManager.getDefault().saveAll();
+            RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+            File pwd = FileUtil.toFile(project.getProjectDirectory());
+            rake.runRake(pwd, null, "Tests", new RubyFileLocator(context), true, "test");
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
             // Run test normally - don't pop up browser
@@ -358,6 +364,8 @@ public class RailsActionProvider implements ActionProvider {
             // Save all files first
             LifecycleManager.getDefault().saveAll();
 
+            // TODO - use RakeSupport
+
             RubyFileLocator fileLocator = new RubyFileLocator(context);
             String displayName = "Rake";
 
@@ -409,7 +417,7 @@ public class RailsActionProvider implements ActionProvider {
                             }
                             catch (MalformedURLException ex) {
                                 ErrorManager.getDefault().notify(ex);
-                            };
+                            }
                         }
                     }
                 }
@@ -577,16 +585,6 @@ public class RailsActionProvider implements ActionProvider {
     }
     
     
-    private File getSourceFolder() {
-        // Default to using the project source directory
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        if (srcPath != null && srcPath.length > 0) {
-            return FileUtil.toFile(srcPath[0]);
-        } else {
-            return FileUtil.toFile(project.getProjectDirectory());
-        }
-    }    
-    
     public boolean isActionEnabled( String command, Lookup context ) {
         // We don't require files to be in the source roots to be executable/debuggable;
         // for example, in Rails you may want to switch to the Files view and execute
@@ -644,90 +642,11 @@ public class RailsActionProvider implements ActionProvider {
         return null;
     }
 
-    private FileObject[] findSourcesAndPackages (Lookup context, FileObject srcDir) {
-        if (srcDir != null) {
-            FileObject[] files = findSelectedFiles(context, srcDir, null, true); // NOI18N
-            //Check if files are either packages or Ruby files
-            if (files != null) {
-                for (int i = 0; i < files.length; i++) {
-                    if (!files[i].isFolder() && (files[i].getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE) ||
-                            files[i].getMIMEType().equals(RhtmlTokenId.MIME_TYPE))) {
-                        return null;
-                    }
-                }
-            }
-            return files;
-        } else {
-            return null;
-        }
-    }
-    
-    private FileObject[] findSourcesAndPackages (Lookup context, FileObject[] srcRoots) {
-        for (int i=0; i<srcRoots.length; i++) {
-            FileObject[] result = findSourcesAndPackages(context, srcRoots[i]);
-            if (result != null) {
-                return result;
-            }
-        }
-        return null;
-    }
-    
-    /** Find either selected tests or tests which belong to selected source files
-     */
-    private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
-        //XXX: Ugly, should be rewritten
-//        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-//        for (int i=0; i< testSrcPath.length; i++) {
-//            FileObject[] files = findSelectedFiles(context, testSrcPath[i], RubyInstallation.RUBY_MIME_TYPE, true); // NOI18N
-//            if (files != null) {
-//                return files;
-//            }
-//        }
-//        if (checkInSrcDir && testSrcPath.length>0) {
-//            FileObject[] files = findSources (context);
-//            if (files != null) {
-//                //Try to find the test under the test roots
-//                FileObject srcRoot = getRoot(project.getSourceRoots().getRoots(),files[0]);
-//                for (int i=0; i<testSrcPath.length; i++) {
-//                    FileObject[] files2 = ActionUtils.regexpMapFiles(files,srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
-//                    if (files2 != null) {
-//                        return files2;
-//                    }
-//                }
-//            }
-//        }
-        return null;
-    }
-   
-
-    /** Find tests corresponding to selected sources.
-     */
-    private FileObject[] findTestSourcesForSources(Lookup context) {
-//        FileObject[] sourceFiles = findSources(context);
-//        if (sourceFiles == null) {
-//            return null;
-//        }
-//        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-//        if (testSrcPath.length == 0) {
-//            return null;
-//        }
-//        FileObject[] srcPath = project.getSourceRoots().getRoots();
-//        FileObject srcDir = getRoot(srcPath, sourceFiles[0]);
-//        for (int i=0; i<testSrcPath.length; i++) {
-//            FileObject[] files2 = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcPath[i], SUBST, true);
-//            if (files2 != null) {
-//                return files2;
-//            }
-//        }
-        return null;
-    }      
-    
-    
     // From the ant module - ActionUtils.
     // However, I've modified it to do its search based on mime type rather than file suffixes
     // (since some Ruby files do not use a .rb extension and are discovered based on the initial shebang line)
     
-    public static FileObject[] findSelectedFiles(Lookup context, FileObject dir, String mimeType, boolean strict) {
+    static FileObject[] findSelectedFiles(Lookup context, FileObject dir, String mimeType, boolean strict) {
         if (dir != null && !dir.isFolder()) {
             throw new IllegalArgumentException("Not a folder: " + dir); // NOI18N
         }
