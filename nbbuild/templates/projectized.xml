@@ -134,7 +134,21 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         </path>
     </target>
 
-    <target name="-conditional-javadoc-warn" depends="-conditional-16-init" if="skip.16">
+    <target name="-conditional-javadoc-init" depends="-conditional-16-init">
+        <condition property="skip.javadoc">
+            <or>
+                <isset property="skip.16"/>
+                <and>
+                    <isset property="config.javadoc.cluster"/>
+                    <not>
+                        <equals arg1="${cluster.dir}" arg2="${config.javadoc.cluster}"/>
+                    </not>
+                </and>                
+            </or>
+        </condition>
+    </target>
+    
+    <target name="-conditional-javadoc-warn" depends="-conditional-javadoc-init" if="skip.16">
         <echo level="error" message="Cannot build javadoc for module ${basedir} as it requires JDK 1.6"/>
     </target>
 
@@ -145,8 +159,8 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <echo>Unpacking XHTML DTD...</echo>
         <ant dir="${nb_all}/libs/external" target="unzip"/>
     </target>
-    
-    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn,-prepare-xhtml-dtd" unless="skip.16">
+
+    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn,-prepare-xhtml-dtd" unless="skip.javadoc">
         <property name="javadoc.check.failonerror" value="false" />
         <!-- This should become an import at some point, perhaps: -->
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
