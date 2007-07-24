@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -47,24 +47,32 @@ public class VarArgsTest extends GeneratorTestMDRCompat {
     public void testMethodWithVarargs() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.File;\n\n" +
-            "public class Test {\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
             "    void method(Object[] a) {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "}\n"
             );
         String golden =
-            "package hierbas.del.litoral;\n\n" +
-            "import java.io.File;\n\n" +
-            "public class Test {\n\n" +
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.File;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "\n" +
             "    void method(Object... a) {\n" +
-            "    }\n\n" +
+            "    }\n" +
+            "\n" +
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
