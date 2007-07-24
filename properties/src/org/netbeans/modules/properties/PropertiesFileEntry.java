@@ -177,12 +177,10 @@ public class PropertiesFileEntry extends PresentableFileEntry
         // Hack to ensure open support is created.
         // PENDING has to be made finer.
         getDataObject().getCookie(PropertiesOpen.class);
-        
-        if(editorSupport == null) {
-            synchronized(this) {
-                if(editorSupport == null)
-                    editorSupport = new PropertiesEditorSupport(this);
-            }
+
+        synchronized(this) {
+            if(editorSupport == null) 
+                editorSupport = new PropertiesEditorSupport(this);
         }
             
         return editorSupport;
