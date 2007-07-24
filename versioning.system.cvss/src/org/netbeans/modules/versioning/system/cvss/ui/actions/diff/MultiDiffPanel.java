@@ -118,7 +118,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         currentType = initialType;
         initComponents();
         setupComponents();
-        refreshSetups();
+        onRefreshButton();
         refreshComponents();
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
     }
@@ -283,6 +283,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             if ((newInfo.getStatus() & displayStatuses) == 0) return false;
         } else {
             if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
+            if (oldInfo.getStatus() == newInfo.getStatus()) return false;
         }
         return context.contains(file);
     }

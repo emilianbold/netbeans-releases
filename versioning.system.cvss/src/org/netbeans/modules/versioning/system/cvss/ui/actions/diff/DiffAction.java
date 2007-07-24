@@ -38,10 +38,6 @@ import org.openide.util.NbBundle;
  */
 public class DiffAction extends AbstractSystemAction {
     
-    private static final int enabledForStatus =
-            FileInformation.STATUS_LOCAL_CHANGE |
-            FileInformation.STATUS_REMOTE_CHANGE;
-
     public DiffAction() {
         setIcon(null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
@@ -51,8 +47,12 @@ public class DiffAction extends AbstractSystemAction {
         return "CTL_MenuItem_Diff";  // NOI18N
     }
 
-    protected boolean enable(Node[] nodes) {
-        return CvsVersioningSystem.getInstance().getFileTableModel(Utils.getCurrentContext(nodes), enabledForStatus).getNodes().length > 0;
+    protected int getFileEnabledStatus() {
+        return FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_REMOTE_CHANGE;
+    }
+
+    protected int getDirectoryEnabledStatus() {
+        return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED; 
     }
 
     public void performCvsAction(Node[] nodes) {
