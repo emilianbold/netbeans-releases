@@ -34,6 +34,7 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenFailureCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenSuccessCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -42,7 +43,7 @@ import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTas
 public class WaitScreenProducer extends MidpComponentProducer {
    
     public WaitScreenProducer() {
-       super(WaitScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Wait Screen", "Wait Screen", WaitScreenCD.ICON_PATH, WaitScreenCD.ICON_LARGE_PATH)); // NOI18N
+       super(WaitScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(WaitScreenProducer.class, "DISP_Wait_Screen"), NbBundle.getMessage(WaitScreenProducer.class, "TTIP_Wait_Screen"), WaitScreenCD.ICON_PATH, WaitScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
 

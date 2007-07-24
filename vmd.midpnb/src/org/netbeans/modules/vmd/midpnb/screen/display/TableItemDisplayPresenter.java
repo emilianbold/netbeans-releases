@@ -36,6 +36,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -78,10 +79,10 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         
         if (!hasModel) {
             cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
-            g.drawString("<no table model specified>", CELL_INSETS, cummulativeY);
+            g.drawString(NbBundle.getMessage(TableItemDisplayPresenter.class, "DISP_no_table_model_specified"), CELL_INSETS, cummulativeY); // NOI18N
         } else if  (values == null) {
             cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
-            g.drawString("<empty table model>", CELL_INSETS, cummulativeY);
+            g.drawString(NbBundle.getMessage(TableItemDisplayPresenter.class, "DISP_empty_table_model"), CELL_INSETS, cummulativeY); // NOI18N
         } else {
             Graphics2D g2D = (Graphics2D)g;
             Dimension oldSize = panel.getSize();

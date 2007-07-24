@@ -20,7 +20,6 @@
 
 package org.netbeans.modules.vmd.midpnb.components.items;
 
-import java.awt.Image;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignEventFilter;
@@ -32,7 +31,10 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter.Resolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+
+import java.awt.*;
 
 /**
  *
@@ -65,7 +67,7 @@ public class ItemSupport {
                 case PRIMARY:
                     return resolveName (component);
                 case SECONDARY:
-                    return "Element";
+                    return NbBundle.getMessage(ItemSupport.class, "TYPE_Element"); // NOI18N
                 case TERTIARY:
                     return null;
                 default:
@@ -86,7 +88,7 @@ public class ItemSupport {
             if (value.getKind() == PropertyValue.Kind.VALUE)
                 return MidpTypes.getString(value);
             else
-                return "";
+                return ""; // NOI18N
         }
         
         public void setEditableName(DesignComponent component, String enteredName) {

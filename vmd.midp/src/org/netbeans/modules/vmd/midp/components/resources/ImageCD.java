@@ -27,7 +27,7 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.imagechooser.PropertyEditorImageChooser;
 
 import java.util.Arrays;
@@ -62,7 +62,7 @@ public final class ImageCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Resource Path", new PropertyEditorImageChooser("png","jpg","gif"), PROP_RESOURCE_PATH);
     }
 

@@ -28,10 +28,12 @@ import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorTableModel;
+import org.openide.util.NbBundle;
+
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertyEditorTableModel;
 
 /**
  *
@@ -61,8 +63,8 @@ public class SimpleTableModelCD extends ComponentDescriptor {
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
-            .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                 .addProperty("Values", new PropertyEditorTableModel(), PROP_VALUES); // TODO - Column Names
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                 .addProperty(NbBundle.getMessage(SimpleTableModelCD.class, "DISP_SimpleTableModel_Values"), new PropertyEditorTableModel(), PROP_VALUES); // NOI18N
     }
 
     private Presenter createSetterPresenter () {

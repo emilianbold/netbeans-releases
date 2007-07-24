@@ -31,7 +31,7 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.date.PropertyEditorDate;
 import org.netbeans.modules.vmd.midp.propertyeditors.timezone.PropertyEditorTimeZone;
@@ -86,7 +86,7 @@ public class DateFieldCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-            .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty("Date", "dd.mm.yyyy hh:mm:ss", PropertyEditorDate.createInstance(), PROP_DATE)
                 .addProperty("Time Zone", PropertyEditorTimeZone.createInstance(), PROP_TIME_ZONE)
                 .addProperty("Input Mode", PropertyEditorComboBox.createInstance(getInputModeValues(), TYPEID), PROP_INPUT_MODE);

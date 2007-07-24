@@ -34,7 +34,7 @@ import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ChildrenByTypePC;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.eventhandler.PropertyEditorEventHandler;
 
 import java.util.ArrayList;
@@ -68,10 +68,10 @@ public final class EventSourceCD extends ComponentDescriptor {
 
     public DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter()
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_ACTION_PROPERTIES)
+            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_ACTION_PROPERTIES)
                 .addProperty("Action", PropertyEditorEventHandler.createInstance(), PROP_EVENT_HANDLER)
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES);
+            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES);
     }
 
     private InspectorPositionController[] createPositionControllers() {

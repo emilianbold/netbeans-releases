@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.openide.util.Utilities;
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,7 +58,7 @@ public class SVGMenuEventHandlerCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
                 // info
-                InfoPresenter.createStatic ("Process SVG Menu", "Action", ICON_PATH),
+                InfoPresenter.createStatic (NbBundle.getMessage(SVGMenuEventHandlerCD.class, "DISP_Process_SVG_Menu"), NbBundle.getMessage(SVGMenuEventHandlerCD.class, "TYPE_Action"), ICON_PATH), // NOI18N
                 // flow
                 new FlowEventHandlerPinBadgePresenter (Utilities.loadImage (ICON_PATH), 0) {
                     protected DesignEventFilter getEventFilter () {
@@ -76,7 +77,7 @@ public class SVGMenuEventHandlerCD extends ComponentDescriptor {
                         DesignComponent menu = commandEventSource.getParentComponent ();
                         String code = MidpCustomCodePresenterSupport.getSVGMenuActionMethodAccessCode (menu);
                         if (code != null)
-                            section.getWriter ().write (code + " ();\n");
+                            section.getWriter ().write (code + " ();\n"); // NOI18N
                     }
                 }
         );

@@ -27,7 +27,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.handlers.MethodPointEventHandlerCD;
 import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
 
 import java.util.Arrays;
@@ -70,8 +70,8 @@ public class MethodPointCD extends ComponentDescriptor {
 
     public DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
-                .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-                .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
+                .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
                     .addProperty ("Method Name", PropertyEditorInstanceName.createInstance(TYPEID), PROP_METHOD_NAME);
     }
 

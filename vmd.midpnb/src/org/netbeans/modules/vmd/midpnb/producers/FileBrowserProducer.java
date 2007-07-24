@@ -22,6 +22,7 @@ import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.FileBrowserOpenCommandCD;
 import org.netbeans.modules.vmd.midpnb.components.displayables.FileBrowserCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.FileBrowserOpenCommandEventSourceCD;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -30,7 +31,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.FileBrowserOpenCommand
 public class FileBrowserProducer extends MidpComponentProducer {
     
     public FileBrowserProducer() {
-        super(FileBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "File Browser", "File Browser", FileBrowserCD.ICON_PATH, FileBrowserCD.ICON_LARGE_PATH)); // NOI18N
+        super(FileBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(FileBrowserProducer.class, "DISP_File_Browser"), NbBundle.getMessage(FileBrowserProducer.class, "TTIP_File_Browser"), FileBrowserCD.ICON_PATH, FileBrowserCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public Result postInitialize (DesignDocument document, DesignComponent fileBrowser) {

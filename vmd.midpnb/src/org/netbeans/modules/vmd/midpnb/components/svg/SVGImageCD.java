@@ -36,10 +36,11 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.resources.ResourcesSupport;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ResourcePC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 import org.netbeans.modules.vmd.midp.propertyeditors.imagechooser.PropertyEditorImageChooser;
 import org.netbeans.modules.vmd.midp.screen.ResourceSRItemPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.*;
 
@@ -84,9 +85,9 @@ public class SVGImageCD extends ComponentDescriptor {
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty("Resource Path", new PropertyEditorImageChooser("svg"), PROP_RESOURCE_PATH)
-                .addProperty("External Resource Handler", PropertyEditorJavaString.createInstance(TYPEID), PROP_EXTERNAL_RESOURCE_HANDLER);
+                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                .addProperty(NbBundle.getMessage(SVGImageCD.class, "DISP_SVGImage_ResourcePath"), new PropertyEditorImageChooser("svg"), PROP_RESOURCE_PATH) // NOI18N
+                .addProperty(NbBundle.getMessage(SVGImageCD.class, "DISP_SVGImage_ExternalResourceHandler"), PropertyEditorJavaString.createInstance(TYPEID), PROP_EXTERNAL_RESOURCE_HANDLER); // NOI18N
     }
     
     private static Presenter createSetterPresenter() {

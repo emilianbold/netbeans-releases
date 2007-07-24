@@ -38,7 +38,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.categories.*;
 import org.netbeans.modules.vmd.midp.inspector.controllers.RootPC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorVersion;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.util.Lookup;
@@ -85,7 +85,7 @@ public final class RootCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Version", "MIDP Version", PropertyEditorVersion.createInstance(), PROP_VERSION);
     }
 

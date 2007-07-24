@@ -41,7 +41,7 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowDisplayableCommandPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.DisplayableResourceCategoriesPresenter;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
@@ -100,7 +100,7 @@ public final class DisplayableCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
-                .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty ("Title", PropertyEditorString.createInstance(), PROP_TITLE)
                     .addProperty ("Ticker", PropertyEditorResource.createTickerPropertyEditor(), PROP_TICKER);
     }

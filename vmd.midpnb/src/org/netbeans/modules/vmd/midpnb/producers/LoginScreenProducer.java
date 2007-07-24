@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.LoginScreenLoginCommandCD;
 import org.netbeans.modules.vmd.midpnb.components.displayables.LoginScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.LoginScreenLoginCommandEventSourceCD;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -41,7 +42,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.LoginScreenLoginComman
 public class LoginScreenProducer extends MidpComponentProducer {
 
     public LoginScreenProducer() {
-        super(LoginScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Login Screen", "Login Screen", LoginScreenCD.ICON_PATH, LoginScreenCD.ICON_LARGE_PATH)); // NOI18N
+        super(LoginScreenCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(LoginScreenProducer.class, "DISP_Login_Screen"), NbBundle.getMessage(LoginScreenProducer.class, "TTIP_Login_Screen"), LoginScreenCD.ICON_PATH, LoginScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public Result postInitialize(DesignDocument document, DesignComponent loginScreen) {

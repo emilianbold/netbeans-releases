@@ -41,7 +41,7 @@ import org.netbeans.modules.vmd.midp.flow.FlowListElementPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
 import org.netbeans.modules.vmd.midp.inspector.controllers.ComponentsCategoryPC;
 import org.netbeans.modules.vmd.midp.inspector.folders.MidpInspectorSupport;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.ListElementEventSourceDisplayPresenter;
@@ -83,7 +83,7 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
             .addProperty ("String", PropertyEditorString.createInstance (), PROP_STRING) // NOI18N
             .addProperty ("Image", PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
             .addProperty("Font", PropertyEditorResource.createFontPropertyEditor(), PROP_FONT) // NOI18N

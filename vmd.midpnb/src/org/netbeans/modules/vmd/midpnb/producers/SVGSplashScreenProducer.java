@@ -29,6 +29,7 @@ import org.netbeans.modules.vmd.midpnb.components.commands.SVGSplashScreenDismis
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGSplashScreenDismissCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGSplashScreenCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -37,7 +38,7 @@ import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 public class SVGSplashScreenProducer extends MidpComponentProducer {
     
     public SVGSplashScreenProducer() {
-        super(SVGSplashScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Splash Screen", "SVG Splash Screen", SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
+        super(SVGSplashScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, NbBundle.getMessage(SVGSplashScreenProducer.class, "DISP_SVG_Splash_Screen"), NbBundle.getMessage(SVGSplashScreenProducer.class, "TTIP_SVG_Splash_Screen"), SVGSplashScreenCD.ICON_PATH, SVGSplashScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public Result postInitialize (DesignDocument document, DesignComponent splashScreen) {

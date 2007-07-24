@@ -25,7 +25,7 @@ import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 
 import java.util.*;
@@ -106,7 +106,7 @@ public final class FontCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Kind", PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_FONT_KIND)
                     .addProperty("Face", PropertyEditorComboBox.createInstance(getFaceTypes(), TYPEID, TYPEID), PROP_FACE)
                     .addProperty("Size", PropertyEditorComboBox.createInstance(getSizeTypes(), TYPEID, TYPEID), PROP_SIZE)

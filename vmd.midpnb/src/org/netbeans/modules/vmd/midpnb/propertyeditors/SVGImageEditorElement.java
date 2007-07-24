@@ -17,16 +17,6 @@
 
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
-import java.awt.BorderLayout;
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import javax.microedition.m2g.SVGImage;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -42,6 +32,17 @@ import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+
+import javax.microedition.m2g.SVGImage;
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  *
@@ -214,7 +215,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         }
 
         public String getDescription() {
-            return "SVG Image Files";
+            return NbBundle.getMessage(SVGImageEditorElement.class, "DISP_SVG_Image_Files"); // NOI18N
         }
 
         private static String getExtension(File file) {

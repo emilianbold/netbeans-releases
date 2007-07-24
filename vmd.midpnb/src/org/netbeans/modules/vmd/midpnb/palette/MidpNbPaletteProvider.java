@@ -52,7 +52,7 @@ public class MidpNbPaletteProvider implements PaletteProvider {
                     categoryFolder.getPrimaryFile().setAttribute("isExpanded", "true"); // NOI18N
                 }
             } catch (IOException e) {
-                Debug.error("Can't create directory for palette category: " + e);
+                Debug.error("Can't create directory for palette category: " + e); // NOI18N
             }
         }
     }

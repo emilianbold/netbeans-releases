@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.SVGWaitScreenFailureCo
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGWaitScreenSuccessCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGWaitScreenCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -41,7 +42,7 @@ import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 public class SVGWaitScreenProducer extends MidpComponentProducer {
     
     public SVGWaitScreenProducer() {
-        super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Wait Screen", "SVG Wait Screen", SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
+        super(SVGWaitScreenCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, NbBundle.getMessage(SVGWaitScreenProducer.class, "DISP_SVG_Wait_Screen"), NbBundle.getMessage(SVGWaitScreenProducer.class, "TTIP_SVG_Wait_Screen"), SVGWaitScreenCD.ICON_PATH, SVGWaitScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public Result postInitialize (DesignDocument document, DesignComponent waitScreen) {

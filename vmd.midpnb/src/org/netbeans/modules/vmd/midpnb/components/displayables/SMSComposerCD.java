@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
-import org.netbeans.modules.vmd.api.inspector.InspectorPositionPresenter;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.Presenter;
@@ -47,14 +46,14 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
-import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorColorChooser;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -103,13 +102,13 @@ public final class SMSComposerCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(CATEGORIES_SMS) 
-                   .addProperty("Phone Number", PropertyEditorString.createInstance(), PROP_PHONE_NUMBER)
-                   .addProperty("Message", PropertyEditorString.createInstance(), PROP_MESSAGE)
-                   .addProperty("Port Number", PropertyEditorNumber.createIntegerInstance(), PROP_PORT_NUMBER)
-                   .addProperty("Automatically Send", PropertyEditorBooleanUC.createInstance(), PROP_SEND_AUTOMATICALLY)
-               .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES) 
-                   .addProperty("Background Color", new PropertyEditorColorChooser(true), PROP_BGK_COLOR)
-                   .addProperty("Foreground Color", new PropertyEditorColorChooser(true), PROP_FRG_COLOR);
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_PhoneNumber"), PropertyEditorString.createInstance(), PROP_PHONE_NUMBER)
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_Message"), PropertyEditorString.createInstance(), PROP_MESSAGE)
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_Port_Number"), PropertyEditorNumber.createIntegerInstance(), PROP_PORT_NUMBER)
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_AutomaticallySend"), PropertyEditorBooleanUC.createInstance(), PROP_SEND_AUTOMATICALLY)
+               .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_BackgroundColor"), new PropertyEditorColorChooser(true), PROP_BGK_COLOR)
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_ForegroundColor"), new PropertyEditorColorChooser(true), PROP_FRG_COLOR);
     }
      
     private Presenter createSetterPresenter () {

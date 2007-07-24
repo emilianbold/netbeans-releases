@@ -22,6 +22,7 @@ import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.PIMBrowserOpenCommandCD;
 import org.netbeans.modules.vmd.midpnb.components.displayables.PIMBrowserCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.PIMBrowserOpenCommandEventSourceCD;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -30,7 +31,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.PIMBrowserOpenCommandE
 public class PIMBrowserProducer extends MidpComponentProducer {
     
     public PIMBrowserProducer() {
-        super(PIMBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "PIM Browser", "PIM Browser", PIMBrowserCD.ICON_PATH, PIMBrowserCD.ICON_LARGE_PATH)); // NOI18N
+        super(PIMBrowserCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(PIMBrowserProducer.class, "DISP_PIM_Browser"), NbBundle.getMessage(PIMBrowserProducer.class, "TTIP_PIM_Browser"), PIMBrowserCD.ICON_PATH, PIMBrowserCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public Result postInitialize (DesignDocument document, DesignComponent pimBrowser) {

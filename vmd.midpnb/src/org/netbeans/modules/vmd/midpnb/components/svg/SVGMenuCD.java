@@ -30,14 +30,15 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.general.AcceptTypePresenter;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.flow.FlowSVGMenuElementPinOrderPresenter;
+import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 
 /**
  *
@@ -79,8 +80,8 @@ public class SVGMenuCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-            .addPropertiesCategory(PropertiesCategories.CATEGORY_CODE_PROPERTIES)
-                .addProperty("Index Based Switch", PropertyEditorBooleanUC.createInstance(false), PROP_INDEX_BASED_SWITCH); //NOI18N   
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
+                .addProperty(NbBundle.getMessage(SVGMenuCD.class, "DISP_SVGMenu_IndexBasedSwitch"), PropertyEditorBooleanUC.createInstance(false), PROP_INDEX_BASED_SWITCH); //NOI18N
         
     }
 
@@ -101,7 +102,7 @@ public class SVGMenuCD extends ComponentDescriptor {
                         ArraySupport.append (getComponent (), SVGMenuCD.PROP_ELEMENTS, component);
                         if (component.isDefaultValue(SVGMenuElementEventSourceCD.PROP_STRING)) {
                             List<PropertyValue> list = getComponent ().readProperty(SVGMenuCD.PROP_ELEMENTS).getArray ();
-                            component.writeProperty (SVGMenuElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue ("SVG Menu Item " + list.size()));
+                            component.writeProperty (SVGMenuElementEventSourceCD.PROP_STRING, MidpTypes.createStringValue (NbBundle.getMessage(SVGMenuCD.class, "DISP_SVGMenu_NewMenuItem", list.size()))); // NOI18N
                         }
                     }
                 },

@@ -33,7 +33,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.sources.IfFalseEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.sources.IfTrueEventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowIfPointPinOrderPresenter;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 import org.openide.util.Utilities;
 
@@ -73,8 +73,8 @@ public class IfPointCD extends ComponentDescriptor {
 
     public DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
-                .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-                .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
+                .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
                     .addProperty ("Condition Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CONDITION); // NOI18N
     }
 

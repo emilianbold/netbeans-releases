@@ -39,7 +39,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCode;
 import org.netbeans.modules.vmd.midp.components.displayables.ScreenCD;
 import org.netbeans.modules.vmd.midp.inspector.controllers.DisplayablePC;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
@@ -84,8 +84,8 @@ public final class FileBrowserCD extends ComponentDescriptor {
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-               .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES) 
-                   .addProperty("Filter","File filter", new PropertyEditorString(NbBundle.getMessage(FileBrowserCD.class, "PROPERTY_EDITOR_COMMENT"),PropertyEditorString.DEPENDENCE_NONE), PROP_FILTER); //NOI18N
+               .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                   .addProperty(NbBundle.getMessage(FileBrowserCD.class, "DISP_FileBrowser_filter"), NbBundle.getMessage(FileBrowserCD.class, "TTIP_FileBrowser_filter"), new PropertyEditorString(NbBundle.getMessage(FileBrowserCD.class, "PROPERTY_EDITOR_COMMENT"),PropertyEditorString.DEPENDENCE_NONE), PROP_FILTER); //NOI18N
     }
      
     private Presenter createSetterPresenter () {
@@ -95,12 +95,12 @@ public final class FileBrowserCD extends ComponentDescriptor {
             .addParameters (DisplayableCode.createCommandListenerParameter())
             .addParameters (MidpCustomCodePresenterSupport.createDisplayParameter())
             .addParameters(MidpParameter.create(PROP_FILTER))
-            .addSetters (MidpSetter.createSetter("setTitle", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE))
-            .addSetters (MidpSetter.createSetter("setTicker", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TICKER))
-            .addSetters (MidpSetter.createSetter("setCommandListener", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_COMMAND_LISTENER))
-            .addSetters(MidpSetter.createSetter("setFilter", MidpVersionable.MIDP).addParameters(PROP_FILTER))
+            .addSetters (MidpSetter.createSetter("setTitle", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TITLE)) // NOI18N
+            .addSetters (MidpSetter.createSetter("setTicker", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_TICKER)) // NOI18N
+            .addSetters (MidpSetter.createSetter("setCommandListener", MidpVersionable.MIDP).addParameters(DisplayableCD.PROP_COMMAND_LISTENER)) // NOI18N
+            .addSetters(MidpSetter.createSetter("setFilter", MidpVersionable.MIDP).addParameters(PROP_FILTER)) // NOI18N
             .addSetters (MidpSetter.createConstructor (TYPEID, MidpVersionable.MIDP_2).addParameters (MidpCustomCodePresenterSupport.PARAM_DISPLAY))
-            .addSetters (MidpSetter.createSetter ("addCommand", MidpVersionable.MIDP).setArrayParameter (DisplayableCode.PARAM_COMMAND).addParameters (DisplayableCode.PARAM_COMMAND));
+            .addSetters (MidpSetter.createSetter ("addCommand", MidpVersionable.MIDP).setArrayParameter (DisplayableCode.PARAM_COMMAND).addParameters (DisplayableCode.PARAM_COMMAND)); // NOI18N
     }
 
     protected List<? extends Presenter> createPresenters() {

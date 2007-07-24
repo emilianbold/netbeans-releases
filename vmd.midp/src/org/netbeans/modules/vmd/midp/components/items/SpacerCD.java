@@ -35,7 +35,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.displayables.FormCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorArrayInteger;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorLayout;
 import org.netbeans.modules.vmd.midp.screen.display.SpacerDisplayPresenter;
@@ -74,7 +74,7 @@ public class SpacerCD extends ComponentDescriptor {
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty("Layout", PropertyEditorLayout.createInstance(), ItemCD.PROP_LAYOUT)
                 .addProperty("Preferred Size", PropertyEditorArrayInteger.create(), ItemCD.PROP_PREFERRED_WIDTH, ItemCD.PROP_PREFERRED_HEIGHT)
                 .addProperty("Minmum size", new PropertyEditorArrayInteger(), PROP_MIN_WIDTH, PROP_MIN_HEIGHT);

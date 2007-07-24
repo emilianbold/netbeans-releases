@@ -46,7 +46,7 @@ public class SVGImageComponent extends JComponent {
         if (old == image)
             return;
         this.image = image;
-        firePropertyChange ("svg-image", old, image);
+        firePropertyChange ("svg-image", old, image); // NOI18N
         repaint ();
     }
 

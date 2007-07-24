@@ -171,7 +171,7 @@ public final class MidpCustomCodePresenterSupport {
                     listTypeParameter = "PIM.TODO_LIST" ; //NOI18N
                     break;
                 default:
-                    throw new IllegalStateException("Illegal value of pimListParameter");
+                    throw new IllegalStateException("Illegal value of pimListParameter"); // NOI18N
             } 
             
             section.getWriter().write(listTypeParameter); // NOI18N

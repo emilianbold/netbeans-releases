@@ -34,6 +34,7 @@ import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -55,12 +56,12 @@ public abstract class CustomComponentProducer extends ComponentProducer {
 
         public SVGPlayerProducer() {
             super(SVGPlayerCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
-                    "SVG Player", "SVG Player", SVGPlayerCD.ICON_PATH, SVGPlayerCD.ICON_LARGE_PATH));
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Player"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Player"), SVGPlayerCD.ICON_PATH, SVGPlayerCD.ICON_LARGE_PATH)); // NOI18N
         }
 
         @Override
         public boolean checkValidity(DesignDocument document) {
-            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") &&
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
                    MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
         }
     }
@@ -69,12 +70,12 @@ public abstract class CustomComponentProducer extends ComponentProducer {
 
         public SVGImageProducer() {
             super(SVGImageCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
-                    "SVG Image", "SVG Image", SVGImageCD.ICON_PATH, SVGImageCD.ICON_LARGE_PATH));
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Image"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Image"), SVGImageCD.ICON_PATH, SVGImageCD.ICON_LARGE_PATH)); // NOI18N
         }
 
         @Override
         public boolean checkValidity(DesignDocument document) {
-            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") &&
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
                    MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
         }
     }
@@ -83,12 +84,12 @@ public abstract class CustomComponentProducer extends ComponentProducer {
 
         public SVGMenuEventHandlerProducer() {
             super(SVGMenuEventHandlerCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
-                    "SVG Menu Action", "SVG Menu Action", SVGMenuEventHandlerCD.ICON_PATH, SVGMenuEventHandlerCD.LARGE_ICON_PATH));
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_SVG_Menu_Action"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_SVG_Menu_Action"), SVGMenuEventHandlerCD.ICON_PATH, SVGMenuEventHandlerCD.LARGE_ICON_PATH)); // NOI18N
         }
 
         @Override
         public boolean checkValidity(DesignDocument document) {
-            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") &&
+            return MidpJavaSupport.checkValidity(document, "javax.microedition.m2g.SVGImage") && // NOI18N
                    MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
         }
     }
@@ -97,7 +98,7 @@ public abstract class CustomComponentProducer extends ComponentProducer {
 
         public TableItemProducer() {
             super(TableItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS,
-                    "Table Item", "Table Item", TableItemCD.ICON_PATH, TableItemCD.ICON_LARGE_PATH));
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_Table_Item"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_Table_Item"), TableItemCD.ICON_PATH, TableItemCD.ICON_LARGE_PATH)); // NOI18N
         }
 
         @Override
@@ -110,7 +111,7 @@ public abstract class CustomComponentProducer extends ComponentProducer {
 
         public SimpleCancellableTaskProducer() {
             super(SimpleCancellableTaskCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES,
-                    "Simple Cancellable Task", "Simple Cancellable Task", CancellableTaskCD.ICON_PATH, CancellableTaskCD.ICON_LARGE_PATH));
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_Simple_Cancellable_Task"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_Simple_Cancellable_Task"), CancellableTaskCD.ICON_PATH, CancellableTaskCD.ICON_LARGE_PATH)); // NOI18N
         }
 
         @Override
@@ -123,7 +124,7 @@ public abstract class CustomComponentProducer extends ComponentProducer {
 
         public SimpleTableModelProducer() {
             super(SimpleTableModelCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES,
-                    "Simple Table Model", "Simple Table Model", TableModelCD.ICON_PATH, TableModelCD.ICON_LARGE_PATH));
+                    NbBundle.getMessage(CustomComponentProducer.class, "DISP_Simple_Table_Model"), NbBundle.getMessage(CustomComponentProducer.class, "TTIP_Simple_Table_Model"), TableModelCD.ICON_PATH, TableModelCD.ICON_LARGE_PATH)); // NOI18N
         }
 
         @Override

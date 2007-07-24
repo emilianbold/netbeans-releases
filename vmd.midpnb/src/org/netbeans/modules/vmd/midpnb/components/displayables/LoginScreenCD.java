@@ -19,19 +19,8 @@
 
 package org.netbeans.modules.vmd.midpnb.components.displayables;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
-import org.netbeans.modules.vmd.api.model.ComponentDescriptor;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.Presenter;
-import org.netbeans.modules.vmd.api.model.PropertyDescriptor;
-import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.TypeDescriptor;
-import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.VersionDescriptor;
+import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.actions.AddActionPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
@@ -46,14 +35,19 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.displayables.CanvasCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorColorChooser;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.MidpNbPropertiesCategories;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author Karol Harezlak
@@ -78,8 +72,6 @@ public final class LoginScreenCD extends ComponentDescriptor {
     public static final String USERNAME_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "LBL_USERNAME"); //NOI18N 
     public static final String USERNAME_PASSWORD = NbBundle.getMessage(LoginScreenCD.class, "LBL_PASSWORD"); //NOI18N  
     
-    private static final String LOGIN_PROPERTIES = "Login Properties"; //NOI18N
-    
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
     }
@@ -100,23 +92,23 @@ public final class LoginScreenCD extends ComponentDescriptor {
             new PropertyDescriptor(PROP_LOGIN_TITLE, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_BGK_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(-3355444), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_FRG_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(-16777216), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_USERNAME_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, MidpTypes.createStringValue(USERNAME_LOGIN), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_PASSWORD_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, MidpTypes.createStringValue(USERNAME_PASSWORD), true, true, MidpVersionable.MIDP_2)
+            new PropertyDescriptor(PROP_USERNAME_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_PASSWORD_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
         );
     }
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-               .addPropertiesCategory(LOGIN_PROPERTIES) 
-                   .addProperty("Username", PropertyEditorString.createInstance(), PROP_USERNAME)
-                   .addProperty("Password", PropertyEditorString.createInstance(), PROP_PASSWORD)
-               .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES) 
-                   .addProperty("Username Label", PropertyEditorString.createInstance(), PROP_USERNAME_LABEL)
-                   .addProperty("Password Label", PropertyEditorString.createInstance(), PROP_PASSWORD_LABEL)
-                   .addProperty("Use Login Button", PropertyEditorBooleanUC.createInstance(false), PROP_USE_LOGIN_BUTTON)
-                   .addProperty("Login Title", PropertyEditorString.createInstance(), PROP_LOGIN_TITLE)
-                   .addProperty("Background Color", new PropertyEditorColorChooser(true), PROP_BGK_COLOR)
-                   .addProperty("Foreground Color", new PropertyEditorColorChooser(true), PROP_FRG_COLOR);
+               .addPropertiesCategory(MidpNbPropertiesCategories.CATEGORY_LOGIN)
+                   .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LogicScreen_Username"), PropertyEditorString.createInstance(), PROP_USERNAME) // NOI18N
+                   .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_Password"), PropertyEditorString.createInstance(), PROP_PASSWORD) // NOI18N
+               .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                   .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_UsernameLabel"), PropertyEditorString.createInstance(), PROP_USERNAME_LABEL) // NOI18N
+                   .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_PasswordLabel"), PropertyEditorString.createInstance(), PROP_PASSWORD_LABEL) // NOI18N
+                   .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_UseLoginButton"), PropertyEditorBooleanUC.createInstance(false), PROP_USE_LOGIN_BUTTON) // NOI18N
+                   .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_LoginTitle"), PropertyEditorString.createInstance(), PROP_LOGIN_TITLE) // NOI18N
+                   .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_BackgroundColor"), new PropertyEditorColorChooser(true), PROP_BGK_COLOR) // NOI18N
+                   .addProperty(NbBundle.getMessage(LoginScreenCD.class, "DISP_LoginScreen_ForegroundColor"), new PropertyEditorColorChooser(true), PROP_FRG_COLOR); // NOI18N
     }
     
     private Presenter createSetterPresenter () {

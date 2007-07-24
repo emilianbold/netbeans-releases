@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.SplashScreenDismissCommandCD;
 import org.netbeans.modules.vmd.midpnb.components.displayables.SplashScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.SplashScreenDismissCommandEventSourceCD;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -38,7 +39,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.SplashScreenDismissCom
 public class SplashScreenProducer extends MidpComponentProducer {
 
     public SplashScreenProducer () {
-       super(SplashScreenCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Splash Screen", "Splash Screen", SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH)); // NOI18N
+       super(SplashScreenCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(SplashScreenProducer.class, "DISP_Splash_Screen"), NbBundle.getMessage(SplashScreenProducer.class, "TTIP_Splash_Screen"), SplashScreenCD.ICON_PATH, SplashScreenCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public Result postInitialize (DesignDocument document, DesignComponent splashScreen) {

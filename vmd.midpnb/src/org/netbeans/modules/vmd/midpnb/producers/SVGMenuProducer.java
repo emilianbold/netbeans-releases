@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.midpnb.components.handlers.SVGMenuEventHandlerCD
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuSelectCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -39,7 +40,7 @@ import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
 public class SVGMenuProducer extends MidpComponentProducer {
     
     public SVGMenuProducer() {
-        super(SVGMenuCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, "SVG Menu", "SVG Menu", SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH)); // NOI18N
+        super(SVGMenuCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG, NbBundle.getMessage(SVGMenuProducer.class, "DISP_SVG_Menu"), NbBundle.getMessage(SVGMenuProducer.class, "TTIP_SVG_Menu"), SVGMenuCD.ICON_PATH, SVGMenuCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public Result postInitialize (DesignDocument document, DesignComponent menu) {

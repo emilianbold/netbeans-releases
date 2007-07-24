@@ -67,7 +67,7 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
     
 //     private static DefaultPropertiesPresenter createPropertiesPresenter() {
 //        return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
-//                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+//                .addPropertiesCategory(MidpNbPropertiesCategories.CATEGORY_PROPERTIES)
 //                     .addProperty("Executable Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CODE);
 //    }
     

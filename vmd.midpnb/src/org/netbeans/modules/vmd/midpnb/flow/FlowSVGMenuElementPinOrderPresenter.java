@@ -27,6 +27,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -41,7 +42,7 @@ public class FlowSVGMenuElementPinOrderPresenter extends FlowPinOrderPresenter {
     }
 
     public String getCategoryDisplayName () {
-        return "SVG Menu Element";
+        return NbBundle.getMessage(FlowSVGMenuElementPinOrderPresenter.class, "DISP_FlowOrder_SVGMenuElement"); // NOI18N
     }
 
     public List<FlowPinDescriptor> sortCategory (ArrayList<FlowPinDescriptor> descriptors) {

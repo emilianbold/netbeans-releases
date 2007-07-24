@@ -27,7 +27,7 @@ import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
 import org.netbeans.modules.vmd.midp.codegen.InstanceNameResolver;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorInstanceName;
 
 import java.util.ArrayList;
@@ -71,8 +71,8 @@ public final class ClassCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-            .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory(PropertiesCategories.CATEGORY_CODE_PROPERTIES)
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
                 .addProperty("Instance Name", PropertyEditorInstanceName.createInstance(TYPEID), PROP_INSTANCE_NAME)
                 .addProperty("Is Lazy Initialized", PropertyEditorBooleanUC.createInstance(false), PROP_LAZY_INIT); //NOI18N
                 

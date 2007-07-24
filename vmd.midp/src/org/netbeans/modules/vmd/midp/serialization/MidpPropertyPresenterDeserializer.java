@@ -80,7 +80,7 @@ public class MidpPropertyPresenterDeserializer extends PresenterDeserializer {
 
         public List<Presenter> createPresenters (ComponentDescriptor descriptor) {
             DefaultPropertiesPresenter presenter = new DefaultPropertiesPresenter ()
-                .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES);
+                .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES);
             if (EDITOR_BOOLEAN.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorBooleanUC.createInstance (), propertyName);
             else if (EDITOR_INT.equals (editor))

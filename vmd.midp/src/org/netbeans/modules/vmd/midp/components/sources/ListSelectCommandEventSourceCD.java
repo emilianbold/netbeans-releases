@@ -31,7 +31,7 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 
 import java.util.ArrayList;
@@ -64,8 +64,8 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES) // TODO - its is not a code property
+            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES) // TODO - its is not a code property
                 .addProperty ("Show Select Command", PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND);
     }
 

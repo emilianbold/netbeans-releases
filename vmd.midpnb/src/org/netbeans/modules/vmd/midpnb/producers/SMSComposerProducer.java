@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.midp.producers.MidpComponentProducer;
 import org.netbeans.modules.vmd.midpnb.components.commands.SMSComposerSendCommandCD;
 import org.netbeans.modules.vmd.midpnb.components.displayables.SMSComposerCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.SMSComposerSendCommandEventSourceCD;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -41,7 +42,7 @@ import org.netbeans.modules.vmd.midpnb.components.sources.SMSComposerSendCommand
 public class SMSComposerProducer extends MidpComponentProducer {
     
     public SMSComposerProducer() {
-        super(SMSComposerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "SMS Composer", "SMS Composer", SMSComposerCD.ICON_PATH, SMSComposerCD.ICON_LARGE_PATH)); // NOI18N
+        super(SMSComposerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(SMSComposerProducer.class, "DISP_SMS_Composer"), NbBundle.getMessage(SMSComposerProducer.class, "TTIP_SMS_Composer"), SMSComposerCD.ICON_PATH, SMSComposerCD.ICON_LARGE_PATH)); // NOI18N
     }
     
     public Result postInitialize (DesignDocument document, DesignComponent smsComposer) {

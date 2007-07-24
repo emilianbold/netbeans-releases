@@ -32,7 +32,7 @@ import org.netbeans.modules.vmd.midp.components.points.SwitchPointCD;
 import org.netbeans.modules.vmd.midp.flow.FlowEventSourcePinPresenter;
 import org.netbeans.modules.vmd.midp.flow.FlowSwitchPointPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 import org.openide.util.Utilities;
 
@@ -77,8 +77,8 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
 
     public DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
-                .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-                .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
+                .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
                     .addProperty ("Switch Case Option", PropertyEditorJavaString.createInstance(TYPEID), PROP_OPTION);
     }
     

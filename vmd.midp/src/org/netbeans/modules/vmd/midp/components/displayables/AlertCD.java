@@ -93,7 +93,7 @@ public final class AlertCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Image",  PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
                     .addProperty("String", PropertyEditorString.createInstance(), PROP_STRING) // NOI18N
                     .addProperty("Type", PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_ALERT_TYPE) // NOI18N

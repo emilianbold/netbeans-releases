@@ -27,7 +27,7 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.handlers.CallPointEventHandlerCD;
 import org.netbeans.modules.vmd.midp.flow.FlowInfoNodePresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
 
 import java.util.ArrayList;
@@ -72,8 +72,8 @@ public class CallPointCD extends ComponentDescriptor {
 
     public DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
-                .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-                .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES)
+                .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
                     .addProperty ("Call Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_ACCESS_CODE);
     }
 

@@ -32,6 +32,7 @@ import javax.swing.*;
 import java.awt.*;
 import org.netbeans.modules.vmd.midp.screen.display.ScreenFileObjectListener;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -90,7 +91,7 @@ public class AbstractInfoDisplayPresenter extends DisplayableDisplayPresenter {
             imageLabel.setIcon(ICON_BROKEN);
         } else {
             imageLabel.setIcon(null);
-            imageLabel.setText("<image not specified>"); //TODO
+            imageLabel.setText(NbBundle.getMessage(AbstractInfoDisplayPresenter.class, "DISP_image_not_specified"));
         }
         
         String text = MidpTypes.getString(getComponent().readProperty(AbstractInfoScreenCD.PROP_TEXT));

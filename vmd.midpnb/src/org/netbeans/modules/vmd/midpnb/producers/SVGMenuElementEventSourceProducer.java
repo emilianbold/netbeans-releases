@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midpnb.components.sources.SVGMenuElementEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.palette.MidpNbPaletteProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -36,7 +37,7 @@ public class SVGMenuElementEventSourceProducer extends ComponentProducer {
     
     public SVGMenuElementEventSourceProducer() {
         super(PRODUCER_ID, SVGMenuElementEventSourceCD.TYPEID, new PaletteDescriptor(MidpNbPaletteProvider.CATEGORY_SVG,
-                "SVG Menu Element", "SVG Menu Element", SVGMenuElementEventSourceCD.ICON_PATH, SVGMenuElementEventSourceCD.ICON_LARGE_PATH));
+                NbBundle.getMessage(SVGMenuElementEventSourceProducer.class, "DISP_SVG_Menu_Element"), NbBundle.getMessage(SVGMenuElementEventSourceProducer.class, "TTIP_SVG_Menu_Element"), SVGMenuElementEventSourceCD.ICON_PATH, SVGMenuElementEventSourceCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public boolean checkValidity(DesignDocument document) {

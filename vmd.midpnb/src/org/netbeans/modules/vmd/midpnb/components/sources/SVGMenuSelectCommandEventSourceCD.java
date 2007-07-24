@@ -30,8 +30,9 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 import org.netbeans.modules.vmd.midp.components.commands.CommandCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
+import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,9 +64,9 @@ public class SVGMenuSelectCommandEventSourceCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_PROPERTIES)
-            .addPropertiesCategory (PropertiesCategories.CATEGORY_CODE_PROPERTIES) // TODO - its is not a code property
-                .addProperty ("Show Select Command", PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND);
+            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
+            .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES) // TODO - its is not a code property
+                .addProperty (NbBundle.getMessage(SVGMenuSelectCommandEventSourceCD.class, "DISP_SVGMenuSelectCommandEventSource_ShowSelectCommand"), PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND); // NOI18N
     }
 
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
@@ -77,7 +78,7 @@ public class SVGMenuSelectCommandEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("SVGMenu.SELECT_COMMAND", "Command", CommandCD.ICON_PATH),
+            InfoPresenter.createStatic ("SVGMenu.SELECT_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
             // flow
             new CommandEventSourceCD.CommandEventSourceFlowPinPresenter () {
                 protected DesignComponent getComponentForAttachingPin () {

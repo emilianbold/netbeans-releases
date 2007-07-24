@@ -28,12 +28,14 @@ import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpVersionable;
-import org.netbeans.modules.vmd.midp.propertyeditors.PropertiesCategories;
-import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
-import java.util.Arrays;
-import java.util.List;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
+import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.openide.util.NbBundle;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -70,9 +72,9 @@ public class SplashScreenCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-               .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
-                   .addProperty("Timeout", PropertyEditorNumber.createIntegerInstance(), PROP_TIMEOUT)
-                   .addProperty("Allow Timeout Interrupt", PropertyEditorBooleanUC.createInstance(), PROP_ALLOW_TIMEOUT_INTERRUPT);
+               .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                   .addProperty(NbBundle.getMessage(SplashScreenCD.class, "DISP_SplashScreen_Timeout"), PropertyEditorNumber.createIntegerInstance(), PROP_TIMEOUT) // NOI18N
+                   .addProperty(NbBundle.getMessage(SplashScreenCD.class, "DISP_SplashScreen_AllowTimeoutInterrupt"), PropertyEditorBooleanUC.createInstance(), PROP_ALLOW_TIMEOUT_INTERRUPT); // NOI18N
     }
 
     private Presenter createSetterPresenter () {

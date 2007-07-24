@@ -134,7 +134,7 @@ public class ItemCD extends ComponentDescriptor {
 
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
-                .addPropertiesCategory(PropertiesCategories.CATEGORY_PROPERTIES)
+                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty("Label", PropertyEditorString.createInstance(), PROP_LABEL)
                     .addProperty("Default Command", PropertyEditorDefaultCommand.createInstance(), PROP_DEFAULT_COMMAND)
                     .addProperty("Layout", PropertyEditorLayout.createInstance(), PROP_LAYOUT)

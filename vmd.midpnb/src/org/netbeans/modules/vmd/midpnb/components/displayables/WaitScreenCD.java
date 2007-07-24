@@ -27,14 +27,15 @@ import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
 import org.netbeans.modules.vmd.midp.codegen.MidpParameter;
 import org.netbeans.modules.vmd.midp.codegen.MidpSetter;
 import org.netbeans.modules.vmd.midp.components.*;
+import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.components.resources.CancellableTaskCD;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.PropertiesCategories;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.MidpNbPropertiesCategories;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.TaskEditorElement;
 import org.openide.util.NbBundle;
+
 import java.util.Arrays;
 import java.util.List;
-import org.netbeans.modules.vmd.midp.propertyeditors.resource.PropertyEditorResource;
-import org.netbeans.modules.vmd.midpnb.propertyeditors.TaskEditorElement;
 
 /**
  * 
@@ -69,8 +70,8 @@ public final class WaitScreenCD extends ComponentDescriptor {
     
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
-               .addPropertiesCategory(PropertiesCategories.CATEGORY_TASK) // TODO
-                   .addProperty("Task", PropertyEditorResource.createInstance(new TaskEditorElement(), // NOI18N
+               .addPropertiesCategory(MidpNbPropertiesCategories.CATEGORY_TASK) // TODO
+                   .addProperty(NbBundle.getMessage(WaitScreenCD.class, "DISP_WaitScreen_Task"), PropertyEditorResource.createInstance(new TaskEditorElement(), // NOI18N
                         NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), // NOI18N
                         NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); // NOI18N
     }
