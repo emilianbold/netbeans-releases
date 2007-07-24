@@ -194,7 +194,7 @@ class PropertySetModelImpl implements PropertySetModel, Runnable {
                 if (
                     (sets.length > 1) ||
                         ((sets.length == 1) &&
-                        (!NbBundle.getMessage(PropertySetModelImpl.class, "CTL_Properties").equals(
+                        (!NbBundle.getMessage(PropertySetModelImpl.class, "CTL_PropertiesNoMnemonic").equals(
                             sets[0].getDisplayName()
                         )))
                 ) { //NOI18N
