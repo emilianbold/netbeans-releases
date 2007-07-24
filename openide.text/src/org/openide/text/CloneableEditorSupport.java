@@ -1398,13 +1398,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                          catch (RuntimeException t) {
                                              prepareDocumentRuntimeException = t;
                                              prepareTask = null;
-                                             Exceptions.printStackTrace(t);
                                              throw t;
                                          }
                                          catch (Error t) {
                                              prepareDocumentRuntimeException = t;
                                              prepareTask = null;
-                                             Exceptions.printStackTrace(t);
                                              throw t;
                                          }
                                          finally {
