@@ -59,7 +59,7 @@ public class WsdlModeler {
     private String packageName;
     private List<WsdlModelListener> modelListeners;
     private List<WsdlChangeListener> wsdlChangeListeners;
-    RequestProcessor.Task task;
+    RequestProcessor.Task task, task1;
     int listenersSize;
     
     protected Properties properties;
@@ -80,6 +80,7 @@ public class WsdlModeler {
                 }
             }
         },true);
+        
     }
     
     public void setPackageName(String packageName) {
@@ -127,6 +128,25 @@ public class WsdlModeler {
         return wsdlModel;
     }
     
+    public void generateWsdlModel(WsdlModelListener listener, final WsdlErrorHandler errorHandler) {
+        if (task1 == null) {
+            task1 = RequestProcessor.getDefault().create(new Runnable() {
+                public void run() {
+                    generateWsdlModel(errorHandler);
+                    synchronized (this) {
+                        listenersSize = modelListeners.size();
+                        fireModelCreated(wsdlModel,listenersSize);
+                        removeListeners();
+                    }
+                }
+            },true);
+        }
+        addWsdlModelListener(listener);
+        if (task1.isFinished()) {
+            task1.schedule(0);
+        }        
+    }
+    
     public void generateWsdlModel(WsdlModelListener listener) {
         generateWsdlModel(listener,false);
     }
@@ -145,6 +165,10 @@ public class WsdlModeler {
     }
     
     private synchronized void generateWsdlModel() {
+        this.generateWsdlModel(new CatchFirstErrorHandler());
+    }
+    
+    private synchronized void generateWsdlModel(WsdlErrorHandler errorHandler) {
         WsimportOptions options = new WsimportOptions();
         properties = new Properties();
         bindingFiles = new HashSet<String>();
@@ -173,10 +197,10 @@ public class WsdlModeler {
                 options.entityResolver = XmlUtil.createEntityResolver(JAXWSUtils.getFileOrURL(JAXWSUtils.absolutize(Util.escapeSpace(catalog.toExternalForm()))));
             }
             
-            options.parseBindings(new IdeErrorReceiver());
+            options.parseBindings(new IdeErrorReceiver(errorHandler));
             
             ideWSDLModeler =
-                    new WSDLModeler(options, new IdeErrorReceiver());
+                    new WSDLModeler(options, new IdeErrorReceiver(errorHandler));
             Model tmpModel = ideWSDLModeler.buildModel();
             
             if (tmpModel!=null) {
@@ -190,12 +214,26 @@ public class WsdlModeler {
                 if (oldWsdlModel!=null) {
                     fireWsdlModelChanged(oldWsdlModel, null);
                 }
-                creationException = new Exception(NbBundle.getMessage(WsdlModeler.class,"ERR_CannotGenerateModel",wsdlUrl.toExternalForm()));
+                SAXParseException parseError = null;
+                if (errorHandler instanceof CatchFirstErrorHandler) {
+                    parseError = ((CatchFirstErrorHandler)errorHandler).getFirstError();
+                    creationException = parseError;
+                }
+                if (parseError == null) {
+                    creationException = new Exception(NbBundle.getMessage(WsdlModeler.class,"ERR_CannotGenerateModel",wsdlUrl.toExternalForm()));
+                }
                 Logger.getLogger(this.getClass().getName()).log(Level.FINE, "WsdlModeler.generateWsdlModel", creationException); //NOI18N
             }
         } catch (Exception ex){
             wsdlModel=null;
-            creationException=ex;
+            SAXParseException parseError = null;
+            if (errorHandler instanceof CatchFirstErrorHandler) {
+                parseError = ((CatchFirstErrorHandler)errorHandler).getFirstError();
+                creationException = parseError;
+            }
+            if (parseError == null) {
+                creationException =ex;
+            }
             Logger.getLogger(this.getClass().getName()).log(Level.FINE, "WsdlModeler.generateWsdlModel", ex); //NOI18N
         }
         
@@ -217,24 +255,58 @@ public class WsdlModeler {
     }
     
     private class IdeErrorReceiver extends ErrorReceiver{
+        private WsdlErrorHandler  errorHandler;
+        
+        IdeErrorReceiver(WsdlErrorHandler errorHandler) {
+            this.errorHandler = errorHandler;
+        }
+        
         public void warning(SAXParseException ex) throws AbortException {
             Logger.getLogger(this.getClass().getName()).log(Level.FINE, 
                     "WsdlModeler.generateWsdlModel", ex); //NOI18N
+            if (errorHandler!=null) {
+                try {
+                    errorHandler.warning(ex);
+                } catch (WsdlErrorHandler.AbortException abort){
+                    AbortException newEx = new AbortException();
+                    newEx.initCause(abort);
+                    throw newEx;
+                }
+            }
         }
         
         public void info(SAXParseException ex) {
             Logger.getLogger(this.getClass().getName()).log(Level.FINE, 
                     "WsdlModeler.generateWsdlModel", ex); //NOI18N
+            if (errorHandler != null) errorHandler.info(ex);
         }
         
         public void fatalError(SAXParseException ex) throws AbortException {
             Logger.getLogger(this.getClass().getName()).log(Level.FINE, 
                     "WsdlModeler.generateWsdlModel", ex); //NOI18N
+            if (errorHandler!=null) {
+                try {
+                    errorHandler.fatalError(ex);
+                } catch (WsdlErrorHandler.AbortException abort){
+                    AbortException newEx = new AbortException();
+                    newEx.initCause(abort);
+                    throw newEx;
+                }
+            }
         }
         
         public void error(SAXParseException ex) throws AbortException {
             Logger.getLogger(this.getClass().getName()).log(Level.FINE, 
                     "WsdlModeler.generateWsdlModel", ex); //NOI18N
+            if (errorHandler!=null) {
+                try {
+                    errorHandler.error(ex);
+                } catch (WsdlErrorHandler.AbortException abort){
+                    AbortException newEx = new AbortException();
+                    newEx.initCause(abort);
+                    throw newEx;
+                }
+            }
         }
         
     }
@@ -250,5 +322,28 @@ public class WsdlModeler {
     private void fireWsdlModelChanged(WsdlModel oldWsdlModel, WsdlModel newWsdlModel ) {
         for (WsdlChangeListener wsdlChangeListener: wsdlChangeListeners) {
             wsdlChangeListener.wsdlModelChanged(oldWsdlModel, newWsdlModel);      }
+    }
+    
+    private class CatchFirstErrorHandler implements WsdlErrorHandler {
+        
+        private SAXParseException firstError;
+
+        public void warning(SAXParseException ex) throws AbortException {
+        }
+
+        public void info(SAXParseException ex) {
+        }
+
+        public void fatalError(SAXParseException ex) throws AbortException {
+            if (firstError == null) firstError = ex;
+        }
+
+        public void error(SAXParseException ex) throws AbortException {
+            if (firstError == null) firstError = ex;
+        }
+        
+        public SAXParseException getFirstError() {
+            return firstError;
+        }
     }
 }
