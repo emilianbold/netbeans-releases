@@ -22,8 +22,6 @@ package org.netbeans.modules.ant.freeform;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -353,8 +351,7 @@ public class FreeformProjectGenerator {
             }
             contextMenuEl.removeChild(ideActionEl);
         }
-        Collections.sort(mappings, new MappingsComparator());
-        for (TargetMapping tm : mappings) {
+        for (TargetMapping tm : sortMappings(mappings)) {
             if (tm.context != null) {
                 // ignore context sensitive actions
                 continue;
@@ -545,27 +542,41 @@ public class FreeformProjectGenerator {
         }
     }
     
-    private static class MappingsComparator implements Comparator {
+    /* Sort only well known project actions target mappings,
+     * order of other actions is kept unchanged
+     */
+    private static List<TargetMapping> sortMappings(List<TargetMapping> toSort) {
         
-        private final List<String> actionsOrder = new ArrayList<String>();
+        ArrayList<TargetMapping> list2Sort = new ArrayList<TargetMapping>(toSort);
         
-        public MappingsComparator() {
-            actionsOrder.add(ActionProvider.COMMAND_BUILD);
-            actionsOrder.add(ActionProvider.COMMAND_REBUILD);
-            actionsOrder.add(ActionProvider.COMMAND_CLEAN);
-            actionsOrder.add("javadoc"); // NOI18N
-            actionsOrder.add(ActionProvider.COMMAND_RUN);
-            actionsOrder.add("deploy"); // NOI18N
-            actionsOrder.add("redeploy"); // NOI18N
-            actionsOrder.add(ActionProvider.COMMAND_TEST);
+        String sortedActions[] = new String[] {
+            ActionProvider.COMMAND_BUILD,
+            ActionProvider.COMMAND_REBUILD,
+            ActionProvider.COMMAND_CLEAN,
+            "javadoc", // NOI18N
+            ActionProvider.COMMAND_RUN,
+            "deploy", // NOI18N
+            "redeploy", // NOI18N
+            ActionProvider.COMMAND_TEST };
+        
+        ArrayList<TargetMapping> sortedList = new ArrayList<TargetMapping>(list2Sort.size());
+        
+        for (String actionName : sortedActions) {
+            for (TargetMapping mapping : list2Sort) {
+                if (actionName.equals(mapping.name)) {
+                    sortedList.add(mapping);
+                    list2Sort.remove(mapping);
+                    break;
+                }
+            }
         }
-    
-        public int compare(Object o1, Object o2) {
-            String s1 = ((TargetMapping) o1).name;
-            String s2 = ((TargetMapping) o2).name;
-            return actionsOrder.indexOf(s1) - actionsOrder.indexOf(s2);
+        
+        for (TargetMapping mapping : list2Sort) {
+            sortedList.add(mapping);
         }
+        
+        return sortedList;
         
     }
-
+    
 }
