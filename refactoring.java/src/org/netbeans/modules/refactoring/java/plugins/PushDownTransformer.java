@@ -35,8 +35,8 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
  */
 public class PushDownTransformer extends RefactoringVisitor {
 
-    private MemberInfo<ElementHandle>[] members;
-    public PushDownTransformer(MemberInfo<ElementHandle> members[]) {
+    private MemberInfo<ElementHandle<? extends Element>>[] members;
+    public PushDownTransformer(MemberInfo<ElementHandle<? extends Element>> members[]) {
         this.members = members;
     }
 

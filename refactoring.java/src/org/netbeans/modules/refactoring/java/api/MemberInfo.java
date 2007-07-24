@@ -88,13 +88,13 @@ public final class MemberInfo<H> {
         return htmlText;
     }
 
-    public static MemberInfo<TypeMirrorHandle> create(TypeMirror el, Tree t, CompilationInfo c) {
-        MemberInfo<TypeMirrorHandle> mi = new MemberInfo<TypeMirrorHandle>(TypeMirrorHandle.create(el), t.toString(), "implements " + t.toString(), UiUtils.getElementIcon(ElementKind.INTERFACE, null));
+    public static <T extends TypeMirror> MemberInfo<TypeMirrorHandle<T>> create(T el, Tree t, CompilationInfo c) {
+        MemberInfo<TypeMirrorHandle<T>> mi = new MemberInfo<TypeMirrorHandle<T>>(TypeMirrorHandle.create(el), t.toString(), "implements " + t.toString(), UiUtils.getElementIcon(ElementKind.INTERFACE, null));
         mi.group = Group.IMPLEMENTS;
         return mi;
     }
 
-    public static MemberInfo<ElementHandle> create(Element el, CompilationInfo c) {
+    public static <T extends Element> MemberInfo<ElementHandle<T>> create(T el, CompilationInfo c) {
         String format = PrintPart.NAME;
         Group g = Group.TYPE;
         if (el.getKind() == ElementKind.FIELD) {
@@ -105,14 +105,14 @@ public final class MemberInfo<H> {
             g=Group.METHOD;
         } 
 
-        MemberInfo<ElementHandle> mi = new MemberInfo<ElementHandle>(ElementHandle.create(el), el.getSimpleName().toString(), UiUtils.getHeader(el, c, format), UiUtils.getDeclarationIcon(el));
+        MemberInfo<ElementHandle<T>> mi = new MemberInfo<ElementHandle<T>>(ElementHandle.create(el), el.getSimpleName().toString(), UiUtils.getHeader(el, c, format), UiUtils.getDeclarationIcon(el));
         mi.modifiers = el.getModifiers();
         mi.group = g;
         return mi;
     }
 
-    public static MemberInfo<ElementHandle> create(Element el, CompilationInfo c, Group group) {
-        MemberInfo<ElementHandle> mi = new MemberInfo<ElementHandle>(ElementHandle.create(el), el.getSimpleName().toString(), UiUtils.getHeader(el, c, UiUtils.PrintPart.NAME), UiUtils.getDeclarationIcon(el));
+    public static <T extends Element> MemberInfo<ElementHandle<T>> create(T el, CompilationInfo c, Group group) {
+        MemberInfo<ElementHandle<T>> mi = new MemberInfo<ElementHandle<T>>(ElementHandle.create(el), el.getSimpleName().toString(), UiUtils.getHeader(el, c, UiUtils.PrintPart.NAME), UiUtils.getDeclarationIcon(el));
         mi.group = group;
         mi.modifiers = el.getModifiers();
         return mi;
@@ -149,8 +149,8 @@ public final class MemberInfo<H> {
         this.makeAbstract = makeAbstract;
     }
 
-    public static MemberInfo<TypeMirrorHandle> createImplements(TypeMirrorHandle handle, String htmlText, Icon icon, String name) {
-        return new MemberInfo<TypeMirrorHandle>(handle, htmlText, icon, name, Group.IMPLEMENTS, Collections.<Modifier>emptySet(), false);
+    public static <T extends TypeMirror> MemberInfo<TypeMirrorHandle<T>> createImplements(TypeMirrorHandle handle, String htmlText, Icon icon, String name) {
+        return new MemberInfo<TypeMirrorHandle<T>>(handle, htmlText, icon, name, Group.IMPLEMENTS, Collections.<Modifier>emptySet(), false);
     }
     
     public Icon getIcon() {

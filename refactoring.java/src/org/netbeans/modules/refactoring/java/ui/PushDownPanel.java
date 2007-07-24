@@ -118,7 +118,7 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
             
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
-                List<MemberInfo<ElementHandle>> l = new ArrayList();
+                List<MemberInfo<? extends ElementHandle<? extends Element>>> l = new ArrayList();
                 TypeElement sourceTypeElement = (TypeElement) handle.resolveElement(controller);
                 sourceKind = sourceTypeElement.getKind();
                 for (TypeMirror tm:sourceTypeElement.getInterfaces()) {
@@ -136,8 +136,8 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                 
                 Object[][] allMembers = new Object[l.size()][3];
                 int i = 0;
-                for (Iterator<MemberInfo<ElementHandle>> it = l.iterator(); it.hasNext(); ) {
-                    MemberInfo<ElementHandle> o = it.next();
+                for (Iterator<MemberInfo<? extends ElementHandle<? extends Element>>> it = l.iterator(); it.hasNext(); ) {
+                    MemberInfo<? extends ElementHandle<? extends Element>> o = it.next();
                     allMembers[i][0] = selectedMembers.contains(o) ? Boolean.TRUE : Boolean.FALSE;
                     allMembers[i][1] = o;
                     allMembers[i][2] = o.getElementHandle().getKind()==ElementKind.METHOD? Boolean.FALSE : null;

@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.refactoring.java.api;
 
+import javax.lang.model.element.Element;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.lookup.Lookups;
@@ -75,7 +77,7 @@ public final class ExtractSuperclassRefactoring extends AbstractRefactoring {
     /** Returns descriptors of the members to extract into the new super class.
      * @return Member descriptors.
      */
-    public MemberInfo[] getMembers() {
+    public MemberInfo<ElementHandle<? extends Element>>[] getMembers() {
         // never return null
         return members == null ? EMPTY_MEMBERS : members;
     }
@@ -83,7 +85,7 @@ public final class ExtractSuperclassRefactoring extends AbstractRefactoring {
     /** Sets members (using their descriptors) to extract into the new super class.
      * @param members Descriptors of members to be extracted into the new super class.
      */
-    public void setMembers(MemberInfo[] members) {
+    public void setMembers(MemberInfo<ElementHandle<? extends Element>>[] members) {
         this.members = members;
     }
 }

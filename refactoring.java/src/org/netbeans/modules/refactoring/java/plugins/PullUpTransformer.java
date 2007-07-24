@@ -37,7 +37,7 @@ import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
  */
 public class PullUpTransformer extends RefactoringVisitor {
 
-    private MemberInfo<ElementHandle>[] members;
+    private MemberInfo<ElementHandle<? extends Element>>[] members;
     private Element targetType;
     private PullUpRefactoring refactoring;
     public PullUpTransformer(PullUpRefactoring refactoring) {

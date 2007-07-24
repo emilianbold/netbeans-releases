@@ -41,11 +41,11 @@ import org.openide.util.lookup.Lookups;
 public final class UseSuperTypeRefactoring extends AbstractRefactoring{
     
     private final TreePathHandle javaClassHandle;
-    private ElementHandle superType;
+    private ElementHandle<TypeElement> superType;
     
     //Forced to create an array since the ComboBoxModel (for the panel)
     //takes only a vector or an array.
-    private ElementHandle[] candidateSuperTypes;
+    private ElementHandle<TypeElement>[] candidateSuperTypes;
     
     /**
      * Creates a new instance of UseSuperTypeRefactoring
@@ -70,7 +70,7 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
      * Sets the SuperType to be used by this refactoring
      * @param superClass The SuperType to be used by this refactoring
      */
-    public void setTargetSuperType(ElementHandle superClass) {
+    public void setTargetSuperType(ElementHandle<TypeElement> superClass) {
         this.superType = superClass;
     }
     
@@ -78,7 +78,7 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
      * Returns the SuperType used by this refactoring
      * @return superClass The SuperType used by this refactoring
      */
-    public ElementHandle getTargetSuperType() {
+    public ElementHandle<TypeElement> getTargetSuperType() {
         return this.superType;
     }
     
@@ -86,7 +86,7 @@ public final class UseSuperTypeRefactoring extends AbstractRefactoring{
      * Returns the possible SuperTypes that could be used for the initial Type
      * @return The list of possible SuperTypes for the current type
      */
-    public ElementHandle[] getCandidateSuperTypes(){
+    public ElementHandle<TypeElement>[] getCandidateSuperTypes(){
         return candidateSuperTypes;
     }
     

@@ -140,7 +140,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
             TypeElement sourceType = (TypeElement) refactoring.getSourceType().resolveElement(cc);
             Collection<Element> supers = RetoucheUtils.getSuperTypes(sourceType, cc);
             TypeElement targetType = (TypeElement) refactoring.getTargetType().resolve(cc);
-            MemberInfo<ElementHandle>[] members = refactoring.getMembers();
+            MemberInfo<ElementHandle<? extends Element>>[] members = refactoring.getMembers();
 
             fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, members.length + 1);
             // #1 - check whether the target type is a legal super type

@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.refactoring.java.api;
 
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -62,21 +64,21 @@ public final class PullUpRefactoring extends AbstractRefactoring {
     /** Returns target supertype to pull members up to.
      * @return Target supertype or null if no target supertype is set.
      */
-    public ElementHandle getTargetType() {
+    public ElementHandle<TypeElement> getTargetType() {
         return targetType;
     }
 
     /** Sets target supertype to pull members up to.
      * @param targetType Target supertype.
      */
-    public void setTargetType(ElementHandle targetType) {
+    public void setTargetType(ElementHandle<TypeElement> targetType) {
         this.targetType = targetType;
     }
 
     /** Returns descriptors of the members to pull up.
      * @return Member descriptors.
      */
-    public MemberInfo<ElementHandle>[] getMembers() {
+    public MemberInfo<ElementHandle<? extends Element>>[] getMembers() {
         // never return null
         return members == null ? EMPTY_MEMBERS : members;
     }
@@ -84,7 +86,7 @@ public final class PullUpRefactoring extends AbstractRefactoring {
     /** Sets members (using their descriptors) to pull up.
      * @param members Descriptors of members to be pulled up.
      */
-    public void setMembers(MemberInfo<ElementHandle>[] members) {
+    public void setMembers(MemberInfo<ElementHandle<? extends Element>>[] members) {
         this.members = members;
     }
 }
