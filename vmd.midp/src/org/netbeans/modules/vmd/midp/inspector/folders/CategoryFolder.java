@@ -19,11 +19,11 @@
 
 package org.netbeans.modules.vmd.midp.inspector.folders;
 
-import javax.swing.Action;
-
 import org.netbeans.modules.vmd.api.inspector.InspectorFolder;
 import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
+
+import javax.swing.*;
 
 /**
  *
@@ -36,7 +36,7 @@ abstract class CategoryFolder extends InspectorFolder {
     }
 
     public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
-        if (path.getPath().size() == 2) //TODO It is not enought, it should check type of parent Folder
+        if (path.getPath().size() == 2) //TODO It is not enough, it should check type of parent Folder
             return true;
         
         return false;

@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -35,11 +36,11 @@ import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
 public class TickerInjectorPresenter extends ScreenButtonInjectorPresenter.Static {
 
     public TickerInjectorPresenter () {
-        super ("Assign a new Ticker", null, 10);
+        super (NbBundle.getMessage(TickerInjectorPresenter.class, "DISP_AssignNewTicker"), null, 10); // NOI18N
     }
 
     public boolean isEnabled () {
-        return getComponent ().readProperty (DisplayableCD.PROP_TICKER) == PropertyValue.createNull ();
+        return getComponent ().readProperty (DisplayableCD.PROP_TICKER).getKind() == PropertyValue.Kind.NULL;
     }
 
     protected void actionPerformed () {

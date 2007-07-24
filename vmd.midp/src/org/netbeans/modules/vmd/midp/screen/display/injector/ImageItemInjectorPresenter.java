@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 import org.netbeans.modules.vmd.api.screen.display.injector.ScreenButtonInjectorPresenter;
 import org.netbeans.modules.vmd.midp.components.items.ImageItemCD;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 
@@ -33,11 +34,11 @@ import javax.swing.*;
 public class ImageItemInjectorPresenter extends ScreenButtonInjectorPresenter.Static {
 
     public ImageItemInjectorPresenter () {
-        super ("Assign a new Image", null, 10);
+        super (NbBundle.getMessage(ImageItemInjectorPresenter.class, "DISP_AssignNewImage"), null, 10); // NOI18N
     }
 
     public boolean isEnabled () {
-        return getComponent ().readProperty (ImageItemCD.PROP_IMAGE) == PropertyValue.createNull ();
+        return getComponent ().readProperty (ImageItemCD.PROP_IMAGE).getKind () == PropertyValue.Kind.NULL;
     }
 
     protected void actionPerformed () {

@@ -155,7 +155,7 @@
             <file name="org-netbeans-modules-vmd-midp-producers-ListProducer.instance"/>
             <file name="org-netbeans-modules-vmd-midp-producers-ListElementEventSourceProducer.instance"/>
             <file name="org-netbeans-modules-vmd-midp-producers-EntryPointProducer.instance"/>
-            <file name="org-netbeans-modules-vmd-midp-producers-IfCallPointProducer.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-producers-IfPointProducer.instance"/>
             <file name="org-netbeans-modules-vmd-midp-producers-ChoiceElementProducer.instance"/>
 
             <file name="org-netbeans-modules-vmd-midp-producers-CommandProducer$BackCommand.instance"/>

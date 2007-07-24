@@ -53,7 +53,7 @@ public class MidpSetterPresenterDeserializer extends PresenterDeserializer {
             return null;
         String name = XMLUtils.getAttributeValue (node, NAME_ATTR);
         String parametersString = XMLUtils.getAttributeValue (node, PARAMETERS_ATTR);
-        StringTokenizer tokenizer = new StringTokenizer (parametersString, ",");
+        StringTokenizer tokenizer = new StringTokenizer (parametersString, ","); // NOI18N
         ArrayList<String> parameters = new ArrayList<String> ();
         while (tokenizer.hasMoreTokens ())
             parameters.add (tokenizer.nextToken ());

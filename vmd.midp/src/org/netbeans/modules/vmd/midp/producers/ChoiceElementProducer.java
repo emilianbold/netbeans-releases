@@ -22,6 +22,7 @@ import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -32,7 +33,7 @@ public class ChoiceElementProducer extends ComponentProducer {
     private static final String PRODUCER_ID = "#ChoiceElementProducer"; // NOI18N
 
     public ChoiceElementProducer() {
-        super(PRODUCER_ID, ChoiceElementCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ELEMENTS, "Choice Element", "Choice Element", ChoiceElementCD.ICON_PATH, ChoiceElementCD.LARGE_ICON_PATH));
+        super(PRODUCER_ID, ChoiceElementCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ELEMENTS, NbBundle.getMessage(ChoiceElementProducer.class, "DISP_ChoiceElement"), NbBundle.getMessage(ChoiceElementProducer.class, "TTIP_ChoiceElement"), ChoiceElementCD.ICON_PATH, ChoiceElementCD.LARGE_ICON_PATH)); // NOI18N
     }
 
     public boolean checkValidity(DesignDocument document) {

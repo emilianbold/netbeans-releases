@@ -21,17 +21,18 @@ package org.netbeans.modules.vmd.midp.screen.display;
 
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
+import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.DateFieldCD;
+import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
-import java.util.Date;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
-import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
-import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 
 /**
  *
@@ -51,20 +52,20 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
         
         PropertyValue inputModeValue = getComponent().readProperty(DateFieldCD.PROP_INPUT_MODE);
         PropertyValue dateValue = getComponent().readProperty(DateFieldCD.PROP_DATE);
-        String text = "<user input mode>";
+        String text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_input_mode"); // NOI18N
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
         if (inputModeValue.getKind() == PropertyValue.Kind.VALUE) {
             int inputMode = MidpTypes.getInteger(inputModeValue);
             switch (inputMode) {
             case DateFieldCD.VALUE_DATE:
-                text = "<user date>";
+                text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_date"); // NOI18N
                 format = DateFormat.getDateInstance(DateFormat.MEDIUM);
                 break;
             case DateFieldCD.VALUE_DATE_TIME:
-                text = "<user date time>";
+                text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_date_time"); // NOI18N
                 break;
             case DateFieldCD.VALUE_TIME:
-                text = "<user time>";
+                text = NbBundle.getMessage(DateFieldDisplayPresenter.class, "DISP_user_time"); // NOI18N
                 format = DateFormat.getTimeInstance(DateFormat.MEDIUM);
                 break;
             }

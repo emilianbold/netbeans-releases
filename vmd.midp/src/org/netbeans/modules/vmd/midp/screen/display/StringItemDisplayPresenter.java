@@ -52,7 +52,7 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT));
         int appearanceMode = MidpTypes.getInteger(getComponent().readProperty(ItemCD.PROP_APPEARANCE_MODE));
         label.setBorder(appearanceMode == ItemCD.VALUE_BUTTON ? BorderFactory.createRaisedBevelBorder() : null);
-        label.setForeground (appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults ().getColor ("Label.foreground"));
+        label.setForeground (appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults ().getColor ("Label.foreground")); // NOI18N
         label.setText(text);
     }
 

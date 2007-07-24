@@ -22,6 +22,7 @@ import org.netbeans.modules.vmd.api.model.*;
 import org.netbeans.modules.vmd.midp.components.sources.EntryStartEventSourceCD;
 import org.netbeans.modules.vmd.midp.components.points.EntryPointCD;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -31,7 +32,7 @@ public class EntryPointProducer extends ComponentProducer {
     private static final String PRODUCER_ID = "#EntryPointProducer"; // NOI18N
 
     public EntryPointProducer () {
-        super (EntryPointProducer.PRODUCER_ID, EntryPointCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, "Entry Point", "Entry Point", EntryPointCD.ICON_PATH, EntryPointCD.LARGE_ICON_PATH));
+        super (EntryPointProducer.PRODUCER_ID, EntryPointCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(EntryPointProducer.class, "DISP_EntryPoint"), NbBundle.getMessage(EntryPointProducer.class, "TTIP_EntryPoint"), EntryPointCD.ICON_PATH, EntryPointCD.LARGE_ICON_PATH)); // NOI18N
     }
 
     public Result postInitialize (DesignDocument document, DesignComponent entryPoint) {

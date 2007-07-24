@@ -13,7 +13,6 @@
  */
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
@@ -25,10 +24,12 @@ import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Transferable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,17 +84,17 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     public void reload(ScreenDeviceInfo deviceInfo) {
         String tickerText = null;
         if (getComponent().readProperty(DisplayableCD.PROP_TICKER).getKind() == PropertyValue.Kind.USERCODE)
-            tickerText = "<user code>";
+            tickerText = NbBundle.getMessage(DisplayableDisplayPresenter.class, "DISP_user_code"); // NOI18N
         else {
             DesignComponent ticker = getComponent().readProperty(DisplayableCD.PROP_TICKER).getComponent();
             if (ticker != null) {
                 PropertyValue value = ticker.readProperty(TickerCD.PROP_STRING);
                 if (value.getKind() == PropertyValue.Kind.USERCODE)
-                    tickerText = "<ticker string user code>"; //NOI18N
+                    tickerText = NbBundle.getMessage(DisplayableDisplayPresenter.class, "DISP_ticker_string_user_code"); // NOI18N
                 else {
                     tickerText = MidpValueSupport.getHumanReadableString(value);
-                    if (tickerText == null || "".equals(tickerText))
-                        tickerText = "<empty ticker string>"; //NOI18N
+                    if (tickerText == null || "".equals(tickerText)) // NOI18N
+                        tickerText = NbBundle.getMessage(DisplayableDisplayPresenter.class, "DISP_empty_ticker_string"); // NOI18N
                 }
             }
         }

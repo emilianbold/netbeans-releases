@@ -19,15 +19,16 @@
 
 package org.netbeans.modules.vmd.midp.inspector.folders;
 
-import java.awt.Image;
-import java.util.Collections;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderPresenter;
+import org.netbeans.modules.vmd.api.inspector.InspectorFolderCategoryPresenter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
 import org.netbeans.modules.vmd.api.model.Presenter;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+
+import java.awt.*;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.vmd.api.inspector.InspectorFolderCategoryPresenter;
 
 /**
  *
@@ -47,7 +48,7 @@ public final class MidpInspectorSupport {
     
     
     //Ordering inside of category by array property defined by propertyName
-    public static final Presenter createComponentCategory(String categoryName, TypeID folderTypeID, Image icon, List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
+    public static Presenter createComponentCategory(String categoryName, TypeID folderTypeID, Image icon, List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
         
         return new InspectorFolderCategoryPresenter(categoryName, 
                                                folderTypeID,
@@ -56,19 +57,19 @@ public final class MidpInspectorSupport {
                                                orderingControllers.toArray(new InspectorOrderingController[orderingControllers.size()]));
     } 
     
-    //Defauld Ordering inside
-    public static final Presenter createComponentCommandsCategory(TypeID ... filtersTypeID) {
+    //Default Ordering inside
+    public static Presenter createComponentCommandsCategory(TypeID ... filtersTypeID) {
         
-        return createComponentCategory("Assigned Commands",
+        return createComponentCategory(NbBundle.getMessage(MidpInspectorSupport.class, "DISP_InspectorCategory_Assigned_Commands"), // NOI18N
                                        TYPEID_COMMANDS,
                                        ICON_ELEMENTS,
-                                       Collections.EMPTY_LIST,
+                                       Collections.<InspectorOrderingController>emptyList (),
                                        filtersTypeID); 
     }
     //Ordering inside of category by array property defined by propertyName
-    public static final Presenter createComponentCommandsCategory(List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
+    public static Presenter createComponentCommandsCategory(List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
         
-        return createComponentCategory("Assigned Commands", 
+        return createComponentCategory(NbBundle.getMessage(MidpInspectorSupport.class, "DISP_InspectorCategory_Assigned_Commands"), // NOI18N
                                        TYPEID_COMMANDS,
                                        ICON_COMMANDS,
                                        orderingControllers,
@@ -76,17 +77,17 @@ public final class MidpInspectorSupport {
     }
     
     //Default Sorting
-    public static final Presenter createComponentElementsCategory(String displayName, TypeID... filtersTypeID) {
+    public static Presenter createComponentElementsCategory(String displayName, TypeID... filtersTypeID) {
         
         return createComponentCategory(displayName,
                                        TYPEID_ELEMENTS,
                                        ICON_ELEMENTS,
-                                       Collections.EMPTY_LIST,
+                                       Collections.<InspectorOrderingController>emptyList (),
                                        filtersTypeID); 
     }
     
     //Ordering inside of category by array property defined by propertyName
-    public static final Presenter createComponentElementsCategory(String displayName, List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
+    public static Presenter createComponentElementsCategory(String displayName, List<InspectorOrderingController> orderingControllers, TypeID... filtersTypeID) {
         
         return createComponentCategory( displayName, 
                                        TYPEID_ELEMENTS,

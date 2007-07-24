@@ -72,13 +72,13 @@ public class MidpPaletteProvider implements PaletteProvider {
                         order.add(categoryFolder);
                     }
                 } catch (IOException e) {
-                    Debug.error("Can't create directory for palette category: " + e);
+                    Debug.error("Can't create directory for palette category: " + e); // NOI18N
                 }
             }
             try {
                 rootFolder.setOrder(order.toArray(new DataObject[order.size()]));
             } catch (IOException e) {
-                Debug.error("Can't set attribute for palette category directory: " + e);
+                Debug.error("Can't set attribute for palette category directory: " + e); // NOI18N
             }
         }
     }

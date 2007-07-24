@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyEditor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.awt.*;
@@ -63,7 +64,7 @@ public class ScreenTextAreaPropertyEditor implements ScreenPropertyEditor {
 
         public StringTextArea (ScreenPropertyDescriptor property) {
             this.property = property;
-            setToolTipText ("Press Ctrl+Enter key to set the edited text");
+            setToolTipText (NbBundle.getMessage(ScreenTextAreaPropertyEditor.class, "TTIP_ScreenTextAreaPE")); // NOI18N
             addKeyListener(this);
             addFocusListener(this);
         }

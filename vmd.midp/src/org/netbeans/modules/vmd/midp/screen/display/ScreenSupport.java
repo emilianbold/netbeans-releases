@@ -106,7 +106,7 @@ public final class ScreenSupport {
                 DesignComponent rootComponent = document.getRootComponent();
                 ScreenDeviceInfoPresenter presenter = rootComponent.getPresenter(ScreenDeviceInfoPresenter.class);
                 if (presenter == null) {
-                    throw new IllegalStateException("No ScreenDevice attached to the root component"); //NOI18N
+                    throw Debug.error ("No ScreenDevice attached to the root component"); //NOI18N
                 }
                 screenDevice[0] = presenter.getScreenDeviceInfo();
             }
@@ -159,7 +159,7 @@ public final class ScreenSupport {
         if (imageFileObject != null) {
             return resolveImageForRoot(imageFileObject, imagePath);
         }
-        Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); // NOI18N
+        Debug.warning("Resource path property in", imageComponent, "contains incorrect value"); // NOI18N
         return null;
     }
 
@@ -175,14 +175,14 @@ public final class ScreenSupport {
         DesignDocument document = imageComponent.getDocument();
 
         Map<FileObject, FileObject> fileMap = MidpProjectSupport.getFileObjectsForRelativeResourcePath(document, imagePath);
-        if (fileMap == null || fileMap.keySet().iterator().hasNext() == false) {
+        if (fileMap == null || ! fileMap.keySet().iterator().hasNext()) {
             return null;
         }
         FileObject imageFileObject = fileMap.keySet().iterator().next();
         if (imageFileObject != null) {
             return imageFileObject;
         }
-        Debug.warning("Resource path property in " + imageComponent + " contains incorrect value"); // NOI18N
+        Debug.warning("Resource path property in", imageComponent, "contains incorrect value"); // NOI18N
         return null;
     }
 

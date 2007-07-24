@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionController;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
  *
@@ -35,8 +36,8 @@ public class ChildrenByTypePC implements InspectorPositionController {
 
     public ChildrenByTypePC(TypeID ... typeIDs) {
         if (typeIDs.length == 0)
-            throw new IllegalArgumentException("Argument typIDs cant be empty"); //NOI18N
-        
+            throw Debug.error ("Argument typIDs cant be empty"); //NOI18N
+
         this.typeIDs = typeIDs;
     }
     

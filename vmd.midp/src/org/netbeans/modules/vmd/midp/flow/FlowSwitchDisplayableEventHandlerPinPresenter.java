@@ -21,10 +21,8 @@
 package org.netbeans.modules.vmd.midp.flow;
 
 import org.netbeans.api.visual.anchor.Anchor;
-import org.netbeans.api.visual.vmd.VMDNodeAnchor;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
-import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.vmd.api.flow.visual.FlowDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowPinDescriptor;
@@ -32,6 +30,7 @@ import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.midp.components.handlers.SwitchDisplayableEventHandlerCD;
+import org.openide.util.NbBundle;
 
 import java.awt.datatransfer.Transferable;
 
@@ -49,7 +48,7 @@ public final class FlowSwitchDisplayableEventHandlerPinPresenter extends FlowEve
     }
 
     protected String getDisplayName () {
-        return "Via";
+        return NbBundle.getMessage (FlowSwitchDisplayableEventHandlerPinPresenter.class, "DISP_FlowPin_Via"); // NOI18N
     }
 
     protected String getOrder () {

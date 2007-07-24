@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionController;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
  *
@@ -37,7 +38,7 @@ public final class ComponentsCategoryByReferencesPC implements InspectorPosition
     
     public ComponentsCategoryByReferencesPC(TypeID typeID, String propertyName) {
         if (typeID == null)
-            throw new IllegalArgumentException("Argument typID cant be null"); //NOI18N
+            throw Debug.error ("Argument typID cant be null"); //NOI18N
         
         this.typeID = typeID;
         this.propertyName = propertyName;

@@ -27,6 +27,7 @@ import org.netbeans.modules.vmd.midp.components.handlers.ListEventHandlerCD;
 import org.netbeans.modules.vmd.midp.components.displayables.ListCD;
 import org.netbeans.modules.vmd.midp.components.displayables.DisplayableCD;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -34,7 +35,7 @@ import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
 public class ListProducer extends MidpComponentProducer {
 
     public ListProducer () {
-        super (ListCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, "List", "List", ListCD.ICON_PATH, ListCD.ICON_LARGE_PATH)); // NOI18N
+        super (ListCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(ListProducer.class, "DISP_List"), NbBundle.getMessage(ListProducer.class, "TTIP_List"), ListCD.ICON_PATH, ListCD.ICON_LARGE_PATH)); // NOI18N
     }
 
     public Result postInitialize (DesignDocument document, DesignComponent list) {

@@ -31,10 +31,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 public final class RootPC implements InspectorPositionController {
 
     public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
-        if (path.getPath().size() == 1 )
-            return true;
-        
-        return false;
+        return path.getPath ().size () == 1;
     }
     
 }

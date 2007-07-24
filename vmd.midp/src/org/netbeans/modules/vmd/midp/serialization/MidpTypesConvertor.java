@@ -40,28 +40,28 @@ public final class MidpTypesConvertor {
         TypeMirror type = element.asType ();
         switch (type.getKind ()) {
             case BOOLEAN:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_BOOLEAN, PropertyValue.createUserCode ("false"));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_BOOLEAN, PropertyValue.createUserCode ("false")); // NOI18N
             case BYTE:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_BYTE, PropertyValue.createUserCode ("(byte) 0"));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_BYTE, PropertyValue.createUserCode ("(byte) 0")); // NOI18N
             case CHAR:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_CHAR, PropertyValue.createUserCode ("(char) 0"));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_CHAR, PropertyValue.createUserCode ("(char) 0")); // NOI18N
             case SHORT:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_SHORT, PropertyValue.createUserCode ("(short) 0"));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_SHORT, PropertyValue.createUserCode ("(short) 0")); // NOI18N
             case DOUBLE:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_DOUBLE, PropertyValue.createUserCode ("0.0"));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_DOUBLE, PropertyValue.createUserCode ("0.0")); // NOI18N
             case FLOAT:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_FLOAT, PropertyValue.createUserCode ("0.0f"));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_FLOAT, PropertyValue.createUserCode ("0.0f")); // NOI18N
             case INT:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_INT, PropertyValue.createUserCode ("0"));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_INT, PropertyValue.createUserCode ("0")); // NOI18N
             case LONG:
-                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_LONG, PropertyValue.createUserCode ("0l"));
+                return createProperty (name, usedInConstructor, MidpTypes.TYPEID_LONG, PropertyValue.createUserCode ("0l")); // NOI18N
             case DECLARED:
                 String className = ((TypeElement) ((DeclaredType) type).asElement ()).getQualifiedName ().toString ();
                 if ("java.lang.String".equals (className)) // NOI18N
                     return new PropertyDescriptor (name, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull (), true, true, Versionable.FOREVER);
                 // TODO - component references like Image...
             default:
-                return new PropertyDescriptor (name, MidpTypes.TYPEID_JAVA_CODE, MidpTypes.createJavaCodeValue ("null"), false, true, Versionable.FOREVER);
+                return new PropertyDescriptor (name, MidpTypes.TYPEID_JAVA_CODE, MidpTypes.createJavaCodeValue ("null"), false, true, Versionable.FOREVER); // NOI18N
         }
     }
 

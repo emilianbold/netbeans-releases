@@ -28,6 +28,7 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
 import org.netbeans.modules.vmd.midp.components.resources.ResourceCD;
 import org.netbeans.modules.vmd.midp.components.items.*;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -45,85 +46,85 @@ public abstract class MidpComponentProducer extends ComponentProducer {
 
     public static final class Form extends MidpComponentProducer {
         public Form() {
-            super(FormCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Form", "Form", FormCD.ICON_PATH, FormCD.ICON_LARGE_PATH)); // NOI18N
+            super(FormCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(MidpComponentProducer.class, "DISP_Form"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_Form"), FormCD.ICON_PATH, FormCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
 
     public static final class Alert extends MidpComponentProducer {
         public Alert() {
-            super(AlertCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Alert", "Alert", AlertCD.ICON_PATH, AlertCD.ICON_LARGE_PATH)); // NOI18N
+            super(AlertCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(MidpComponentProducer.class, "DISP_Alert"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_Alert"), AlertCD.ICON_PATH, AlertCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
 
     public static final class TextBox extends MidpComponentProducer {
         public TextBox() {
-            super(TextBoxCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, "Text Box", "Text Box", TextBoxCD.ICON_PATH, TextBoxCD.ICON_LARGE_PATH)); // NOI18N
+            super(TextBoxCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_DISPLAYABLES, NbBundle.getMessage(MidpComponentProducer.class, "DISP_TextBox"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_TextBox"), TextBoxCD.ICON_PATH, TextBoxCD.ICON_LARGE_PATH)); // NOI18N
         }
     }
 
     public static final class ChoiceGroup extends MidpComponentProducer {
         public ChoiceGroup() {
-            super(ChoiceGroupCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Choice Group", "Choice Group", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
+            super(ChoiceGroupCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, NbBundle.getMessage(MidpComponentProducer.class, "DISP_ChoiceGroup"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_ChoiceGroup"), ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class Gauge extends MidpComponentProducer {
         public Gauge() {
-            super(GaugeCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Gauge", "Gauge", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
+            super(GaugeCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, NbBundle.getMessage(MidpComponentProducer.class, "DISP_Gauge"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_Gauge"), ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class Spacer extends MidpComponentProducer {
         public Spacer() {
-            super(SpacerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Spacer", "Spacer", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
+            super(SpacerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, NbBundle.getMessage(MidpComponentProducer.class, "DISP_Spacer"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_Spacer"), ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class DateField extends MidpComponentProducer {
         public DateField() {
-            super(DateFieldCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Date Field", "Date Field", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
+            super(DateFieldCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, NbBundle.getMessage(MidpComponentProducer.class, "DISP_DateField"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_DateField"), ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class ImageItem extends MidpComponentProducer {
         public ImageItem() {
-            super(ImageItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Image Item", "Image Item", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
+            super(ImageItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, NbBundle.getMessage(MidpComponentProducer.class, "DISP_ImageItem"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_ImageItem"), ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class StringItem extends MidpComponentProducer {
         public StringItem() {
-            super(StringItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "String Item", "String Item", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
+            super(StringItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, NbBundle.getMessage(MidpComponentProducer.class, "DISP_StringItem"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_StringItem"), ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class CustomItem extends MidpComponentProducer {
         public CustomItem() {
-            super(CustomItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Custom Item", "Custom Item", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
+            super(CustomItemCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, NbBundle.getMessage(MidpComponentProducer.class, "DISP_CustomItem"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_CustomItem"), ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class Font extends MidpComponentProducer {
         public Font() {
-            super(FontCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Font", "Font", ResourceCD.ICON_PATH, ResourceCD.LARGE_ICON_PATH)); // NOI18N
+            super(FontCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, NbBundle.getMessage(MidpComponentProducer.class, "DISP_Font"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_Font"), ResourceCD.ICON_PATH, ResourceCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class Image extends MidpComponentProducer {
         public Image() {
-            super(ImageCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Image", "Image", ResourceCD.ICON_PATH, ResourceCD.LARGE_ICON_PATH)); // NOI18N
+            super(ImageCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, NbBundle.getMessage(MidpComponentProducer.class, "DISP_Image"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_Image"), ResourceCD.ICON_PATH, ResourceCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class Ticker extends MidpComponentProducer {
         public Ticker() {
-            super(TickerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, "Ticker", "Ticker", ResourceCD.ICON_PATH, ResourceCD.LARGE_ICON_PATH)); // NOI18N
+            super(TickerCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_RESOURCES, NbBundle.getMessage(MidpComponentProducer.class, "DISP_Ticker"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_Ticker"), ResourceCD.ICON_PATH, ResourceCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
 
     public static final class TextField extends MidpComponentProducer {
         public TextField() {
-            super(TextFieldCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, "Text Field", "Text Field", ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
+            super(TextFieldCD.TYPEID, new PaletteDescriptor(MidpPaletteProvider.CATEGORY_ITEMS, NbBundle.getMessage(MidpComponentProducer.class, "DISP_TextField"), NbBundle.getMessage(MidpComponentProducer.class, "TTIP_TextField"), ItemCD.ICON_PATH, ItemCD.LARGE_ICON_PATH)); // NOI18N
         }
     }
    

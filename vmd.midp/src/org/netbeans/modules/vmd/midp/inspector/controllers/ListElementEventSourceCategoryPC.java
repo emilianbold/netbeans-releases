@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.inspector.InspectorFolderPath;
 import org.netbeans.modules.vmd.api.inspector.InspectorPositionController;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.model.Debug;
 
 /**
  *
@@ -36,7 +37,7 @@ public final class ListElementEventSourceCategoryPC implements InspectorPosition
 
     public ListElementEventSourceCategoryPC(TypeID typeID) {
         if (typeID == null)
-            throw new IllegalArgumentException("Argument typID cant be null"); //NOI18N
+            throw Debug.error ("Argument typID cant be null"); //NOI18N
         
         this.typeID = typeID;
     }
@@ -50,11 +51,8 @@ public final class ListElementEventSourceCategoryPC implements InspectorPosition
         
         if (component.getParentComponent().getComponentID() != parentComponentID)
             return false;
-        
-        if (path.getLastElement().getTypeID() == typeID )
-            return true;
-        
-        return false;
+
+        return path.getLastElement ().getTypeID ().equals (typeID);
     }
     
 }

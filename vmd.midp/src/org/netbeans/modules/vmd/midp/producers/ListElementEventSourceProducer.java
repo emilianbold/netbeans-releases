@@ -25,6 +25,7 @@ import org.netbeans.modules.vmd.midp.components.MidpJavaSupport;
 import org.netbeans.modules.vmd.midp.components.elements.ChoiceElementCD;
 import org.netbeans.modules.vmd.midp.components.sources.ListElementEventSourceCD;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -34,7 +35,7 @@ public class ListElementEventSourceProducer extends ComponentProducer {
     private static final String PRODUCER_ID = "#ListElementEventSourceProducer"; // NOI18N
 
     public ListElementEventSourceProducer () {
-        super (PRODUCER_ID, ListElementEventSourceCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_ELEMENTS, "List Element", "List Element", ChoiceElementCD.ICON_PATH, ChoiceElementCD.LARGE_ICON_PATH));
+        super (PRODUCER_ID, ListElementEventSourceCD.TYPEID, new PaletteDescriptor (MidpPaletteProvider.CATEGORY_ELEMENTS, NbBundle.getMessage(ListElementEventSourceProducer.class, "DISP_ListElement"), NbBundle.getMessage(ListElementEventSourceProducer.class, "TTIP_ListElement"), ChoiceElementCD.ICON_PATH, ChoiceElementCD.LARGE_ICON_PATH)); // NOI18N
     }
 
     public boolean checkValidity(DesignDocument document) {

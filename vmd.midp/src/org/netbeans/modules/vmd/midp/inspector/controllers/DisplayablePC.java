@@ -32,9 +32,7 @@ import org.netbeans.modules.vmd.midp.components.categories.DisplayablesCategoryC
 public final class DisplayablePC implements InspectorPositionController {
 
     public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
-        if (path.getPath().size() == 3 && path.getPath().get(2).getTypeID() == DisplayablesCategoryCD.TYPEID)
-            return true;
+        return path.getPath ().size () == 3 && path.getPath ().get (2).getTypeID () == DisplayablesCategoryCD.TYPEID;
 
-        return false;
     }
 }

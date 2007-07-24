@@ -24,6 +24,7 @@ import org.netbeans.modules.vmd.api.screen.display.ScreenPropertyDescriptor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenTextAreaPropertyEditor;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -57,7 +58,7 @@ public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
         if (text != null)
             this.textBox.setText(text);
         else
-            this.textBox.setText("<empty text>"); // NOI18N
+            this.textBox.setText(NbBundle.getMessage(TextBoxDisplayPresenter.class, "DISP_empty_text"));
     }
     
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {

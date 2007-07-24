@@ -32,10 +32,7 @@ import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 public class ResourcePC implements InspectorPositionController {
 
     public boolean isInside(InspectorFolderPath path, InspectorFolder folder, DesignComponent component) {
-        if (path.getLastElement() != null && path.getLastElement().getTypeID() == ResourcesCategoryCD.TYPEID)
-            return true;
-        
-        return false;
+        return path.getLastElement () != null && path.getLastElement ().getTypeID () == ResourcesCategoryCD.TYPEID;
     }
 
 }
