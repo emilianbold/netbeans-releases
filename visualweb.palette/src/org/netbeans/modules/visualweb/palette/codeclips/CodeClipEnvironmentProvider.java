@@ -81,7 +81,7 @@ public class CodeClipEnvironmentProvider implements Environment.Provider {
 
         private Lookup lookup = null;
 
-        Reference refNode = new WeakReference(null);
+        Reference<CodeClipItemNode> refNode = new WeakReference<CodeClipItemNode>(null);
 
         CodeClipNodeFactory(XMLDataObject obj) {
 
@@ -128,7 +128,7 @@ public class CodeClipEnvironmentProvider implements Environment.Provider {
 
         public synchronized CodeClipItemNode getInstance() {
 
-            CodeClipItemNode node = (CodeClipItemNode)refNode.get();
+            CodeClipItemNode node = refNode.get();
             if (node != null)
                 return node;
 
@@ -154,7 +154,7 @@ public class CodeClipEnvironmentProvider implements Environment.Provider {
             }
 
             node = createPaletteItemNode(handler);
-            refNode = new WeakReference(node);
+            refNode = new WeakReference<CodeClipItemNode>(node);
 
             return node;
         }

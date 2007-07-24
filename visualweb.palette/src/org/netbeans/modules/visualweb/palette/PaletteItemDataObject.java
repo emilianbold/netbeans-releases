@@ -45,7 +45,6 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.io.*;
 import java.beans.*;
-import javax.swing.Action;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
@@ -136,12 +135,13 @@ public class PaletteItemDataObject extends MultiDataObject {
         return new ItemNode();
     }
     
-    public Node.Cookie getCookie(Class cookieClass) {
+    @Override
+    public <T extends Node.Cookie> T getCookie(Class<T> cookieClass) {
         
         if (PaletteItemInfoCookie.class.isAssignableFrom(cookieClass)){
-            return new PaletteItemInfoImpl( this );
+            return cookieClass.cast(new PaletteItemInfoImpl( this ));
         }                
-        return super.getCookie(cookieClass);
+        return cookieClass.cast(super.getCookie(cookieClass));
     }
     
     // -------

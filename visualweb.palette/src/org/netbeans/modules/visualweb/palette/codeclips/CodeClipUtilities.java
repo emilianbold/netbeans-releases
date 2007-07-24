@@ -29,10 +29,8 @@
 
 package org.netbeans.modules.visualweb.palette.codeclips;
 
-import org.netbeans.modules.visualweb.palette.api.CodeClipDragAndDropHandler;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Enumeration;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Vector;

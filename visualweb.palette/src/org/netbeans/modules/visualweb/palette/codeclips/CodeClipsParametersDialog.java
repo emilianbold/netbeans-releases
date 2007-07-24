@@ -47,9 +47,6 @@ public class CodeClipsParametersDialog extends JPanel {
 
     /** UI properties
      */
-
-    private final static int WIDTH = 400;
-    private final static int HEIGHT = 90;
     /** ToDo - remove this restriction and make newParam/paramArray Vectors
      */
     //private final int MAX_PARAMS = 3;
