@@ -69,8 +69,8 @@ public final class LoginScreenCD extends ComponentDescriptor {
     public static final String PROP_BGK_COLOR = "backgroundColor"; //NOI18N
     public static final String PROP_FRG_COLOR = "foregroungColor"; //NOI18N
     
-    public static final String USERNAME_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "LBL_USERNAME"); //NOI18N 
-    public static final String USERNAME_PASSWORD = NbBundle.getMessage(LoginScreenCD.class, "LBL_PASSWORD"); //NOI18N  
+    public static final String USERNAME_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "LBL_LoginScreen_Username"); //NOI18N 
+    public static final String USERNAME_PASSWORD = NbBundle.getMessage(LoginScreenCD.class, "LBL_LoginScreen_Password"); //NOI18N  
     
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);

@@ -35,8 +35,7 @@ import org.netbeans.modules.vmd.midpnb.components.displayables.LoginScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.LoginScreenLoginCommandEventSourceCD;
 import org.openide.util.NbBundle;
 
-/**
- *
+ /*
  * @author Karol Harezlak
  */
 public class LoginScreenProducer extends MidpComponentProducer {

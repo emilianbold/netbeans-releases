@@ -61,6 +61,8 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private int dependence;
     private String comment;
     private long componentID;
+    private String defaultValue;
+    private boolean isDefaultValueUsed;
 
     /**
     * Creates instance of PropertyEditorString.
@@ -76,11 +78,31 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     public PropertyEditorString(String comment, int dependence) {
         this.comment = comment;
         this.dependence = dependence;
+        isDefaultValueUsed = false;
         initComponents();
 
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
+    }
+    
+    /**
+    * Creates instance of PropertyEditorString.
+    *
+    * @param String comment to be displayed underneath of text area in custom
+    * property editor. Can be null.
+    * @param int dependence of particular DesignComponent type. Possible values
+    * are DEPENDENCE_NONE, DEPENDENCE_TEXT_BOX, DEPENDENCE_TEXT_FIELD. This value
+    * will affect for that components after property value will be changed. For
+    * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
+    * this property will be automatically increased to be equal of text length.
+    * @param String default value of the property editor, could be different from default
+    * value specified in the component descriptor 
+    */
+    public PropertyEditorString(String comment, int dependence, String defaultValue) {
+       this(comment, dependence);
+       this.defaultValue = defaultValue;
+       isDefaultValueUsed = true;
     }
 
     /**
@@ -88,6 +110,13 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     */
     public static final PropertyEditorString createInstance() {
         return new PropertyEditorString(null, DEPENDENCE_NONE);
+    }
+    
+    /**
+    * Creates instance of PropertyEditorString without dependences with default value.
+    */
+    public static final PropertyEditorString createInstance(String defaultValue) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue);
     }
 
     /**
@@ -117,6 +146,15 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         customEditor = new CustomEditor(comment);
     }
 
+    @Override
+    public Object getDefaultValue() {
+        if (!isDefaultValueUsed)
+            return super.getDefaultValue();
+        if (defaultValue == null)
+            return PropertyValue.createNull();
+        return MidpTypes.createStringValue(defaultValue);
+    }
+     
     /*
     * Give attention of invoking super.init(component)
     */
