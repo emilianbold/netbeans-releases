@@ -30,6 +30,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
@@ -431,6 +432,18 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         return refs;
     }
     
+    private static boolean isSubclassOf(TypeElement subclass, TypeElement superclass) {
+        TypeMirror superType = subclass.getSuperclass();
+        while(superType.getKind() != TypeKind.NONE) {
+            TypeElement superTypeElm = (TypeElement) ((DeclaredType) superType).asElement();
+            if (superclass == superTypeElm) {
+                return true;
+            }
+            superType = superTypeElm.getSuperclass();
+        }
+        return false;
+    }
+    
     private static final class Encapsulator extends RefactoringVisitor {
         
         private final EncapsulateFieldRefactoring refactoring;
@@ -451,7 +464,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         public Tree visitCompilationUnit(CompilationUnitTree node, Element field) {
             return scan(node.getTypeDecls(), field);
         }
-
+        
         @Override
         public Tree visitClass(ClassTree node, Element field) {
             if (getCurrentPath().getCompilationUnit() == getCurrentPath().getParentPath().getLeaf()) {
@@ -497,7 +510,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), variable));
             if (el == field && refactoring.getSetterName() != null
                     // check (field = 3) == 3
-                    && (isArray || checkAssignmentInsideExpression())) {
+                    && (isArray || checkAssignmentInsideExpression())
+                    && !isInConstructorOfFieldClass(getCurrentPath(), field)) {
                 if (isArray) {
                     ExpressionTree invkgetter = createGetterInvokation(variable);
                     rewrite(variable, invkgetter);
@@ -529,7 +543,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), variable));
             if (el == field && refactoring.getSetterName() != null
                     // check (field += 3) == 3
-                    && (isArray || checkAssignmentInsideExpression())) {
+                    && (isArray || checkAssignmentInsideExpression())
+                    && !isInConstructorOfFieldClass(getCurrentPath(), field)) {
                 if (isArray) {
                     ExpressionTree invkgetter = createGetterInvokation(variable);
                     rewrite(variable, invkgetter);
@@ -565,7 +580,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                     t = ((ArrayAccessTree) t).getExpression();
                 }
                 Element el = workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), t));
-                if (el == field && (isArray || checkAssignmentInsideExpression())) {
+                if (el == field && (isArray || checkAssignmentInsideExpression())
+                        && !isInConstructorOfFieldClass(getCurrentPath(), field)) {
                     // check (++field + 3)
                     ExpressionTree invkgetter = createGetterInvokation(t);
                     if (isArray) {
@@ -593,7 +609,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 return null;
             }
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            if (el == field) {
+            if (el == field && !isInConstructorOfFieldClass(getCurrentPath(), field)) {
                 ExpressionTree nodeNew = createGetterInvokation(node);
                 rewrite(node, nodeNew);
             }
@@ -606,7 +622,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                 return null;
             }
             Element el = workingCopy.getTrees().getElement(getCurrentPath());
-            if (el == field) {
+            if (el == field && !isInConstructorOfFieldClass(getCurrentPath(), field)) {
                 ExpressionTree nodeNew = createGetterInvokation(node);
                 rewrite(node, nodeNew);
             }
@@ -753,13 +769,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             
             if (mods.contains(Modifier.PROTECTED)) {
                 // check inheritance
-                TypeMirror superType = where.getSuperclass();
-                while(superType.getKind() == TypeKind.NONE) {
-                    TypeElement superclass = (TypeElement) ((DeclaredType) superType).asElement();
-                    if (field.getEnclosingElement() == superclass) {
-                        return false;
-                    }
-                    superType = superclass.getSuperclass();
+                if (isSubclassOf(where, (TypeElement) field.getEnclosingElement())) {
+                    return false;
                 }
                 // check same package
                 return workingCopy.getElements().getPackageOf(where) != workingCopy.getElements().getPackageOf(field);
@@ -772,6 +783,32 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
             // default access
             // check same package
             return workingCopy.getElements().getPackageOf(where) != workingCopy.getElements().getPackageOf(field);
+        }
+
+        private boolean isInConstructorOfFieldClass(TreePath path, Element field) {
+            Tree leaf = path.getLeaf();
+            Kind kind = leaf.getKind();
+            while (true) {
+                switch (kind) {
+                case METHOD:
+                    if (workingCopy.getTreeUtilities().isSynthetic(path)) {
+                        return false;
+                    }
+                    Element m = workingCopy.getTrees().getElement(path);
+                    return m.getKind() == ElementKind.CONSTRUCTOR
+                            && (m.getEnclosingElement() == field.getEnclosingElement()
+                                || isSubclassOf((TypeElement) m.getEnclosingElement(), (TypeElement) field.getEnclosingElement()));
+                case COMPILATION_UNIT:
+                case CLASS:
+                case NEW_CLASS:
+                    path = null;
+                    break;
+                default:
+                    path = path.getParentPath();
+                    leaf = path.getLeaf();
+                    kind = leaf.getKind();
+                }
+            }
         }
         
     }
