@@ -157,7 +157,8 @@ public class Utils {
     
     public static void registerResources(java.io.File[] resourceDirs, ServerInterface mejb){
         SunDeploymentManagerInterface sunDm = (SunDeploymentManagerInterface) mejb.getDeploymentManager();
-        if (sunDm.getAppserverVersion() != ServerLocationManager.GF_V2) {
+// TODO : re-enable this when server team resolves 3317
+//        if (sunDm.getAppserverVersion() != ServerLocationManager.GF_V2) {
             System.out.println(bundle.getString("Msg_ProjResRegisterStart")); //NOI18N
             try {
                 for (int j = 0; j < resourceDirs.length; j++) {
@@ -175,19 +176,19 @@ public class Utils {
                 System.out.println(errorMsg);
             }
             System.out.println(bundle.getString("Msg_ProjResRegisterFinish")); //NOI18N
-        }else {
-            System.out.println(bundle.getString("Msg_PrepResourcesForDeploy")); //NOI18N
-            for (int j = 0; j < resourceDirs.length; j++) {
-                File resourceDir = resourceDirs[j];
-                File[] resources = null;
-                if (resourceDir != null) {
-                    resources = resourceDir.listFiles(new SunResourceFileFilter());
-                }
-                if (resources != null) {
-                    prepareSunResources(mejb, resources);
-                }
-            }
-        }
+//        }else {
+//            System.out.println(bundle.getString("Msg_PrepResourcesForDeploy")); //NOI18N
+//            for (int j = 0; j < resourceDirs.length; j++) {
+//                File resourceDir = resourceDirs[j];
+//                File[] resources = null;
+//                if (resourceDir != null) {
+//                    resources = resourceDir.listFiles(new SunResourceFileFilter());
+//                }
+//                if (resources != null) {
+//                    prepareSunResources(mejb, resources);
+//                }
+//            }
+//        }
     }
     
     private static void registerSunResources(final ServerInterface mejb, final File[] resources) throws Exception {

@@ -100,29 +100,30 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         }
         
         // Support build extension for new resource persistence strategy
-        File f = module.getResourceDirectory();
-        while (null != f && !f.exists()) {
-            f = f.getParentFile();
-        }
-        if (null != f) {
-            Project p = FileOwnerQuery.getOwner(f.toURI());
-            FileObject pdfo = p.getProjectDirectory();
-            if (pdfo == null) {
-                return;
-            }
-            FileObject nbProjectFO = pdfo.getFileObject("nbproject");
-            if (nbProjectFO == null) {
-                return;
-            }
-            FileObject privateFO = nbProjectFO.getFileObject("private");
-            if (privateFO == null) {
-                return;
-            }
-            
-            privateFO.addFileChangeListener(new StaticBuildExtensionListener((ModuleType) module.getModuleType()));
-        } else {
-            Logger.getLogger(ModuleConfigurationImpl.class.getName()).finer("Could not find project for J2eeModule");
-        }
+// TODO : re-enable this when server team resolves 3317
+//        File f = module.getResourceDirectory();
+//        while (null != f && !f.exists()) {
+//            f = f.getParentFile();
+//        }
+//        if (null != f) {
+//            Project p = FileOwnerQuery.getOwner(f.toURI());
+//            FileObject pdfo = p.getProjectDirectory();
+//            if (pdfo == null) {
+//                return;
+//            }
+//            FileObject nbProjectFO = pdfo.getFileObject("nbproject");
+//            if (nbProjectFO == null) {
+//                return;
+//            }
+//            FileObject privateFO = nbProjectFO.getFileObject("private");
+//            if (privateFO == null) {
+//                return;
+//            }
+//            
+//            privateFO.addFileChangeListener(new StaticBuildExtensionListener((ModuleType) module.getModuleType()));
+//        } else {
+//            Logger.getLogger(ModuleConfigurationImpl.class.getName()).finer("Could not find project for J2eeModule");
+//        }
     }
     
     
