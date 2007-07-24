@@ -138,6 +138,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             super(config);
         }
 
+        @Override
         public void visitNode(Node iVisited) {
             if (iVisited == null) {
                 return;
@@ -182,6 +183,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             }
         }
 
+        @Override
         protected boolean printCommentsAfter(Node iVisited) {
             boolean hasComment = false;
 

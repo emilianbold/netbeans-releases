@@ -22,7 +22,12 @@ import org.netbeans.modules.ruby.lexer.LexUtilities;
  * @todo Try typing in whole source files and other than tracking missing end and } closure
  *   statements the buffer should be identical - both in terms of quotes to the rhs not having
  *   accumulated as well as indentation being correct.
- * 
+ * @todo
+ *   // TODO: Test
+ *   // - backspace deletion
+ *   // - entering incomplete output
+ *   // automatic reindentation of "end", "else" etc.
+ *
  * 
  * 
  * @author Tor Norbye
@@ -399,6 +404,34 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("x = /\\^/", '/', "x = /\\/^/");
     }
 
+    public void testNotRegexp1() throws Exception {
+        insertChar("x = 10 ^", '/', "x = 10 /^");
+    }
+
+    public void testNotRegexp2() throws Exception {
+        insertChar("x = 3.14 ^", '/', "x = 3.14 /^");
+    }
+
+    // This test doesn't work; the lexer identifies x = y / as the
+    // beginning of a regular expression. Without the space it DOES
+    // work (see regexp4)
+    //public void testNotRegexp3() throws Exception {
+    //    insertChar("x = y ^", '/', "x = y /^");
+    //}
+
+    public void testNotRegexp4() throws Exception {
+        insertChar("x = y^", '/', "x = y/^");
+    }
+
+    public void testRegexpPercent1() throws Exception {
+        insertChar("x = %r^", '(', "x = %r(^)");
+    }
+
+    public void testRegexpPercent2() throws Exception {
+        insertChar("x = %r(^)", ')', "x = %r()^");
+    }
+    
+    
     public void testSinglePercent1() throws Exception {
         insertChar("x = %q^", '(', "x = %q(^)");
     }
@@ -491,6 +524,28 @@ public class BracketCompleterTest extends RubyTestBase {
     public void testBackspace4() throws Exception {
         deleteChar("xy^z", "x^z");
     }
+
+    public void testBackspace5() throws Exception {
+        deleteChar("x=\"^\"", "x=^");
+    }
+    
+    public void testBackspace6() throws Exception {
+        deleteChar("x='^'", "x=^");
+    }
+    
+    public void testBackspace7() throws Exception {
+        deleteChar("x=(^)", "x=^");
+    }
+    
+    // BROKEN!
+    //public void testBackspace8() throws Exception {
+    //    deleteChar("x={^}", "x=^");
+    //}
+    
+    // BROKEN!
+    //public void testBackspace9() throws Exception {
+    //    deleteChar("x=/^/", "x=^");
+    //}
     
     public void testContComment() throws Exception {
         if (BracketCompleter.CONTINUE_COMMENTS) {
@@ -612,23 +667,18 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("# foo^", 'x', "# x^", "foo");
     }
     
-//    public void testdeleteWord() throws Exception {
-//        deleteWord("foo_bar_baz^", "foo_bar^");
-//    }
-//
-//    public void testdeleteWord2() throws Exception {
-//        deleteWord("foo_bar_baz ^", "foo_bar^");
-//    }
-//
-//    public void testdeleteWord3() throws Exception {
-//        deleteWord("FooBarBaz^", "FooBar^");
-//    }
-    
-    // TODO: Test
-    // - backspace deletion
-    // - entering incomplete output
-    // automatic reindentation of "end", "else" etc.
+    public void testdeleteWord() throws Exception {
+        deleteWord("foo_bar_baz^", "foo_bar^");
+    }
 
+    //public void testdeleteWord2() throws Exception {
+    //    deleteWord("foo_bar_baz ^", "foo_bar^");
+    //}
+
+    public void testdeleteWord3() throws Exception {
+        deleteWord("FooBarBaz^", "FooBar^");
+    }
+    
     public void test108889() throws Exception {
         // Reproduce 108889: AIOOBE and AE during editing
         // NOTE: While the test currently throws an exception, when the 

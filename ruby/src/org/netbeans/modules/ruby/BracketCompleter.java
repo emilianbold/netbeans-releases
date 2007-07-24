@@ -111,6 +111,9 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
      */
     private int previousAdjustmentOffset = -1;
 
+    /** True iff we're processing bracket matching AFTER the key has been inserted rather than before  */
+    private boolean isAfter;
+
     /**
      * The indentation to revert to when previousAdjustmentOffset is set and the token
      * changed
@@ -129,6 +132,8 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
     public int beforeBreak(Document document, int offset, JTextComponent target)
         throws BadLocationException {
+        isAfter = false;
+        
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
         
@@ -441,6 +446,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
     public boolean beforeCharInserted(Document document, int caretOffset, JTextComponent target, char ch)
         throws BadLocationException {
+        isAfter = false;
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
 
@@ -505,16 +511,13 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             }
         }
 
+        // "/" is handled AFTER the character has been inserted since we need the lexer's help
         if (ch == '\"') {
             stringTokens = STRING_TOKENS;
             beginTokenId = RubyTokenId.QUOTED_STRING_BEGIN;
         } else if (ch == '\'') {
             stringTokens = STRING_TOKENS;
             beginTokenId = RubyTokenId.STRING_BEGIN;
-        } else if (ch == '/') {
-            // TODO: Check to see that it's really going to be a regexp when it's inserted...
-            stringTokens = REGEXP_TOKENS;
-            beginTokenId = RubyTokenId.REGEXP_BEGIN;
         } else if (id == RubyTokenId.ERROR) {
             String text = token.text().toString();
 
@@ -642,6 +645,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
      */
     public boolean afterCharInserted(Document document, int dotPos, JTextComponent target, char ch)
         throws BadLocationException {
+        isAfter = true;
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
 
@@ -748,6 +752,30 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         case 'n':
             // See if it's the end of an "when" - if so, reindent
             reindent(doc, dotPos, RubyTokenId.WHEN, caret);
+            
+            break;
+            
+        case '/': {
+            // Bracket matching for regular expressions has to be done AFTER the
+            // character is inserted into the document such that I can use the lexer
+            // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
+            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
+            TokenId id = token.id();
+
+            if (id == RubyTokenId.REGEXP_BEGIN || id == RubyTokenId.REGEXP_END) {
+                TokenId[] stringTokens = REGEXP_TOKENS;
+                TokenId beginTokenId = RubyTokenId.REGEXP_BEGIN;
+
+                boolean inserted =
+                    completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
+
+                if (inserted) {
+                    caret.setDot(dotPos + 1);
+                }
+                
+                return inserted;
+            }
+        }
         }
 
         return true;
@@ -1160,8 +1188,8 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     private void completeOpeningBracket(BaseDocument doc, int dotPos, Caret caret, char bracket)
         throws BadLocationException {
         if (isCompletablePosition(doc, dotPos + 1)) {
-            String matchinBracket = "" + matching(bracket);
-            doc.insertString(dotPos + 1, matchinBracket, null);
+            String matchingBracket = "" + matching(bracket);
+            doc.insertString(dotPos + 1, matchingBracket, null);
             caret.setDot(dotPos + 1);
         }
     }
@@ -1244,6 +1272,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         for (TokenId currId : stringTokens) {
             if (id == currId) {
                 insideString = true;
+                break;
             }
         }
 
@@ -1273,7 +1302,9 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 char chr = doc.getChars(dotPos, 1)[0];
 
                 if (chr == bracket) {
-                    doc.insertString(dotPos, "" + bracket, null); //NOI18N
+                    if (!isAfter) {
+                        doc.insertString(dotPos, "" + bracket, null); //NOI18N
+                    }
                     doc.remove(dotPos, 1);
 
                     return true;
@@ -1282,14 +1313,14 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         }
 
         if ((completablePosition && !insideString) || eol) {
-            doc.insertString(dotPos, "" + bracket + matching(bracket), null); //NOI18N
+            doc.insertString(dotPos, "" + bracket + (isAfter ? "" : matching(bracket)), null); //NOI18N
 
             return true;
         }
 
         return false;
     }
-
+    
     /**
      * Checks whether dotPos is a position at which bracket and quote
      * completion is performed. Brackets and quotes are not completed
@@ -1333,7 +1364,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
 
             return ((chr == ')') || (chr == ',') || (chr == '+') || (chr == '}') || (chr == ';') ||
-            (chr == ']'));
+               (chr == ']') || (chr == '/'));
         }
     }
 
