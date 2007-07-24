@@ -616,35 +616,42 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             int anchorOffset = -1;
 outer:      for (Iterator it = localCompletionResult.getResultSets().iterator(); it.hasNext();) {
                 CompletionResultSetImpl resultSet = (CompletionResultSetImpl)it.next();
-                if (anchorOffset == -1)
-                    anchorOffset = resultSet.getAnchorOffset();
-                for (Iterator itt = resultSet.getItems().iterator(); itt.hasNext();) {
-                    CharSequence text = ((CompletionItem)itt.next()).getInsertPrefix();
-                    if (text == null) {
-                        commonText = null;
-                        break outer;
+                List<? extends CompletionItem> resultItems = resultSet.getItems();
+                if (resultItems.size() > 0) {
+                    if (anchorOffset >= -1) {
+                        if (anchorOffset > -1 && anchorOffset != resultSet.getAnchorOffset())
+                            anchorOffset = -2;
+                        else
+                            anchorOffset = resultSet.getAnchorOffset();
                     }
-                    if (commonText == null) {
-                        commonText = text;
-                    } else {
-                        // Get the largest common part
-                        int minLen = Math.min(text.length(), commonText.length());
-                        for (int commonInd = 0; commonInd < minLen; commonInd++) {
-                            if (text.charAt(commonInd) != commonText.charAt(commonInd)) {
-                                if (commonInd == 0) {
-                                    commonText = null;
-                                    break outer; // no common text
+                    for (Iterator itt = resultItems.iterator(); itt.hasNext();) {
+                        CharSequence text = ((CompletionItem)itt.next()).getInsertPrefix();
+                        if (text == null) {
+                            commonText = null;
+                            break outer;
+                        }
+                        if (commonText == null) {
+                            commonText = text;
+                        } else {
+                            // Get the largest common part
+                            int minLen = Math.min(text.length(), commonText.length());
+                            for (int commonInd = 0; commonInd < minLen; commonInd++) {
+                                if (text.charAt(commonInd) != commonText.charAt(commonInd)) {
+                                    if (commonInd == 0) {
+                                        commonText = null;
+                                        break outer; // no common text
+                                    }
+                                    commonText = commonText.subSequence(0, commonInd);
+                                    break;
                                 }
-                                commonText = commonText.subSequence(0, commonInd);
-                                break;
                             }
                         }
                     }
                 }
             }
-            if (commonText != null) {
+            if (commonText != null && anchorOffset >= 0) {
                 int caretOffset = c.getSelectionStart();
-                if (anchorOffset > -1  && caretOffset - anchorOffset < commonText.length()) {
+                if (caretOffset - anchorOffset < commonText.length()) {
                     commonText = commonText.subSequence(caretOffset - anchorOffset, commonText.length());
 
                     Document doc = getActiveDocument();
