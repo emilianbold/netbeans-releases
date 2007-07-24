@@ -126,6 +126,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * to save. Called by my topcomponent when it wants to close its last topcomponent, but the table editor may still be open
      * @return <code>true</code> if everything can be closed
      */
+    @Override
     protected boolean canClose () {
         // if the table is open, can close without worries, don't remove the save cookie
         if (hasOpenedTableComponent()){
@@ -141,6 +142,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * Overrides superclass method.
      * @return the {@link CloneableEditor} for this support
      */
+    @Override
     protected CloneableEditor createCloneableEditor() {
         return new PropertiesEditor(this);
     }
@@ -202,6 +204,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     
     /**
      */
+    @Override
     protected void initializeCloneableEditor(CloneableEditor editor) {
 	((PropertiesEditor) editor).initialize(myEntry);
     }
@@ -213,6 +216,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @param kit kit to user to create the document
      * @return the document annotated by the properties
      */
+    @Override
     protected StyledDocument createStyledDocument(EditorKit kit) {
         StyledDocument document = super.createStyledDocument(kit);
         
@@ -247,6 +251,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @throws <code>BadLocationException</code> should not normally be thrown
      * @see #saveFromKitToStream
      */
+    @Override
     protected void loadFromStreamToKit(StyledDocument document, InputStream inputStream, EditorKit editorKit)
     throws IOException, BadLocationException {
         final PropCharsetDecoder decoder
@@ -271,6 +276,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @throws BadLocationException should not normally be thrown
      * @see #loadFromStreamToKit
      */
+    @Override
     protected void saveFromKitToStream(StyledDocument document, EditorKit editorKit, OutputStream outputStream)
     throws IOException, BadLocationException {
         final PropCharsetEncoder encoder
@@ -291,6 +297,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return <code>true</code> if the environment accepted being marked as modified
      *    or <code>false</code> if it refused it and the document should still be unmodified
      */
+    @Override
     protected boolean notifyModified () {
         // Reparse file.
         myEntry.getHandler().autoParse();
@@ -304,6 +311,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         }
     }
     
+    @Override
     protected Task reloadDocument(){
         Task tsk = super.reloadDocument();
         tsk.addTaskListener(new TaskListener(){
@@ -315,6 +323,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     }
 
     /** Overrides superclass method. Adds checking for opened Table component. */
+    @Override
     protected void notifyUnmodified () {
         super.notifyUnmodified();
         
@@ -323,12 +332,14 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     
     /**
      */
+    @Override
     public void open() {
 	super.open();
 	attachStatusListener();
     }
     
     /** Overrides superclass method. Adds checking for opened Table panel. */
+    @Override
     protected void notifyClosed() {
         // Close document only in case there is not open table editor.
         if(!hasOpenedTableComponent()) {
@@ -405,6 +416,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     }
 
     /** */
+    @Override
     protected String messageHtmlName () {
         if (!myEntry.getDataObject().isValid()) {
             return null;
@@ -470,6 +482,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     
     /** Overrides superclass method. Gets <code>UndoRedo</code> manager which maps 
      * <code>UndoalbleEdit</code>'s to <code>StampFlag</code>'s. */
+    @Override
     protected UndoRedo.Manager createUndoRedoManager () {
         return new UndoRedoStampFlagManager();
     }
@@ -939,6 +952,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         /** Fired when a file is changed.
          * @param fe the event describing context where action has taken place
          */
+        @Override
         public void fileChanged(FileEvent evt) {
             Environment environment = reference.get();
             if (environment != null) {
@@ -1050,16 +1064,19 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * When closing last view, also close the document.
          * @return <code>true</code> if close succeeded
          */
+        @Override
         protected boolean closeLast () {
             return super.closeLast();
         }
 
         /** Overrides superclass method. Gets <code>Icon</code>. */
+        @Override
         public Image getIcon () {
             return Utilities.loadImage("org/netbeans/modules/properties/propertiesLocale.gif"); // NOI18N
         }
         
         /** Overrides superclass method. Gets help context. */
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(Util.HELP_ID_EDITLOCALE);
         }
@@ -1081,6 +1098,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                 = new WeakHashMap<UndoableEdit,StampFlag>(5);
         
         /** Overrides superclass method. Adds StampFlag to UndoableEdit. */
+        @Override
         public synchronized boolean addEdit(UndoableEdit anEdit) {
             stampFlags.put(anEdit, new StampFlag(System.currentTimeMillis(),
                 ((PropertiesDataObject)PropertiesEditorSupport.this.myEntry.getDataObject()).getOpenSupport().atomicUndoRedoFlag ));
@@ -1088,6 +1106,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         }
         
         /** Overrides superclass method. Adds StampFlag to UndoableEdit. */
+        @Override
         public boolean replaceEdit(UndoableEdit anEdit) {
             stampFlags.put(anEdit, new StampFlag(System.currentTimeMillis(), 
                 ((PropertiesDataObject)PropertiesEditorSupport.this.myEntry.getDataObject()).getOpenSupport().atomicUndoRedoFlag ));
@@ -1095,6 +1114,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         }
         
         /** Overrides superclass method. Updates time stamp for the edit. */
+        @Override
         public synchronized void undo() throws CannotUndoException {
             UndoableEdit anEdit = editToBeUndone();
             if(anEdit != null) {
@@ -1105,6 +1125,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         }
         
         /** Overrides superclass method. Updates time stamp for that edit. */
+        @Override
         public synchronized void redo() throws CannotRedoException {
             UndoableEdit anEdit = editToBeRedone();
             if(anEdit != null) {
