@@ -308,7 +308,7 @@ public class PageFlowController {
     }
 
     public final boolean isKnownFile(FileObject file) {
-        if (file.getMIMEType().equals("text/x-jsp")) {
+        if (file.getMIMEType().equals("text/x-jsp") && !file.getExt().equals("jspf")) {
             return true;
         } else if (file.getMIMEType().equals("text/html")) {
             return true;
