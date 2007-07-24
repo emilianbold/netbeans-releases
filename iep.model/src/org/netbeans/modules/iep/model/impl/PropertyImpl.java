@@ -16,13 +16,44 @@
  */
 package org.netbeans.modules.iep.model.impl;
 
+import org.netbeans.modules.iep.model.IEPComponent;
+import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPVisitor;
+import org.netbeans.modules.iep.model.Property;
+import org.w3c.dom.Element;
+
 /**
  *
- * @author radval
+ * 
  */
-public class PropertyImpl {
+public class PropertyImpl extends IEPComponentBase implements Property {
 
-    public PropertyImpl() {
+    public PropertyImpl(IEPModel model, Element e) {
+        super(model, e);
+    }
+
+    public void accept(IEPVisitor visitor) {
+        visitor.visitProperty(this);
+    }
+
+    public IEPComponent createChild(Element childEl) {
+        return null;
+    }
+
+    public String getName() {
+        return getAttribute(ATTR_NAME);
+    }
+
+    public void setName(String name) {
+        setAttribute(NAME_PROPERTY, ATTR_NAME, name);
+    }
+
+    public String getValue() {
+        return getAttribute(ATTR_VALUE);
+    }
+
+    public void setValue(String value) {
+        setAttribute(VALUE_PROPERTY, ATTR_VALUE, value);
     }
 
 }

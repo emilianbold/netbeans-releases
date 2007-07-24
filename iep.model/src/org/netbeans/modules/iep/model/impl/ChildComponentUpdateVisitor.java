@@ -95,14 +95,30 @@ public class ChildComponentUpdateVisitor<T extends IEPComponent> implements
 		}
 	}
 
-    public void visit(org.netbeans.modules.iep.model.Component component) {
-    
+    public void visitComponent(org.netbeans.modules.iep.model.Component component) {
+        if (parent instanceof Component) {
+            if (operation == Operation.ADD) {
+                    addChild(org.netbeans.modules.iep.model.Component.COMPONENT_CHILD, component);
+            } else if (operation == Operation.REMOVE) {
+                    removeChild(org.netbeans.modules.iep.model.Component.COMPONENT_CHILD, component);
+            } else if (operation == null) {
+                    canAdd = true;
+            }
+        }
     }
 
-    public void visit(Property property) {
-    
+    public void visitProperty(Property property) {
+        if (parent instanceof Component) {
+            if (operation == Operation.ADD) {
+                    addChild(org.netbeans.modules.iep.model.Component.COMPONENT_CHILD, property);
+            } else if (operation == Operation.REMOVE) {
+                    removeChild(org.netbeans.modules.iep.model.Component.COMPONENT_CHILD, property);
+            } else if (operation == null) {
+                    canAdd = true;
+            }
+        }
     }
-
+    
     
         
 }
