@@ -139,7 +139,7 @@ Microsystems, Inc. All Rights Reserved.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.core.ui</code-name-base>
-                        <compile-dependency/>
+                        <recursive/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.core.windows</code-name-base>
