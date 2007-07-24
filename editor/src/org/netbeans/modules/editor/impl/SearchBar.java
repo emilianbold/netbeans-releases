@@ -88,7 +88,7 @@ public final class SearchBar extends JToolBar {
      */
     private static final MouseListener sharedMouseListener
         = new org.openide.awt.MouseUtils.PopupMouseAdapter() {
-            public void mouseEntered(MouseEvent evt) {
+            public @Override void mouseEntered(MouseEvent evt) {
                 Object src = evt.getSource();
                 
                 if (src instanceof JButton) { // ignore JMenuItem and JToggleButton
@@ -100,7 +100,7 @@ public final class SearchBar extends JToolBar {
                 }
             }
             
-            public void mouseExited(MouseEvent evt) {
+            public @Override void mouseExited(MouseEvent evt) {
                 Object src = evt.getSource();
                 if (src instanceof JButton) { // ignore JMenuItem and JToggleButton
                     AbstractButton button = (AbstractButton)evt.getSource();
@@ -118,6 +118,7 @@ public final class SearchBar extends JToolBar {
     private JLabel findLabel;
     private JComboBox incrementalSearchComboBox;
     private JTextField incrementalSearchTextField;
+    private DocumentListener incrementalSearchTextFieldListener;
     private JButton findNextButton;
     private JButton findPreviousButton;
     private JCheckBox matchCaseCheckBox;
@@ -148,16 +149,16 @@ public final class SearchBar extends JToolBar {
             Action[] actions = component.getActions();
             for(Action action:actions) {
                 // Discover the keyStrokes for incremental-search-forward
-                if (action.getValue(Action.NAME).equals(IncrementalSearchForwardAction.NAME)) {
+                if (action.getValue(Action.NAME).equals(IncrementalSearchForwardAction.ACTION_NAME)) {
                     Action incrementalSearchForwardAction = action;
                     KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchForwardAction);
                     if (keyStrokes != null) {
                         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
                         for(KeyStroke ks : keyStrokes) {
                             LOG.fine("found IncrementalSearchForwardAction, " + ks); //NOI18N
-                            inputMap.put(ks, IncrementalSearchForwardAction.NAME);
+                            inputMap.put(ks, IncrementalSearchForwardAction.ACTION_NAME);
                         }
-                        getActionMap().put(IncrementalSearchForwardAction.NAME,
+                        getActionMap().put(IncrementalSearchForwardAction.ACTION_NAME,
                             new AbstractAction() {
                                 public void actionPerformed(ActionEvent e) {
                                     findNext();
@@ -165,16 +166,16 @@ public final class SearchBar extends JToolBar {
                             });
                     }
                 // Discover the keyStrokes for incremental-search-backward
-                } else if (action.getValue(Action.NAME).equals(IncrementalSearchBackwardAction.NAME)) {
+                } else if (action.getValue(Action.NAME).equals(IncrementalSearchBackwardAction.ACTION_NAME)) {
                     Action incrementalSearchBackwardAction = action;
                     KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchBackwardAction);
                     if (keyStrokes != null) {
                         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
                         for(KeyStroke ks : keyStrokes) {
                             LOG.fine("found IncrementalSearchBackwardAction, " + ks); //NOI18N
-                            inputMap.put(ks, IncrementalSearchBackwardAction.NAME);
+                            inputMap.put(ks, IncrementalSearchBackwardAction.ACTION_NAME);
                         }
-                        getActionMap().put(IncrementalSearchBackwardAction.NAME,
+                        getActionMap().put(IncrementalSearchBackwardAction.ACTION_NAME,
                             new AbstractAction() {
                                 public void actionPerformed(ActionEvent e) {
                                     findPrevious();
@@ -211,20 +212,20 @@ public final class SearchBar extends JToolBar {
         // configure incremental search text field
         incrementalSearchComboBox = new JComboBox()
         {
-            public Dimension getMinimumSize() {
+            public @Override Dimension getMinimumSize() {
                 return getPreferredSize();
             }
 
-            public Dimension getMaximumSize() {
+            public @Override Dimension getMaximumSize() {
                 return getPreferredSize();
             }
         };
         incrementalSearchComboBox.setEditable(true);
         incrementalSearchTextField = (JTextField) incrementalSearchComboBox.getEditor().getEditorComponent();
         incrementalSearchTextField.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); // NOI18N
-        
+
         // listen on text change
-        incrementalSearchTextField.getDocument().addDocumentListener(new DocumentListener() {
+        incrementalSearchTextFieldListener = new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
             }
 
@@ -237,10 +238,11 @@ public final class SearchBar extends JToolBar {
                 // text changed - attempt incremental search
                 incrementalSearch();
             }
-        });
+        };
+        incrementalSearchTextField.getDocument().addDocumentListener(incrementalSearchTextFieldListener);
 
         incrementalSearchTextField.addFocusListener(new FocusAdapter() {
-            public void focusLost(FocusEvent e) {
+            public @Override void focusLost(FocusEvent e) {
                 looseFocus();
             }
         });
@@ -373,7 +375,7 @@ public final class SearchBar extends JToolBar {
         setVisible(false);
     }
 
-    public String getUIClassID() {
+    public @Override String getUIClassID() {
         //For GTK and Aqua look and feels, we provide a custom toolbar UI -
         //but we cannot override this globally or it will cause problems for
         //the form editor & other things
@@ -384,7 +386,7 @@ public final class SearchBar extends JToolBar {
         }
     }
     
-    public String getName() {
+    public @Override String getName() {
         //Required for Aqua L&F toolbar UI
         return "editorSearchBar"; // NOI18N
     }
@@ -420,7 +422,7 @@ public final class SearchBar extends JToolBar {
     private void incrementalSearch() {
         String incrementalSearchText = incrementalSearchTextField.getText();
         boolean empty = incrementalSearchText.length() <= 0;
-        
+    
         // Enable/disable the pre/next buttons
         findPreviousButton.setEnabled(!empty);
         findNextButton.setEnabled(!empty);
@@ -484,7 +486,8 @@ public final class SearchBar extends JToolBar {
     private void find(boolean next) {
         String incrementalSearchText = incrementalSearchTextField.getText();
         boolean empty = incrementalSearchText.length() <= 0;
-        
+
+        incrementalSearchTextField.getDocument().removeDocumentListener(incrementalSearchTextFieldListener);
         // Add the text to the top of the list
         for(int i = incrementalSearchComboBox.getItemCount() - 1; i >= 0; i--) {
             String item = (String) incrementalSearchComboBox.getItemAt(i);
@@ -494,6 +497,7 @@ public final class SearchBar extends JToolBar {
         }
         ((MutableComboBoxModel) incrementalSearchComboBox.getModel()).insertElementAt(incrementalSearchText, 0);
         incrementalSearchComboBox.setSelectedIndex(0);
+        incrementalSearchTextField.getDocument().addDocumentListener(incrementalSearchTextFieldListener);
         
         // configure find properties
         FindSupport findSupport = FindSupport.getFindSupport();
@@ -611,13 +615,13 @@ public final class SearchBar extends JToolBar {
 
     public static class IncrementalSearchForwardAction extends BaseAction {
         
-        public static final String NAME = "incremental-search-forward"; // NOI18N
+        public static final String ACTION_NAME = "incremental-search-forward"; // NOI18N
     
         static final long serialVersionUID = -1;
         
         public IncrementalSearchForwardAction() {
-            super(NAME, CLEAR_STATUS_TEXT);
-            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchForwardAction.class, NAME));
+            super(ACTION_NAME, CLEAR_STATUS_TEXT);
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchForwardAction.class, ACTION_NAME));
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -638,13 +642,13 @@ public final class SearchBar extends JToolBar {
     
     public static class IncrementalSearchBackwardAction extends BaseAction {
         
-        public static final String NAME = "incremental-search-backward"; // NOI18N
+        public static final String ACTION_NAME = "incremental-search-backward"; // NOI18N
 
         static final long serialVersionUID = -1;
         
         public IncrementalSearchBackwardAction() {
-            super(NAME, CLEAR_STATUS_TEXT);
-            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchBackwardAction.class, NAME));
+            super(ACTION_NAME, CLEAR_STATUS_TEXT);
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(IncrementalSearchBackwardAction.class, ACTION_NAME));
         }
         
         public void actionPerformed(ActionEvent evt, JTextComponent target) {

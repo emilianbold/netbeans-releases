@@ -339,7 +339,6 @@ public final class EditorFindSupport {
                 
                 Position endPos = (Position) props.get(FIND_BLOCK_SEARCH_END);
                 int blockSearchEnd = (endPos != null) ? endPos.getOffset() : -1;
-                int endOffset = (back) ? 0 : -1;
                 int pos;
                 try {
                     int start = (blockSearch && blockSearchStart > -1) ? blockSearchStart : 0;
@@ -360,21 +359,16 @@ public final class EditorFindSupport {
                     return false;
                 }
                 
-                // Find the layer
-                BlockHighlighting layer = (BlockHighlighting)findLayer(comp, Factory.INC_SEARCH_LAYER);
-
                 if (pos >= 0) {
+                    // Find the layer
+                    BlockHighlighting layer = findLayer(comp, Factory.INC_SEARCH_LAYER);
+
                     String s = (String)props.get(FIND_WHAT);
                     int len = (s != null) ? s.length() : 0;
                     if (len > 0) {
                         if (comp.getSelectionEnd() > comp.getSelectionStart()){
                             comp.select(caretPos, caretPos);
                         }
-                        
-// TODO: remove
-//                        incLayer.setInversion(!blockSearch);
-//                        incLayer.setEnabled(true);
-//                        incLayer.setArea(pos, len);
                         
                         if (layer != null) {
                             layer.highlightBlock(
@@ -384,19 +378,9 @@ public final class EditorFindSupport {
                             );
                         }
 
-                        // reset higlighting
-                        Map<String, Object> defaultProps = getValidFindProperties(null);
-                        String findWhatDef = (String)defaultProps.get(FIND_WHAT);
-                        if (findWhatDef!=null && findWhatDef.length()>0){
-                            defaultProps.put(FIND_WHAT, ""); //NOI18N
-                            comp.repaint();
-                        }
-
                         ensureVisible(comp, pos, pos);
                         return true;
                     }
-                } else { // string not found
-                    // !!!          ((BaseCaret)c.getCaret()).dispatchUpdate();
                 }
                
             }
@@ -409,7 +393,7 @@ public final class EditorFindSupport {
     public void incSearchReset() {
         // Find the layer
         JTextComponent comp = EditorRegistry.lastFocusedComponent();
-        BlockHighlighting layer = comp == null ? null : (BlockHighlighting)findLayer(comp, Factory.INC_SEARCH_LAYER);
+        BlockHighlighting layer = comp == null ? null : findLayer(comp, Factory.INC_SEARCH_LAYER);
         
         if (layer != null) {
             layer.highlightBlock(-1, -1, null);
@@ -561,7 +545,7 @@ public final class EditorFindSupport {
                              int blockEndPos, Map<String, Object> props, boolean oppositeDir) throws BadLocationException {
         if (c != null) {
             props = getValidFindProperties(props);
-            Document doc = (Document)c.getDocument();
+            Document doc = c.getDocument();
             int pos = -1;
             boolean wrapDone = false;
             String replaced = null;
@@ -683,7 +667,7 @@ public final class EditorFindSupport {
                 return false;
             }
 
-            Document doc = (Document)c.getDocument();
+            Document doc = c.getDocument();
             int startPos = c.getSelectionStart();
             int len = c.getSelectionEnd() - startPos;
             DocUtils.atomicLock(doc);
@@ -713,7 +697,7 @@ public final class EditorFindSupport {
     public void replaceAll(Map<String, Object> props) {
         incSearchReset();
         JTextComponent c = EditorRegistry.lastFocusedComponent();
-        Document doc = (Document)c.getDocument();
+        Document doc = c.getDocument();
         int maxCnt = doc.getLength();
         int replacedCnt = 0;
         int totalCnt = 0;
@@ -972,7 +956,7 @@ public final class EditorFindSupport {
             return regExp;
         }
         
-        public boolean equals(Object obj){
+        public @Override boolean equals(Object obj){
             if (!(obj instanceof SPW)){
                 return false;
             }
@@ -983,7 +967,7 @@ public final class EditorFindSupport {
                     this.regExp == sp.isRegExp());
         }
 
-        public int hashCode() {
+        public @Override int hashCode() {
             int result = 17;
             result = 37*result + (this.wholeWords ? 1:0);
             result = 37*result + (this.matchCase ? 1:0);
@@ -992,7 +976,7 @@ public final class EditorFindSupport {
             return result;
         }
         
-        public String toString(){
+        public @Override String toString(){
             StringBuffer sb = new StringBuffer("[SearchPatternWrapper:]\nsearchExpression:"+searchExpression);//NOI18N
             sb.append('\n');
             sb.append("wholeWords:");//NOI18N

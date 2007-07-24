@@ -132,7 +132,7 @@ public class NbEditorUI extends ExtEditorUI {
         super.installUI(c);
 
         if (!attached){
-            attachSystemActionPerformer(SearchBar.IncrementalSearchForwardAction.NAME);
+            attachSystemActionPerformer(SearchBar.IncrementalSearchForwardAction.ACTION_NAME);
             attachSystemActionPerformer(ExtKit.replaceAction);
             attachSystemActionPerformer(ExtKit.gotoAction);
             attachSystemActionPerformer(ExtKit.showPopupMenuAction);

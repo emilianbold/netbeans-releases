@@ -192,7 +192,7 @@ public class NbEditorKit extends ExtKit {
         addSystemActionMapping(deleteNextCharAction, org.openide.actions.DeleteAction.class);
         addSystemActionMapping(showPopupMenuAction, org.openide.actions.PopupAction.class);
 
-        addSystemActionMapping(SearchBar.IncrementalSearchForwardAction.NAME, org.openide.actions.FindAction.class);
+        addSystemActionMapping(SearchBar.IncrementalSearchForwardAction.ACTION_NAME, org.openide.actions.FindAction.class);
         addSystemActionMapping(replaceAction, org.openide.actions.ReplaceAction.class);
         addSystemActionMapping(gotoAction, org.openide.actions.GotoAction.class);
 
