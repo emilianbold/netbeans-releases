@@ -66,6 +66,8 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel{
         contentPanel.setLayout( new GridBagLayout() );
         contentPanel.setBackground( UIManager.getColor("Table.background") ); //NOI18N
         jScrollPane1.setBorder( UIManager.getBorder("ScrollPane.border") ); //NOI18N
+        jScrollPane1.getVerticalScrollBar().setUnitIncrement( new JLabel("X").getPreferredSize().height );
+        jScrollPane1.getVerticalScrollBar().setBlockIncrement( new JLabel("X").getPreferredSize().height*10 );
         
         if( choices.length > 0 ) {
         
