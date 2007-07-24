@@ -193,6 +193,10 @@ public abstract class TabDisplayerUI extends ComponentUI {
     
     protected abstract void cancelRequestAttention (int tab);   
     
+    /**
+     * @since 1.9
+     * @return An icon for various buttons displayed in tab control (close/pin/scroll left/right etc), see TabControlButton class.
+     */
     public Icon getButtonIcon( int buttonId, int buttonState ) {
         Icon res = null;
         initIcons();

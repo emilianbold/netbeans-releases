@@ -33,6 +33,7 @@ import org.netbeans.swing.tabcontrol.event.TabActionEvent;
  * <p>The button is painted using a set of icons only unless 'showBorder' is true.
  * The icons should include 'fake' button border then.</p>
  * 
+ * @since 1.9
  * @author S. Aubrecht
  */
 public abstract class TabControlButton extends JButton {

@@ -526,7 +526,7 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
      * Listen to mouse events and handles selection behaviour and close icon
      * button behaviour.
      */
-    class Controller extends MouseAdapter
+    protected class Controller extends MouseAdapter
             implements MouseMotionListener, ChangeListener, PropertyChangeListener, ComplexListDataListener {
 
         /**

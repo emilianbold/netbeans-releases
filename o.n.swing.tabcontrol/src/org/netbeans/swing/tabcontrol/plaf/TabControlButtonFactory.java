@@ -44,6 +44,7 @@ import org.netbeans.swing.tabcontrol.WinsysInfoForTabbed;
 /**
  * A factory to create tab control buttons.
  * 
+ * @since 1.9
  * @author S. Aubrecht
  */
 public class TabControlButtonFactory {
