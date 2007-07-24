@@ -19,32 +19,18 @@
 
 package org.openide.actions;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import javax.swing.Action;
-import javax.swing.event.ChangeListener;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.SaveAsCapable;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 import org.netbeans.core.windows.*;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.windows.Mode;
 
 /**
  * Tests SaveAsAction.
