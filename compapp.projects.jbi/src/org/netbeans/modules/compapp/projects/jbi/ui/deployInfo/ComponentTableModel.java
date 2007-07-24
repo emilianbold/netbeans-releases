@@ -19,10 +19,8 @@
 
 package org.netbeans.modules.compapp.projects.jbi.ui.deployInfo;
 
+import java.util.List;
 import org.openide.ErrorManager;
-
-import java.util.Vector;
-
 import javax.swing.table.AbstractTableModel;
 
 
@@ -33,20 +31,20 @@ import javax.swing.table.AbstractTableModel;
  */
 public class ComponentTableModel extends AbstractTableModel {
     /** Column labels used */
-    private Vector mColumnNames = null;
+    private List<String> mColumnNames = null;
 
     /** Data for this model */
-    private Vector mData = null;
+    private List<ComponentObject> mComponentObjects = null;
 
     /**
      * Constructor for the DependencyModel object
      *
      * @param data row data to populate table model with
-     * @param labels column titles to populate table model with
+     * @param columnNames column titles to populate table model with
      */
-    public ComponentTableModel(Vector data, Vector labels) {
-        mData = data;
-        mColumnNames = labels;
+    public ComponentTableModel(List<ComponentObject> componentObjects, List<String> columnNames) {
+        mComponentObjects = componentObjects;
+        mColumnNames = columnNames;
     }
 
     /**
@@ -64,7 +62,7 @@ public class ComponentTableModel extends AbstractTableModel {
      * @return int
      */
     public int getRowCount() {
-        return mData.size();
+        return mComponentObjects.size();
     }
 
     /**
@@ -75,7 +73,7 @@ public class ComponentTableModel extends AbstractTableModel {
      * @return String
      */
     public String getColumnName(int col) {
-        return (String) mColumnNames.elementAt(col);
+        return mColumnNames.get(col);
     }
 
     /*
@@ -86,29 +84,6 @@ public class ComponentTableModel extends AbstractTableModel {
      */
     public Class getColumnClass(int c) {
         return getValueAt(0, c).getClass();
-    }
-
-    /**
-     * Gets the cellEditable attribute of the Dependency Model object
-     *
-     * @param row row position
-     * @param col column position
-     *
-     * @return The cellEditable value
-     */
-    public boolean isCellEditable(int row, int col) {
-        boolean isEditable = false;
-
-        if (col == 0) {
-            isEditable = true;
-
-            /*
-               ComponentObject dataEntry = (ComponentObject) mData.elementAt(row);
-               isEditable = dataEntry.getEnabled();
-             */
-        }
-
-        return isEditable;
     }
 
     /**
@@ -124,19 +99,14 @@ public class ComponentTableModel extends AbstractTableModel {
 
         try {
             if ((getRowCount() > 0) && ((row != -1) && (col != -1))) {
-                ComponentObject tableEntry = (ComponentObject) mData.elementAt(row);
+                ComponentObject tableEntry = mComponentObjects.get(row);
 
-                if (tableEntry != null) { //
-
+                if (tableEntry != null) {
                     // set the right data for each column
                     if (col == 0) {
-                        obj = new Boolean(tableEntry.getEnabled());
-                    } else if (col == 1) {
                         obj = tableEntry.getType();
-                    } else if (col == 2) {
+                    } else if (col == 1) {
                         obj = tableEntry.getName();
-                    //} else if (col == 3) {
-                    //    obj = tableEntry.getId();
                     }
                 }
             }
@@ -147,58 +117,13 @@ public class ComponentTableModel extends AbstractTableModel {
         return obj;
     }
 
-    /*
-     * Don't need to implement this method unless your table's
-     * data can change. Column 0 is the only one that is changing
-     */
-    public void setValueAt(Object value, int row, int col) {
-        ComponentObject dataEntry = (ComponentObject) mData.elementAt(row);
-
-        // the boolean value is always the 1st entry on the model
-        if (value instanceof Boolean) {
-            dataEntry.setEnabled(((Boolean) value).booleanValue());
-        }
-
-        fireTableCellUpdated(row, col);
-    }
-
     /**
-     * reset the data and column labels
+     * reset the data 
      *
-     * @param data row data to set
-     * @param labels column labels to set
+     * @param componentObjects row data to set
      */
-    public void setDataVector(Vector data, Vector labels) {
-        mData = data;
-        mColumnNames = labels;
-    }
-
-    /**
-     * Returns true if row is editable
-     *
-     * @param row row position
-     *
-     * @return The edit mode value
-     */
-    public boolean isRowEditable(int row) {
-        boolean isEditable = false;
-
-        // only column 0 is editable in this model
-        try {
-            ComponentObject dataEntry = (ComponentObject) mData.elementAt(row);
-            isEditable = dataEntry.getEnabled();
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-
-        return isEditable;
-    }
-
-    /**
-     * The main program for the DependencyModel class
-     *
-     * @param args The command line arguments
-     */
-    public static void main(String[] args) {
+    public void setData(List<ComponentObject> componentObjects) {
+        mComponentObjects = componentObjects;        
+        fireTableDataChanged();
     }
 }

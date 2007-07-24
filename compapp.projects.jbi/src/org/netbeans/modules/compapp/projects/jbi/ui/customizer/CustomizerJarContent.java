@@ -92,18 +92,18 @@ public class CustomizerJarContent extends JPanel
 
         jTableComp.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, "SE", "BPEL Service Engine"},
-                {null, "BC", "HTTP SOAP Binding Component"}
+                {"engine", "BPEL Service Engine"},
+                {"binding", "HTTP SOAP Binding Component"}
             },
             new String [] {
-                " ", "Type", "Title"
+                "Type", "Component ID"
             }
         ) {
             Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.String.class, java.lang.String.class
+                java.lang.String.class, java.lang.String.class
             };
             boolean[] canEdit = new boolean [] {
-                true, false, false
+                false, false
             };
 
             public Class getColumnClass(int columnIndex) {
@@ -116,7 +116,7 @@ public class CustomizerJarContent extends JPanel
         });
         jScrollPane1.setViewportView(jTableComp);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonUpdateComponents, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddFilter_JButton")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonUpdateComponents, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_CheckComponentsOnTargetServer_JButton")); // NOI18N
 
         jLabelAddContent.setLabelFor(jTableAddContent);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelAddContent, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddContent_JLabel")); // NOI18N

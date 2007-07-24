@@ -27,7 +27,6 @@ import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.ComponentObject;
 import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.ComponentTableModel;
-import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.ComponentTableRenderer;
 import org.netbeans.modules.compapp.projects.jbi.ui.deployInfo.TableSorterUtil;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -43,20 +42,14 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Vector;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -67,16 +60,15 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.jbiserver.management.AdministrationService;
 import org.netbeans.modules.compapp.projects.jbi.JbiActionProvider;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.CreateComponentInformation;
 import org.netbeans.modules.compapp.projects.jbi.ui.NoSelectedServerWarning;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 
 /**
  * Handles adding and removing of additional war content.
@@ -88,14 +80,15 @@ final class VisualArchiveIncludesSupport {
     private static final String COMPONENT_INFO_FILE_NAME = "ComponentInformation.xml"; // NOI18N    
     private static final String ASSEMBLY_INFO_FILE_NAME = "AssemblyInformation.xml"; // NOI18N
         
+    private static final int COMPONENT_TYPE_COLUMN = 0;
+    private static final int COMPONENT_NAME_COLUMN = 1;
+        
     private JbiProjectProperties webProperties;
     
-    private Project master;    
+    private Project project;    
     
     private JTable componentTable;    
-    private ComponentTableModel mComponentTableModel;
-    private ComponentTableRenderer mTableRenderer;
-    private Vector mComponentTableColumnNames;
+    private ComponentTableModel componentTableModel;    
     
     private JTable classpathTable;        
     private ClasspathTableModel classpathTableModel;
@@ -110,8 +103,6 @@ final class VisualArchiveIncludesSupport {
     private String compInfoFileLoc;
     private String assemblyInfoFileLoc;
     
-    private JComboBox comboTarget = null;
-    private DefaultComboBoxModel comboModel = null;
     private List<String> componentNames = new ArrayList<String>();
     
     private List<VisualClassPathItem> bindingVisualClassPathItems = null; 
@@ -142,14 +133,10 @@ final class VisualArchiveIncludesSupport {
         this.updateComponentsButton = updateComponentsButton;
         this.addProjectButton = addProjectButton;
         this.removeProjectButton = removeProjectButton;        
-        this.master = webProperties.getProject();       
+        this.project = webProperties.getProject();       
                 
         this.bindingVisualClassPathItems = webProperties.getBindingList();
-        
-        // combobox cell editor for target selection
-        comboModel = new DefaultComboBoxModel(new String[] {" "}); // NOI18N
-        comboTarget = new JComboBox(comboModel);
-        
+                
         initClassPathTable();          
         
         initComponentTable();
@@ -194,11 +181,9 @@ final class VisualArchiveIncludesSupport {
         
         for (int i = 0; i < items.size(); i++) {
             VisualClassPathItem vi = items.get(i);
-            classpathTableModel.setValueAt(vi, i, 0);
-            classpathTableModel.setValueAt("", i, 1); // NOI18N
+            classpathTableModel.setValueAt(vi, i, 0);            
+            classpathTableModel.setValueAt(vi.getAsaType(), i, 1);
         }
-        
-        updateAsaTarget();
         
         classpathTableModel.fireTableDataChanged();
     }
@@ -218,23 +203,23 @@ final class VisualArchiveIncludesSupport {
         return items;
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @param tml DOCUMENT ME!
-     */
-    public void addTableModelListener(TableModelListener tml) {
-        classpathTableModel.addTableModelListener(tml);
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @param tml DOCUMENT ME!
-     */
-    public void removeTableModelListener(TableModelListener tml) {
-        classpathTableModel.removeTableModelListener(tml);
-    }
+//    /**
+//     * DOCUMENT ME!
+//     *
+//     * @param tml DOCUMENT ME!
+//     */
+//    public void addTableModelListener(TableModelListener tml) {
+//        classpathTableModel.addTableModelListener(tml);
+//    }
+//    
+//    /**
+//     * DOCUMENT ME!
+//     *
+//     * @param tml DOCUMENT ME!
+//     */
+//    public void removeTableModelListener(TableModelListener tml) {
+//        classpathTableModel.removeTableModelListener(tml);
+//    }
     
     /**
      * Action listeners will be informed when the value of the list changes.
@@ -255,7 +240,7 @@ final class VisualArchiveIncludesSupport {
     }
     
     private void fireActionPerformed() {
-        ArrayList listeners;
+        List<ActionListener> listeners;
         
         synchronized (this) {
             listeners = new ArrayList(actionListeners);
@@ -263,8 +248,7 @@ final class VisualArchiveIncludesSupport {
         
         ActionEvent ae = new ActionEvent(this, 0, null);
         
-        for (Iterator it = listeners.iterator(); it.hasNext();) {
-            ActionListener al = (ActionListener) it.next();
+        for (ActionListener al : listeners) {
             al.actionPerformed(ae);
         }
     }
@@ -314,7 +298,7 @@ final class VisualArchiveIncludesSupport {
             AntArtifact artifact = uniqueArtifacts.get(i);
             VisualClassPathItem vi = viMap.get(artifact);
             newData[data.length + i][0] = vi;
-            newData[data.length + i][1] = getDefaultTarget(vi.getAsaType());
+            newData[data.length + i][1] = vi.getAsaType();
             if (VisualClassPathItem.isJavaEEProjectAntArtifact(artifact)){
                 webProperties.addSunResourceProject(artifact);
             }
@@ -329,7 +313,7 @@ final class VisualArchiveIncludesSupport {
     
     private void removeElements() {
         ListSelectionModel sm = classpathTable.getSelectionModel();
-        Object aa = null;
+        Object vcpi = null;
         
         int index = sm.getMinSelectionIndex();
         
@@ -345,16 +329,16 @@ final class VisualArchiveIncludesSupport {
                 elements.add(data[i]);
             } else {
                 if (data[i][0] instanceof VisualClassPathItem){
-                    aa = ((VisualClassPathItem)data[i][0]).getObject();
-                    if ((aa instanceof AntArtifact) &&
-                            (VisualClassPathItem.isJavaEEProjectAntArtifact((AntArtifact)aa))){
-                        webProperties.removeSunResourceProject((AntArtifact)aa);
+                    vcpi = ((VisualClassPathItem)data[i][0]).getObject();
+                    if ((vcpi instanceof AntArtifact) &&
+                            (VisualClassPathItem.isJavaEEProjectAntArtifact((AntArtifact)vcpi))){
+                        webProperties.removeSunResourceProject((AntArtifact)vcpi);
                     }
                 }
             }
         }
         
-        final int n = elements.size();
+        int n = elements.size();
         data = (Object[][]) elements.toArray(new Object[n][2]);
         classpathTableModel.fireTableRowsDeleted(elements.size(), n0 - 1);
         
@@ -367,23 +351,11 @@ final class VisualArchiveIncludesSupport {
         fireActionPerformed();
     }
     
-    private String getDefaultTarget(String type) {
-        int tsize = componentNames.size();
-        
-        for (int i = 0; i < tsize; i++) {
-            String val = componentNames.get(i);
-            
-            if (val.startsWith(type)) {
-                return val;
-            }
-        }
-        
-        return ""; // NOI18N
-    }
-    
-    private void updateClassPathTableModel(String jar, String suName, String suDesc, String compName) {
+    private void updateClassPathTableModel(String jar, String suName, 
+            String suDesc, String compName) {
         for (int i = 0, size = classpathTableModel.getRowCount(); i < size; i++) {
-            VisualClassPathItem vcpi = (VisualClassPathItem) classpathTableModel.getValueAt(i, 0);
+            VisualClassPathItem vcpi = 
+                    (VisualClassPathItem) classpathTableModel.getValueAt(i, 0);
             
             String shortName = vcpi.getShortName();
             if (shortName.compareTo(jar) == 0 ||
@@ -396,22 +368,6 @@ final class VisualArchiveIncludesSupport {
                 vcpi.setAsaTarget(compName);
                 
                 classpathTableModel.setValueAt(compName, i, 1);
-                
-//                // lookup the targe list
-//                for (int j = 0, tsize = comboValues.size(); j < tsize; j++) {
-//                    String target = comboValues.get(j);
-//                    
-//                    if (target.indexOf(compName) > 0) {
-//                        classpathTableModel.setValueAt(target, i, 1);
-//                        
-//                        return;
-//                    }
-//                }
-//                
-//                // not set yet.. default to the first non-blank traget on the list
-//                classpathTableModel.setValueAt(getDefaultTarget(vcpi.getAsaType()), i, 1);
-//                
-//                return;
             }
         }
         
@@ -424,7 +380,7 @@ final class VisualArchiveIncludesSupport {
         }
     }
         
-    // Load AsseemblyInfo.xml and update classpath table and component table's first column
+    // Load AsseemblyInfo.xml and update classpath table
     private void updateClassPathTable() {
         try {            
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -437,10 +393,7 @@ final class VisualArchiveIncludesSupport {
             String suDescription = null;
             String compName = null;
             String jar = null;
-            
-            // a list of component names currently being used in this compapp
-            List<String> compNames = new ArrayList<String>();
-            
+                        
             for (int i = 0, isize = serviceUnitNodeList.getLength(); i < isize; i++) {
                 NodeList kids = serviceUnitNodeList.item(i).getChildNodes();
                 
@@ -476,13 +429,7 @@ final class VisualArchiveIncludesSupport {
                 
                 if (jar != null) {
                     updateClassPathTableModel(jar, suName, suDescription, compName);
-                    compNames.add(compName);
                 }
-            }
-            
-            for (int i = 0, size = mComponentTableModel.getRowCount(); i < size; i++) {
-                String name = (String) mComponentTableModel.getValueAt(i, COMPONENT_NAME_COLUMN);
-                mComponentTableModel.setValueAt(compNames.contains(name), i, COMPONENT_IN_DEPLOYMENT_COLUMN);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -501,28 +448,19 @@ final class VisualArchiveIncludesSupport {
         firstColumn.setHeaderValue(NbBundle.getMessage(getClass(), "TXT_Archive_Item")); // NOI18N
         secondColumn.setHeaderValue(NbBundle.getMessage(getClass(), "TXT_Archive_PathInArchive")); // NOI18N
         firstColumn.setCellRenderer(new ClassPathCellRenderer());
-        secondColumn.setCellEditor(new TargetComboBoxEditor(comboTarget));  
-    }
+    }    
     
-    private static final int COMPONENT_IN_DEPLOYMENT_COLUMN = 0;
-    private static final int COMPONENT_TYPE_COLUMN = 1;
-    private static final int COMPONENT_NAME_COLUMN = 2;
-    
-    // Target Component support...
-    //--------------------------------------------------------------------------
     private void initComponentTable() {
-        Vector datas = new Vector(1);
+        List<ComponentObject> componentObjects = new ArrayList<ComponentObject>();
         
-        // setup the table model to  use
-        mComponentTableColumnNames = new Vector();
-        mComponentTableColumnNames.addElement(" "); // NOI18N
-        mComponentTableColumnNames.addElement(NbBundle.getMessage(getClass(), "Type"));  // NOI18N
-        mComponentTableColumnNames.addElement(NbBundle.getMessage(getClass(), "Component_ID"));  // NOI18N
-        mComponentTableModel = new ComponentTableModel(datas, mComponentTableColumnNames);
-        
-        // setup table sorter to use
-        TableSorterUtil mTableSorter = new TableSorterUtil(mComponentTableModel);
-        componentTable.setModel(mTableSorter);
+        // setup the table model to use
+        List<String> columnNames = new ArrayList<String>();
+        columnNames.add(NbBundle.getMessage(getClass(), "Type"));  // NOI18N
+        columnNames.add(NbBundle.getMessage(getClass(), "Component_ID"));  // NOI18N
+        componentTableModel = new ComponentTableModel(componentObjects, columnNames);
+        TableModel sortedComponentTableModel = new TableSorterUtil(componentTableModel);
+        componentTable.setModel(sortedComponentTableModel);
+                
         componentTable.setShowHorizontalLines(true);
         componentTable.setShowVerticalLines(false);
         componentTable.setShowGrid(false);
@@ -533,41 +471,24 @@ final class VisualArchiveIncludesSupport {
         componentTable.getTableHeader().setAlignmentY(JTable.LEFT_ALIGNMENT);
         componentTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
-        // setup renderer
-        mTableRenderer = new ComponentTableRenderer(mComponentTableModel);
         TableColumnModel columnModel = componentTable.getColumnModel();
-        columnModel.getColumn(COMPONENT_IN_DEPLOYMENT_COLUMN).setCellRenderer(mTableRenderer);
-        columnModel.getColumn(COMPONENT_TYPE_COLUMN).setCellRenderer(mTableRenderer);
-        columnModel.getColumn(COMPONENT_NAME_COLUMN).setCellRenderer(mTableRenderer);
-        columnModel.getColumn(COMPONENT_IN_DEPLOYMENT_COLUMN).setMaxWidth(30);
         columnModel.getColumn(COMPONENT_TYPE_COLUMN).setPreferredWidth(70);
         columnModel.getColumn(COMPONENT_NAME_COLUMN).setPreferredWidth(300);
-        
-        mComponentTableModel.addTableModelListener(new TargetSupportListener());
     }
     
     /**
      * DOCUMENT ME!
      */
     public void initTableValues() {
-        updateComponentTable(false);    
+        updateComponentTable();    
         updateClassPathTable();
     }
-    
-//    private void updateComboTarget() {
-//        comboModel.removeAllElements();
-//        comboModel.addElement(" "); // NOI18N
-//        
-//        for (int i = 0; i < componentNames.size(); i++) {
-//            comboModel.addElement(componentNames.get(i));
-//        }
-//    }
         
     /**
      * Update component table with components from ComponentInformation.xml.
      * Also rebuild componentNames and bindingVisualClassPathItems.
      */
-    private void updateComponentTable(boolean inDeployment) {
+    private void updateComponentTable() {
         
         File dst = new File(compInfoFileLoc);
         
@@ -575,7 +496,7 @@ final class VisualArchiveIncludesSupport {
             if (dst.exists()) {
                 JBIComponentDocument compDoc = ComponentInformationParser.parse(dst);
                 List<JBIComponentStatus> compList = compDoc.getJbiComponentList();
-                updateComponentTable(compList, inDeployment);
+                updateComponentTable(compList);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -586,10 +507,9 @@ final class VisualArchiveIncludesSupport {
      * Update component table with components from the given list.
      * Also rebuild componentNames and bindingVisualClassPathItems.
      */            
-    private void updateComponentTable(List<JBIComponentStatus> compList, 
-            boolean inDeployment) {
+    private void updateComponentTable(List<JBIComponentStatus> compList) {
         
-        Vector rowData = new Vector(1);
+        List<ComponentObject> rowData = new ArrayList<ComponentObject>();
         
         componentNames.clear();
         bindingVisualClassPathItems.clear();
@@ -603,8 +523,7 @@ final class VisualArchiveIncludesSupport {
                     component.getType(),
                     component.getState(),
                     component.getName(),
-                    component.getDescription(),
-                    inDeployment); // update this when loading assembly info
+                    component.getDescription()); // update this when loading assembly info
             rowData.add(comp);
             
             componentNames.add(component.getName());
@@ -613,33 +532,15 @@ final class VisualArchiveIncludesSupport {
                 VisualClassPathItem vi = new VisualClassPathItem(
                         bcJar, VisualClassPathItem.TYPE_ARTIFACT,
                         "BCDeployment.jar", null, // NOI18N
-                        inDeployment);
+                        true);
                 vi.setAsaTarget(component.getName());
                 bindingVisualClassPathItems.add(vi);
             }
         }
         
-        mComponentTableModel.setDataVector(
-                rowData, mComponentTableColumnNames);
-        mTableRenderer.setModel(mComponentTableModel);
-        mComponentTableModel.fireTableDataChanged();
-
-        //updateComboTarget();
+        componentTableModel.setData(rowData);
     }
-    
-    private void updateAsaTarget() {
-        for (int i = 0, size = classpathTableModel.getRowCount(); i < size; i++) {
-            VisualClassPathItem vi = (VisualClassPathItem) classpathTableModel.getValueAt(i, 0);
-            String tid = (String) classpathTableModel.getValueAt(i, 1);
-            
-            if ((tid == null) || (tid.trim().length() < 1)) {
-                // not set yet.. default to the first non-blank traget on the list
-                classpathTableModel.setValueAt(getDefaultTarget(vi.getAsaType()), i, 1);
-            }
-        }
-    }
-    
-    
+        
     private boolean isSelectedServer() {
         String instance = (String) webProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
         boolean selected = true;
@@ -676,13 +577,8 @@ final class VisualArchiveIncludesSupport {
                 selected = instance != null;
                 
                 if (selected) {
-//                    JbiProjectProperties wpp = new JbiProjectProperties(
-//                            project, antProjectHelper, refHelper
-//                        );
                     webProperties.put(JbiProjectProperties.J2EE_SERVER_INSTANCE, instance);
                     webProperties.store();
-//                    System.out.println("setting server instance to be " + instance);
-//                    wpp.store();
                 }
             }
             
@@ -742,7 +638,6 @@ final class VisualArchiveIncludesSupport {
             port = (String) properties.getProperty(JbiManager.PORT_ATTR);
             userName = (String) properties.getProperty(JbiManager.USERNAME_ATTR);
             password = (String) properties.getProperty(JbiManager.PASSWORD_ATTR);
-            //location = (String) properties.getProperty(JbiManager.
             
             webProperties.put(JbiProjectProperties.HOST_NAME_PROPERTY_KEY, hostName);
             webProperties.put(JbiProjectProperties.ADMINISTRATION_PORT_PROPERTY_KEY, port);
@@ -780,23 +675,15 @@ final class VisualArchiveIncludesSupport {
                 adminService.constructDocumentObject();
                 JBIComponentDocument componentDocument = 
                         adminService.getJBIComponentDocument();
-                //componentDocument.dump();   
                 
                 List<JBIComponentStatus> compList = 
                         componentDocument.getJbiComponentList();                
-                updateComponentTable(compList, true);
-                
-                
-                // TODO: save on OK instead of Update; merge instead of overwrite
-//                try {
-//                    updateComponentInformationFiles(componentDocument);
-//                } catch (IOException ex) {
-//                    ex.printStackTrace();
-//                }
+                updateComponentTable(compList);
             }
         }
     }
     
+    /*
     private void updateComponentInformationFiles(JBIComponentDocument componentDocument) throws IOException {
         FileObject rootFileObject = webProperties.getProject().getProjectDirectory();
         FileObject confFileObject = rootFileObject.getFileObject("src").getFileObject("conf"); // NOI18N
@@ -812,6 +699,7 @@ final class VisualArchiveIncludesSupport {
             e.printStackTrace();
         }
     }
+    */
     
     private void updateProperties(JbiProjectProperties prop, 
             ClasspathTableModel classpathModel) {
@@ -840,26 +728,6 @@ final class VisualArchiveIncludesSupport {
     
     // -------------------- private inner classes ------------------------------
     
-    private class TargetSupportListener implements TableModelListener {
-        public void tableChanged(TableModelEvent e) {
-            if ((e.getType() == TableModelEvent.UPDATE) && 
-                    (e.getColumn() == COMPONENT_IN_DEPLOYMENT_COLUMN)) {
-                int rn = e.getFirstRow();
-                String tid = (String) mComponentTableModel.getValueAt(rn, COMPONENT_NAME_COLUMN);
-                for (VisualClassPathItem vi : bindingVisualClassPathItems) {                    
-                    if (vi != null) {
-                        String sid = vi.getAsaTarget();
-                        
-                        if ((sid != null) && (sid.equalsIgnoreCase(tid))) {
-                            boolean b = ((Boolean) mComponentTableModel.getValueAt(rn, COMPONENT_IN_DEPLOYMENT_COLUMN)).booleanValue();
-                            vi.setInDeployment(b);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
     private class ClasspathSupportListener
             implements ActionListener, ListSelectionListener, TableModelListener {
         
@@ -877,7 +745,7 @@ final class VisualArchiveIncludesSupport {
                 javaeeAntArtifactTypes.addAll(JbiProjectConstants.JAVA_EE_AA_TYPES);
                 javaeeAntArtifactTypes.add(JbiProjectConstants.ARTIFACT_TYPE_JBI_ASA);                
                 AntArtifact[] artifacts = AntArtifactChooser.showDialog(
-                        javaeeAntArtifactTypes, master, null, null);
+                        javaeeAntArtifactTypes, project, null, null);
                 
                 if (artifacts != null) {
                     addArtifacts(artifacts);
@@ -927,8 +795,6 @@ final class VisualArchiveIncludesSupport {
             updateProperties(webProperties, classpathTableModel);
             
             if (e.getColumn() == 1) {
-                //VisualClassPathItem cpItem = (VisualClassPathItem) classpathModel.getValueAt(e.getFirstRow(), 0);
-                // cpItem.setPathInWAR((String) classpathModel.getValueAt(e.getFirstRow(), 1));
                 fireActionPerformed();
             }
         }
@@ -952,7 +818,7 @@ final class VisualArchiveIncludesSupport {
     private class ClasspathTableModel extends AbstractTableModel {
         
         public int getColumnCount() {
-            return 2; //classpath item name, item location within WAR
+            return 2; 
         }
         
         public int getRowCount() {            
@@ -963,43 +829,9 @@ final class VisualArchiveIncludesSupport {
             return data[row][col];
         }
         
-        public boolean isCellEditable(int row, int col) {
-            return col == 1;
-        }
-        
         public void setValueAt(Object value, int row, int col) {
             data[row][col] = value;
             fireTableCellUpdated(row, col);
-        }
-    }
-    
-    private class TargetComboBoxEditor extends DefaultCellEditor {
-        
-        public TargetComboBoxEditor(JComboBox combo) {
-            super(combo);
-        }
-        
-        public Component getTableCellEditorComponent(
-                JTable table, Object value, boolean isSelected, 
-                int row, int column) {
-            
-            VisualClassPathItem vcpi = 
-                    (VisualClassPathItem) classpathTableModel.getValueAt(row, 0);
-            
-            JComboBox comboBox = (JComboBox) getComponent();
-            DefaultComboBoxModel comboModel = (DefaultComboBoxModel) comboBox.getModel();
-            comboModel.removeAllElements();
-            
-            String type = null;
-            if (vcpi != null) {
-                type = vcpi.getAsaType();
-            }
-            
-            if (type != null) {
-                comboModel.addElement(type);
-            }
-            
-            return comboBox;
         }
     }
 }

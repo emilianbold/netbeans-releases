@@ -29,7 +29,6 @@ public class ComponentObject {
     private String status; // installed, started, stop
     private String name; // component name
     private String description; // component description
-    private boolean enabled; // to deploy or not
 
     /**
      * Creates a new ComponentObject object.
@@ -38,17 +37,14 @@ public class ComponentObject {
      * @param status DOCUMENT ME!
      * @param name DOCUMENT ME!
      * @param description DOCUMENT ME!
-     * @param enabled DOCUMENT ME!
      */
     public ComponentObject(
-        String type, String status, String name, String description, boolean enabled
-    ) {
+        String type, String status, String name, String description) {
         super();
         this.type = type;
         this.status = status;
         this.name = name;
         this.description = description;
-        this.enabled = enabled;
     }
 
     /**
@@ -85,23 +81,5 @@ public class ComponentObject {
      */
     public String getDescription() {
         return this.description;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @return DOCUMENT ME!
-     */
-    public boolean getEnabled() {
-        return this.enabled;
-    }
-
-    /**
-     * DOCUMENT ME!
-     *
-     * @param enabled DOCUMENT ME!
-     */
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 }

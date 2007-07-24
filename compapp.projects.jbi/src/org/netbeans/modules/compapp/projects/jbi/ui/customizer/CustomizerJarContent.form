@@ -122,13 +122,12 @@
         <Component class="javax.swing.JTable" name="jTableComp">
           <Properties>
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
-              <Table columnCount="3" rowCount="2">
-                <Column editable="true" title=" " type="java.lang.Object"/>
+              <Table columnCount="2" rowCount="2">
                 <Column editable="false" title="Type" type="java.lang.String">
-                  <Data value="SE"/>
-                  <Data value="BC"/>
+                  <Data value="engine"/>
+                  <Data value="binding"/>
                 </Column>
-                <Column editable="false" title="Title" type="java.lang.String">
+                <Column editable="false" title="Component ID" type="java.lang.String">
                   <Data value="BPEL Service Engine"/>
                   <Data value="HTTP SOAP Binding Component"/>
                 </Column>
@@ -141,7 +140,7 @@
     <Component class="javax.swing.JButton" name="jButtonUpdateComponents">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="LBL_CustomizeWAR_AddFilter_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="LBL_CustomizeWAR_CheckComponentsOnTargetServer_JButton" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AccessibilityProperties>
