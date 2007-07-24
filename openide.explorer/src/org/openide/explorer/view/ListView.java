@@ -524,6 +524,10 @@ public class ListView extends JScrollPane implements Externalizable {
         }
 
         model.removeListDataListener(managerListener);
+        // #109123: clear the model, as it may become invalid, because we stopped 
+        // tracking ExplorerManager changes through listeners
+        model.setNode(Node.EMPTY);
+        
         list.removeMouseListener(popupSupport);
     }
 
