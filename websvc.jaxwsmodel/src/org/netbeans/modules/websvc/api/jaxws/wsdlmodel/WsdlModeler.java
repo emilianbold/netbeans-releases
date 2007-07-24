@@ -129,22 +129,17 @@ public class WsdlModeler {
     }
     
     public void generateWsdlModel(WsdlModelListener listener, final WsdlErrorHandler errorHandler) {
-        if (task1 == null) {
-            task1 = RequestProcessor.getDefault().create(new Runnable() {
+        RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
                 public void run() {
                     generateWsdlModel(errorHandler);
                     synchronized (this) {
-                        listenersSize = modelListeners.size();
-                        fireModelCreated(wsdlModel,listenersSize);
+                        fireModelCreated(wsdlModel,1);
                         removeListeners();
                     }
                 }
             },true);
-        }
         addWsdlModelListener(listener);
-        if (task1.isFinished()) {
-            task1.schedule(0);
-        }        
+        task.run();
     }
     
     public void generateWsdlModel(WsdlModelListener listener) {
