@@ -37,11 +37,15 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+
+import org.netbeans.api.java.source.JavaSource;
+
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
@@ -49,6 +53,12 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.CompoundBorder;
 import java.util.*;
 import java.awt.BorderLayout;
+import java.io.IOException;
+import javax.swing.text.StyledDocument;
+import org.netbeans.api.java.source.ui.DialogBinding;
+import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
+import org.openide.text.NbDocument;
 
 /**
  * A GUI panel for customizing a Watch.
@@ -70,23 +80,50 @@ public class WatchPanel {
         JPDADebugger d = (JPDADebugger) en.lookupFirst(null, JPDADebugger.class);
         CallStackFrame csf = d.getCurrentCallStackFrame();
         if (csf != null) {
-            DataObject dobj = null;
+            String language = DebuggerManager.getDebuggerManager ().getCurrentSession().getCurrentLanguage();
             SourcePath sp = (SourcePath) en.lookupFirst(null, SourcePath.class);
-            String url = sp.getURL(csf, "Java");
-            FileObject file;
-            try {
-                file = URLMapper.findFileObject (new URL (url));
-                if (file != null) {
-                    try {
-                        dobj = DataObject.find (file);
-                    } catch (DataObjectNotFoundException ex) {
-                        // null dobj
-                    }
-                }
-            } catch (MalformedURLException e) {
-                // null dobj
+            String url = sp.getURL(csf, language);
+            int line = csf.getLineNumber(language);
+            setupContext(editorPane, url, line);
+        }
+    }
+    
+    public static void setupContext(JEditorPane editorPane, String url, int line) {
+        EditorKit kit = CloneableEditorSupport.getEditorKit("text/x-java");
+        editorPane.setEditorKit(kit);
+        FileObject file;
+        StyledDocument doc;
+        try {
+            file = URLMapper.findFileObject (new URL (url));
+            if (file == null) {
+                return;
             }
-            editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
+            try {
+                DataObject dobj = DataObject.find (file);
+                EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+                if (ec == null) {
+                    return;
+                }
+                try {
+                    doc = ec.openDocument();
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                    return;
+                }
+            } catch (DataObjectNotFoundException ex) {
+                // null dobj
+                return;
+            }
+        } catch (MalformedURLException e) {
+            // null dobj
+            return;
+        }
+        try {
+            int offset = NbDocument.findLineOffset(doc, line);
+            //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
+            JavaSource js = DialogBinding.bindComponentToFile(file, offset, 0, editorPane);
+        } catch (IndexOutOfBoundsException ioobex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
         }
     }
 
@@ -99,9 +136,11 @@ public class WatchPanel {
         panel.getAccessibleContext ().setAccessibleDescription (bundle.getString ("ACSD_WatchPanel")); // NOI18N
         JLabel textLabel = new JLabel();
         Mnemonics.setLocalizedText(textLabel, bundle.getString ("CTL_Watch_Name")); // NOI18N
-        editorPane = new JEditorPane("text/x-java", expression); // NOI18N
+        editorPane = new JEditorPane();//expression); // NOI18N
+        editorPane.setText(expression);
         
-        setupContext(editorPane);
+        setupContext(editorPane);//, EditorContextBridge.getContext().getCurrentURL (),
+                     //EditorContextBridge.getContext().getCurrentLineNumber ());
         
         JScrollPane sp = createScrollableLineEditor(editorPane);
         FontMetrics fm = editorPane.getFontMetrics(editorPane.getFont());
@@ -130,7 +169,7 @@ public class WatchPanel {
     }
     
     public static JScrollPane createScrollableLineEditor(JEditorPane editorPane) {
-        editorPane.setKeymap(new FilteredKeymap(editorPane.getKeymap()));
+        editorPane.setKeymap(new FilteredKeymap(editorPane));
         JScrollPane sp = new JScrollPane(editorPane, JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                                      JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
                 

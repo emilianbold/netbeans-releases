@@ -142,8 +142,8 @@ public class ConditionsPanel extends javax.swing.JPanel {
         cbWhenHitCountActionPerformed(null);
     }
     
-    public void setupConditionPaneContext(DataObject dobj) {
-        tfCondition.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
+    public void setupConditionPaneContext(String url, int line) {
+        WatchPanel.setupContext(tfCondition, url, line);
     }
     
     private String getFilterStr(String[] filter) {

@@ -42,6 +42,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -75,6 +76,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -95,10 +97,11 @@ public class Evaluator extends javax.swing.JPanel {
             create(new EvaluateTask());
     private boolean ignoreEvents = false;
     private SessionListener sessionListener;
+    private PropertyChangeListener csfListener;
     
     /** Creates new form Evaluator */
     public Evaluator(JPDADebugger debugger) {
-        this.debugger = debugger;
+        setDebugger(debugger);
         initComponents();
         initCombo();
         initResult();
@@ -111,6 +114,24 @@ public class Evaluator extends javax.swing.JPanel {
         sessionListener = new SessionListener();
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_SESSION, sessionListener);
+    }
+    
+    private void setDebugger(JPDADebugger debugger) {
+        this.debugger = debugger;
+        this.csfListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {
+                    // Re-initialize the context of the combo
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            initCombo();
+                        }
+                    });
+                }
+            }
+        };
+        debugger.addPropertyChangeListener(
+                WeakListeners.propertyChange(csfListener, debugger));
     }
     
     /** This method is called from within the constructor to
@@ -189,8 +210,14 @@ public class Evaluator extends javax.swing.JPanel {
     }//GEN-LAST:event_expressionComboBoxActionPerformed
     
     private void initCombo() {
-        expressionComboBox.setEditor(new CompletionedEditor());
+        String textInEditor = (String) expressionComboBox.getEditor().getItem();
+        CompletionedEditor ce = new CompletionedEditor();
+        expressionComboBox.setEditor(ce);
         expressionComboBox.setEditable(true);
+        ce.setupContext();
+        expressionComboBox.getEditor().setItem(textInEditor);
+        //expressionComboBox.revalidate();
+        expressionComboBox.repaint();
     }
     
     private void initResult() {
@@ -407,34 +434,29 @@ public class Evaluator extends javax.swing.JPanel {
         private JEditorPane editor;
         private java.awt.Component component;
         private Object oldValue;
+        private boolean isContextSetUp;
         
         public CompletionedEditor() {
-            editor = new JEditorPane("text/x-java", ""); //NOI18N
+            editor = new JEditorPane();
             editor.setBorder(null);
-            editor.setKeymap(new FilteredKeymap(editor.getKeymap()));
+            editor.setKeymap(new FilteredKeymap(editor));
             component = new JScrollPane(editor,
                                         JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
             editor.addFocusListener(new FocusListener() {
                 public void focusGained(FocusEvent e) {
-                    WatchPanel.setupContext(editor);
+                    setupContext();
                 }
                 public void focusLost(FocusEvent e) {
                 }
             });
-            editor.addPropertyChangeListener("keymap", new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (!(evt.getNewValue() instanceof FilteredKeymap)) {
-                        // We have to do that lazily, because the property change
-                        // is fired *before* the keymap is actually changed!
-                        if (EventQueue.isDispatchThread()) {
-                            EventQueue.invokeLater(new KeymapUpdater());
-                        } else {
-                            RequestProcessor.getDefault().post(new KeymapUpdater(), 100);
-                        }
-                    }
-                }
-            });
+        }
+        
+        public void setupContext() {
+            if (!isContextSetUp) {
+                WatchPanel.setupContext(editor);
+                isContextSetUp = true;
+            }
         }
         
         public void addActionListener(java.awt.event.ActionListener actionListener) {
@@ -484,14 +506,6 @@ public class Evaluator extends javax.swing.JPanel {
             editor.requestFocus();
         }
         
-        private class KeymapUpdater implements Runnable {
-            
-            public void run() {
-                editor.setKeymap(new FilteredKeymap(editor.getKeymap()));
-            }
-            
-        }
-
     }
     
     /**
@@ -528,10 +542,11 @@ public class Evaluator extends javax.swing.JPanel {
         public void propertyChange (PropertyChangeEvent e) {
             Evaluator eval = currentEvaluator;
             if (eval != null) {
+                eval.csfListener = null;
                 DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
                 if (de == null) return ;
                 JPDADebugger debugger = (JPDADebugger) de.lookupFirst(null, JPDADebugger.class);
-                eval.debugger = debugger;
+                eval.setDebugger(debugger);
             }
             updateModel ();
         }

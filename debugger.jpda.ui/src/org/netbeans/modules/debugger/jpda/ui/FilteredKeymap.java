@@ -19,10 +19,14 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
-import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
+import org.openide.util.RequestProcessor;
 
 /**
  * A keymap that filters ENTER, ESC and TAB, which have special meaning in dialogs
@@ -37,8 +41,29 @@ public class FilteredKeymap implements Keymap {
     private final Keymap keyMap; // The original keymap
     
     /** Creates a new instance of FilteredKeymap */
-    public FilteredKeymap(Keymap keyMap) {
-        this.keyMap = keyMap;
+    public FilteredKeymap(final JTextComponent component) {
+        
+        class KeymapUpdater implements Runnable {
+            public void run() {
+                component.setKeymap(new FilteredKeymap(component));
+            }
+        }
+        
+        this.keyMap = component.getKeymap();
+        component.addPropertyChangeListener("keymap", new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (!(evt.getNewValue() instanceof FilteredKeymap)) {
+                    // We have to do that lazily, because the property change
+                    // is fired *before* the keymap is actually changed!
+                    component.removePropertyChangeListener("keymap", this);
+                    if (EventQueue.isDispatchThread()) {
+                        EventQueue.invokeLater(new KeymapUpdater());
+                    } else {
+                        RequestProcessor.getDefault().post(new KeymapUpdater(), 100);
+                    }
+                }
+            }
+        });
     }
     
     public void addActionForKeyStroke(KeyStroke key, Action a) {
@@ -94,4 +119,5 @@ public class FilteredKeymap implements Keymap {
     public void setResolveParent(javax.swing.text.Keymap parent) {
         keyMap.setResolveParent(parent);
     }
+    
 }

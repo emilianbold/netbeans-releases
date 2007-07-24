@@ -135,22 +135,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
     }
     
     private void setupConditionPane() {
-        String url = breakpoint.getURL();
-        DataObject dobj = null;
-        FileObject file;
-        try {
-            file = URLMapper.findFileObject (new URL (url));
-            if (file != null) {
-                try {
-                    dobj = DataObject.find (file);
-                } catch (DataObjectNotFoundException ex) {
-                    // null dobj
-                }
-            }
-        } catch (MalformedURLException e) {
-            // null dobj
-        }
-        conditionsPanel.setupConditionPaneContext(dobj);
+        conditionsPanel.setupConditionPaneContext(breakpoint.getURL(), breakpoint.getLineNumber());
     }
     
     // <RAVE>
