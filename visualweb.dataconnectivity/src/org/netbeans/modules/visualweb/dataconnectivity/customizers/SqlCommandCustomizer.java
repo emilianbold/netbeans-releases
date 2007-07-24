@@ -22,29 +22,22 @@ import javax.naming.NamingException;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.visualweb.dataconnectivity.Log;
-// import org.netbeans.modules.db.sql.visualeditor.querybuilder.QueryBuilder;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditor;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorFactory;
 import org.netbeans.modules.db.sql.visualeditor.api.VisualSQLEditorMetaData;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSource;
-// import org.netbeans.modules.visualweb.dataconnectivity.ui.QueryTopComponent;
 
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.impl.BasicCustomizer2;
-import com.sun.sql.rowset.CachedRowSetX;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.Iterator;
-import java.util.Set;
+import java.beans.PropertyChangeListener;
+import java.util.HashMap;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 
 /**
@@ -63,6 +56,9 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
     private DesignBean 				bean;
     private VisualSQLEditor			vse;
     
+    private static HashMap<DesignBean, TopComponent> queryEditors =
+            new HashMap<DesignBean, TopComponent>();
+    
     // Constructor
     
     public SqlCommandCustomizer(String customerizerClassName )  {
@@ -77,17 +73,14 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
         
         bean = srcBean;
         
-        Component retComp ;
+        TopComponent qe = null;
         
-// JDTODO - See if we have a way to do this
-//         /* see if there's already a TopComponent with the same name **/
-//         retComp = findCurrent(srcBean) ;
-//         if ( retComp != null) {
-//             if ( retComp instanceof TopComponent) {
-//                 ((TopComponent)retComp).requestActive() ;
-//             }
-//             return retComp ;
-//         }
+        if ((qe = queryEditors.get(srcBean)) != null) {
+            if (!qe.isOpened())
+                qe.open();
+            qe.requestActive();
+            return qe;
+        }
 
         /****
          * get the dataSourceName
@@ -122,8 +115,8 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
             DatabaseConnection[] dbconns = ConnectionManager.getDefault().getConnections();
             // Find the one we want
             for (int i=0; i<dbconns.length; i++) {
-                if (((DatabaseConnection)dbconns[i]).getDatabaseURL().equals(dtds.getUrl())) {
-                    dbconn = (DatabaseConnection)dbconns[i];
+                if ((dbconns[i]).getDatabaseURL().equals(dtds.getUrl())) {
+                    dbconn = dbconns[i];
                     break;
                 }
             }
@@ -136,12 +129,10 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
         vse = VisualSQLEditorFactory.createVisualSQLEditor(dbconn, command, metadata);
         
         vse.addPropertyChangeListener(vseListener);
-        retComp = vse.open();
-        
-//            QueryBuilder.openCustomizerPanel( sqlStatement ) ;
-//        } else {
-//            retComp = QueryTopComponent.openQueryFrame(sqlStatement, dsName) ;
-//        }
+        Component retComp = vse.open();
+        if (retComp instanceof TopComponent) {
+            queryEditors.put(srcBean, (TopComponent)retComp);
+        }
         
         return retComp ;
     }
@@ -163,7 +154,7 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
 //             useViewData = false ;
 //         }
 //     }
-    
+      
     /**
      * Attempt to locate an existing QB for the given designBean.
      */
@@ -205,7 +196,7 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
 //
 //        return qbForm;
 //         return null;
-//     }
+//     }    
     
     // Listen for changes to statement property, and notify the bean
     
@@ -222,7 +213,7 @@ public class SqlCommandCustomizer extends BasicCustomizer2 {
             }
         }
     } ;
-    
+
     
     /****
      * convenience method for looking up the datasource in the current
