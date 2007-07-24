@@ -92,7 +92,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
         backupSourcesCheck.setSelected(prjProps.isCodeGenBackupSources());
         generateMarkersCheck.setSelected(prjProps.isCodeGenUseMarkers());
         addMarkersCheck.setSelected(prjProps.isCodeGenAddMarkers());
-        addMarkersCheck.setEnabled(! prjProps.isCodeGenAddMarkers());
+        addMarkersCheck.setEnabled(prjProps.isCodeGenUseMarkers());
         showDialogCheckBox.setSelected(prjProps.isCodeGenShowDialog());
         
         scrollPlaceHolder.setVisible(true);
