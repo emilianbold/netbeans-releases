@@ -529,7 +529,7 @@ public final class EditorFindSupport {
                             msg += back ? NbBundle.getBundle(EditorFindSupport.class).getString(WRAP_END_LOCALE)
                                    : NbBundle.getBundle(EditorFindSupport.class).getString(WRAP_START_LOCALE);
                         }
-                        ComponentUtils.setStatusBoldText(c, msg);
+                        ComponentUtils.setStatusText(c, msg);
                         c.getToolkit().beep();
                     } else {
                         ComponentUtils.setStatusText(c, msg);
