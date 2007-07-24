@@ -34,6 +34,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -49,10 +50,13 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
     private final boolean hasModuleJsf;
     JsfTable jsfTable;
     JTextComponent target;
+    private final FileObject targetFileObject;
+    
             
     public JsfTableCustomizer(JsfTable jsfTable, JTextComponent target) {
         this.jsfTable = jsfTable;
         this.target = target;
+        this.targetFileObject = JsfForm.getFO(target);
         
         initComponents();
         errorField.setForeground(UIManager.getColor("nb.errorForeground")); //NOI18N
@@ -206,7 +210,7 @@ public class JsfTableCustomizer extends javax.swing.JPanel implements DocumentLi
         }
         boolean validClassName = false;
         try {
-            validClassName = empty.isSelected() || JsfFormCustomizer.classExists(classTextField);
+            validClassName = empty.isSelected() || JsfFormCustomizer.classExists(targetFileObject, classTextField.getText());
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }

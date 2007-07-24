@@ -57,6 +57,7 @@ import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.ActiveEditorDrop;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -120,8 +121,10 @@ public final class JsfForm implements ActiveEditorDrop {
                 String body = createBody(targetComponent, !containsFView);
                 JSFPaletteUtilities.insert(body, targetComponent);
             } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
                 accept = false;
             } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
                 accept = false;
             }
         }
@@ -192,17 +195,14 @@ public final class JsfForm implements ActiveEditorDrop {
         List<ExecutableElement> result = new LinkedList<ExecutableElement>();
         TypeElement typeElement = entityTypeElement;
         while (typeElement != null) {
-            boolean isEntityOrMapped = false;
-            if (isAnnotatedWith(typeElement, "javax.persistence.Entity") || isAnnotatedWith(typeElement, "javax.persistence.MappedSuperclass")) {
-                isEntityOrMapped = true;
-                break;
-            }
-            if (isEntityOrMapped) {
+            if (isAnnotatedWith(typeElement, "javax.persistence.Entity") || isAnnotatedWith(typeElement, "javax.persistence.MappedSuperclass")) { // NOI18N
                 result.addAll(ElementFilter.methodsIn(typeElement.getEnclosedElements()));
             }
             Element enclosingElement = typeElement.getEnclosingElement();
             if (ElementKind.CLASS == enclosingElement.getKind()) {
                 typeElement = (TypeElement) enclosingElement;
+            } else {
+                typeElement = null;
             }
         }
         return result.toArray(new ExecutableElement[result.size()]);
@@ -211,7 +211,7 @@ public final class JsfForm implements ActiveEditorDrop {
     static boolean isId(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
         Element element = isFieldAccess ? guessField(controller, method) : method;
         if (element != null) {
-            if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
+            if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) { // NOI18N
                 return true;
             }
         }
@@ -221,7 +221,7 @@ public final class JsfForm implements ActiveEditorDrop {
     static boolean isGenerated(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
         Element element = isFieldAccess ? guessField(controller, method) : method;
         if (element != null) {
-            if (isAnnotatedWith(element, "javax.persistence.GeneratedValue")) {
+            if (isAnnotatedWith(element, "javax.persistence.GeneratedValue")) { // NOI18N
                 return true;
             }
         }
@@ -231,7 +231,7 @@ public final class JsfForm implements ActiveEditorDrop {
     static String getTemporal(CompilationController controller, ExecutableElement method, boolean isFieldAccess) {
         Element element = isFieldAccess ? guessField(controller, method) : method;
         if (element != null) {
-            AnnotationMirror annotationMirror = findAnnotation(element, "javax.persistence.Temporal");
+            AnnotationMirror annotationMirror = findAnnotation(element, "javax.persistence.Temporal"); // NOI18N
             if (annotationMirror != null) {
                 Collection<? extends AnnotationValue> attributes = annotationMirror.getElementValues().values();
                 if (attributes.iterator().hasNext()) {
@@ -249,10 +249,7 @@ public final class JsfForm implements ActiveEditorDrop {
     static FileObject getFO(JTextComponent target) {
         Document doc = target.getDocument();
         if (doc != null) {
-            DataObject dobj = NbEditorUtilities.getDataObject(doc);
-            if (dobj != null) {
-                return dobj.getPrimaryFile();
-            }
+            return NbEditorUtilities.getFileObject(doc);
         }
         return null;
     }
@@ -293,7 +290,7 @@ public final class JsfForm implements ActiveEditorDrop {
         boolean fieldAccess = false;
         boolean accessTypeDetected = false;
         TypeElement typeElement = clazz;
-        while (typeElement != null) {
+//        while (typeElement != null) {
             for (Element element : typeElement.getEnclosedElements()) {
                 if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
                     if (ElementKind.FIELD == element.getKind()) {
@@ -305,8 +302,8 @@ public final class JsfForm implements ActiveEditorDrop {
             if (!accessTypeDetected) {
                 Logger.getLogger("global").log(Level.WARNING, "Failed to detect correct access type for class:" + typeElement.getQualifiedName()); // NOI18N
             }
-            typeElement = (TypeElement) typeElement.getEnclosingElement();
-        }
+//            typeElement = (TypeElement) typeElement.getEnclosingElement();
+//        }
         return fieldAccess;
     }
 

@@ -47,16 +47,18 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
     private boolean dialogOK = false;
 
     private final boolean hasModuleJsf;
+    private final FileObject targetFileObject;
     JsfForm jsfTable;
     JTextComponent target;
             
     public JsfFormCustomizer(JsfForm jsfTable, JTextComponent target) {
         this.jsfTable = jsfTable;
         this.target = target;
-        
+        this.targetFileObject = JsfForm.getFO(target);
         initComponents();
         hasModuleJsf = JsfForm.hasModuleJsf(target);
         errorField.setForeground(UIManager.getColor("nb.errorForeground")); //NOI18N
+        
         classTextField.getDocument().addDocumentListener(this);
     }
     
@@ -260,7 +262,7 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         }
         boolean validClassName = false;
         try {
-            validClassName = empty.isSelected() || classExists(classTextField);
+            validClassName = empty.isSelected() || classExists(targetFileObject, classTextField.getText());
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
@@ -298,15 +300,14 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
     private javax.swing.ButtonGroup viewType;
     // End of variables declaration//GEN-END:variables
     
-    protected static boolean classExists(final JTextComponent jTextComponent) throws IOException {
+    protected static boolean classExists(FileObject referenceFO, final String className) throws IOException {
         final boolean[] result = new boolean[] { false };
-        FileObject fileObject = JsfForm.getFO(jTextComponent);
-        if (fileObject != null) {
-            JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        if (referenceFO != null) {
+            JavaSource javaSource = JavaSource.forFileObject(referenceFO);
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = controller.getElements().getTypeElement(jTextComponent.getText());
+                    TypeElement typeElement = controller.getElements().getTypeElement(className);
                     result[0] = typeElement != null;
                 }
             }, true);
