@@ -37,18 +37,13 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.palette.PaletteActions;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.actions.NewAction;
 import org.openide.actions.RenameAction;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.filesystems.Repository;
 
 
 public class CodeClipPaletteActions extends PaletteActions {
@@ -81,7 +76,7 @@ public class CodeClipPaletteActions extends PaletteActions {
 
     public Action[] getCustomItemActions(Lookup item) {
         return new Action[] {
-            ((RenameAction)SystemAction.get(RenameAction.class)).createContextAwareInstance(item),
+            SystemAction.get(RenameAction.class).createContextAwareInstance(item),
             new EditCodeClipAction(item)
 //            ((EditAction)SystemAction.get(EditAction.class)).createContextAwareInstance(item)
         };
@@ -89,7 +84,7 @@ public class CodeClipPaletteActions extends PaletteActions {
 
     public Action[] getCustomPaletteActions() {
         return new Action[] {
-            ((NewAction)SystemAction.get(NewAction.class))
+            SystemAction.get(NewAction.class)
         };
     }
 
