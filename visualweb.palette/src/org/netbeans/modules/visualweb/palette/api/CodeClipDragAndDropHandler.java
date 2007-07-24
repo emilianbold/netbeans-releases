@@ -116,8 +116,8 @@ public class CodeClipDragAndDropHandler extends DragAndDropHandler{
         String localizingBundle = "org.netbeans.modules.visualweb.palette.codeclips.Bundle";
 
         try{
-            String displayNameString = "CLIP";
-//            String displayNameString = NbBundle.getMessage(CodeClipDragAndDropHandler.class, "CLIP");
+//            String displayNameString = "CLIP";
+            String displayNameString = NbBundle.getMessage(CodeClipDragAndDropHandler.class, "CLIP");
             //This causes a problem if it tries to find "Clip" during the drop.
             CodeClipUtilities.createCodeClipFile(folderObject, body, displayNameString, localizingBundle, null);
         } catch (IOException ex) {
