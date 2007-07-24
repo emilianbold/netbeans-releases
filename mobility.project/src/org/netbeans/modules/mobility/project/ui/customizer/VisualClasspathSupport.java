@@ -476,7 +476,7 @@ public final class VisualClasspathSupport {
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column );
             final VisualClassPathItem visualClassPathItem = (VisualClassPathItem)value;
-            setIcon(visualClassPathItem.getIcon());
+            setIcon(visualClassPathItem == null ? null : visualClassPathItem.getIcon());
             return this;
         }
         
