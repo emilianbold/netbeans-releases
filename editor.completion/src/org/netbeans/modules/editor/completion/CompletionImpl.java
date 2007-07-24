@@ -524,7 +524,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
             if (e.getKeyCode() == KeyEvent.VK_TAB) {
                 e.consume();
-                if (compEditable)
+                if (compEditable && e.getID() == KeyEvent.KEY_PRESSED)
                     insertCommonPrefix();
                 return;
             }
@@ -610,6 +610,13 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         Result localCompletionResult;
         synchronized (this) {
             localCompletionResult = completionResult;
+            if (localCompletionResult == null)
+                return;
+            if (!isAllResultsFinished(localCompletionResult.resultSets)) {
+                try {
+                    wait();                    
+                } catch (InterruptedException ie) {}
+            }
         }
         if (localCompletionResult != null) {
             CharSequence commonText = null;
@@ -1206,42 +1213,45 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
      * This method may be called from any thread.
      */
     void finishNotify(CompletionResultSetImpl finishedResult) {
+        Result localResult;
+        boolean finished = false;
         switch (finishedResult.getQueryType()) {
             case CompletionProvider.COMPLETION_QUERY_TYPE:
             case CompletionProvider.COMPLETION_ALL_QUERY_TYPE:
-                Result localCompletionResult;
                 synchronized (this) {
-                    localCompletionResult = completionResult;
-                }
-                if (finishedResult.getResultId() == localCompletionResult) {
-                    if (isAllResultsFinished(localCompletionResult.getResultSets())) {
-                        requestShowCompletionPane(localCompletionResult);
+                    localResult = completionResult;
+                    if (finishedResult.getResultId() == localResult) {
+                        System.out.println("->" + finishedResult.getTask());
+                        finished = isAllResultsFinished(localResult.getResultSets());
+                        notifyAll();
                     }
                 }
+                if (finished)
+                    requestShowCompletionPane(localResult);
                 break;
 
             case CompletionProvider.DOCUMENTATION_QUERY_TYPE:
-                Result localDocumentationResult;
                 synchronized (this) {
-                    localDocumentationResult = docResult;
-                }
-                if (finishedResult.getResultId() == localDocumentationResult) {
-                    if (isAllResultsFinished(localDocumentationResult.getResultSets())) {
-                        requestShowDocumentationPane(localDocumentationResult);
+                    localResult = docResult;
+                    if (finishedResult.getResultId() == localResult) {
+                        finished = isAllResultsFinished(localResult.getResultSets());
+                        notifyAll();
                     }
                 }
+                if (finished)
+                    requestShowDocumentationPane(localResult);
                 break;
 
             case CompletionProvider.TOOLTIP_QUERY_TYPE:
-                Result localToolTipResult;
                 synchronized (this) {
-                    localToolTipResult = toolTipResult;
-                }
-                if (finishedResult.getResultId() == localToolTipResult) {
-                    if (isAllResultsFinished(localToolTipResult.getResultSets())) {
-                        requestShowToolTipPane(localToolTipResult);
+                    localResult = toolTipResult;
+                    if (finishedResult.getResultId() == localResult) {
+                        finished = isAllResultsFinished(localResult.getResultSets());
+                        notifyAll();
                     }
                 }
+                if (finished)
+                    requestShowToolTipPane(localResult);
                 break;
                 
             default:
