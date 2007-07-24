@@ -493,6 +493,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 14;
         add(includesExcludesButton, gridBagConstraints);
+        includesExcludesButton.getAccessibleContext().setAccessibleDescription("Included and excluded parts of sources");
 
         org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Encoding")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -501,6 +502,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
         add(encodingLabel, gridBagConstraints);
+        encodingLabel.getAccessibleContext().setAccessibleDescription("Encoding");
 
         encodingComboBox.setRenderer(new EncodingRenderer());
         encodingComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -515,6 +517,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(encodingComboBox, gridBagConstraints);
+        encodingComboBox.getAccessibleContext().setAccessibleName("Encoding");
+        encodingComboBox.getAccessibleContext().setAccessibleDescription("Project encoding");
     }// </editor-fold>//GEN-END:initComponents
 
 private void encodingComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encodingComboBoxActionPerformed
