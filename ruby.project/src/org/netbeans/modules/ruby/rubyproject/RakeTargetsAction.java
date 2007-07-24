@@ -369,7 +369,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
         String[] args = argList.toArray(new String[argList.size()]);
         ProcessBuilder pb = new ProcessBuilder(args);
         pb.directory(pwd);
-        pb.redirectErrorStream();
+        pb.redirectErrorStream(true);
 
         // PATH additions for JRuby etc.
         Map<String, String> env = pb.environment();

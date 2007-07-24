@@ -358,7 +358,7 @@ public class PluginManager {
         ProcessBuilder pb = new ProcessBuilder(args);
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         pb.directory(pwd);
-        pb.redirectErrorStream();
+        pb.redirectErrorStream(true);
         
         // PATH additions for JRuby etc.
         Map<String, String> env = pb.environment();
