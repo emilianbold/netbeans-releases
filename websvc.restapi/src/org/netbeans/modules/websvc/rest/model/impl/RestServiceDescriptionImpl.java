@@ -21,6 +21,7 @@ package org.netbeans.modules.websvc.rest.model.impl;
 import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -49,12 +50,11 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
         for (AnnotationMirror annotation: element.getAnnotationMirrors()) {
             if (annotation.getAnnotationType().toString().equals("javax.ws.rs.UriTemplate")) {
                 for (ExecutableElement key : annotation.getElementValues().keySet()) {
-                    System.out.println("key = " + key.getSimpleName());
+                    //System.out.println("key = " + key.getSimpleName());
                     if (key.getSimpleName().toString().equals("value")) {
                         uriTemplate = annotation.getElementValues().get(key).toString();
                         uriTemplate = uriTemplate.substring(1, uriTemplate.length()-1);
-                                  
-                        System.out.println("uriTemplate = " + uriTemplate);
+                        
                         return uriTemplate;
                     }
                 }
@@ -79,13 +79,21 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
         }
         AnnotationModelHelper helper = getHelper();
         Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
-        AnnotationMirror webServiceAnn = annByType.get("javax.ws.rs.UriTemplate"); // NOI18N
-        if (webServiceAnn == null) {
-            return false;
+        if (annByType.get("javax.ws.rs.UriTemplate") != null) {
+            return true;// NOI18N
         }
         
-        return true;
+        for (Element element : typeElement.getEnclosedElements()) {
+            if (element.getKind() == ElementKind.METHOD) {
+                if (helper.hasAnnotation(element.getAnnotationMirrors(), "javax.ws.rs.HttpMethod")) {    //NOI18N
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
+    
     
     public String toString() {
         return name + "[" + uriTemplate + "]";   //NOI18N

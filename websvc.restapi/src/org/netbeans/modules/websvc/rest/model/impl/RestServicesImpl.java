@@ -60,8 +60,8 @@ public class RestServicesImpl implements RestServices {
     private AnnotationModelHelper helper;
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     private volatile PersistentObjectManager<RestServiceDescriptionImpl> restServiceManager;
-    
-    
+    private boolean disableChangeSupport;
+   
     public static RestServicesImpl create(AnnotationModelHelper helper) {
         RestServicesImpl instance =  new RestServicesImpl(helper);
         instance.initialize();
@@ -81,8 +81,18 @@ public class RestServicesImpl implements RestServices {
     private void initialize() {
         restServiceManager = helper.createPersistentObjectManager(new RestServiceProvider());
         restServiceManager.addChangeListener(new ChangeListener() {
+            private boolean isBusy;
+            
             public void stateChanged(ChangeEvent e) {
+                System.out.println("RestServices.stateChanged");
+                //(new Exception()).printStackTrace();
+                
+                if (disableChangeSupport) {
+                    System.out.println("skipping");
+                    return;
+                }
                 propChangeSupport.firePropertyChange("/restservices", null, null); // NOI18N
+                isBusy = false;
             }
         });
     }
@@ -108,10 +118,21 @@ public class RestServicesImpl implements RestServices {
         propChangeSupport.removePropertyChangeListener(pcl);
     }
     
+    public void disablePropertyChangeListener() {
+        this.disableChangeSupport = true;
+    }
+    
+    public void enablePropertyChangeListener() {
+        this.disableChangeSupport = false;
+        
+        //propChangeSupport.firePropertyChange("/restservices", null, null); // NOI18N
+    }
     
     private final class RestServiceProvider implements ObjectProvider<RestServiceDescriptionImpl> {
         
-        public List<RestServiceDescriptionImpl> createInitialObjects() throws InterruptedException {
+        public synchronized List<RestServiceDescriptionImpl> createInitialObjects() throws InterruptedException {
+            System.out.println("createInitialObjects()");
+            //(new Exception()).printStackTrace();
             final Map<TypeElement, RestServiceDescriptionImpl> result =
                     new HashMap<TypeElement, RestServiceDescriptionImpl>();
             
@@ -119,10 +140,10 @@ public class RestServicesImpl implements RestServices {
                     (Set<ElementKind>) EnumSet.of(ElementKind.CLASS),
                     new AnnotationHandler() { // NOI18N
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
-                    System.out.println("ElementKind.CLASS type = " + type + " element = " + element +
-                             " annotation = " + annotation);
+                    //System.out.println("ElementKind.CLASS type = " + type + " element = " + element +
+                    //         " annotation = " + annotation);
                     if (!result.containsKey(type)) {
-                        System.out.println("adding RestServiceDescImpl for " + type.getQualifiedName().toString());
+                        //System.out.println("adding RestServiceDescImpl for " + type.getQualifiedName().toString());
                         result.put(type, new RestServiceDescriptionImpl(helper, type));
                     }
                 }
@@ -132,9 +153,9 @@ public class RestServicesImpl implements RestServices {
                     (Set<ElementKind>) EnumSet.of(ElementKind.METHOD),
                     new AnnotationHandler() { // NOI18N
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
-                    System.out.println("ElementKind.METHOD type = " + type + 
-                            " element = " + element +
-                            " annotation = " + annotation);
+                    //System.out.println("ElementKind.METHOD type = " + type + 
+                    //        " element = " + element +
+                    //        " annotation = " + annotation);
                     if (!result.containsKey(type)) {
                         System.out.println("adding RestServiceDescImpl for " + type.getQualifiedName().toString());
                         result.put(type, new RestServiceDescriptionImpl(helper, type));
@@ -145,7 +166,10 @@ public class RestServicesImpl implements RestServices {
             return new ArrayList<RestServiceDescriptionImpl>(result.values());
         }
         
-        public List<RestServiceDescriptionImpl> createObjects(TypeElement type) {
+        public synchronized List<RestServiceDescriptionImpl> createObjects(TypeElement type) {
+            //System.out.println("createObjects() type = " + type);
+            //(new Exception()).printStackTrace();
+            
             if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
                 boolean isRest = false;
                 if (helper.hasAnnotation(type.getAnnotationMirrors(), "javax.ws.rs.UriTemplate")) { // NOI18N
@@ -169,7 +193,8 @@ public class RestServicesImpl implements RestServices {
             return Collections.emptyList();
         }
         
-        public boolean modifyObjects(TypeElement type, List<RestServiceDescriptionImpl> objects) {
+        public synchronized boolean modifyObjects(TypeElement type, List<RestServiceDescriptionImpl> objects) {
+            System.out.println("modifyObject type = " + type);
             assert objects.size() == 1;
             RestServiceDescriptionImpl restService = objects.get(0);
             if (!restService.refresh(type)) {

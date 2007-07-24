@@ -22,13 +22,16 @@ import java.io.IOException;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 
 /**
  * REST support utilitities across all project types.
- * 
+ *
  * @author Nam Nguyen
  */
 public class RestUtils {
@@ -69,16 +72,52 @@ public class RestUtils {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         return restSupport != null && restSupport.isRestSupportOn();
     }
-
+    
     public static void setRestEnabled(Project project, Boolean v) {
         RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
         if (restSupport != null) {
             restSupport.setRestSupport(v);
         }
     }
-
+    
     public static JavaSource createRestConnection(FileObject folder, String pkgName) {
         JavaSource source = JavaSourceHelper.createJavaSource(REST_CONNECTION_TEMPLATE, folder, pkgName, REST_CONNECTION);
         return source;
+    }
+    
+    public static RestSupport getRestSupport(Project project) {
+        return project.getLookup().lookup(RestSupport.class);
+    }
+    
+    public static MetadataModel<RestServicesMetadata> getRestServicesMetadataModel(Project project) {
+        return getRestSupport(project).getRestServicesMetadataModel();
+    }
+    
+    public static void disableRestServicesChangeListner(Project project) {
+        final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(project);
+        try {
+            wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                public Void run(final RestServicesMetadata metadata) {
+                    metadata.getRoot().disablePropertyChangeListener();
+                    return null;
+                }
+            });
+        } catch (java.io.IOException ex) {
+            
+        }
+    }
+    
+    public static void enableRestServicesChangeListner(Project project) {
+     final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(project);
+        try {
+            wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                public Void run(final RestServicesMetadata metadata) {
+                    metadata.getRoot().enablePropertyChangeListener();
+                    return null;
+                }
+            });
+        } catch (java.io.IOException ex) {
+            
+        }
     }
 }

@@ -39,4 +39,8 @@ public interface RestServices extends RootInterface {
     public void addPropertyChangeListener(PropertyChangeListener pcl);
     
     public void removePropertyChangeListener(PropertyChangeListener pcl);
+    
+    public void disablePropertyChangeListener();
+    
+    public void enablePropertyChangeListener();
 }

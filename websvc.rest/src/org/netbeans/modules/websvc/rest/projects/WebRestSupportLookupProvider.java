@@ -30,6 +30,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
@@ -59,41 +60,34 @@ public class WebRestSupportLookupProvider implements LookupProvider {
             PropertyChangeListener pcl;
             
             protected void projectOpened() {
-                RestSupport support = prj.getLookup().lookup(RestSupport.class);
-                
-                if (support!=null) {
-                    final MetadataModel<RestServicesMetadata> wsModel = support.getRestServicesMetadataModel();
-                    try {
-                        wsModel.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
-                            public Void run(final RestServicesMetadata metadata) {
-                                RestServices restServices = metadata.getRoot();
-                                pcl = new RestServicesChangeListener(wsModel, prj);
-                                restServices.addPropertyChangeListener(pcl);                  
-                                return null;
-                            }
-                        });
-                    } catch (java.io.IOException ex) {
-                        
-                    }
+                final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(prj);
+                try {
+                    wsModel.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
+                        public Void run(final RestServicesMetadata metadata) {
+                            RestServices restServices = metadata.getRoot();
+                            pcl = new RestServicesChangeListener(wsModel, prj);
+                            restServices.addPropertyChangeListener(pcl);
+                            return null;
+                        }
+                    });
+                } catch (java.io.IOException ex) {
+                    
                 }
             }
             
+            
             protected void projectClosed() {
-                RestSupport support = prj.getLookup().lookup(RestSupport.class);
-                
-                if (support!=null) {
-                    final MetadataModel<RestServicesMetadata> wsModel = support.getRestServicesMetadataModel();
-                    try {
-                        wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                            public Void run(final RestServicesMetadata metadata) {
-                                RestServices RestServices = metadata.getRoot();
-                                RestServices.removePropertyChangeListener(pcl);
-                                return null;
-                            }
-                        });
-                    } catch (java.io.IOException ex) {
-                        
-                    }
+                final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(prj);
+                try {
+                    wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                        public Void run(final RestServicesMetadata metadata) {
+                            RestServices RestServices = metadata.getRoot();
+                            RestServices.removePropertyChangeListener(pcl);
+                            return null;
+                        }
+                    });
+                } catch (java.io.IOException ex) {
+                    
                 }
             }
         };
@@ -103,10 +97,10 @@ public class WebRestSupportLookupProvider implements LookupProvider {
     }
     
     private class RestServicesChangeListener implements PropertyChangeListener {
-        MetadataModel<RestServicesMetadata> wsModel;
-        Project prj;
-        RestSupport support;
-        
+        private MetadataModel<RestServicesMetadata> wsModel;
+        private Project prj;
+        private RestSupport support;
+       
         private RequestProcessor.Task updateRestSvcTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 updateRestServices();
@@ -120,33 +114,34 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         }
         
         public void propertyChange(PropertyChangeEvent evt) {
-            //requestModelUpdate();
-            updateRestSvcTask.schedule(100);
+            updateRestServices();
         }
         
-        private void updateRestServices() {
-            System.out.println("updating rest services");
+        private synchronized void updateRestServices() {
+            //System.out.println("updating rest services");
             try {
                 wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
                         RestServices root = metadata.getRoot();
-                        for (RestServiceDescription desc : root.getRestServiceDescription()) {
-                            System.out.println("desc = " + desc);                          
-                        }
+                        //System.out.println("RestServices = " + root);
+     
+                        RestServiceDescription[] descriptions = root.getRestServiceDescription();
                         
-                        if (root.getRestServiceDescription().length > 0) {
-                            System.out.println("Turning rest support on");
-                            support.ensureRestDevelopmentReady();
-                        } else {
-                            //TODO turn isRestSupportOn flag off.
+                        System.out.println("count = " + descriptions.length);
+                        for (RestServiceDescription desc : descriptions) {
+                            System.out.println("desc = " + desc);
                         }
-                        
+   
+                        if (descriptions.length > 0) {
+                            //TODO turn on rest support
+                        }
                         return null;
                     }
                 });
             } catch (IOException ex) {
                 
             }
+            //System.out.println("done updating rest services");
         }
     }
     
