@@ -122,7 +122,7 @@ class LogFormatter extends XMLFormatter{
         String fileName=null;
         try{
             clazz = loader.loadClass(frame.getClassName());
-        }catch(Exception exc){
+        }catch(Throwable exc){
             Logger.getLogger(LogFormatter.class.getName()).log(Level.FINE, "Class loading error", exc);// NOI18N
         }
         if (clazz != null){
