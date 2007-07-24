@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -456,17 +457,25 @@ public class FileBuilder
 
 	FileObject fi = FileUtil.toFileObject(new File(oldFileFrom));
 	FileObject fo = FileUtil.toFileObject(new File(oldFileTo));
-	if (fi == null || fo == null) 
+	if (fi == null) 
 	{
 	    throw new IOException(); // TBD meaningfull message
 	} 
-
+	OutputStream fos; 
+	if (fo != null) 
+	{
+	    fos = fo.getOutputStream();
+	}
+	else 
+	{
+	    fos = new FileOutputStream(oldFileTo);
+	}
 	if (charset != null) {
 	    r = new InputStreamReader(fi.getInputStream(), charset);
-	    w = new OutputStreamWriter(fo.getOutputStream(), charset);
+	    w = new OutputStreamWriter(fos, charset);
 	} else {
 	    r = new InputStreamReader(fi.getInputStream());
-	    w = new OutputStreamWriter(fo.getOutputStream());
+	    w = new OutputStreamWriter(fos);
 	}
 	BufferedReader br = new BufferedReader(r);
 	BufferedWriter bw = new BufferedWriter(w);

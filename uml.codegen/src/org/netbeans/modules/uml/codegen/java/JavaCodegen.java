@@ -232,8 +232,8 @@ public class JavaCodegen implements ICodeGenerator
 				extAdd = "." + templExt; // NOI18N
 			    }
 			    String targetPackageFolderPath = exportPkgFileObject.getPath();
-			    String targetFilePath = targetPackageFolderPath
-				+ SEP + getOutputName(clinfo.getName(), domainTemplate) + extAdd;
+			    String targName = getOutputName(clinfo.getName(), domainTemplate) + extAdd;
+			    String targetFilePath = targetPackageFolderPath + SEP + targName;
 			    fmap.targetFilePath = targetFilePath;
 			    File targetFile = new File(targetFilePath);
 			    targetFiles.add(targetFile);
@@ -252,6 +252,14 @@ public class JavaCodegen implements ICodeGenerator
 				    fmap.merge = true;
 				    genToTmp = true;
 				} 		
+				String exName = new File(targetFile.getCanonicalPath()).getName();
+				if (!exName.equals(targName)) {
+				    FileObject trgFO = FileUtil.toFileObject(targetFile);
+				    if (trgFO != null) 
+				    {
+					trgFO.delete();
+				    }
+				}
 			    } 
 			    else 
 			    {
@@ -436,7 +444,7 @@ public class JavaCodegen implements ICodeGenerator
 						     fmap.generatedFilePath,
 						     fmap.existingFileInfo, 
 						     fmap.existingSourceBackupPath, 
-						     fmap.targetFilePath);     
+						     fmap.targetFilePath);    
 					task.log(task.TERSE, " " + getBundleMessage("MSG_OK")); // NOI18N
 				    } 
 				    else 
@@ -527,6 +535,7 @@ public class JavaCodegen implements ICodeGenerator
 			}
 			else 
 			{
+			    
 			    if ( (! backup) && (fmap.merge) 
 				 && (fmap.existingSourceBackupPath != null)) 
 			    {
@@ -661,49 +670,48 @@ public class JavaCodegen implements ICodeGenerator
     
     private FileObject backupFile(File file)
     {
-        String fileName = file.getName();
-	String className;
-	String ext = ""; 
-	int ind = fileName.indexOf('.');
-	if (ind > -1) {
-	    className = fileName.substring(0, ind);
-	    if (ind < fileName.length()) 
-	    {
-		ext = fileName.substring(ind + 1);
-	    }
-	} 
-	else 
-	{
-	    className = fileName;
-	}	    
-        String[] files = file.getParentFile().list(
-            new BackupJavaFilesFilter(fileName));
-        
-        int nextSeqNum = 0;
-        
-        for (String curName: files)
-        {
-            String numStr = StringTokenizer2.replace(
-                curName.substring(fileName.length()),
-                TILDE, ""); // NOI18N
-            try
-            {
-                int seqNum = Integer.parseInt(numStr);
-
-                if (seqNum > nextSeqNum)
-                    nextSeqNum = seqNum;
-            }
-
-            catch (NumberFormatException ex)
-            {
-                // silently suppress
-            }
-        }
-        
-        nextSeqNum++;
-        
         try
         {
+	    String fileName = new File(file.getCanonicalPath()).getName();
+	    String className;
+	    String ext = ""; 
+	    int ind = fileName.indexOf('.');
+	    if (ind > -1) {
+		className = fileName.substring(0, ind);
+		if (ind < fileName.length()) 
+		{
+		    ext = fileName.substring(ind + 1);
+		}
+	    } 
+	    else 
+	    {
+		className = fileName;
+	    }	    
+	    String[] files = file.getParentFile()
+		.list(new BackupJavaFilesFilter(fileName));
+        
+	    int nextSeqNum = 0;
+        
+	    for (String curName: files)
+	    {
+		String numStr = StringTokenizer2.replace(
+		    curName.substring(fileName.length()),
+		    TILDE, ""); // NOI18N
+		try
+		{
+		    int seqNum = Integer.parseInt(numStr);
+		    
+		    if (seqNum > nextSeqNum)
+			nextSeqNum = seqNum;
+		}
+		catch (NumberFormatException ex)
+		{
+		    // silently suppress
+		}
+	    }
+	    
+	    nextSeqNum++;
+        
             FileObject buFileObj = FileUtil.copyFile(
                 FileUtil.toFileObject(file),
                 FileUtil.toFileObject(file.getParentFile()),
@@ -711,8 +719,7 @@ public class JavaCodegen implements ICodeGenerator
                 ext + nextSeqNum + TILDE);
             
             return buFileObj;
-        }
-        
+        }       
         catch (IOException ex)
         {
             // TODO: conover - provide proper handling
