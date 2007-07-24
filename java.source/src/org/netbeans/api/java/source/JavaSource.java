@@ -1403,16 +1403,17 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                                         try {
                                             r.task.run (null);
                                         } finally {
+                                            currentRequest.clearCurrentTask();
                                             boolean cancelled = requests.contains(r);
                                             if (!cancelled) {
                                                 DeferredTask[] _todo;
                                                 synchronized (todo) {
                                                     _todo = todo.toArray(new DeferredTask[todo.size()]);
                                                     todo.clear();
-                                                }                                                
+                                                }
                                                 for (DeferredTask rq : _todo) {
                                                     try {
-                                                        rq.js.runUserActionTask(rq.task, rq.shared);
+                                                        rq.js.runUserActionTask(rq.task, rq.shared);                                                        
                                                     } finally {
                                                         rq.sync.taskFinished();
                                                     }
@@ -1914,6 +1915,21 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 this.reference = reference;                
             }
             return result;
+        }
+        
+        /**
+         * Prevents rececondition in runWhenScanFinished. This method may be called only from
+         * the Java-Source-Worker-Thread right after the initial scan finished. The problem was
+         * that the task was added into the todo after the todo was drained into the list of pending
+         * tasks but the getTaskToCancel thought that the task is still the RepositoryUpdater. So the
+         * Java-Source-Worker-Thread has to clean the task after calling RU.run but before draining the
+         * pending tasks into the array, it cannot use setCurrentTaks (null) since it is under javac lock
+         * and the setCurrentTaks methods may block the caller thread => deadlock.
+         */ 
+        void clearCurrentTask () {
+            synchronized (INTERNAL_LOCK) {
+                this.reference = null;
+            }
         }
         
         JavaSource.Request getTaskToCancel (final Priority priority) {
