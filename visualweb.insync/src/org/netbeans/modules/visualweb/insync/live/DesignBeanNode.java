@@ -982,17 +982,17 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
             return null;
         }
         
-        // I probably SHOULDN'T truncate when we're showing
-        // outputlink urls!
-        int slash = s.lastIndexOf('/');
+//        // I probably SHOULDN'T truncate when we're showing
+//        // outputlink urls!
+//        int slash = s.lastIndexOf('/');
+//        
+//        if (slash != -1) {
+//            s = s.substring(slash + 1);
+//        }
         
-        if (slash != -1) {
-            s = s.substring(slash + 1);
-        }
-        
-        // Truncate long strings
+//        // Truncate long strings
 //        s = DesignerUtils.truncateString(s, 30);
-        s = Util.truncateString(s, 30);
+//        s = Util.truncateString(s, 30);
         
         return s;
     }
