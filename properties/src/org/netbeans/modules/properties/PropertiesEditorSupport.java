@@ -860,11 +860,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             
         /** Lazy getter for property change support. */
         private PropertyChangeSupport prop() {
-            if (propSupp == null) {
-                synchronized (this) {
-                    if (propSupp == null) {
-                        propSupp = new PropertyChangeSupport (this);
-                    }
+            synchronized (this) {
+                if (propSupp == null) {
+                    propSupp = new PropertyChangeSupport (this);
                 }
             }
             
@@ -873,11 +871,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             
         /** Lazy getter for vetoable support. */
         private VetoableChangeSupport veto() {
-            if (vetoSupp == null) {
-                synchronized (this) {
-                    if (vetoSupp == null) {
-                        vetoSupp = new VetoableChangeSupport (this);
-                    }
+            synchronized (this) {
+                if (vetoSupp == null) {
+                    vetoSupp = new VetoableChangeSupport (this);
                 }
             }
             return vetoSupp;
