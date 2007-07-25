@@ -46,7 +46,7 @@ public final class RefactoringElementsBag {
     
     private final List<RefactoringElementImplementation> delegate;
     private final RefactoringSession session;
-    private Collection<FileObject> readOnlyFiles = new HashSet();
+    private Collection<FileObject> readOnlyFiles = new HashSet<FileObject>();
     
     /**
      * Creates an instance of RefactoringElementsBag
@@ -54,8 +54,8 @@ public final class RefactoringElementsBag {
     RefactoringElementsBag(RefactoringSession session, List<RefactoringElementImplementation> delegate) {
         this.session = session;
         this.delegate = delegate;
-        this.commits = new ArrayList();
-        this.fileChanges =  new ArrayList();
+        this.commits = new ArrayList<Transaction>();
+        this.fileChanges =  new ArrayList<RefactoringElementImplementation>();
     }
     
     /**
@@ -82,8 +82,8 @@ public final class RefactoringElementsBag {
             delegate.add(el);
         //isQuery should be used
         } else if (isGuarded(el) && !(refactoring instanceof WhereUsedQuery)) {
-            ArrayList<RefactoringElementImplementation> proposedChanges = new ArrayList();
-            ArrayList<Transaction> transactions = new ArrayList();
+            ArrayList<RefactoringElementImplementation> proposedChanges = new ArrayList<RefactoringElementImplementation>();
+            ArrayList<Transaction> transactions = new ArrayList<Transaction>();
             for (GuardedBlockHandler gbHandler: APIAccessor.DEFAULT.getGBHandlers(refactoring)) {
                 el.setEnabled(false);
                 p = APIAccessor.DEFAULT.chainProblems(gbHandler.handleChange(el, proposedChanges, transactions),  p);
@@ -184,8 +184,8 @@ public final class RefactoringElementsBag {
                     Position elementStart = el.getPosition().getBegin().getPosition();
                     Position elementEnd = el.getPosition().getEnd().getPosition();
                     for(GuardedSection section:manager.getGuardedSections()) {
-                        if (section.contains(elementStart, false) ||
-                                section.contains(elementEnd, false)) {
+                        if (section.contains(elementStart, true) ||
+                                section.contains(elementEnd, true)) {
                             return true;
                         }
                     }
