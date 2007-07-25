@@ -83,8 +83,10 @@ class CvsOptionsPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.jLabel1.text")); // NOI18N
 
         statusLabelFormat.setText(org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.statusLabelFormat.text")); // NOI18N
+        statusLabelFormat.setToolTipText(org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.statusLabelFormat.toolTipText")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(statusVarsBrowse, org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.statusVarsBrowse.text")); // NOI18N
+        statusVarsBrowse.setToolTipText(org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.statusVarsBrowse.toolTipText")); // NOI18N
         statusVarsBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 statusVarsBrowseActionPerformed(evt);
@@ -92,6 +94,7 @@ class CvsOptionsPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(excludeNewFiles, org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.excludeNewFiles.text")); // NOI18N
+        excludeNewFiles.setToolTipText(org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.excludeNewFiles.toolTipText")); // NOI18N
         excludeNewFiles.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         excludeNewFiles.setMargin(new java.awt.Insets(0, 0, 0, 0));
         excludeNewFiles.addActionListener(new java.awt.event.ActionListener() {
@@ -101,6 +104,7 @@ class CvsOptionsPanel extends javax.swing.JPanel {
         });
 
         org.openide.awt.Mnemonics.setLocalizedText(wrapCommitMessages, org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.wrapCommitMessages.text")); // NOI18N
+        wrapCommitMessages.setToolTipText(org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.wrapCommitMessages.toolTipText")); // NOI18N
         wrapCommitMessages.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         wrapCommitMessages.setMargin(new java.awt.Insets(0, 0, 0, 0));
         wrapCommitMessages.addActionListener(new java.awt.event.ActionListener() {

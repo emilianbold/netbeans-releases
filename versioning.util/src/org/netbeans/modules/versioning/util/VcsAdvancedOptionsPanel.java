@@ -49,8 +49,10 @@ public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
             }
         });
         jScrollPane1.setViewportView(versioningSystemsList);
+        versioningSystemsList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VcsAdvancedOptionsPanel.class, "VcsAdvancedOptionsPanel.versioningSystemsList.AccessibleContext.accessibleDescription")); // NOI18N
 
-        jLabel1.setText(org.openide.util.NbBundle.getBundle(VcsAdvancedOptionsPanel.class).getString("LBL_VersioningSystems")); // NOI18N
+        jLabel1.setLabelFor(versioningSystemsList);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(VcsAdvancedOptionsPanel.class).getString("LBL_VersioningSystems")); // NOI18N
 
         containerPanel.setLayout(new java.awt.CardLayout());
 
