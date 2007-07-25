@@ -35,6 +35,9 @@ import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.
 import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIServiceAssemblyStatus;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
+import org.netbeans.modules.j2ee.deployment.impl.ServerString;
+import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
 
 /**
  * Ant task to deploy/undeploy Service Assembly to/from the target JBI server.
@@ -201,11 +204,13 @@ public class DeployServiceAssembly extends Task {
                     "See http://www.netbeans.org/issues/show_bug.cgi?id=108702 for more info."; 
             throw new BuildException(msg);
         }
-        
+                
         String nbUserDir = getNetBeansUserDir();
-        String j2eeServerInstance = getJ2eeServerInstance();
+        String serverInstanceID = getJ2eeServerInstance();
+                
+        startServer(serverInstanceID);
         
-        ServerInstance instance = AdminServiceHelper.getServerInstance(nbUserDir, j2eeServerInstance);
+        ServerInstance instance = AdminServiceHelper.getServerInstance(nbUserDir, serverInstanceID);
         AdministrationService adminService = AdminServiceHelper.getAdminService(instance);
         
         hostName = instance.getHostName();
@@ -268,7 +273,26 @@ public class DeployServiceAssembly extends Task {
             throw new BuildException("Service assembly deployment failed.");
         }
     }
-    
+      
+    private void startServer(String serverInstanceID) {
+        org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst =
+                ServerRegistry.getInstance().getServerInstance(serverInstanceID);
+        if (inst == null) {
+            log("Bad target server ID: " + serverInstanceID);
+        }
+        ServerString server = new ServerString(inst);
+        
+        org.netbeans.modules.j2ee.deployment.impl.ServerInstance serverInstance = 
+                server.getServerInstance();
+        if (server == null || serverInstance == null) {
+            log("Make sure a target server is set in project properties.");
+        }
+        
+        // Currently it is not possible to select target to which modules will
+        // be deployed. Lets use the first one.
+        // (This will start the server if the server is not running.)
+        ServerTarget targets[] = serverInstance.getTargets();
+    }
     
     /**
      * Retrieves the status of the given Service Assembly deployed on the JBI

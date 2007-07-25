@@ -518,15 +518,15 @@ public class JbiActionProvider implements ActionProvider {
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
             return false;
-        } else if (!JbiManager.isRunningAppServer(instance)) {
-            NotifyDescriptor d =
-                    new NotifyDescriptor.Message(
-                    NbBundle.getMessage(
-                    JbiActionProvider.class, "MSG_NoRunningServerError" // NOI18N
-                    ),
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-            return false;
+//        } else if (!JbiManager.isRunningAppServer(instance)) {
+//            NotifyDescriptor d =
+//                    new NotifyDescriptor.Message(
+//                    NbBundle.getMessage(
+//                    JbiActionProvider.class, "MSG_NoRunningServerError" // NOI18N
+//                    ),
+//                    NotifyDescriptor.ERROR_MESSAGE);
+//            DialogDisplayer.getDefault().notify(d);
+//            return false;
         }
         
         return true;
