@@ -34,4 +34,8 @@ Microsystems, Inc. All Rights Reserved.
     <ant antfile="profiler/build.xml" target="clean" inheritAll="false"/>
   </target>
 
+  <target name="runtests" description="Run automatic test">
+    <ant antfile="test/build.xml" dir="./test" target="all" inheritAll="false"/>
+  </target>
+
 </project>
