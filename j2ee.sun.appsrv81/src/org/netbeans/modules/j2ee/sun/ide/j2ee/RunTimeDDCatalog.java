@@ -410,11 +410,17 @@ public class RunTimeDDCatalog extends GrammarQueryManager implements CatalogRead
         else if (systemId!=null && systemId.endsWith(APP_1_4_XSD)) {
             return new org.xml.sax.InputSource(SCHEMASLOCATION+APP_1_4_XSD);
         }
+        else if (systemId!=null && systemId.endsWith(APPCLIENT_1_4_XSD)) {
+            return new org.xml.sax.InputSource(SCHEMASLOCATION+APPCLIENT_1_4_XSD);
+        }
         else if (systemId!=null && systemId.endsWith(WEBAPP_2_5_XSD)) {
             return new org.xml.sax.InputSource(SCHEMASLOCATION+WEBAPP_2_5_XSD);
         }
         else if (systemId!=null && systemId.endsWith(APP_5_XSD)) {
             return new org.xml.sax.InputSource(SCHEMASLOCATION+APP_5_XSD);
+        }
+        else if (systemId!=null && systemId.endsWith(APPCLIENT_5_XSD)) {
+            return new org.xml.sax.InputSource(SCHEMASLOCATION+APPCLIENT_5_XSD);
         }
         else if (systemId!=null && systemId.endsWith(PERSISTENCEORM_XSD)) {
             return new org.xml.sax.InputSource(SCHEMASLOCATION+PERSISTENCEORM_XSD);
