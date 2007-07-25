@@ -101,7 +101,7 @@ public final class JavaRefactoringUtils {
      * @param sourceOnly library classes ignored if true
      * @return 
      */
-    public static Collection<Element> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
+    public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
         return RetoucheUtils.getSuperTypes(type, info);
     }
 
@@ -160,6 +160,12 @@ public final class JavaRefactoringUtils {
         return result;
     }
 
+    /**
+     * Convert Trees to TreePathHandles
+     * @param trees 
+     * @param info 
+     * @return 
+     */
     public static List <TreePathHandle> treesToHandles (Iterable <? extends Tree> trees, CompilationInfo info) {
         List <TreePathHandle> result = new ArrayList <TreePathHandle> (trees instanceof Collection ?
             ((Collection)trees).size() : 11);
@@ -177,6 +183,12 @@ public final class JavaRefactoringUtils {
         return result;
     }
 
+    /**
+     * Resolves ElementHandles to Elemnts
+     * @param handles 
+     * @param info 
+     * @return 
+     */
     public static <T extends Element> List <T> handlesToElements (Iterable <ElementHandle<T>> handles, CompilationInfo info) {
         List <T> result = new ArrayList <T> (handles instanceof Collection ? ((Collection)handles).size() : 0);
         for (ElementHandle<? extends T> h : handles) {
@@ -188,6 +200,12 @@ public final class JavaRefactoringUtils {
     }
 
 
+    /**
+     * Resolves TypeMirrorHandles to TypeMirrors
+     * @param types 
+     * @param info 
+     * @return 
+     */
     public static List <TypeMirror> handlesToTypes (Iterable <? extends TypeMirrorHandle> types, CompilationInfo info) {
         List <TypeMirror> result = new ArrayList <TypeMirror> ();
         for (TypeMirrorHandle h : types) {
@@ -196,6 +214,11 @@ public final class JavaRefactoringUtils {
         return result;
     }
 
+    /**
+     * Creates TypeMirrosHandles from TypeMirrors
+     * @param types 
+     * @return 
+     */
     public static List <TypeMirrorHandle> typesToHandles (Iterable <? extends TypeMirror> types) {
         List <TypeMirrorHandle> result = new ArrayList <TypeMirrorHandle> ();
         for (TypeMirror h : types) {
@@ -204,6 +227,11 @@ public final class JavaRefactoringUtils {
         return result;
     }
 
+    /**
+     * Create ElementHandles from Elements
+     * @param elements 
+     * @return 
+     */
     public static <T extends Element> List <ElementHandle<T>> elementsToHandles (Iterable <? extends T> elements) {
         List <ElementHandle<T>> result = new ArrayList <ElementHandle<T>> (elements instanceof
                 Collection ? ((Collection)elements).size() : 11);

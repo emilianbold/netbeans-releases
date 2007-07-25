@@ -350,13 +350,13 @@ public class RetoucheUtils {
         return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
     }
     
-    public static Collection<Element> getSuperTypes(TypeElement type, CompilationInfo info) {
-        Collection<Element> result = new HashSet();
-        LinkedList<TypeElement> l = new LinkedList();
+    public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info) {
+        Collection<TypeElement> result = new HashSet<TypeElement>();
+        LinkedList<TypeElement> l = new LinkedList<TypeElement>();
         l.add(type);
         while (!l.isEmpty()) {
             TypeElement t = l.removeFirst();
-            Element superClass = typeToElement(t.getSuperclass(), info);
+            TypeElement superClass = typeToElement(t.getSuperclass(), info);
             if (superClass!=null) {
                 result.add(superClass);
                 l.addLast((TypeElement)superClass);
@@ -379,11 +379,11 @@ public class RetoucheUtils {
         }    
     }
     
-    public static Collection<Element> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
+    public static Collection<TypeElement> getSuperTypes(TypeElement type, CompilationInfo info, boolean sourceOnly) {
         if (!sourceOnly)
             return getSuperTypes(type, info);
-        Collection<Element> result = new HashSet();
-        for (Element el: getSuperTypes(type, info)) {
+        Collection<TypeElement> result = new HashSet<TypeElement>();
+        for (TypeElement el: getSuperTypes(type, info)) {
             FileObject file = SourceUtils.getFile(el, info.getClasspathInfo());
             if (file!=null && isFileInOpenProject(file) && !isFromLibrary(el, info.getClasspathInfo())) {
                 result.add(el);
@@ -404,7 +404,7 @@ public class RetoucheUtils {
         return result;
     }
     
-    public static Collection<FileObject> elementsToFile(Collection<Element> elements, ClasspathInfo cpInfo ) {
+    public static Collection<FileObject> elementsToFile(Collection<? extends Element> elements, ClasspathInfo cpInfo ) {
         Collection <FileObject> result = new HashSet();
         for (Element handle:elements) {
             result.add(SourceUtils.getFile(handle, cpInfo));

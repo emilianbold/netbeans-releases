@@ -17,7 +17,7 @@
 package org.netbeans.modules.refactoring.java.spi;
 
 /**
- *
+ * thrown if (JavaSource.toPhase(p)!=p))
  * @author Jan Becicka
  */
 public class ToPhaseException extends Exception {

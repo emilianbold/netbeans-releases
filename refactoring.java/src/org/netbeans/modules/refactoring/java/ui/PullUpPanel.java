@@ -119,7 +119,7 @@ public class PullUpPanel extends JPanel implements CustomRefactoringPanel {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.RESOLVED);
                     // retrieve supertypes (will be used in the combo)
-                    Collection<Element> supertypes = RetoucheUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
+                    Collection<TypeElement> supertypes = RetoucheUtils.getSuperTypes((TypeElement)handle.resolveElement(controller), controller, true);
                     MemberInfo[] minfo = new MemberInfo[supertypes.size()];
                     int i=0;
                     for (Element e: supertypes) {

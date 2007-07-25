@@ -140,7 +140,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         try {
             cc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement sourceType = (TypeElement) refactoring.getSourceType().resolveElement(cc);
-            Collection<Element> supers = RetoucheUtils.getSuperTypes(sourceType, cc);
+            Collection<TypeElement> supers = RetoucheUtils.getSuperTypes(sourceType, cc);
             TypeElement targetType = refactoring.getTargetType().resolve(cc);
             MemberInfo<ElementHandle<? extends Element>>[] members = refactoring.getMembers();
 

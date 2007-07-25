@@ -54,8 +54,8 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 
 /**
- *
- * @author Jan Becicka, Tim Boudreau
+ * @author Jan Becicka
+ * @author Tim Boudreau
  */
 final class JavaRefactoringGlobalAction extends NodeAction {
     private final JavaRefactoringActionDelegate delegate;

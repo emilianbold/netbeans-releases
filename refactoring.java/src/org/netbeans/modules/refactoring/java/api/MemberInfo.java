@@ -37,7 +37,8 @@ import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.UiUtils.PrintPart;
 
 /**
- *
+ * Wrapper class for ElementHandles, TreePathHandles and TypeMirrorHandles.
+ * It contains referemce to appropriste handle + name and icon
  * @param H 
  * @author Jan Becicka
  */
@@ -59,7 +60,22 @@ public final class MemberInfo<H> {
     }
 
     public enum Group {
-        IMPLEMENTS, METHOD, FIELD, TYPE;
+        /** 
+         * member is in implements clause
+         */ 
+        IMPLEMENTS,
+        /**  
+         * member represents method
+         */
+        METHOD,
+        /**  
+         * member represents field
+         */
+        FIELD,
+        /**
+         * member represents type
+         */
+        TYPE;
     }
     
     /** Creates a new instance of MemberInfo describing a field
