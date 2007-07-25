@@ -90,6 +90,13 @@ public class RADConnectionPropertyEditor
             designValue =(RADConnectionDesignValue)value;
             editorType = designValue.getType() == RADConnectionDesignValue.TYPE_CODE ?
                 Type.CustomCode : Type.FormConnection;
+            if (editorType == Type.CustomCode) {
+                String code = designValue.getCode();
+                if ((code == null) || (code.trim().length() == 0)) { 
+                    // Issue 101617
+                    setValue(property.getDefaultValue());
+                }
+            }
         } else {
             designValue = null;
             realValue = value;
