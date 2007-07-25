@@ -116,7 +116,14 @@ public class DatabaseManager implements ParserManagerListener {
                             if (c != null) 
                                 type = "local";
                         }
-                        context.addDefinition (new DatabaseDefinition (name, type, item.getOffset (), item.getEndOffset ()));
+                        DatabaseContext con = context;
+                        if ("method".equals(type)) { // NOI18N
+                            con = con.getParent();
+                            if (con == null) {
+                                con = context;
+                            }
+                        }
+                        con.addDefinition (new DatabaseDefinition (name, type, item.getOffset (), item.getEndOffset ()));
                     }
                 }
                 feature = language.getFeature ("SEMANTIC_CONTEXT", astPath);

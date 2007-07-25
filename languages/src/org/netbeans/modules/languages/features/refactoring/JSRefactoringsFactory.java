@@ -100,9 +100,10 @@ public class JSRefactoringsFactory implements RefactoringPluginFactory {
         int end = lineNumber < endLine ? NbDocument.findLineOffset(doc, lineNumber + 1) : length;
         try {
             String str = doc.getText(start, end - start - 1);
-            String text = str.substring(0, tokenStart - start) + "<b>" + // NOI18N
-                    str.substring(tokenStart - start, tokenEnd - start) + "</b>" + // NOI18N
-                    str.substring(tokenEnd - start);
+            String text = tokenEnd > end ? str :
+                str.substring(0, tokenStart - start) + "<b>" + // NOI18N
+                str.substring(tokenStart - start, tokenEnd - start) + "</b>" + // NOI18N
+                str.substring(tokenEnd - start);
             return text.trim();
         } catch (BadLocationException ex) {
             ErrorManager.getDefault().notify(ex);
