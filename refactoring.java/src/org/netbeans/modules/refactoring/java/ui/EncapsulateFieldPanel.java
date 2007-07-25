@@ -69,6 +69,8 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
     private String classname;
     private String[][] methodNames; // array of String {getterName, setterName}
     private static boolean ALWAYS_USE_ACCESSORS = true;
+    private static int FIELD_ACCESS_INDEX = 3;
+    private static int METHOD_ACCESS_INDEX = 0;
     
     private static final String modifierNames[] = {
         "public", // NOI18N
@@ -109,6 +111,8 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
         initComponents();
         setName(title);
         jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
+        jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
+        jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);
         // *** initialize table
         // set renderer for the column "Field" to display name of the feature (with icon)
         jTableFields.setDefaultRenderer(MemberInfo.class, new UIUtilities.JavaElementTableCellRenderer());
@@ -421,11 +425,13 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
     }
     
     public Set<Modifier> getFieldModifiers() {
-        return Collections.singleton(getModifier(jComboField.getSelectedIndex()));
+        FIELD_ACCESS_INDEX = jComboField.getSelectedIndex();
+        return Collections.singleton(getModifier(FIELD_ACCESS_INDEX));
     }
     
     public Set<Modifier> getMethodModifiers() {
-        return Collections.singleton(getModifier(jComboAccess.getSelectedIndex()));
+        METHOD_ACCESS_INDEX = jComboAccess.getSelectedIndex();
+        return Collections.singleton(getModifier(METHOD_ACCESS_INDEX));
     }
 
     private Modifier getModifier(int index) {
