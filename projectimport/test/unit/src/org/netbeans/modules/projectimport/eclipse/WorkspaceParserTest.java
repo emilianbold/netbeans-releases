@@ -20,6 +20,7 @@
 package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
 
@@ -33,9 +34,11 @@ public final class WorkspaceParserTest extends NbTestCase {
     }
     
     public void testGetLocation() throws Exception {
-        assertRightPath("/some/path", "/some/path");
-        assertRightPath("URI//file:/some/path", "/some/path");
-        assertRightPath("URI//whatever:/some/path", "/some/path");
+        String tempFilePath = new File(System.getProperty("java.io.tmpdir"), "tmp").getAbsolutePath();
+        System.out.println(tempFilePath);
+        assertRightPath(tempFilePath, tempFilePath);
+        assertRightPath("URI//file:" + tempFilePath, tempFilePath);
+        assertRightPath("URI//whatever:" + tempFilePath, tempFilePath); 
     }
     
     private void assertRightPath(final String rawPath, final String expectedPath) throws IOException {
