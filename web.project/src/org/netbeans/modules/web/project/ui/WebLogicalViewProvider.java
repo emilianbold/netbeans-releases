@@ -386,7 +386,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
         @Override                                                                                                            
         public String getShortDescription() {                                                                                
             String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());                              
-            return NbBundle.getMessage(WebLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName);             
+            return NbBundle.getMessage(WebLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName); // NO18N             
         }   
 
         public void run() {
