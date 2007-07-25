@@ -382,6 +382,12 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
 
             return img;
         }
+        
+        @Override                                                                                                            
+        public String getShortDescription() {                                                                                
+            String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());                              
+            return NbBundle.getMessage(WebLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName);             
+        }   
 
         public void run() {
             boolean fireIcon;
