@@ -100,15 +100,6 @@
 <mapID target="webbrowser.default" url="webbrowser/default.html" />
 
 
-<mapID target="propfiles.intro" url="propfiles/about_resourcebundles.html" />
-<mapID target="propfiles.creating" url="propfiles/creating_resourcebundles.html" />
-<mapID target="propfiles.adding" url="propfiles/addingprops.html" />
-<mapID target="propfiles.modifying" url="propfiles/modifyprops.html" />
-<!--<mapID target="propfiles.removing" url="propfiles/removingprops.html" />-->
-<mapID target="propfiles.addlocale" url="propfiles/addinglocale.html" />
-
-<!--this topic also a CSH ID for .properties files in Source Editor-->
-<mapID target="propfiles.editlocale" url="propfiles/editinglocale.html" />
 
 
 
