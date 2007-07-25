@@ -231,6 +231,7 @@ public class OrderingTest extends NbTestCase {
         assertEquals(20, ball.getAttribute("position"));
         assertEmptyLog();
         // XXX test also complex reorders; swaps with left bias; larger rotations; moves to start or end; {X} => {X} and {} => {}; ad nauseam
+        // XXX test sO when newly added item (e.g. at end, or elsewhere) has no initial position
     }
 
     // XXX test IAE, ...
