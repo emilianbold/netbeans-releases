@@ -148,7 +148,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="position" intvalue="200"/>
             </file>
             <file name="org-openide-actions-RedoAction.instance">
-                <attr name="position" intvalue="800"/>
+                <attr name="position" intvalue="205"/>
             </file>
             <file name="Separator1.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
