@@ -160,6 +160,7 @@ public abstract class PresentableFileEntry extends FileEntry
      * @return file object with renamed file
      * @see  #renameEntry
      */
+    @Override
     public FileObject rename (String name) throws IOException {
         String oldName = getName();
         FileObject fo = super.rename(name);
@@ -179,6 +180,7 @@ public abstract class PresentableFileEntry extends FileEntry
     }
     
     /** Deletes file object and fires property change. */
+    @Override
     public void delete () throws IOException {
         super.delete();
         
