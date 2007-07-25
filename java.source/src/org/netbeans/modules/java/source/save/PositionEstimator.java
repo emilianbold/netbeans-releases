@@ -388,70 +388,76 @@ public abstract class PositionEstimator {
             return new int[] { sectionStart, sectionEnd };
         }
     }
-
-    /**
-     * Provides position estimator for features in type declaration.
-     */
-    @Deprecated
-    static class DeprecatedEstimator extends PositionEstimator {
+    
+    static class CasesEstimator extends PositionEstimator {
         
-        public DeprecatedEstimator(final List<? extends Tree> oldL, 
+        private List<int[]> data;
+        
+        public CasesEstimator(final List<? extends Tree> oldL, 
                                 final List<? extends Tree> newL, 
                                 final WorkingCopy copy)
         {
             super(oldL, newL, copy);
         }
         
+        @Override()
         public void initialize() {
             int size = oldL.size();
-            matrix = new int[size+1][5];
-            matrix[size] = new int[] { -1, -1, -1, -1, -1 };
+            data = new ArrayList<int[]>(size);
             SourcePositions positions = copy.getTrees().getSourcePositions();
             CompilationUnitTree compilationUnit = copy.getCompilationUnit();
-            int i = 0;
             
             for (Tree item : oldL) {
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
-                if (treeEnd < 0) {
-                    if (Tree.Kind.BLOCK == item.getKind()) {
-                        // handle the semicolon written in the source. Represeted
-                        // by empty initializer in the source -- useful for
-                        // bluff API users. -- It does not have position, this
-                        // means we have to find it.
-                        if (i > 0) {
-                            seq.moveIndex(matrix[i-1][4]);
-                            seq.moveNext();
-                            TokenUtilities.moveFwdToToken(seq, seq.offset(), JavaTokenId.SEMICOLON);
-                            treeStart = seq.offset();
-                            treeEnd = treeStart + 1;
-                        } else {
-                            // a ted babo rad.
-                        }
-                    } else {
-                        // because the tree parsed does not represent exactly
-                        // the source, we have to do many stupid hacks like
-                        // this. -- Currently, we have found (hopefully) the
-                        // syntetic thing which does not have its source
-                        // representation.
-                        continue;
-                    }
-                }
-                
+
                 seq.move(treeStart);
                 seq.moveNext();
-                int startIndex = seq.index();
-                // go back to opening/closing curly, semicolon or other
-                // token java-compiler important token.
-                moveToSrcRelevant(seq, Direction.BACKWARD);
-                seq.moveNext();
-                int veryBeg = seq.index();
-                seq.move(treeEnd);
-                matrix[i++] = new int[] { veryBeg, veryBeg, veryBeg, startIndex, seq.index() };
-                if (i == size) {
-                    seq.move(treeEnd);
-                    matrix[i][2] = seq.index();
+                if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
+                    seq.moveNext();
                 }
+                int previousEnd = seq.offset();
+                Token<JavaTokenId> token;
+                while (nonRelevant.contains((token = seq.token()).id())) {
+                    int localResult = -1;
+                    switch (token.id()) {
+                        case WHITESPACE:
+                            int indexOf = token.text().toString().indexOf('\n');
+                            if (indexOf > -1) {
+                                localResult = seq.offset() + indexOf + 1;
+                            }
+                            break;
+                        case LINE_COMMENT:
+                            previousEnd = seq.offset() + token.text().length();
+                            break;
+                    }
+                    if (localResult > 0) {
+                        previousEnd = localResult;
+                        break;
+                    }
+                    if (!seq.moveNext()) break;
+                }
+                seq.move(treeEnd);
+                int wideEnd = treeEnd;
+                while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
+                    if (JavaTokenId.WHITESPACE == token.id()) {
+                        int indexOf = token.text().toString().indexOf('\n');
+                        if (indexOf > -1) {
+                            wideEnd = seq.offset() + indexOf + 1;
+                        } else {
+                            wideEnd = seq.offset();
+                        }
+                    } else if (JavaTokenId.LINE_COMMENT == token.id()) {
+                        wideEnd = seq.offset() + token.text().length();
+                        break;
+                    } else if (JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                        break;
+                    }
+                    if (wideEnd > treeEnd)
+                        break;
+                }
+                if (wideEnd < treeEnd) wideEnd = treeEnd;
+                data.add(new int[] { previousEnd, wideEnd, previousEnd });
             }
             initialized = true;
         }
@@ -459,14 +465,66 @@ public abstract class PositionEstimator {
         @Override()
         public int getInsertPos(int index) {
             if (!initialized) initialize();
-            int tokenIndex = matrix[index][2];
-            // cannot do any decision about the position - probably first
-            // element is inserted, no information is available. Call has
-            // to decide.
-            if (tokenIndex == -1) return -1;
-            seq.moveIndex(tokenIndex);
+            if (data.isEmpty()) {
+                return -1;
+            } else {
+                return index == data.size() ? data.get(index-1)[2] : data.get(index)[0];
+            }
+        }
+
+        /**
+         * Used when all elements from the list was removed.
+         */
+        public int[] sectionRemovalBounds(StringBuilder replacement) {
+            if (!initialized) initialize();
+            // this part should be generalized
+            assert !oldL.isEmpty() && newL.isEmpty(); // check the call correctness
+            SourcePositions positions = copy.getTrees().getSourcePositions();
+            CompilationUnitTree compilationUnit = copy.getCompilationUnit();
+            int sectionStart = (int) positions.getStartPosition(compilationUnit, oldL.get(0));
+            int sectionEnd = (int) positions.getEndPosition(compilationUnit, oldL.get(oldL.size()-1));
+            // end of generalization part
+            
+            seq.move(sectionStart);
             seq.moveNext();
-            return goAfterFirstNewLine(seq);
+            Token<JavaTokenId> token;
+            while (seq.movePrevious() && nonRelevant.contains((token = seq.token()).id())) {
+                if (JavaTokenId.LINE_COMMENT == token.id()) {
+                    seq.moveNext();
+                    sectionStart = seq.offset();
+                    break;
+                } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                    break;
+                } else if (JavaTokenId.WHITESPACE == token.id()) {
+                    int indexOf = token.text().toString().indexOf('\n');
+                    if (indexOf > -1) {
+                        sectionStart = seq.offset() + indexOf + 1;
+                    } else {
+                        sectionStart = seq.offset();
+                    }
+                }
+            }
+            seq.move(sectionEnd);
+            seq.movePrevious();
+            while (seq.moveNext() && nonRelevant.contains((token = seq.token()).id())) {
+                if (JavaTokenId.LINE_COMMENT == token.id()) {
+                    sectionEnd = seq.offset();
+                    if (seq.moveNext()) {
+                        sectionEnd = seq.offset();
+                    }
+                    break;
+                } else if (JavaTokenId.BLOCK_COMMENT == token.id() || JavaTokenId.JAVADOC_COMMENT == token.id()) {
+                    break;
+                } else if (JavaTokenId.WHITESPACE == token.id()) {
+                    int indexOf = token.text().toString().lastIndexOf('\n');
+                    if (indexOf > -1) {
+                        sectionEnd = seq.offset() + indexOf + 1;
+                    } else {
+                        sectionEnd += seq.offset() + token.text().length();
+                    }
+                }
+            }
+            return new int[] { sectionStart, sectionEnd };
         }
         
         public String head() { return ""; }
@@ -475,20 +533,10 @@ public abstract class PositionEstimator {
 
         public String getIndentString() { return ""; }
         
+        @Override()
         public int[] getPositions(int index) {
             if (!initialized) initialize();
-            int begin = getInsertPos(index);
-            if (matrix[index][4] != -1) {
-                seq.moveIndex(matrix[index][4]);
-                seq.moveNext();
-            }
-            int end = goAfterFirstNewLine(seq);
-            return new int [] { begin, end };
-        }
-        
-        @Override
-        public LineInsertionType lineInsertType() {
-            return LineInsertionType.AFTER;
+            return data.get(index);
         }
         
         public int prepare(int startPos, StringBuilder aHead,
@@ -509,8 +557,16 @@ public abstract class PositionEstimator {
             return startPos;
         }
         
-        public int[] sectionRemovalBounds(StringBuilder replacement) {
-            throw new UnsupportedOperationException("Not supported yet.");
+        @Override
+        public String toString() {
+            if (!initialized) initialize();
+            String result = "";
+            for (int i = 0; i < data.size(); i++) {
+                int[] pos = data.get(i);
+                String s = copy.getText().substring(pos[0], pos[1]);
+                result += "[" + s + "]";
+            }
+            return result;
         }
 
     }
@@ -835,7 +891,7 @@ public abstract class PositionEstimator {
                         moveToSrcRelevant(seq, Direction.BACKWARD);
                         seq.moveNext();
                         treeEnd = seq.offset();
-                    };
+                    }
                 }
                 
                 seq.move(treeStart);

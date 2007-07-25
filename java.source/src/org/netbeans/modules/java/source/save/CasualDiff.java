@@ -715,7 +715,7 @@ public class CasualDiff {
         while (tokenSequence.moveNext() && JavaTokenId.LBRACE != tokenSequence.token().id()) ;
         tokenSequence.moveNext();
         copyTo(localPointer, localPointer = tokenSequence.offset());
-        PositionEstimator est = EstimatorFactory.deprecated(oldT.getCases(), newT.getCases(), workingCopy);
+        PositionEstimator est = EstimatorFactory.cases(oldT.getCases(), newT.getCases(), workingCopy);
         localPointer = diffList(oldT.cases, newT.cases, localPointer, est, Measure.MEMBER, printer);
         
         copyTo(localPointer, bounds[1]);
