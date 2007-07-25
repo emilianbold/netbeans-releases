@@ -396,6 +396,9 @@ public class BindingCustomizer extends JPanel {
                         }
                     }
                     columnSelector.setItems(available, selected);
+                } else {
+                    // Issue 104707 part 2 - no column selected
+                    columnSelector.setItems(columnSelector.getSelectedItems(), Collections.emptyList());
                 }
             }
             nullValueCheckBox.setSelected(binding.isNullValueSpecified());
