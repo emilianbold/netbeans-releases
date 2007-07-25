@@ -1221,7 +1221,6 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 synchronized (this) {
                     localResult = completionResult;
                     if (finishedResult.getResultId() == localResult) {
-                        System.out.println("->" + finishedResult.getTask());
                         finished = isAllResultsFinished(localResult.getResultSets());
                         notifyAll();
                     }
