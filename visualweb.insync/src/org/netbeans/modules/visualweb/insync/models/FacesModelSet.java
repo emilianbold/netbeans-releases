@@ -330,16 +330,16 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
     
     //--------------------------------------------------------------------------------- Construction
     
-    public static void startModeling(FileObject file) {
+    public static FacesModelSet startModeling(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
         if (project == null) {
-            return;
+            return null;
         }
-        startModeling(project);
+        return startModeling(project);
     }
     
-    public static void startModeling(Project project) {
-        ModelSet.startModeling(project, FacesModelSet.class);
+    public static FacesModelSet startModeling(Project project) {
+        return (FacesModelSet) ModelSet.startModeling(project, FacesModelSet.class);
     }
 
     public static FacesModelSet getInstance(FileObject file) {

@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -313,39 +314,35 @@ public abstract class ModelSet implements FileChangeListener {
     protected static java.util.Collection getFactories() {
         return Lookup.getDefault().lookup(new Lookup.Template(Model.Factory.class)).allInstances();
     }
+    
+    private static Map<Project, Runnable> projectToRunnable = new HashMap<Project, Runnable>();
 
-    protected static void startModeling(final Project project, final Class ofType) {
+    protected static ModelSet startModeling(final Project project, final Class ofType) {
         if (project == null)
-            return;
+            return null;
         ModelSet set = getModelSet(project);
         if (set == null) {
-            new Thread(new Runnable() {
-                public void run() {
-                    FileObject sourceRootFileObject = JsfProjectUtils.getSourceRoot(project);
-                    Enumeration<? extends FileObject> sourceFileObjects = sourceRootFileObject.getChildren(true);
-                    FileObject anyJavaFile = null;
-                    while (sourceFileObjects.hasMoreElements()) {
-                        FileObject aSourceFileObject = sourceFileObjects.nextElement();
-                        if (aSourceFileObject.getMIMEType().equals("text/x-java")) { // NOI18N
-                            anyJavaFile = aSourceFileObject;
-                            break;
-                        }
-                    }
-
-                    if (anyJavaFile == null) {
-                        // Can't use wrapper task to ensure background scaning
-                        // stopped while modeling.
-                        getInstance(project, ofType);
-                    } else {                    
-                        ReadTaskWrapper.execute(
-                                    new ReadTaskWrapper.Read() {
-                                        public Object run(CompilationInfo cinfo){
-                                            return getInstance(project, ofType);
-                                        }
-                                    }, anyJavaFile);                        
-                    }
-                }}, "Loading ModelSet for " + project.getProjectDirectory().getName()).start(); // NOI18N
+        	synchronized (projectToRunnable) {
+				Runnable modelingRunnable = projectToRunnable.get(project);
+				if (modelingRunnable == null) {
+					modelingRunnable = new Runnable() {
+		                public void run() {
+		                	try {
+			                    getInstance(project, ofType);			                    
+		                	} finally {
+		                		synchronized (projectToRunnable) {
+		                			projectToRunnable.remove(project);
+		                		}
+		                	}
+		                }};
+	                projectToRunnable.put(project, modelingRunnable);
+		            new Thread(modelingRunnable, "Loading ModelSet for " + project.getProjectDirectory().getName()).start(); // NOI18N
+				}
+			}        	
+        } else {
+        	return set;
         }
+        return null;
     }
     
     protected static ModelSet getInstance(FileObject file, Class ofType) {
@@ -358,7 +355,7 @@ public abstract class ModelSet implements FileChangeListener {
      * @param project
      * @return
      */
-    synchronized protected static ModelSet getInstance(Project project, Class ofType) {
+    synchronized protected static ModelSet getInstance(final Project project, final Class ofType) {
         if (project == null)
             return null;
         ModelSet set = null;
@@ -366,21 +363,47 @@ public abstract class ModelSet implements FileChangeListener {
             set = (ModelSet) sets.get(project);
         }
         if (set == null && ofType != null) {
-            try {
-                WindowManager.getDefault().getRegistry().removePropertyChangeListener(windowManagerPropertyRegistry);
-                Constructor constructor = ofType.getConstructor(new Class[] {Project.class});
-                set = (ModelSet) constructor.newInstance(new Object[] {project});
-                set.setInitialized();
-                // This should be fired after the ModelSet is fully constructed
-                // and initial syncall has happened.  
-                fireModelSetAdded(set);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            } finally {
-                WindowManager.getDefault().getRegistry().addPropertyChangeListener(windowManagerPropertyRegistry);
+        	FileObject sourceRootFileObject = JsfProjectUtils.getSourceRoot(project);
+            Enumeration<? extends FileObject> sourceFileObjects = sourceRootFileObject.getChildren(true);
+            FileObject anyJavaFile = null;
+            while (sourceFileObjects.hasMoreElements()) {
+                FileObject aSourceFileObject = sourceFileObjects.nextElement();
+                if (aSourceFileObject.getMIMEType().equals("text/x-java")) { // NOI18N
+                    anyJavaFile = aSourceFileObject;
+                    break;
+                }
+            }
+            if (anyJavaFile == null) {
+                // Can't use wrapper task to ensure background scaning
+                // stopped while modeling.
+            	set = createInstance(project, ofType);
+            } else {
+                set = (ModelSet) ReadTaskWrapper.execute(
+	                    new ReadTaskWrapper.Read() {
+	                        public Object run(CompilationInfo cinfo){
+	                        	return createInstance(project, ofType);
+	                        }
+	                    }, anyJavaFile);             
             }
         }
         return set;
+    }
+    
+    private static ModelSet createInstance(Project project, Class ofType) {
+    	try {
+            WindowManager.getDefault().getRegistry().removePropertyChangeListener(windowManagerPropertyRegistry);
+            Constructor constructor = ofType.getConstructor(new Class[] {Project.class});
+            ModelSet set = (ModelSet) constructor.newInstance(new Object[] {project});
+            set.setInitialized();
+            // This should be fired after the ModelSet is fully constructed
+            // and initial syncall has happened.  
+            fireModelSetAdded(set);
+            return set;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            WindowManager.getDefault().getRegistry().addPropertyChangeListener(windowManagerPropertyRegistry);
+        }
     }
     
     protected static ModelSet getModelSet(FileObject file) {
