@@ -26,9 +26,9 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Toolbars">
         <folder name="Memory">
-            <attr name="org-openide-actions-GarbageCollectAction.instance/org-netbeans-modules-uihandler-interactive-SubmitAction.shadow" boolvalue="true"/>
             <file name="org-netbeans-modules-uihandler-interactive-SubmitAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-uihandler-interactive-SubmitAction.instance"/>
+                <attr name="position" intvalue="150"/>
             </file>
         </folder>
     </folder>

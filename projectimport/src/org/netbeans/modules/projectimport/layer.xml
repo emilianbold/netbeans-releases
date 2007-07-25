@@ -18,26 +18,21 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC '-//NetBeans//DTD Filesystem 1.1//EN' 'http://www.netbeans.org/dtds/filesystem-1_1.dtd'>
-
 <filesystem>
-
     <folder name="Menu">
         <folder name="File">
-            <attr name="Separator2.instance/Import" boolvalue="true" />
             <folder name="Import">
+                <attr name="position" intvalue="1426"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projectimport.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif" />
                 <file name="org-netbeans-modules-projectimport-eclipse-ImportProjectAction.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.eclipse.ImportProjectAction" />
                 </file>
             </folder>
-
-            <!-- TODO is this correct way? -->
-            <attr name="Import/ImporterSeparator1.instance" boolvalue="true" />
             <file name="ImporterSeparator1.instance">
+                <attr name="position" intvalue="1430"/>
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
             </file>
         </folder>
     </folder>
-
 </filesystem>

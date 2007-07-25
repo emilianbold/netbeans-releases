@@ -45,16 +45,10 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         <folder name="JavaHelp">
-            <!-- Merge it after the main online help: -->
-            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-collab-channel-chat-helpset.xml"
-                    boolvalue="true"/>
-            <!-- This DTD gives an instance of HelpSet: -->
-            <file name="org-netbeans-modules-collab-channel-chat-helpset.xml"
-                    url="org-netbeans-modules-collab-channel-chat-helpset.xml" />
-            <!-- Merge before additional helpsets such as the Ant Manual. -->
-            <attr name="org-netbeans-modules-collab-channel-chat-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt"
-                    boolvalue="true"/>
-        </folder>                
+            <file name="org-netbeans-modules-collab-channel-chat-helpset.xml" url="org-netbeans-modules-collab-channel-chat-helpset.xml">
+                <attr name="position" intvalue="3044"/>
+            </file>
+        </folder>
     </folder>
 
 </filesystem>

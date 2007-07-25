@@ -33,25 +33,22 @@ Microsystems, Inc. All Rights Reserved.
 					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabTextFileHandlerFactory.instance"/>
 					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabJavaFileHandlerFactory.instance"/>
 					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabXMLFileHandlerFactory.instance"/>
-					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabFormFileHandlerFactory.instance"/>                                         
-					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabDefaultFileHandlerFactory.instance"/>                                                                                                    
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabFormFileHandlerFactory.instance"/>
+					<file name="org-netbeans-modules-collab-channel-filesharing-filehandler-CollabDefaultFileHandlerFactory.instance"/>
 				</folder>
 			</folder>
 		</folder>
 		<folder name="JavaHelp">
-			<!-- Merge it after the main online help: -->
-			<attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-collab-channel-filesharing-helpset.xml" boolvalue="true"/>
-			<!-- This DTD gives an instance of HelpSet: -->
-			<file name="org-netbeans-modules-collab-channel-filesharing-helpset.xml" url="org-netbeans-modules-collab-channel-filesharing-helpset.xml" />
-			<!-- Merge before additional helpsets such as the Ant Manual. -->
-			<attr name="org-netbeans-modules-collab-channel-filesharing-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+			<file name="org-netbeans-modules-collab-channel-filesharing-helpset.xml" url="org-netbeans-modules-collab-channel-filesharing-helpset.xml">
+                            <attr name="position" intvalue="3046"/>
+                        </file>
 		</folder>
 	</folder>
 
     <!-- Lines marked as erroneous: -->
 	<folder name="Editors">
 		<folder name="AnnotationTypes">
-			<file name="regionhistory-annotation.xml" url="regionhistory-annotation.xml"/>                
+			<file name="regionhistory-annotation.xml" url="regionhistory-annotation.xml"/>
 			<file name="region-annotation1.xml" url="region-annotation1.xml"/>
 			<file name="region-annotation2.xml" url="region-annotation2.xml"/>
 			<file name="region-annotation3.xml" url="region-annotation3.xml"/>
@@ -62,14 +59,14 @@ Microsystems, Inc. All Rights Reserved.
 			<file name="region-annotation8.xml" url="region-annotation8.xml"/>
 			<file name="region-annotation9.xml" url="region-annotation9.xml"/>
 		</folder>
-	</folder>     
+	</folder>
 
 	<folder name="Shortcuts">
 		<file name="C-L.instance">
 			<attr name="instanceClass" stringvalue="org.netbeans.modules.collab.channel.filesharing.ui.actions.SyncAction"/>
-		</file>   
+		</file>
 	</folder> <!-- Shortcuts -->
-        
+
         <!-- actions -->
         <folder name="Actions">
             <folder name="Collaboration">
@@ -80,8 +77,9 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Projects" >
 	    <folder name="Actions" >
-                <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareProjectAction.instance" />
-                <attr name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareProjectAction.instance/org-netbeans-modules-versioning-system-cvss-ui-actions-ProjectCvsMenuItem.instance" boolvalue="true"/>
+                <file name="org-netbeans-modules-collab-channel-filesharing-ui-actions-ShareProjectAction.instance">
+                    <attr name="position" intvalue="290"/>
+                </file>
             </folder>
         </folder>
 </filesystem>

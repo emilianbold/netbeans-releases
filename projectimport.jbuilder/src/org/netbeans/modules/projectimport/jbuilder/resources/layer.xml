@@ -23,17 +23,17 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Menu">
       <folder name="File">
-           <attr name="Separator2.instance/Import" boolvalue="true" />
             <folder name="Import">
+                <attr name="position" intvalue="1426"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.projectimport.jbuilder.resources.Bundle"/>
                 <file name="org-netbeans-modules-projectimport-jbuilder-ImportJBProjectAction.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.projectimport.jbuilder.ImportAction" />
                 </file>
             </folder>
-            <attr name="Import/ImporterSeparator1.instance" boolvalue="true" />
             <file name="ImporterSeparator1.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-            </file>            
+                <attr name="position" intvalue="1430"/>
+            </file>
         </folder>
     </folder>
 
