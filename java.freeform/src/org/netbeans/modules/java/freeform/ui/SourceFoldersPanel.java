@@ -246,6 +246,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jLabel3, gridBagConstraints);
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_SourceLevel_Label")); // NOI18N
         jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_SourceFoldersPanel_jLabel3")); // NOI18N
 
         sourceLevel.addItemListener(new java.awt.event.ItemListener() {
@@ -260,6 +261,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(sourceLevel, gridBagConstraints);
+        sourceLevel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_SourceLevel_Name")); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle"); // NOI18N
         sourceLevel.getAccessibleContext().setAccessibleDescription(bundle.getString("AD_SourceFoldersPanel_sourceLevel")); // NOI18N
 
@@ -493,7 +495,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 14;
         add(includesExcludesButton, gridBagConstraints);
-        includesExcludesButton.getAccessibleContext().setAccessibleDescription("Included and excluded parts of sources");
+        includesExcludesButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Includes-Excludes_Name")); // NOI18N
+        includesExcludesButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Includes-Excludes_Desc")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_Encoding")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -502,7 +505,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
         add(encodingLabel, gridBagConstraints);
-        encodingLabel.getAccessibleContext().setAccessibleDescription("Encoding");
+        encodingLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Encoding_Label_Name")); // NOI18N
+        encodingLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Encoding_Label_Desc")); // NOI18N
 
         encodingComboBox.setRenderer(new EncodingRenderer());
         encodingComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -517,8 +521,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         add(encodingComboBox, gridBagConstraints);
-        encodingComboBox.getAccessibleContext().setAccessibleName("Encoding");
-        encodingComboBox.getAccessibleContext().setAccessibleDescription("Project encoding");
+        encodingComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Encoding_Name")); // NOI18N
+        encodingComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "ACSD_Encoding_Desc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void encodingComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_encodingComboBoxActionPerformed
