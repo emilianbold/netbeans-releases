@@ -51,6 +51,7 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider;
+import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -185,6 +186,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
             fileBuilt,
             new RecommendedTemplatesImpl(),
             refHelper,
+            new IcanproProjectEncodingQueryImpl(evaluator()),
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(),
                     new String[] {"${"+IcanproProjectProperties.SOURCE_ROOT+"}"},
