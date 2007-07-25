@@ -222,7 +222,7 @@ public class Installer extends ModuleInstall implements Runnable {
             public void close() throws SecurityException {
             }
         }
-        H handler = new H();
+        H hndlr = new H();
         
         
         InputStream is = null;
@@ -230,7 +230,7 @@ public class Installer extends ModuleInstall implements Runnable {
         if (logsSize < UIHandler.MAX_LOGS && f1 != null && f1.exists()) {
             try {
                 is = new FileInputStream(f1);
-                LogRecords.scan(is, handler);
+                LogRecords.scan(is, hndlr);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
@@ -245,7 +245,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         try {
             is = new FileInputStream(f);
-            LogRecords.scan(is, handler);
+            LogRecords.scan(is, hndlr);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
@@ -258,7 +258,7 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
         
-        return handler.logs;
+        return hndlr.logs;
     }
     
     private static File logFile(int revision) {
@@ -330,6 +330,7 @@ public class Installer extends ModuleInstall implements Runnable {
         UIHandler.SUPPORT.firePropertyChange(null, null, null);
     }
     
+    @Override
     public boolean closing() {
         UIHandler.waitFlushed();
         
@@ -814,8 +815,8 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         
         public void actionPerformed(ActionEvent e) {
-            final URL[] url = new URL[1];
-            String actionURL = decodeButtons(e.getSource(), url);
+            final URL[] universalResourceLocator = new URL[1];
+            String actionURL = decodeButtons(e.getSource(), universalResourceLocator);
             
             LOG.log(Level.FINE, "actionPerformed: command = {0}", e.getActionCommand()); // NOI18N
             
@@ -842,7 +843,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
                 RP.post(new Runnable() {
                     public void run() {
-                        uploadAndPost(recs, url[0]);
+                        uploadAndPost(recs, universalResourceLocator[0]);
                     }
                 });
                 okToExit = false;
@@ -852,8 +853,8 @@ public class Installer extends ModuleInstall implements Runnable {
             }
             
             if (Button.REDIRECT.isCommand(e.getActionCommand())){
-                if (url[0] != null) {
-                    showURL(url[0]);
+                if (universalResourceLocator[0] != null) {
+                    showURL(universalResourceLocator[0]);
                 }
                 doCloseDialog();
                 return ;
@@ -928,8 +929,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 }else{
                     txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm());
                 }
-                NotifyDescriptor dd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notifyLater(dd);
+                NotifyDescriptor nd = new NotifyDescriptor.Message(txt, NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
             }
             if (nextURL != null) {
                 clearLogs();
@@ -1113,10 +1114,14 @@ public class Installer extends ModuleInstall implements Runnable {
             if ("ERROR_URL".equals(msg)&(dd.getOptions().length > 1)){
                 Object obj = dd.getOptions()[0];
                 AbstractButton abut = null;
-                String report=null;
+                String rptr = null;
                 if (obj instanceof AbstractButton ) abut = (AbstractButton)obj;
-                if (abut != null)report = (String) abut.getClientProperty("alt");
-                if ("reportDialog".equals(report)) dd.setMessage(reportPanel);
+                if (abut != null) {
+                    rptr = (String) abut.getClientProperty("alt");
+                }
+                if ("reportDialog".equals(rptr)) {
+                    dd.setMessage(reportPanel);
+                }
             }
         }
     } // end SubmitInteractive
