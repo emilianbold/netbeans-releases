@@ -1,12 +1,10 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
- *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
+ *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved. 
  *	  Use is subject to license terms.
 > -->
 <html>
 <head>
-<meta name="lastupdated" content="2Feb04">
-<!-- p2 -->
 
 <title>Specify Mail Resource Dialog Box</title>
 <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
@@ -16,7 +14,7 @@
 <p><small> <a href="#seealso">See Also</a> </small></p>
 <p>You use this dialog box to automatically generate code that sends an e-mail 
   from a Java file. You open the dialog box by right-clicking a Java file in the 
-  Source Editor and choosing Enterprise Resources > Send E-mail. The file must 
+  Source Editor and choosing Enterprise Resources &gt; Send E-mail. The file must 
   be in an EJB module project or a standard web application project. You cannot 
   generate e-mail code in a free-form web application project.</p>
 <p>You use the dialog box as follows:</p>
@@ -24,24 +22,24 @@
   of the IDE.</p>
 <ol>
   <li>Under Service Locator Strategy, specify whether to generate inline lookup 
-    code or use an existing service locator. You can click the Browse to search 
+    code or use an existing service locator. You can click Browse to search 
     for the service locator class name.</li>
   <li>Click OK. 
-    <p> The IDE creates two methods: 
+      <p> The IDE creates two methods:</p>
     <ul>
       <li><tt><b>getSession</b></tt><b>.</b> Looks up the mail resource and creates 
         a mail session.</li>
       <li><tt><b>sendMail</b></tt><b>.</b> Constructs and send the e-mail. </li>
     </ul>
     <p>The IDE also registers the resource reference in your module's general 
-      deployment descriptor. 
+    deployment descriptor. </p>
   </li>
-  <li>In your code, call the <tt>sendMail</tt> method and pass the e-mail adress, 
+  <li>In your code, call the <tt>sendMail</tt> method and pass the e-mail address, 
     subject, and body as parameters.</li>
 </ol>
 <ul class="note">
   <li>You have to configure the mail resource on the application server yourself. 
-    If your project's target server is the Sun Java System Applciation Server, the IDE automatically 
+    If your project's target server is the Sun Java System Applciation Server/GlassFish, the IDE automatically 
     configures the resource reference in the application-specific deployment descriptor. 
     If you are deploying to a different application server, you have to configure 
     the server-specific deployment descriptors yourself.</li>
