@@ -29,9 +29,11 @@ import java.awt.Dialog;
 import java.awt.event.ActionListener;
 
 import javax.swing.JPanel;
+import org.netbeans.modules.bpel.project.ProjectConstants;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
 /** Customizer for WAR packaging.
  */
@@ -64,7 +66,7 @@ public class CustomizerJarContent extends JPanel implements IcanproCustomizer.Pa
 
     public void initValues() {
         //vps.register(jTextFieldFileName, IcanproProjectProperties.JAR_NAME);
-        vps.register(vas, IcanproProjectProperties.WS_CONTENT_ADDITIONAL);
+        vps.register(vas, ProjectConstants.WS_CONTENT_ADDITIONAL);
 
         vas.initTableValues();
     }

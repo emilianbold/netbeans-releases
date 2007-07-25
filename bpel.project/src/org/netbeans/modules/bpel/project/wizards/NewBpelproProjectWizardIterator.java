@@ -19,148 +19,36 @@
 
 package org.netbeans.modules.bpel.project.wizards;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.HashSet;
-
-import java.util.NoSuchElementException;
-import java.util.Set;
-
-import javax.swing.JComponent;
-import javax.swing.event.ChangeListener;
-
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.bpel.project.BpelproProjectGenerator;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.modules.compapp.projects.base.ui.wizards.NewIcanproProjectWizardIterator;
 
 /**
  * Wizard to create a new Web project.
  * @author Jesse Glick
  */
-public class NewBpelproProjectWizardIterator
-        implements WizardDescriptor.InstantiatingIterator,
-        org.netbeans.modules.bpel.project.IcanproConstants {
+public class NewBpelproProjectWizardIterator 
+        extends NewIcanproProjectWizardIterator 
+        implements org.netbeans.modules.bpel.project.IcanproConstants {
     
     private static final long serialVersionUID = 1L;
     
-    private WizardDescriptor.Panel[] createPanels() {
-        return new WizardDescriptor.Panel[] {
-            new PanelConfigureProject(getDefaultName()),
-            //need this after EA1
-            ///new PanelConfigureProjectApp(),
-        };
+    @Override
+    protected void createProject(File dirF, String name, String j2eeLevel) throws IOException {
+        BpelproProjectGenerator.createProject(dirF, name);
     }
-    
-    private String[] createSteps() {
-        return new String[] {
-            NbBundle.getBundle(WIZARD_BUNDLE).getString("LBL_NWP1_ProjectTitleName"), //NOI18N
-            //need this after EA1
-            ///NbBundle.getBundle("WIZARD_BUNDLE).getString("LBL_NWP1_ProjectAppName") //NOI18N
-        };
+
+    @Override
+    protected String getDefaultTitle() {
+        return NbBundle.getMessage(NewBpelproProjectWizardIterator.class, "LBL_BPEL_Wizard_Title"); //NOI18N   
     }
-    
+
+    @Override
     protected String getDefaultName() {
-//        return NbBundle.getBundle(WIZARD_BUNDLE).getString("LBL_NPW1_DefaultProjectName");
         return NbBundle.getMessage(NewBpelproProjectWizardIterator.class, "LBL_NPW1_DefaultProjectName"); //NOI18N
     }
-    
-//    protected void createProject(File dirF, String name, String j2eeLevel) throws IOException {
-////        IcanproProjectGenerator.createProject(dirF, name, j2eeLevel);
-//        BpelproProjectGenerator.createProject(dirF, name, j2eeLevel);
-//    }
-    
-    public Set instantiate() throws IOException {
-        Set resultSet = new HashSet();
-        File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
-        String name = (String) wiz.getProperty(WizardProperties.NAME);
-                 
-//        AntProjectHelper h = createProject(dirF, name, j2eeLevel); // REFACTOR ME
-        AntProjectHelper h = BpelproProjectGenerator.createProject(dirF, name);
-                
-        FileObject dir = FileUtil.toFileObject(dirF);
-        
-        resultSet.add(dir);
-        
-        // Returning set of FileObject of project diretory.
-        // Project will be open and set as main
-        return resultSet;
-    }
-    
-    private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor wiz;
-    
-    public void initialize(WizardDescriptor wiz) {
-        this.wiz = wiz;
-        index = 0;
-        panels = createPanels();
-        // Make sure list of steps is accurate.
-        String[] steps = createSteps();
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
-            if (steps[i] == null) {
-                // Default step name to component name of panel.
-                // Mainly useful for getting the name of the target
-                // chooser to appear in the list of steps.
-                steps[i] = c.getName();
-            }
-            if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent)c;
-                // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
-                // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
-            }
-        }
-    }
-    public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty(WizardProperties.PROJECT_DIR,null);
-        this.wiz.putProperty(WizardProperties.NAME,null);
-        this.wiz = null;
-        panels = null;
-    }
-    
-    public String name() {
-        return MessageFormat.format(NbBundle.getBundle(WIZARD_BUNDLE).getString("LBL_WizardStepsCount"), new String[] {(new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
-    }
-    
-    public boolean hasNext() {
-        return index < panels.length - 1;
-    }
-    public boolean hasPrevious() {
-        return index > 0;
-    }
-    public void nextPanel() {
-        if (!hasNext()) throw new NoSuchElementException();
-        index++;
-    }
-    public void previousPanel() {
-        if (!hasPrevious()) throw new NoSuchElementException();
-        index--;
-    }
-    public WizardDescriptor.Panel current() {
-        return panels[index];
-    }
-    
-    // If nothing unusual changes in the middle of the wizard, simply:
-    public final void addChangeListener(ChangeListener l) {}
-    public final void removeChangeListener(ChangeListener l) {}
-    
-    // helper methods, finds BPEL file's FileObject
-    private FileObject getBPELFileObject(FileObject sourcesRoot, String bpelName) {
-        // replace '.' with '/'
-        bpelName = bpelName.replace('.', '/'); // NOI18N
-        
-        // ignore unvalid bpelName ???
-        
-        return sourcesRoot.getFileObject(bpelName + ".bpel"); // NOI18N
-    }
+
 }
 

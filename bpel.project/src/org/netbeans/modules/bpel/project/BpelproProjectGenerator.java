@@ -39,7 +39,7 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -176,7 +176,7 @@ public class BpelproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
-        ep.setProperty(IcanproProjectProperties.VALIDATION_FLAG, "false");
+        ep.setProperty(ProjectConstants.VALIDATION_FLAG, "false");
         ep.setProperty(IcanproProjectProperties.JAVAC_TARGET, "1.4");
 
         ep.setProperty(IcanproProjectProperties.BUILD_DIR, DEFAULT_BUILD_DIR);
@@ -188,15 +188,7 @@ public class BpelproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.DEBUG_CLASSPATH, "${"+IcanproProjectProperties.JAVAC_CLASSPATH+"}:${"+IcanproProjectProperties.BUILD_CLASSES_DIR+"}");
 
         //============= Start of IcanPro========================================//
-        ep.setProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX, "sun-bpel-engine"); // NOI18N     //FIXME? REPACKAGING
-        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS, 
-                NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Assembly_Unit_Alias")); // NOI18N
-        ep.setProperty(IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION, 
-                NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Assembly_Unit_Description")); // NOI18N
-        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS, 
-                NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Application_Sub_Assembly_Alias")); // NOI18N
-        ep.setProperty(IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION, 
-                NbBundle.getMessage(BpelproProjectGenerator.class, "TXT_Application_Sub_Assembly_Description")); // NOI18N
+        ep.setProperty(IcanproProjectProperties.JBI_SE_TYPE, "sun-bpel-engine"); // NOI18N     //FIXME? REPACKAGING
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N
 

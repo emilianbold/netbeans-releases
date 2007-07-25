@@ -45,7 +45,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.bpel.project.IcanproProject;
-import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 // import org.netbeans.modules.websvc.api.webservices.WebServicesView;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.loaders.DataObject;

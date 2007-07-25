@@ -49,6 +49,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.openide.filesystems.FileObject;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
 /**
  * Handles adding and removing of additional war content.

@@ -33,6 +33,8 @@ package org.netbeans.modules.bpel.project;
 public class ProjectConstants {
 
     public static final String SOURCES_TYPE_BPELPRO = "BIZPRO";
+    public static final String VALIDATION_FLAG = "allow.build.with.error"; //NOI18N
+    public static final String WS_CONTENT_ADDITIONAL="ws.content.additional";
 
     /** Creates a new instance of ProjectConstants */
     public ProjectConstants() {

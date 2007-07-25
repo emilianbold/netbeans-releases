@@ -26,7 +26,6 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
 import org.netbeans.spi.project.support.ProjectOperations;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.DeleteOperationImplementation;
@@ -41,6 +40,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+
+
 public class BpelProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     private BpelproProject project;
     

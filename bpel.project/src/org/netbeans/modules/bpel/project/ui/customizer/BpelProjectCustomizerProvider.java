@@ -28,6 +28,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.catalogsupport.ui.customizer.CustomizerProviderImpl;
 
 import org.netbeans.modules.bpel.project.BpelproProject;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
 /** 
  * Customization of BPEL project
@@ -43,6 +44,7 @@ public class BpelProjectCustomizerProvider extends CustomizerProviderImpl {
         super(project,project.getAntProjectHelper(),project.getReferenceHelper());
     }
     
+    @Override
     protected Map<ProjectCustomizer.Category,JComponent> createCategoriesMap() {
         ProjectCustomizer.Category general = ProjectCustomizer.Category.create(
                 GENERAL,
@@ -57,6 +59,7 @@ public class BpelProjectCustomizerProvider extends CustomizerProviderImpl {
         return map;
     }
 
+    @Override
     protected void storeProjectData() {
         super.storeProjectData();
         projectProperties.store();

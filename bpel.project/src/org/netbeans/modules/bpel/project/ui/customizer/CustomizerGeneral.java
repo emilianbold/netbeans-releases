@@ -25,11 +25,13 @@ import java.io.File;
 
 import javax.swing.JPanel;
 import org.netbeans.modules.bpel.project.BpelProjectHelper;
+import org.netbeans.modules.bpel.project.ProjectConstants;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
 /** Customizer for general project attributes.
  *
@@ -49,7 +51,7 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         this.webProperties = webProperties;
         vps = new VisualPropertySupport(webProperties);
     
-        Object validationObject =webProperties.get(IcanproProjectProperties.VALIDATION_FLAG);
+        Object validationObject =webProperties.get(ProjectConstants.VALIDATION_FLAG);
         
         // BpelProjectHelper.getInstance().getProjectProperty(IcanproProjectProperties.VALIDATION_FLAG);
         if (validationObject != null ){
@@ -71,12 +73,7 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         File pf = FileUtil.toFile(projectFolder);
         jTextFieldProjectFolder.setText(pf == null ? "" : pf.getPath()); // NOI18N
 
-        vps.register(jTextFieldProjectType, IcanproProjectProperties.JBI_SETYPE_PREFIX);
-        vps.register(jTextFieldAssemblyUnitAlias, IcanproProjectProperties.ASSEMBLY_UNIT_ALIAS);
-        vps.register(jTextFieldAssemblyUnitDescription, IcanproProjectProperties.ASSEMBLY_UNIT_DESCRIPTION);
-        vps.register(jTextFieldApplicationSubAssemblyAlias, IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_ALIAS);
-        vps.register(jTextFieldApplicationSubAssemblyDescription, IcanproProjectProperties.APPLICATION_SUB_ASSEMBLY_DESCRIPTION);
-
+        vps.register(jTextFieldProjectType, IcanproProjectProperties.JBI_SE_TYPE);
     }
 
     
@@ -256,10 +253,10 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
 // TODO add your handling code here:
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             //bValidation = false;
-            webProperties.put(IcanproProjectProperties.VALIDATION_FLAG, true);
+            webProperties.put(ProjectConstants.VALIDATION_FLAG, true);
          //   BpelProjectHelper.getInstance().setProjectProperty(IcanproProjectProperties.VALIDATION_FLAG, "false", false);
         } else {
-            webProperties.put(IcanproProjectProperties.VALIDATION_FLAG, false);
+            webProperties.put(ProjectConstants.VALIDATION_FLAG, false);
          //   bValidation = true;
          //   BpelProjectHelper.getInstance().setProjectProperty(IcanproProjectProperties.VALIDATION_FLAG, "true",false);
         }

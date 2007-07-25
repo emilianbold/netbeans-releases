@@ -44,6 +44,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import org.openide.util.HelpCtx;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
 public class IcanproCustomizer extends javax.swing.JPanel implements HelpCtx.Provider  {
     

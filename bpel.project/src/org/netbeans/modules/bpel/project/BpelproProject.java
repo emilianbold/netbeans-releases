@@ -18,11 +18,7 @@
  */
 package org.netbeans.modules.bpel.project;
 
-import org.netbeans.modules.bpel.project.ui.customizer.BpelProjectCustomizerProvider;
-import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
-import org.netbeans.modules.bpel.project.spi.JbiArtifactProvider;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.File;
@@ -49,8 +45,11 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileLock;
 
+import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
+import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.bpel.project.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -177,8 +176,9 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
             spp,
             new BpelproActionProvider( this, helper, refHelper ),
             new IcanproLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
-            new BpelProjectCustomizerProvider(this),
-            new AntArtifactProviderImpl(),
+//            new BpelProjectCustomizerProvider(this),
+            new IcanproCustomizerProvider(this, helper, refHelper),
+            new JbiArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(this),
             new BpelProjectOperations(this),
@@ -438,11 +438,11 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
       }
     }
 
-    private final class AntArtifactProviderImpl implements JbiArtifactProvider {
+    private final class JbiArtifactProviderImpl implements JbiArtifactProvider {
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(BpelproProject.ARTIFACT_TYPE_JBI_ASA + ":" +
-                        helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX),
+                        helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SE_TYPE),
                         IcanproProjectProperties.SE_DEPLOYMENT_JAR,
                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
                 helper.createSimpleAntArtifact(JavaProjectConstants.ARTIFACT_TYPE_JAR,
@@ -452,7 +452,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         }
         
         public String getJbiServiceAssemblyType() {
-            return helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX);
+            return helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SE_TYPE);
         }
     }
     

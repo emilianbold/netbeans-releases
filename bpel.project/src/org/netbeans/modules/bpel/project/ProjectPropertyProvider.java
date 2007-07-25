@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.bpel.project;
 
-import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
 /**
  * @author radval

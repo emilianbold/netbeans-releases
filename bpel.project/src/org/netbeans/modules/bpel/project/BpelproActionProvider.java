@@ -40,8 +40,8 @@ import org.openide.windows.OutputWriter;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.api.debugger.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
-import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
-import org.netbeans.modules.bpel.project.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.VisualClassPathItem;
 
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
