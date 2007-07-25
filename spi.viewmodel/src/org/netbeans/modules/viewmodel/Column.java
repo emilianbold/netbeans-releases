@@ -98,7 +98,11 @@ public class Column extends PropertySupport.ReadWrite {
                 index = treeTable.getColumnVisibleIndex(this, index);
             }
             //System.err.println("Get order of "+this.getDisplayName()+" => "+index);
-            return new Integer(index);
+            if (index == -1) {
+                return null;
+            } else {
+                return new Integer(index);
+            }
         }
         if ("InvisibleInTreeTableView".equals (propertyName)) 
             return Boolean.valueOf (!columnModel.isVisible ());
