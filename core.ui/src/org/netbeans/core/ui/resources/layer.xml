@@ -235,13 +235,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
                 <attr name="position" intvalue="800"/>
             </file>
-            <file name="oldRootsStart.txt">
-                <attr name="position" intvalue="900"/>
-            </file>
-            <!-- #22758 Just a placeholder for old roots menu items -->
-            <file name="oldRootsEnd.txt">
-                <attr name="position" intvalue="1000"/>
-            </file>
         </folder>
         <folder name="Help">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
