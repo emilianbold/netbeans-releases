@@ -378,10 +378,10 @@ public class ADCoreEngine extends DiagramEngine
                         }
                         break;
                     case IDrawingToolKind.DTK_ZOOM :
-                        setGraphState(graph, new ADInteractiveZoomState());
+                        setGraphState(graph, new ADZoomState());
                         break;
                     case IDrawingToolKind.DTK_MOUSE_ZOOM :
-                        setGraphState(graph, new ADZoomState());
+                        setGraphState(graph, new ADInteractiveZoomState());
                         break;
                     case IDrawingToolKind.DTK_EDGENAV_MOUSE :
                         setGraphState(graph, new ADLinkNavigationState());
@@ -5781,7 +5781,7 @@ public class ADCoreEngine extends DiagramEngine
 		{
 			if (!bReadOnly)
 			{
-				pDrawingAreaControl.enterMode(IDrawingToolKind.DTK_MOUSE_ZOOM) ;
+				pDrawingAreaControl.enterMode(IDrawingToolKind.DTK_ZOOM) ;
 			}
 			bHandled = true;
 		}
@@ -5789,7 +5789,7 @@ public class ADCoreEngine extends DiagramEngine
 		{
 			if (!bReadOnly)
 			{
-				pDrawingAreaControl.enterMode(IDrawingToolKind.DTK_ZOOM) ;
+                                pDrawingAreaControl.enterMode(IDrawingToolKind.DTK_MOUSE_ZOOM) ;
 			}
 			bHandled = true;
 		}
