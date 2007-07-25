@@ -899,11 +899,6 @@ public abstract class PositionEstimator {
                 if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
                     seq.moveNext();
                 }
-                seq.move(treeStart);
-                seq.moveNext();
-                if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
-                    seq.moveNext();
-                }
                 int previousEnd = seq.offset();
                 Token<JavaTokenId> token;
                 while (nonRelevant.contains((token = seq.token()).id())) {
@@ -1094,11 +1089,6 @@ public abstract class PositionEstimator {
                 if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
                     seq.moveNext();
                 }
-                seq.move(treeStart);
-                seq.moveNext();
-                if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
-                    seq.moveNext();
-                }
                 int previousEnd = seq.offset();
                 Token<JavaTokenId> token;
                 while (nonRelevant.contains((token = seq.token()).id())) {
@@ -1259,11 +1249,6 @@ public abstract class PositionEstimator {
                 int treeStart = (int) positions.getStartPosition(compilationUnit, item);
                 int treeEnd = (int) positions.getEndPosition(compilationUnit, item);
                 
-                seq.move(treeStart);
-                seq.moveNext();
-                if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
-                    seq.moveNext();
-                }
                 seq.move(treeStart);
                 seq.moveNext();
                 if (null != moveToSrcRelevant(seq, Direction.BACKWARD)) {
