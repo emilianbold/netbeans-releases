@@ -18,6 +18,7 @@ package org.netbeans.modules.iep.model.impl;
 
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.IEPQNames;
 import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.Property;
 import org.w3c.dom.Element;
@@ -28,6 +29,10 @@ import org.w3c.dom.Element;
  */
 public class PropertyImpl extends IEPComponentBase implements Property {
 
+    public PropertyImpl(IEPModel model) {
+        this(model, createNewElement(IEPQNames.PROPERTY.getQName(), model));
+    }
+    
     public PropertyImpl(IEPModel model, Element e) {
         super(model, e);
     }

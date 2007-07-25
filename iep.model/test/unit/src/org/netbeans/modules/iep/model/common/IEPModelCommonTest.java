@@ -54,21 +54,31 @@ public class IEPModelCommonTest extends TestCase {
     	IEPModel model = provider.getWLMModel(wfFile);
     	
     	IEPComponentFactory factory = new IEPComponentFactoryImpl (model);
-
-        /*
-    	TTasks tasks =factory.createTasks(model);
-    	model.setTasks(tasks);
-    	TTask task = factory.createTask(model);
-    	model.startTransaction();
-    	tasks.addTask(task);
-    	assertNull(task.getOperationAsString());
-    	WSDLModel newModel = TestCatalogModel.getDefault().getWSDLModel(NamespaceLocation.PURCHASE_ORDER);
-    	Operation opt = newModel.getDefinitions().getPortTypes().iterator().next().getOperations().iterator().next();
-    	task.setOperation(new OperationReference(opt, TaskImpl.class.cast (task)));
-    	assertEquals("ns0:ApprovePurchase", task.getOperationAsString());
-    	model.endTransaction();
-    	assertEquals(1,  tasks.getImports().size());
-        */
+        
+        Component component = factory.createComponent(model);
+        component.setName("test");
+        component.setTitle("test");
+        component.setType("/IEP/Model/Plan|Metadata");
+        Property p1 = factory.createProperty(model);
+        p1.setName("p1");
+        p1.setValue("v1");
+        component.addProperty(p1);
+        
+        Property p2 = factory.createProperty(model);
+        p2.setName("p1");
+        p2.setValue("v1");
+        component.addProperty(p2);
+        
+        model.startTransaction();
+        model.getComponent().addChildComponent(component);
+        model.endTransaction();
+        
+        //assert child components on the root component
+        assertEquals(5, model.getComponent().getChildComponents().size());
+        
+        Component c = model.getComponent().getChildComponents().get(4);
+        assertEquals(component, c);
+        
     }
     
     

@@ -24,40 +24,13 @@ import org.netbeans.modules.xml.xam.dom.ComponentFactory;
 /**
  *
  * 
- * Factory for providing concrete implementations of WLMComponent
+ * Factory for providing concrete implementations of IEPComponent
  */
 
 public interface IEPComponentFactory extends ComponentFactory<IEPComponent> {
 
-        /*
-	TImport createImport(WLMModel model);
- 
-        TTasks createTasks (WLMModel model);
- 	
-        TTask createTask(WLMModel model);
+        Component createComponent(IEPModel model);
         
-	TAssignment createAssignment (WLMModel model);
+        Property createProperty(IEPModel model);
         
-	User createUser (WLMModel model) ;
-	
-	Group createGroup (WLMModel model);
-	
-	Role createRole (WLMModel model);
-        
-	TTimeout createTimeout (WLMModel model);
-        
-	TDeadlineExpr createDeadline (WLMModel model);
-        
-	TDurationExpr createDuration (WLMModel model);
-	
-	TEscalation createEscalation (WLMModel model);
-	
-	TNotification createNotification (WLMModel model);
-	
-	TAction createAction (WLMModel model);
-        
-	TRecipient createRecipient (WLMModel model);
-        
-	TAddress createAddress (WLMModel model);
-        */
 }

@@ -95,5 +95,21 @@ public class ComponentImpl extends IEPComponentBase implements Component {
         return getChildren(Property.class);
     }
 
+    public void addChildComponent(Component child) {
+        addAfter(COMPONENT_CHILD, child, TypeCollection.FOR_COMPONENT.types());
+    }
+
+    public void removeChildComponent(Component child) {
+        removeChild(COMPONENT_CHILD, child);
+    }
+
+    public void addProperty(Property property) {
+        addAfter(PROPERTY_CHILD, property, TypeCollection.FOR_PROPERTY.types());
+    }
+
+    public void removeProperty(Property property) {
+        removeChild(PROPERTY_CHILD, property);
+    }
+
     
 }

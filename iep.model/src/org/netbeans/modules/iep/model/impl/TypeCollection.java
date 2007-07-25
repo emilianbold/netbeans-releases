@@ -19,52 +19,49 @@
 
 package org.netbeans.modules.iep.model.impl;
 
-import javax.xml.namespace.QName;
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
-import org.netbeans.modules.iep.model.IEPComponentFactory;
-import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.Property;
 
-import org.w3c.dom.Element;
 
 /**
  * 
  * 
  */
-public class IEPComponentFactoryImpl implements IEPComponentFactory {
+public enum TypeCollection {
+	EMPTY(createEmpty()),
+	FOR_COMPONENT (createComponent()),
+        FOR_PROPERTY (createProperty());
+        
+	private Collection<Class<? extends IEPComponent>> types;
 
-	private IEPModel model;
-
-	/** Creates a new instance of IEPComponentFactoryImpl */
-	public IEPComponentFactoryImpl(IEPModel model) {
-		this.model = model;
+	TypeCollection(Collection<Class<? extends IEPComponent>> types) {
+		this.types = types;
 	}
 
-	public IEPComponent create(Element element, IEPComponent context) {
-
-		return context.createChild(element);
+	public Collection<Class<? extends IEPComponent>> types() {
+		return types;
 	}
 
-	public IEPComponent create(IEPComponent parent, QName qName) {
-		String q = qName.getPrefix();
-		if (q == null || q.length() == 0) {
-			q = qName.getLocalPart();
-		} else {
-			q = q + ":" + qName.getLocalPart();
-		}
-		Element element = model.getDocument().createElementNS(
-				qName.getNamespaceURI(), q);
-		return parent.createChild(element);
+	static Collection<Class<? extends IEPComponent>> createEmpty() {
+		Collection<Class<? extends IEPComponent>> c = new ArrayList<Class<? extends IEPComponent>>();
+		return c;
+	}
+	
+	static Collection<Class<? extends IEPComponent>> createComponent() {
+		Collection<Class<? extends IEPComponent>> c = createEmpty();
+		c.add(Component.class);
+		return c;
 	}
 
-    public Component createComponent(IEPModel model) {
-        return new ComponentImpl(model);
-    }
-
-    public Property createProperty(IEPModel model) {
-        return new PropertyImpl(model);
-    }
-
+        static Collection<Class<? extends IEPComponent>> createProperty() {
+		Collection<Class<? extends IEPComponent>> c = createEmpty();
+		c.add(Component.class);
+                c.add(Property.class);
+		return c;
+	}
+        
 	
 }

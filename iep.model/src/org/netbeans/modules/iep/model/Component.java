@@ -38,4 +38,13 @@ public interface Component extends IEPComponent {
     List<Component> getChildComponents();
 
     List<Property> getProperties();
+    
+    void addChildComponent(Component child);
+    
+    void removeChildComponent(Component child);
+    
+    void addProperty(Property property);
+    
+    void removeProperty(Property property);
+    
 }
