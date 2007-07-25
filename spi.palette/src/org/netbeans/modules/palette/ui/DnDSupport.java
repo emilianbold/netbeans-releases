@@ -87,10 +87,13 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
     
     void add( CategoryDescriptor descriptor ) {
         CategoryList list = descriptor.getList();
+        list.setTransferHandler( null );
+        list.setDragEnabled(false);
         recognizers.add( DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer( list, DnDConstants.ACTION_MOVE, this ) );
         dropTargets.add( new DropTarget( list, this ) );
         
         CategoryButton button = descriptor.getButton();
+        button.setTransferHandler( null );
         recognizers.add( DragSource.getDefaultDragSource().createDefaultDragGestureRecognizer( button, DnDConstants.ACTION_MOVE, this ) );
         dropTargets.add( new DropTarget( button, this ) );
     }
