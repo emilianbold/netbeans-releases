@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="Plan" title="Plan" type="/IEP/Model/Plan">
+<property name="version" value="1.0"/>
+<component name="Metadata" title="Metadata" type="/IEP/Model/Plan|Metadata">
+<component name="View" title="View" type="/IEP/Model/Plan|Metadata|View">
+<property name="orthoflow" value="true"/>
+</component>
+</component>
+<component name="Schemas" title="Schemas" type="/IEP/Model/Plan|Schemas"/>
+<component name="Operators" title="Operators" type="/IEP/Model/Plan|Operators">
+<component name="o0" title="o0" type="/IEP/Operator/RelationAggregator">
+<property name="x" value="285"/>
+<property name="y" value="46"/>
+<property name="z" value="0"/>
+<property name="id" value="o0"/>
+<property name="name" value="RelationAggregator0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="2"/>
+<property name="inputType" value="i18n.IEP.IOType.relation"/>
+<property name="inputIdList" value="o3"/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.relation"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+<property name="fromColumnList" value=""/>
+<property name="toColumnList" value=""/>
+<property name="groupByColumnList" value=""/>
+<property name="whereClause" value=""/>
+</component>
+<component name="o1" title="o1" type="/IEP/Input/StreamInput">
+<property name="x" value="60"/>
+<property name="y" value="46"/>
+<property name="z" value="1"/>
+<property name="id" value="o1"/>
+<property name="name" value="StreamInput0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="0"/>
+<property name="inputType" value="i18n.IEP.IOType.none"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.stream"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+</component>
+<component name="o2" title="o2" type="/IEP/Output/StreamOutput">
+<property name="x" value="446"/>
+<property name="y" value="136"/>
+<property name="z" value="2"/>
+<property name="id" value="o2"/>
+<property name="name" value="StreamOutput0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="2"/>
+<property name="inputType" value="i18n.IEP.IOType.stream"/>
+<property name="inputIdList" value="o7"/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.none"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+<property name="includeTimestamp" value="false"/>
+</component>
+<component name="o3" title="o3" type="/IEP/Operator/GapWindow">
+<property name="x" value="181"/>
+<property name="y" value="46"/>
+<property name="z" value="3"/>
+<property name="id" value="o3"/>
+<property name="name" value="GapWindow0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="1"/>
+<property name="inputType" value="i18n.IEP.IOType.stream"/>
+<property name="inputIdList" value="o1"/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.relation"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+<property name="start" value="1"/>
+<property name="attribute" value=""/>
+<property name="attributeList" value=""/>
+</component>
+<component name="o4" title="o4" type="/IEP/Output/BatchedStreamOutput">
+<property name="x" value="429"/>
+<property name="y" value="316"/>
+<property name="z" value="4"/>
+<property name="id" value="o4"/>
+<property name="name" value="BatchedStreamOutput0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="0"/>
+<property name="inputType" value="i18n.IEP.IOType.stream"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.none"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="true"/>
+<property name="includeTimestamp" value="false"/>
+<property name="batchSize" value="10"/>
+<property name="maximumDelaySize" value="10.0"/>
+<property name="maximumDelayUnit" value="second"/>
+</component>
+<component name="o5" title="o5" type="/IEP/Output/StreamOutput">
+<property name="x" value="446"/>
+<property name="y" value="406"/>
+<property name="z" value="5"/>
+<property name="id" value="o5"/>
+<property name="name" value="StreamOutput1"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="0"/>
+<property name="inputType" value="i18n.IEP.IOType.stream"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.none"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+<property name="includeTimestamp" value="false"/>
+</component>
+<component name="o6" title="o6" type="/IEP/Output/TableOutput">
+<property name="x" value="450"/>
+<property name="y" value="46"/>
+<property name="z" value="6"/>
+<property name="id" value="o6"/>
+<property name="name" value="TableOutput0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="3"/>
+<property name="inputType" value="i18n.IEP.IOType.relation"/>
+<property name="inputIdList" value="o0"/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.none"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+</component>
+<component name="o7" title="o7" type="/IEP/Operator/TimeBasedAggregator">
+<property name="x" value="278"/>
+<property name="y" value="136"/>
+<property name="z" value="7"/>
+<property name="id" value="o7"/>
+<property name="name" value="TimeBasedAggregator0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="1"/>
+<property name="inputType" value="i18n.IEP.IOType.stream"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value="o8"/>
+<property name="outputType" value="i18n.IEP.IOType.stream"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+<property name="fromColumnList" value=""/>
+<property name="toColumnList" value=""/>
+<property name="groupByColumnList" value=""/>
+<property name="fromClause" value=""/>
+<property name="whereClause" value=""/>
+<property name="start" value="1969-12-31 16:00:00.000-0800"/>
+<property name="increment" value="1.0"/>
+<property name="incrementUnit" value="second"/>
+<property name="size" value="1.0"/>
+<property name="unit" value="second"/>
+</component>
+<component name="o8" title="o8" type="/IEP/Input/TableInput">
+<property name="x" value="183"/>
+<property name="y" value="136"/>
+<property name="z" value="8"/>
+<property name="id" value="o8"/>
+<property name="name" value="TableInput0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="0"/>
+<property name="inputType" value="i18n.IEP.IOType.none"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.table"/>
+<property name="isGlobal" value="true"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+</component>
+<component name="o9" title="o9" type="/IEP/Operator/TupleBasedAggregator">
+<property name="x" value="277"/>
+<property name="y" value="226"/>
+<property name="z" value="9"/>
+<property name="id" value="o9"/>
+<property name="name" value="TupleBasedAggregator0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="1"/>
+<property name="inputType" value="i18n.IEP.IOType.stream"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.stream"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+<property name="fromColumnList" value=""/>
+<property name="toColumnList" value=""/>
+<property name="groupByColumnList" value=""/>
+<property name="fromClause" value=""/>
+<property name="whereClause" value=""/>
+<property name="start" value="1"/>
+<property name="increment" value="1"/>
+<property name="size" value="1"/>
+</component>
+<component name="o10" title="o10" type="/IEP/Output/BatchedStreamOutput">
+<property name="x" value="429"/>
+<property name="y" value="496"/>
+<property name="z" value="10"/>
+<property name="id" value="o10"/>
+<property name="name" value="BatchedStreamOutput1"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="0"/>
+<property name="inputType" value="i18n.IEP.IOType.stream"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.none"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="true"/>
+<property name="includeTimestamp" value="false"/>
+<property name="batchSize" value="10"/>
+<property name="maximumDelaySize" value="10.0"/>
+<property name="maximumDelayUnit" value="second"/>
+</component>
+<component name="o11" title="o11" type="/IEP/Operator/Distinct">
+<property name="x" value="461"/>
+<property name="y" value="586"/>
+<property name="z" value="11"/>
+<property name="id" value="o11"/>
+<property name="name" value="Distinct0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="0"/>
+<property name="inputType" value="i18n.IEP.IOType.relation"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.relation"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+</component>
+<component name="o12" title="o12" type="/IEP/Operator/Intersect">
+<property name="x" value="458"/>
+<property name="y" value="676"/>
+<property name="z" value="12"/>
+<property name="id" value="o12"/>
+<property name="name" value="Intersect0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="0"/>
+<property name="inputType" value="i18n.IEP.IOType.relation"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.relation"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+</component>
+<component name="o13" title="o13" type="/IEP/Operator/PartitionedWindow">
+<property name="x" value="436"/>
+<property name="y" value="226"/>
+<property name="z" value="13"/>
+<property name="id" value="o13"/>
+<property name="name" value="PartitionedWindow0"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="2"/>
+<property name="inputType" value="i18n.IEP.IOType.stream"/>
+<property name="inputIdList" value="o9"/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.relation"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+<property name="size" value="9"/>
+<property name="attributeList" value=""/>
+</component>
+<component name="o14" title="o14" type="/IEP/Operator/RelationAggregator">
+<property name="x" value="119"/>
+<property name="y" value="0"/>
+<property name="z" value="0"/>
+<property name="id" value="o14"/>
+<property name="name" value="RelationAggregator1"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="0"/>
+<property name="inputType" value="i18n.IEP.IOType.relation"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.relation"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+<property name="fromColumnList" value=""/>
+<property name="toColumnList" value=""/>
+<property name="groupByColumnList" value=""/>
+<property name="whereClause" value=""/>
+</component>
+<component name="o15" title="o15" type="/IEP/Operator/TimeBasedAggregator">
+<property name="x" value="0"/>
+<property name="y" value="0"/>
+<property name="z" value="0"/>
+<property name="id" value="o15"/>
+<property name="name" value="TimeBasedAggregator1"/>
+<property name="inputSchemaIdList" value=""/>
+<property name="outputSchemaId" value=""/>
+<property name="description" value=""/>
+<property name="topoScore" value="0"/>
+<property name="inputType" value="i18n.IEP.IOType.stream"/>
+<property name="inputIdList" value=""/>
+<property name="staticInputIdList" value=""/>
+<property name="outputType" value="i18n.IEP.IOType.stream"/>
+<property name="isGlobal" value="false"/>
+<property name="globalId" value=""/>
+<property name="batchMode" value="false"/>
+<property name="fromColumnList" value=""/>
+<property name="toColumnList" value=""/>
+<property name="groupByColumnList" value=""/>
+<property name="fromClause" value=""/>
+<property name="whereClause" value=""/>
+<property name="start" value="1969-12-31 16:00:00.000-0800"/>
+<property name="increment" value="1.0"/>
+<property name="incrementUnit" value="second"/>
+<property name="size" value="1.0"/>
+<property name="unit" value="second"/>
+</component>
+</component>
+<component name="Links" title="Links" type="/IEP/Model/Plan|Links">
+<component name="link0" title="link0" type="/IEP/Model/Link">
+<property name="name" value="link0"/>
+<property name="from" value="o1"/>
+<property name="to" value="o3"/>
+</component>
+<component name="link1" title="link1" type="/IEP/Model/Link">
+<property name="name" value="link1"/>
+<property name="from" value="o3"/>
+<property name="to" value="o0"/>
+</component>
+<component name="link2" title="link2" type="/IEP/Model/Link">
+<property name="name" value="link2"/>
+<property name="from" value="o0"/>
+<property name="to" value="o6"/>
+</component>
+<component name="link3" title="link3" type="/IEP/Model/Link">
+<property name="name" value="link3"/>
+<property name="from" value="o7"/>
+<property name="to" value="o2"/>
+</component>
+<component name="link4" title="link4" type="/IEP/Model/Link">
+<property name="name" value="link4"/>
+<property name="from" value="o8"/>
+<property name="to" value="o7"/>
+</component>
+<component name="link5" title="link5" type="/IEP/Model/Link">
+<property name="name" value="link5"/>
+<property name="from" value="o9"/>
+<property name="to" value="o13"/>
+</component>
+</component>
+</component>

@@ -34,7 +34,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class IEPModelImpl extends IEPModel {
-	private Component tasks;
+	private Component rootComponent;
 
 	private IEPComponentFactory wcf;
 
@@ -47,11 +47,12 @@ public class IEPModelImpl extends IEPModel {
 	public IEPComponent createRootComponent(Element root) {
 		// TODO Auto-generated method stub
 		  String namespace = root.getNamespaceURI();
-	        if ( IEPModel.WLM_NAMESPACE.equals(namespace) &&
-	        		IEPModel.WLM_TASKS.equals( root.getLocalName() ) ) 
+	        //if ( IEPModel.IEP_NAMESPACE.equals(namespace) &&
+                //     IEPModel.IEP_COMPONENT.equals( root.getLocalName() )) 
+                if (IEPModel.IEP_COMPONENT.equals( root.getLocalName() )) 
 	        {
-	        	//tasks = new TasksImpl (this, root);
-	            return tasks;
+                    rootComponent = new ComponentImpl (this, root);
+	            return rootComponent;
 	        } 
 	        return null;
 	}
@@ -111,16 +112,13 @@ public class IEPModelImpl extends IEPModel {
 
 	public IEPComponent getRootComponent() {
 		// TODO Auto-generated method stub
-		return tasks;
+		return rootComponent;
 	}
-
-	public Component getComponent() {
-		return tasks;
-	}
-
-	public void setTasks(Component tasks) {
-		this.tasks = tasks;
-	}
+        
+        public Component getComponent() {
+            return rootComponent;
+        }
+	
 	
     public ChangeInfo prepareChangeInfo(List<Node> pathToRoot) {
         ChangeInfo change = super.prepareChangeInfo(pathToRoot);
@@ -131,5 +129,7 @@ public class IEPModelImpl extends IEPModel {
         change.setParentComponent(parentComponent);
         return change;
     }
+
+    
 
 }

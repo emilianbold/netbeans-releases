@@ -1,5 +1,7 @@
 package org.netbeans.modules.iep.model;
 
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
@@ -32,5 +34,8 @@ public interface Component extends IEPComponent {
     String getType();
     
     void setType(String type);
+    
+    List<Component> getChildComponents();
 
+    List<Property> getProperties();
 }

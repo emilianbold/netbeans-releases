@@ -34,8 +34,8 @@ import org.netbeans.modules.xml.xam.Referenceable;
  */
 public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> implements Referenceable {
     
-     public static String WLM_NAMESPACE = "http://jbi.com.sun/wfse";
-     public static String WLM_TASKS = "tasks";
+     public static String IEP_NAMESPACE = "http://jbi.com.sun/iep";
+     public static String IEP_COMPONENT = "component";
     
      protected IEPModel(ModelSource source) {
         super(source);
@@ -77,4 +77,5 @@ public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> imple
 //     */
 //   <T extends ReferenceableWLMComponent> T  findComponetnByName(QName name, Class<T> type);
    
+     public abstract Component getComponent();
 }

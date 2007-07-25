@@ -16,11 +16,14 @@
  */
 package org.netbeans.modules.iep.model.impl;
 
+import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPQNames;
 import org.netbeans.modules.iep.model.IEPVisitor;
+import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 import org.w3c.dom.Element;
 
@@ -82,6 +85,14 @@ public class ComponentImpl extends IEPComponentBase implements Component {
 
     public void setType(String type) {
         setAttribute(TYPE_PROPERTY, ATTR_TYPE, type);
+    }
+
+    public List<Component> getChildComponents() {
+        return getChildren(Component.class);
+    }
+
+    public List<Property> getProperties() {
+        return getChildren(Property.class);
     }
 
     
