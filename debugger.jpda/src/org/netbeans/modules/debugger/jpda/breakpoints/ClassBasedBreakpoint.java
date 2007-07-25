@@ -51,6 +51,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     private String sourceRoot;
     private final Object SOURCE_ROOT_LOCK = new Object();
     private SourceRootsChangedListener srChListener;
+    private PropertyChangeListener weakSrChListener;
     
     private static Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
@@ -77,7 +78,7 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
             if (sourceRoot != null && srChListener == null) {
                 srChListener = new SourceRootsChangedListener();
                 getDebugger().getEngineContext().addPropertyChangeListener(
-                        WeakListeners.propertyChange(srChListener,
+                        weakSrChListener = WeakListeners.propertyChange(srChListener,
                                                      getDebugger().getEngineContext()));
             } else if (sourceRoot == null) {
                 srChListener = null; // release the listener
@@ -88,6 +89,16 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     protected final String getSourceRoot() {
         synchronized (SOURCE_ROOT_LOCK) {
             return sourceRoot;
+        }
+    }
+    
+    protected void remove () {
+        super.remove();
+        synchronized (SOURCE_ROOT_LOCK) {
+            if (srChListener != null) {
+                getDebugger().getEngineContext().removePropertyChangeListener(weakSrChListener);
+                srChListener = null;
+            }
         }
     }
     

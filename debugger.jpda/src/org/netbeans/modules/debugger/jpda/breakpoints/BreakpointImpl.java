@@ -150,7 +150,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
 
     protected abstract void setRequests ();
     
-    protected final void remove () {
+    protected void remove () {
         removeAllEventRequests ();
         breakpoint.removePropertyChangeListener(this);
         setValidity(Breakpoint.VALIDITY.UNKNOWN, null);
