@@ -14,10 +14,4 @@
 		<type>javax.help.TOCView</type>
 		<data>rubytoc.xml</data>
 	</view>
-	<view mergetype="javax.help.AppendMerge">
-		<name></name>
-		<label></label>
-		<type>javax.help.IndexView</type>
-		<data>rubyindex.xml</data>
-	</view>
 </helpset>
