@@ -77,6 +77,8 @@ public class MoveTransformer extends RefactoringVisitor {
                     if (!"".equals(newPackageName)) {
                         Tree nju = make.MemberSelect(make.Identifier(newPackageName), el);
                         rewrite(node, nju);
+                    } else {
+                        problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));
                     }
                 }
                 if (isThisFileMoving && !isElementMoving(el)) {
