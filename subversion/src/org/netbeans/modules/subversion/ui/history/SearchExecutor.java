@@ -212,7 +212,9 @@ class SearchExecutor implements Runnable {
                 }
                 String originalFilePath = event.getChangedPath().getPath();
                 for (String srcPath : historyPaths.keySet()) {
-                    if (originalFilePath.startsWith(srcPath)) {
+                    if ( originalFilePath.startsWith(srcPath) && 
+                         (originalFilePath.length() == srcPath.length() || originalFilePath.charAt(srcPath.length()) == '/') ) 
+                    {
                         originalFilePath = historyPaths.get(srcPath) + originalFilePath.substring(srcPath.length());
                         break;
                     }
