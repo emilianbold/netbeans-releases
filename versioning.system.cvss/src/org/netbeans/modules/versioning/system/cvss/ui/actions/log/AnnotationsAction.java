@@ -39,7 +39,6 @@ import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
 
@@ -156,7 +155,7 @@ public class AnnotationsAction extends AbstractSystemAction {
      */
     private JEditorPane activatedEditorPane(Node[] nodes) {
         EditorCookie ec = activatedEditorCookie(nodes);
-        if (ec != null) {
+        if (ec != null && SwingUtilities.isEventDispatchThread()) {
             JEditorPane[] panes = ec.getOpenedPanes();
             if (panes != null && panes.length > 0) {
                 return panes[0];
