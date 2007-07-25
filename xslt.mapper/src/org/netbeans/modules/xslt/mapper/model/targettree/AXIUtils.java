@@ -224,7 +224,8 @@ public class AXIUtils {
                 }
             }
         } else if (xslc instanceof org.netbeans.modules.xslt.model.Template){ //no declaration nodes fond downtree
-            return mapper.getContext().getTargetType().getModel().getRoot();
+            AXIComponent targetType = mapper.getContext().getTargetType();
+            return targetType != null ? targetType.getModel().getRoot() : null;
         }  else if (xsl_parent != null) {
             return getType(xsl_parent, mapper);
         }
