@@ -65,6 +65,7 @@ import org.openide.util.Exceptions;
  *   and see if they are indentable.
  * @todo If you select a complete line, the endOffset is on a new line; adjust it back
  * @todo If line ends with \ I definitely have a line continuation!
+ * @todo Reflow comment text? http://ruby.netbeans.org/issues/show_bug.cgi?id=11553
 
  *
  * @author Tor Norbye

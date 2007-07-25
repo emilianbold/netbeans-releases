@@ -210,6 +210,11 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         reformatFileContents("testfiles/ape.rb");
     }
 
+    public void testFormat110332() throws Exception {
+        // Check that the given source files reformat EXACTLY as specified
+        reformatFileContents("testfiles/percent-expressions.rb");
+    }
+    
     public void testFormatDate() throws Exception {
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/date.rb");
@@ -359,6 +364,5 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
     public void testDocumentRange2() throws Exception {
         format("def foo\n     if true\n           %<%xxx%>%\n     end\nend\n",
                 "def foo\n     if true\n       xxx\n     end\nend\n", null);
-    }
-    
+    }    
 }

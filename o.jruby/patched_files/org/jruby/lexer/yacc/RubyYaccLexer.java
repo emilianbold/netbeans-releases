@@ -464,7 +464,7 @@ public class RubyYaccLexer {
             do {c = src.read();} while (Character.isWhitespace(c));
             src.unread(c);
             yaccValue = new Token("%"+c+begin, getPosition());
-            return Tokens.tQWORDS_BEG;
+                return Tokens.tQWORDS_BEG;
 
         case 'x':
             lex_strterm = new StringTerm(str_xquote, end, begin);

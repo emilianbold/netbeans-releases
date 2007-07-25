@@ -83,7 +83,8 @@ import org.openide.util.Exceptions;
  *   etc.
  * @todo Pressing newline in a parameter list doesn't work well if it's on a blockdefining
  *    line - e.g. def foo(a,b => it will insert the end BEFORE the closing paren!
- * @todo Pressing "/" after a number shouldn't introduce regexp bracket matching
+ * @todo Pressing space in a comment beyond the textline limit should wrap text?
+ *    http://ruby.netbeans.org/issues/show_bug.cgi?id=11553
  *
  * @author Tor Norbye
  */
@@ -661,10 +662,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
 
                 if (ts != null) {
                     ts.move(dotPos);
-                }
 
-                if (ts.moveNext() && (ts.offset() < dotPos)) {
-                    LexUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
+                    if (ts.moveNext() && (ts.offset() < dotPos)) {
+                        LexUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
+                    }
                 }
             }
 

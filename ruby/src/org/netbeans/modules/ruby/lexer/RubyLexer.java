@@ -298,6 +298,8 @@ public final class RubyLexer implements Lexer<GsfTokenId> {
         case Tokens.tINTEGER:
             return RubyTokenId.INT_LITERAL;
 
+        case Tokens.tQWORDS_BEG:
+        case Tokens.tWORDS_BEG:
         case Tokens.tSTRING_BEG:
         case Tokens.tXSTRING_BEG:
 
