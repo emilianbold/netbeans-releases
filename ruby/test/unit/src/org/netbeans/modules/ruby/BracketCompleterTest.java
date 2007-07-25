@@ -671,9 +671,9 @@ public class BracketCompleterTest extends RubyTestBase {
         deleteWord("foo_bar_baz^", "foo_bar^");
     }
 
-    //public void testdeleteWord2() throws Exception {
-    //    deleteWord("foo_bar_baz ^", "foo_bar^");
-    //}
+    public void testdeleteWord2() throws Exception {
+        deleteWord("foo_bar_baz ^", "foo_bar^");
+    }
 
     public void testdeleteWord3() throws Exception {
         deleteWord("FooBarBaz^", "FooBar^");
@@ -681,6 +681,33 @@ public class BracketCompleterTest extends RubyTestBase {
     
     public void testDeleteWord4_110998() throws Exception {
         deleteWord("Blah::Set^Foo", "Blah::^Foo");
+    }
+
+    public void testdeleteWords() throws Exception {
+        deleteWord("foo bar^", "foo ^");
+    }
+
+
+    public void testDeleteWord4_110998c() throws Exception {
+        String before = "  snark^\n";
+        String after = "^\n";
+        deleteWord(before, after);
+    }
+    
+    public void testDeleteWord4_110998b() throws Exception {
+        String before = "" +
+"  snark(%w(a b c))\n" +
+"  snark(%W(a b c))\n" +
+"  snark^\n" +
+"  snark(%Q(a b c))\n" +
+"  snark(%w(a b c))\n";
+        String after = "" +
+"  snark(%w(a b c))\n" +
+"  snark(%W(a b c))\n" +
+"  ^\n" +
+"  snark(%Q(a b c))\n" +
+"  snark(%w(a b c))\n";
+        deleteWord(before, after);
     }
     
     public void testBackwardsDeletion() throws Exception {

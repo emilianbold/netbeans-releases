@@ -1579,6 +1579,8 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                             return ts.offset();
                         }
                     }
+                    
+                    return ts.offset();
                 }
             } else {
                 // Find next
