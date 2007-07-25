@@ -60,9 +60,7 @@ import org.netbeans.modules.languages.features.ExpandFoldTypeAction;
 import org.netbeans.modules.languages.features.HyperlinkListener;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.languages.features.DatabaseManager;
-import org.netbeans.modules.languages.features.IndentAction;
 import org.netbeans.modules.languages.features.LanguagesGenerateFoldPopupAction;
-import org.netbeans.modules.languages.features.MyFirstDrawLayer;
 import org.netbeans.modules.languages.features.MySecondDrawLayer;
 import org.netbeans.modules.languages.features.UncommentCodeAction;
 import org.netbeans.modules.languages.parser.Pattern;
@@ -230,10 +228,6 @@ public class LanguagesEditorKit extends NbEditorKit {
     
     protected void initDocument (Document doc) {
         doc.putProperty("mimeType", mimeType); //NOI18N
-        ((BaseDocument) doc).addLayer (
-            new MyFirstDrawLayer (mimeType), 
-            3000
-        );
         ((BaseDocument) doc).addLayer (
             new MySecondDrawLayer (mimeType), 
             1500

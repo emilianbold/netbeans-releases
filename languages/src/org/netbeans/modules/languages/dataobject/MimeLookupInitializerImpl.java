@@ -22,6 +22,7 @@ package org.netbeans.modules.languages.dataobject;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.netbeans.modules.languages.features.CompletionProviderImpl;
+import org.netbeans.modules.languages.features.GLFHighlightsLayerFactory;
 import org.netbeans.spi.editor.mimelookup.MimeLookupInitializer;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
@@ -113,7 +114,8 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 //                        new Integer (3), 
 //                        new Integer (4),
                         new Integer (5),
-                        new Integer (6)
+                        new Integer (6),
+                        new Integer (7)
                     },
                     new InstanceContent.Convertor<Integer,Object> () {
                         public Object convert (Integer i) {
@@ -145,6 +147,8 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
                                     return new BraceHighlighting (mimeTypes[0]);
                                 case 6:
                                     return new IndentFactory ();
+                                case 7:
+                                    return new GLFHighlightsLayerFactory ();
                             }
                             return null;
                         }
@@ -164,6 +168,8 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
                                     return BracesMatcherFactory.class;
                                 case 6:
                                     return IndentFactory.class;
+                                case 7:
+                                    return GLFHighlightsLayerFactory.class;
                             }
                             return null;
                         }

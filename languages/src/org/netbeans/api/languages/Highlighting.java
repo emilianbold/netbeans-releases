@@ -19,12 +19,15 @@
 
 package org.netbeans.api.languages;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.Map;
+import javax.swing.event.EventListenerList;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -59,6 +62,8 @@ public class Highlighting {
     
     
     private Document                                document;
+    private EventListenerList                       listeners;
+    
     
     private Highlighting (Document document) {
         this.document = document;
@@ -100,14 +105,15 @@ public class Highlighting {
         return null;
     }
     
-    private Highlight highlight (int start, int end, AttributeSet as) {
+    private Highlight highlight (int startOffset, int endOffset, AttributeSet as) {
         try {
             Highlight result = new Highlight (
-                document.createPosition (start),
-                document.createPosition (end),
+                document.createPosition (startOffset),
+                document.createPosition (endOffset),
                 as
             );
             items.add (result);
+            fire (startOffset, endOffset);
             return result;
         } catch (BadLocationException ex) {
             ex.printStackTrace ();
@@ -115,6 +121,27 @@ public class Highlighting {
         }
     }
     
+    public void addPropertyChangeListener (PropertyChangeListener l) {
+        if (listeners == null)
+            listeners = new EventListenerList ();
+        listeners.add (PropertyChangeListener.class, l);
+    }
+    
+    public void removePropertyChangeListener (PropertyChangeListener l) {
+        if (listeners == null) return;
+        listeners.remove (PropertyChangeListener.class, l);
+    }
+    
+    protected void fire (int startOffset, int endOffset) {
+        Object[] l = listeners.getListenerList ();
+        PropertyChangeEvent event = null;
+        for (int i = l.length-2; i>=0; i-=2) {
+            if (event == null)
+                event = new PropertyChangeEvent (this, null, startOffset, endOffset);
+            ((PropertyChangeListener) l [i+1]).propertyChange (event);
+        }
+    }
+     
     public class Highlight {
         private Position start, end;
         private AttributeSet attributeSet;
@@ -127,6 +154,7 @@ public class Highlighting {
         
         public void remove () {
             items.remove (this);
+            fire (start.getOffset (), end.getOffset ());
         }
     }
 }

@@ -40,8 +40,8 @@ import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.languages.ParserManager.State;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.features.AnnotationManager.LanguagesAnnotation;
-import org.netbeans.modules.languages.features.DatabaseItem;
 import org.openide.util.RequestProcessor;
+
 
 /**
  *
@@ -59,7 +59,7 @@ public class MarkOccurrencesSupport implements CaretListener {
     
     public MarkOccurrencesSupport (JTextComponent editor) {
         this.editor = editor;
-        editorToMOS.put (editor, new WeakReference (this));
+        editorToMOS.put (editor, new WeakReference<MarkOccurrencesSupport> (this));
     }
 
     public void caretUpdate (final CaretEvent e) {
@@ -124,7 +124,6 @@ public class MarkOccurrencesSupport implements CaretListener {
                 } catch (BadLocationException ex) {
                     ex.printStackTrace ();
                 }
-                editor.repaint ();
             }
         });
     }
@@ -165,7 +164,6 @@ public class MarkOccurrencesSupport implements CaretListener {
                 Iterator<LanguagesAnnotation> it2 = annotations.iterator ();
                 while (it2.hasNext ())
                     doc.removeAnnotation (it2.next ());
-                editor.repaint ();
                 highlights = null;
                 annotations = null;
             }
