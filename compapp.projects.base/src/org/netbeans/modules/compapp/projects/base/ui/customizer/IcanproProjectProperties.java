@@ -311,7 +311,7 @@ public class IcanproProjectProperties {
         return subprojects;
     }
     
-    Project getProject() {
+    public Project getProject() {
         return project;
     }
     
