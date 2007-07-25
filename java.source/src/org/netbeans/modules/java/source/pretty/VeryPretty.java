@@ -1383,21 +1383,6 @@ public final class VeryPretty extends JCTree.Visitor {
 		arrCnt++;
 	    }
 	    print(t);
-	    if (ty instanceof Type.ClassType) {
-		List < Type > typarams = ((Type.ClassType) ty).typarams_field;
-		if (typarams != null && typarams.nonEmpty()) {
-                    print('<');
-		    for (; typarams.nonEmpty(); typarams = typarams.tail) {
-			print(null, typarams.head);
-                        if (typarams.tail.nonEmpty()) {
-                            if (cs.spaceBeforeComma())
-                                print(' ');
-                            print(cs.spaceAfterComma() ? ", " : ",");
-                        }
-		    }
-		    print('>');
-		}
-	    }
 	    while (--arrCnt >= 0)
 		print("[]");
 	}
