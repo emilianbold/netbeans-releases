@@ -47,6 +47,7 @@ public class MoveTransformer extends RefactoringVisitor {
     private boolean isThisFileReferencingOldPackage = false;
     private Set<Element> elementsAlreadyImported = new HashSet();
     private Problem problem;
+    private boolean moveToDefaulPackageProblem = false;
 
     public Problem getProblem() {
         return problem;
@@ -78,7 +79,10 @@ public class MoveTransformer extends RefactoringVisitor {
                         Tree nju = make.MemberSelect(make.Identifier(newPackageName), el);
                         rewrite(node, nju);
                     } else {
-                        problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));
+                        if (!moveToDefaulPackageProblem) {
+                            problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));
+                            moveToDefaulPackageProblem = true;
+                        }
                     }
                 }
                 if (isThisFileMoving && !isElementMoving(el)) {
@@ -221,7 +225,10 @@ public class MoveTransformer extends RefactoringVisitor {
                 if (newPackageName != null) {
                     cut = insertImport(cut, newPackageName.toString() + ".*", null);
                 } else {
-                    problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));
+                    if (!moveToDefaulPackageProblem) {
+                        problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_MovingClassToDefaultPackage"));
+                        moveToDefaulPackageProblem = true;
+                    }
                 }
                       
             }
