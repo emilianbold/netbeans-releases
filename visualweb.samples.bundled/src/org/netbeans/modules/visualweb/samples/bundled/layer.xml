@@ -4,33 +4,26 @@
     <!--
     <folder name="Templates">
         <folder name="Project">
-            <attr name="Web/Samples" boolvalue="true"/>
             <folder name="Samples">
                 <folder name="VisualWeb">
+                    <attr name="position" intvalue="300" />
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/webSamplesCategory.html"/>
-                    <file name="MovieAdmin.zip" url="MovieAdmin.zip">
+                    <file name="ExampleOne" url="ExampleOne.zip">
                        <attr name="template" boolvalue="true"/>
-                       <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/Movies.html"/>
+                       <attr name="templateCategory" stringvalue="web-types"/>
+                       <attr name="position" intvalue="100"/>
+                       <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/ExampleOne.html"/>
                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
-                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.visualweb.samples.bundled.WebSampleProjectIterator"/>
-                       <attr name="prjType" stringvalue="web"/>
-                    </file>
-                    <attr name="MovieAdmin.zip/MoviesClassLibrary.zip" boolvalue="true"/>
-                    <file name="MoviesClassLibrary.zip" url="MoviesClassLibrary.zip">
-                       <attr name="template" boolvalue="true"/>
-                       <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/MoviesClassLibrary.html"/>
-                       <attr name="SystemFileSystem.localizingBundle" stringvalue="com.sun.rave.samples.bundled.Bundle"/>
-                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/project/jsfproject/ui/resources/webProjectIcon.gif"/>
-                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.visualweb.project.jsfproject.examples.WebSampleProjectIterator"/>
-                       <attr name="prjType" stringvalue="web"/>
+                       <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
                     </file>
                 </folder>
             </folder>
         </folder>
-    </folder>
+    </folder> 
     -->
+
     <!-- Java Code Clips in palette -->
     <folder name="CreatorJavaPalette">
         <attr name="OpenIDE-Folder-SortMode" stringvalue="O"/>
@@ -65,4 +58,3 @@
         </folder>
     </folder>
 </filesystem>
-

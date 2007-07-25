@@ -2,4 +2,37 @@
 <project basedir="." default="netbeans" name="visualweb/samples/bundled">
     <description>Builds, tests, and runs the project org.netbeans.modules.visualweb.samples.bundled</description>
     <import file="../../../nbbuild/templates/projectized.xml"/>
+
+    <target name="jar" depends="gather-samples,projectized-common.jar"/>
+    
+    <target name="-init" >
+        <!-- properties -->
+        <property name="release.dir"   location="release/samples" />
+        <property name="webapps.dest"  location="${build.classes.dir}/org/netbeans/modules/visualweb/samples/bundled" />
+        <property name="webapps.repos" location="../webapps" />
+        <property name="complibs.dest" location="${release.dir}/complibs/" />
+    </target>
+
+    <target name="gather-samples" depends="-init">
+        <echo message="Zipping up and copying sample web app projects." />
+        <!-- sample webapps -->
+        <!--
+        <mkdir dir="${webapps.dest}" />
+        <zip basedir="${webapps.repos}/ExampleOne" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/ExampleOne.zip" />  
+        -->
+        <!-- sample complibs -->
+    </target>
+    
+    <target name="netbeans-extra" depends="-init">
+        <echo message="Preparing release dir and copying sample complibs." />
+        <!-- sample complibs -->
+        <mkdir dir="${complibs.dest}" /> <!-- Create the dir because complibs mgr looks there for complibs. -->
+    </target>
+
+    <target name="clean" depends="projectized-common.clean,reldir-clean" />
+
+    <!-- Clean out the release directory. -->
+    <target name="reldir-clean">
+        <delete dir="${release.dir}"/>
+    </target>    
 </project>
