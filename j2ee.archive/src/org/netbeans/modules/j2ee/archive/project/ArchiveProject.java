@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -57,6 +58,7 @@ import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
@@ -269,17 +271,39 @@ public class ArchiveProject implements org.netbeans.api.project.Project {
             return ret;
         }
     }
-    
+    //when #110886 gets implemented, this class is obsolete    
     private final class Info implements ProjectInformation {
         
         private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private WeakReference<String> cachedName = null;
+        
+        Info() {}
+        
+        void firePropertyChange(String prop) {
+            pcs.firePropertyChange(prop, null, null);
+            synchronized (pcs) {
+                cachedName = null;
+            }
+        }
         
         public String getName() {
-            return ArchiveProject.this.getNamedProjectAttribute(NAME_LIT);
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
         
         public String getDisplayName() {
-            return ArchiveProject.this.getNamedProjectAttribute(NAME_LIT);
+            synchronized (pcs) {
+                if (cachedName != null) {
+                    String dn = cachedName.get();
+                    if (dn != null) {
+                        return dn;
+                    }
+                }
+            }
+            String dn = ArchiveProject.this.getNamedProjectAttribute(NAME_LIT);
+            synchronized (pcs) {
+                cachedName = new WeakReference<String>(dn);
+            }
+            return dn;
         }
         
         public Icon getIcon() {

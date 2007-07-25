@@ -25,6 +25,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -112,6 +113,7 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.project.support.LookupProviderSupport;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -684,22 +686,40 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
 
     // Private innerclasses ----------------------------------------------------
     
+    //when #110886 gets implemented, this class is obsolete
     private final class Info implements ProjectInformation {
         
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        
+        private WeakReference<String> cachedName = null;
         
         Info() {}
         
         void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
+            synchronized (pcs) {
+                cachedName = null;
+            }
         }
         
         public String getName() {
-            return EjbJarProject.this.getName();
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
         
         public String getDisplayName() {
-            return EjbJarProject.this.getName();
+            synchronized (pcs) {
+                if (cachedName != null) {
+                    String dn = cachedName.get();
+                    if (dn != null) {
+                        return dn;
+                    }
+                }
+            }        
+            String dn = EjbJarProject.this.getName();
+            synchronized (pcs) {
+                cachedName = new WeakReference<String>(dn);
+            }
+            return dn;
         }
         
         public Icon getIcon() {

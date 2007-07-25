@@ -23,6 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -290,23 +291,41 @@ public final class EarProject implements Project, AntProjectListener, FileChange
     }
     
     // Private innerclasses ----------------------------------------------------
-    
+    //when #110886 gets implemented, this class is obsolete
     private final class Info implements ProjectInformation {
         
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        
+        
+        private WeakReference<String> cachedName = null;
         
         Info() {}
         
         void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
+            synchronized (pcs) {
+                cachedName = null;
+            }
         }
         
         public String getName() {
-            return EarProject.this.getName();
+            return PropertyUtils.getUsablePropertyName(getDisplayName());
         }
         
         public String getDisplayName() {
-            return EarProject.this.getName();
+            synchronized (pcs) {
+                if (cachedName != null) {
+                    String dn = cachedName.get();
+                    if (dn != null) {
+                        return dn;
+                    }
+                }
+            }        
+            String dn = EarProject.this.getName();
+            synchronized (pcs) {
+                cachedName = new WeakReference<String>(dn);
+            }
+            return dn;
         }
         
         public Icon getIcon() {

@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.*;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -107,6 +108,7 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -557,14 +559,19 @@ public final class WebProject implements Project, AntProjectListener, FileChange
     }
     // Private innerclasses ----------------------------------------------------
     
+    //when #110886 gets implemented, this class is obsolete
     private final class Info implements ProjectInformation {
         
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        private WeakReference<String> cachedName = null;
         
         Info() {}
         
         void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
+            synchronized (pcs) {
+                cachedName = null;
+            }
         }
         
         public String getName() {
@@ -572,8 +579,16 @@ public final class WebProject implements Project, AntProjectListener, FileChange
         }
         
         public String getDisplayName() {
-            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-                public Object run() {
+            synchronized (pcs) {
+                if (cachedName != null) {
+                    String dn = cachedName.get();
+                    if (dn != null) {
+                        return dn;
+                    }
+                }
+            }
+            String dn = ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+                public String run() {
                     Element data = updateHelper.getPrimaryConfigurationData(true);
                     // XXX replace by XMLUtil when that has findElement, findText, etc.
                     NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -586,7 +601,12 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     return "???"; // NOI18N
                 }
             });
+            synchronized (pcs) {
+                cachedName = new WeakReference<String>(dn);
+            }
+            return dn;
         }
+
         
         public Icon getIcon() {
             return WEB_PROJECT_ICON;

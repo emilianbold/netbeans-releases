@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -487,15 +488,20 @@ public final class AppClientProject implements Project, AntProjectListener, File
     }
     
     // Private innerclasses ----------------------------------------------------
-    
+    //when #110886 gets implemented, this class is obsolete    
     private final class Info implements ProjectInformation {
         
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        
+        private WeakReference<String> cachedName = null;
         
         Info() {}
         
         void firePropertyChange(String prop) {
             pcs.firePropertyChange(prop, null, null);
+            synchronized (pcs) {
+                cachedName = null;
+            }
         }
         
         public String getName() {
@@ -503,7 +509,15 @@ public final class AppClientProject implements Project, AntProjectListener, File
         }
         
         public String getDisplayName() {
-            return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            synchronized (pcs) {
+                if (cachedName != null) {
+                    String dn = cachedName.get();
+                    if (dn != null) {
+                        return dn;
+                    }
+                }
+            }
+            String dn = ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
                 public String run() {
                     Element data = updateHelper.getPrimaryConfigurationData(true);
                     // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -517,6 +531,10 @@ public final class AppClientProject implements Project, AntProjectListener, File
                     return "???"; // NOI18N
                 }
             });
+            synchronized (pcs) {
+                cachedName = new WeakReference<String>(dn);
+            }
+            return dn;
         }
         
         public Icon getIcon() {

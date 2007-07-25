@@ -121,7 +121,7 @@ class ActionsUtil {
      */    
     public static boolean commandSupported( Project project, String command, Lookup context ) {
         //We have to look whether the command is supported by the project
-        ActionProvider ap = (ActionProvider)project.getLookup().lookup( ActionProvider.class );
+        ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
         if ( ap != null ) {
             List commands = Arrays.asList( ap.getSupportedActions() );
             if ( commands.contains( command ) ) {
@@ -147,8 +147,21 @@ class ActionsUtil {
         else {
             // Some project selected 
             // XXX what about passing an object that computes the name lazily
-            return ActionsUtil.formatName( namePattern, projects.length, ProjectUtils.getInformation( projects[0] ).getDisplayName() );
+             return ActionsUtil.formatName( namePattern, projects.length, new Wrapper(projects[0]));
         }
+    }
+    
+    private static class Wrapper {
+        Wrapper(Project prj) {
+            project = prj;
+        }
+        private Project project;
+
+        @Override
+        public String toString() {
+            return ProjectUtils.getInformation( project ).getDisplayName();
+        }
+        
     }
 
     
@@ -157,12 +170,12 @@ class ActionsUtil {
      * or first object (e.g. Project or file) or null if the number is == 0
      * {2} whats the type of the name 0 == normal, 1 == menu, 2 == popup
      */  
-    public static String formatName( String namePattern, int numberOfObjects, String firstObjectName ) {
+    public static String formatName( String namePattern, int numberOfObjects, Object firstObjectName ) {
         
         MessageFormat mf = null;
         
         synchronized ( pattern2format ) {
-            mf = (MessageFormat)pattern2format.get( namePattern );
+            mf = pattern2format.get(namePattern);
             if ( mf == null ) {
                 mf = new MessageFormat( namePattern );
                 pattern2format.put( namePattern, mf );
@@ -174,7 +187,7 @@ class ActionsUtil {
         mf.format( 
             new Object[] {
                 numberOfObjects,
-                firstObjectName == null ? "" : firstObjectName,
+                firstObjectName == null ? "" : firstObjectName.toString(),
             }, 
             result, 
             null );            
