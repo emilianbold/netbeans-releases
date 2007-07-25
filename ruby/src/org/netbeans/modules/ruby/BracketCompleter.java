@@ -1508,21 +1508,33 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         Token<? extends GsfTokenId> token = ts.token();
         TokenId id = token.id();
 
-        while (id == RubyTokenId.WHITESPACE) {
-            if (reverse && !ts.movePrevious()) {
-                return -1;
-            } else if (!reverse && !ts.moveNext()) {
-                return -1;
+        if (id == RubyTokenId.WHITESPACE) {
+            // Just eat up the space in the normal IDE way
+            if ((reverse && ts.offset() < offset) || (!reverse && ts.offset() > offset)) {
+                return ts.offset();
             }
+            while (id == RubyTokenId.WHITESPACE) {
+                if (reverse && !ts.movePrevious()) {
+                    return -1;
+                } else if (!reverse && !ts.moveNext()) {
+                    return -1;
+                }
 
-            token = ts.token();
-            id = token.id();
-
+                token = ts.token();
+                id = token.id();
+            }
             if (reverse) {
-                offset = ts.offset();
+                int start = ts.offset()+token.length();
+                if (start < offset) {
+                    return start;
+                }
             } else {
-                offset = ts.offset()+token.length();
+                int start = ts.offset();
+                if (start > offset) {
+                    return start;
+                }
             }
+            
         }
 
         if (id == RubyTokenId.IDENTIFIER || id == RubyTokenId.TYPE_SYMBOL ||
