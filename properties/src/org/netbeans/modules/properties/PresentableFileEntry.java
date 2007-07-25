@@ -19,21 +19,19 @@
 
 package org.netbeans.modules.properties;
 
-import java.awt.datatransfer.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.*;
-
-import javax.swing.*;
+import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
-
-import org.openide.loaders.*;
-import org.openide.*;
-import org.openide.util.datatransfer.*;
 import org.openide.filesystems.FileObject;
-import org.openide.util.*;
-import org.openide.nodes.*;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.FileEntry;
+import org.openide.loaders.MultiDataObject;
+import org.openide.nodes.CookieSet;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 
 /**
  * Object that represents one <code>FileEntry</code> and has support
