@@ -219,9 +219,9 @@ public class SearchForJavaAction extends WizardAction {
             }
         }
         
-        if (javaLocations.size() > 0) {
-            lastSelectedJava = javaLocations.get(0);
-        }
+        //if (javaLocations.size() > 0) {
+        //    lastSelectedJava = javaLocations.get(0);
+        //}
         
         progress.setDetail("");
         progress.setPercentage(Progress.COMPLETE);
