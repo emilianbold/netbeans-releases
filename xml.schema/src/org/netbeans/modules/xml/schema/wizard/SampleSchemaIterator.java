@@ -60,19 +60,30 @@ public class SampleSchemaIterator extends Object implements TemplateWizard.Itera
      */
     protected WizardDescriptor.Panel[] createPanels (Project project,
 						     final TemplateWizard wizard) {
-        Sources sources = ProjectUtils.getSources(project);
-	SourceGroup[] folders = 
-	    sources.getSourceGroups(ProjectConstants.JAVA_SOURCES_TYPE);
-	if (folders == null || folders.length == 0) {
-	    folders = sources.getSourceGroups(Sources.TYPE_GENERIC);
-	}
-	//make the first one as the default target folder. IZ: 98643
-        if (folders != null && folders.length != 0) {
-            DataFolder df = DataFolder.findFolder(folders[0].getRootFolder());
-            wizard.setTargetFolder(df);
-        }
-        WizardDescriptor.Panel panel = Templates.createSimpleTargetChooser(project, folders);
-	return new WizardDescriptor.Panel[] {panel};
+            DataFolder df = null;
+            Sources sources = ProjectUtils.getSources(project);
+            SourceGroup[] folders = sources.getSourceGroups(ProjectConstants.JAVA_SOURCES_TYPE);
+            if (folders == null || folders.length == 0) {
+                folders = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            }
+            try {
+                df = wizard.getTargetFolder();
+            } catch (IOException ex) {
+                //just catch
+            }
+            if (df != null) {
+                wizard.setTargetFolder(df);
+                org.openide.WizardDescriptor.Panel panel = Templates.createSimpleTargetChooser(project, folders);
+                return new org.openide.WizardDescriptor.Panel[]{panel};
+            }
+
+            //make the first one as the default target folder. IZ: 98643
+            if (folders != null && folders.length != 0) {
+                df = DataFolder.findFolder(folders[0].getRootFolder());
+                wizard.setTargetFolder(df);
+            }
+            WizardDescriptor.Panel panel = Templates.createSimpleTargetChooser(project, folders);
+            return new WizardDescriptor.Panel[] {panel};
     }
     
     /**
