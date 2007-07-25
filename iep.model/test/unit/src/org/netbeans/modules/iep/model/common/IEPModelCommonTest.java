@@ -9,11 +9,15 @@ package org.netbeans.modules.iep.model.common;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.util.Iterator;
+import java.util.List;
 
 import junit.framework.TestCase;
+import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.Property;
 import org.netbeans.modules.iep.model.impl.IEPComponentFactoryImpl;
 import org.netbeans.modules.iep.model.util.XmlUtil;
 
@@ -85,29 +89,51 @@ public class IEPModelCommonTest extends TestCase {
 
         //assert child components on the root component
         assertEquals(4, model.getComponent().getChildComponents().size());
-
+        
+        List<Component> childComponents = model.getComponent().getChildComponents();
+        
+        Component metadataComponent  = childComponents.get(0);
+        assertEquals("Metadata", metadataComponent.getName());
+        assertEquals("Metadata", metadataComponent.getTitle());
+        assertEquals("/IEP/Model/Plan|Metadata", metadataComponent.getType());
+        
+        List<Component> metadataComponentChildren = metadataComponent.getChildComponents();
+        assertEquals(1, metadataComponentChildren.size());
+        
+        Component viewComponent  = metadataComponentChildren.get(0);
+        assertEquals("View", viewComponent.getName());
+        assertEquals("View", viewComponent.getTitle());
+        assertEquals("/IEP/Model/Plan|Metadata|View", viewComponent.getType());
+        
+        List<Property> viewComponentProperties = viewComponent.getProperties();
+        assertEquals(1,  viewComponentProperties.size());
+ 
+        Property property1_1 = viewComponentProperties.get(0);
+        assertEquals("orthoflow", property1_1.getName());
+        assertEquals("true", property1_1.getValue());
+        
+        Component schemaComponent  = childComponents.get(1);
+        assertEquals("Schemas", schemaComponent.getName());
+        assertEquals("Schemas", schemaComponent.getTitle());
+        assertEquals("/IEP/Model/Plan|Schemas", schemaComponent.getType());
         /*
-        assertEquals(1, model.getTasks().getTasks ().size());
-        TTasks tasks = model.getTasks();
-    	TTask task = tasks.getTasks().get(0);
-    	assertEquals("http://jbi.com.sun/wfse/wsdl/WorkflowApp2/ApprovePurchase", tasks.getTargetNamespace());
-    	TImport importEl = tasks.getImports().iterator().next();
-    	assertNotNull (importEl.getImportedWSDLModel());
-    	assertEquals(1, task.getTimeouts().size());
-    	assertNull(task.getTimeouts().get(0).getDuration());
-    	assertNotNull(task.getTimeouts().get(0).getDeadline());
-    	assertEquals("2006-12-01T23:00:00", task.getTimeouts().get(0).getDeadline().getContent());
-    	assertEquals(1, task.getEscalations().size());
-    	TAssignment assign = task.getEscalations().get(0).getAssignment();
-    	assertEquals(1,assign.getUsers().size());
-    	assertEquals(0,assign.getGroups().size());
-    	assertEquals(0,assign.getRoles().size());
-    	assertEquals(1, assign.getUsers().size());
-    	assertEquals("rwaldorf", assign.getUsers().get(0).getContent());
-    	assertEquals(1, task.getNotifications().size());
-    	assertTrue(task.getOperation().isResolved());
-    	assertEquals(1, tasks.getImports().size());
-    	*/
+        List<Component> schemaComponentChildren = schemaComponent.getChildComponents();
+        assertEquals(2, schemaComponentChildren.size());
+        
+        Component componentOperators  = schemaComponentChildren.get(0);
+        assertEquals("Operators", componentOperators.getName());
+        assertEquals("Operators", componentOperators.getTitle());
+        assertEquals("/IEP/Model/Plan|Operators", componentOperators.getType());
+        
+        List<Component> operatorComponentChildren = componentOperators.getChildComponents();
+        assertEquals(16, operatorComponentChildren.size());
+        
+        Component componentRelationAggregatorOperator  = operatorComponentChildren.get(0);
+        assertEquals("o0", componentRelationAggregatorOperator.getName());
+        assertEquals("o0", componentRelationAggregatorOperator.getTitle());
+        assertEquals("/IEP/Operator/RelationAggregator", componentRelationAggregatorOperator.getType());
+        */
+        
     } 
     
 }
