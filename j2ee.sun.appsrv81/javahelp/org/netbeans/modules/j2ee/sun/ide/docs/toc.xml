@@ -1,26 +1,28 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
 <!DOCTYPE toc PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN" "http://java.sun.com/products/javahelp/toc_1_0.dtd">
 <toc version="1.0">
-<tocitem text="Servers and Databases">
-    <tocitem text="Servers">
-        <tocitem text="Sun Java System Application Server Platform Edition">
-            <tocitem text="About the Sun Java System Application Server"  target="aboutplugin"/>
-            <tocitem text="Working with the Sun Java System Application Server"  target="working_withsjs"/>
-            <tocitem text="Sun Java System Application Server Tasks: Quick Reference"  target="sjs_quickref"/>
-            <tocitem text="Registering a Sun Java System Application Server Instance"  target="register_appserver"/>
-	    <tocitem text="Viewing the Sun Java System Application Server in the IDE"  target="viewing_appserver"/>
-            <tocitem text="Viewing the Sun Java System Application Server Log File"  target="viewing_logfile"/>
-            <tocitem text="Accessing the Sun Java System Application Server Admin Console"  target="adminconsole"/>
-            <tocitem text="Modifying JVM Properties of the Sun Java System Application Server"  target="sjs_jvm"/>
-            <tocitem text="Setting up a Connection Pool on the Sun Java System Application Server"  target="def_connpool"/>
-            <tocitem text="Setting up a JDBC Resource on the Sun Java System Application Server"  target="def_jdbcresource"/>
-            <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcatmodule"/>
-            <tocitem text="Setting up a JMS Resource on the Sun Java System Application Server"  target="def_jms"/>
-            <tocitem text="Setting up a JavaMail Resource on the Sun Java System Application Server"  target="def_javamail"/>
-            <tocitem text="Setting up a Persistence Manager Resource on the Sun Java System Application Server"  target="def_persistence"/>
-            <tocitem text="Registering a Resource with the Sun Java System Application Server"  target="register_resource"/>
-            <tocitem text="Managing Users for the Sun Java System Application Server"  target="sjs_manageuser"/>
-            <tocitem text="Configuring Security Roles for the Sun Java System Application Server"  target="sjs_security"/>
+<tocitem text="IDE Basics" >
+    <tocitem text="Servers and Databases">
+        <tocitem text="Servers">
+            <tocitem text="Sun Java System Application Server/GlassFish">
+                <tocitem text="About the Sun Java System Application Server/GlassFish"  target="aboutplugin"/>
+                <tocitem text="Working with the Sun Java System Application Server/GlassFish"  target="working_withsjs"/>
+                <tocitem text="Sun Java System Application Server/GlassFish Tasks: Quick Reference"  target="sjs_quickref"/>
+                <tocitem text="Registering a Sun Java System Application Server/GlassFish Instance"  target="register_appserver"/>
+                <tocitem text="Viewing the Sun Java System Application Server/GlassFish in the IDE"  target="viewing_appserver"/>
+                <tocitem text="Viewing the Sun Java System Application Server/GlassFish Log File"  target="viewing_logfile"/>
+                <tocitem text="Accessing the Sun Java System Application Server Admin Console"  target="adminconsole"/>
+                <tocitem text="Modifying JVM Properties of the Sun Java System Application Server/GlassFish"  target="sjs_jvm"/>
+                <tocitem text="Setting up a Connection Pool on the Sun Java System Application Server/GlassFish"  target="def_connpool"/>
+                <tocitem text="Setting up a JDBC Resource on the Sun Java System Application Server/GlassFish"  target="def_jdbcresource"/>
+                <tocitem text="Accessing a Connection Pool from a JSP Page" target="jsp_connectionpool_tomcatmodule"/>
+                <tocitem text="Setting up a JMS Resource on the Sun Java System Application Server/GlassFish"  target="def_jms"/>
+                <tocitem text="Setting up a JavaMail Resource on the Sun Java System Application Server/GlassFish"  target="def_javamail"/>
+<!--            <tocitem text="Setting up a Persistence Manager Resource on the Sun Java System Application Server"  target="def_persistence"/> -->
+                <tocitem text="Registering a Resource with the Sun Java System Application Server/GlassFish"  target="register_resource"/>
+                <tocitem text="Managing Users for the Sun Java System Application Server/GlassFish"  target="sjs_manageuser"/>
+                <tocitem text="Configuring Security Roles for the Sun Java System Application Server/GlassFish"  target="sjs_security"/>
+            </tocitem>
         </tocitem>
     </tocitem>
 </tocitem>

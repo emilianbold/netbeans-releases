@@ -64,6 +64,20 @@
       <tocitem text="Activating and Deactivating a Plugin" target="configure.enable.module" />
     </tocitem>
   </tocitem>
+  
+  <tocitem text="Servers and Databases" expand="false">
+
+   <tocitem text="Web Browsers" >
+      <tocitem text="Opening a Web Browser From the IDE" target="webbrowser"/>
+      <tocitem text="Setting a Proxy" target="proxy" />
+      <tocitem text="Accessing Local Files Through a Proxy" target="bypass.proxy" />
+      <tocitem text="Changing the Default Web Browser" target="webbrowser.default" />
+      <tocitem text="Configuring a Web Browser" target="webbrowser.config" />
+      <tocitem text="Configuring HTTP Server Options" target="httpserver-options" />
+      <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
+    </tocitem>
+
+   </tocitem>
 
   <tocitem text="Keyboard Shortcuts" >
     <tocitem text="About Keyboard Shortcuts" target="shortcuts.kybd" />
@@ -123,25 +137,6 @@
 
 
   </tocitem>
-
-
-
-
-
-
-<tocitem text="Servers and Databases" expand="false">
-
-   <tocitem text="Web Browsers" >
-      <tocitem text="Opening a Web Browser From the IDE" target="webbrowser"/>
-      <tocitem text="Setting a Proxy" target="proxy" />
-      <tocitem text="Accessing Local Files Through a Proxy" target="bypass.proxy" />
-      <tocitem text="Changing the Default Web Browser" target="webbrowser.default" />
-      <tocitem text="Configuring a Web Browser" target="webbrowser.config" />
-      <tocitem text="Configuring HTTP Server Options" target="httpserver-options" />
-      <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
-    </tocitem>
-
-</tocitem>
 
 
 </toc>

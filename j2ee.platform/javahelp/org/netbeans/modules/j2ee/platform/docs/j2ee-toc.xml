@@ -19,7 +19,7 @@
         </tocitem>
     </tocitem>
     
-    
+    <tocitem text="IDE Basics" >
     <tocitem text="Servers and Databases">
     
         <tocitem text="Servers">
@@ -48,6 +48,7 @@
             </tocitem>
         </tocitem>
 
+    </tocitem>
     </tocitem>
     
     <!-- Start of enterprise applications -->
