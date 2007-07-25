@@ -279,7 +279,21 @@ implements FileSystem.Status, org.openide.util.LookupListener {
             user = l;
         } else {
             // use some replacement
-            user = FileUtil.createMemoryFileSystem ();
+            String customFSClass = System.getProperty("org.netbeans.core.systemfilesystem.custom"); // NOI18N
+            if (customFSClass != null) {
+                try {
+                    Class clazz = Class.forName(customFSClass);
+                    Object instance = clazz.newInstance();
+                    user = (FileSystem)instance;
+                } catch (Exception x) {
+                    ModuleLayeredFileSystem.err.log(
+                        Level.WARNING,
+                        "Custom system file system writable layer init failed ", x); // NOI18N
+                    user = FileUtil.createMemoryFileSystem ();
+                }
+            } else {
+                user = FileUtil.createMemoryFileSystem ();
+            }
         }
 
         if (homeDir == null) {
