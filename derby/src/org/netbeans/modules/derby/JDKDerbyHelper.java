@@ -20,18 +20,23 @@
 package org.netbeans.modules.derby;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Andrei Badea
  */
 public class JDKDerbyHelper {
+
+    private static final  Logger LOGGER = Logger.getLogger(JDKDerbyHelper.class.getName());
 
     private final JavaPlatform platform;
 
@@ -59,14 +64,46 @@ public class JDKDerbyHelper {
     }
 
     public String findDerbyLocation() {
+        // see issue 83144
+        if (Utilities.isWindows()) {
+            LOGGER.log(Level.FINE, "Operating system: Windows");
+            String programFilesPath = System.getProperty("Env-ProgramFiles"); // NOI18N
+            LOGGER.log(Level.FINE, "Program Files path: {0}", programFilesPath);
+            if (programFilesPath != null) {
+                File derbyDirFile = new File(programFilesPath, "Sun/JavaDB"); // NOI18N
+                String result = testDerbyInstallLocation(derbyDirFile);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        if (Utilities.isUnix()) {
+            LOGGER.log(Level.FINE, "Operating system: Unix");
+            String result = testDerbyInstallLocation(new File("/opt/SUNWjavadb")); // NOI18N
+            if (result != null) {
+                return result;
+            }
+            result = testDerbyInstallLocation(new File("/opt/sun/javadb")); // NOI18N
+            if (result != null) {
+                return result;
+            }
+        }
         for (Object dir : platform.getInstallFolders()) {
             FileObject derbyDir = ((FileObject)dir).getFileObject("db"); // NOI18N
             if (derbyDir != null) {
-                File derbyDirFile = FileUtil.toFile(derbyDir);
-                if (Util.isDerbyInstallLocation(derbyDirFile)) {
-                    return derbyDirFile.getAbsolutePath();
+                String result = testDerbyInstallLocation(FileUtil.toFile(derbyDir));
+                if (result != null) {
+                    return result;
                 }
             }
+        }
+        return null;
+    }
+
+    private static String testDerbyInstallLocation(File directory) {
+        LOGGER.log(Level.FINE, "Testing directory: {0}", directory);
+        if (Util.isDerbyInstallLocation(directory)) {
+            return directory.getAbsolutePath();
         }
         return null;
     }
