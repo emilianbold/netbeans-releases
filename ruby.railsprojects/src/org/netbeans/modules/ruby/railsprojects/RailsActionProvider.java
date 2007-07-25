@@ -355,6 +355,12 @@ public class RailsActionProvider implements ActionProvider {
                 runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand);
                 return;
             }
+            
+            if (path.length() == 0) {
+                // No corresponding URL - some other file we should just try to execute
+                runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand);
+                return;
+            }
 
             runServer(path, debugCommand || debugSingleCommand);
             return;
