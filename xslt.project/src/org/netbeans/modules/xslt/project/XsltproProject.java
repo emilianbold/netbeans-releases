@@ -242,7 +242,6 @@ public class XsltproProject implements Project, AntProjectListener {
             spp,
             new XsltproActionProvider( this, helper, refHelper ),
             new IcanproLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
-            new JbiArtifactProviderImpl(),
 //            new XsltProjectCustomizerProvider(this),
             new IcanproCustomizerProvider(this, helper, refHelper),
             new JbiArtifactProviderImpl(),
