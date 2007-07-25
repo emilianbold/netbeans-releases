@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -264,10 +265,12 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     }
 
     private void formRename(/*boolean saveAll*/) {
-        saveFormForUndo();
-        saveResourcesForUndo();
-        ResourceSupport.formRenamed(formEditor.getFormModel(), refInfo.getOldName());
-        updateForm(true);
+        if (prepareForm(true)) {
+            saveFormForUndo();
+            saveResourcesForUndo();
+            ResourceSupport.formRenamed(formEditor.getFormModel(), refInfo.getOldName());
+            updateForm(true);
+        }
     }
 
     private void componentClassRename(String oldName, String newName) {
@@ -539,34 +542,29 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     private boolean replaceClassOrPkgName(String oldName, String newName, boolean pkgName) {
         FileObject formFile = formDataObject.getFormFile();
         FileLock lock = null;
+        OutputStream os = null;
+        InputStream is = null;
         try {
             lock = formFile.lock();
-        }
-        catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
-        }
 
-        String[] oldStr;
-        String[] newStr;
-        boolean shortName;
-        if (pkgName) {
-            oldName = oldName + "."; // NOI18N
-            newName = newName + "."; // NOI18N
-            oldStr = new String[] { oldName, oldName.replace('.', '/') };
-            newStr = new String[] { newName, newName.replace('.', '/') };
-            shortName = false;
-        } else {
-            shortName = !oldName.contains("."); // NOI18N
-            oldStr = new String[] { oldName };
-            newStr = new String[] { newName };
-        }
+            String[] oldStr;
+            String[] newStr;
+            boolean shortName;
+            if (pkgName) {
+                oldName = oldName + "."; // NOI18N
+                newName = newName + "."; // NOI18N
+                oldStr = new String[] { oldName, oldName.replace('.', '/') };
+                newStr = new String[] { newName, newName.replace('.', '/') };
+                shortName = false;
+            } else {
+                shortName = !oldName.contains("."); // NOI18N
+                oldStr = new String[] { oldName };
+                newStr = new String[] { newName };
+            }
 
-        java.io.OutputStream os = null;
-        final String encoding = "UTF-8"; // NOI18N
-        try {
+            String encoding = "UTF-8"; // NOI18N
             String outString;
-            InputStream is = formFile.getInputStream();
+            is = formFile.getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, encoding));
             if (!shortName) {
                 // With fully qualified name we can safely do plain textual
@@ -641,6 +639,8 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             saveForUndo(formFile);
 
             is.close();
+            is = null;
+
             os = formFile.getOutputStream(lock);
             os.write(outString.getBytes(encoding));
         } catch (Exception ex) {
@@ -648,6 +648,9 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             return false;
         } finally {
             try {
+                if (is != null) {
+                    is.close();
+                }
                 if (os != null) {
                     os.close();
                 }
