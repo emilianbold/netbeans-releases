@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'  ?>
 <!--
-*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE toc
@@ -11,7 +11,7 @@
 
 <toc version="2.0">
 
-<!-- last updated 09Feb04 -->
+<tocitem text="IDE Basics">
 <tocitem text="Servers and Databases">
 <tocitem text="HTTP Monitor">
     <!-- ctx_monitorintro is csh for F1 on HTTP Monitor -->
@@ -22,6 +22,7 @@
     <!-- monitor_resend is csh for Help button on Edit and replay dialog -->
     <tocitem text="Saving Session Data" target="monitor_store" />
     <tocitem text="Replaying Session Data" target="monitor_resend" /> 
+</tocitem>
 </tocitem>
 </tocitem>
 </toc>
