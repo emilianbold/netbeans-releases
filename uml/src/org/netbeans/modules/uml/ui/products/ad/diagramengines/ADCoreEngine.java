@@ -4938,13 +4938,68 @@ public class ADCoreEngine extends DiagramEngine
 				String nKind = (String)accelsToRegister.get(i);
 				boolean bFoundAccel = true;
 	
-				// register accels for when we have focus
+				// register accels when we have focus
 				if (nKind.equals(IDrawingAreaAcceleratorKind.DAVK_DOWN) ||
 					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_UP) ||
 					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_TAB) ||
 					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ATTRIBUTE) ||
 					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_OPERATION) ||
-					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_PARAMETER))
+					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_PARAMETER) ||
+                                        
+                                        //model element creation
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_AGGREGATION) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_COMPOSITION) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_IMPLEMENTATION) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ASSOCIATION) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SYNCHRONUS_MESSAGE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_DEPENDENCY) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ACTIVITYEDGE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_GENERALIZATION) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_STATETRANSITION) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ABSTRACTION) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_INVOCATION) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ACTOR) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_DECISION) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_CLASS) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_SIMPLESTATE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ERENTITY) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_PACKAGE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_INTERFACE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_USECASE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_MESSAGE_AFTER) ||
+                                        
+                                         // toolbars - diagram layout
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_CIRCULAR_STYLE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_HIERARCHICAL_STYLE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_INCREMENTAL_LAYOUT) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_RELAYOUT) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_ORTHOGONAL_STYLE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_SEQUENCE_DIAGRAM_LAYOUT) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_TREE_STYLE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_SYMMETRIC_STYLE) ||
+                                        
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SELECT_ALL) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SELECT_ALL_SIMILAR) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_RESIZE_TO_CONTENTS) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_TOGGLE_ORTHOGONALITY) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SHOW_FRIENDLY_NAMES) ||
+                                        
+                                        // Toolbar shortcuts
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_EXPORT_AS_IMAGE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_FIT_TO_WINDOW) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_PRINT_PREVIEW) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_MOVE_BACKWARD) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_MOVE_FORWARD) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_MOVE_TO_BACK) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_MOVE_TO_FRONT) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SELECT_MODE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_PAN_MODE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_NAVIGATE_LINK_MODE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_ZOOM_INTERACTIVELY_MODE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_ZOOM_WITH_MARQUEE_MODE) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_DIAGRAM_SYNC) ||
+                                        nKind.equals(IDrawingAreaAcceleratorKind.DAVK_RELATIONSHIP_DISCOVERY)
+                                    )
 				{
 					pAcceleratorsOnlyWhenHaveFocus.add(nKind);
 				}
@@ -4958,58 +5013,11 @@ public class ADCoreEngine extends DiagramEngine
 					bFoundAccel = true;
 	
 					// register accels for all the time, even if we don't have focus
-					if (nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_AGGREGATION) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_COMPOSITION) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_IMPLEMENTATION) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ASSOCIATION) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SYNCHRONUS_MESSAGE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_DEPENDENCY) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ACTIVITYEDGE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_GENERALIZATION) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_STATETRANSITION) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ABSTRACTION) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_INVOCATION) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ACTOR) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_DECISION) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_CLASS) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_SIMPLESTATE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ERENTITY) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_PACKAGE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_INTERFACE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_USECASE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_CIRCULAR_STYLE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_HIERARCHICAL_STYLE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_INCREMENTAL_LAYOUT) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_RELAYOUT) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_ORTHOGONAL_STYLE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_SEQUENCE_DIAGRAM_LAYOUT) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_TREE_STYLE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_LAYOUT_SYMMETRIC_STYLE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_COPY) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CUT) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_PASTE) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SAVE) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SELECT_ALL) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SELECT_ALL_SIMILAR) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_RESIZE_TO_CONTENTS) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_TOGGLE_ORTHOGONALITY) ||
-						nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SHOW_FRIENDLY_NAMES) || 
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_EXPORT_AS_IMAGE) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_FIT_TO_WINDOW) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_PRINT_PREVIEW) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_MOVE_BACKWARD) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_MOVE_FORWARD) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_MOVE_TO_BACK) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_MOVE_TO_FRONT) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SELECT_MODE) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_PAN_MODE) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_NAVIGATE_LINK_MODE) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_ZOOM_INTERACTIVELY_MODE) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_ZOOM_WITH_MARQUEE_MODE) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_DIAGRAM_SYNC) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_RELATIONSHIP_DISCOVERY) ||
-                                                nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_MESSAGE_AFTER))
-//                                                nKind.equals("ctrl enter"))
+					if (nKind.equals(IDrawingAreaAcceleratorKind.DAVK_COPY) ||
+                                            nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CUT) ||
+                                            nKind.equals(IDrawingAreaAcceleratorKind.DAVK_PASTE) ||
+                                            nKind.equals(IDrawingAreaAcceleratorKind.DAVK_SAVE)
+                                            )
 					{
 						pAcceleratorsToReceiveAlways.add(nKind);
 					}

@@ -70,9 +70,7 @@ public class AcceleratorManager implements IAcceleratorManager
                 
                 //added this line to handle tab/shift-tab 
 		hwnd.setFocusTraversalKeysEnabled(false);
-                
 		hwnd.registerKeyboardAction(action, keyStroke, nCondition);
-		//hwnd.registerKeyboardAction(action, KeyStroke.getKeyStroke("alt shift C"), JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 	
 	public void register(JComponent hwnd, IAcceleratorListener listener, ETList<String> accelerators, boolean bNoFocus )
