@@ -89,6 +89,9 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
         }
         FileObject ddFile = wm.getDeploymentDescriptor();
         WebApp webApp = getWebApp(ddFile);
+        if (webApp == null){
+            return null;
+        }
         String clazz = resolveClass(handle);
         
         List<WebRefactoring> refactorings = new ArrayList<WebRefactoring>();
@@ -126,12 +129,14 @@ public class WebRefactoringFactory implements RefactoringPluginFactory{
     }
     
     private WebApp getWebApp(FileObject ddFile){
+        if (ddFile == null){
+            return null;
+        }
         try{
             return DDProvider.getDefault().getDDRoot(ddFile);
         }catch(IOException ioe){
             Exceptions.printStackTrace(ioe);
         }
-        //XXX
         return null;
     }
     
