@@ -83,6 +83,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(enableTasklist, gridBagConstraints);
+        enableTasklist.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TasklistOptionsPanel.class, "ACD_EnableTaskList")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(enableDependencies, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("jCheckBox2.text")); // NOI18N
         enableDependencies.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -97,6 +98,7 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 8, 0);
         add(enableDependencies, gridBagConstraints);
+        enableDependencies.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TasklistOptionsPanel.class, "ACD_EnableDependencies")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(enableBadges, org.openide.util.NbBundle.getBundle(TasklistOptionsPanel.class).getString("jCheckBox1.text_1")); // NOI18N
         enableBadges.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -113,6 +115,10 @@ public class TasklistOptionsPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 8, 0);
         add(enableBadges, gridBagConstraints);
+        enableBadges.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TasklistOptionsPanel.class, "ACD_EnableErrorBadges")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TasklistOptionsPanel.class, "ACN_TaskListOptionsPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TasklistOptionsPanel.class, "ACD_TaskListOptionsPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void enableTasklistStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_enableTasklistStateChanged

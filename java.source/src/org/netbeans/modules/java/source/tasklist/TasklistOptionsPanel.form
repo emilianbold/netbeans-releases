@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <Properties>
     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -8,6 +8,14 @@
       </Border>
     </Property>
   </Properties>
+  <AccessibilityProperties>
+    <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/java/source/tasklist/Bundle.properties" key="ACN_TaskListOptionsPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <ResourceString bundle="org/netbeans/modules/java/source/tasklist/Bundle.properties" key="ACD_TaskListOptionsPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+    </Property>
+  </AccessibilityProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -36,6 +44,11 @@
         </Property>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/source/tasklist/Bundle.properties" key="ACD_EnableTaskList" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="enableTasklistStateChanged"/>
       </Events>
@@ -60,6 +73,11 @@
         </Property>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/source/tasklist/Bundle.properties" key="ACD_EnableDependencies" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="0" gridY="1" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="20" insetsBottom="8" insetsRight="0" anchor="18" weightX="1.0" weightY="0.0"/>
@@ -81,6 +99,11 @@
         </Property>
         <Property name="opaque" type="boolean" value="false"/>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/source/tasklist/Bundle.properties" key="ACD_EnableErrorBadges" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints gridX="0" gridY="2" gridWidth="0" gridHeight="0" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="20" insetsBottom="8" insetsRight="0" anchor="18" weightX="1.0" weightY="1.0"/>
