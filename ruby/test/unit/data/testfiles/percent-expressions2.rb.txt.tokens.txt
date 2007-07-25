@@ -1,0 +1,88 @@
+.t.e.s.t. Percent expressions
+CLASS           "class", la=2, st=8
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_CLASS,null,null]
+GSF_CONSTANT    "Apple", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+DEF             "def", la=2, st=6
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_FNAME,null,null]
+GSF_IDENTIFIER  "foo", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "    ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "snark", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_ARG,null,null]
+GSF_STRING_BEGIN  "%w[", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=],paren=91,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_STRING_LITERAL  "a", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=],paren=91,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=],paren=91,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_STRING_LITERAL  "b", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=],paren=91,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=],paren=91,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_STRING_LITERAL  "c", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=],paren=91,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_STRING_END  "]", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "    ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "\n", la=1, st=0
+GSF_WHITESPACE  "    ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "blah", la=2, st=2
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+END             "end", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+END             "end", la=2, st=1
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+CLASS           "class", la=2, st=8
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_CLASS,null,null]
+GSF_CONSTANT    "Apple", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+DEF             "def", la=2, st=6
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_FNAME,null,null]
+GSF_IDENTIFIER  "foo", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "    ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "snark", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_ARG,null,null]
+GSF_STRING_BEGIN  "%w,", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=,,paren=0,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_STRING_LITERAL  "a", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=,,paren=0,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=,,paren=0,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_STRING_LITERAL  "b", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=,,paren=0,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=,,paren=0,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_STRING_LITERAL  "c", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=,,paren=0,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_STRING_END  ",", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "    ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "blah", la=2, st=2
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+END             "end", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+END             "end", la=2, st=1
+GSF_WHITESPACE  "\n\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+CLASS           "class", la=2, st=8
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_CLASS,null,null]
+GSF_CONSTANT    "Apple", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+DEF             "def", la=2, st=6
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_FNAME,null,null]
+GSF_IDENTIFIER  "foo", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "    ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "snark", la=2, st=2
+GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_ARG,null,null]
+GSF_STRING_BEGIN  "%w/", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=/,paren=0,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_STRING_LITERAL  "a", la=1, st=RubyLexerState[-,StringTerm[func=qwords,term=/,paren=0,nest=0,embed=1],EXPR_ARG,StringTermState[nest=0,embed=1],null]
+GSF_STRING_END  "/", st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "    ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+GSF_IDENTIFIER  "blah", la=2, st=2
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+GSF_WHITESPACE  "  ", la=1, st=RubyLexerState[spaceseen,null,EXPR_BEG,null,null]
+END             "end", la=2, st=1
+GSF_WHITESPACE  "\n", la=1, st=RubyLexerState[commandstart,null,EXPR_BEG,null,null]
+END             "end", la=1, st=1
+GSF_IDENTIFIER  "\n", la=1, st=1
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+

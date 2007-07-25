@@ -61,4 +61,9 @@ public class RubyTokenDumpTest extends NbTestCase {
         LexerTestUtilities.checkTokenDump(this, "testfiles/freakout.rb.txt",
                 RubyTokenId.language());
     }    
+
+    public void testPercentExpressions() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/percent-expressions2.rb.txt",
+                RubyTokenId.language());
+    }    
 }

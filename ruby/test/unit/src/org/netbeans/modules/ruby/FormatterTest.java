@@ -107,7 +107,7 @@ public class FormatterTest extends RubyTestBase {
             doc.insertString(caret.getDot(), "\n", null);
         
             int startPos = caret.getDot()+1;
-            int endPos = Utilities.getRowEnd(doc, startPos);
+            int endPos = startPos+1;
 
             //ParserResult result = parse(fo);
             ParserResult result = null;
@@ -377,4 +377,42 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         format("def foo\n     if true\n           %<%xxx%>%\n     end\nend\n",
                 "def foo\n     if true\n       xxx\n     end\nend\n", null);
     }    
+
+    public void testPercentWIndent110983a() throws Exception {
+        insertNewline(
+            "class Apple\n  def foo\n    snark %w[a b c]^\n    blah",
+            "class Apple\n  def foo\n    snark %w[a b c]\n    ^\n    blah", null);
+    }
+
+    public void testPercentWIndent110983b() throws Exception {
+        insertNewline(
+            "class Apple\n  def foo\n    snark %w,a b c,^\n    blah",
+            "class Apple\n  def foo\n    snark %w,a b c,\n    ^\n    blah", null);
+    }
+
+    public void testPercentWIndent110983c() throws Exception {
+        insertNewline(
+            "class Apple\n  def foo\n    snark %w/a/^\n    blah",
+            "class Apple\n  def foo\n    snark %w/a/\n    ^\n    blah", null);
+    }
+    
+    public void testPercentWIndent110983d() throws Exception {
+        insertNewline(
+            "class Apple\n  def foo\n    snark %W[a b c]^\n    blah",
+            "class Apple\n  def foo\n    snark %W[a b c]\n    ^\n    blah", null);
+    }
+
+    public void testPercentWIndent110983e() throws Exception {
+        insertNewline(
+            "class Apple\n  def foo\n    snark %Q[a b c]^\n    blah",
+            "class Apple\n  def foo\n    snark %Q[a b c]\n    ^\n    blah", null);
+    }
+
+    public void testEof() throws Exception {
+        format("def foo\n     if true\n           %<%xxx%>%\n     end\nend\n",
+                "def foo\n     if true\n       xxx\n     end\nend\n", null);
+        format("x\n",
+               "x\n", null);
+    }
+
 }

@@ -1,0 +1,24 @@
+.t.e.s.t. Percent expressions
+class Apple
+  def foo
+    snark %w[a b c]
+    
+    blah
+  end
+end
+
+class Apple
+  def foo
+    snark %w,a b c,
+    blah
+  end
+end
+
+class Apple
+  def foo
+    snark %w/a/
+    blah
+  end
+end
+
+.e.o.f.

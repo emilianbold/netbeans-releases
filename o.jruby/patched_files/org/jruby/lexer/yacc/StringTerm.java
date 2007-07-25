@@ -74,16 +74,16 @@ public class StringTerm extends StrTerm {
         if ((processingEmbedded == IGNORE_EMBEDDED || processingEmbedded == LOOKING_FOR_EMBEDDED) && (c == term) && (nest == 0)) {
         // END NETBEANS MODIFICATIONS
             if ((func & RubyYaccLexer.STR_FUNC_QWORDS) != 0) {
-                func = -1;
                 // BEGIN NETBEANS MODIFICATIONS
-                if (term == ')' && processingEmbedded == LOOKING_FOR_EMBEDDED) { // Only make this change when lexing, not parsing
+                if (processingEmbedded == LOOKING_FOR_EMBEDDED) { // Only make this change when lexing, not parsing
                     // I want the terminating ")" to be passed as a string closure token,
                     // not as a plain rparen, since I want it to match up with the 
                     // string opening tag (and I don't want an unbalanced right paren)
-                    lexer.setValue(new Token(")", lexer.getPosition()));
+                    lexer.setValue(new Token(""+term, lexer.getPosition()));
                     return Tokens.tSTRING_END;
                 }
                 // END NETBEANS MODIFICATIONS
+                func = -1;
                 lexer.getPosition();
                 return ' ';
             }
