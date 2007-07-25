@@ -19,7 +19,9 @@
 
 package org.netbeans.qa.form.beans;
 
+import org.netbeans.jellytools.actions.CompileAction;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.properties.Property;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.qa.form.*;
@@ -56,11 +58,23 @@ public class AddBeanForms extends AddAndRemoveBeansTest {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         
+        suite.addTest(new AddBeanForms("testCompileBeanClasses")); // NOI18N
         suite.addTest(new AddBeanForms("testAddingBeanFormWithVisualBeanSuperclass")); // NOI18N
         suite.addTest(new AddBeanForms("testAddingBeanFormWithNonVisualBeanSuperclass")); // NOI18N        
         
         return suite;
     }
+
+    /** Compiling beans components */
+    public void testCompileBeanClasses() {
+        Node beanNode = openFile(VISUAL_BEAN_NAME);
+        CompileAction action = new CompileAction();
+        action.perform(beanNode);
+
+        beanNode = openFile(NONVISUAL_BEAN_NAME);
+        action = new CompileAction();
+        action.perform(beanNode);
+   }
     
     /** Test adding Bean Form with visual bean superclass */
     public void testAddingBeanFormWithVisualBeanSuperclass() {
