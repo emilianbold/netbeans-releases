@@ -20,7 +20,6 @@
 
 package org.netbeans.modules.properties;
 
-
 import java.awt.Component;
 import java.awt.datatransfer.Transferable;
 import java.awt.Dialog;
@@ -29,13 +28,10 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.List;
-
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
@@ -43,10 +39,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
-import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.cookies.SaveCookie;
-import org.openide.loaders.FileEntry;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.datatransfer.PasteType;
