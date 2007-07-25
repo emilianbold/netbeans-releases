@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.java.source.builder;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.util.Trees;
-import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.util.Name;
 import javax.lang.model.util.Types;
@@ -33,7 +30,6 @@ import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTags;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
@@ -47,10 +43,6 @@ public class ElementsService {
     private com.sun.tools.javac.code.Types jctypes;
     private Name.Table names;
     private Types types;
-    private VariableCharacterization vcCache;
-    private Element vcKey;
-    private Tree vcTree;
-    private Trees trees;
     
     private static final Context.Key<ElementsService> KEY =
 	    new Context.Key<ElementsService>();
@@ -67,7 +59,6 @@ public class ElementsService {
         jctypes = com.sun.tools.javac.code.Types.instance(context);
         names = Name.Table.instance(context);
         types = TypesService.instance(context);
-        trees = JavacTrees.instance(context);
     }
 
     /**
@@ -148,28 +139,7 @@ public class ElementsService {
 	}
 	return false;
     }
-    
-    public boolean referenced(Element e, Element parent) {
-	return getCharacterization(parent).referenced(e);
-    }
-    
-    public boolean assigned(Element e, Element parent) {
-	return getCharacterization(parent).assigned(e);
-    }
-    
-    VariableCharacterization getCharacterization(Element s) {
-	if(s!=vcKey|| vcCache==null) {
-            vcTree = trees.getTree(s);
-	    vcCache = new VariableCharacterization(vcTree);
-	    vcKey= s;
-	}
-	return vcCache;
-    }
-    
-    public boolean parameter(Element e, Element parent) {
-	return getCharacterization(parent).parameter(e);
-    }
-    
+
     public boolean alreadyDefinedIn(CharSequence name, ExecutableType method, TypeElement enclClass) {
         Type.MethodType meth = ((Type)method).asMethodType();
         ClassSymbol clazz = (ClassSymbol)enclClass;
