@@ -87,4 +87,60 @@ public class TokenHierarchyTest extends NbTestCase {
         assertSame(et, et2);
     }
 
+    public void testEmbeddingOnSubSequence() throws Exception {
+        Document doc = new ModificationTextDocument();
+        // Assign a language to the document
+        String text = "/**abc*/";
+        doc.insertString(0, text, null);
+        
+        doc.putProperty(Language.class,TestTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        TokenSequence<?> ets = ts.embedded();
+        assertTrue(ets.moveNext());
+        Token<?> et = ets.token();
+        assertNotNull(et);
+        
+        TokenHierarchy<?> hi2 = TokenHierarchy.get(doc);
+        TokenSequence<?> ts2 = hi2.tokenSequence();
+        // Use subsequence
+        ts2 = ts2.subSequence(0);
+        assertTrue(ts2.moveNext());
+        TokenSequence<?> ets2 = ts2.embedded();
+        assertTrue(ets2.moveNext());
+        Token<?> et2 = ets2.token();
+        assertNotNull(et2);
+        
+        assertSame("Same tokens expected", et, et2);
+    }
+
+    public void testEmbeddingOnSubSequenceSimple() throws Exception {
+        Document doc = new ModificationTextDocument();
+        // Assign a language to the document
+        String text = "/**abc*/";
+        doc.insertString(0, text, null);
+        
+        doc.putProperty(Language.class,TestTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        
+        TokenSequence<?> ts = hi.tokenSequence();
+        // Use subsequence
+        ts = ts.subSequence(0);
+        assertTrue(ts.moveNext());
+        TokenSequence<?> ets = ts.embedded();
+        assertTrue(ets.moveNext());
+        Token<?> et = ets.token();
+        assertNotNull(et);
+        
+        // Ask the original top-level token sequence again
+        TokenSequence<?> ets2 = ts.embedded();
+        assertTrue(ets2.moveNext());
+        Token<?> et2 = ets2.token();
+        assertNotNull(et2);
+        
+        assertSame(et, et2);
+    }
+
 }

@@ -125,6 +125,19 @@ public class TokenSequenceTest extends NbTestCase {
 
         sub = ts.subSequence(3, 3);
         assertFalse(sub.moveNext());
+        
+        sub = ts.subSequence(2, 2);
+        assertTrue(sub.moveNext());
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "abc", 0);
+        assertFalse(sub.moveNext());
+
+        sub = ts.subSequence(7, 7);
+        assertTrue(sub.moveNext());
+        LexerTestUtilities.assertTokenEquals(sub,TestTokenId.IDENTIFIER, "defg", 4);
+        assertFalse(sub.moveNext());
+
+        sub = ts.subSequence(8, 8);
+        assertFalse(sub.moveNext());
     }
     
     public void testMoveNextPrevious() {
