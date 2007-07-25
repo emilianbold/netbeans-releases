@@ -21,7 +21,6 @@ package org.netbeans.modules.form.j2ee;
 import com.sun.source.tree.*;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
@@ -37,7 +36,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
-import javax.swing.Action;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -79,18 +77,11 @@ import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlExcep
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.*;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Utility methods.
@@ -324,6 +315,7 @@ public class J2EEUtils {
      * @throws Exception when something goes wrong ;-).
      */
     public static RADComponent createEntityManager(FormModel model, String puName) throws Exception {
+        assert EventQueue.isDispatchThread();
         FileObject formFile = FormEditor.getFormDataObject(model).getFormFile();
         Class emClass = ClassPathUtils.loadClass("javax.persistence.EntityManager", formFile); // NOI18N
         RADComponent entityManager = new RADComponent();
@@ -673,25 +665,27 @@ public class J2EEUtils {
                             String type = variable.getType().toString();
                             if (type.endsWith("PropertyChangeSupport")) { // NOI18N
                                 alreadyUpdated[0] = true;
-                                return;
                             }
                         }
                     }
                     
                     TreeMaker make = wc.getTreeMaker();
+                    ClassTree modifiedClass = clazz;
                     
-                    // changeSupport field
-                    TypeElement transientElement = wc.getElements().getTypeElement("javax.persistence.Transient"); // NOI18N
-                    TypeMirror transientMirror = transientElement.asType();
-                    Tree transientType = make.Type(transientMirror);
-                    AnnotationTree transientTree = make.Annotation(transientType , Collections.EMPTY_LIST);
-                    ModifiersTree modifiers = make.Modifiers(Modifier.PRIVATE, Collections.singletonList(transientTree));
-                    TypeElement changeSupportElement = wc.getElements().getTypeElement("java.beans.PropertyChangeSupport"); // NOI18N
-                    TypeMirror changeSupportMirror = changeSupportElement.asType();
-                    Tree changeSupportType = make.Type(changeSupportMirror);
-                    NewClassTree changeSupportConstructor = make.NewClass(null, Collections.EMPTY_LIST, make.QualIdent(changeSupportElement), Collections.singletonList(make.Identifier("this")), null);
-                    VariableTree changeSupport = make.Variable(modifiers, "changeSupport", changeSupportType, changeSupportConstructor); // NOI18N
-                    ClassTree modifiedClass = make.insertClassMember(clazz, 0, changeSupport);
+                    if (!alreadyUpdated[0]) {
+                        // changeSupport field
+                        TypeElement transientElement = wc.getElements().getTypeElement("javax.persistence.Transient"); // NOI18N
+                        TypeMirror transientMirror = transientElement.asType();
+                        Tree transientType = make.Type(transientMirror);
+                        AnnotationTree transientTree = make.Annotation(transientType , Collections.EMPTY_LIST);
+                        ModifiersTree modifiers = make.Modifiers(Modifier.PRIVATE, Collections.singletonList(transientTree));
+                        TypeElement changeSupportElement = wc.getElements().getTypeElement("java.beans.PropertyChangeSupport"); // NOI18N
+                        TypeMirror changeSupportMirror = changeSupportElement.asType();
+                        Tree changeSupportType = make.Type(changeSupportMirror);
+                        NewClassTree changeSupportConstructor = make.NewClass(null, Collections.EMPTY_LIST, make.QualIdent(changeSupportElement), Collections.singletonList(make.Identifier("this")), null);
+                        VariableTree changeSupport = make.Variable(modifiers, "changeSupport", changeSupportType, changeSupportConstructor); // NOI18N
+                        modifiedClass = make.insertClassMember(clazz, 0, changeSupport);
+                    }
 
                     // property change notification
                     for (Tree clMember : modifiedClass.getMembers()) {
@@ -728,7 +722,7 @@ public class J2EEUtils {
                                 BlockTree newBlock = make.insertBlockStatement(block, 0, oldParameter);
 
                                 // changeSupport.firePropertyChange("<propertyName>", old<PropertyName>, <propertyName>);
-                                MemberSelectTree fireMethod = make.MemberSelect(make.Identifier(changeSupport.getName()), "firePropertyChange"); // NOI18N
+                                MemberSelectTree fireMethod = make.MemberSelect(make.Identifier("changeSupport"), "firePropertyChange"); // NOI18N
                                 List<ExpressionTree> fireArgs = new LinkedList<ExpressionTree>();
                                 fireArgs.add(make.Literal(propName));
                                 fireArgs.add(make.Identifier(oldParameterName));

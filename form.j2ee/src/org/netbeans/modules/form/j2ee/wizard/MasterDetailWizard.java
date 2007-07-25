@@ -19,20 +19,26 @@
 
 package org.netbeans.modules.form.j2ee.wizard;
 
+import com.sun.source.tree.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -76,6 +82,9 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
     private transient WizardDescriptor.InstantiatingIterator delegateIterator;
     /** Number of steps of the delegate iterator (for configuring new file) */
     private int beforeStepsNo;
+    private String[] joinInfo;
+    private String joinColumn;
+    private String referencedColumn;
 
     /**
      * Creates new <code>MasterDetailWizard</code>.
@@ -296,7 +305,8 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             DatabaseConnection connection = (DatabaseConnection)wizard.getProperty("connection"); // NOI18N
             String masterTableName = (String)wizard.getProperty("master"); // NOI18N
             String detailFKTable = (String)wizard.getProperty("detailFKTable"); // NOI18N
-            String joinColumn = (String)wizard.getProperty("detailFKColumn"); // NOI18N
+            joinColumn = (String)wizard.getProperty("detailFKColumn"); // NOI18N
+            referencedColumn = (String)wizard.getProperty("detailPKColumn"); // NOI18N
 
             FileObject javaFile;
             if (delegateIterator != null) {
@@ -323,11 +333,10 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             String masterEntity = entity[0][0];
             String detailClass = null;
             String detailEntity = null;
-            String[] joinInfo = null;
+            
             if (entity[1] != null) {
                 detailClass = entity[1][1];
                 detailEntity = entity[1][0];
-                joinInfo = findOneToManyRelationProperties(mappings, masterEntity, detailEntity, joinColumn);
             }
             MasterDetailGenerator generator = new MasterDetailGenerator(formFile, javaFile,
                 masterClass, detailClass, masterEntity, detailEntity,
@@ -425,15 +434,28 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                     // Add the entity into the persistence unit if it is not there already
                     J2EEUtils.addEntityToUnit(entityInfo[1], unit, project);
                 }
-                
-                J2EEUtils.makeEntityObservable(folder, entityInfo, mappings);
             }
-            
+
             String[][] result = new String[2][];
             result[0] = J2EEUtils.findEntity(mappings, tableName);
             if (detailTable != null)  {
                 result[1] = J2EEUtils.findEntity(mappings, detailTable);
+                joinInfo = findOneToManyRelationProperties(mappings, result[0][0], result[1][0], joinColumn);
+                if ((joinInfo == null) || joinInfo[1] == null) {
+                    // Determine whether there already exist field mapped to PK column
+                    boolean anotherDetailFieldExists = !J2EEUtils.propertiesForColumns(mappings, result[1][0], Collections.singletonList(joinColumn)).isEmpty();
+
+                    // Issue 102630 - missing relationship between entities
+                    addRelationship(result[0], result[1], joinColumn, referencedColumn, (joinInfo == null) ? null : joinInfo[0], anotherDetailFieldExists, folder);
+                    joinInfo = findOneToManyRelationProperties(mappings, result[0][0], result[1][0], joinColumn);
+                }
             }
+            
+            J2EEUtils.makeEntityObservable(folder, result[0], mappings);
+            if (detailTable != null) {
+                J2EEUtils.makeEntityObservable(folder, result[1], mappings);
+            }
+
             return result;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -510,7 +532,11 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                             };
                         }
                     }
-                    return null;
+                    if (relationField != null) {
+                        return new String[] { J2EEUtils.fieldToProperty(relationField), null };
+                    } else {
+                        return null;
+                    }
                 }
             }).get();
         } catch (InterruptedException iex) {
@@ -519,6 +545,266 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             eex.printStackTrace();
         }
         return properties;
+    }
+    
+    private static void addRelationship(final String[] masterInfo, final String[] detailInfo,
+            final String joinColumn, final String referencedColumn, String detailField,
+            final boolean anotherDetailFieldExists, FileObject fileInProject) {
+        ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.SOURCE);
+        final String[] df = new String[] {detailField};
+        if (df[0] == null) {
+            String detailJava = detailInfo[1].replace('.', '/') + ".java"; // NOI18N
+            FileObject detailFob = cp.findResource(detailJava);
+            if (detailFob == null) return;
+            JavaSource source = JavaSource.forFileObject(detailFob);
+            try {
+                source.runModificationTask(new CancellableTask<WorkingCopy>() {
+
+                    public void run(WorkingCopy wc) throws Exception {
+                        wc.toPhase(JavaSource.Phase.RESOLVED);
+                        CompilationUnitTree cu = wc.getCompilationUnit();
+                        ClassTree clazz = null;
+                        for (Tree typeDecl : cu.getTypeDecls()) {
+                            if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                                clazz = (ClassTree) typeDecl;
+                                break;
+                            }
+                        }
+
+                        // Find existing fields and methods
+                        int idx = 0;
+                        int fieldIndex = 0;
+                        Set<String> methods = new HashSet<String>();
+                        Set<String> fields = new HashSet<String>();
+                        for (Tree member : clazz.getMembers()) {
+                            idx++;
+                            if (Tree.Kind.VARIABLE == member.getKind()) {
+                                VariableTree variable = (VariableTree)member;
+                                fields.add(variable.getName().toString());
+                                fieldIndex = idx;
+                            } else if (Tree.Kind.METHOD == member.getKind()) {
+                                MethodTree method = (MethodTree)member;
+                                methods.add(method.getName().toString());
+                            }
+                        }
+
+                        // Determine preferred name of the field
+                        StringBuilder sb = new StringBuilder();
+                        boolean upper = false;
+                        for (int i=0; i<joinColumn.length(); i++) {
+                            char c = joinColumn.charAt(i);
+                            if (c == '_') {
+                                upper = true;
+                            } else {
+                                if (upper) {
+                                    c = Character.toUpperCase(c);
+                                } else {
+                                    c = Character.toLowerCase(c);
+                                }
+                                sb.append(c);
+                                upper = false;
+                            }
+                        }
+                        String detailFieldName = sb.toString();
+                        String detailMethodSuffix = Character.toUpperCase(detailFieldName.charAt(0)) + detailFieldName.substring(1);
+                        String candFieldName = detailFieldName;
+                        String candMethodSuffix = detailMethodSuffix;
+                        int count = 1;
+                        boolean ok = false;
+                        while (!ok) {
+                            ok = !fields.contains(candFieldName);
+                            ok = ok && !methods.contains("set" + candMethodSuffix); // NOI18N
+                            ok = ok && !methods.contains("get" + candMethodSuffix); // NOI18N
+                            if (!ok) {
+                                count++;
+                                candFieldName = detailFieldName + count;
+                                candMethodSuffix = detailMethodSuffix + count;
+                            }
+                        }
+                        detailFieldName = candFieldName;
+                        detailMethodSuffix = candMethodSuffix;
+                        df[0] = detailFieldName;
+
+                        // Add the field
+                        TreeMaker make = wc.getTreeMaker();
+                        AssignmentTree nameParameter = make.Assignment(make.Identifier("name"), make.Literal(joinColumn)); // NOI18N
+                        AssignmentTree referencedParameter = make.Assignment(make.Identifier("referencedColumnName"), make.Literal(referencedColumn)); // NOI18N
+                        List<ExpressionTree> parameters = new ArrayList<ExpressionTree>();
+                        parameters.add(nameParameter);
+                        parameters.add(referencedParameter);
+                        if (anotherDetailFieldExists) {
+                            AssignmentTree updatableParameter = make.Assignment(make.Identifier("updatable"), make.Identifier("false")); // NOI18N
+                            AssignmentTree insertableParameter = make.Assignment(make.Identifier("insertable"), make.Identifier("false")); // NOI18N
+                            parameters.add(updatableParameter);
+                            parameters.add(insertableParameter);
+                        }
+                        TypeElement joinColumnElement = wc.getElements().getTypeElement("javax.persistence.JoinColumn"); // NOI18N
+                        AnnotationTree joinColumnTree = make.Annotation(make.QualIdent(joinColumnElement), parameters);
+                        TypeElement manyToOneElement = wc.getElements().getTypeElement("javax.persistence.ManyToOne"); // NOI18N
+                        AnnotationTree manyToOneTree = make.Annotation(make.QualIdent(manyToOneElement), Collections.EMPTY_LIST); // NOI18N
+                        List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(2);
+                        annotations.add(joinColumnTree);
+                        annotations.add(manyToOneTree);
+                        ModifiersTree modifiers = make.Modifiers(Collections.singleton(Modifier.PRIVATE), annotations);
+                        TypeElement masterElement = wc.getElements().getTypeElement(masterInfo[1]);
+                        VariableTree field = make.Variable(modifiers, detailFieldName, make.QualIdent(masterElement), null);
+                        ClassTree modifiedClass = make.insertClassMember(clazz, fieldIndex, field);
+                        wc.rewrite(clazz, modifiedClass);
+
+                        // Add getter
+                        ReturnTree returnExp = make.Return(make.Identifier(detailFieldName));
+                        MethodTree getMethod = make.Method(
+                            make.Modifiers(Collections.singleton(Modifier.PUBLIC), Collections.EMPTY_LIST),
+                            "get" + detailMethodSuffix, // NOI18N
+                            make.QualIdent(masterElement),
+                            Collections.EMPTY_LIST,
+                            Collections.EMPTY_LIST,
+                            Collections.EMPTY_LIST,
+                            make.Block(Collections.singletonList(returnExp), false),
+                            null
+                        );
+                        modifiedClass = make.addClassMember(modifiedClass, getMethod);
+                        wc.rewrite(clazz, modifiedClass);
+
+                        // Add setter
+                        ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
+                        VariableTree par = make.Variable(parMods, detailFieldName, make.QualIdent(masterElement), null);
+                        AssignmentTree assignExp = make.Assignment(make.Identifier("this." + detailFieldName), make.Identifier(detailFieldName));
+                        MethodTree setMethod = make.Method(
+                            make.Modifiers(Collections.singleton(Modifier.PUBLIC), Collections.EMPTY_LIST),
+                            "set" + detailMethodSuffix, // NOI18N
+                            make.PrimitiveType(TypeKind.VOID),
+                            Collections.EMPTY_LIST,
+                            Collections.singletonList(par),
+                            Collections.EMPTY_LIST,
+                            make.Block(Collections.singletonList(make.ExpressionStatement(assignExp)), false),
+                            null
+                        );
+                        modifiedClass = make.addClassMember(modifiedClass, setMethod);
+                        wc.rewrite(clazz, modifiedClass);
+                    }
+                    public void cancel() {
+                    }
+
+                }).commit();
+            } catch (IOException ioex) {
+                ioex.printStackTrace();
+            }
+        }
+
+        String masterJava = masterInfo[1].replace('.', '/') + ".java"; // NOI18N
+        FileObject masterFob = cp.findResource(masterJava);
+        if (masterFob == null) return;
+        JavaSource source = JavaSource.forFileObject(masterFob);
+        try {
+            source.runModificationTask(new CancellableTask<WorkingCopy>() {
+
+                public void run(WorkingCopy wc) throws Exception {
+                    wc.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cu = wc.getCompilationUnit();
+                    ClassTree clazz = null;
+                    for (Tree typeDecl : cu.getTypeDecls()) {
+                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                            clazz = (ClassTree) typeDecl;
+                            break;
+                        }
+                    }
+
+                    // Find existing fields and methods
+                    int idx = 0;
+                    int fieldIndex = 0;
+                    Set<String> methods = new HashSet<String>();
+                    Set<String> fields = new HashSet<String>();
+                    for (Tree member : clazz.getMembers()) {
+                        idx++;
+                        if (Tree.Kind.VARIABLE == member.getKind()) {
+                            VariableTree variable = (VariableTree)member;
+                            fields.add(variable.getName().toString());
+                            fieldIndex = idx;
+                        } else if (Tree.Kind.METHOD == member.getKind()) {
+                            MethodTree method = (MethodTree)member;
+                            methods.add(method.getName().toString());
+                        }
+                    }
+
+                    // Determine preferred name of the field
+                    String masterFieldName = detailInfo[0] + "Collection"; // NOI18N
+                    masterFieldName = Character.toLowerCase(masterFieldName.charAt(0)) + masterFieldName.substring(1);
+                    String masterMethodSuffix = Character.toUpperCase(masterFieldName.charAt(0)) + masterFieldName.substring(1);
+                    String candFieldName = masterFieldName;
+                    String candMethodSuffix = masterMethodSuffix;
+                    int count = 1;
+                    boolean ok = false;
+                    while (!ok) {
+                        ok = !fields.contains(candFieldName);
+                        ok = ok && !methods.contains("set" + candMethodSuffix); // NOI18N
+                        ok = ok && !methods.contains("get" + candMethodSuffix); // NOI18N
+                        if (!ok) {
+                            count++;
+                            candFieldName = masterFieldName + count;
+                            candMethodSuffix = masterMethodSuffix + count;
+                        }
+                    }
+                    masterFieldName = candFieldName;
+                    masterMethodSuffix = candMethodSuffix;
+
+                    // Add the field
+                    TreeMaker make = wc.getTreeMaker();
+                    TypeElement cascadeTypeElement = wc.getElements().getTypeElement("javax.persistence.CascadeType"); // NOI18N
+                    AssignmentTree cascadeParameter = make.Assignment(make.Identifier("cascade"), make.MemberSelect(make.QualIdent(cascadeTypeElement),"ALL")); // NOI18N
+                    AssignmentTree mappedByParameter = make.Assignment(make.Identifier("mappedBy"), make.Literal(df[0])); // NOI18N
+                    List<ExpressionTree> parameters = new ArrayList<ExpressionTree>();
+                    parameters.add(cascadeParameter);
+                    parameters.add(mappedByParameter);
+                    TypeElement oneToManyElement = wc.getElements().getTypeElement("javax.persistence.OneToMany"); // NOI18N
+                    AnnotationTree oneToManyTree = make.Annotation(make.QualIdent(oneToManyElement), parameters);
+                    ModifiersTree modifiers = make.Modifiers(Collections.singleton(Modifier.PRIVATE), Collections.singletonList(oneToManyTree));
+                    TypeElement collectionElement = wc.getElements().getTypeElement("java.util.Collection"); // NOI18N
+                    TypeElement detailElement = wc.getElements().getTypeElement(detailInfo[1]);
+                    ParameterizedTypeTree collectionTree = make.ParameterizedType(make.QualIdent(collectionElement), Collections.singletonList(make.QualIdent(detailElement)));
+                    VariableTree field = make.Variable(modifiers, masterFieldName, collectionTree, null);
+                    ClassTree modifiedClass = make.insertClassMember(clazz, fieldIndex, field);
+                    wc.rewrite(clazz, modifiedClass);
+
+                    // Add getter
+                    ReturnTree returnExp = make.Return(make.Identifier(masterFieldName));
+                    MethodTree getMethod = make.Method(
+                        make.Modifiers(Collections.singleton(Modifier.PUBLIC), Collections.EMPTY_LIST),
+                        "get" + masterMethodSuffix, // NOI18N
+                        collectionTree,
+                        Collections.EMPTY_LIST,
+                        Collections.EMPTY_LIST,
+                        Collections.EMPTY_LIST,
+                        make.Block(Collections.singletonList(returnExp), false),
+                        null
+                    );
+                    modifiedClass = make.addClassMember(modifiedClass, getMethod);
+                    wc.rewrite(clazz, modifiedClass);
+                    
+                    // Add setter
+                    ModifiersTree parMods = make.Modifiers(Collections.EMPTY_SET, Collections.EMPTY_LIST);
+                    VariableTree par = make.Variable(parMods, masterFieldName, collectionTree, null);
+                    AssignmentTree assignExp = make.Assignment(make.Identifier("this." + masterFieldName), make.Identifier(masterFieldName));
+                    MethodTree setMethod = make.Method(
+                        make.Modifiers(Collections.singleton(Modifier.PUBLIC), Collections.EMPTY_LIST),
+                        "set" + masterMethodSuffix, // NOI18N
+                        make.PrimitiveType(TypeKind.VOID),
+                        Collections.EMPTY_LIST,
+                        Collections.singletonList(par),
+                        Collections.EMPTY_LIST,
+                        make.Block(Collections.singletonList(make.ExpressionStatement(assignExp)), false),
+                        null
+                    );
+                    modifiedClass = make.addClassMember(modifiedClass, setMethod);
+                    wc.rewrite(clazz, modifiedClass);
+                }
+                public void cancel() {
+                }
+
+            }).commit();
+        } catch (IOException ioex) {
+            ioex.printStackTrace();
+        }
     }
 
 }
