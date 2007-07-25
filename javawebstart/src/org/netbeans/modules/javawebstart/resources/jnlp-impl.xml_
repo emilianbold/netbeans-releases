@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
         <available file="${master.jnlp.file}" property="master.jnlp.exists"/>
     </target>
     <target name="jnlp-init-generate-master" depends="-check-for-master.jnlp" unless="master.jnlp.exists">
-        <echo file="${master.jnlp.file}"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+        <echo file="${master.jnlp.file}" encoding="UTF-8"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <jnlp spec="1.0+" codebase="$${jnlp.codebase}" href="launch.jnlp">
     <information>
         <title>$${APPLICATION.TITLE}</title>
@@ -187,7 +187,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Generating JNLP file -->
     
     <target name="generate-jnlp" depends="jnlp-init-generate-master,-init-codebase,-init-resources-runtime,-init-security,-init-resources-jars,-init-application-args,-init-icons,-init-offline,-init-descriptions,jnlp-init-notinited">
-        <copy file="master.jnlp" tofile="${jnlp.dest.dir}/${launch.jnlp.file}__" overwrite="true">
+        <copy file="${master.jnlp.file}" tofile="${jnlp.dest.dir}/${launch.jnlp.file}__" overwrite="true" encoding="UTF-8">
             <filterchain>
                 <replacestring from="$${jnlp.codebase}" to="${jnlp.codebase.value}"/>
                 <replacestring from="&lt;!--$${JNLP.ICONS}--&gt;" to="${jnlp.icons.value}"/>
@@ -215,7 +215,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="jnlp.application.args.value" value=""/>
     </target>
     <target name="-strip-empty-lines">
-        <move file="${jnlp.dest.dir}/${launch.jnlp.file}__" tofile="${jnlp.dest.dir}/${launch.jnlp.file}" overwrite="true">
+        <move file="${jnlp.dest.dir}/${launch.jnlp.file}__" tofile="${jnlp.dest.dir}/${launch.jnlp.file}" overwrite="true" encoding="UTF-8">
             <filterchain>
                 <linecontainsregexp>
                     <regexp pattern=".+"/>
