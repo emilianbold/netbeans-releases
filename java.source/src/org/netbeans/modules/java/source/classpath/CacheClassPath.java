@@ -24,13 +24,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
@@ -52,8 +49,9 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
     
     private final ClassPath cp;    
     private final boolean translate;
-    private PropertyChangeSupport listeners;
+    private final PropertyChangeSupport listeners;
     private List<PathResourceImplementation> cache;
+    private long eventId;
     
     /** Creates a new instance of CacheClassPath */
     private CacheClassPath (ClassPath cp, boolean translate) {
@@ -75,71 +73,90 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
         if (ClassPath.PROP_ENTRIES.equals(event.getPropertyName())) {
             synchronized (this) {
                 this.cache = null;
+                this.eventId++;
             }
             this.listeners.firePropertyChange(PROP_RESOURCES,null,null);
         }
     }
 
-    public synchronized List<? extends PathResourceImplementation> getResources() {
-        if (this.cache == null) {            
-            List<ClassPath.Entry> entries = this.cp.entries();
-            this.cache = new LinkedList<PathResourceImplementation> ();            
-            final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
-            for (ClassPath.Entry entry : entries) {
-                URL url = entry.getURL();
-                URL[] sourceUrls;
-                if (translate) {
-                    sourceUrls = gsp.getSourceRootForBinaryRoot(url, this.cp, true);
-                }
-                else {        
-                    sourceUrls = new URL[] {url};
-                }
-                if (sourceUrls != null) {
-                    for (URL sourceUrl : sourceUrls) {
-                        try {
-                            File cacheFolder = Index.getClassFolder(sourceUrl);
-                            URL cacheUrl = cacheFolder.toURI().toURL();
-                            if (!cacheFolder.exists()) {                                
-                                cacheUrl = new URL (cacheUrl.toExternalForm()+"/");     //NOI18N
-                            }
-                            this.cache.add(ClassPathSupport.createResource(cacheUrl));
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify(ioe);
-                        }
-                    }
-                } else {
-                    if (FileObjects.JAR.equals(url.getProtocol())) {
-                        URL foo = FileUtil.getArchiveFile(url);
-                        if (!FileObjects.FILE.equals(foo.getProtocol())) {
-                            FileObject fo = URLMapper.findFileObject(foo);
-                            if (fo != null) {
-                                foo = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-                                if (FileObjects.FILE.equals(foo.getProtocol())) {
-                                    url = FileUtil.getArchiveRoot(foo);
-                                }
-                            }
-                        }
-                    }
-                    else if (!FileObjects.FILE.equals(url.getProtocol())) {
-                        FileObject fo = URLMapper.findFileObject(url);
-                        if (fo != null) {
-                            URL foo = URLMapper.findURL(fo, URLMapper.EXTERNAL);
-                            if (FileObjects.FILE.equals(foo.getProtocol())) {
-                                url = foo;
-                            }
-                        }
-                    }
+    public List<? extends PathResourceImplementation> getResources() {
+        long currentEventId;
+        synchronized (this) {
+            if (this.cache!= null) {
+                return this.cache;
+            }
+            currentEventId = this.eventId;
+        }        
+        final List<ClassPath.Entry> entries = this.cp.entries();
+        final List<PathResourceImplementation> _cache = new LinkedList<PathResourceImplementation> ();            
+        final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
+        for (ClassPath.Entry entry : entries) {
+            URL url = entry.getURL();
+            URL[] sourceUrls;
+            if (translate) {
+                sourceUrls = gsp.getSourceRootForBinaryRoot(url, this.cp, true);
+            }
+            else {        
+                sourceUrls = new URL[] {url};
+            }
+            if (sourceUrls != null) {
+                for (URL sourceUrl : sourceUrls) {
                     try {
-                        File sigs = Index.getClassFolder(url);
-                        this.cache.add (ClassPathSupport.createResource(sigs.toURI().toURL()));
+                        File cacheFolder = Index.getClassFolder(sourceUrl);
+                        URL cacheUrl = cacheFolder.toURI().toURL();
+                        if (!cacheFolder.exists()) {                                
+                            cacheUrl = new URL (cacheUrl.toExternalForm()+"/");     //NOI18N
+                        }
+                        _cache.add(ClassPathSupport.createResource(cacheUrl));
                     } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+                        ErrorManager.getDefault().notify(ioe);
                     }
-                    this.cache.add (ClassPathSupport.createResource(url));
                 }
+            } else {
+                if (FileObjects.JAR.equals(url.getProtocol())) {
+                    URL foo = FileUtil.getArchiveFile(url);
+                    if (!FileObjects.FILE.equals(foo.getProtocol())) {
+                        FileObject fo = URLMapper.findFileObject(foo);
+                        if (fo != null) {
+                            foo = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                            if (FileObjects.FILE.equals(foo.getProtocol())) {
+                                url = FileUtil.getArchiveRoot(foo);
+                            }
+                        }
+                    }
+                }
+                else if (!FileObjects.FILE.equals(url.getProtocol())) {
+                    FileObject fo = URLMapper.findFileObject(url);
+                    if (fo != null) {
+                        URL foo = URLMapper.findURL(fo, URLMapper.EXTERNAL);
+                        if (FileObjects.FILE.equals(foo.getProtocol())) {
+                            url = foo;
+                        }
+                    }
+                }
+                try {
+                    File sigs = Index.getClassFolder(url);
+                    _cache.add (ClassPathSupport.createResource(sigs.toURI().toURL()));
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+                _cache.add (ClassPathSupport.createResource(url));
             }
         }
-        return this.cache;
+        List<? extends PathResourceImplementation> res;
+        synchronized (this) {
+            if (currentEventId == this.eventId) {
+                if (this.cache == null) {
+                    this.cache = _cache;
+                }
+                res = this.cache;
+            }
+            else {
+                res = _cache;
+            }            
+        }
+        assert res != null;
+        return res;
     }
     
     
