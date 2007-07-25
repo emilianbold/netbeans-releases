@@ -20,6 +20,7 @@
 package org.openide.explorer.propertysheet;
 
 import java.awt.AWTKeyStroke;
+import java.awt.event.ComponentEvent;
 import org.openide.util.NbBundle;
 import java.awt.AWTEvent;
 import java.awt.Component;
@@ -39,6 +40,7 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -898,6 +900,7 @@ abstract class BaseTable extends JTable implements FocusListener {
 
         searchpanel.setBounds(loc.x, loc.y, width, height);
         dest.add(searchpanel);
+        getParent().addComponentListener( searchField );
         searchpanel.setVisible(true);
         searchField.requestFocus();
     }
@@ -915,6 +918,7 @@ abstract class BaseTable extends JTable implements FocusListener {
             viewportListener = null;
         }
         
+        getParent().removeComponentListener(searchField);
         if (searchpanel.getParent() != null) {
             searchpanel.getParent().remove(searchpanel);
         }
@@ -1105,7 +1109,8 @@ abstract class BaseTable extends JTable implements FocusListener {
         super.removeNotify();
     }
 
-    private class SearchField extends JTextField implements ActionListener, FocusListener {
+    private class SearchField extends JTextField 
+            implements ActionListener, FocusListener, ComponentListener {
         private int selectionBeforeLastShow = -1;
 
         public SearchField() {
@@ -1263,6 +1268,21 @@ abstract class BaseTable extends JTable implements FocusListener {
                     break;
                 }
             }
+        }
+
+        public void componentResized(ComponentEvent e) {
+            hideSearchField();
+        }
+
+        public void componentMoved(ComponentEvent e) {
+            hideSearchField();
+        }
+
+        public void componentShown(ComponentEvent e) {
+        }
+
+        public void componentHidden(ComponentEvent e) {
+            hideSearchField();
         }
     }
 
