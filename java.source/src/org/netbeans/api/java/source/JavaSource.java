@@ -1181,19 +1181,19 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         } catch (Abort abort) {
             currentPhase = Phase.UP_TO_DATE;
         } catch (IOException ex) {
-            currentPhase = Phase.MODIFIED;
+            currentPhase = Phase.UP_TO_DATE;
             dumpSource(currentInfo, ex);
             throw ex;
         } catch (ReattributionException ex) {
-            currentPhase = Phase.MODIFIED;
+            currentPhase = Phase.UP_TO_DATE;
             dumpSource(currentInfo, ex);
             throw new RuntimeException(ex);
         } catch (RuntimeException ex) {
-            currentPhase = Phase.MODIFIED;
+            currentPhase = Phase.UP_TO_DATE;
             dumpSource(currentInfo, ex);
             throw ex;        
         } catch (Error ex) {
-            currentPhase = Phase.MODIFIED;
+            currentPhase = Phase.UP_TO_DATE;
             dumpSource(currentInfo, ex);
             throw ex;
         }
