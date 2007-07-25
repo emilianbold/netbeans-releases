@@ -123,16 +123,10 @@ public class Installer extends ModuleInstall {
         for (Activated a : Lookup.getDefault().lookupAll(Activated.class)) {
             a.activated(log);
         }
-        /*
-        Enumeration<String> en = LogManager.getLogManager().getLoggerNames();
-        while (en.hasMoreElements()) {
-            String name = en.nextElement();
-            if (name.startsWith("org.netbeans.ui")) {
-                Logger l = Logger.getLogger(name);
-                l.setLevel(Level.FINEST);
-            }
+        
+        if (logsSize >= UIHandler.MAX_LOGS) {
+            displaySummary("INIT_URL", false, false);
         }
-         */
     }
     
     @Override
@@ -673,6 +667,7 @@ public class Installer extends ModuleInstall {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+                notifyAll();
             }
             
             LOG.log(Level.FINE, "doShow, dialog has been created"); // NOI18N
@@ -788,6 +783,14 @@ public class Installer extends ModuleInstall {
                 dialogCreated = true;
                 // dialog created let the code go on
                 notifyAll();
+                
+                
+                try {
+                    // wait till the other code runs
+                    wait();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             
             LOG.log(Level.FINE, "run, showDialogAndGetValue");
