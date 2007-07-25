@@ -99,7 +99,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="nbm.release.date" value=""/>
         <property name="nbm.needs.restart" value="false"/>
         <property name="nbm.is.global" value=""/>
-        <condition property="nbm.target.dir" value="build">
+        <condition property="nbm.target.dir" value="${basedir}/build">
              <not>
                  <isset property="base.nbm.target.dir"/>
              </not>
