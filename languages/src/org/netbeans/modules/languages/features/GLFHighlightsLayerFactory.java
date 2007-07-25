@@ -35,6 +35,12 @@ public class GLFHighlightsLayerFactory implements HighlightsLayerFactory {
                 new SemanticHighlightsLayer (context.getDocument ())
             ),
             HighlightsLayer.create (
+                "GLF Languages Coloring", 
+                ZOrder.SYNTAX_RACK.forPosition (11), 
+                false, 
+                new LanguagesHighlightsLayer (context.getDocument ())
+            ),
+            HighlightsLayer.create (
                 "GLF Token Highlighting", 
                 ZOrder.SHOW_OFF_RACK.forPosition (0), 
                 false, 

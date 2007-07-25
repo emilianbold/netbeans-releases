@@ -39,7 +39,6 @@ import javax.swing.text.TextAction;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.editor.Acceptor;
 
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
@@ -61,7 +60,6 @@ import org.netbeans.modules.languages.features.HyperlinkListener;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.languages.features.DatabaseManager;
 import org.netbeans.modules.languages.features.LanguagesGenerateFoldPopupAction;
-import org.netbeans.modules.languages.features.MySecondDrawLayer;
 import org.netbeans.modules.languages.features.UncommentCodeAction;
 import org.netbeans.modules.languages.parser.Pattern;
 
@@ -228,10 +226,6 @@ public class LanguagesEditorKit extends NbEditorKit {
     
     protected void initDocument (Document doc) {
         doc.putProperty("mimeType", mimeType); //NOI18N
-        ((BaseDocument) doc).addLayer (
-            new MySecondDrawLayer (mimeType), 
-            1500
-        );
         new AnnotationManager (doc);
         new DatabaseManager (doc);
     }

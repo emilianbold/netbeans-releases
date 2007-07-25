@@ -33,17 +33,16 @@ import org.netbeans.api.languages.ParseException;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
-import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
-import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 
 
 /**
  *
  * @author Jan Jancura
  */
-class SemanticHighlightsLayer implements HighlightsContainer {
+class SemanticHighlightsLayer extends AbstractHighlightsContainer {
 
     private Document document;
     
@@ -55,12 +54,7 @@ class SemanticHighlightsLayer implements HighlightsContainer {
         return new Highlights (document, startOffset, endOffset);
     }
 
-    public void addHighlightsChangeListener (HighlightsChangeListener listener) {
-    }
-
-    public void removeHighlightsChangeListener (HighlightsChangeListener listener) {
-    }
-
+    
     private static class Highlights implements HighlightsSequence {
 
         private Document            document;
@@ -83,7 +77,6 @@ class SemanticHighlightsLayer implements HighlightsContainer {
             } catch (ParseException ex) {
                 ast = ex.getASTNode ();
             }
-            System.out.println("Highlight " + startOffset + " : " + endOffset);
         }
         
         public boolean moveNext () {
@@ -92,10 +85,9 @@ class SemanticHighlightsLayer implements HighlightsContainer {
             do {
                 startOffset1 = endOffset1;
                 if (startOffset1 >= document.getLength () - 1) return false;
-                System.out.print(startOffset1+ ",");
                 ASTPath path = ast.findPath (startOffset1);
                 if (path == null) return false;
-                boolean isTrailing = isTrailing (path, startOffset1);
+                boolean isTrailing = isTrailing (path);
                 ASTNode splitNode = isTrailing ? splitNode (path) : null;
                 int i, k = path.size ();
                 for ( i = 0; i < k; i++) {
@@ -107,7 +99,6 @@ class SemanticHighlightsLayer implements HighlightsContainer {
                         Language language = LanguagesManager.getDefault ().getLanguage (item.getMimeType ());
                         AttributeSet as = null;
                         List<AttributeSet> colors = ColorsManager.getColors (language, path.subPath (i), document);
-                        //List colors = (List) language.getFeature (Language.COLOR, path.subPath (i));
                         if (colors != null && !colors.isEmpty ()) {
                             for (Iterator<AttributeSet> it = colors.iterator (); it.hasNext ();) {
                                 as = it.next ();
@@ -123,10 +114,8 @@ class SemanticHighlightsLayer implements HighlightsContainer {
                     } catch (ParseException ex) {
                     }
                 }
-                if (endOffset1 > startOffset1) {
-                    System.out.println (getAttributes () + " : " + getStartOffset () + " : " + getEndOffset ());
+                if (endOffset1 > startOffset1)
                     return true;
-                }
                 endOffset1 = path.getLeaf ().getEndOffset ();
             } while (endOffset1 < endOffset);
             return false;
@@ -144,7 +133,7 @@ class SemanticHighlightsLayer implements HighlightsContainer {
             return attributeSet;
         }
 
-        private static boolean isTrailing (ASTPath path, int offset) {
+        private static boolean isTrailing (ASTPath path) {
             try {
                 if (path.size () < 2 ||
                     !(path.get (path.size () - 2) instanceof ASTNode)
@@ -153,16 +142,11 @@ class SemanticHighlightsLayer implements HighlightsContainer {
                 ASTNode lastNode = (ASTNode) path.get (path.size () - 2);
                 Language language = LanguagesManager.getDefault ().getLanguage (lastNode.getMimeType ());
                 Set skipTokens = language.getSkipTokenTypes();
-                if (!(path.getLeaf () instanceof ASTToken)) {
-    //                System.out.println("path does not end by token " + offset + " : " + path);
+                if (!(path.getLeaf () instanceof ASTToken))
                     return false;
-                }
                 ASTToken leaf = (ASTToken) path.getLeaf ();
-                ASTNode split = null;
                 if (!skipTokens.contains (leaf.getType ())) 
                     return false;
-                split = (ASTNode) path.getRoot();
-                int size = path.size ();
                 List<ASTItem> list = lastNode.getChildren ();
                 for (ListIterator<ASTItem> iter = list.listIterator (list.size ()); iter.hasPrevious (); ) {
                     ASTItem item = iter.previous ();
