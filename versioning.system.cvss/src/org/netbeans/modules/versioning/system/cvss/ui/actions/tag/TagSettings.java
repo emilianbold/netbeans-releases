@@ -141,19 +141,19 @@ public class TagSettings extends javax.swing.JPanel implements DocumentListener 
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(cbMoveTag, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
+                .add(cbMoveTag, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
                 .add(159, 159, 159))
             .add(layout.createSequentialGroup()
                 .add(nameLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(tfName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
+                .add(tfName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButton1))
             .add(layout.createSequentialGroup()
                 .add(cbCheckModified, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(159, 159, 159))
             .add(layout.createSequentialGroup()
-                .add(cbDeleteTag, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
+                .add(cbDeleteTag, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
                 .add(159, 159, 159))
         );
         layout.setVerticalGroup(
@@ -171,7 +171,7 @@ public class TagSettings extends javax.swing.JPanel implements DocumentListener 
                 .add(cbDeleteTag))
         );
 
-        tfName.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TagSettings.class, "ACSN_BrowseTag")); // NOI18N
+        tfName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TagSettings.class, "TagSettings.tfName.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void cbDeleteTagActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbDeleteTagActionPerformed
