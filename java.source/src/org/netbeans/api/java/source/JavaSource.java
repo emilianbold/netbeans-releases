@@ -99,7 +99,6 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.builder.ASTService;
-import org.netbeans.modules.java.source.builder.Scanner;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavadocEnv;
 import org.netbeans.modules.java.source.engine.ReattributionException;
@@ -1016,7 +1015,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         ErrorHandlingJavadocEnter.preRegister(context);
         JavadocMemberEnter.preRegister(context);       
         JavadocEnv.preRegister(context, getClasspathInfo());
-        Scanner.Factory.instance(context);
         //Builder2.instance(context).keepComments = true;
         com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;

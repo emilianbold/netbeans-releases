@@ -19,24 +19,17 @@
 
 package org.netbeans.modules.java.builder;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.util.TreePath;
-import static org.netbeans.modules.java.source.builder.BufferRun.Kind.*;
 import static org.netbeans.api.java.source.Comment.Style.*;
 import static com.sun.tools.javac.parser.Token.*;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import javax.xml.validation.Validator;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -54,6 +47,7 @@ public class CommentHandlerServiceTest extends NbTestCase {
         super(testName);
     }
 
+    @Override
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
     }
@@ -106,6 +100,7 @@ public class CommentHandlerServiceTest extends NbTestCase {
      * Will be in /tmp or whatever, and will be empty.
      * If you just need a java.io.File use clearWorkDir + getWorkDir.
      */
+    @SuppressWarnings("deprecation")
     public static FileObject makeScratchDir(NbTestCase test) throws IOException {
         test.clearWorkDir();
         File root = test.getWorkDir();

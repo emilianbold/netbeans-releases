@@ -30,7 +30,6 @@ import com.sun.tools.javac.util.Context;
 
 import java.util.*;
 
-import static org.netbeans.modules.java.source.builder.BufferRun.Kind.*;
 import static org.netbeans.api.java.source.Comment.Style.*;
 import static com.sun.tools.javac.parser.Token.*;
 
