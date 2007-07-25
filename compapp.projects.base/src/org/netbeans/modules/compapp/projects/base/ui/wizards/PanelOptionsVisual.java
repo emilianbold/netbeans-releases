@@ -50,33 +50,18 @@ public class PanelOptionsVisual
         setAsMainCheckBox = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
 
+        setLayout(new java.awt.BorderLayout());
+
         setAsMainCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox"));
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        add(setAsMainCheckBox, java.awt.BorderLayout.CENTER);
+        setAsMainCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox"));
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "                                   ");
+        jLabel1.setText("                                   ");
+        add(jLabel1, java.awt.BorderLayout.NORTH);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(setAsMainCheckBox)
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 622, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(18, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(setAsMainCheckBox)
-                    .add(layout.createSequentialGroup()
-                        .add(2, 2, 2)
-                        .add(jLabel1)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
     }// </editor-fold>//GEN-END:initComponents
     
     boolean valid(WizardDescriptor wizardDescriptor) {

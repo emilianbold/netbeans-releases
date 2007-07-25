@@ -214,6 +214,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.compapp.projects.dtelpro</friend>
+                <friend>org.netbeans.modules.xslt.project</friend>
                 <friend>org.netbeans.modules.iep.project</friend>
                 <friend>org.netbeans.modules.etl.project</friend>
                 <friend>org.netbeans.modules.edm.project</friend>

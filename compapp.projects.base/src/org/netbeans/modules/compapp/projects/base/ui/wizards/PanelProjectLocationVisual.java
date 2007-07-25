@@ -21,6 +21,7 @@
 package org.netbeans.modules.compapp.projects.base.ui.wizards;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 
 import javax.swing.JFileChooser;
@@ -31,12 +32,14 @@ import org.netbeans.modules.compapp.projects.base.ui.FoldersListSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class PanelProjectLocationVisual
     extends SettingsPanel
     implements DocumentListener, org.netbeans.modules.compapp.projects.base.IcanproConstants {
     
+    public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
     private PanelConfigureProject panel;
     
     /** Creates new form PanelProjectLocationVisual */
@@ -56,6 +59,8 @@ public class PanelProjectLocationVisual
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
         projectNameLabel = new javax.swing.JLabel();
         projectNameTextField = new javax.swing.JTextField();
         projectLocationLabel = new javax.swing.JLabel();
@@ -64,72 +69,75 @@ public class PanelProjectLocationVisual
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
 
-        projectNameLabel.setLabelFor(projectNameTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectName_Label"));
+        setLayout(new java.awt.GridBagLayout());
 
-        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc"));
+        projectNameLabel.setLabelFor(projectNameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectName_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        add(projectNameLabel, gridBagConstraints);
+        projectNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectName_Label")); // NOI18N
+        projectNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
+        add(projectNameTextField, gridBagConstraints);
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc")); // NOI18N
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectLocation_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(projectLocationLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectLocation_Label")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        add(projectLocationLabel, gridBagConstraints);
+        projectLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_ProjectLocation_Label")); // NOI18N
 
-        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(projectLocationTextField, gridBagConstraints);
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(Button, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
+        org.openide.awt.Mnemonics.setLocalizedText(Button, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button")); // NOI18N
         Button.setActionCommand("BROWSE");
         Button.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseLocationAction(evt);
             }
         });
-
-        Button.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
+        add(Button, gridBagConstraints);
+        Button.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc")); // NOI18N
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
+        org.openide.awt.Mnemonics.setLocalizedText(createdFolderLabel, org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(createdFolderLabel, gridBagConstraints);
 
         createdFolderTextField.setEditable(false);
-        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(projectNameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 70, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(projectLocationLabel)
-                    .add(createdFolderLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 11, Short.MAX_VALUE)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
-                    .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)
-                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(Button)
-                .addContainerGap())
-        );
-
-        layout.linkSize(new java.awt.Component[] {createdFolderLabel, projectLocationLabel, projectNameLabel}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(projectNameLabel)
-                    .add(projectNameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(projectLocationLabel)
-                    .add(projectLocationTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(Button))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(createdFolderLabel)
-                    .add(createdFolderTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(244, 244, 244))
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(createdFolderTextField, gridBagConstraints);
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
@@ -160,12 +168,55 @@ public class PanelProjectLocationVisual
     }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
-        if (projectNameTextField.getText().length() == 0) {
+        String projectName = projectNameTextField.getText();
+        if (projectName.length() == 0                //String indexOf is not picking up \ char if this is the
+                // first char
+                || projectName.substring(0,1).equals("\\")
+                || projectName.indexOf('/')  >= 0         //NOI18N
+                || projectName.indexOf("\\") >= 0         //NOI18N
+                || projectName.indexOf(':')  >= 0
+                || !isValidName(projectName)) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getBundle(WIZARD_BUNDLE).getString("MSG_IllegalProjectName")); //NOI18N
             return false; // Display name not specified
         }
         
+
+        if (projectName.indexOf(' ')  >= 0) {        //NOI18N
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectNameWithWhiteSpace"));
+            return false;
+        }
+        
+        File f = new File(projectLocationTextField.getText()).getAbsoluteFile();
+        if (getCanonicalFile(f)==null) {
+            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation");
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            return false;
+        }
+
         File destFolder = new File(createdFolderTextField.getText());
+        if (getCanonicalFile(destFolder) == null) {
+            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName");
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            return false;
+        }
+        
+        File projLoc = FileUtil.normalizeFile(destFolder);
+        while (projLoc != null && !projLoc.exists()) {
+            projLoc = projLoc.getParentFile();
+        }
+        if (projLoc == null || !projLoc.canWrite()) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", // NOI18N
+                    NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderReadOnly"));
+            return false;
+        }
+
+        if (FileUtil.toFileObject(projLoc) == null) {
+            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation");
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            return false;
+        }
+
         File[] children = destFolder.listFiles();
         if (destFolder.exists() && children != null && children.length > 0) {
             // Folder exists and is not empty
@@ -175,6 +226,25 @@ public class PanelProjectLocationVisual
                 
         wizardDescriptor.putProperty("WizardPanel_errorMessage", ""); //NOI18N
         return true;
+    }
+    
+    static boolean isValidName(String fileName){
+        try {
+            boolean bValid = true;
+            File tempFile =  new File(fileName);
+            String tempFileName =0+fileName;
+            File actualTempFile = File.createTempFile(tempFileName, null);
+
+            if (!FileUtil.normalizeFile(tempFile).equals(tempFile.getCanonicalFile())) {
+                bValid = false;
+            }
+            actualTempFile.delete();
+            actualTempFile = null;
+            tempFile = null;
+            return bValid;
+        }catch (Exception e) {
+            return false;
+        }
     }
     
     void store(WizardDescriptor d) {        
@@ -237,14 +307,23 @@ public class PanelProjectLocationVisual
     // Implementation of DocumentListener --------------------------------------
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
+        if (this.projectNameTextField.getDocument() == e.getDocument()) {
+            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
+        }
     }
     
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
+        if (this.projectNameTextField.getDocument() == e.getDocument()) {
+            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
+        }
     }
     
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
+        if (this.projectNameTextField.getDocument() == e.getDocument()) {
+            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
+        }
     }
     // End if implementation of DocumentListener -------------------------------
     
@@ -259,13 +338,21 @@ public class PanelProjectLocationVisual
     
     private String getCreatedFolderPath() {
         StringBuffer folder = new StringBuffer(projectLocationTextField.getText().trim());
-        if (!projectLocationTextField.getText().endsWith(File.separator))
+        if (!projectLocationTextField.getText().endsWith(File.separator)) {
             folder.append(File.separatorChar);
+        }
         folder.append(projectNameTextField.getText().trim());
         
         return folder.toString();
     }
-    
+
+    static File getCanonicalFile(File file) {
+        try {
+            return file.getCanonicalFile();
+        } catch (IOException e) {
+            return null;
+        }
+    }    
 }
 
 //TODO implement check for project folder name and location
