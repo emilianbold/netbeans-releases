@@ -23,10 +23,15 @@
                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/examples/resources/j2seProject.gif"/>
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
                       <attr name="prjType" stringvalue="j2se"/>
-                      <attr name="defaultFileToOpen" stringvalue="readme.txt"/>
                     </file>
                 </folder>
             </folder>
+        </folder>
+    </folder>
+    <folder name="org-netbeans-modules-java-examples">
+        <folder name="OpenAfterCreated">
+            <!-- the file to open should have the same name as the template zip file -->
+            <file name="GUIFormExamples.url" url="nbresloc:/org/netbeans/modules/java/examples/resources/GUIExamplesDescription.url" />
         </folder>
     </folder>
 </filesystem>

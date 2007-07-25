@@ -20,11 +20,12 @@
 package org.netbeans.modules.java.examples;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.NbBundle;
@@ -94,10 +95,19 @@ public class J2SESampleProjectIterator implements TemplateWizard.Iterator {
         java.util.Set set = new java.util.HashSet();
         set.add(DataObject.find(prjLoc));
 
-        Object openFileName = (String) templateFO.getAttribute("defaultFileToOpen"); // NOI18N
-        if (openFileName instanceof String) {
-            FileObject openFO = prjLoc.getFileObject((String)openFileName);
+        // open file from the project specified in the "defaultFileToOpen" attribute
+        Object openFile = templateFO.getAttribute("defaultFileToOpen"); // NOI18N
+        if (openFile instanceof String) {
+            FileObject openFO = prjLoc.getFileObject((String)openFile);
             set.add(DataObject.find(openFO));
+        }
+        // also open a documentation file registered for this project
+        // and copy the .url file for it to the project (#71985)
+        FileObject docToOpen = Repository.getDefault().getDefaultFileSystem().findResource(
+            "org-netbeans-modules-java-examples/OpenAfterCreated/" + templateFO.getName() + ".url"); // NOI18N
+        if (docToOpen != null) {
+            docToOpen = FileUtil.copyFile(docToOpen, prjLoc, "readme"); // NOI18N
+            set.add(DataObject.find(docToOpen));
         }
 
         return set;
