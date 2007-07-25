@@ -29,7 +29,6 @@ import org.openide.util.RequestProcessor;
 import javax.swing.*;
 import java.util.Collections;
 import java.awt.*;
-import java.beans.BeanInfo;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
@@ -58,54 +57,23 @@ public class RepositoryPathNode extends AbstractNode {
     private RepositoryPathEntry entry;
     private final BrowserClient client;    
     private boolean repositoryFolder;
-
-    static class RepositoryPathEntry {
-        private final SVNNodeKind svnNodeKind;
-        private final RepositoryFile file;
-        private final SVNRevision revision;        
-        private Date date;
-        private final String author;
-        RepositoryPathEntry (RepositoryFile file, SVNNodeKind svnNodeKind, SVNRevision revision, Date date, String author) {
-            this.svnNodeKind = svnNodeKind;
-            this.file = file;
-            this.revision =revision;
-            this.date = date;
-            this.author = author;
-        }
-        public SVNNodeKind getSvnNodeKind() {
-            return svnNodeKind;
-        }
-        RepositoryFile getRepositoryFile() {
-            return file;
-        }        
-        SVNRevision getLastChangedRevision() {
-            return revision;
-        }       
-        Date getLastChangedDate() {
-            return date;
-        }               
-        String getLastChangedAuthor() {
-            return author;
-        }                       
-    }    
-    
+    private int expanded = 0;
+           
     static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryFile file) {
         return createRepositoryPathNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""));
     }   
     
-    static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {
-        RepositoryPathChildren kids = new RepositoryPathChildren(client, entry);
-        RepositoryPathNode node = new RepositoryPathNode(kids, client, entry, true);
+    static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {        
+        RepositoryPathNode node = new RepositoryPathNode(client, entry, true);
         return node;
     }
-
+    
     static RepositoryPathNode createBrowserPathNode(BrowserClient client, RepositoryPathEntry entry) {
-        RepositoryPathNode node = new RepositoryPathNode(new Children.Array(), client, entry, false);
-        return node;
+        return new BrowserPathNode(client, entry, false);
     }
             
-    private RepositoryPathNode(Children children, BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
-        super(entry.getSvnNodeKind() == SVNNodeKind.DIR ? children : Children.LEAF);
+    private RepositoryPathNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
+        super(entry.getSvnNodeKind() == SVNNodeKind.DIR ? new Children.Array() : Children.LEAF);
         this.entry = entry;
         this.client = client;
         this.repositoryFolder = repositoryFolder;
@@ -187,6 +155,20 @@ public class RepositoryPathNode extends AbstractNode {
 
     private void setRepositoryFolder(boolean bl) {
         repositoryFolder = bl;
+    }
+    
+    void expand() {
+        switch(expanded) {
+            case 0: 
+                expanded += 1;
+                break;
+            case 1:    
+                setChildren(new RepositoryPathChildren(client, entry));            
+                expanded += 1;
+                break;    
+            default:    
+                // do nothing    
+        }        
     }
     
     private static class RepositoryPathChildren extends Children.Keys {
@@ -315,7 +297,6 @@ public class RepositoryPathNode extends AbstractNode {
     private final static String HISTORY_SHORT_DESC = org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "LBL_BrowserTree_History_Short_Desc");    
            
     private class RevisionProperty extends NodeProperty {
-
         public RevisionProperty() {
             super(PROPERTY_NAME_REVISION, String.class, PROPERTY_NAME_REVISION, PROPERTY_NAME_REVISION);
         }
@@ -413,6 +394,46 @@ public class RepositoryPathNode extends AbstractNode {
             SVNUrl fileUrl = entry.getRepositoryFile().getFileUrl();
             final SvnSearch svnSearch = new SvnSearch(new RepositoryFile(repositoryUrl, fileUrl, revision));        
             return svnSearch.getSearchPanel();
+        }
+    }
+
+    static class RepositoryPathEntry {
+        private final SVNNodeKind svnNodeKind;
+        private final RepositoryFile file;
+        private final SVNRevision revision;        
+        private Date date;
+        private final String author;
+        RepositoryPathEntry (RepositoryFile file, SVNNodeKind svnNodeKind, SVNRevision revision, Date date, String author) {
+            this.svnNodeKind = svnNodeKind;
+            this.file = file;
+            this.revision =revision;
+            this.date = date;
+            this.author = author;
+        }
+        public SVNNodeKind getSvnNodeKind() {
+            return svnNodeKind;
+        }
+        RepositoryFile getRepositoryFile() {
+            return file;
+        }        
+        SVNRevision getLastChangedRevision() {
+            return revision;
+        }       
+        Date getLastChangedDate() {
+            return date;
+        }               
+        String getLastChangedAuthor() {
+            return author;
+        }                       
+    }        
+
+    private static class BrowserPathNode extends RepositoryPathNode {
+        public BrowserPathNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
+            super(client, entry, repositoryFolder);
+        }       
+        @Override
+        void expand() {
+            // do nothing
         }
     }
     

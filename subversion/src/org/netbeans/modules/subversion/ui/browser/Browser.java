@@ -29,6 +29,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JPanel;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeWillExpandListener;
+import javax.swing.tree.ExpandVetoException;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -38,6 +41,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -50,8 +54,7 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
  *
  * @author Tomas Stupka
  */
-public class Browser implements VetoableChangeListener, BrowserClient {
-        
+public class Browser implements VetoableChangeListener, BrowserClient, TreeWillExpandListener {        
     
     public final static int BROWSER_SHOW_FILES                  = 1;
     public final static int BROWSER_SINGLE_SELECTION_ONLY       = 2;
@@ -95,8 +98,9 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                                  (mode & BROWSER_SINGLE_SELECTION_ONLY) == BROWSER_SINGLE_SELECTION_ONLY);
         
         panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Browser_Prompt"));    // NOI18N
-        getExplorerManager().addVetoableChangeListener(this);                
-        
+        panel.addTreeWillExpandListener(this);
+        getExplorerManager().addVetoableChangeListener(this);                        
+                
         if(nodeActions!=null) {
             this.nodeActions = nodeActions;
             panel.setActions(nodeActions);    
@@ -109,10 +113,12 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         this.repositoryRoot = repositoryRoot;
         
         RepositoryPathNode rootNode = RepositoryPathNode.createRepositoryPathNode(this, repositoryRoot);                        
+        rootNode.expand();
+        
         Node[] selectedNodes = getSelectedNodes(rootNode, repositoryRoot, select);   
         getExplorerManager().setRootContext(rootNode);
         
-        if(selectedNodes==null) {
+        if(selectedNodes == null) {
             selectedNodes = new Node[] {};
         }
         
@@ -121,10 +127,13 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             for (int i = 0; i < selectedNodes.length; i++) {
                 getExplorerManager().setExploredContext(selectedNodes[i]);                           
             }   
+            if(selectedNodes.length > 0) {
+                ((RepositoryPathNode) selectedNodes[selectedNodes.length - 1]).expand();
+            }
         } catch (PropertyVetoException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }                  
-        
+                
     }       
 
     public RepositoryFile[] getRepositoryFiles() {
@@ -134,7 +143,8 @@ public class Browser implements VetoableChangeListener, BrowserClient {
         }
         
         // get the nodes first
-        Node[] nodes = (Node[]) getExplorerManager().getSelectedNodes();
+        Node[] nodes = getExplorerManager().getSelectedNodes();
+        
         // clean up - however the dialog was closed, we always cancel all running tasks 
         cancel();  
         
@@ -183,8 +193,8 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             segmentParentNode = rootNode;
             RepositoryFile segmentFile = repositoryRoot;
             for (int j = 0; j < segments.length; j++) {
-                segmentFile = segmentFile.appendPath(segments[j]);
-                RepositoryPathNode segmentNode = RepositoryPathNode.createRepositoryPathNode(this, segmentFile);
+                segmentFile = segmentFile.appendPath(segments[j]);                                                
+                RepositoryPathNode segmentNode = RepositoryPathNode.createRepositoryPathNode(this, segmentFile);    
                 segmentParentNode.getChildren().add(new Node[] {segmentNode});                
                 segmentParentNode = segmentNode;
             }   
@@ -319,13 +329,9 @@ public class Browser implements VetoableChangeListener, BrowserClient {
             if(newSelection == null || newSelection.length == 0) {                
                 return;
             }
-
-            // RULE: don't select the repository node
-//            if(containsRootNode(newSelection)) {                
-//                throw new PropertyVetoException("", evt); // NOI18N
-//            }
-            
-            if((mode & BROWSER_FILES_SELECTION_ONLY) == BROWSER_FILES_SELECTION_ONLY) {          // file selection only
+           
+            // applies if file selection only
+            if((mode & BROWSER_FILES_SELECTION_ONLY) == BROWSER_FILES_SELECTION_ONLY) {          
                 if(checkForNodeType(newSelection, SVNNodeKind.DIR))  {
                     panel.warning(org.openide.util.NbBundle.getMessage(Browser.class, "LBL_Warning_FileSelectionOnly"));        // NOI18N
                     if(initialSelectionDone) keepWarning = true;
@@ -333,14 +339,14 @@ public class Browser implements VetoableChangeListener, BrowserClient {
                 }       
             }
             
-            if((mode & BROWSER_FOLDERS_SELECTION_ONLY) == BROWSER_FOLDERS_SELECTION_ONLY) {     // folder selection only                
+            // applies if folder selection only                
+            if((mode & BROWSER_FOLDERS_SELECTION_ONLY) == BROWSER_FOLDERS_SELECTION_ONLY) {     
                 if(checkForNodeType(newSelection, SVNNodeKind.FILE)) {                         
                     panel.warning(org.openide.util.NbBundle.getMessage(Browser.class, "LBL_Warning_FolderSelectionOnly"));      // NOI18N
                     if(initialSelectionDone) keepWarning = true;
                     throw new PropertyVetoException("", evt);                                                                   // NOI18N
                 }                    
-            }
-            
+            }            
             
             // RULE: don't select nodes on a different level as the already selected 
             if(oldSelection.length == 0 && newSelection.length == 1) {
@@ -439,4 +445,19 @@ public class Browser implements VetoableChangeListener, BrowserClient {
     void setSelectedNodes(Node[] selection) throws PropertyVetoException {
         getExplorerManager().setSelectedNodes(selection);
     }
+
+    public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {        
+        Object obj = event.getPath().getLastPathComponent();                                
+        if(obj == null) return;
+        Node n = Visualizer.findNode(obj);
+        if(n instanceof RepositoryPathNode) {
+            RepositoryPathNode node = (RepositoryPathNode) n;
+            node.expand();
+        }
+    }
+
+    public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+        // do nothing
+    }
+
 }

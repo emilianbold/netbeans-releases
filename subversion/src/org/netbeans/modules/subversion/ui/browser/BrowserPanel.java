@@ -33,6 +33,7 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.explorer.ExplorerManager;
@@ -72,8 +73,8 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
             treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         }
         treeView.setPopupAllowed(true);        
-        treeView.getTree().setShowsRootHandles(true);                
-
+        treeView.getTree().setShowsRootHandles(true);                        
+        
         GridBagConstraints c = new GridBagConstraints();
         int gridY = 0;
                 
@@ -146,6 +147,14 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
     
     public ExplorerManager getExplorerManager() {
         return manager;
+    }
+    
+    void addTreeWillExpandListener(TreeWillExpandListener l) {
+        treeView.getTree().addTreeWillExpandListener(l);
+    }
+    
+    void removeTreeWillExpandListener(TreeWillExpandListener l) {
+        treeView.getTree().removeTreeWillExpandListener(l);
     }
     
     private class BrowserTreeTableView extends TreeTableView {        
