@@ -123,12 +123,14 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
                 if (isOnSourceClasspath(file)) {
                     changeType = RefactoringInfo.ChangeType.FOLDER_RENAME;
                     primaryFile = file;
+                    oldName = file.getName();
                 }
             } else if (pkgFolder != null) {
                 // renaming a package (without subfolders)
                 if (isOnSourceClasspath(pkgFolder.getFolder())) {
                     changeType = RefactoringInfo.ChangeType.PACKAGE_RENAME;
                     primaryFile = pkgFolder.getFolder();
+                    oldName = primaryFile.getName();
                 }
             }
         } else if (refactoring instanceof MoveRefactoring) {
