@@ -146,7 +146,8 @@ final class RemoteFilesystemChooser extends JPanel implements ExplorerManager.Pr
     public void addNotify(){
         super.addNotify();
         try {
-            ActiveSyncOps.getDefault().addConnectionListener(connectionListener = new ConnectionListener());
+            if (ActiveSyncOps.getDefault() != null)
+                ActiveSyncOps.getDefault().addConnectionListener(connectionListener = new ConnectionListener());
         } catch (ActiveSyncException ex) {
         }
         
@@ -154,7 +155,8 @@ final class RemoteFilesystemChooser extends JPanel implements ExplorerManager.Pr
     
     public void removeNotify(){
         try {
-            ActiveSyncOps.getDefault().removeConnectionListener(connectionListener);
+            if (ActiveSyncOps.getDefault() != null)
+                ActiveSyncOps.getDefault().removeConnectionListener(connectionListener);
         } catch (ActiveSyncException ex) {
         }
         super.removeNotify();
@@ -223,6 +225,7 @@ final class RemoteFilesystemChooser extends JPanel implements ExplorerManager.Pr
         } catch (Exception e){e.printStackTrace();};
         RemoteFilesystemChooser.this.firePropertyChange(NotifyDescriptor.PROP_VALID, true, false);
         JLabel errorLabel = new JLabel(error);
+        errorLabel.setHorizontalAlignment(JLabel.CENTER);
         add(errorLabel, BorderLayout.CENTER);
         invalidate();
         setVisible(true);

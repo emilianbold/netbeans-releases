@@ -69,7 +69,7 @@ public class WindowsMobileDeployTask extends Task {
         log("jar: " + jarFile);
         log("jad: " + jadFile);
         
-        if (!activeSync.isAvailable()) throw new BuildException("active sync is not available");
+        if (activeSync == null || !activeSync.isAvailable()) throw new BuildException("active sync is not available");
         
             
         try {
