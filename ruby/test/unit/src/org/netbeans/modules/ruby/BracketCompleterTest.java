@@ -679,6 +679,30 @@ public class BracketCompleterTest extends RubyTestBase {
         deleteWord("FooBarBaz^", "FooBar^");
     }
     
+    public void testDeleteWord4_110998() throws Exception {
+        deleteWord("Blah::Set^Foo", "Blah::^Foo");
+    }
+    
+    public void testBackwardsDeletion() throws Exception {
+        String s = "Foo::Bar = whatever('hello')  \n  nextline";
+        BracketCompleter bc = new BracketCompleter();
+        for (int i = s.length(); i >= 1; i--) {
+            String shortened = s.substring(0, i);
+            BaseDocument doc = getDocument(shortened);
+
+            JTextArea ta = new JTextArea(doc);
+            Caret caret = ta.getCaret();
+            int dot = i;
+            caret.setDot(dot);
+            int begin = bc.getNextWordOffset(doc, dot, true);
+            if (begin == -1) {
+                begin = Utilities.getPreviousWord(ta, dot);
+            }
+            
+            assert begin != -1 && begin < i;
+        }
+    }
+    
     public void test108889() throws Exception {
         // Reproduce 108889: AIOOBE and AE during editing
         // NOTE: While the test currently throws an exception, when the 

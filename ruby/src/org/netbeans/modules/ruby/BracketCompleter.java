@@ -1497,91 +1497,98 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
     public int getNextWordOffset(Document document, int offset, boolean reverse) {
         BaseDocument doc = (BaseDocument)document;
         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+        if (ts == null) {
+            return -1;
+        }
         ts.move(offset);
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return -1;
+        }
 
-        TokenId id;
-        
-        do {
+        Token<? extends GsfTokenId> token = ts.token();
+        TokenId id = token.id();
+
+        while (id == RubyTokenId.WHITESPACE) {
             if (reverse && !ts.movePrevious()) {
                 return -1;
             } else if (!reverse && !ts.moveNext()) {
                 return -1;
             }
-            
-            Token<? extends GsfTokenId> token = ts.token();
+
+            token = ts.token();
             id = token.id();
 
-            if (id == RubyTokenId.IDENTIFIER || id == RubyTokenId.TYPE_SYMBOL ||
-                    id == RubyTokenId.CONSTANT ||
-                    id == RubyTokenId.GLOBAL_VAR || id == RubyTokenId.INSTANCE_VAR) {
-                String s = token.text().toString();
-                int length = s.length();
-                int wordOffset = offset-ts.offset();
-                if (reverse) {
-                    // Find previous
-                    int offsetInImage = offset - 1 - ts.offset(); 
-                    if (offsetInImage < length && Character.isUpperCase(s.charAt(offsetInImage))) {
-                        for (int i = offsetInImage - 1; i >= 0; i--) {
-                            char charAtI = s.charAt(i);
-                            if (charAtI == '_' || !Character.isUpperCase(charAtI)) {
-                                // return offset of previous uppercase char in the identifier
-                                return ts.offset() + i + 1;
-                            }
-                        }
-                        return ts.offset();
-                    } else {
-                        for (int i = offsetInImage - 1; i >= 0; i--) {
-                            char charAtI = s.charAt(i);
-                            if (charAtI == '_') {
-                                return ts.offset() + i;
-                            }
-                            if (Character.isUpperCase(charAtI)) {
-                                // now skip over previous uppercase chars in the identifier
-                                for (int j = i; j >= 0; j--) {
-                                    char charAtJ = s.charAt(j);
-                                    if (charAtJ == '_') {
-                                        return ts.offset() + j;
-                                    }
-                                    if (!Character.isUpperCase(charAtJ)) {
-                                        // return offset of previous uppercase char in the identifier
-                                        return ts.offset() + j + 1;
-                                    }
-                                }
-                                return ts.offset();
-                            }
-                        }
-                    }
-                } else {
-                    // Find next
-                    int start = wordOffset+1;
-                    if (Character.isUpperCase(s.charAt(wordOffset))) { 
-                        // if starting from a Uppercase char, first skip over follwing upper case chars
-                        for (int i = start; i < length; i++) {
-                            char charAtI = s.charAt(i);
-                            if (!Character.isUpperCase(charAtI)) {
-                                break;
-                            }
-                            if (s.charAt(i) == '_') {
-                                return ts.offset()+i;
-                            }
-                            start++;
-                        }
-                    }
-                    for (int i = start; i < length; i++) {
-                        char charAtI = s.charAt(i);
-                        if (charAtI == '_' || Character.isUpperCase(charAtI)) {
-                            return ts.offset()+i;
-                        }
-                    }
-                }
-            }
-            
             if (reverse) {
                 offset = ts.offset();
             } else {
                 offset = ts.offset()+token.length();
             }
-        } while (id == RubyTokenId.WHITESPACE);
+        }
+
+        if (id == RubyTokenId.IDENTIFIER || id == RubyTokenId.TYPE_SYMBOL ||
+                id == RubyTokenId.CONSTANT ||
+                id == RubyTokenId.GLOBAL_VAR || id == RubyTokenId.INSTANCE_VAR) {
+            String s = token.text().toString();
+            int length = s.length();
+            int wordOffset = offset-ts.offset();
+            if (reverse) {
+                // Find previous
+                int offsetInImage = offset - 1 - ts.offset(); 
+                if (offsetInImage < length && Character.isUpperCase(s.charAt(offsetInImage))) {
+                    for (int i = offsetInImage - 1; i >= 0; i--) {
+                        char charAtI = s.charAt(i);
+                        if (charAtI == '_' || !Character.isUpperCase(charAtI)) {
+                            // return offset of previous uppercase char in the identifier
+                            return ts.offset() + i + 1;
+                        }
+                    }
+                    return ts.offset();
+                } else {
+                    for (int i = offsetInImage - 1; i >= 0; i--) {
+                        char charAtI = s.charAt(i);
+                        if (charAtI == '_') {
+                            return ts.offset() + i;
+                        }
+                        if (Character.isUpperCase(charAtI)) {
+                            // now skip over previous uppercase chars in the identifier
+                            for (int j = i; j >= 0; j--) {
+                                char charAtJ = s.charAt(j);
+                                if (charAtJ == '_') {
+                                    return ts.offset() + j;
+                                }
+                                if (!Character.isUpperCase(charAtJ)) {
+                                    // return offset of previous uppercase char in the identifier
+                                    return ts.offset() + j + 1;
+                                }
+                            }
+                            return ts.offset();
+                        }
+                    }
+                }
+            } else {
+                // Find next
+                int start = wordOffset+1;
+                if (Character.isUpperCase(s.charAt(wordOffset))) { 
+                    // if starting from a Uppercase char, first skip over follwing upper case chars
+                    for (int i = start; i < length; i++) {
+                        char charAtI = s.charAt(i);
+                        if (!Character.isUpperCase(charAtI)) {
+                            break;
+                        }
+                        if (s.charAt(i) == '_') {
+                            return ts.offset()+i;
+                        }
+                        start++;
+                    }
+                }
+                for (int i = start; i < length; i++) {
+                    char charAtI = s.charAt(i);
+                    if (charAtI == '_' || Character.isUpperCase(charAtI)) {
+                        return ts.offset()+i;
+                    }
+                }
+            }
+        }
         
         // Default handling in the IDE
         return -1;
