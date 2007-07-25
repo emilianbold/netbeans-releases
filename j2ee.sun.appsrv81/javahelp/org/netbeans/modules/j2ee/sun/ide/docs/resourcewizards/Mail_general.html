@@ -43,11 +43,11 @@ Microsystems, Inc. All Rights Reserved.
             The following information is required and must be supplied before you can Finish or 
             proceed to the next screen:</p>
             <ul>
-                <li><b>JNDI name.</b> The JNDI must be unique to the resource. JavaMail resources are usually placed withing the <tt>mail</tt> naming subcontext.</li>
-                <li><b>Mail host name.</b> The host name is the DNS name of the default mail server. 
+                <li><b>JNDI Name.</b> The JNDI must be unique to the resource. JavaMail resources are usually placed withing the <tt>mail</tt> naming subcontext.</li>
+                <li><b>Mail Host.</b> The host name is the DNS name of the default mail server. 
                 The name must be resolvable to an actual host name.</li>
-                <li><b>Default user name.</b> Enter the user name to use when connecting to the mail server.</li>
-                <li><b>Default return address.</b> Enter the email address of the default user, in the form <tt>username@host.domain</tt>.</li>
+                <li><b>Default User.</b> Enter the user name to use when connecting to the mail server.</li>
+                <li><b>Default Return Address.</b> Enter the email address of the default user, in the form <tt>username@host.domain</tt>.</li>
             </ul></li>
             <li>Advanced information is optional. It is best to leave the advanced settings at their default values unless 
             the Application Server's mail provider has been reconfigured to 
@@ -62,11 +62,14 @@ Microsystems, Inc. All Rights Reserved.
             <li>Click Finish to create the resource.<br>
             Click Next to proceed to the advanced properties screen.</li>
         </ol>
-        <p>The JavaMail Session resource is created in the setup directory in the Files window.
-        You can change the properties of the resource in the properties window. The resource
-        needs to be registered with the server to make it available. After the resource is 
-        registered, the resource appears in the JavaMail Resources node in the Application Server
-        instance node in the Runtime window.</p> 
+       <p>When you complete the wizard, the resource properties are added to <tt>sun-resources.xml</tt>.
+        If you need to edit the properties of the resource, you can open <tt>sun-resources.xml</tt> in the Source Editor by expanding the 
+        Server Resources node of your project in the Projects window and double-clicking the file. </p>
+                
+        <p>Once you have created the object in your project, the resource needs to be registered with the server before you can use it.
+        The resource is automatically registered when you deploy your project.</p>
+        After the resource is registered, the resource appears in the JavaMail Resources node under the Resources node for the server
+        instance in the Services window.</p> 
         
         <p>For more on the Sun JavaMail API, see:</p>
         <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

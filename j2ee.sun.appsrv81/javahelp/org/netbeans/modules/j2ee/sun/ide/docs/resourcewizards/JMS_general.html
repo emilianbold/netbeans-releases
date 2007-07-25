@@ -14,7 +14,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <html>
@@ -66,17 +66,28 @@ Microsystems, Inc. All Rights Reserved.
                 <li>Check the javax.jms.QueueConnectionFactory radio button if it is used as a queue.</li>
                 <li>Check the javax.jms.TopicConnectionFactory radio button if it is used as a topic.</li>
                 <li>Check the javax.jms.ConnectionFactory radio button if it is used as a connection factory.</li>
-            </ul></li>
+            </ul>
+            <ul class="note">
+                <li>With the introduction of the JMS 1.1 specification, it is recommended that you use <tt>javax.jms.ConnectionFactory</tt>
+            if you do not need to support existing code.</li>
+            </ul>
+            </li>
             <li>Click Next to further customize the resource properties.<br>
             Click Finish to create the resource without additional properties. You can
-            add properties later in the properties window.</li>
+            add properties later by editing <tt>sun-resources.xml</tt>.</li>
             
-            <p>The JMS resource is created and appears in the Files window in the setup node. </p>
+            <p>The JMS resource properties are added to <tt>sun-resources.xml</tt>.
+            You can open <tt>sun-resources.xml</tt> in the Source Editor by expanding the 
+            Server Resources node of your project in the Projects window and double-clicking the file. </p>
         </ol>
 
+        <p>Once you have created the object in your project, the resource needs to be registered with the server before you can use it.
+        The resource is automatically registered when you deploy your project.</p>
+        
         <dl>
                 <dt><a name="seealso">See Also</a></dt>
-                <dd>     <a href="../general/def_jms.html">Defining a JMS Resource</a></dd>
+                <dd>     <a href="../general/def_jms.html">Setting up a JMS Resource on the Sun Java System Application Server/GlassFish</a></dd>
+                <dd>  <a href="register_resource.html">Registering a Resource with the Sun Java System Application Server/GlassFish</a></dd>
         </dl>
 
         <hr>
