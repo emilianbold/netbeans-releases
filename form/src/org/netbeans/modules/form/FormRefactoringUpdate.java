@@ -314,6 +314,18 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             fes.closeFormEditor();
         }
         replaceClassOrPkgName(oldClassName, newClassName, false);
+        replaceShortClassName(oldClassName, newClassName);
+    }
+
+    private boolean replaceShortClassName(String oldName, String newName) {
+        if (oldName.contains(".")) { // NOI18N
+            String shortOldName = oldName.substring(oldName.lastIndexOf('.')+1);
+            String shortNewName = newName.substring(newName.lastIndexOf('.')+1);
+            if (!shortNewName.equals(shortOldName)) {
+                return replaceClassOrPkgName(shortOldName, newName, false); // (intentionally replace with FQN)
+            }
+        }
+        return false;
     }
 
     private void packageRename() {
@@ -345,6 +357,13 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             String newName = refInfo.getNewName();
             if (oldName != null && newName != null) {
                 boolean replaced = replaceClassOrPkgName(oldName, newName, false);
+               // also try to replace short class name
+                switch (refInfo.getChangeType()) {
+                case CLASS_RENAME:
+                case CLASS_MOVE:
+                    replaced |= replaceShortClassName(oldName, newName);
+                    break;
+                }
                 if (replaced) {
                     final FormEditorSupport fes = formDataObject.getFormEditorSupport();
                     if (fes.isOpened()) { // need to regenerate the code
