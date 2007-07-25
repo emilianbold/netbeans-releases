@@ -409,9 +409,16 @@ public class DocumentationScrollPane extends JScrollPane {
                 final String desc = e.getDescription();
                 if (desc != null) {
                     CompletionDocumentation doc = currentDocumentation.resolveLink(desc);
-                    if (doc == null)
-                        doc = new DefaultDoc(currentDocumentation, desc);
-                    setData(doc);
+                    if (doc == null) {
+                        try {
+                            URL url = currentDocumentation.getURL();
+                            url =  url != null ? new URL(url, desc) : new URL(desc);
+                            doc = new DefaultDoc(currentDocumentation, url);
+                        } catch (MalformedURLException ex) {                            
+                        }
+                    }
+                    if (doc != null)
+                        setData(doc);
                 }                    
             }
         }
@@ -423,13 +430,9 @@ public class DocumentationScrollPane extends JScrollPane {
         private URL url = null;
         private String desc = null;
         
-        private DefaultDoc(CompletionDocumentation baseDoc, String desc) {
-            try {
-                url = new URL(baseDoc.getURL(), desc);
-            } catch (MalformedURLException ex) {
-                this.baseDoc = baseDoc;
-                this.desc = desc;
-            }
+        private DefaultDoc(CompletionDocumentation baseDoc, URL url) {
+            this.baseDoc = baseDoc;
+            this.url = url;
         }
     
         public String getText() {

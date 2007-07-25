@@ -231,12 +231,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                     toolTip = null;
                     anchorOffset = -1;
                     JavaSource js = JavaSource.forDocument(doc);
-                    if (queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
-                        FileObject fo = SourceUtils.getFile(element, js.getClasspathInfo());
-                        if (fo != null)
-                            js = JavaSource.forFileObject(fo);
-                    }
                     if (js != null) {
+                        if (queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
+                            FileObject fo = SourceUtils.getFile(element, js.getClasspathInfo());
+                            if (fo != null)
+                                js = JavaSource.forFileObject(fo);
+                        }
                         Future<Void> f = js.runWhenScanFinished(this, true);
                         if (!f.isDone()) {
                             component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N

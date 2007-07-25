@@ -40,7 +40,8 @@ public class JavaCompletionDoc implements CompletionDocumentation {
     }
 
     public JavaCompletionDoc resolveLink(String link) {
-        return new JavaCompletionDoc( elementJavadoc.resolveLink(link));
+        ElementJavadoc doc = elementJavadoc.resolveLink(link);
+        return doc != null ? new JavaCompletionDoc(doc) : null;
     }
 
     public URL getURL() {
