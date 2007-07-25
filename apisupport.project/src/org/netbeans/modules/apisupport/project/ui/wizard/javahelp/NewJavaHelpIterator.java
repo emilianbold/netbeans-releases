@@ -21,15 +21,16 @@ package org.netbeans.modules.apisupport.project.ui.wizard.javahelp;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFilesFactory.ModifyManifest;
 import org.netbeans.modules.apisupport.project.EditableManifest;
-import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 
@@ -99,7 +100,7 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                 String path = codeNameBase.replace('.','/') + "/docs/"; // NOI18N
                 
                 files = new CreatedModifiedFiles(getProject());
-                Map tokens = new HashMap();
+                Map<String,String> tokens = new HashMap<String,String>();
                 tokens.put("@@CODE_NAME@@", basename); // NOI18N
                 tokens.put("@@FULL_CODE_NAME@@", codeNameBase); // NOI18N
                 tokens.put("@@DISPLAY_NAME@@", ProjectUtils.getInformation(getProject()).getDisplayName()); // NOI18N
@@ -110,17 +111,18 @@ public class NewJavaHelpIterator extends BasicWizardIterator {
                         NewJavaHelpIterator.class.getResource("template_myplugin-helpset.xml"), // NOI18N
                         tokens,
                         null,
-                        null));
+                        // Pick an arbitrary place to put it. Can always be moved elsewhere if anyone cares:
+                        Collections.<String,Object>singletonMap("position", Integer.toString(3000 + new Random().nextInt(1000))))); // NOI18N
                 
                 //copying templates
-                for (int i = 0; i < TEMPLATE_SUFFIXES.length; i++) {
-                    URL template = NewJavaHelpIterator.class.getResource(TEMPLATE_RESOURCES[i]);
-                    String filePath = "javahelp/" + path + basename + TEMPLATE_SUFFIXES[i]; // NOI18N
+                for (String suffix : TEMPLATE_SUFFIXES) {
+                    URL template = NewJavaHelpIterator.class.getResource(suffix);
+                    String filePath = "javahelp/" + path + basename + suffix; // NOI18N
                     files.add(files.createFileWithSubstitutions(filePath, template, tokens));
                 }
                 
                 // edit some properties
-                Map props = new HashMap();
+                Map<String,String> props = new HashMap<String,String>();
                 // Default for javahelp.base (org/netbeans/modules/foo/docs) is correct.
                 // For <checkhelpset> (currently nb.org modules only, but may be bundled in harness some day):
                 props.put("javahelp.hs", basename + TEMPLATE_SUFFIX_HS); // NOI18N
