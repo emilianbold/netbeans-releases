@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -32,15 +31,18 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 
+import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
+import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.IcanproConstants;
+
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.modules.xslt.project.wizard.IcanproLogicalViewProvider;
-import org.netbeans.modules.xslt.project.ui.customizer.XsltProjectCustomizerProvider;
 import org.netbeans.modules.xslt.project.ui.customizer.XsltproProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -111,6 +113,7 @@ public class XsltproProject implements Project, AntProjectListener {
         return this.refHelper;
     }
     
+    @Override
     public String toString() {
         return "XsltproProject[" + getProjectDirectory() + "]"; // NOI18N
     }
@@ -121,8 +124,8 @@ public class XsltproProject implements Project, AntProjectListener {
     
     /** Return configured project name. */
     public String getName() {
-        return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
-            public Object run() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<String>() {
+            public String run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
                 NodeList nl = data.getElementsByTagNameNS(XsltproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
@@ -139,7 +142,7 @@ public class XsltproProject implements Project, AntProjectListener {
     
     /** Store configured project name. */
     public void setName(final String name) {
-        ProjectManager.mutex().writeAccess(new Mutex.Action() {
+        ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -180,7 +183,7 @@ public class XsltproProject implements Project, AntProjectListener {
     }
     
     String getBuildXmlName() {
-        String storedName = helper.getStandardPropertyEvaluator().getProperty(BUILD_FILE);
+        String storedName = helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.BUILD_FILE);
         return storedName == null ? GeneratedFilesHelper.BUILD_XML_PATH : storedName;
     }
     
@@ -213,17 +216,15 @@ public class XsltproProject implements Project, AntProjectListener {
                 new String[] {"${build.classes.dir}/*.class"} // NOI18N
         );
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-// todo a|r        String webModuleLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_EJBModule"); //NOI18N
-// todo a|r       String srcJavaLabel = org.openide.util.NbBundle.getMessage(IcanproCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
         String webModuleLabel = org.openide.util.NbBundle.getMessage(XsltproProject.class, "LBL_Node_EJBModule"); //NOI18N
         String srcJavaLabel = org.openide.util.NbBundle.getMessage(XsltproProject.class, "LBL_Node_Sources"); //NOI18N
         
-        sourcesHelper.addPrincipalSourceRoot("${"+SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null);
-        sourcesHelper.addPrincipalSourceRoot("${"+SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null);
+        sourcesHelper.addPrincipalSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
         
-        sourcesHelper.addTypedSourceRoot("${"+SRC_DIR+"}", SOURCES_TYPE_XSLTPRO, srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", SOURCES_TYPE_XSLTPRO, srcJavaLabel, /*XXX*/null, null);
 //        sourcesHelper.addTypedSourceRoot("${"+SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${"+SRC_DIR+"}", ProjectConstants.SOURCES_TYPE_XML, srcJavaLabel, /*XXX*/null, null);
+        sourcesHelper.addTypedSourceRoot("${"+IcanproProjectProperties.SRC_DIR+"}", ProjectConstants.SOURCES_TYPE_XML, srcJavaLabel, /*XXX*/null, null);
         
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
@@ -241,9 +242,10 @@ public class XsltproProject implements Project, AntProjectListener {
             spp,
             new XsltproActionProvider( this, helper, refHelper ),
             new IcanproLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
-//            new IcanproCustomizerProvider( this, helper, refHelper ),
-            new XsltProjectCustomizerProvider(this),
-            new AntArtifactProviderImpl(),
+            new JbiArtifactProviderImpl(),
+//            new XsltProjectCustomizerProvider(this),
+            new IcanproCustomizerProvider(this, helper, refHelper),
+            new JbiArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             //todo m
             new ProjectOpenedHookImpl(this),
@@ -253,10 +255,10 @@ public class XsltproProject implements Project, AntProjectListener {
             refHelper,
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(),
-                    new String[] {"${"+SOURCE_ROOT+"}"},
+                    new String[] {"${"+IcanproProjectProperties.SOURCE_ROOT+"}"},
                     new String[] {
-                "${"+BUILD_DIR+"}",
-                "${"+DIST_DIR+"}"}
+                "${"+IcanproProjectProperties.BUILD_DIR+"}",
+                "${"+IcanproProjectProperties.DIST_DIR+"}"}
             )
             ,
             new DefaultProjectCatalogSupport(this, helper, refHelper)
@@ -351,7 +353,7 @@ public class XsltproProject implements Project, AntProjectListener {
             }
             
             // Make it easier to run headless builds on the same machine at least.
-            ProjectManager.mutex().writeAccess(new Mutex.Action() {
+            ProjectManager.mutex().writeAccess(new Mutex.Action<Object>() {
                 public Object run() {
                     EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     ep.setProperty("netbeans.user", System.getProperty("netbeans.user"));
@@ -392,22 +394,25 @@ public class XsltproProject implements Project, AntProjectListener {
      *
      * @see org.netbeans.spi.project.ant.AntArtifactProvider
      */
-    private final class AntArtifactProviderImpl implements AntArtifactProvider {
+    private final class JbiArtifactProviderImpl implements JbiArtifactProvider {
         
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(XsltproProject.ARTIFACT_TYPE_JBI_ASA + ":" +
-                        helper.getStandardPropertyEvaluator().getProperty(JBI_SETYPE_PREFIX),
-                        SE_DEPLOYMENT_JAR,
+                        helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SE_TYPE),
+                        IcanproProjectProperties.SE_DEPLOYMENT_JAR,
                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
                 
-                helper.createSimpleAntArtifact(ARTIFACT_TYPE_JAR,
-                        SE_DEPLOYMENT_JAR,
+                helper.createSimpleAntArtifact(IcanproConstants.ARTIFACT_TYPE_JAR,
+                        IcanproProjectProperties.SE_DEPLOYMENT_JAR,
                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
                 
             };
         }
-        
+
+        public String getJbiServiceAssemblyType() {
+            return helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SE_TYPE);
+        }
     }
     
     /**
@@ -419,37 +424,15 @@ public class XsltproProject implements Project, AntProjectListener {
         // List of primarily supported templates
         
         private static final String[] TYPES = new String[] {
-            /*
-            "java-classes",        // NOI18N
-            "ejb-types",            // NOI18N
-            "java-beans",           // NOI18N
-            "oasis-XML-catalogs",   // NOI18N
-            "XML",                  // NOI18N
-            "ant-script",           // NOI18N
-            "ant-task",             // NOI18N
-            "simple-files"          // NOI18N
-             */
             "SOA",
             "XML",                  // NOI18N
             "simple-files"          // NOI18N
         };
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
-//            "Templates/XML/XSLTDocument.xsl",    // NOI18N
             "Templates/SOA/xslt.service",    // NOI18N
-//            "Templates/XML/stylesheet.xsl",// NOI18N
             "Templates/XML/XmlSchema.xsd",    // NOI18N
-            "Templates/XML/WSDL.wsdl",    // NOI18N
-//            "Templates/ICAN/schema.xsd",
-//            "Templates/ICAN/untitled.wsdl"
-            /*
-            "Templates/J2EE/Session", // NOI18N
-            "Templates/J2EE/RelatedCMP", // NOI18N
-            "Templates/J2EE/Entity",  // NOI18N
-            "Templates/J2EE/Message", //NOI18N
-            "Templates/J2EE/WebService", // NOI18N
-            "Templates/Classes/Class.java" // NOI18N
-             */
+            "Templates/XML/WSDL.wsdl"    // NOI18N
         };
         
         public String[] getRecommendedTypes() {

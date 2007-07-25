@@ -35,13 +35,12 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
-//import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.loaders.DataObject;
@@ -93,6 +92,7 @@ public class IcanproViews {
             this.project = project;
         }
         
+        @Override
         protected void addNotify() {
             super.addNotify();
             projectDir.addFileChangeListener(this);
@@ -111,14 +111,14 @@ public class IcanproViews {
             l.add(KEY_EJBS);
              */
             
-            DataFolder docBaseDir = getFolder(META_INF);
+            DataFolder docBaseDir = getFolder(IcanproProjectProperties.META_INF);
             if (docBaseDir != null) {
                 /*
                 l.add(KEY_DOC_BASE);
                  */
             }
             
-            DataFolder srcDir = getFolder(SRC_DIR);
+            DataFolder srcDir = getFolder(IcanproProjectProperties.SRC_DIR);
             if (srcDir != null) {
                 l.add(KEY_SOURCE_DIR);
             }
@@ -164,9 +164,11 @@ public class IcanproViews {
             Node n = null;
 
             if (key == KEY_SOURCE_DIR) {
-                FileObject srcRoot = helper.resolveFileObject(evaluator.getProperty(SRC_DIR));
+                FileObject srcRoot = helper.resolveFileObject(
+                        evaluator.getProperty(IcanproProjectProperties.SRC_DIR));
                 Project p = FileOwnerQuery.getOwner(srcRoot);
                 Sources s = ProjectUtils.getSources(p);
+                // TODO r | m
                 SourceGroup sgs [] = ProjectUtils.getSources(p).getSourceGroups(XsltproConstants.SOURCES_TYPE_ICANPRO);
                 for (int i = 0; i < sgs.length; i++) {
                     if (sgs [i].contains(srcRoot)) {
@@ -218,7 +220,7 @@ public class IcanproViews {
         }
         
         private FileObject getTransformmapFO() {
-            DataFolder srcDir = getFolder(SRC_DIR);
+            DataFolder srcDir = getFolder(IcanproProjectProperties.SRC_DIR);
             if (srcDir != null) {
                 FileObject srcFO = srcDir.getPrimaryFile();
                 if (srcFO == null) {
@@ -282,8 +284,7 @@ public class IcanproViews {
         }
     }
     
-    private static final class RootNode extends FilterNode implements FileChangeListener {
-        private FileObject sourceFolder;
+    private static final class RootNode extends FilterNode {
         public RootNode(FileObject sourceFolder, Node n, org.openide.nodes.Children children) {
             super(n,  children);
             assert sourceFolder != null;
@@ -292,16 +293,7 @@ public class IcanproViews {
                     DELEGATE_GET_ACTIONS);
             setDisplayName(
                     NbBundle.getMessage(IcanproViews.class, "LBL_ProcessFiles"));
-            this.sourceFolder = sourceFolder;
-            sourceFolder.addFileChangeListener(this);
-            
         }
-
-        protected void finalize() {
-            super.finalize();
-            sourceFolder.removeFileChangeListener(this);
-        }
-
 // TODO r        
 //        public RootNode(Node n, DataFolder dataFolder) {
 //            super(n,  dataFolder.createNodeChildren( NO_FOLDERS_FILTER));
@@ -328,6 +320,7 @@ public class IcanproViews {
             };
         }
         
+        @Override
         public boolean canDestroy() {
             return false;
         }
@@ -345,67 +338,6 @@ public class IcanproViews {
         @Override
         public boolean canCut() {
             return false;
-        }
-        
-        void addTransformmapNode(XsltTransformationsNode node) {
-            assert node != null;
-            org.openide.nodes.Children children = getChildren();
-            if (children == null || isExistChildNode(children, node)) {
-                return;
-            } 
-            
-            children.add(new Node[] {node});
-        }
-        
-        void removeTransformmapNode(String foName) {
-            org.openide.nodes.Children children = getChildren();
-            if (children == null) {
-                return;
-            }
-            Node xsltMapNode = null;
-            Node[] nodes = children.getNodes();
-            for (Node elem : nodes) {
-                if (elem instanceof XsltTransformationsNode) {
-                    children.remove(new Node[]{elem});
-                    break;
-                }
-            }
-        }
-        
-        private boolean isExistChildNode(org.openide.nodes.Children children,
-                Node node) 
-        {
-            return children.findChild(node.getName()) != null;
-        }
-
-        public void fileFolderCreated(FileEvent fe) {
-        }
-
-        public void fileDataCreated(FileEvent fe) {
-            FileObject fo = fe.getFile();
-            if (isTransformmapFile(fo)) {
-                XsltTransformationsNode xsltMapNode 
-                        = NodeFactory.createXsltTransformationsNode(fo);
-                if (xsltMapNode != null) {
-                    addTransformmapNode(xsltMapNode);
-                }
-            }
-        }
-
-        public void fileChanged(FileEvent fe) {
-        }
-
-        public void fileDeleted(FileEvent fe) {
-            FileObject fo = fe.getFile();
-            if (isTransformmapFile(fo)) {
-                removeTransformmapNode(fo.getNameExt());
-            }
-        }
-
-        public void fileRenamed(FileRenameEvent fe) {
-        }
-
-        public void fileAttributeChanged(FileAttributeEvent fe) {
         }
     }
     

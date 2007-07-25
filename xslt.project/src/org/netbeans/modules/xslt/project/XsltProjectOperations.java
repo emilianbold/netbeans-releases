@@ -34,6 +34,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
 /**
  *
@@ -67,7 +68,7 @@ public class XsltProjectOperations  implements DeleteOperationImplementation, Co
         files.add(project.getSourceDirectory());
         
         PropertyEvaluator evaluator = project.evaluator();
-        String prop = evaluator.getProperty(XsltproConstants.SOURCE_ROOT);
+        String prop = evaluator.getProperty(IcanproProjectProperties.SOURCE_ROOT);
         if (prop != null) {
             FileObject projectDirectory = project.getProjectDirectory();
             FileObject srcDir = project.getAntProjectHelper().resolveFileObject(prop);
@@ -80,7 +81,7 @@ public class XsltProjectOperations  implements DeleteOperationImplementation, Co
     }
 
     public void notifyDeleting() throws IOException {
-       XsltproActionProvider ap = (XsltproActionProvider) project.getLookup().lookup(XsltproActionProvider.class);
+       XsltproActionProvider ap = project.getLookup().lookup(XsltproActionProvider.class);
         assert ap != null;
         
         Lookup context = Lookups.fixed(new Object[0]);

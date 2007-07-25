@@ -28,7 +28,9 @@ import java.util.Map;
 import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.xslt.project.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+//import org.netbeans.modules.xslt.project.ui.customizer.VisualClassPathItem;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.xslt.project.ui.customizer.XsltproProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -117,7 +119,7 @@ public class XsltproActionProvider implements ActionProvider{
             return;
         }
         Properties p = null;
-        String[] targetNames = (String[])commands.get(command);
+        String[] targetNames = commands.get(command);
 ////        //EXECUTION PART    
 ////        if (command.equals (XsltproConstants.COMMAND_DEPLOY) || command.equals (XsltproConstants.COMMAND_REDEPLOY)) {
 ////            if (!isSelectedServer ()) {
@@ -170,7 +172,7 @@ public class XsltproActionProvider implements ActionProvider{
      * @return array of targets or null to stop execution; can return empty array
      */
     String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-        String[] targetNames = (String[])commands.get(command);
+        String[] targetNames = commands.get(command);
         return targetNames;
     }
 
@@ -187,7 +189,7 @@ public class XsltproActionProvider implements ActionProvider{
     
     private void buildDependentProjectsAndRunTask(String[] targetNames, Properties p) throws IOException  {
    	XsltproProjectProperties app = this.project.getProjectProperties();
-        List items = (List) app.get(XsltproConstants.JAVAC_CLASSPATH);
+        List items = (List) app.get(IcanproProjectProperties.JAVAC_CLASSPATH);
         ArrayList artifacts = new ArrayList();
 
         for (int i = 0, size = items.size(); i < size; i++) {

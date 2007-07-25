@@ -35,9 +35,7 @@ import org.netbeans.modules.xslt.project.XsltproProject;
 import org.netbeans.modules.xslt.project.nodes.IcanproViews;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-
 import org.openide.util.actions.SystemAction;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -107,8 +105,7 @@ public class IcanproLogicalViewProvider  implements LogicalViewProvider {
         Node[] children = root.getChildren().getNodes(true);
         for (Node node : children) {
             if (target instanceof DataObject || target instanceof FileObject) {
-                DataObject d = (DataObject) node.getLookup().
-                    lookup(DataObject.class);
+                DataObject d = node.getLookup().lookup(DataObject.class);
                 if (d == null) {
                     continue;
                 }
@@ -156,8 +153,7 @@ public class IcanproLogicalViewProvider  implements LogicalViewProvider {
         if ( obj == null ){
             return false;
         }
-        DataObject dataObject = (DataObject)node.getLookup().lookup( 
-                DataObject.class );
+        DataObject dataObject = node.getLookup().lookup(DataObject.class);
         if ( dataObject == null ) {
             return false;
         }
@@ -229,10 +225,12 @@ public class IcanproLogicalViewProvider  implements LogicalViewProvider {
             }
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("xslt_project_about"); // NOI18N
         }
 
+        @Override
         public Action[] getActions( boolean context ) {
             if ( context )
                 return super.getActions( true );
@@ -240,10 +238,12 @@ public class IcanproLogicalViewProvider  implements LogicalViewProvider {
                 return getAdditionalActions();
         }
 
+        @Override
         public boolean canRename() {
             return true;
         }
         
+        @Override
         public void setName(String s) {
             DefaultProjectOperations.performDefaultRenameOperation(project, s);
         }
@@ -369,8 +369,8 @@ public class IcanproLogicalViewProvider  implements LogicalViewProvider {
 
             public void actionPerformed( ActionEvent e ) {
 
-                Project project = (Project)context.lookup( Project.class );
-                ActionProvider ap = (ActionProvider)project.getLookup().lookup( ActionProvider.class);
+                Project project = context.lookup(Project.class);
+                ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
 
                 ap.invokeAction( command, context );
 
