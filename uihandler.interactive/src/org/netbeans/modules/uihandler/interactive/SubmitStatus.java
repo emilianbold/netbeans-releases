@@ -117,7 +117,7 @@ public class SubmitStatus implements StatusLineElementProvider {
                 msg = NbBundle.getMessage(SubmitAction.class, "MSG_SubmitAction", Controller.getDefault().getLogRecordsCount());
             }
             setToolTipText(msg); // NOI18N
-            resize(0, 0);
+            resize(0, 16);
         }
         
         @SuppressWarnings("deprecated")
@@ -125,13 +125,13 @@ public class SubmitStatus implements StatusLineElementProvider {
         public void resize(int w, int h) {
             boolean ignore = Boolean.getBoolean("netbeans.full.hack"); // NOI18N
             if (ignore) {
-                super.resize(0, 0);
+                super.resize(0, 16);
                 return;
             }
             
             if (Controller.getDefault().isAutomaticSubmit()) {
                 if (Controller.getDefault().getHintsURL() == null) {
-                    super.resize(0, 0);
+                    super.resize(0, 16);
                 } else {
                     super.resize(16, 16);
                 }
@@ -141,7 +141,7 @@ public class SubmitStatus implements StatusLineElementProvider {
             // regular mode
             if (Controller.getDefault().getLogRecordsCount() < 800) {
                 //&& Installer.timesSubmitted() == 0) {
-                super.resize(0, 0);
+                super.resize(0, 16);
             } else {
                 super.resize(16, 16);
             }
