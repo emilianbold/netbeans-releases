@@ -82,6 +82,21 @@ is the proper place.
 
     <changes>
 
+        <change id="ExtKit.ToggleCommentAction.added">
+            <summary>Added ExtKit.ToggleCommentAction</summary>
+            <version major="1" minor="16"/>
+            <date day="23" month="7" year="2007"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" deprecation="no" addition="yes"/>
+            <description>
+                <p>
+                    The <code>ExtKit.ToggleCommentAction</code> was added as a
+                    replacement for the <code>ExtKit.CommentAction</code> and
+                    <code>ExtKit.UncommentAction</code> actions.
+                </p>
+            </description>
+        </change>
+
         <change id="BracesMatching.spi.related.deprecations">
             <summary>Several things were deprecated in favor of BracesMatching SPI</summary>
             <version major="1" minor="15"/>
