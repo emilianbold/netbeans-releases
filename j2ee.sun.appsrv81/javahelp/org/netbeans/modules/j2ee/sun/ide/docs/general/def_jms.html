@@ -15,17 +15,17 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <html>
     <head>
-        <title>Setting up a JMS Resource on the Sun Java System Application Server</title>
+        <title>Setting up a JMS Resource on the Sun Java System Application Server/GlassFish</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
-    <h2>Setting up a JMS Resource on the Sun Java System Application Server</h2>
+    <h2>Setting up a JMS Resource on the Sun Java System Application Server/GlassFish</h2>
     <p><small><a href="#seealso">See Also</a></small></p>
     <p>The JMS API allows loosely coupled, reliable, asynchronous interactions among Java EE components 
     and legacy systems capable of messaging. You can add new behavior 
@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
     <ol>
         <li>Go to File &gt; New (Ctrl-N).</li>
         <li>In the Project drop-down list, choose either your EJB module or Web module.</li>
-        <li>Select Sun Resources in the Categories pane, JMS Resource in the File Types pane, and click Next.</li>
+        <li>Select GlassFish in the Categories pane, JMS Resource in the File Types pane, and click Next.</li>
         <li>(required) Enter a JNDI name for the resource. JMS administered objects are usually placed within the <tt>jms</tt> naming subcontext (for example, <tt>jms/MyMessageSource</tt>).</li>
         <li>Enable or disable the resource by choosing true or false.</li>
         <li>Enter a description.</li>
@@ -66,16 +66,24 @@ Microsystems, Inc. All Rights Reserved.
             <ul>
                 <li><tt><b>javax.jms.QueueConnectionFactory</b><tt> - used for point-to-point communication</li>
                 <li><tt><b>javax.jms.TopicConnectionFactory</b></tt> - used for publish-subscribe communication</li>
+                <li><tt><b>javax.jms.ConnectionFactory</b></tt> - used for point-to-point communication</li>
             </ul>
-            
+            <ul class="note">
+                <li>With the introduction of the JMS 1.1 specification, it is recommended that you use <tt>javax.jms.ConnectionFactory</tt>
+            if you do not need to support existing code.</li>
+            </ul>
         </li>
         <li>Click Next.</li>
         <li>Enter properties for the resource, if any.</li>
         <li>Click Finish.</li>
     </ol>
     
-    <p>Once you have created the object in your project, you need to register the 
-    resource with the server.</p>
+    <p>When you complete the wizard, the resource properties are added to <tt>sun-resources.xml</tt>.
+    If you need to edit the properties of the resource, you can open <tt>sun-resources.xml</tt> in the Source Editor by expanding the 
+    Server Resources node of your project in the Projects window and double-clicking the file. </p>
+
+    <p>Once you have created the object in your project, the resource needs to be registered with the server before you can use it.
+    The resource is automatically registered when you deploy your project.</p>
         
     <h3>Connector Resources</h3>
     <p>When you register JMS resources, the IDE automatically registers connector resources.
@@ -83,13 +91,13 @@ Microsystems, Inc. All Rights Reserved.
     application with a connection to an EIS. Multiple connector resources
     may specify a single connection pool. Applications locate a connector
     resource by doing a look up of the resource using its JNDI name.</p>
-    <p>When you register or delete JMS resources, the IDE automatically performs the following tasks:</p>
+    <p>When you create the JMS resources using the wizard, the IDE automatically performs the following tasks:</p>
     <ul>
         <li>For each JMS connection factory that you register, the IDE registers a connector connection pool and connector resource.</li> 
         <li>For each JMS destination you register, the IDE registers an admin object resource.</li>
-        <li>When you delete a JMS resources, the corresponding connector resources are automatically deleted.</li>
+        <!--<li>When you delete a JMS resources, the corresponding connector resources are automatically deleted.</li>-->
     </ul> 
-    <p>Connector resources are visible in the Connectors node in the Runtime window.</p>
+    <p>Connector resources are visible in the Connectors node in the Services window.</p>
     <p>For more on these types of communication and other aspects of JMS,
     see the Chapter 32 The Java Message Service in the Java EE 5 Tutorial:</p>
     <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -101,7 +109,7 @@ Microsystems, Inc. All Rights Reserved.
        
     <dl>
         <dt><a name="seealso">See Also</a></dt>
-        <dd><a href="register_resource.html">Registering a Resource with the Sun Java System Application Server</a> </dd>
+        <dd><a href="register_resource.html">Registering a Resource with the Sun Java System Application Server/GlassFish</a> </dd>
         <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_msg_driven_beans.html">About Message-Driven Beans</a></dd>
     </dl>
 

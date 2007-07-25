@@ -15,64 +15,55 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <html>
     <head>
-        <title>Registering a Resource with the Sun Java System Application Server</title>
+        <title>Registering a Resource with the Sun Java System Application Server/GlassFish</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
-    <h2>Registering a Resource with the Sun Java System Application Server</h2>
+    <h2>Registering a Resource with the Sun Java System Application Server/GlassFish</h2>
     <p><small><a href="#seealso">See Also</a></small></p>
-    <p>Once you have created a resource object, it needs to be registered with the server. Once registered, the object
-    is available to all the applications and resources.</p>
-    <p>Resources are automatically 
-    registered with the server when the project is deployed. Using the pop-up menu in the IDE
-    you can also register resources individually without deploying or redeploying the project.</p>
+    <p>Once you have created a resource object, the resource needs to be registered with the server. 
+    Once registered, the object is available to all the applications and resources.</p>
+    <p>Resources are automatically registered with the server when the project is deployed.</p>
 
-    <p>When you create a resource object for a project with the New File wizard, 
-    the resource is added to the project and appears in two places:</p>
-    <ul><li>In the Server Resources node in the Projects window.</li>
-        <li>In the setup folder in the Files window.</li>
+    <p>When you create a resource object for a project with the New File wizard,
+        the resource name and properties are added to the file <tt>sun-resources.xml</tt>.
+    You can edit <tt>sun-resources.xml</tt> in the Source Editor to modify resource properties.</p> 
+    
+    <p>To open the <tt>sun-resource.xml</tt> in the Source Editor, 
+    double-click the file in one of the following places:</p>
+    <ul><li>In the Projects window, under the Server Resources node</li>
+        <li>In the Files window, in the setup directory</li>
     </ul>
     
-    <p><b>To register an individual resource:</b></p>
-    <ol>
-        <li>Locate the object in the Projects window or Files window.</li>
-        <li>Right-click the object and choose Register.</li>
-        <li>In the Java Message Service Resource Registration dialog box, 
-        check to make sure the JNDI resource name and the server instance are correct.</li>
-        <li>Click Register.</li>
-        <li>Click Close when you get the registration successful message.</li>
-    </ol> 
-    <p>After the object is registered with the server it is visible in the Runtime window under the Servers node
+     
+    <p>After the object is registered with the server it is visible in the Services window under the Servers node
     under the node corresponding to the type of resource. You can modify some of the properties of the resource 
     object by opening the properties window for the object.</p>
     
     <p><b>To delete a resource from the server:</b></p>
     <ol>
-        <li>Locate the object you wish to delete in the Runtime window.</li>
-        <li>Right-click on the object and select Delete.</li>
+        <li>Locate the object you wish to delete in the Services window.</li>
+        <li>Right-click on the object and select Delete Resource.</li>
     </ol> 
-    <p>When you delete a resource from the server it is no longer visible in the Runtime window.</p>
+    <p>When you delete a resource from the server it is no longer visible in the Services window.</p>
     <p><b>Notes:</b></p>    
     <ul>
-        <li>After a resource has been removed from the server, it is still listed as a resource in your project.
-        Unless you delete the resource from your project, when you deploy your application
-        the resource will be registered again. To completely delete the resource and ensure that it is not
-        registered again, delete the resource using the pop-up menu in the Files window or the Projects window.</li>
+        <li>If you create a resource in your project, removing the resource from the server does not delete it from your project.
+        The resource is still defined in <tt>sun-resources.xml</tt> until you modify the file and remove it.
+        If you do not remove the resource definition in <tt>sun-resources.xml</tt>, the resource will be created again when you deploy your project.</li>
     
-    
-        <li>The JNDI name for a resource must be unique. If the JNDI name is already taken by another resource,
-        an error message will appear in the dialog box when you try to register the resource. To change the JNDI name,
-        right-click the resource in the Files or Projects window, choose Properties and change the JNDI name.</li>
+        <li>The JNDI name for a resource must be unique. To change the JNDI name,
+        open <tt>sun-resources.xml</tt> in the Source Editor and modify the name.</li>
     </ul>
     <dl>
         <dt><a name="seealso">See Also</a></dt>
-        <dd><a href="working_withSJS.html">Working with the Sun Java System Application Server</a></dd>
+        <dd><a href="working_withSJS.html">Working with the Sun Java System Application Server/GlassFish</a></dd>
     </dl>
 
     <hr>

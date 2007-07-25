@@ -15,17 +15,17 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <html>
     <head>
-        <title>Setting up a JavaMail Resource on the Sun Java System Application Server</title>
+        <title>Setting up a JavaMail Resource on the Sun Java System Application Server/GlassFish</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
-    <h2>Setting up a JavaMail Resource on the Sun Java System Application Server</h2>
+    <h2>Setting up a JavaMail Resource on the Sun Java System Application Server/GlassFish</h2>
     <p><small><a href="#seealso">See Also</a></small></p>
     <p>The JavaMail API is a set of abstract APIs that model a mail system.
     The API provides a platform-independent and protocol-independent framework to 
@@ -40,23 +40,27 @@ Microsystems, Inc. All Rights Reserved.
     <ol>
         <li>Go to File &gt; New (Ctrl-N).</li>
         <li>In the Project combo box, choose either your EJBModule or WebModule.</li>
-        <li>Select Sun Resources in the Categories pane, JavaMail Resource in the File Types pane, and click Next.</li>
+        <li>Select GlassFish in the Categories pane, JavaMail Resource in the File Types pane, and click Next.</li>
         <li>(required) Enter a JNDI name for the resource.</li>
         <li>(required) In the mail host field, enter the DNS name of the default mail server.</li>           
         <li>(required) In the default user field, enter the user name to use when connecting to the mail server.</li>        
         <li>(required) In the Default Return Address field, enter the email address of the default user, in the form <tt>username@host.domain</tt>.</li>          
         <li>Enable or disable the resource by choosing true or false.</li>
         <li>Enter a description.</li>        
-        <li>In the Advanced area, change the field values only if the Sun Java System Application Server's mail 
+        <li>In the Advanced area, change the field values only if the server's mail 
         provider has been reconfigured to use a nondefault store or transport protocol.
-        Select Tru for Debug Enabled for extra debugging output.</li>        
+        Select True for Debug Enabled for extra debugging output.</li>        
         <li>Click Next.</li>
         <li>Enter any properties for the resource.</li>
         <li>Click Finish.</li>
     </ol>
-    
-    <p>Once you have created the object in your project, you need to register the 
-    resource with the server.</p>
+    <p>When you complete the wizard, the resource properties are added to <tt>sun-resources.xml</tt>.
+    If you need to edit the properties of the resource, you can open <tt>sun-resources.xml</tt> in the Source Editor by expanding the 
+    Server Resources node of your project in the Projects window and double-clicking the file. </p>
+            
+    <p>Once you have created the object in your project, the resource needs to be registered with the server before you can use it.
+    The resource is automatically registered when you deploy your project.</p>
+
     <p>For more on the Sun JavaMail API, see:</p>
     <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="content" value="http://java.sun.com/products/javamail/">
@@ -67,7 +71,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <dl>
         <dt><a name="seealso">See Also</a></dt>
-        <dd>  <a href="register_resource.html">Registering a Resource with the Sun Java System Application Server</a></dd>
+        <dd>  <a href="register_resource.html">Registering a Resource with the Sun Java System Application Server/GlassFish</a></dd>
     </dl>
 
     <hr>

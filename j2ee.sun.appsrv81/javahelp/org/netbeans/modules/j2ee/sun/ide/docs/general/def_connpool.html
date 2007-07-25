@@ -15,17 +15,17 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <html>
     <head>
-        <title>Setting up a Connection Pool on the Sun Java System Application Server</title>
+        <title>Setting up a Connection Pool on the Sun Java System Application Server/GlassFish</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
 
-    <h2>Setting up a Connection Pool on the Java System Application Server</h2>
+    <h2>Setting up a Connection Pool on the Java System Application Server/GlassFish</h2>
     <p><small><a href="#seealso">See Also</a></small></p>
     <p>A JDBC connection pool is a group of reusable connections that the
     application server maintains for a particular database. Applications
@@ -46,7 +46,7 @@ Microsystems, Inc. All Rights Reserved.
                 Java EE patterns recommend saving the resource in the EJB module to allow greater flexibility and reusability.</li>
             </ul>
         </li>
-        <li>Select Sun Resources in the Categories pane, JDBC Connection Pool in the File Types pane, and click Next.</li>
+        <li>Select GlassFish in the Categories pane, JDBC Connection Pool in the File Types pane, and click Next.</li>
         <li>(required) Give the connection pool a name.</li>
         <li>Select to either use an existing database connection or create a new connection by choosing 
         a configuration from the list.</li>
@@ -57,22 +57,20 @@ Microsystems, Inc. All Rights Reserved.
         <li>Enter any properties for the connection. You may need to enter the URL for the database and user name and
         password to connect.</li>
         <li>Click Next if you want to modify the default properties for the connection. You can change these properties later
-        in the properties window for the connection pool.</li>
+        by editing the <tt>sun-resources.xml</tt> file.</li>
         <li>Click Finish.</li>
     </ol>
     
     <p>Once you have created a connection pool in your project, the resource needs to be registered with the server
     to make it available to all applications and resources. The resource is automatically registered when the project is
-    deployed. Alternatively, you can manually <a href="register_resource.html">register the
-    resource with the server</a> without deploying or redeploying the project. 
-    Ensure the Sun Java System Application Server is running before manually registering the resource with the server.</p>
+    deployed. </p>
     
     
     <dl>
         <dt><a name="seealso">See Also</a></dt>
         <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_aboutdbconnect.html">About Connection Pools</a></dd>            
         <dd><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a> </dd>
-        <dd><a href="register_resource.html">Registering a Resource with the Sun Java System Application Server</a> </dd>
+        <dd><a href="register_resource.html">Registering a Resource with the Sun Java System Application Server/GlassFish</a> </dd>
     </dl>
 
     <hr>

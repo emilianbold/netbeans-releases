@@ -14,42 +14,44 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
     -->
 <html>
     <head>
-        <title>Registering a Sun Java System Application Server Instance</title>
+        <title>Registering a Sun Java System Application Server/GlassFish Instance</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>Registering a Sun Java System Application Server Instance</h2>
+        <h2>Registering a Sun Java System Application Server/GlassFish Instance</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>To begin developing enterprise applications you must first register an instance of the
-        Java System Application Server with the IDE.</p>
+        Sun Java System Application Server/GlassFish with the IDE.</p>
 
         <p>If you deploy your applications to a remote instance of the
-        Java System Application Server, those libraries are available at runtime. However, during 
+        Sun Java System Application Server/GlassFish, those libraries are available at runtime. However, during 
         development, to compile your project you need a local instance of this server and libraries.</p>
-        <p>You can have multiple instances of the Java System Application Server registered with the 
+        <p>You can have multiple instances of the Sun Java System Application Server/GlassFish registered with the 
         IDE, but you must first specify the local folder that contains the local installation of 
-        the Java System Application Server. You only need to specify the location of the local installation once.</p>
+        the server. You only need to specify the location of the local installation once.</p>
     
-        <p><b>To register an instance of the Java System Application Server:</b></p>
+        <p><b>To register an instance of the Sun Java System Application Server/GlassFish:</b></p>
         <ol>
-            <li>Choose Tools &gt; Server Manager.</li>
-            <li>In the Server Manager, click Add Server to start the Add Server wizard.
+            <li>Choose Tools &gt; Servers.</li>
+            <li>In the Servers dialog box, click Add Server to open the Add Server wizard.
             <ul class="note">
-                <li>Alternatively, right-click the Servers node in the Runtime window and choose 
+                <li>Alternatively, right-click the Servers node in the Services window and choose 
                 Add Server. </li>
             </ul></li>
-            <li>Select the Sun Java System Application Server from the drop-down list.</li>
-            <li>Enter a name for the server instance. This name is used to identify the server in the IDE.</li>
+            <li>Select the server you want to register.</li>
+            <li>Type a name for the server instance. This name is used to identify the server in the IDE.</li>
             <li>Click Next.</li>
-            <li>Supply the directory path of the Sun Java System Application Server.</li>
-            <li>Select the type of domain you are registering and click Next.</li>
-            <li>Specify the domain you want to register.
-                <ul class="note"><li>If you are registering a remote domain, you need to specify the host and port used to communicate with the remote domain.</li></ul>
+            <li>Supply the platform location of the server.</li>
+            <li>Select the type of domain you are registering.
+                <ul class="note">
+                <li>If you are registering the local default domain, the available domains are listed in the drop-down list.
+                If you are registering a remote domain, you need to specify the host and port used to communicate with the remote domain.
+                </li></ul>
             </li>
             <li>Click Finish to complete the Add Server Instance wizard. 
             Alternatively, click Next if you want to enter a username and password for the domain.</li>
@@ -58,35 +60,35 @@ Microsystems, Inc. All Rights Reserved.
                 you are prompted to supply the username and password when needed.<br>
                 The default username/password is admin/adminadmin.</li>
             </ul>
-            <li>Click Close in the Server Manager dialog box.</li>
+            <li>Click Close in the Servers dialog box.</li>
         </ol>  
-        <p>Once a server instance is registered with the IDE, a node for the server instance is visible in the Runtime 
+        <p>Once a server instance is registered with the IDE, a node for the server instance is visible in the Services
         window under the Servers node. 
         You can perform the following tasks by right-clicking 
         the server instance node and choosing a task from the pop-up menu:</p> 
         <ul>
             <li>Start and stop a local server instance</li>
-            <li>Remove an instance of the Sun Java System Application Server</li> 
+            <li>Remove an instance of the server</li> 
             <li>Open the Sun Java System Application Server admin console in a browser</li> 
             <li>View the server log file</li> 
-            <li>View the Sun Java System Application Server properties</li>
+            <li>View the properties of the Sun Java System Application Server/GlassFish</li>
         </ul>
-        <p><b>To remove an instance of the Java System Application Server:</b></p>
+        <p><b>To remove an instance of the Java System Application Server/GlassFish:</b></p>
         <ol>
-            <li>Choose Tools &gt; Server Manager.</li>
-            <li>In the Server Manager dialog box, select the Sun Java System Application Server from the list of servers in the left pane.</li>
+            <li>Choose Tools &gt; Servers.</li>
+            <li>In the Servers dialog box, select the server name in the left pane.</li>
             <li>Click Remove.</li>
             <li>Click Close.</li>
         </ol>
         <ul class="note">
             <li>
-                Alternatively, in the Runtime window right-click the server instance you want to remove and 
+                Alternatively, in the Services window right-click the server instance you want to remove and 
                 choose Remove from the pop-up menu.
             </li>
         </ul>
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="working_withSJS.html">Working With the Sun Java System Application Server</a></dd>
+            <dd><a href="working_withSJS.html">Working With the Sun Java System Application Server/GlassFish</a></dd>
         </dl>
         <hr>
 

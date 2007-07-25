@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -27,44 +27,28 @@ Microsystems, Inc. All Rights Reserved.
 
     <body>
 
-        <h2>Modifying JVM Properties of the Sun Java System Application Server</h2>
+        <h2>Modifying JVM Properties of the Sun Java System Application Server/GlassFish</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>You can set and modify the properties for the JVM of the Sun Java System Application Server
-        by modifying the JVM properties sheet in the Runtime window.</p>
+        <p>You can set and modify the properties for the JVM of the Sun Java System Application Server/GlassFish
+        by modifying the JVM properties sheet for the server. You can open the properties sheet from the Services window.</p>
         <p><b>To modify the JVM properties:</b></p>
         <ol>
-            <li>Ensure that the Sun Java System Application Server instance is running.</li>
-            <li>In the Runtime window, expand the Servers node and the Sun Java System Application Server instance.</li>
-            <li>Right-click the JVMs node and select properties to bring up the properties window.</li>
+            <li>Ensure that the Sun Java System Application Server/GlassFish instance is running.</li>
+            <li>In the Runtime window, expand the Servers node and the Sun Java System Application Server/GlassFish instance.</li>
+            <li>Right-click the JVMs node and choose Properties to bring up the properties window.</li>
             <li>In the Properties window, you can modify the follow properties of the JVM:
 
             <ul>
-                <li><b>bytecode-preprocessors.</b> Enter a comma-separated list of class
-                names. Each class must implement the
-                com.sun.appserv.BytecodePreprocessor interface. Classes are called in
-                the order specified.</li>
-                <li><b>native-library-path-suffix.</b> Add entries to the end of the native
-                library path. The native library path is a concatenation of the
-                server&#8217;s relative
-                path for its native shared libraries, the standard JRE native library
-                path, the shell environment setting (LD_LIBRARY_PATH on UNIX), and any
-                path specified on the JVM Profiler Settings page.</li>
-                <li><b>native-library-path-prefix.</b> Add entries to the beginning of the
-                native library path. The native library path is a concatenation of the
-                server&#8217;s relative
-                path for its native shared libraries, the standard JRE native library
-                path, the shell environment setting (LD_LIBRARY_PATH on UNIX), and any
-                path specified on the JVM Profiler Settings page.</li>
-                <li><b>classpath-suffix.</b> Click the box to add a directory or JAR/ZIP
-                file to the end of the classpath. You can also remove directories or
-                JAR/ZIP files currently in the JVM classpath and reorder the classpath references.</li>
-
+                <li><b></b></li>
                 <li><b>debug-options.</b> Enter or edit debug options. Note that using an
                 option of&nbsp; transport=dt_shmem is only supported on Windows.</li>
-
-                <li><b>java-home.</b> The name of the installation directory of the Java 2
-                Standard Edition (J2SE) software.</li>
-
+                <li><b>server-classpath.</b> Click the box to add a directory or JAR/ZIP
+                file to the server classpath. You can also remove directories or JAR/ZIP files currently in the server
+                classpath and reorder the classpath references.</li>
+                <li><b>classpath-prefix.</b> Click the box to add a directory or JAR/ZIP
+                file to the beginning of the classpath. You can also remove directories or JAR/ZIP files currently in the classpath
+                and reorder the classpath references.</li>
+                <li><b>RMIC-options.</b> Command-line options for RMIC compiler.</li>
                 <li><b>jvm-options.</b> Displays the JVM options. Edit options directly or
                 click the box to edit options with the editor.
                 <ul>
@@ -72,23 +56,32 @@ Microsystems, Inc. All Rights Reserved.
                     <li>Add new options by entering the options in the Item field and then clicking Add.</li>
                     <li>Options in the Item List can be moved up or down. Select the item to reposition and click Up or Down.</li>
                 </ul></li>
-
-                <li><b>javac-options.</b>  Displays the javac options. Edit options directly or click the box to edit options with the editor.</li>                
-                <li><b>debug-enabled.</b> Set to true to enable debug mode; otherwise, set
-                to false to disable debug mode. If set to true, set the jpda_port_number.</li>
-
-                <li><b>server-classpath.</b> Click the box to add a directory or JAR/ZIP
-                file to the server classpath. You can also remove directories or JAR/ZIP files currently in the server
-                classpath and reorder the classpath references.</li>
-
-                <li><b>classpath-prefix.</b> Click the box to add a directory or JAR/ZIP
-                file to the beginning of the classpath. You can also remove directories or JAR/ZIP files currently in the classpath
-                and reorder the classpath references.</li>
-
-                <li><b>rmic-options.</b> Command-line options for RMIC compiler.</li>
-
+                <li><b>Javac-options.</b>  Displays the Javac options. Edit options directly or click the box to edit options with the editor.</li>                
+                <li><b>native-library-path-prefix.</b> Add entries to the beginning of the
+                native library path. The native library path is a concatenation of the
+                server&#8217;s relative
+                path for its native shared libraries, the standard JRE native library
+                path, the shell environment setting (LD_LIBRARY_PATH on UNIX), and any
+                path specified on the JVM Profiler Settings page.</li>
+                <li><b>java-home.</b> The name of the installation directory of the Java 2
+                Standard Edition (J2SE) software.</li>
+                <li><b>classpath-suffix.</b> Click the box to add a directory or JAR/ZIP
+                file to the end of the classpath. You can also remove directories or
+                JAR/ZIP files currently in the JVM classpath and reorder the classpath references.</li>
+                <li><b>native-library-path-suffix.</b> Add entries to the end of the native
+                library path. The native library path is a concatenation of the
+                server&#8217;s relative
+                path for its native shared libraries, the standard JRE native library
+                path, the shell environment setting (LD_LIBRARY_PATH on UNIX), and any
+                path specified on the JVM Profiler Settings page.</li>
                 <li><b>env-classpath-ignored.</b> Set to true to ignore env-classpath. This
                 is the recommended setting.</li>
+                <li><b>bytecode-preprocessors.</b> Enter a comma-separated list of class
+                names. Each class must implement the
+                com.sun.appserv.BytecodePreprocessor interface. Classes are called in
+                the order specified.</li>
+                <li><b>debug-enabled.</b> Set to true to enable debug mode; otherwise, set
+                to false to disable debug mode. If set to true, set the jpda_port_number.</li>
 
                 <li><b>jpda_port_number/shared_memory.</b> This property is determined by
                 the transport setting in debug-options. If the transport value is
@@ -103,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="working_withSJS.html">Working with the Sun Java System Application Server</a></dd>
+            <dd><a href="working_withSJS.html">Working with the Sun Java System Application Server/GlassFish</a></dd>
         </dl>
         <hr>
 

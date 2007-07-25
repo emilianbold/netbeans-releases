@@ -15,14 +15,15 @@ Microsystems, Inc. All Rights Reserved.
 <html>
 
     <head>
-        <title>Sun Java System Application Server Tasks: Quick Reference</title>
+        <title>Sun Java System Application Server/GlassFish Tasks: Quick Reference</title>
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>Sun Java System Application Server Tasks: Quick Reference</h2>
+        <h2>Sun Java System Application Server/GlassFish Tasks: Quick Reference</h2>
         <!--<p><small><a href="#seealso">See Also</a></small></p>-->
         <p>This topic describes common tasks you can perform with applications and 
-        resources on the Sun Java System Application Server. For more detailed information, click the links in the right column.</p>
+        resources on the Sun Java System Application Server/GlassFish. 
+        For more detailed information, click the links in the right column.</p>
 
         <table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
             task name. The right column lists the steps to perform.">
@@ -31,24 +32,24 @@ Microsystems, Inc. All Rights Reserved.
                 <th scope="col" align="left">Follow these steps</th>
             </tr>
             <tr valign="top"> 
-                <td>Register the Java System Application Server with the IDE.</td>
+                <td>Register the Java System Application Server/GlassFish with the IDE.</td>
                 <td> 
                     <ol>
-                        <li>Choose Tools &gt; Server Manager.</li>
+                        <li>Choose Tools &gt; Servers.</li>
                         <li>Click Add Server to start the Add Server wizard.</li>
                         <li>Choose the server type, give the server instance a name and click Next.</li>
                         <li>Define the server instance properties and click Finish.</li>
                     </ol>
-                    <p>For more information, see <a href="register_appserver.html">Registering the Sun Java System Application Server</a>.</p>
+                    <p>For more information, see <a href="register_appserver.html">Registering the Sun Java System Application Server/GlassFish</a>.</p>
                 </td>
             </tr>            
             <tr valign="top"> 
                 <td>Start or stop the server.</td>
                 <td> 
                     <ol>
-                        <li>In the Runtime window, right-click the Sun Java System Application Server
+                        <li>In the Services window, right-click the Sun Java System Application Server/GlassFish
                             node and choose Start / Stop Server.
-                            <p>Alternately, click the Start the Server button in the server log tab in the Output window.</p>
+                            <p>Alternatively, click the Start the Server button in the server log tab in the Output window.</p>
                             <ul class="note">
                                 <li>You cannot start and stop a remote installation of a server from within the IDE.</li>
                             </ul>
@@ -62,7 +63,7 @@ Microsystems, Inc. All Rights Reserved.
                     <ol>
                         <li>Choose File &gt; New (Ctrl-N) to open the New File wizard.</li>
                         <li>Choose the EJB module from the Project drop-down list.</li>
-                        <li>Select JDBC Connection Pool from the Sun Resources category and click Next.</li>
+                        <li>Select JDBC Connection Pool from the GlassFish category and click Next.</li>
                         <li>Choose a connection and enter details for the connection pool.</li>
                         <li>Click Finish.</li>
                     </ol>
@@ -75,12 +76,12 @@ Microsystems, Inc. All Rights Reserved.
                     <ol>
                         <li>Choose File &gt; New (Ctrl-N) to open the New File wizard.</li>
                         <li>Choose the EJB module from the Project drop-down list.</li>
-                        <li>Select JDBC Resource from the Sun Resources category and click Next.</li>
+                        <li>Select JDBC Resource from the GlassFish category and click Next.</li>
                         <li>Select to use an existing connection pool or create a new one.</li>
                         <li>Enter a JNDI name and any other details.</li>
                         <li>Click Finish.</li>
                     </ol>
-                    <p>For more information, see <a href="def_jdbcresource.html">Setting Up a JDBC Resource on the Sun Java System Application Server</a>.</p>
+                    <p>For more information, see <a href="def_jdbcresource.html">Setting Up a JDBC Resource on the Sun Java System Application Server/GlassFish</a>.</p>
                 </td>
             </tr>
             <tr valign="top"> 
@@ -89,13 +90,13 @@ Microsystems, Inc. All Rights Reserved.
                     <ol>
                         <li>Choose File &gt; New (Ctrl-N) to open the New File wizard.</li>
                         <li>Choose the EJB module from the Project drop-down list.</li>
-                        <li>Select JMS Resource from the Sun Resources category and click Next.</li>
+                        <li>Select JMS Resource from the GlassFish category and click Next.</li>
                         <li>Enter a JNDI name for the resource and any other details.</li>
                         <li>Choose a resource type and click Next.</li>
                         <li>Enter any resource properties.</li>
                         <li>Click Finish.</li>
                     </ol>
-                    <p>For more information, see <a href="def_jms.html">Setting Up a JMS Resource on the Sun Java System Application Server</a>.</p>
+                    <p>For more information, see <a href="def_jms.html">Setting Up a JMS Resource on the Sun Java System Application Server/GlassFish</a>.</p>
                 </td>
             </tr>
             <tr valign="top"> 
@@ -104,14 +105,15 @@ Microsystems, Inc. All Rights Reserved.
                     <ol>
                         <li>Choose File &gt; New (Ctrl-N) to open the New File wizard.</li>
                         <li>Choose the EJB module from the Project drop-down list.</li>
-                        <li>Select JavaMail Resource from the Sun Resources category and click Next.</li>
+                        <li>Select JavaMail Resource from the GlassFish category and click Next.</li>
                         <li>Enter a JNDI name and the server and user details.</li>       
                         <li>Click Finish.</li>
                     </ol>
                     <p>For more information, see <a href="def_javamail.html">Setting Up a JavaMail Resource on the Sun Java System Application Server</a>.</p>
                 </td>
             </tr>
-            <tr valign="top"> 
+            <!-- TODO -- is this still valid -->
+<!--            <tr valign="top"> 
                 <td>Add a persistence resource.</td>
                 <td> 
                     <ol>
@@ -119,17 +121,18 @@ Microsystems, Inc. All Rights Reserved.
                         <li>Choose the EJB module from the Project drop-down list.</li>
                         <li>Select Persistence Resource from the Sun Resources category and click Next.</li>
                         <li>Select to use an existing JDBC resource or create a new one.</li>
-                        <li>Enter a JNDI name and any other details.</li>
+                        <li>Enter a JNDI name and other required resource details.</li>
                         <li>Click Finish.</li>
                     </ol>
                     <p>For more information, see <a href="def_persistence.html">Setting Up a Persistence Manager Resource on the Sun Java System Application Server</a>.</p>
                 </td>
             </tr>
+  -->
             <tr valign="top"> 
                 <td>Undeploy an application.</td>
                 <td> 
                     <ol>
-                        <li>Expand the Sun Java System Application Server instance and the Applications node in the Runtime window.</li>
+                        <li>Expand the Sun Java System Application Server/GlassFish instance node and the Applications node in the Services window.</li>
                         <li>Expand the node which contains the type of application to undeploy.</li>
                         <li>Right-click the application and choose Undeploy.</li>
                     </ol>

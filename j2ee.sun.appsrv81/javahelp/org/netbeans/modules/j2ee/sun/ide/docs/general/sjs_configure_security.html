@@ -9,27 +9,27 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <html>
 
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>Configuring Security Roles for the Sun Java System Application Server</title>
+<title>Configuring Security Roles for the Sun Java System Application Server/GlassFish</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 
 </head>
 
 <body>
-<h1>Configuring Security Roles for the Sun Java System Application Server</h1>
+<h1>Configuring Security Roles for the Sun Java System Application Server/GlassFish</h1>
 <p><small><a href="#seealso">See Also</a></small></p>
     <p>If you want to create secure areas of a web application, you need to configure the security roles by
         modifying the project's deployment descriptors.
         When configuring the security roles for your web application, you define your security roles in <tt>web.xml</tt>.</p>
-    <p>If you want to deploy your application to the Sun Java System Application Server, you need 
+    <p>If the target server for your application is the Sun Java System Application Server/GlassFish, you need 
     to edit <tt>sun-web.xml</tt> to map the security roles to the users and groups defined on 
-    the Sun Java System Application Server.
+    the server.
     You map security roles by adding a principal or group to a security role. 
     A security role can have more than one principal or group.
     You can use the IDE to help you edit <tt>sun-web.xml</tt> to map security roles.</p>
@@ -38,21 +38,24 @@ Microsystems, Inc. All Rights Reserved.
 <p><b>To map security roles:</b></p>
  
  <ol>
-<li>In the Projects window of the IDE, double-click <tt>sun-web.xml</tt> located in the Configuration Files directory.</li>
-<li>Expand the Sun Web Application node in the left pane of the Sun Web Application visual editor and select a security role subnode.
-<ul class="note"><li>The security roles subnodes are determined by the security roles defined in <tt>web.xml</tt>.
+<li>In the Projects window of the IDE, double-click <tt>sun-web.xml</tt> located in the Configuration Files directory of your web application project.</li>
+<li>Click the Security tab in the visual editor.</li>
+<li>Click Add Security Role Mapping to create a new security role.
+<ul class="note"><li>The security roles are determined by the security roles defined in <tt>web.xml</tt>.
+If <tt>web.xml</tt> already defines a security role, the role is listed in <tt>sun-web.xml</tt>.
 For more on defining security roles in <tt>web.xml</tt>, see 
-<a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/web/csh/graphic_editor/dd_multiview_security_securityrolesNode.html"><tt>web.xml</tt> Visual Editor: Security Roles</a></li></ul></li>
-<li>In the Security Role Mapping pane for the security role, click Add Principal or Add Group
-to open the Add Principal or Add Group dialog box.</li>
+<a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs/web/csh/graphic_editor/dd_multiview_security_securityrolesNode.html"><tt>web.xml</tt> Visual Editor: Security Roles</a></li>
+</ul></li>
+<li>Expand the security role node to view the properties of the security role.</li>
+<li>Click Add Principal or Add Group to open the Add Principal or Add Group dialog box.</li>
 <li>In the dialog box, enter the name of the principal or group to add to the selected security role.
-The name of the principal or group must match a name specified on the Sun Java System Application Server.
+The name of the principal or group must match a name specified on the Sun Java System Application Server/GlassFish.
  </ol>
  
 <ul class="note"><li>The principals and groups specified in <tt>sun-web.xml</tt> must be valid for the
-realm as configured on the Sun Java System Application Server.
-For more on setting users and groups on the Sun Java System Application Server,
-see <a href="sjs_manage_users.html">Managing Users for the Sun Java System Application Server</a>.</li></ul>
+realm as configured on the Sun Java System Application Server/GlassFish.
+For more on setting users and groups on the Sun Java System Application Server/GlassFish,
+see <a href="sjs_manage_users.html">Managing Users for the Sun Java System Application Server/GlassFish</a>.</li></ul>
 
 <p>For more on configuring security, see the chapter on securing applications in the Sun Java System Application Server Developer's Guide:</p>
     <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -64,9 +67,9 @@ see <a href="sjs_manage_users.html">Managing Users for the Sun Java System Appli
     
 <dl>
 <dt><a name="seealso">See Also</a></dt>
-<dd><a href="working_withSJS.html">Working with the Sun Java System Application Server</a></dd>
-<dd><a href="sjs_manage_users.html">Managing Users for the Sun Java System Application Server</a></dd>
-<dd><a href="adminconsole.html">Accessing the Java System Application Server Admin Console</a></dd>
+<dd><a href="working_withSJS.html">Working with the Sun Java System Application Server/GlassFish</a></dd>
+<dd><a href="sjs_manage_users.html">Managing Users for the Sun Java System Application Server/GlassFish</a></dd>
+<dd><a href="adminconsole.html">Accessing the Sun Java System Application Server Admin Console</a></dd>
 <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/web/csh/graphic_editor/dd_multiview_security_securityrolesNode.html">web.xml Visual Editor: Security Roles</a></dd>
 </dl>
 
