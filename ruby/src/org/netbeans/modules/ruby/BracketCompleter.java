@@ -1534,6 +1534,9 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             if (reverse) {
                 // Find previous
                 int offsetInImage = offset - 1 - ts.offset(); 
+                if (offsetInImage < 0) {
+                    return -1;
+                }
                 if (offsetInImage < length && Character.isUpperCase(s.charAt(offsetInImage))) {
                     for (int i = offsetInImage - 1; i >= 0; i--) {
                         char charAtI = s.charAt(i);
