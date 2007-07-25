@@ -38,6 +38,9 @@ public class TMapModelFactoryImpl  extends AbstractModelFactory<TMapModel>
 
     @Override
     public TMapModel getModel(ModelSource source) {
+        if (source == null) {
+            return null;
+        }
         Lookup lookup = source.getLookup();
         assert lookup.lookup(Document.class) != null;
         return super.getModel(source);
