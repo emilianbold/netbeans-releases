@@ -42,14 +42,16 @@ public final class ListMatcher<E> {
     private final Stack<ResultItem<E>> result;
 
     // contains method for distance-measuring
-    private final Measure measure;
+    private final Comparator<E> measure;
     
     // create ListMatcher instance
-    private ListMatcher(List<? extends E> oldL, List<? extends E> newL, Measure measure) {
+    @SuppressWarnings("unchecked")
+    private ListMatcher(List<? extends E> oldL, List<? extends E> newL, Comparator<E> measure) {
         this((E[]) oldL.toArray(), (E[]) newL.toArray(), measure);
     }
     
     // create ListMatcher instance
+    @SuppressWarnings("unchecked")
     private ListMatcher(List<? extends E> oldL, List<? extends E> newL) {
         this((E[]) oldL.toArray(), (E[]) newL.toArray());
     }
@@ -59,7 +61,8 @@ public final class ListMatcher<E> {
         this(oldL, newL, null);
     }
     
-    private ListMatcher(E[] oldL, E[] newL, Measure measure) {
+    @SuppressWarnings("unchecked")
+    private ListMatcher(E[] oldL, E[] newL, Comparator<E> measure) {
         this.oldL = oldL;
         this.newL = newL;
         this.measure = measure != null ? measure : Measure.DEFAULT;
@@ -85,7 +88,7 @@ public final class ListMatcher<E> {
      * @param  comparator  used for comparing elements.
      * @return       created instance.
      */
-    public static <T> ListMatcher<T> instance(List<? extends T> oldL, List<? extends T> newL, Measure measure) {
+    public static <T> ListMatcher<T> instance(List<? extends T> oldL, List<? extends T> newL, Comparator<T> measure) {
         return new ListMatcher<T>(oldL, newL, measure);
     }
     /**
@@ -121,6 +124,7 @@ public final class ListMatcher<E> {
         
         private final String name;
         
+        @Override
         public String toString() {
             return name;
         }
@@ -149,6 +153,7 @@ public final class ListMatcher<E> {
             this.operation = operation;
         }
         
+        @Override
         public String toString() {
             StringBuffer sb = new StringBuffer(128);
             sb.append('{');
@@ -195,7 +200,7 @@ public final class ListMatcher<E> {
                     S[ii][jj] = S[ii-1][jj-1] + 1;
                     R[ii][jj] = UP_AND_LEFT;
                 } else {
-                    int distance = measure.getDistance(oldL[ii-1], newL[jj-1]);
+                    int distance = measure.compare(oldL[ii-1], newL[jj-1]);
                     // if the distance is betwwen OBJECTS_MATCH and INFINITE_DISTANCE,
                     // old element was modified to new element.
                     if (distance > OBJECTS_MATCH && distance < INFINITE_DISTANCE) {
@@ -516,6 +521,7 @@ public final class ListMatcher<E> {
             private boolean head() { return (type & HEAD) != NONE; }
             private boolean tail() { return (type & TAIL) != NONE; }
             
+            @Override
             public String toString() {
                 StringBuffer sb = new StringBuffer();
                 if (head()) sb.append("head ");

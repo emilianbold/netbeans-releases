@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.api.java.source.gen;
@@ -47,7 +47,7 @@ public class ListMatcherTest extends NbTestCase {
                 "{insert} A\n" +
                 "{insert} B\n" +
                 "{insert} C\n";
-        ListMatcher matcher = ListMatcher.instance(oldL, newL);
+        ListMatcher<String> matcher = ListMatcher.<String>instance(oldL, newL);
         if (matcher.match()) {
             String result = matcher.printResult(false);
             System.err.println("-------------");
@@ -67,7 +67,7 @@ public class ListMatcherTest extends NbTestCase {
                 "{delete} A\n" +
                 "{delete} B\n" +
                 "{delete} C\n";
-        ListMatcher matcher = ListMatcher.instance(oldL, newL);
+        ListMatcher<String> matcher = ListMatcher.<String>instance(oldL, newL);
         if (matcher.match()) {
             String result = matcher.printResult(false);
             System.err.println("-------------");
@@ -86,7 +86,7 @@ public class ListMatcherTest extends NbTestCase {
         String golden = 
                 "{insert} A\n" +
                 "{nochange} B\n";
-        ListMatcher matcher = ListMatcher.instance(oldL, newL);
+        ListMatcher<String> matcher = ListMatcher.<String>instance(oldL, newL);
         if (matcher.match()) {
             String result = matcher.printResult(false);
             System.err.println("---------------");
@@ -105,7 +105,7 @@ public class ListMatcherTest extends NbTestCase {
         String golden = 
                 "{delete} A\n" +
                 "{nochange} B\n";
-        ListMatcher matcher = ListMatcher.instance(oldL, newL);
+        ListMatcher<String> matcher = ListMatcher.<String>instance(oldL, newL);
         if (matcher.match()) {
             String result = matcher.printResult(false);
             System.err.println("------------------");
@@ -131,7 +131,7 @@ public class ListMatcherTest extends NbTestCase {
                 "{delete} F\n" +
                 "{nochange} G\n" +
                 "{insert} H\n";
-        ListMatcher matcher = ListMatcher.instance(oldL, newL);
+        ListMatcher<String> matcher = ListMatcher.<String>instance(oldL, newL);
         if (matcher.match()) {
             String result = matcher.printResult(false);
             System.err.println("-----------");

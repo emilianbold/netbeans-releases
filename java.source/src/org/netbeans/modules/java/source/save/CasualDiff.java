@@ -1665,7 +1665,7 @@ public class CasualDiff {
             List<? extends JCTree> newList,
             JavaTokenId[] makeAround,
             int pos,
-            Measure measure)
+            Comparator<JCTree> measure)
     {
         assert oldList != null && newList != null;
         if (oldList == newList || oldList.equals(newList))
@@ -1763,7 +1763,7 @@ public class CasualDiff {
             List<? extends JCTree> newList,
             JavaTokenId[] makeAround,
             int pos,
-            Measure measure)
+            Comparator<JCTree> measure)
     {
         assert oldList != null && newList != null;
         if (oldList == newList || oldList.equals(newList))
@@ -1915,7 +1915,7 @@ public class CasualDiff {
             List<? extends JCTree> newList,
             int localPointer, 
             PositionEstimator estimator,
-            Measure measure, 
+            Comparator<JCTree> measure, 
             VeryPretty printer)
     {
         if (oldList == newList || oldList.equals(newList)) {
@@ -1923,7 +1923,7 @@ public class CasualDiff {
         }
         assert oldList != null && newList != null;
         
-        ListMatcher<JCTree> matcher = ListMatcher.instance(
+        ListMatcher<JCTree> matcher = ListMatcher.<JCTree>instance(
                 oldList, 
                 newList,
                 measure
