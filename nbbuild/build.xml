@@ -1559,6 +1559,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         <include name="visualweb*/"/>
         <include name="ruby*/"/>
         <include name="mobility*/"/>
+        <exclude name="mobility*/emulators-inst/wtk22_*.zip"/> <!-- XXX #110820 -->
         <include name="soa*/"/>
         <include name="identity*/"/>
         <include name="xml*/"/>
