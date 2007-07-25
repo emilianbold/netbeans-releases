@@ -177,6 +177,40 @@ public class InstallerTest extends NbTestCase {
         assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
         assertFalse("disabled", b.isEnabled());
     }
+    public void testTitle() throws Exception {
+        String page = "<html><head><title>Ahoj</title></head><body><form action='http://xyz.cz' method='POST'>" +
+            "\n" +
+            "</form></body></html>";
+        
+        InputStream is = new ByteArrayInputStream(page.getBytes());
+        JButton def = new JButton("Default");
+        DialogDescriptor dd = new DialogDescriptor(null, "MyTit");
+        Installer.parseButtons(is, def, dd);
+        is.close();
+        Object[] buttons = dd.getOptions();
+        
+        assertNotNull("buttons parsed", buttons);
+        assertEquals("There is the default", 1, buttons.length);
+        assertEquals("3rd is default", def, buttons[0]);
+        assertEquals("Ahoj", dd.getTitle());
+    }
+    public void testNoTitle() throws Exception {
+        String page = "<html><head></head><body><form action='http://xyz.cz' method='POST'>" +
+            "\n" +
+            "</form></body></html>";
+        
+        InputStream is = new ByteArrayInputStream(page.getBytes());
+        JButton def = new JButton("Default");
+        DialogDescriptor dd = new DialogDescriptor(null, "MyTit");
+        Installer.parseButtons(is, def, dd);
+        is.close();
+        Object[] buttons = dd.getOptions();
+        
+        assertNotNull("buttons parsed", buttons);
+        assertEquals("There is the default", 1, buttons.length);
+        assertEquals("3rd is default", def, buttons[0]);
+        assertEquals("MyTit", dd.getTitle());
+    }
 
     public void testUnknownButton() throws Exception {
         String page = "<html><body><form action='http://xyz.cz' method='POST'>" +

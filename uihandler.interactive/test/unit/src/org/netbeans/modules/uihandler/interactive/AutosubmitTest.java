@@ -90,7 +90,7 @@ public class AutosubmitTest extends NbTestCase {
         
         Component icon = new SubmitStatus().getStatusLineElement();
         icon.setSize(10, 20); // dummy call, invokes refresh
-        assertEquals("Unvisible now as nothing has been uploaded to server yet", new Dimension(0, 0), icon.getSize());
+        assertEquals("Unvisible now as nothing has been uploaded to server yet", 0, icon.getSize().width);
         
         String reply = "" +
             "<html>" + 

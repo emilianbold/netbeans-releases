@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.uihandler;
 
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -61,7 +63,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLEditorKit;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -470,6 +480,15 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         dd.setOptions(buttons.toArray());
         dd.setAdditionalOptions(left.toArray());
+
+        NodeList title = doc.getElementsByTagName("title");
+        for (int i = 0; i < title.getLength(); i++) {
+            String t = title.item(i).getTextContent();
+            if (t != null) {
+                dd.setTitle(t);
+                break;
+            }
+        }
     }
     
     static String decodeButtons(Object res, URL[] url) {
@@ -983,11 +1002,12 @@ public class Installer extends ModuleInstall implements Runnable {
         
     } // end of Submit
     
-    private static final class SubmitInteractive extends Submit {
+    private static final class SubmitInteractive extends Submit 
+    implements HyperlinkListener {
         private boolean connectDialog;
         private Dialog d;
         private SubmitPanel panel;
-        private HtmlBrowser browser;
+        private JEditorPane browser;
         private boolean urlAssigned;
         
         public SubmitInteractive(String msg, boolean connectDialog) {
@@ -1002,20 +1022,29 @@ public class Installer extends ModuleInstall implements Runnable {
             if ((t != null)&&(reportPanel !=null)){
                 reportPanel.setSummary(t.toString());
             }
-            browser = new HtmlBrowser();
+            browser = new JEditorPane();
             try {
                 URL resource = new URL("nbresloc:/org/netbeans/modules/uihandler/Connecting.html"); // NOI18N
-                browser.setURL(resource); // NOI18N
-            } catch (MalformedURLException ex) {
+                browser.setPage(resource); // NOI18N
+            } catch (IOException ex) {
                 LOG.log(Level.SEVERE, ex.getMessage(), ex);
             }
-            browser.setEnableLocation(false);
-            browser.setEnableHome(false);
-            browser.setStatusLineVisible(false);
-            browser.setToolbarVisible(false);
-            browser.setPreferredSize(new Dimension(640, 480));
+            
+            Dimension dim = new Dimension(450, 50);
             browser.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 0, 8));
-            dd.setMessage(browser);
+            browser.setPreferredSize(dim);
+            browser.setEditable(false); 
+            browser.setEditorKit(new HTMLEditorKit()); // needed up to nb5.5 
+            browser.setBackground(new JLabel().getBackground()); 
+            browser.addHyperlinkListener(this);
+            
+            JScrollPane p = new JScrollPane();
+            p.setViewportView(browser);
+            p.setBorder(BorderFactory.createEmptyBorder());
+            p.setPreferredSize(dim);
+                
+            
+            dd.setMessage(p);
             
             //        AbstractNode root = new AbstractNode(new Children.Array());
             //        root.setName("root"); // NOI18N
@@ -1033,6 +1062,12 @@ public class Installer extends ModuleInstall implements Runnable {
             dd.setButtonListener(this);
             dd.setModal(true);
             d = DialogDisplayer.getDefault().createDialog(dd);
+        }
+
+        public void hyperlinkUpdate(HyperlinkEvent e) {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                showURL(e.getURL());
+            }
         }
         
         protected void closeDialog() {
@@ -1073,7 +1108,11 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         protected synchronized void assignInternalURL(URL u) {
             if (browser != null) {
-                browser.setURL(u);
+                try {
+                    browser.setPage(u);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
             urlAssigned = true;
             notifyAll();
@@ -1106,8 +1145,8 @@ public class Installer extends ModuleInstall implements Runnable {
                         }
                     }
                 }
-                d.setVisible(true);
             }
+            d.setVisible(true);
             return dd.getValue();
         }
         protected void alterMessage(DialogDescriptor dd) {
