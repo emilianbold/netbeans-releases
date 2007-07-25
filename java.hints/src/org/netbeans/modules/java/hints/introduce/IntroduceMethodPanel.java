@@ -89,13 +89,13 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
             }
         };
         
-        final ErrorLabel errorLabel = new ErrorLabel( name.getDocument(), validator );
-        errorLabel.addPropertyChangeListener(  ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
+        final ErrorLabel eLabel = new ErrorLabel( name.getDocument(), validator );
+        eLabel.addPropertyChangeListener(  ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
-                btnOk.setEnabled( errorLabel.isInputTextValid() );
+                btnOk.setEnabled( eLabel.isInputTextValid() );
             }
         });
-        return errorLabel;
+        return eLabel;
     }
     
     String getDefaultErrorMessage( String inputText ) {
@@ -150,8 +150,6 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
         accessPrivate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         accessPrivate.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "jLabel1");
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -165,7 +163,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
                             .add(lblName))
                         .add(21, 21, 21)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
+                            .add(name, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(accessPublic)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -191,7 +189,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
                     .add(accessProtected)
                     .add(accessDefault)
                     .add(accessPrivate))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 123, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 137, Short.MAX_VALUE)
                 .add(errorLabel)
                 .addContainerGap())
         );

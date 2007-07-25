@@ -35,7 +35,7 @@
                       </Group>
                       <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="name" alignment="0" pref="418" max="32767" attributes="0"/>
+                          <Component id="name" alignment="0" pref="425" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="accessPublic" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -69,7 +69,7 @@
                   <Component id="accessDefault" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="accessPrivate" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="123" max="32767" attributes="0"/>
+              <EmptySpace pref="137" max="32767" attributes="0"/>
               <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -204,9 +204,6 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="errorLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="jLabel1"/>
-      </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createErrorLabel();"/>
       </AuxValues>
