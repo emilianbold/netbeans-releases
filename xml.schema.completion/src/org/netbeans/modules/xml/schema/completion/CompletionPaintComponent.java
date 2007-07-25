@@ -99,9 +99,6 @@ public abstract class CompletionPaintComponent extends JPanel {
             g.setFont(font);
         }
         drawStringToGraphics(g, s, font);
-        if (g != null) {
-            g.setFont(drawFont);
-        }
     }
 
     protected void drawStringToGraphics(Graphics g, String s, Font font) {
@@ -113,13 +110,8 @@ public abstract class CompletionPaintComponent extends JPanel {
 
     protected int getWidth(String s, Font font) {
         if (font != null)
-            return getFontMetrics(font).stringWidth(s);
-        
-        Integer i = (Integer)widths.get(s);
-        if (i != null)
-            return i.intValue();
-        
-        return (s == null)?fontMetrics.stringWidth(""):fontMetrics.stringWidth(s);
+            return getFontMetrics(getDrawFont()).stringWidth(s)*2;
+        return (s == null)?fontMetrics.stringWidth(""):fontMetrics.stringWidth(s)*2;
     }
 
     protected Color getColor(String s, Color defaultColor) {
@@ -127,28 +119,15 @@ public abstract class CompletionPaintComponent extends JPanel {
         : defaultColor;
     }
 
-    private void storeWidth(String s) {
-        fontMetrics.stringWidth(s);
-    }
-
     public void setFont(Font font) {
         super.setFont(font);
-
         fontMetrics = this.getFontMetrics(font);
         fontHeight = fontMetrics.getHeight();
         ascent = fontMetrics.getAscent();
-        if (widths != null) {
-            widths.clear();
-        } else {
-            widths = new HashMap();
-        }
-        for (int i = 0; i < frequentWords.length; i++) {
-            storeWidth(frequentWords[i]);
-        }
         drawFont = font;
     }
 
-    protected Font getDrawFont(){
+    protected Font getDrawFont() {
         return drawFont;
     }
 
@@ -198,14 +177,10 @@ public abstract class CompletionPaintComponent extends JPanel {
     private int iconTextGap = 5;
     private int fontHeight;
     private int ascent;
-    private Map widths;
     private FontMetrics fontMetrics;
     private boolean isSelected;
     private CompletionResultItem completionItem;
     
     private static final String THROWS = " throws "; // NOI18N
     private static String str; //completion item text
-    private static final String[] frequentWords = new String[] {
-        "", " ", "[]", "(", ")", ", ", "String", THROWS // NOI18N
-    };
 }

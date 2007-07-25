@@ -141,11 +141,12 @@ public abstract class CompletionResultItem implements CompletionItem {
         return getItemText();
     }
     
-    public abstract Component getPaintComponent(boolean isSelected);
+    public abstract CompletionPaintComponent getPaintComponent();
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        Component renderComponent = getPaintComponent(false);
+        CompletionPaintComponent renderComponent = getPaintComponent();
         return renderComponent.getPreferredSize().width;
+        //return getPaintComponent().getWidth(getItemText(), defaultFont);
     }
     
     public int getSortPriority() {
@@ -168,12 +169,13 @@ public abstract class CompletionResultItem implements CompletionItem {
     public void render(Graphics g, Font defaultFont, 
             Color defaultColor, Color backgroundColor,
             int width, int height, boolean selected) {
-        Component renderComponent = getPaintComponent(selected);
+        CompletionPaintComponent renderComponent = getPaintComponent();
         renderComponent.setFont(defaultFont);
         renderComponent.setForeground(defaultColor);
         renderComponent.setBackground(backgroundColor);
         renderComponent.setBounds(0, 0, width, height);
-        ((CompletionPaintComponent)renderComponent).paintComponent(g);
+        renderComponent.setSelected(selected);
+        renderComponent.paintComponent(g);
     }
         
     protected boolean shift = false;

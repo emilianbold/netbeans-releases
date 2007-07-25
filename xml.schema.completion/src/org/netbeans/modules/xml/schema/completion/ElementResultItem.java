@@ -18,11 +18,10 @@
  */
 package org.netbeans.modules.xml.schema.completion;
 
-import java.awt.Component;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.xml.axi.AbstractElement;
-import org.netbeans.modules.xml.schema.completion.CompletionPaintComponent.ElementPaintComponent;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
+import org.netbeans.modules.xml.schema.completion.CompletionPaintComponent.ElementPaintComponent;
 
 /**
  *
@@ -65,10 +64,11 @@ public class ElementResultItem extends CompletionResultItem {
         return displayText;
     }
     
-    public Component getPaintComponent(boolean isSelected) {
-        CompletionPaintComponent component = 
-                new ElementPaintComponent(this);
-        component.setSelected(isSelected);
+    public CompletionPaintComponent getPaintComponent() {
+        if(component == null) {
+            component = new ElementPaintComponent(this);
+        }
         return component;
     }
+
 }
