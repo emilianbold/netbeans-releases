@@ -331,6 +331,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
+                <friend>org.netbeans.modules.visualweb.samples.bundled</friend>
                 <friend>org.netbeans.modules.visualweb.samples.postrel</friend>
                 <package>org.netbeans.modules.visualweb.api.complib</package>
             </friend-packages>
