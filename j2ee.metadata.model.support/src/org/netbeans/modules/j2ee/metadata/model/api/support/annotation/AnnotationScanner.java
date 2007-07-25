@@ -28,6 +28,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
@@ -98,11 +99,14 @@ public class AnnotationScanner {
             }
             List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
             for (AnnotationMirror annotationMirror : annotationMirrors) {
-                TypeMirror annotationType = annotationMirror.getAnnotationType();
-                // XXX or should compare annotation type names here?
-                if (controller.getTypes().isSameType(searchedTypeMirror, annotationType)) {
+                DeclaredType annotationType = annotationMirror.getAnnotationType();
+                String annotationTypeName = helper.getAnnotationTypeName(annotationType);
+                // issue 110819: need to compare the real type names, since the annotation can be @<any>
+                if (searchedTypeName.equals(annotationTypeName)) {
                     LOGGER.log(Level.FINE, "notifying element {0}, annotation {1}", new Object[] { element.getQualifiedName(), annotationMirror }); // NOI18N
                     handler.typeAnnotation(element, annotationMirror);
+                } else {
+                    LOGGER.log(Level.FINE, "type name mismatch, ignoring element {0}, annotation {1}", new Object[] { element.getQualifiedName(), annotationMirror }); // NOI18N
                 }
             }
         }
@@ -166,14 +170,14 @@ public class AnnotationScanner {
             
             // class etc.
             if (!typeKinds.isEmpty()) {
-                handleAnnotation(handler, typeElement, typeElement, controller, searchedTypeMirror);
+                handleAnnotation(handler, typeElement, typeElement, searchedTypeName);
             }
             
             // methods & fields
             if (!nonTypeKinds.isEmpty()) {
                 for (Element element : typeElement.getEnclosedElements()) {
                     if (nonTypeKinds.contains(element.getKind())) {
-                        handleAnnotation(handler, typeElement, element, controller, searchedTypeMirror);
+                        handleAnnotation(handler, typeElement, element, searchedTypeName);
                     }
                 }
             }
@@ -182,18 +186,24 @@ public class AnnotationScanner {
     
     private void handleAnnotation(final AnnotationHandler handler, 
             final TypeElement typeElement, final Element element, 
-            final CompilationController controller, final TypeMirror searchedTypeMirror) {
+            final String searchedTypeName) {
         
         List<? extends AnnotationMirror> fieldAnnotationMirrors = element.getAnnotationMirrors();
         for (AnnotationMirror annotationMirror : fieldAnnotationMirrors) {
-            TypeMirror annotationType = annotationMirror.getAnnotationType();
-            // XXX or should compare annotation type names here?
-            if (controller.getTypes().isSameType(searchedTypeMirror, annotationType)) {
+            DeclaredType annotationType = annotationMirror.getAnnotationType();
+            String annotationTypeName = helper.getAnnotationTypeName(annotationType);
+            // issue 110819: need to compare the real type names, since the annotation can be @<any>
+            if (searchedTypeName.equals(annotationTypeName)) {
                 LOGGER.log(
                         Level.FINE,
                         "notifying type {0}, element {1}, annotation {2}", // NOI18N
                         new Object[] { typeElement.getQualifiedName(), element.getSimpleName(), annotationMirror });
                 handler.handleAnnotation(typeElement, element, annotationMirror);
+            } else {
+                LOGGER.log(
+                        Level.FINE,
+                        "type name mismatch, ignoring type {0}, element {1}, annotation {2}", // NOI18N
+                        new Object[] { typeElement.getQualifiedName(), element.getSimpleName(), annotationMirror });
             }
         }
     }
