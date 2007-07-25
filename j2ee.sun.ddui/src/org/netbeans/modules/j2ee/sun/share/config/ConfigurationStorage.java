@@ -484,7 +484,7 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
             saveInProgress++;
             
             if(config != null) {
-                config.writeDeploymentPlanFiles(this);
+//                config.writeDeploymentPlanFiles(this);
                 needsSave = false;
                 ConfigDataObject configDO = getPrimaryDataObject();
                 if(configDO != null) {
@@ -493,18 +493,18 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
             } else {
                 throw new IllegalStateException("Attempted to save configuration when DeploymentConfiguration is null.");
             }
-        } catch (ConfigurationException ce) {
-            reportExceptionDuringSave(ce);
-            
-            // 1. Must throw IOException here, otherwise, if caller is IDE's exit dialog
-            // this dataobject will be removed from the queue of savable objects.
-            // 2. IOException constructor in JDK 1.4.2 cannot chain exceptions.
-            IOException ioe = new IOException(ce.getLocalizedMessage());
-            ioe.initCause(ce);
-            throw ioe;
-        } catch(IOException ioe) {
-            reportExceptionDuringSave(ioe);
-            throw ioe;
+//        } catch (ConfigurationException ce) {
+//            reportExceptionDuringSave(ce);
+//            
+//            // 1. Must throw IOException here, otherwise, if caller is IDE's exit dialog
+//            // this dataobject will be removed from the queue of savable objects.
+//            // 2. IOException constructor in JDK 1.4.2 cannot chain exceptions.
+//            IOException ioe = new IOException(ce.getLocalizedMessage());
+//            ioe.initCause(ce);
+//            throw ioe;
+//        } catch(IOException ioe) {
+//            reportExceptionDuringSave(ioe);
+//            throw ioe;
         } finally {
             saveInProgress--;
         }
@@ -565,7 +565,7 @@ public class ConfigurationStorage implements PropertyChangeListener, Node.Cookie
         if(config instanceof SunONEDeploymentConfiguration) {
             SunONEDeploymentConfiguration s1dc = (SunONEDeploymentConfiguration) config;
             ModuleDDSupport rootSupport = (ModuleDDSupport) moduleMap.get(ROOT);
-            s1dc.readDeploymentPlanFiles(this, module.getJ2eeModule());
+//            s1dc.readDeploymentPlanFiles(this, module.getJ2eeModule());
             createDConfigBean(rootSupport);
             loaded = true;
         } else {
