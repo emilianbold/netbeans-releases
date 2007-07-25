@@ -98,12 +98,14 @@ public class PropertiesDataNode extends DataNode {
     
     /** Gets new types that can be created in this node.
      * @return array with <code>NewLocaleType</code> */
+    @Override
     public NewType[] getNewTypes() {
         return new NewType[] {new NewLocaleType()};
     }
     
     /** Indicates whether this node has customizer. Overrides superclass method.
      * @return true */
+    @Override
     public boolean hasCustomizer() {
         return true;
     }
@@ -111,6 +113,7 @@ public class PropertiesDataNode extends DataNode {
     /** Gets node customizer. Overrides superclass method. 
      * @return <code>BundleNodeCustomizer</code> instance.
      * @see BundleNodeCustomizer */
+    @Override
     public Component getCustomizer() {
         return new BundleNodeCustomizer((PropertiesDataObject)getDataObject());
     }
@@ -118,6 +121,7 @@ public class PropertiesDataNode extends DataNode {
     /** Creates paste types for this node. Overrides superclass method. 
      * @param transferable transferable in clipboard 
      * @param types <code>PasteType</code>'s valid for this node. */
+    @Override
     public void createPasteTypes(Transferable transferable, List<PasteType> types) {
         super.createPasteTypes(transferable, types);
 
@@ -216,6 +220,7 @@ public class PropertiesDataNode extends DataNode {
     private class NewLocaleType extends NewType {
 
         /** Overrides superclass method. */
+        @Override
         public String getName() {
             return NbBundle.getBundle(PropertiesDataNode.class).getString("LAB_NewLocaleAction");
         }
