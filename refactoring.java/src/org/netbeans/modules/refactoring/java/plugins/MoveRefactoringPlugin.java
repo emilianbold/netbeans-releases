@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.plugins;
@@ -41,9 +41,9 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
 
     private Map packagePostfix = new HashMap();
     AbstractRefactoring refactoring;
-    ArrayList<FileObject> filesToMove = new ArrayList();
+    ArrayList<FileObject> filesToMove = new ArrayList<FileObject>();
     HashMap<FileObject,ElementHandle> classes;
-    Map<FileObject, Set<FileObject>> whoReferences = new HashMap();
+    Map<FileObject, Set<FileObject>> whoReferences = new HashMap<FileObject, Set<FileObject>>();
     private FileObject[] origFilesToMove;
     
     public MoveRefactoringPlugin(MoveRefactoring move) {
@@ -57,10 +57,11 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         if (fo!=null) {
             setup(Collections.singletonList(fo), "", true);
         } else {
-            setup(Collections.singletonList(((NonRecursiveFolder)rename.getRefactoringSource().lookup(NonRecursiveFolder.class)).getFolder()), "", false);
+            setup(Collections.singletonList((rename.getRefactoringSource().lookup(NonRecursiveFolder.class)).getFolder()), "", false); // NOI18N
         }
     }
     
+    @Override
     public Problem preCheck() {
         Problem preCheckProblem = null;
         for (FileObject file:filesToMove) {
@@ -71,10 +72,12 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         return preCheckProblem;
     }
 
+    @Override
     public Problem checkParameters() {
         return null;
     }
 
+    @Override
     public Problem fastCheckParameters() {
         if (refactoring instanceof RenameRefactoring) {
             //folder rename
@@ -181,7 +184,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     }    
     
     private void initClasses() {
-        classes = new HashMap();
+        classes = new HashMap<FileObject,ElementHandle>();
         for (int i=0;i<filesToMove.size();i++) {
             final int j = i;
             try {
@@ -209,7 +212,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                 }, true);
             } catch (IOException ex) {
                 java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE, ex.getMessage(), ex);
-            };
+            }
             
         }
     }
@@ -289,18 +292,6 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         }
         return result;
     }        
-
-    protected Problem preCheck(CompilationController javac) throws IOException {
-        return null;
-    }
-
-    protected Problem checkParameters(CompilationController javac) throws IOException {
-        return null;
-    }
-
-    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
-        return null;
-    }
 
     protected JavaSource getJavaSource(Phase p) {
         return null;

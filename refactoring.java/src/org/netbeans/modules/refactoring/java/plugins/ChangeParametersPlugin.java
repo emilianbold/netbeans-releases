@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.plugins;
@@ -55,12 +55,14 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
         this.treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
     }
     
-    public Problem checkParameters(CompilationController info) {
+    @Override
+    public Problem checkParameters() {
         //TODO:
         return null;
     }
 
-    public Problem fastCheckParameters(CompilationController info) {
+    @Override
+    public Problem fastCheckParameters() {
         //TODO:
         return null;    
     }
@@ -87,7 +89,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
                         TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
                         Element el = treePathHandle.resolveElement(info);
                     ElementHandle<TypeElement>  enclosingType = ElementHandle.create(SourceUtils.getEnclosingTypeElement(el));
-                        allMethods = new HashSet();
+                        allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                         allMethods.add(ElementHandle.create((ExecutableElement)el));
                         for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
                             set.add(SourceUtils.getFile(e, info.getClasspathInfo()));
@@ -219,6 +221,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin implements Pro
      *
      * @return  overrides or overriden problem or both
      */
+    @Override
     public Problem preCheck(CompilationController info) throws IOException {
         fireProgressListenerStart(refactoring.PRE_CHECK, 4);
         Problem preCheckProblem = null;

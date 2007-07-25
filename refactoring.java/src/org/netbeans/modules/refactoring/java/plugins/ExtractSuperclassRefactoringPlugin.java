@@ -107,6 +107,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         return JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
     }
 
+    @Override
     protected Problem preCheck(CompilationController javac) throws IOException {
         // fire operation start on the registered progress listeners (2 step)
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 2);
@@ -147,10 +148,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         }
     }
     
-    protected Problem fastCheckParameters(CompilationController cc) {
-        return null;
-    }
-    
+    @Override
     public Problem fastCheckParameters() {
         Problem result = null;
         
@@ -174,15 +172,17 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         return null;
     }
 
+    @Override
     public Problem checkParameters() {
         MemberInfo[] members = refactoring.getMembers();
-        if (refactoring.getMembers().length == 0) {
+        if (members.length == 0) {
             return new Problem(true, NbBundle.getMessage(ExtractSuperclassRefactoringPlugin.class, "ERR_ExtractSuperClass_MembersNotAvailable")); // NOI18N);
         }
         return super.checkParameters();
 
     }
     
+    @Override
     protected Problem checkParameters(CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
         
@@ -197,11 +197,13 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                 Problem p = null;
                 switch(info.getGroup()) {
                 case FIELD:
+                    @SuppressWarnings("unchecked")
                     ElementHandle<VariableElement> vehandle = (ElementHandle<VariableElement>) info.getElementHandle();
                     VariableElement field = vehandle.resolve(javac);
                     p = checkFieldParameter(javac, field, members);
                     break;
                 case METHOD:
+                    @SuppressWarnings("unchecked")
                     ElementHandle<ExecutableElement> eehandle = (ElementHandle<ExecutableElement>) info.getElementHandle();
                     ExecutableElement method = eehandle.resolve(javac);
                     p = checkMethodParameter(javac, method, members);
@@ -293,7 +295,8 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         for (int i = 0; i < members.length && !typeArgs.isEmpty(); i++) {
             if (members[i].getGroup() == MemberInfo.Group.METHOD) {
             // check methods
-            ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) members[i].getElementHandle();
+                @SuppressWarnings("unchecked")
+                ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) members[i].getElementHandle();
                 ExecutableElement elm = handle.resolve(javac);
             
                 RetoucheUtils.findUsedGenericTypes(typeUtils, typeArgs, result, elm.getReturnType());
@@ -359,6 +362,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             }
         }
         
+        @Override
         public void undoChange() {
             FileObject ifcFO = null;
             if (superClassURL != null) {
@@ -432,6 +436,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             
             for (MemberInfo member : refactoring.getMembers()) {
                 if (member.getGroup() == MemberInfo.Group.FIELD) {
+                    @SuppressWarnings("unchecked")
                     ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.getElementHandle();
                     VariableElement elm = handle.resolve(wc);
                     VariableTree tree = (VariableTree) wc.getTrees().getTree(elm);
@@ -446,9 +451,10 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     );
                     members.add(copy);
                 } else if (member.getGroup() == MemberInfo.Group.METHOD) {
+                    @SuppressWarnings("unchecked")
                     ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.getElementHandle();
                     ExecutableElement elm = handle.resolve(wc);
-                    MethodTree methodTree = (MethodTree) wc.getTrees().getTree(elm);
+                    MethodTree methodTree = wc.getTrees().getTree(elm);
                     if (member.isMakeAbstract() && !elm.getModifiers().contains(Modifier.ABSTRACT)) {
                         methodTree = make.Method(
                                 makeAbstract(make, methodTree.getModifiers()),
@@ -611,7 +617,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             wc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement clazz = this.sourceType.resolve(wc);
             assert clazz != null;
-            ClassTree classTree = (ClassTree) wc.getTrees().getTree(clazz);
+            ClassTree classTree = wc.getTrees().getTree(clazz);
             TreeMaker make = wc.getTreeMaker();
             // fake interface since interface file does not exist yet
             Tree superClassTree;
@@ -665,6 +671,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
             List<Tree> result = new ArrayList<Tree>(members.length);
             for (MemberInfo member : members) {
                 if (member.getGroup() == MemberInfo.Group.FIELD) {
+                    @SuppressWarnings("unchecked")
                     ElementHandle<VariableElement> handle = (ElementHandle<VariableElement>) member.getElementHandle();
                     VariableElement elm = handle.resolve(javac);
                     assert elm != null;
@@ -672,6 +679,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                     assert t != null;
                     result.add(t);
                 } else if (member.getGroup() == MemberInfo.Group.METHOD && !member.isMakeAbstract()) {
+                    @SuppressWarnings("unchecked")
                     ElementHandle<ExecutableElement> handle = (ElementHandle<ExecutableElement>) member.getElementHandle();
                     ExecutableElement elm = handle.resolve(javac);
                     assert elm != null;

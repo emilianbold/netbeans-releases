@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.plugins;
@@ -109,6 +109,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         throw new IllegalStateException();
     }
     
+    @Override
     protected Problem preCheck(CompilationController info) throws IOException {
         Problem preCheckProblem = null;
         fireProgressListenerStart(refactoring.PRE_CHECK, 4);
@@ -204,6 +205,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         return new MessageFormat(NbBundle.getMessage(RenameRefactoringPlugin.class, "ERR_CannotRenameFile")).format(new Object[] {r.getNameExt()});
     }
     
+    @Override
     protected Problem fastCheckParameters(CompilationController info) throws IOException {
         Problem fastCheckProblem = null;
         info.toPhase(JavaSource.Phase.RESOLVED);
@@ -288,6 +290,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         return fastCheckProblem;
     }
     
+    @Override
     protected Problem checkParameters(CompilationController info) throws IOException {
         
         Problem checkProblem = null;
@@ -368,7 +371,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         set.addAll(idx.getResources(enclosingType, EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
                     } else if (kind == ElementKind.METHOD) {
                         //add all references of overriding methods
-                        allMethods = new HashSet();
+                        allMethods = new HashSet<ElementHandle<ExecutableElement>>();
                         allMethods.add(ElementHandle.create((ExecutableElement)el));
                         for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)el, info)) {
                             addMethods(e, set, info, idx);
@@ -376,7 +379,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                         //add all references of overriden methods
                         for (ExecutableElement ov: RetoucheUtils.getOverridenMethods((ExecutableElement)el, info)) {
                             addMethods(ov, set, info, idx);
-                            for (ExecutableElement e:RetoucheUtils.getOverridingMethods((ExecutableElement)ov, info)) {
+                            for (ExecutableElement e:RetoucheUtils.getOverridingMethods( ov,info)) {
                                 addMethods(e, set, info, idx);
                             }
                         }
@@ -676,7 +679,7 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
                     }
                 }
             }
-        };
+        }
         return null;
     }
     

@@ -83,7 +83,8 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
      *Checks whether the candidate element is a valid Type.
      *@return Problem The problem instance indicating that an invalid element was selected.
      */
-    protected org.netbeans.modules.refactoring.api.Problem preCheck(CompilationController info) {
+    @Override
+    public Problem preCheck() {
         //        Element subType = refactoring.getTypeElement();
         //        if(!(subType instanceof JavaClass)){
         //            String errMsg = NbBundle.getMessage(UseSuperTypeRefactoringPlugin.class,
@@ -96,7 +97,8 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
     /**
      * @return A problem indicating that no super type was selected.
      */
-    public org.netbeans.modules.refactoring.api.Problem fastCheckParameters(CompilationController info) {
+    @Override
+    public Problem fastCheckParameters() {
         if (refactoring.getTargetSuperType() == null) {
             return new Problem(true, NbBundle.getMessage(UseSuperTypeRefactoringPlugin.class, "ERR_UseSuperTypeNoSuperType"));
         }
@@ -106,7 +108,8 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
     /**
      * A no op. Returns null
      */
-    public org.netbeans.modules.refactoring.api.Problem checkParameters(CompilationController info) {
+    @Override
+    public Problem checkParameters() {
         return null;
     }
     

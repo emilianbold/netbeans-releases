@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.plugins;
@@ -70,6 +70,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
     
+    @Override
     protected Problem preCheck(CompilationController info) throws IOException {
         // fire operation start on the registered progress listeners (4 steps)
         fireProgressListenerStart(refactoring.PRE_CHECK, 4);
@@ -148,12 +149,14 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         return preCheckProblem;
     }
 
-    protected Problem checkParameters(CompilationController info) {
+    @Override
+    public Problem checkParameters() {
         //TODO:
         return null;
     }
 
-    protected Problem fastCheckParameters(CompilationController info) {
+    @Override
+    public Problem fastCheckParameters() {
         Problem result = null;
         
         String newName = refactoring.getClassName();
@@ -178,7 +181,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
 
     private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        HashSet<FileObject> set = new HashSet();
+        HashSet<FileObject> set = new HashSet<FileObject>();
         ClassIndex idx = cpInfo.getClassIndex();
         set.addAll(idx.getResources(RetoucheUtils.getElementHandle(refactoring.getSourceType()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE)));
         return set;
@@ -187,7 +190,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Set<FileObject> a = getRelevantFiles();
         fireProgressListenerStart(ProgressEvent.START, a.size());
-        final Collection<ModificationResult> results = new ArrayList();
+        final Collection<ModificationResult> results = new ArrayList<ModificationResult>();
         JavaSource js = JavaSource.forFileObject(RetoucheUtils.getFileObject(refactoring.getRefactoringSource().lookup(TreePathHandle.class)));
         try {
             results.add(js.runModificationTask(new AddOuterClass()));
@@ -255,7 +258,7 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         private ClassTree refactorInnerClass(TreeMaker tm, ClassTree newInnerClass, WorkingCopy workingCopy, Element outer) {
             String referenceName = refactoring.getReferenceName();
             if (referenceName != null) {
-                VariableTree variable = tm.Variable(tm.Modifiers(Collections.EMPTY_SET), refactoring.getReferenceName(), tm.Type(outer.asType()), null);
+                VariableTree variable = tm.Variable(tm.Modifiers(Collections.<Modifier>emptySet()), refactoring.getReferenceName(), tm.Type(outer.asType()), null);
                 newInnerClass = tm.insertClassMember(newInnerClass, 0, variable);
 
                 for (Tree member:newInnerClass.getMembers()) {

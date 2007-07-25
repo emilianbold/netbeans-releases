@@ -25,7 +25,6 @@ import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
@@ -69,6 +68,7 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
     
+    @Override
     protected Problem preCheck(CompilationController cc) throws IOException {
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
         try {
@@ -108,7 +108,8 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     
-    protected Problem fastCheckParameters(CompilationController cc) {
+    @Override
+    public Problem fastCheckParameters() {
         MemberInfo[] info = refactoring.getMembers();
         // #1 - check whether there are any members to pull up
         if (info.length == 0) {
@@ -133,13 +134,14 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
 
+    @Override
     protected Problem checkParameters(CompilationController cc) throws IOException {
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
         try {
             cc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement sourceType = (TypeElement) refactoring.getSourceType().resolveElement(cc);
             Collection<Element> supers = RetoucheUtils.getSuperTypes(sourceType, cc);
-            TypeElement targetType = (TypeElement) refactoring.getTargetType().resolve(cc);
+            TypeElement targetType = refactoring.getTargetType().resolve(cc);
             MemberInfo<ElementHandle<? extends Element>>[] members = refactoring.getMembers();
 
             fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, members.length + 1);
@@ -218,9 +220,9 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
     }
     
     public Problem prepare(RefactoringElementsBag refactoringElements) {
-        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+//        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         
-        Set<FileObject> a = new HashSet();
+        Set<FileObject> a = new HashSet<FileObject>();
         a.addAll(RetoucheUtils.getSuperTypesFiles(refactoring.getSourceType()));
         a.add(RetoucheUtils.getFileObject(treePathHandle));
         fireProgressListenerStart(ProgressEvent.START, a.size());

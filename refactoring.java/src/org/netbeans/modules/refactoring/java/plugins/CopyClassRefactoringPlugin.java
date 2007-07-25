@@ -13,12 +13,11 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -61,17 +60,11 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         this.refactoring = refactoring;
     }
     
-    /** Checks pre-conditions of the refactoring.
-     * @return Problems found or <code>null</code>.
-     */
-    public Problem preCheck(CompilationController info) {
-        return null;
-    }
-    
     protected JavaSource getJavaSource(Phase p) {
         return JavaSource.forFileObject(refactoring.getRefactoringSource().lookup(FileObject.class));
     }
     
+    @Override
     public Problem fastCheckParameters(CompilationController info) {
         if (!Utilities.isJavaIdentifier(refactoring.getNewName())) {
             String msg = new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidIdentifier")).format(
@@ -97,7 +90,13 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
         return null;
     }
 
-    public Problem checkParameters(CompilationController info) {
+    @Override
+    public Problem checkParameters() {
+        return null;
+    }
+
+    @Override
+    public Problem preCheck() {
         return null;
     }
 

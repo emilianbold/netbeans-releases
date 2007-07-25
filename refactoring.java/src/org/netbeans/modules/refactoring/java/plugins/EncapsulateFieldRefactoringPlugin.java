@@ -117,6 +117,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         return JavaSource.forFileObject(fo);
     }
     
+    @Override
     protected Problem preCheck(CompilationController javac) throws IOException {
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 2);
         try {
@@ -160,10 +161,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         return fastCheckParameters(refactoring.getGetterName(), refactoring.getSetterName(), refactoring.getMethodModifiers(), refactoring.getFieldModifiers(), refactoring.isAlwaysUseAccessors());
     }
 
-    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
-        throw new UnsupportedOperationException();
-    }
-    
+    @Override
     protected Problem checkParameters(CompilationController javac) throws IOException {
         Problem p = null;
         Element field = sourceType.resolveElement(javac);

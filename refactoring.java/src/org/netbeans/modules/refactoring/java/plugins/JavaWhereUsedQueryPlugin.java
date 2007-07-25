@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.plugins;
@@ -33,7 +33,6 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
-import org.netbeans.modules.refactoring.java.plugins.FindOverridingVisitor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -60,21 +59,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         }
     }
     
+    @Override
     public Problem preCheck() {
         if (!refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject().isValid()) {
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
         }
-        return null;
-    }
-    protected Problem preCheck(CompilationController info) {
-//        Problem p = isElementAvail(getSearchHandle(), refactoring.getContext().lookup(CompilationInfo.class));
-//        if (p != null)
-//            return p;
-        
-//        if (!((jmiObject instanceof Feature) || (jmiObject instanceof Variable) || (jmiObject instanceof JavaPackage) || (jmiObject instanceof TypeParameter)) ) {
-//            return new Problem(true, NbBundle.getMessage(WhereUsedQuery.class, "ERR_WhereUsedWrongType"));
-//        }
-        
         return null;
     }
     
@@ -154,10 +143,10 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     private Set<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
         Set<FileObject> set = new HashSet<FileObject>();
-        LinkedList<ElementHandle<TypeElement>> elements = new LinkedList(idx.getElements(ElementHandle.create(el),
+        LinkedList<ElementHandle<TypeElement>> elements = new LinkedList<ElementHandle<TypeElement>>(idx.getElements(ElementHandle.create(el),
                 EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
                 EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-        HashSet<ElementHandle> result = new HashSet();
+        HashSet<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
         while(!elements.isEmpty()) {
             ElementHandle<TypeElement> next = elements.removeFirst();
             result.add(next);
@@ -182,16 +171,16 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         return null;
     }
     
-    //@Override
-    protected Problem fastCheckParameters(CompilationController info) {
+    @Override
+    public Problem fastCheckParameters() {
         if (refactoring.getRefactoringSource().lookup(TreePathHandle.class).getKind() == Tree.Kind.METHOD) {
             return checkParametersForMethod(isFindOverridingMethods(), isFindUsages());
         } 
         return null;
     }
     
-    //@Override
-    protected Problem checkParameters(CompilationController info) {
+    @Override
+    public Problem checkParameters() {
         return null;
     }
     
@@ -218,7 +207,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_SUBCLASSES);
     }
     private boolean isFindUsages() {
-        return refactoring.getBooleanValue(refactoring.FIND_REFERENCES);
+        return refactoring.getBooleanValue(WhereUsedQuery.FIND_REFERENCES);
     }
     private boolean isFindDirectSubclassesOnly() {
         return refactoring.getBooleanValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES);
@@ -258,7 +247,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             }
             Element element = refactoring.getRefactoringSource().lookup(TreePathHandle.class).resolveElement(compiler);
             assert element != null;
-            Collection<TreePath> result = new ArrayList();
+            Collection<TreePath> result = new ArrayList<TreePath>();
             if (isFindUsages()) {
                 FindUsagesVisitor findVisitor = new FindUsagesVisitor(compiler);
                 findVisitor.scan(compiler.getCompilationUnit(), element);

@@ -13,26 +13,40 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.java.spi;
 
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.modules.refactoring.java.spi.DiffElement;
-import org.netbeans.modules.refactoring.java.plugins.*;
 import com.sun.source.tree.CompilationUnitTree;
 import java.io.IOException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.*;
-import org.netbeans.modules.refactoring.spi.*;
-import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
+import org.netbeans.modules.refactoring.java.plugins.FindVisitor;
+import org.netbeans.modules.refactoring.java.plugins.RetoucheCommit;
+import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
+import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -41,51 +55,37 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin, CancellableTask<CompilationController> {
+public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
 
-    protected enum Phase {PRECHECK, FASTCHECKPARAMETERS, CHECKPARAMETERS, PREPARE, DEFAULT};
-    private Phase whatRun = Phase.DEFAULT;
-    private Problem problem;
+    protected enum Phase {PRECHECK, FASTCHECKPARAMETERS, CHECKPARAMETERS, PREPARE};
     protected volatile boolean cancelRequest = false;
     private volatile CancellableTask currentTask;
+    private WorkingTask workingTask = new WorkingTask();
     
 
-    protected abstract Problem preCheck(CompilationController javac) throws IOException;
-    protected abstract Problem checkParameters(CompilationController javac) throws IOException;
-    protected abstract Problem fastCheckParameters(CompilationController javac) throws IOException;
+    protected Problem preCheck(CompilationController javac) throws IOException {
+        return null;
+    }
+    protected Problem checkParameters(CompilationController javac) throws IOException {
+        return null;
+    }
+    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
+        return null;
+    }
 //    protected abstract Problem prepare(WorkingCopy wc, RefactoringElementsBag bag) throws IOException;
 
     protected abstract JavaSource getJavaSource(Phase p);
 
-    public void cancel() {
-    }
-
-    public final void run(CompilationController javac) throws Exception {
-        switch(whatRun) {
-        case PRECHECK:
-            this.problem = preCheck(javac);
-            break;
-        case CHECKPARAMETERS:
-            this.problem = checkParameters(javac);
-            break;
-        case FASTCHECKPARAMETERS:
-            this.problem = fastCheckParameters(javac);
-            break;
-        default:
-            throw new IllegalStateException();
-        }
-    }
-    
     public Problem preCheck() {
-        return run(Phase.PRECHECK);
+        return workingTask.run(Phase.PRECHECK);
     }
 
     public Problem checkParameters() {
-        return run(Phase.CHECKPARAMETERS);
+        return workingTask.run(Phase.CHECKPARAMETERS);
     }
 
     public Problem fastCheckParameters() {
-        return run(Phase.FASTCHECKPARAMETERS);
+        return workingTask.run(Phase.FASTCHECKPARAMETERS);
     }
 
 //    public Problem prepare(final RefactoringElementsBag bag) {
@@ -107,21 +107,6 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
 //        }
 //        return problem;
 //    }
-
-    private Problem run(Phase s) {
-        this.whatRun = s;
-        this.problem = null;
-        JavaSource js = getJavaSource(s);
-        if (js==null) {
-            return null;
-        }
-        try {
-            js.runUserActionTask(this, true);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        return problem;
-    }
     
     public void cancelRequest() {
         cancelRequest = true;
@@ -133,9 +118,9 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
         ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
         if (cpInfo==null) {
-            Collection handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
+            Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
             if (!handles.isEmpty()) {
-                cpInfo = RetoucheUtils.getClasspathInfoFor((TreePathHandle[])handles.toArray(new TreePathHandle[handles.size()]));
+                cpInfo = RetoucheUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
             } else {
                 cpInfo = RetoucheUtils.getClasspathInfoFor((FileObject)null);
             }
@@ -215,7 +200,7 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     
     protected final Collection<ModificationResult> processFiles(Set<FileObject> files, CancellableTask<WorkingCopy> task) {
         currentTask = task;
-        Collection<ModificationResult> results = new LinkedList();
+        Collection<ModificationResult> results = new LinkedList<ModificationResult>();
         try {
             Iterable<? extends List<FileObject>> work = groupByRoot(files);
             for (List<FileObject> fos : work) {
@@ -242,6 +227,44 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
                 }
             }
         }
+    }
+    
+    private class WorkingTask implements Task<CompilationController> {
+        
+        private Phase whatRun;
+        private Problem problem;
+
+        private Problem run(Phase s) {
+            this.whatRun = s;
+            this.problem = null;
+            JavaSource js = getJavaSource(s);
+            if (js==null) {
+                return null;
+            }
+            try {
+                js.runUserActionTask(this, true);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            return problem;
+        }
+
+        public void run(CompilationController javac) throws Exception {
+            switch(whatRun) {
+            case PRECHECK:
+                this.problem = preCheck(javac);
+                break;
+            case CHECKPARAMETERS:
+                this.problem = checkParameters(javac);
+                break;
+            case FASTCHECKPARAMETERS:
+                this.problem = fastCheckParameters(javac);
+                break;
+            default:
+                throw new IllegalStateException();
+            }
+        }
+        
     }
     
     protected class TransformTask implements CancellableTask<WorkingCopy> {

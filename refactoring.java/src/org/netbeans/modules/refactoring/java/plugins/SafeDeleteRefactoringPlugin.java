@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -70,7 +70,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
      */
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         RefactoringSession inner = RefactoringSession.create("delete"); // NOI18N
-        Set refactoredObjects = new HashSet();
+        Set<Object> refactoredObjects = new HashSet<Object>();
         Collection<? extends FileObject> files = refactoring.getRefactoringSource().lookupAll(FileObject.class);
         fireProgressListenerStart(AbstractRefactoring.PARAMETERS_CHECK, whereUsedQueries.length + 1);
         for(int i = 0;i < whereUsedQueries.length; ++i) {
@@ -179,6 +179,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
      * Checks whether the element being refactored is a valid Method/Field/Class
      * @return Problem returns a generic problem message if the check fails
      */
+    @Override
     public Problem preCheck() {
 //        Element[] refElements = refactoring.getRefactoredObjects();
 //        for(int i = 0;i < refElements.length; ++i) {
@@ -202,22 +203,24 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     /**
      * A No-op for this particular refactoring.
      */
+    @Override
     public Problem fastCheckParameters() {
         //Nothing to be done for Safe Delete
         return null;
     }
     
-    private ArrayList<TreePathHandle> grips = new ArrayList();
+    private ArrayList<TreePathHandle> grips = new ArrayList<TreePathHandle>();
     /**
      * Invokes the checkParameters of each of the underlying
      * WhereUsed refactorings and returns a Problem (if any)
      * returned by any of these queries.
      */
+    @Override
     public Problem checkParameters() {
         //This class expects too many details from SafeDeleteRefactoring
         //But there's no other go I guess.
         grips.clear();
-        final ArrayList<ClasspathInfo> controllers = new ArrayList();
+        final ArrayList<ClasspathInfo> controllers = new ArrayList<ClasspathInfo>();
         for (final FileObject f:refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
             JavaSource source = JavaSource.forFileObject(f);
             try {
@@ -273,7 +276,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         for (TreePathHandle current : refactoring.getRefactoringSource().lookupAll(TreePathHandle.class)) {
             if (current.resolveElement(info).equals(handle.resolveElement(info))) {
                 return true;
-            };
+            }
         }
         return false;
     }
@@ -341,18 +344,6 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
             //return JavaMetamodel.getManager().getElementPosition(importStmt);
             return null;
         }
-    }
-
-    protected Problem preCheck(CompilationController javac) throws IOException {
-        return null;
-    }
-
-    protected Problem checkParameters(CompilationController javac) throws IOException {
-        return null;
-    }
-
-    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
-        return null;
     }
 
     protected JavaSource getJavaSource(Phase p) {

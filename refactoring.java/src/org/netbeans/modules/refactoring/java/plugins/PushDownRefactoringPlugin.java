@@ -25,13 +25,13 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.PushDownRefactoring;
-import org.netbeans.modules.refactoring.java.plugins.PushDownTransformer;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -63,6 +63,7 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
     
+    @Override
     protected Problem preCheck(CompilationController cc) throws IOException {
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 4);
         try {
@@ -79,7 +80,7 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
 
             // increase progress (step 1)
             fireProgressListenerStep();
-            ElementHandle eh = ElementHandle.create(treePathHandle.resolveElement(cc));
+            ElementHandle<TypeElement> eh = ElementHandle.create((TypeElement) treePathHandle.resolveElement(cc));
             Set<FileObject> resources = cc.getClasspathInfo().getClassIndex().getResources(eh, EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.of(ClassIndex.SearchScope.SOURCE));
             if (resources.isEmpty()) {
                 return new Problem(true, NbBundle.getMessage(PushDownRefactoringPlugin.class, "ERR_PushDOwn_NoSubtype")); // NOI18N
@@ -102,11 +103,13 @@ public final class PushDownRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
 
-    protected Problem checkParameters(CompilationController info) {
+    @Override
+    public Problem checkParameters() {
         return null;
     }
 
 
+    @Override
     protected Problem fastCheckParameters(CompilationController info) {
         // #1 - check whether there are any members to pull up
         if (refactoring.getMembers().length == 0) {

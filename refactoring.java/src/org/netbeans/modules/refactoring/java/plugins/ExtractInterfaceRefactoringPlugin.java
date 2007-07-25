@@ -104,7 +104,8 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         this.refactoring = refactoring;
     }
 
-    public Problem fastCheckParameters(CompilationController info) {
+    @Override
+    public Problem fastCheckParameters() {
         Problem result = null;
         
         String newName = refactoring.getInterfaceName();
@@ -143,6 +144,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         return JavaSource.forFileObject(refactoring.getSourceType().getFileObject());
     }
     
+    @Override
     protected Problem preCheck(CompilationController javac) throws IOException {
         // fire operation start on the registered progress listeners (1 step)
         fireProgressListenerStart(AbstractRefactoring.PRE_CHECK, 1);
@@ -183,6 +185,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         }
     }
     
+    @Override
     protected Problem checkParameters(CompilationController javac) throws IOException {
         if (refactoring.getMethods().isEmpty() && refactoring.getFields().isEmpty() && refactoring.getImplements().isEmpty()) {
             return new Problem(true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ExtractInterface_MembersNotAvailable")); // NOI18N);
@@ -333,6 +336,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             }
         }
         
+        @Override
         public void undoChange() {
             FileObject ifcFO = null;
             if (ifcURL != null) {
@@ -470,7 +474,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             wc.toPhase(JavaSource.Phase.RESOLVED);
             TypeElement clazz = this.sourceType.resolve(wc);
             assert clazz != null;
-            ClassTree classTree = (ClassTree) wc.getTrees().getTree(clazz);
+            ClassTree classTree = wc.getTrees().getTree(clazz);
             TreeMaker maker = wc.getTreeMaker();
             // fake interface since interface file does not exist yet
             Tree interfaceTree;
