@@ -407,6 +407,7 @@ public class CvsVersioningSystem {
         }
         File topmost = null;
         for (; file != null; file = file.getParentFile()) {
+            if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
             File repository = new File(file, FILENAME_CVS_REPOSITORY);
             File entries = new File(file, FILENAME_CVS_ENTRIES);
             if (repository.canRead() && entries.canRead()) {

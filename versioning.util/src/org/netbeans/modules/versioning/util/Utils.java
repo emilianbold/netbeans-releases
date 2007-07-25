@@ -69,6 +69,27 @@ public final class Utils {
      */
     private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1);
 
+    private static /*final*/ File [] unversionedFolders;
+    
+    static {
+        try {
+            String uf = VersioningSupport.getPreferences().get("unversionedFolders", null);
+            if (uf == null || uf.length() == 0) {
+                unversionedFolders = new File[0];
+            } else {
+                String [] paths = uf.split("\\;");
+                unversionedFolders = new File[paths.length];
+                int idx = 0;
+                for (String path : paths) {
+                    unversionedFolders[idx++] = new File(path);
+                }
+            }
+        } catch (Exception e) {
+            unversionedFolders = new File[0];
+            Logger.getLogger(Utils.class.getName()).log(Level.WARNING, e.getMessage(), e);
+        }
+    }
+    
     private Utils() {
     }
 
@@ -598,6 +619,24 @@ public final class Utils {
         ces.view();
     }
 
+    /**
+     * Asks for permission to scan a given folder for versioning metadata. Misconfigured automount daemons may
+     * try to look for a "CVS" server if asked for "/net/CVS/Entries" file for example causing hangs and full load.
+     * Versioning systems must NOT scan a folder if this method returns true and should consider it as unversioned. 
+     * 
+     * @param folder a folder to query
+     * @link http://www.netbeans.org/issues/show_bug.cgi?id=105161
+     * @return true if scanning for versioning system metadata is forbidden in the given folder, false otherwise
+     */
+    public static boolean isScanForbidden(File folder) {
+        for (File unversionedFolder : unversionedFolders) {
+            if (isAncestorOrEqual(unversionedFolder, folder)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private static Map<File, Charset> fileToCharset;
     
     /**
@@ -605,7 +644,7 @@ public final class Utils {
      * the given file. A following getAssociatedEncoding() call for 
      * the file will then return the referenceFile-s Charset.      
      * 
-     * @param referrenceFile the file which charset has to be used when encoding file
+     * @param referenceFile the file which charset has to be used when encoding file
      * @param file file to be encoded with the referenceFile-s charset 
      * 
      */
