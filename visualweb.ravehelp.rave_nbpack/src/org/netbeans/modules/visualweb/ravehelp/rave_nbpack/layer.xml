@@ -6,7 +6,7 @@
             <!-- Put this main helpset at the top -->
             <attr name="org-netbeans-modules-usersguide-above-regular.txt" boolvalue="true"/>
             <file name="org-netbeans-modules-visualweb-ravehelp-rave_nbpack-helpset.xml" url="helpsetref.xml">
-                <attr name="position" intvalue="1100"/>
+                <attr name="position" intvalue="375"/>
             </file>
             <!-- Ensure merging before 3rd-party helpsets -->
             </folder>
