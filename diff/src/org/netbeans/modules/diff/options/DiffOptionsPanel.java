@@ -88,15 +88,12 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        jPanel1 = new javax.swing.JPanel();
         internalDiff = new javax.swing.JRadioButton();
         externalDiff = new javax.swing.JRadioButton();
-        ignoreWhitespace = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         externalCommand = new javax.swing.JTextField();
         browseCommand = new javax.swing.JButton();
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jPanel1.border.title"))); // NOI18N
+        ignoreWhitespace = new javax.swing.JCheckBox();
 
         buttonGroup1.add(internalDiff);
         org.openide.awt.Mnemonics.setLocalizedText(internalDiff, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jRadioButton1.text")); // NOI18N
@@ -107,10 +104,6 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
         org.openide.awt.Mnemonics.setLocalizedText(externalDiff, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jRadioButton2.text")); // NOI18N
         externalDiff.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         externalDiff.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        org.openide.awt.Mnemonics.setLocalizedText(ignoreWhitespace, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jCheckBox1.text")); // NOI18N
-        ignoreWhitespace.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        ignoreWhitespace.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         jLabel1.setLabelFor(externalCommand);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jLabel1.text")); // NOI18N
@@ -124,59 +117,41 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
             }
         });
 
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(internalDiff)
-                            .add(jPanel1Layout.createSequentialGroup()
-                                .add(17, 17, 17)
-                                .add(jLabel1)))
-                        .add(27, 27, 27)
-                        .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                                .add(externalCommand, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 437, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(browseCommand))
-                            .add(ignoreWhitespace)))
-                    .add(externalDiff))
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(internalDiff)
-                    .add(ignoreWhitespace))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(externalDiff)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
-                    .add(browseCommand)
-                    .add(externalCommand, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        org.openide.awt.Mnemonics.setLocalizedText(ignoreWhitespace, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jCheckBox1.text")); // NOI18N
+        ignoreWhitespace.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        ignoreWhitespace.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jLabel1)
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(internalDiff)
+                        .add(externalDiff)))
+                .add(41, 41, 41)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(externalCommand, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(browseCommand))
+                    .add(ignoreWhitespace)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(14, 14, 14)
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(internalDiff)
+                    .add(ignoreWhitespace))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(externalDiff)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(browseCommand)
+                    .add(externalCommand, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -203,7 +178,6 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
     private javax.swing.JCheckBox ignoreWhitespace;
     private javax.swing.JRadioButton internalDiff;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 
     public void stateChanged(ChangeEvent e) {
