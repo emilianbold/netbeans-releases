@@ -40,7 +40,6 @@ import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.openide.filesystems.FileObject;
@@ -78,10 +77,9 @@ public class AdminObjectResourceTest extends NbTestCase implements WizardConstan
             FileObject falseProject = FileUtil.createFolder(fpf);
             falseProject.createFolder("setup");
             jmsdata.setTargetFileObject(falseProject);
-            jmsdata.setTargetFile("jmstResourceTest");
             ResourceUtils.saveJMSResourceDatatoXml(jmsdata);
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/jmstResourceTest.sun-resource"));
-            Resources res = Util.getResourcesObject(resourceObj);
+            File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
+            Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(res.getAdminObjectResource(0), mejb, false);
             resourceObj.delete();
@@ -119,10 +117,9 @@ public class AdminObjectResourceTest extends NbTestCase implements WizardConstan
             if (null == falseProject.createFolder("setup"))
                 fail("falseProject/setup is null");
             jmsdata.setTargetFileObject(falseProject);
-            jmsdata.setTargetFile("jmsqResourceTest");
             ResourceUtils.saveJMSResourceDatatoXml(jmsdata);
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/jmsqResourceTest.sun-resource"));
-            Resources res = Util.getResourcesObject(resourceObj);
+            File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
+            Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             ResourceUtils.register(res.getAdminObjectResource(0), mejb, false);
             resourceObj.delete();

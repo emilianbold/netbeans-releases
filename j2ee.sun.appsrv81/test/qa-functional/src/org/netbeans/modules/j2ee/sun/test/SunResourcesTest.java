@@ -31,7 +31,6 @@ import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.dd.api.serverresources.Resources;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
-import org.netbeans.modules.j2ee.sun.ide.sunresources.resourcesloader.SunResourceDataObject;
 import org.netbeans.modules.j2ee.sun.ide.sunresources.wizards.ResourceConfigData;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.openide.filesystems.FileObject;
@@ -80,12 +79,11 @@ public class SunResourcesTest extends NbTestCase implements WizardConstants{
             FileObject falseProject = FileUtil.createFolder(fpf);
             falseProject.createFolder("setup");
             cpdata.setTargetFileObject(falseProject);
-            cpdata.setTargetFile("poolTest");
-            
+                        
             ResourceUtils.saveConnPoolDatatoXml(cpdata);
             
-            SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/poolTest.sun-resource"));
-            Resources res = Util.getResourcesObject(resourceObj);
+            File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
+            Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
             
             ResourceUtils.register(res.getJdbcConnectionPool(0), mejb, false);

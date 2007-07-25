@@ -37,7 +37,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/modules/j2ee/sun/test/AdminObjectResourceTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/ConnectionFactoryResourceTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/MailResourceTest.class"/>
-                <include name="org/netbeans/modules/j2ee/sun/test/PersistenceResourceTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/CustomerCMPSampleTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/DukeStatefulTest.class"/>
                 <include name="org/netbeans/modules/j2ee/sun/test/WebServiceTest.class"/>
