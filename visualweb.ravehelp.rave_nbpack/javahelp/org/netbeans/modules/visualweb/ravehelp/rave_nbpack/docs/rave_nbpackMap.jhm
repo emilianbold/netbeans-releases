@@ -239,7 +239,6 @@
 	<mapID target="projrave_projects_howtoprojects_set_project_properties" url="projects/howtoprojects/set_project_properties.html"/>
 	<mapID target="projrave_projects_howtoprojects_set_start_page" url="projects/howtoprojects/set_start_page.html"/>
 	<mapID target="projrave_projects_howtoprojects_view_zoom_image" url="projects/howtoprojects/view_zoom_image.html"/>
-	<mapID target="projrave_projects_project_process" url="projects/project_process.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_complib" url="ui_elements/dialogs/add_complib.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_data_source_db" url="ui_elements/dialogs/add_data_source_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_add_database_conn_db" url="ui_elements/dialogs/add_database_conn_db.html"/>
