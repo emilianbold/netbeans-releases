@@ -287,6 +287,7 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
     
     void updateColumnWidths () {
         int i, k = columns.length;
+        int d = 0;
         for (i = 0; i < k; i++) {
             if (Boolean.TRUE.equals (columns [i].getValue 
                 ("InvisibleInTreeTableView"))
@@ -296,9 +297,10 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
                 if (column.isDefault ()) {
                     int width = column.getColumnWidth ();
                     treeTable.setTreePreferredWidth (width);
+                    d = 1;
                 } else {
                     int width = column.getColumnWidth ();
-                    treeTable.setTableColumnPreferredWidth (i, width);
+                    treeTable.setTableColumnPreferredWidth (i - d, width);
                 }
             }
         }
