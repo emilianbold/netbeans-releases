@@ -227,11 +227,21 @@ public class SOAPComponentValidator
                                         bindingFault,
                                         NbBundle.getMessage(SOAPComponentValidator.class, "SOAPFaultValidator.Only_one_fault_allowed")));
                             }
+
                             Iterator<SOAPFault> soapFaults =
                                     bindingFault.getExtensibilityElements(SOAPFault.class).iterator();
                             while(soapFaults.hasNext()) {
-                                soapFaults.next().accept(this);
+                                SOAPFault soapFault = (SOAPFault) soapFaults.next();   // should be only one defined
+                                if (!soapFault.getName().equals(bindingFault.getName()))  {                       
+                                    results.add(
+                                        new Validator.ResultItem(this,
+                                        Validator.ResultType.ERROR,
+                                        bindingFault,
+                                        NbBundle.getMessage(SOAPComponentValidator.class, "SOAPFaultValidator.Fault_name_not_match")));
+                                 }
+                                 soapFault.accept(this);
                             }
+
                         }
                     }
                 }
