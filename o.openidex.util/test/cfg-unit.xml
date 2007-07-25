@@ -15,7 +15,7 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Tests which should be run before commit to validate IDE. -->
 
 
-    <testbag testattribs="stable" executor="ide" name="Unit tests running in the IDE">
+    <testbag testattribs="stable" executor="code" name="Unit tests running in the IDE">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openidex/search/*Test.class"/>
@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     
-    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    <executor name="code" antfile="build-unit.xml" target="run-unit-test"/>
     <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
     
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
