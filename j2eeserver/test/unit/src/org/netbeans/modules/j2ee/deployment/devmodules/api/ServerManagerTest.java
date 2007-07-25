@@ -18,11 +18,7 @@
  */
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
-import java.awt.EventQueue;
-import java.awt.Robot;
-import java.awt.event.KeyEvent;
 import org.netbeans.junit.NbTestCase;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -50,22 +46,5 @@ public class ServerManagerTest extends NbTestCase {
         } catch (IllegalThreadStateException e) {
             // expected
         }
-        EventQueue.invokeAndWait(new Runnable() {
-            public void run() {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        try {
-                            Robot robot = new Robot();
-                            robot.waitForIdle();
-                            robot.keyPress(KeyEvent.VK_ESCAPE);
-                            robot.keyRelease(KeyEvent.VK_ESCAPE);
-                        } catch (Exception e) {
-                            fail(e.getMessage());
-                        }
-                    }
-                });
-                assertNull(ServerManager.showAddServerInstanceWizard());
-            }
-        });
     }
 }
