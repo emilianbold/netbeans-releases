@@ -210,6 +210,18 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
         reformatFileContents("testfiles/ape.rb");
     }
 
+    public void testFormatMephisto1() throws Exception {
+        reformatFileContents("testfiles/mephisto-site.rb");
+    }
+    
+    public void testFormatMephisto2() throws Exception {
+        reformatFileContents("testfiles/mephisto_controller.rb");
+    }
+    
+    public void testFormatMephisto3() throws Exception {
+        reformatFileContents("testfiles/mephisto-articles-controller.rb");
+    }
+    
     public void testFormat110332() throws Exception {
         // Check that the given source files reformat EXACTLY as specified
         reformatFileContents("testfiles/percent-expressions.rb");
