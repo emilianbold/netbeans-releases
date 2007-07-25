@@ -35,7 +35,7 @@ final class AccessorImpl extends APIAccessor {
     }
     
     public boolean hasPluginsWithProgress(AbstractRefactoring refactoring) {
-        return !refactoring.pluginsWithProgress.isEmpty();
+        return refactoring.pluginsWithProgress!=null && !refactoring.pluginsWithProgress.isEmpty();
     }
 
     public Problem chainProblems(Problem p, Problem p1) {
