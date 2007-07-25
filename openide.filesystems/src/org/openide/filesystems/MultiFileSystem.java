@@ -142,7 +142,7 @@ public class MultiFileSystem extends FileSystem {
         if (Arrays.equals(fileSystems, systems)) {
             return;
         }
-
+        MultiFileObject.freeAllAttribCaches();
         // save for notification
         FileSystem[] oldSystems = systems;
 

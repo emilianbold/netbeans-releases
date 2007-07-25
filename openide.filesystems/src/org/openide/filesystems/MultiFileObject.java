@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 /** Implementation of the file object for multi file system.
 *
@@ -75,8 +76,8 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
     /**performance trick:  holds delegetad FileObject used last time to getAttributes.
      * It may looks simply, but all more sophisticated solutions was less efficient.
      */
-    private FileObject lastAttrCacheFile;
-    private String lastAttrCacheName = ""; // NOI18N
+    private static Map<MultiFileObject, AttributeCache> fo2AttribCache = 
+            new WeakHashMap<MultiFileObject, AttributeCache>();
 
     /** Constructor. Takes reference to file system this file belongs to.
     *
@@ -113,10 +114,24 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         return leader.getFileSystem();
     }
 
+    static synchronized void freeAllAttribCaches() {
+        fo2AttribCache.clear();
+    }
+    
     /** Frees cached objects - added with perf.changes  */
-    private void freeLastAttrCache() {
-        lastAttrCacheFile = null;
-        lastAttrCacheName = ""; // NOI18N
+    private void freeAttribCache() {
+        getAttributeCache().free();
+    }
+    
+    private AttributeCache getAttributeCache() {
+        synchronized (MultiFileObject.class) {
+            AttributeCache retval = fo2AttribCache.get(this);
+            if (retval == null) {
+                retval = new AttributeCache();
+                fo2AttribCache.put(this, retval);
+            }
+            return retval;
+        }
     }
 
     /** Updates list of all references.
@@ -193,7 +208,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                     continue;
                 }
 
-                mfo.freeLastAttrCache();
+                mfo.freeAttribCache();
                 mfo.superRefresh(true);
             }
         } finally {
@@ -230,7 +245,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                     }
                 }
 
-                mfo.freeLastAttrCache();
+                mfo.freeAttribCache();
                 mfo.refresh(true);
             }
         } finally {
@@ -687,8 +702,8 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         { /*There was proved that this block enhances performance*/
 
             Object oPerf;
-            FileObject localFo = lastAttrCacheFile;
-            String cachedAttrName = lastAttrCacheName;
+            FileObject localFo = getAttributeCache().getDelegate();
+            String cachedAttrName = getAttributeCache().getAttributeName();
 
             if ((localFo != null) && !localFo.equals(this) && cachedAttrName.equals(attrName)) {
                 if (localFo.isRoot() && (prefixattr != null)) {
@@ -794,8 +809,8 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         }
 
         if (o != null) {
-            lastAttrCacheFile = fo;
-            lastAttrCacheName = attrName;
+            getAttributeCache().setDelegate(fo);
+            getAttributeCache().setAttributeName(attrName);
         }
 
         return o;
@@ -834,9 +849,9 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
             attrToSet = path.replace('/', '\\') + '\\' + attrName;
         }
 
-        lastAttrCacheFile = fo;
-        lastAttrCacheName = attrToSet;
-
+        getAttributeCache().setDelegate(fo);
+        getAttributeCache().setAttributeName(attrToSet);
+        
         if (fo instanceof AbstractFolder) {
             ((AbstractFolder) fo).setAttribute(attrToSet, voidify(value), false);
         } else {
@@ -1629,6 +1644,32 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         public String toString() {
             return super.toString() + " for " + MultiFileObject.this + " valid=" + isValid(); // NOI18N
         }
-    }
+    }    
     // MfLock
+    
+    private static class AttributeCache {
+        private FileObject delegate;
+        private String attribName = ""; // NOI18N        
+        
+        private void free() {
+            delegate = null;
+            attribName = ""; // NOI18N            
+        }
+        
+        private void setDelegate(FileObject delegate) {
+            this.delegate = delegate;            
+        }
+        
+        private void setAttributeName(String attribName) {
+            this.attribName = attribName;
+        }
+                        
+        private FileObject getDelegate() {
+            return delegate;
+        }
+        
+        private String getAttributeName() {
+            return attribName;
+        }
+    }
 }
