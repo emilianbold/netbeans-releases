@@ -15,6 +15,7 @@
                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/examples/resources/j2seProject.gif"/>
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
                       <attr name="prjType" stringvalue="j2se"/>
+                      <attr name="position" intvalue="200"/>
                     </file>
                     <file name="GUIFormExamples.zip" url="GUIFormExamples.zip">
                       <attr name="template" boolvalue="true"/>
@@ -23,6 +24,7 @@
                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/examples/resources/j2seProject.gif"/>
                       <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.examples.J2SESampleProjectIterator"/>
                       <attr name="prjType" stringvalue="j2se"/>
+                      <attr name="position" intvalue="100"/>
                     </file>
                 </folder>
             </folder>

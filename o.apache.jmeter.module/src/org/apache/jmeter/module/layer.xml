@@ -1,75 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-  <folder name="Actions">
-    <folder name="JMeter">
-      <file name="org-apache-jmeter-module-JMeterRunAction.instance"/>
-      <file name="org-apache-jmeter-module-ExternalEditAction.instance"/>
-    </folder>
-  </folder>
-  <folder name="Loaders">
-    <folder name="text">
-      <folder name="x-jmeter-plan">
-        <folder name="Actions">
-          <file name="org-openide-actions-OpenAction.instance"/>
-          <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-          <attr name="org-openide-actions-OpenAction.instance/org-apache-jmeter-module-ExternalEditAction.instance" boolvalue="true"/>
-          <file name="org-apache-jmeter-module-ExternalEditAction.shadow">
-            <attr name="originalFile" stringvalue="Actions/JMeter/org-apache-jmeter-module-ExternalEditAction.instance"/>
-          </file>
-          <attr name="org-apache-jmeter-module-ExternalEditAction.instance/org-apache-jmeter-module-JMeterRunAction.shadow" boolvalue="true"/>
-          <file name="org-apache-jmeter-module-JMeterRunAction.shadow">
-            <attr name="originalFile" stringvalue="Actions/JMeter/org-apache-jmeter-module-JMeterRunAction.instance"/>
-          </file>
-          <attr name="org-apache-jmeter-module-JMeterRunAction.shadow/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-FileSystemAction.instance"/>
-          <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
-          <file name="sep-1.instance">
-            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-          </file>
-          <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-CutAction.instance"/>
-          <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-CopyAction.instance"/>
-          <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
-          <file name="sep-2.instance">
-            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-          </file>
-          <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-DeleteAction.instance"/>
-          <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-RenameAction.instance"/>
-          <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
-          <file name="sep-3.instance">
-            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-          </file>
-          <attr name="sep-3.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-          <file name="org-openide-actions-PropertiesAction.instance"/>
+    <folder name="Actions">
+        <folder name="JMeter">
+            <file name="org-apache-jmeter-module-JMeterRunAction.instance"/>
+            <file name="org-apache-jmeter-module-ExternalEditAction.instance"/>
         </folder>
-      </folder>
     </folder>
-  </folder>
-  <folder name="Shortcuts">
-    <file name="S-F6.shadow"> 
-      <attr name="instanceClass" stringvalue="Actions/JMeter/org-apache-jmeter-module-JMeterRunAction.instance"/> 
-    </file>
-  </folder>
-  <folder name="Services">
-    <folder name="MIMEResolver">
-      <file name="JMXTypeResolver.xml" url="JMXTypeResolver.xml">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.jmeter.module.Bundle"/>
-      </file>
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-jmeter-plan">
+                <folder name="Actions">
+                    <file name="org-apache-jmeter-module-ExternalEditAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JMeter/org-apache-jmeter-module-ExternalEditAction.instance"/>
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-apache-jmeter-module-JMeterRunAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/JMeter/org-apache-jmeter-module-JMeterRunAction.instance"/>
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="400"/>
+                    </file>
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
     </folder>
-  </folder>
-  <folder name="Templates">
-    <attr name="Package/LoadTesting" boolvalue="true"/>
-    <folder name="LoadTesting">
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.jmeter.module.Bundle"/>
-      <file name="JMeterPlan.jmx" url="JMeterPlan.jmx">
-        <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/jmeter/module/resources/JMeterPlans.html" />
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.jmeter.module.Bundle"/>
-        <attr name="template" boolvalue="true"/>
-      </file>
+    <folder name="Shortcuts">
+        <file name="S-F6.shadow"> 
+            <attr name="instanceClass" stringvalue="Actions/JMeter/org-apache-jmeter-module-JMeterRunAction.instance"/> 
+        </file>
     </folder>
-  </folder>
+    <folder name="Services">
+        <folder name="MIMEResolver">
+            <file name="JMXTypeResolver.xml" url="JMXTypeResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.jmeter.module.Bundle"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="LoadTesting">
+            <attr name="position" intvalue="2013"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.jmeter.module.Bundle"/>
+            <file name="JMeterPlan.jmx" url="JMeterPlan.jmx">
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/jmeter/module/resources/JMeterPlans.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.jmeter.module.Bundle"/>
+                <attr name="template" boolvalue="true"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

@@ -21,8 +21,9 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Services">
         <folder name="JavaHelp">
-            <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-apache-tools-ant-module-helpset.xml" boolvalue="true"/>
-            <file name="org-apache-tools-ant-module-helpset.xml" url="helpset-decl.xml"/>
+            <file name="org-apache-tools-ant-manual.xml" url="helpset-decl.xml">
+                <attr name="position" intvalue="4000"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

@@ -17,181 +17,148 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
 
     <folder name="Actions">
         <folder name="Collaboration">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.resources.Bundle"/>
-			<file name="org-netbeans-modules-collab-ui-actions-LoginAction.instance"/>
-			<file name="org-netbeans-modules-collab-ui-actions-LogoutAction.instance"/>
-			<file name="org-netbeans-modules-collab-ui-actions-LogoutAllAction.instance"/>
-			<file name="org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
-			<file name="org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
+            <file name="org-netbeans-modules-collab-ui-actions-LoginAction.instance"/>
+            <file name="org-netbeans-modules-collab-ui-actions-LogoutAction.instance"/>
+            <file name="org-netbeans-modules-collab-ui-actions-LogoutAllAction.instance"/>
+            <file name="org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
+            <file name="org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
         </folder>
     </folder>
 
-	<folder name="Menu">
-		<attr name="CVS/Collaboration" boolvalue="true"/>
-		<attr name="RunProject/Collaboration" boolvalue="true"/>
-		<attr name="Modeling/Collaboration" boolvalue="true"/>
-		<folder name="Collaboration">
-			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.resources.Bundle"/>
-			<file name="Login.shadow">
-				<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-LoginAction.instance"/>
-			</file>
-			<attr name="Login.shadow/Separator1.instance" boolvalue="true"/>
-			<file name="Separator1.instance">
-				<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-			</file>
-			<!--
-			<attr name="Separator1.instance/ShowNextNotificationAction.shadow" boolvalue="true"/>
-			<file name="ShowNextNotificationAction.shadow">
-				<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
-			</file>
-			<attr name="ShowNextNotificationAction.shadow/start-global-actions.txt" boolvalue="true"/>
-			-->
-			<file name="start-global-actions.txt"/>
-			<attr name="start-global-actions.txt/end-global-actions.txt" boolvalue="true"/>
-			<file name="end-global-actions.txt"/>
-			<attr name="end-global-actions.txt/Separator2.instance" boolvalue="true"/>
-			<file name="Separator2.instance">
-				<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-			</file>
-			<attr name="Separator2.instance/Logout.shadow" boolvalue="true"/>
-			<file name="Logout.shadow">
-				<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-LogoutAction.instance"/>
-			</file>
-			<attr name="Logout.shadow/LogoutAll.shadow" boolvalue="true"/>
-			<file name="LogoutAll.shadow">
-				<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-LogoutAllAction.instance"/>
-			</file>
-			<!--
-			<file name="org-netbeans-modules-collab-ui-actions-TestAction.instance"/>
-			-->
-		</folder>
-		<attr name="Collaboration/Tools" boolvalue="true"/>
+    <folder name="Menu">
+        <folder name="Collaboration">
+            <attr name="position" intvalue="950"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.resources.Bundle"/>
+            <file name="Login.shadow">
+                <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-LoginAction.instance"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="Separator1.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+            <!--
+            <file name="ShowNextNotificationAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
+            </file>
+            -->
+            <file name="Separator2.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="Logout.shadow">
+                <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-LogoutAction.instance"/>
+                <attr name="position" intvalue="600"/>
+            </file>
+            <file name="LogoutAll.shadow">
+                <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-LogoutAllAction.instance"/>
+                <attr name="position" intvalue="700"/>
+            </file>
+            <!--
+            <file name="org-netbeans-modules-collab-ui-actions-TestAction.instance"/>
+            -->
+        </folder>
         <folder name="Window">
-            <attr name="oldRootsEnd.txt/Collaboration.shadow" boolvalue="true" />
-            <attr name="org-netbeans-core-output-OutputWindowAction.instance/Collaboration.shadow" boolvalue="true" />
-            <attr name="org-netbeans-core-execution-ExecutionViewAction.instance/Collaboration.shadow" boolvalue="true" />
-            <attr name="ResultViewOpenAction.shadow/Collaboration.shadow" boolvalue="true" />
-            <attr name="org-netbeans-modules-tasklist-docscan-SourceTasksAction.instance/Collaboration.shadow" boolvalue="true" />
-			<file name="Collaboration.shadow">
-				<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
-			</file>
-            <attr name="Collaboration.shadow/com-sun-tools-profiler-monitor-client-MonitorAction.instance" boolvalue="true" />
-            <attr name="Collaboration.shadow/org-netbeans-modules-web-monitor-client-MonitorAction.instance" boolvalue="true" />
+            <folder name="Other">
+                <file name="Collaboration.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
+                    <attr name="position" intvalue="130"/>
+                </file>
+            </folder>
+            <!-- TAF: Experiment
+            <file name="Separator3a.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+            </file>
+            <file name="ShowNextNotificationAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
+            </file>
+            -->
+        </folder>
+    </folder>
 
-			<!-- TAF: Experiment
-			<attr name="Separator3a.instance/Separator3.instance" boolvalue="true"/>
-			<file name="Separator3a.instance">
-				<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-			</file>
-			<attr name="Separator3a.instance/ShowNextNotificationAction.shadow" boolvalue="true"/>
-			<file name="ShowNextNotificationAction.shadow">
-				<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
-			</file>
-			<attr name="ShowNextNotificationAction.shadow/Separator3.instance" boolvalue="true"/>
-			-->
-		</folder>
-<!--		<folder name="Help">
-			<folder name="HelpShortcuts">
-				
-				<attr name="com-sun-forte4j-modules-dbmodel-mainpage.xml/org-netbeans-modules-collab-mainpage.xml" boolvalue="true"/>
-				
-				<file name="org-netbeans-modules-collab-mainpage.xml" url="help-main-ref.xml" >
-					<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.resources.Bundle"/>
-					<attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/openide/resources/actions/empty.gif"/>
-				</file>                                  
-				
-				<attr name="org-netbeans-modules-collab-mainpage.xml/org-netbeans-modules-usersguide-lower-sep.instance" boolvalue="true"/>
-			</folder>
-		</folder>-->
-	</folder>
+    <folder name="Toolbars">
+        <folder name="Collaboration">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.resources.Bundle"/>
+            <!--
+            <file name="ShowCollabExplorerAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
+            </file>
+            -->
+            <file name="LoginAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-LoginAction.instance"/>
+                <attr name="position" intvalue="100"/>
+            </file>
+            <file name="ShowNextNotificationAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
+                <attr name="position" intvalue="200"/>
+            </file>
+        </folder>
+    </folder>
 
-	<folder name="Toolbars">
-		<folder name="Collaboration">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.resources.Bundle"/>
-		<!--
-			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.resources.Bundle"/>
-			<file name="ShowCollabExplorerAction.shadow">
-				<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
-			</file>
-            <attr name="ShowCollabExplorerAction.shadow/LoginAction.shadow" boolvalue="true" />
-		-->
-			<file name="LoginAction.shadow">
-				<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-LoginAction.instance"/>
-			</file>
-            <attr name="LoginAction.shadow/ShowNextNotificationAction.shadow" boolvalue="true" />
-			<file name="ShowNextNotificationAction.shadow">
-				<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
-			</file>
-		</folder>
-	</folder>
-	
-	<folder name="Services">
-		<folder name="Collaboration">
-			<file name="org-netbeans-modules-collab-ui-DefaultUserInterface.settings" url="DefaultUserInterface.settings">
-				<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.Bundle"/>
-				<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/collab/core/resources/collab_png.gif"/>
-				<attr name="SystemFileSystem.layer" stringvalue="session"/>
-			</file>
-			<file name="org-netbeans-modules-collab-ui-options-CollabSettings.settings" url="CollabSettings.settings">
-				<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.options.Bundle"/>
-				<attr name="SystemFileSystem.layer" stringvalue="session"/>
-			</file>
-			<file name="org-netbeans-modules-collab-ui-options-HiddenCollabSettings.settings" url="HiddenCollabSettings.settings">
-				<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.options.Bundle"/>
-				<attr name="SystemFileSystem.layer" stringvalue="session"/>
-			</file>
-			<file name="org-netbeans-modules-collab-ui-options-NotificationSettings.settings" url="NotificationSettings.settings">
-				<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.options.Bundle"/>
-				<attr name="SystemFileSystem.layer" stringvalue="session"/>
-			</file>
-		</folder>
-		<folder name="JavaHelp">
-			<!-- Merge it after the main online help: -->
-			<attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-collab-helpset.xml" boolvalue="true"/>
-			<!-- This DTD gives an instance of HelpSet: -->
-			<file name="org-netbeans-modules-collab-helpset.xml" url="org-netbeans-modules-collab-helpset.xml" />
-			<!-- Merge before additional helpsets such as the Ant Manual. -->
-			<attr name="org-netbeans-modules-collab-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
-		</folder>                        
-	</folder>
+    <folder name="Services">
+        <folder name="Collaboration">
+            <file name="org-netbeans-modules-collab-ui-DefaultUserInterface.settings" url="DefaultUserInterface.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/collab/core/resources/collab_png.gif"/>
+                <attr name="SystemFileSystem.layer" stringvalue="session"/>
+            </file>
+            <file name="org-netbeans-modules-collab-ui-options-CollabSettings.settings" url="CollabSettings.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.options.Bundle"/>
+                <attr name="SystemFileSystem.layer" stringvalue="session"/>
+            </file>
+            <file name="org-netbeans-modules-collab-ui-options-HiddenCollabSettings.settings" url="HiddenCollabSettings.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.options.Bundle"/>
+                <attr name="SystemFileSystem.layer" stringvalue="session"/>
+            </file>
+            <file name="org-netbeans-modules-collab-ui-options-NotificationSettings.settings" url="NotificationSettings.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.collab.ui.options.Bundle"/>
+                <attr name="SystemFileSystem.layer" stringvalue="session"/>
+            </file>
+        </folder>
+        <folder name="JavaHelp">
+            <file name="org-netbeans-modules-collab-helpset.xml" url="org-netbeans-modules-collab-helpset.xml">
+                <attr name="position" intvalue="3042"/>
+            </file>
+        </folder>
+    </folder>
 
-	<folder name="Shortcuts">
-		<file name="CS-L.shadow">
-			<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
-		</file>   
-		<!--
-		<file name="CAS-L.shadow">
-			<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-LoginAction.instance"/>
-		</file>   
-		-->
-		<file name="A-BACK_QUOTE.shadow">
-			<attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
-		</file>   
-	</folder>
+    <folder name="Shortcuts">
+        <file name="CS-L.shadow">
+            <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
+        </file>
+        <!--
+        <file name="CAS-L.shadow">
+                <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-LoginAction.instance"/>
+        </file>
+        -->
+        <file name="A-BACK_QUOTE.shadow">
+            <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowNextNotificationAction.instance"/>
+        </file>
+    </folder>
 
-	<folder name="Windows2">
-		<folder name="Components">
-			<file name="CollaborationExplorer.settings" url="CollaborationExplorer.settings"/>
-		</folder>
-		<folder name="Groups">
-			<file name="collaboration.wsgrp" url="collaboration.wsgrp"/>
-			<folder name="collaboration">
-				<file name="CollaborationExplorer.wstcgrp" url="CollaborationExplorer.wstcgrp"/>
-			</folder>
-		</folder>
-		<folder name="Modes">
-			<file name="collaboration.wsmode" url="collaboration.wsmode"/>
-			<folder name="collaboration">
-				<file name="CollaborationExplorer.wstcref" url="CollaborationExplorer.wstcref"/>
-			</folder>
-		</folder>
-	</folder>
+    <folder name="Windows2">
+        <folder name="Components">
+            <file name="CollaborationExplorer.settings" url="CollaborationExplorer.settings"/>
+        </folder>
+        <folder name="Groups">
+            <file name="collaboration.wsgrp" url="collaboration.wsgrp"/>
+            <folder name="collaboration">
+                <file name="CollaborationExplorer.wstcgrp" url="CollaborationExplorer.wstcgrp"/>
+            </folder>
+        </folder>
+        <folder name="Modes">
+            <file name="collaboration.wsmode" url="collaboration.wsmode"/>
+            <folder name="collaboration">
+                <file name="CollaborationExplorer.wstcref" url="CollaborationExplorer.wstcref"/>
+            </folder>
+        </folder>
+    </folder>
 
     <folder name="OptionsDialog">
         <folder name="Advanced">
@@ -199,6 +166,6 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.collab.ui.options.CollabOptions"/>
             </file>
         </folder>
-   </folder>
-	
+    </folder>
+
 </filesystem>
