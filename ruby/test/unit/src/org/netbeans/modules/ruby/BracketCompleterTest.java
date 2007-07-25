@@ -672,7 +672,8 @@ public class BracketCompleterTest extends RubyTestBase {
     }
 
     public void testdeleteWord2() throws Exception {
-        deleteWord("foo_bar_baz ^", "foo_bar^");
+        deleteWord("foo_bar_baz ^", "foo_bar_baz^");
+        deleteWord("foo_bar_baz^", "foo_bar^");
     }
 
     public void testdeleteWord3() throws Exception {
