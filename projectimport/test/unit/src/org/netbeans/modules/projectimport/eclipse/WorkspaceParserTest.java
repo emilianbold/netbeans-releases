@@ -35,7 +35,6 @@ public final class WorkspaceParserTest extends NbTestCase {
     
     public void testGetLocation() throws Exception {
         String tempFilePath = new File(System.getProperty("java.io.tmpdir"), "tmp").getAbsolutePath();
-        System.out.println(tempFilePath);
         assertRightPath(tempFilePath, tempFilePath);
         assertRightPath("URI//file:" + tempFilePath, tempFilePath);
         assertRightPath("URI//whatever:" + tempFilePath, tempFilePath); 
