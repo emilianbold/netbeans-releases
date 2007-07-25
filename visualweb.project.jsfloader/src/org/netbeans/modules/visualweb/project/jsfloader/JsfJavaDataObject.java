@@ -49,6 +49,7 @@ public class JsfJavaDataObject extends MultiDataObject implements JsfJavaDataObj
 
 
     static final long serialVersionUID =8354927561693097159L;
+    static final String JSF_ATTRIBUTE = "jsfjava"; // NOI18N
 
     public JsfJavaDataObject(FileObject pf, JsfJavaDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);

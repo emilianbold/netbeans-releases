@@ -63,6 +63,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
 
     static final long serialVersionUID =8354927561693097159L;
 
+    static final String JSF_ATTRIBUTE = "jsfjsp"; // NOI18N
     private static final String JSP_ICON_BASE = "org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject"; // NOI18N
     private static final String PROP_ENCODING = "encoding"; // NOI18N
     private static final String DEFAULT_ENCODING = "ISO-8559-1"; // NOI18N
@@ -366,6 +367,7 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
             JsfJspDataLoader.jspTemplateCreation.set(Boolean.FALSE);
         }
         
+        result.getPrimaryFile().setAttribute(JSF_ATTRIBUTE, Boolean.TRUE);
         FileObject backingTargetFileObjectFolder = Utils.findJavaFolderForJsp(result.getPrimaryFile());
         if (backingTargetFileObjectFolder == null) {
             throw new JsfDataObjectException("Can't find corresponding java folder for " + result); // NOI18N
@@ -383,7 +385,9 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
                     + " was created by somebody else. It is not necessary now, fix it!"); // NOI18N
         } else {
             DataObject newBackingJava = backingTemplate.createFromTemplate(backingTargetFolder, result.getName());
+            
             try {
+                newBackingJava.getPrimaryFile().setAttribute(JsfJavaDataObject.JSF_ATTRIBUTE, Boolean.TRUE);
                 // XXX NB issue #81746.
                 newBackingJava.getPrimaryFile().setAttribute("NBIssue81746Workaround", Boolean.TRUE); // NOI18N
             } catch (IOException ex) {

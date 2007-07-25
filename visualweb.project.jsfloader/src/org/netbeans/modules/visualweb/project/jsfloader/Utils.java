@@ -144,6 +144,13 @@ final class Utils {
                 if(dob instanceof JsfJspDataObject) {
                     return (JsfJspDataObject)dob;
                 } else {
+                    try {
+                        dob.setValid(false);
+                        dob = DataObject.find(jspFile);
+                    } catch (PropertyVetoException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Corresponding jsp data object is not jsf " + dob)); // NOI18N
+                    }
+                    
                     if (!quietly)
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                                 new IllegalStateException("Corresponding jsp data object is not jsf " + dob)); // NOI18N

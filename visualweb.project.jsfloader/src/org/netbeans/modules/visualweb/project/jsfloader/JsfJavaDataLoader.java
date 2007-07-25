@@ -102,17 +102,26 @@ public class JsfJavaDataLoader extends MultiFileLoader {
             return null;
         }
 
-        // Needs to check whether the file belongs to the Creator JSF project,
-        // The file in NB project has to fall back to NB loaders.
-        // XXX Workaround for NB issue #78424
-        if (!JsfProjectUtils.isJsfProjectFile(primaryFile) && !Utils.isTemplateFileObject(primaryFile)) {
-            return null;
+        Object attrib = primaryFile.getAttribute(JsfJavaDataObject.JSF_ATTRIBUTE);
+        if (attrib != null && attrib instanceof Boolean) {
+            if (((Boolean)attrib).booleanValue() == true) 
+                return primaryFile;
+            else
+                return null;
         }
 
+        // XXX JsfProjectUtils.isJsfProjectFile() is very slow and should be revisited
+        // since this affects all loaded java files in NetBeans
+        boolean isTemplate = Utils.isTemplateFileObject(primaryFile);
+        if (!isTemplate && !JsfProjectUtils.isJsfProjectFile(primaryFile)) {
+            return null;
+        }
+        
         // It is most likely a Java file, however, we need to see if there is already a JsfJavaDataObject registered
         // for this file object.  There is a case where by in middle of refactoring, the JSP and the JAVA file are not
         // linked as they should be, but there is still a JsfJavaDataObject registered uner this file object
         // Duplicated in JsfJspDataObject
+        // XXX This causes some performance issues and should probably be removed
         DataObject dataObject = DataObjectPoolFind(fo);
         if (dataObject instanceof JsfJavaDataObject) {
             return fo;
@@ -128,6 +137,10 @@ public class JsfJavaDataLoader extends MultiFileLoader {
             return null;
         }
 
+        if (!isTemplate) {
+            setJsfFileAttribute(primaryFile);
+        }
+        
         return primaryFile;
     }
     
@@ -152,6 +165,13 @@ public class JsfJavaDataLoader extends MultiFileLoader {
         }
         return null;
     }
-        
+    
+    private void setJsfFileAttribute(FileObject fo) {
+        try {
+            fo.setAttribute(JsfJavaDataObject.JSF_ATTRIBUTE, Boolean.TRUE);
+        }catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+        }
+    }
 }
 
