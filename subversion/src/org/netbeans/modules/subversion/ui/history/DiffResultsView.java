@@ -114,8 +114,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
             // invoked asynchronously becase treeView.getSelection() may not be ready yet
             Runnable runnable = new Runnable() {
                 public void run() {
-                    RepositoryRevision container1 = (RepositoryRevision) nodes[0].getLookup().lookup(RepositoryRevision.class);
-                    RepositoryRevision.Event r1 = (RepositoryRevision.Event) nodes[0].getLookup().lookup(RepositoryRevision.Event.class);
+                    RepositoryRevision container1 = nodes[0].getLookup().lookup(RepositoryRevision.class);
+                    RepositoryRevision.Event r1 = nodes[0].getLookup().lookup(RepositoryRevision.Event.class);
                     try {
                         currentIndex = treeView.getSelection()[0];
                         if (nodes.length == 1) {
