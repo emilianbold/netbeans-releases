@@ -35,6 +35,7 @@ import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
+import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
 
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
@@ -252,6 +253,7 @@ public class XsltproProject implements Project, AntProjectListener {
             fileBuilt,
             new RecommendedTemplatesImpl(),
             refHelper,
+            new IcanproProjectEncodingQueryImpl(evaluator()),
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(),
                     new String[] {"${"+IcanproProjectProperties.SOURCE_ROOT+"}"},
