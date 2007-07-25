@@ -9,7 +9,7 @@
         <gzip src="workspace/nbbuild/nbms/updates.xml" destfile="workspace/nbbuild/nbms/updates.xml.gz"/>
 	<taskdef name="vuc" classname="org.netbeans.nbbuild.VerifyUpdateCenter" classpath="workspace/nbbuild/nbantext.jar"/>
 	<echo>Checking synchronic and diachronic consistency of NBMs; see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency</echo>
-	<vuc updates="workspace/nbbuild/nbms/updates.xml" oldupdates="lastSuccessful/archive/nbbuild/nbms/updates.xml">
+	<vuc updates="workspace/nbbuild/nbms/updates.xml" oldupdates="lastSuccessful/archive/nbbuild/nbms/updates.xml" report="workspace/nbbuild/nbms/vuc-report.xml">
 	    <classpath>
 	        <fileset dir="workspace/nbbuild/netbeans">
                     <include name="platform*/lib/*.jar"/>
