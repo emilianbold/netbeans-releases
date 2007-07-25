@@ -48,6 +48,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -57,8 +58,8 @@ import org.w3c.dom.Element;
  */
 public class RailsProjectGenerator {
     public static final RegexpOutputRecognizer RAILS_GENERATOR =
-        new RegexpOutputRecognizer("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.(rb|mab|rjs|rxml|rake|erb|builder|rhtml|yml|js|html|cgi|fcgi|txt|png|gif|css))\\s*$",
-            2, -1, -1); // NOI18N
+        new RegexpOutputRecognizer("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.(rb|mab|rjs|rxml|rake|erb|builder|rhtml|yml|js|html|cgi|fcgi|txt|png|gif|css))\\s*$", // NOI18N
+            2, -1, -1);
 
     private RailsProjectGenerator() {}
     
@@ -76,7 +77,8 @@ public class RailsProjectGenerator {
         if (create) {
             boolean runThroughRuby = RubyInstallation.getInstance().getVersion("rails") != null; // NOI18N
             ExecutionDescriptor desc = null;
-            String displayName = "Generate Rails Project";
+            String displayName = NbBundle.getMessage(GotoActionView.class, "GenerateRails");
+
             File pwd = dir.getParentFile();
             if (runThroughRuby) {
                 desc = new ExecutionDescriptor(displayName, pwd,
@@ -135,7 +137,7 @@ public class RailsProjectGenerator {
     }
     
     private static void insertActiveJdbcHook(FileObject dir) {
-        FileObject fo = dir.getFileObject("config/environment.rb");
+        FileObject fo = dir.getFileObject("config/environment.rb"); // NOI18N
         if (fo != null) {
             try {
                 DataObject dobj = DataObject.find(fo);
@@ -148,14 +150,14 @@ public class RailsProjectGenerator {
                         // This rails version already handles JDBC somehow
                         return;
                     }
-                    offset = text.indexOf("Rails::Initializer.run do |config|");
+                    offset = text.indexOf("Rails::Initializer.run do |config|"); // NOI18N
                     if (offset != -1) {
                         String insert =
                             "# Inserted by NetBeans Ruby support to support JRuby; you can delete if not using JRuby\n" +
-                            "if RUBY_PLATFORM =~ /java/\n" +
-                            "  require 'rubygems'\n" + 
-                            "  RAILS_CONNECTION_ADAPTERS = %w(jdbc)\n" +
-                            "end\n\n";
+                            "if RUBY_PLATFORM =~ /java/\n" + // NOI18N
+                            "  require 'rubygems'\n" + // NOI18N
+                            "  RAILS_CONNECTION_ADAPTERS = %w(jdbc)\n" + // NOI18N
+                            "end\n\n"; // NOI18N
                         doc.insertString(offset, insert, null);
                         SaveCookie sc = dobj.getCookie(SaveCookie.class);
                         if (sc != null) {

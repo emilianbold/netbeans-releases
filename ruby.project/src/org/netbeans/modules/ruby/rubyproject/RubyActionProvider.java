@@ -147,9 +147,9 @@ public class RubyActionProvider implements ActionProvider {
                 if (sb.length() > 0) {
                     sb.append(' ');
                 }
-                sb.append("-I\"");
+                sb.append("-I\""); // NOI18N
                 sb.append(FileUtil.toFile(root).getAbsoluteFile());
-                sb.append("\"");
+                sb.append("\""); // NOI18N
             }
         }
         if (testPath != null && testPath.length > 0) {
@@ -157,14 +157,14 @@ public class RubyActionProvider implements ActionProvider {
                 if (sb.length() > 0) {
                     sb.append(' ');
                 }
-                sb.append("-I\"");
+                sb.append("-I\""); // NOI18N
                 sb.append(FileUtil.toFile(root).getAbsoluteFile());
-                sb.append("\"");
+                sb.append("\""); // NOI18N
             }
         }
         String includePath = sb.toString();
         if (options != null) {
-            options = includePath + " " + options;
+            options = includePath + " " + options; // NOI18N
         } else {
             options = includePath;
         }
@@ -340,14 +340,16 @@ public class RubyActionProvider implements ActionProvider {
                         return;
                     }
                 } catch (IOException ioe) {           
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + ioe);
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Error while saving project: " + ioe); // NOI18N
                 }
             }
 
             // Save all files first
             LifecycleManager.getDefault().saveAll();
             
-            String displayName = (mainClass != null) ? "Ruby" : "Rake"; // TODO - internationalize
+            String displayName = (mainClass != null) ? 
+                NbBundle.getMessage(RubyActionProvider.class, "Ruby") :
+                NbBundle.getMessage(RubyActionProvider.class, "Rake");
 
             ProjectInformation info = ProjectUtils.getInformation(project);
             if (info != null) {
@@ -422,7 +424,7 @@ public class RubyActionProvider implements ActionProvider {
             // Save all files first
             LifecycleManager.getDefault().saveAll();
             
-            String displayName = "Rake"; // TODO - internationalize
+            String displayName = NbBundle.getMessage(RubyActionProvider.class, "Rake");
             File pwd = getSourceFolder(); // Or project directory
             
             Runnable finishedAction =
@@ -434,7 +436,7 @@ public class RubyActionProvider implements ActionProvider {
             
             String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
             new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRake()).
-                    additionalArgs("clean").
+                    additionalArgs("clean"). // NOI18N
                     postBuild(finishedAction).
                     allowInput().
                     classPath(classPath).
@@ -453,7 +455,8 @@ public class RubyActionProvider implements ActionProvider {
             // Save all files first
             LifecycleManager.getDefault().saveAll();
             
-            String displayName = "Rake"; // TODO - internationalize
+            String displayName = 
+                NbBundle.getMessage(RubyActionProvider.class, "Rake");
             File pwd = getSourceFolder(); // Or project directory?
             String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
             new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRake()).
@@ -471,11 +474,14 @@ public class RubyActionProvider implements ActionProvider {
             }
 
             //RubyFileLocator fileLocator = new RubyFileLocator(context);
-            String displayName = "Rake"; // TODO - internationalize
+            String displayName = 
+                NbBundle.getMessage(RubyActionProvider.class, "Rake");
+
             File pwd = getSourceFolder(); // Or project directory?
             String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
             new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRake()).
-                    additionalArgs("clean").allowInput().
+                    additionalArgs("clean"). // NOI18N
+                    allowInput().
                     classPath(classPath).
                     fileLocator(new RubyFileLocator(context, project)).
                     addOutputRecognizer(RubyExecution.RUBY_COMPILER),
@@ -497,9 +503,9 @@ public class RubyActionProvider implements ActionProvider {
                 public void run() {
                     // TODO - wait for the file to be created
                     // Open brower on the doc directory
-                    FileObject doc = project.getProjectDirectory().getFileObject("doc");
+                    FileObject doc = project.getProjectDirectory().getFileObject("doc"); // NOI18N
                     if (doc != null) {
-                        FileObject index = doc.getFileObject("index.html");
+                        FileObject index = doc.getFileObject("index.html"); // NOI18N
                         if (index != null) {
                             try {
                                 URL url = FileUtil.toFile(index).toURI().toURL();
@@ -515,8 +521,8 @@ public class RubyActionProvider implements ActionProvider {
             };
             
             RubyFileLocator fileLocator = new RubyFileLocator(context, project);
-            String displayName = "Ruby Documentation"; // TODO - internationalize
-            String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
+            String displayName = NbBundle.getMessage(RubyActionProvider.class, "RubyDocumentation");
+
             new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRDoc()).
                     fileLocator(fileLocator).
                     postBuild(showBrowser).
@@ -569,7 +575,6 @@ public class RubyActionProvider implements ActionProvider {
                     file.getNameExt(), context, isDebug);
         }
 
-        // XXX TODO
         if (COMMAND_TEST.equals(command)) {
             if (!RubyInstallation.getInstance().isValidRuby(true)) {
                 return;

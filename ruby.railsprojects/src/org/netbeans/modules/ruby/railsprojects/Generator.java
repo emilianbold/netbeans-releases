@@ -47,7 +47,7 @@ public class Generator {
     public static Generator MODEL = new Generator("model", null, 1); // NOI18N
     public static Generator PLUGIN = new Generator("plugin", null, 1); // NOI18N
     public static Generator SCAFFOLD =
-        new Generator("scaffold", null, "ModelName", "ScaffControllerName", "ScaffoldActions", 1); // NOI1N
+        new Generator("scaffold", null, "ModelName", "ScaffControllerName", "ScaffoldActions", 1); // NOI18N
     public static Generator SESSION_MIGRATION = new Generator("session_migration", null, 1); // NOI18N
     public static Generator WEB_SERVICE =
         new Generator("web_service", null, null, "ApiMethods", null, 1); // NOI18N
@@ -62,7 +62,8 @@ public class Generator {
     public Generator(String name, FileObject location, int argsRequired) {
         this.name = name;
         this.location = location;
-        this.nameKey = "Arguments"; // Unknown meaning of the first argument
+        // Unknown meaning of the first argument
+        this.nameKey = "Arguments";  // NOI18N
         this.argsRequired = argsRequired;
     }
 
@@ -134,20 +135,20 @@ public class Generator {
             if (gemLocation != null) {
                 //Example: jruby-0.9.2/lib/ruby/gems/1.8/gems/rails-1.1.6/lib/rails_generator/generators/components       
                 generatorDir = new File(gemLocation,
-                        "lib" + File.separator +
-                        "rails_generator" + File.separator + "generators" + File.separator +
-                        "components" + File.separator + name);
+                        "lib" + File.separator + // NOI18N
+                        "rails_generator" + File.separator + "generators" + File.separator + // NOI18N
+                        "components" + File.separator + name); // NOI18N
             }
         } else {
             generatorDir = FileUtil.toFile(location);
         }
 
-        File usageFile = new File(generatorDir, "USAGE");
+        File usageFile = new File(generatorDir, "USAGE"); // NOI18N
 
         if (!usageFile.exists()) {
             // At least the "resource" generator on railties seems to live
             // in the "wrong" place; check the additional location
-            usageFile = new File(generatorDir, "templates" + File.separator + "USAGE");
+            usageFile = new File(generatorDir, "templates" + File.separator + "USAGE"); // NOI18N
             if (!usageFile.exists()) {
                 return null;
             }
@@ -166,7 +167,7 @@ public class Generator {
                 }
 
                 sb.append(line);
-                sb.append("\n");
+                sb.append("\n"); // NOI18N
             }
 
             if (sb.length() > 0) {

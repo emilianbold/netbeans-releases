@@ -140,7 +140,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     
    // Well known paths
     public static final String[] WELL_KNOWN_PATHS = new String[] {
-            "${" + JAVAC_CLASSPATH + "}",
+            "${" + JAVAC_CLASSPATH + "}", // NOI18N
     };
     public static final String LIBRARY_PREFIX = "${libs."; // NOI18N
     public static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
@@ -261,13 +261,13 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         privateGroup.store( privateProperties );
         
         storeRunConfigs(RUN_CONFIGS, projectProperties, privateProperties);
-        EditableProperties ep = updateHelper.getProperties("nbproject/private/config.properties");
+        EditableProperties ep = updateHelper.getProperties("nbproject/private/config.properties"); // NOI18N
         if (activeConfig == null) {
-            ep.remove("config");
+            ep.remove("config"); // NOI18N
         } else {
-            ep.setProperty("config", activeConfig);
+            ep.setProperty("config", activeConfig); // NOI18N
         }
-        updateHelper.putProperties("nbproject/private/config.properties", ep);
+        updateHelper.putProperties("nbproject/private/config.properties", ep); // NOI18N
 
         
         // Save all paths
@@ -327,19 +327,19 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
             }
         }
         m.put(null, def);
-        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs");
+        FileObject configs = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
         if (configs != null) {
             for (FileObject kid : configs.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
                 m.put(kid.getName(), new TreeMap<String,String>(updateHelper.getProperties(FileUtil.getRelativePath(project.getProjectDirectory(), kid))));
             }
         }
-        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs");
+        configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
         if (configs != null) {
             for (FileObject kid : configs.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
                 Map<String,String> c = m.get(kid.getName());

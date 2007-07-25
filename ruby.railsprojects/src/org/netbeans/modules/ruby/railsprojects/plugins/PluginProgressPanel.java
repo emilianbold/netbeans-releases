@@ -66,7 +66,7 @@ public class PluginProgressPanel extends javax.swing.JPanel {
 
         if (doc != null) {
             try {
-                doc.insertString(doc.getLength(), line + "\n", null);
+                doc.insertString(doc.getLength(), line + "\n", null); // NOI18N
             } catch (BadLocationException e) {
             }
         }
@@ -238,7 +238,7 @@ private void outputToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
         public void keyPressed(KeyEvent event) {
             if (event.getKeyCode() == KeyEvent.VK_ENTER) {
-                append("\n");
+                append("\n"); // NOI18N
             }
             
             event.consume();

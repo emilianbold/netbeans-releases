@@ -295,7 +295,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
                     fileSystemListeners.put(fs, fsl);
                 } catch (FileStateInvalidException e) {
                     ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, ErrorManager.UNKNOWN, "Cannot get " + fo + " filesystem, ignoring...", null, null, null); // NO18N
+                    err.annotate(e, ErrorManager.UNKNOWN, "Cannot get " + fo + " filesystem, ignoring...", null, null, null); // NOI18N
                     err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }

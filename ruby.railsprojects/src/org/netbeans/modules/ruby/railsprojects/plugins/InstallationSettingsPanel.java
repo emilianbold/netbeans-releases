@@ -63,7 +63,7 @@ public class InstallationSettingsPanel extends javax.swing.JPanel {
 
         svnGroup = new javax.swing.ButtonGroup();
         revisionCheckBox = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
+        nameLabel = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
         messageLabel = new javax.swing.JLabel();
         revisionField = new javax.swing.JTextField();
@@ -71,11 +71,12 @@ public class InstallationSettingsPanel extends javax.swing.JPanel {
         externalsRadio = new javax.swing.JRadioButton();
         checkoutRadio = new javax.swing.JRadioButton();
 
-        revisionCheckBox.setText("Specific revision:");
+        revisionCheckBox.setText(org.openide.util.NbBundle.getMessage(InstallationSettingsPanel.class, "SpecificRev")); // NOI18N
         revisionCheckBox.setEnabled(false);
         revisionCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(InstallationSettingsPanel.class, "InstallationSettingsPanel.jLabel1.text")); // NOI18N
+        nameLabel.setLabelFor(nameField);
+        nameLabel.setText(org.openide.util.NbBundle.getMessage(InstallationSettingsPanel.class, "InstallationSettingsPanel.nameLabel.text")); // NOI18N
 
         nameField.setText(org.openide.util.NbBundle.getMessage(InstallationSettingsPanel.class, "InstallationSettingsPanel.nameField.text")); // NOI18N
 
@@ -83,7 +84,7 @@ public class InstallationSettingsPanel extends javax.swing.JPanel {
 
         revisionField.setEnabled(false);
 
-        subversionToggle.setText("Use Subversion");
+        subversionToggle.setText(org.openide.util.NbBundle.getMessage(InstallationSettingsPanel.class, "UseSvn")); // NOI18N
         subversionToggle.setMargin(new java.awt.Insets(0, 0, 0, 0));
         subversionToggle.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -92,13 +93,13 @@ public class InstallationSettingsPanel extends javax.swing.JPanel {
         });
 
         svnGroup.add(externalsRadio);
-        externalsRadio.setText("Use svn:externals to grab the plugin");
+        externalsRadio.setText(org.openide.util.NbBundle.getMessage(InstallationSettingsPanel.class, "UseExternals")); // NOI18N
         externalsRadio.setEnabled(false);
         externalsRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         svnGroup.add(checkoutRadio);
         checkoutRadio.setSelected(true);
-        checkoutRadio.setText("Use svn checkout to grab the plugin");
+        checkoutRadio.setText(org.openide.util.NbBundle.getMessage(InstallationSettingsPanel.class, "UseCheckout")); // NOI18N
         checkoutRadio.setEnabled(false);
         checkoutRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -110,7 +111,7 @@ public class InstallationSettingsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(jLabel1)
+                        .add(nameLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(nameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 354, Short.MAX_VALUE))
                     .add(messageLabel)
@@ -131,7 +132,7 @@ public class InstallationSettingsPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel1)
+                    .add(nameLabel)
                     .add(nameField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(subversionToggle)
@@ -161,9 +162,9 @@ private void toggledSubversion(java.awt.event.ActionEvent evt) {//GEN-FIRST:even
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JRadioButton checkoutRadio;
     private javax.swing.JRadioButton externalsRadio;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel messageLabel;
     private javax.swing.JTextField nameField;
+    private javax.swing.JLabel nameLabel;
     private javax.swing.JCheckBox revisionCheckBox;
     private javax.swing.JTextField revisionField;
     private javax.swing.JCheckBox subversionToggle;

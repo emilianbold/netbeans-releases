@@ -251,7 +251,7 @@ public class RailsProject implements Project, RakeProjectListener {
             public Void run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
-                NodeList nl = data.getElementsByTagNameNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                NodeList nl = data.getElementsByTagNameNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
                 Element nameEl;
                 if (nl.getLength() == 1) {
                     nameEl = (Element) nl.item(0);
@@ -260,7 +260,7 @@ public class RailsProject implements Project, RakeProjectListener {
                         nameEl.removeChild(deadKids.item(0));
                     }
                 } else {
-                    nameEl = data.getOwnerDocument().createElementNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name");
+                    nameEl = data.getOwnerDocument().createElementNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
                     data.insertBefore(nameEl, /* OK if null */data.getChildNodes().item(0));
                 }
                 nameEl.appendChild(data.getOwnerDocument().createTextNode(name));

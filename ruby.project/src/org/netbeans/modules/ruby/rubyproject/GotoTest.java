@@ -110,7 +110,7 @@ public class GotoTest extends AbstractAction implements EditorAction {
     }
 
     private boolean isZenTestInstalled() {
-        return RubyInstallation.getInstance().getVersion("ZenTest") != null;
+        return RubyInstallation.getInstance().getVersion("ZenTest") != null; // NOI18N
     }
 
     private boolean isRSpecInstalled(FileObject projectDir) {
@@ -119,7 +119,7 @@ public class GotoTest extends AbstractAction implements EditorAction {
     }
 
     private boolean isRailsInstalled() {
-        return RubyInstallation.getInstance().getVersion("rails") != null;
+        return RubyInstallation.getInstance().getVersion("rails") != null; // NOI18N
     }
 
     private void appendRegexp(StringBuilder sb, String s) {
@@ -151,7 +151,7 @@ public class GotoTest extends AbstractAction implements EditorAction {
             path = path.replace(File.separatorChar, '/');
         }
 
-        Matcher matcher = Pattern.compile("(.*)" + pattern1).matcher(path); // Do suffix matching
+        Matcher matcher = Pattern.compile("(.*)" + pattern1).matcher(path); // Do suffix matching // NOI18N
 
         if (matcher.matches()) {
             String prefix = matcher.group(1);
@@ -371,7 +371,7 @@ public class GotoTest extends AbstractAction implements EditorAction {
     }
 
     private void notFound(JTextComponent target) {
-        Utilities.setStatusBoldText(target, "Opposite file not found");
+        Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoTest.class, "OppositeNotFound"));
     }
 
     private DeclarationLocation findTestPair(FileObject fo, final int offset, final boolean findTest) {

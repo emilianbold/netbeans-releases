@@ -103,7 +103,7 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         // to represent the name of the module, and the "module" text field to represent
         // modules surrounding the current module
         if (type == NewRubyFileWizardIterator.TYPE_TEST) {
-            extendsText.setText("Test::Unit::TestCase");
+            extendsText.setText("Test::Unit::TestCase"); // NOI18N
             type = this.type = NewRubyFileWizardIterator.TYPE_CLASS;
         }
 
@@ -207,7 +207,7 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         if ( type == NewRubyFileWizardIterator.TYPE_PACKAGE ) {
             String docName = preselectedPackage == null || preselectedPackage.toString().length() == 0 ? 
                 DEFAULT_NEW_PACKAGE_NAME : 
-                preselectedPackage.toString() + "." + DEFAULT_NEW_PACKAGE_NAME;
+                preselectedPackage.toString() + "." + DEFAULT_NEW_PACKAGE_NAME; // NOI18N
 
             documentNameTextField.setText( docName );                    
             int docNameLen = docName.length();
@@ -229,7 +229,7 @@ public class RubyTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                         //Ordinary file
                         String prefix = NEW_CLASS_PREFIX;
                         // See 91580
-                        Object customPrefix = template.getAttribute("templateNamePrefix");
+                        Object customPrefix = template.getAttribute("templateNamePrefix"); // NOI18N
                         if (customPrefix != null) {
                             prefix = customPrefix.toString();
                         }

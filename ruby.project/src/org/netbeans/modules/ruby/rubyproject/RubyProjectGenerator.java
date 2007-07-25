@@ -52,10 +52,8 @@ import org.w3c.dom.NodeList;
  */
 public class RubyProjectGenerator {
     
-    //static final String MINIMUM_ANT_VERSION = "1.6.5";
-    
-    public static final String DEFAULT_SRC_NAME = "src.dir";
-    public static final String DEFAULT_TEST_SRC_NAME = "test.src.dir";
+    public static final String DEFAULT_SRC_NAME = "src.dir"; // NOI18N
+    public static final String DEFAULT_TEST_SRC_NAME = "test.src.dir"; // NOI18N
     
     private RubyProjectGenerator() {}
     
@@ -75,9 +73,9 @@ public class RubyProjectGenerator {
         FileObject srcFolder = dirFO.createFolder("lib"); // NOI18N
         dirFO.createFolder("test"); // NOI18N
         if ( mainClass != null ) {
-            createMainClass( mainClass, srcFolder, "Templates/Ruby/main.rb" );
+            createMainClass( mainClass, srcFolder, "Templates/Ruby/main.rb" ); // NOI18N
         }
-        createMainClass( "Rakefile.rb", srcFolder, "Templates/Ruby/rakefile.rb" );
+        createMainClass( "Rakefile.rb", srcFolder, "Templates/Ruby/rakefile.rb" ); // NOI18N
 
         // Run Rake -T silently to determine the available targets and write into private area
         RakeTargetsAction.refreshTargets(p);
@@ -98,7 +96,7 @@ public class RubyProjectGenerator {
             public Void run() throws Exception {
                 Element data = h.getPrimaryConfigurationData(true);
                 Document doc = data.getOwnerDocument();
-                NodeList nl = data.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");
+                NodeList nl = data.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots"); // NOI18N
                 assert nl.getLength() == 1;
                 Element sourceRoots = (Element) nl.item(0);
                 nl = data.getElementsByTagNameNS(RubyProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N

@@ -45,16 +45,16 @@ public class Plugin implements Comparable<Plugin> {
     public String toString() {
         // Shown in ListCellRenderer etc.
         StringBuilder sb = new StringBuilder(100);
-        sb.append("<html><b>");
+        sb.append("<html><b>"); // NOI18N
         sb.append(name);
-        sb.append("</b>");
+        sb.append("</b>"); // NOI18N
 
         if (repository != null) {
-            sb.append(": ");
+            sb.append(": "); // NOI18N
             sb.append(repository);
         }
 
-        sb.append("</html>");
+        sb.append("</html>"); // NOI18N
 
         return sb.toString();
     }

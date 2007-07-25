@@ -137,21 +137,21 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
     private FileObject getRailsHome() {
         // This method tries to replicate the logic in Rails' lookup.rb's Dir.user_home method
         // Otherwise it could have user Java's "user.home" property
-        String home = System.getenv("HOME");
+        String home = System.getenv("HOME"); // NOI18N
         if (home == null) {
-            home = System.getenv("USERPROFILE");
+            home = System.getenv("USERPROFILE"); // NOI18N
         }
         if (home == null) {
-            String homedrive = System.getenv("HOMEDRIVE");
-            String homepath = System.getenv("HOMEPATH");
+            String homedrive = System.getenv("HOMEDRIVE"); // NOI18N
+            String homepath = System.getenv("HOMEPATH"); // NOI18N
             if (homedrive != null && homepath != null) {
-                home = homedrive + ":" + homepath;
+                home = homedrive + ":" + homepath; // NOI18N
             }
         }
         if (home == null) {
             // File.expand_path '~'
             try {
-                File f = new File("~");
+                File f = new File("~"); // NOI18N
                 f = f.getCanonicalFile().getAbsoluteFile();
                 if (f.exists()) {
                     home = f.getAbsolutePath();
@@ -162,7 +162,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         }
         // Fallback (in case my ~ code etc. doesn't work)
         if (home == null) {
-            home = System.getProperty("user.home");
+            home = System.getProperty("user.home"); // NOI18N
         }
         
         if (home != null) {
@@ -257,21 +257,23 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         // NOTE - we need to use / as the path separator, NOT File.separator here because
         // these relative path names are passed to FileObject.getFileObject() which
         // always wants /
-        scan(generators, dir, "lib/generators", null, added); // Look in lib/generators
-        scan(generators, dir, "vendor/generators", null, added); // Look in vendor/generators
+
+        scan(generators, dir, "lib/generators", null, added);  // NOI18N
+        scan(generators, dir, "vendor/generators", null, added); // NOI18N
         // TODO: Look recursively for a "generators" directory under vendor/plugins, e.g.
         //  RAILS_ROOT/vendor/plugins/**/generatorsi
-        scan(generators, dir, "vendor/plugins", "generators", added);
+        scan(generators, dir, "vendor/plugins", "generators", added); // NOI18N
                     
         // 2. Look in the user's home directory (as defined by Rails)
         FileObject railsHome = getRailsHome();
         if (railsHome != null) {
-            scan(generators, railsHome, ".rails/generators", null, added); // Look in ~/.rails/generators
+            // Look in ~/.rails/generators
+            scan(generators, railsHome, ".rails/generators", null, added); // NOI18N
             
         }
         
         // 3. Add in RubyGem generators
-        File gemDir = new File(RubyInstallation.getInstance().getRubyLibGemDir() + File.separator + "gems");
+        File gemDir = new File(RubyInstallation.getInstance().getRubyLibGemDir() + File.separator + "gems"); // NOI18N
         if (gemDir.exists()) {
             Set<String> gems = RubyInstallation.getInstance().getInstalledGems();
             for (String gem : gems) {
@@ -282,7 +284,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
                 if (gem.endsWith("_generator")) { // NOI18N
                     String version = RubyInstallation.getInstance().getVersion(gem);
                     if (version != null) {
-                        File f = new File(gemDir, gem + "-" + version);
+                        File f = new File(gemDir, gem + "-" + version); // NOI18N
                         if (f.exists()) {
                             FileObject fo = FileUtil.toFileObject(f);
                             // The generator is named "gem"
@@ -398,7 +400,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
     public String[] getFirstParameterList() {
         if (parameter1Text.isVisible()) {
             // Change commas to spaces since lists are space separated, not comma separated
-            return parameter1Text.getText().replace(',', ' ').replace("  ", " ").trim().split(" ");
+            return parameter1Text.getText().replace(',', ' ').replace("  ", " ").trim().split(" "); // NOI18N
         } else {
             return null;
         }
@@ -406,7 +408,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
     
     public String[] getSecondParameterList() {
         if (parameter2Text.isVisible()) {
-            return parameter2Text.getText().replace(',', ' ').replace("  ", " ").trim().split(" ");
+            return parameter2Text.getText().replace(',', ' ').replace("  ", " ").trim().split(" "); // NOI18N
         } else {
             return null;
         }

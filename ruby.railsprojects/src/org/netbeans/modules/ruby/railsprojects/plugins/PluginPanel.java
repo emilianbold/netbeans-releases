@@ -728,7 +728,7 @@ private void installedPanelComponentShown(java.awt.event.ComponentEvent evt) {//
                             model.addElement(NbBundle.getMessage(PluginPanel.class, "NoNetwork"));
                         }
                         for (String line : lines) {
-                            model.addElement("<html><span color=\"red\">" + line + "</span></html>");
+                            model.addElement("<html><span color=\"red\">" + line + "</span></html>"); // NOI18N
                         }
                     }
                     list.clearSelection();
@@ -807,7 +807,7 @@ private void installedPanelComponentShown(java.awt.event.ComponentEvent evt) {//
                         // TODO - don't do this when I'm showing a cached list!!!
                         model.addElement(NbBundle.getMessage(PluginPanel.class, "NoNetwork"));
                         for (String line : lines) {
-                            model.addElement("<html><span color=\"red\">" + line + "</span></html>");
+                            model.addElement("<html><span color=\"red\">" + line + "</span></html>"); // NOI18N
                         }
                     }
                     list.clearSelection();

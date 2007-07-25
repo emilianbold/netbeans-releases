@@ -102,16 +102,18 @@ final class IrbTopComponent extends TopComponent {
     public static synchronized IrbTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
+            // Internal error message - NOI18N
             ErrorManager.getDefault().log(ErrorManager.WARNING,
-                    "Cannot find MyWindow component. It will not be located properly in the window system.");
+                    "Cannot find MyWindow component. It will not be located properly in the window system."); // NOI18N
             return getDefault();
         }
         if (win instanceof IrbTopComponent) {
             return (IrbTopComponent)win;
         }
+        // Internal error message - NOI18N
         ErrorManager.getDefault().log(ErrorManager.WARNING,
-                "There seem to be multiple components with the '" + PREFERRED_ID +
-                "' ID. That is a potential source of errors and unexpected behavior.");
+                "There seem to be multiple components with the '" + PREFERRED_ID + // NOI18N
+                "' ID. That is a potential source of errors and unexpected behavior."); // NOI18N
         return getDefault();
     }
 
@@ -253,8 +255,8 @@ final class IrbTopComponent extends TopComponent {
             }};
         final Ruby runtime = Ruby.newInstance(config);
 
-        runtime.defineGlobalConstant("ARGV", runtime.newArrayNoCopy(new IRubyObject[] {
-                runtime.newString("-f") }));
+        runtime.defineGlobalConstant("ARGV", runtime.newArrayNoCopy(new IRubyObject[] { // NOI18N
+                runtime.newString("-f") })); // NOI18N
         runtime.getLoadService().init(new ArrayList(0));
         
         tar.hookIntoRuntime(runtime);

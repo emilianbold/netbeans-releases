@@ -196,21 +196,21 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         File f = new File (projectLocationTextField.getText()).getAbsoluteFile();
         if (getCanonicalFile (f)==null) {
             String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
             return false;
         }
         // not allow to create project on unix root folder, see #82339
         File cfl = getCanonicalFile(new File(createdFolderTextField.getText()));
         if (Utilities.isUnix() && cfl != null && cfl.getParentFile().getParent() == null) {
             String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_ProjectInRootNotSupported");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
             return false;
         }
         
         final File destFolder = new File( createdFolderTextField.getText() ).getAbsoluteFile();
         if (getCanonicalFile (destFolder) == null) {
             String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
             return false;
         }
 
@@ -226,7 +226,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message); // NOI18N
             return false;
         }
         

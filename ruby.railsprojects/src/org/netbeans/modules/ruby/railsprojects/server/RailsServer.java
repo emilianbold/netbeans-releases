@@ -393,6 +393,7 @@ public class RailsServer {
             this.startedMessage = startedMessage;
         }
 
+        @Override
         public RecognizedOutput processLine(String line) {
             // This is ugly, but my attempts to use URLConnection on the URL repeatedly
             // and check for connection.getResponseCode()==HttpURLConnection.HTTP_OK didn't
@@ -402,7 +403,7 @@ public class RailsServer {
                 synchronized (RailsServer.this) {
                     status = ServerStatus.RUNNING;
                 }
-            } else if (line.contains("in `new': Address in use (Errno::EADDRINUSE)")) {
+            } else if (line.contains("in `new': Address in use (Errno::EADDRINUSE)")) { // NOI18N
                 portConflict = true;
             }
 

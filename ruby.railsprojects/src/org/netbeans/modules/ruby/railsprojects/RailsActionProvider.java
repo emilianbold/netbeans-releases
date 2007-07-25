@@ -57,6 +57,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /** 
@@ -131,10 +132,10 @@ public class RailsActionProvider implements ActionProvider {
 
     /** Return true iff the given file is a migration file */
     private boolean isMigrationFile(FileObject file) {
-        if (file.getParent() == null || !file.getParent().getName().equals("migrate")) {
+        if (file.getParent() == null || !file.getParent().getName().equals("migrate")) { // NOI18N
             return false;
         }
-        if (file.getParent().getParent() == null || !file.getParent().getParent().getName().equals("db")) {
+        if (file.getParent().getParent() == null || !file.getParent().getParent().getName().equals("db")) { // NOI18N
             return false;
         }
         
@@ -198,7 +199,8 @@ public class RailsActionProvider implements ActionProvider {
             LifecycleManager.getDefault().saveAll();
             RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
             File pwd = FileUtil.toFile(project.getProjectDirectory());
-            rake.runRake(pwd, null, "Tests", new RubyFileLocator(context), true, "test");
+            String displayName = NbBundle.getMessage(RailsActionProvider.class, "Tests");
+            rake.runRake(pwd, null, displayName, new RubyFileLocator(context), true, "test"); // NOI18N
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
             // Run test normally - don't pop up browser
@@ -274,7 +276,7 @@ public class RailsActionProvider implements ActionProvider {
             final String HELPER_SUFFIX = "_helper"; // NOI18N
 
             if (file.getExt().equals("rhtml") || file.getExt().equals("erb")) { // NOI18N
-                if (fileName.endsWith(".html")) { // .html.erb
+                if (fileName.endsWith(".html")) { // .html.erb  // NOI18N
                     fileName = fileName.substring(0, fileName.length()-".html".length()); // NOI18N
                 }
                 if (!fileName.startsWith("_")) { // NOI18N
@@ -367,7 +369,7 @@ public class RailsActionProvider implements ActionProvider {
             // TODO - use RakeSupport
 
             RubyFileLocator fileLocator = new RubyFileLocator(context);
-            String displayName = "Rake";
+            String displayName = NbBundle.getMessage(RailsActionProvider.class, "Rake");
 
             ProjectInformation info = ProjectUtils.getInformation(project);
             if (info != null) {
@@ -406,9 +408,9 @@ public class RailsActionProvider implements ActionProvider {
                 public void run() {
                     // TODO - wait for the file to be created
                     // Open brower on the doc directory
-                    FileObject doc = project.getProjectDirectory().getFileObject("doc/app");
+                    FileObject doc = project.getProjectDirectory().getFileObject("doc/app"); // NOI18N
                     if (doc != null) {
-                        FileObject index = doc.getFileObject("index.html");
+                        FileObject index = doc.getFileObject("index.html"); // NOI18N
                         if (index != null) {
                             try {
                                 URL url = FileUtil.toFile(index).toURI().toURL();
@@ -424,10 +426,10 @@ public class RailsActionProvider implements ActionProvider {
             };
             
             RubyFileLocator fileLocator = new RubyFileLocator(context);
-            String displayName = "Rake - Documentation";
+            String displayName = NbBundle.getMessage(RailsActionProvider.class, "RakeDoc");
  
             new RubyExecution(new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getRake()).
-                    additionalArgs("appdoc").
+                    additionalArgs("appdoc"). // NOI18N
                     postBuild(showBrowser).
                     fileLocator(fileLocator).
                     addOutputRecognizer(RubyExecution.RUBY_COMPILER),
@@ -479,9 +481,9 @@ public class RailsActionProvider implements ActionProvider {
     }    
     
     private void openRailsConsole(Lookup context) {
-        String displayName = "Rails Console";
+        String displayName = NbBundle.getMessage(RailsActionProvider.class, "RailsConsole");
         File pwd = FileUtil.toFile(project.getProjectDirectory());
-        String script = "script" + File.separator + "console";
+        String script = "script" + File.separator + "console"; // NOI18N
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
 
         new RubyExecution(new ExecutionDescriptor(displayName, pwd, script).
@@ -516,9 +518,9 @@ public class RailsActionProvider implements ActionProvider {
                 if (sb.length() > 0) {
                     sb.append(' ');
                 }
-                sb.append("-I\"");
+                sb.append("-I\""); // NOI18N
                 sb.append(FileUtil.toFile(root).getAbsoluteFile());
-                sb.append("\"");
+                sb.append("\""); // NOI18N
             }
         }
         if (testPath != null && testPath.length > 0) {
@@ -526,14 +528,14 @@ public class RailsActionProvider implements ActionProvider {
                 if (sb.length() > 0) {
                     sb.append(' ');
                 }
-                sb.append("-I\"");
+                sb.append("-I\""); // NOI18N
                 sb.append(FileUtil.toFile(root).getAbsoluteFile());
-                sb.append("\"");
+                sb.append("\""); // NOI18N
             }
         }
         String includePath = sb.toString();
         if (options != null) {
-            options = includePath + " " + options;
+            options = includePath + " " + options; // NOI18N
         } else {
             options = includePath;
         }

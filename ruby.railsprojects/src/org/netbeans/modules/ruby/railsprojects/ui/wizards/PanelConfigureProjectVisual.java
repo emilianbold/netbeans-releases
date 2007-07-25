@@ -104,8 +104,8 @@ public class PanelConfigureProjectVisual extends JPanel {
         Integer lastType = (Integer) d.getProperty("rails-wizard-type");  //NOI18N        
         if (lastType == null || lastType.intValue() != this.type) {
             //bugfix #46387 The type of project changed, reset values to defaults
-            d.putProperty ("name", null);
-            d.putProperty ("projdir",null);
+            d.putProperty ("name", null); // NOI18N
+            d.putProperty ("projdir",null); // NOI18N
         }
         projectLocationPanel.read (d);
         optionsPanel.read (d);

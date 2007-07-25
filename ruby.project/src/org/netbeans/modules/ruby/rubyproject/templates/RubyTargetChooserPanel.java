@@ -108,15 +108,15 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
             type == NewRubyFileWizardIterator.TYPE_TEST) {
             if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_TEST) {
                 if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
-                    setErrorMessage("ERR_RubyTargetChooser_InvalidClass");
+                    setErrorMessage("ERR_RubyTargetChooser_InvalidClass"); // NOI18N
                     return false;
                 }
                 String superclass = gui.getExtends();
                 if (superclass != null && superclass.length() > 0) {
-                    String[] mods = superclass.split("::");
+                    String[] mods = superclass.split("::"); // NOI18N
                     for (String mod : mods) {
                         if (!RubyUtils.isValidRubyClassName(mod)) {
-                            setErrorMessage("ERR_RubyTargetChooser_InvalidSuperclass");
+                            setErrorMessage("ERR_RubyTargetChooser_InvalidSuperclass"); // NOI18N
                             return false;
                         }
                     }
@@ -124,16 +124,16 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
             }
             if (type == NewRubyFileWizardIterator.TYPE_MODULE) {
                 if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
-                    setErrorMessage("ERR_RubyTargetChooser_InvalidModule");
+                    setErrorMessage("ERR_RubyTargetChooser_InvalidModule"); // NOI18N
                     return false;
                 }
             }
             String in = gui.getModuleName();
             if (in != null && in.length() > 0) {
-                String[] mods = in.split("::");
+                String[] mods = in.split("::"); // NOI18N
                 for (String mod : mods) {
                     if (!RubyUtils.isValidRubyClassName(mod)) {
-                        setErrorMessage("ERR_RubyTargetChooser_InvalidInModule");
+                        setErrorMessage("ERR_RubyTargetChooser_InvalidInModule"); // NOI18N
                         return false;
                     }
                 }
@@ -142,14 +142,14 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
         
         if ( type == NewRubyFileWizardIterator.TYPE_PACKAGE) {
             if ( !isValidPackageName( gui.getTargetName() ) ) {
-                setErrorMessage( "ERR_RubyTargetChooser_InvalidPackage" );
+                setErrorMessage( "ERR_RubyTargetChooser_InvalidPackage" ); // NOI18N
                 return false;
             }
         }
         else if (type == NewRubyFileWizardIterator.TYPE_PKG_INFO) {
             assert "package-info".equals( gui.getTargetName() );        //NOI18N
             if ( !isValidPackageName( gui.getPackageName() ) ) {
-                setErrorMessage( "ERR_RubyTargetChooser_InvalidPackage" );
+                setErrorMessage( "ERR_RubyTargetChooser_InvalidPackage" ); // NOI18N
                 return false;
             }
         }
@@ -163,7 +163,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
 //                return false;
 //            }            
             if (!isValidFileName(gui.getTargetName())) {
-                setErrorMessage( "ERR_RubyTargetChooser_InvalidFilename" );
+                setErrorMessage( "ERR_RubyTargetChooser_InvalidFilename" ); // NOI18N
                 return false;
             }
         }
@@ -182,7 +182,9 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
         if (gui != null) {
             setLocalizedErrorMessage (errorMessage);
         }
-        if (errorMessage!=null) returnValue=false;                
+        if (errorMessage!=null) {
+            returnValue = false;
+        }                
         
 //        if (type != NewRubyFileWizardIterator.TYPE_PACKAGE && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) { 
 //            if(isValidPackageRequired){
@@ -264,15 +266,15 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
             
             if (type == NewRubyFileWizardIterator.TYPE_CLASS || 
                     type == NewRubyFileWizardIterator.TYPE_TEST) {
-                wizard.putProperty("class", gui.getClassName());
-                wizard.putProperty("module", gui.getModuleName());
-                wizard.putProperty("extend", gui.getExtends());
+                wizard.putProperty("class", gui.getClassName()); // NOI18N
+                wizard.putProperty("module", gui.getModuleName()); // NOI18N
+                wizard.putProperty("extend", gui.getExtends()); // NOI18N
             } else if (type == NewRubyFileWizardIterator.TYPE_MODULE) {
                 // NOTE - even when adding a -module-, we will use the "class" textfield
                 // to represent the name of the module, and the "module" text field to represent
                 // modules surrounding the current module
-                wizard.putProperty("module", gui.getClassName());
-                wizard.putProperty("outermodules", gui.getModuleName());
+                wizard.putProperty("module", gui.getClassName()); // NOI18N
+                wizard.putProperty("outermodules", gui.getModuleName()); // NOI18N
             }
         }
         ((WizardDescriptor)settings).putProperty ("NewFileWizard_Title", null); // NOI18N
@@ -353,7 +355,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
         if (str.length() > 0 && str.charAt(0) == '.') {
             return false;
         }
-        StringTokenizer tukac = new StringTokenizer(str, ".");
+        StringTokenizer tukac = new StringTokenizer(str, "."); // NOI18N
         while (tukac.hasMoreTokens()) {
             String token = tukac.nextToken();
             if ("".equals(token))

@@ -54,7 +54,7 @@ public final class SourceNodeFactory implements NodeFactory {
     }
     
     public NodeList createNodes(Project p) {
-        RailsProject project = (RailsProject)p.getLookup().lookup(RailsProject.class);
+        RailsProject project = p.getLookup().lookup(RailsProject.class);
         assert project != null;
         return new SourcesNodeList(project);
     }
@@ -93,16 +93,16 @@ public final class SourceNodeFactory implements NodeFactory {
         }
         
         private Generator getGenerator(String subdir) {
-            if (subdir.equals("app/controllers")) {
+            if (subdir.equals("app/controllers")) { // NOI18N
                 return Generator.CONTROLLER;
             }
-            if (subdir.equals("app/views")) {
+            if (subdir.equals("app/views")) { // NOI18N
                 return Generator.CONTROLLER;
             }
-            if (subdir.equals("app/models")) {
+            if (subdir.equals("app/models")) { // NOI18N
                 return Generator.MODEL;
             }
-            if (subdir.equals("db")) {
+            if (subdir.equals("db")) { // NOI18N
                 return Generator.MIGRATION;
             }
             return Generator.NONE;
@@ -244,7 +244,7 @@ public final class SourceNodeFactory implements NodeFactory {
             super(new RootNode(sourceGroup, generator));
             
             this.project = project;
-            this.nodeName = "Sources";
+            this.nodeName = "Sources"; // NOI18N
         }
         
         

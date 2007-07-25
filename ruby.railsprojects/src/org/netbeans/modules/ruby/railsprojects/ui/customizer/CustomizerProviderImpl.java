@@ -69,7 +69,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
 
-    public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-ruby-railsprojects/Customizer"; //NO18N
+    public static final String CUSTOMIZER_FOLDER_PATH = "Projects/org-netbeans-modules-ruby-railsprojects/Customizer"; //NOI18N
     
     private static Map /*<Project,Dialog>*/project2Dialog = new HashMap(); 
     

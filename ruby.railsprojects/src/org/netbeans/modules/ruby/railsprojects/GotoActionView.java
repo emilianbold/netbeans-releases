@@ -41,7 +41,7 @@ import org.openide.util.NbBundle;
 public class GotoActionView extends AbstractAction {
     public GotoActionView() {
         super(NbBundle.getMessage(GotoActionView.class, "rails-goto-action-view")); // NOI18N
-        putValue("PopupMenuText",
+        putValue("PopupMenuText", // NOI18N
             NbBundle.getBundle(GotoActionView.class).getString("editor-popup-goto-action-view")); // NOI18N
     }
 
@@ -77,7 +77,7 @@ public class GotoActionView extends AbstractAction {
                     gotoAction(target, fo);
                 } else {
                     Utilities.setStatusBoldText(target,
-                        "This action only applies to Controllers and Views in Ruby On Rails projects");
+                            NbBundle.getMessage(GotoActionView.class, "AppliesToControllers"));
                 }
             }
 
@@ -86,7 +86,7 @@ public class GotoActionView extends AbstractAction {
     }
 
     private void notFound(JTextComponent target) {
-        Utilities.setStatusBoldText(target, "Controller file not found: Error in the project?");
+        Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoActionView.class, "ControllerNotFound"));
     }
 
     // Move from something like app/controllers/credit_card_controller.rb#debit()
@@ -94,7 +94,7 @@ public class GotoActionView extends AbstractAction {
     private void gotoView(JTextComponent target, FileObject file, String fileSuffix, String parentAppDir) {
         // This should be a view.
         if (!file.getName().endsWith(fileSuffix)) {
-            Utilities.setStatusBoldText(target, "This action only applies to Rails Actions");
+            Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoActionView.class, "AppliesToActions"));
 
             return;
         }
@@ -177,7 +177,7 @@ public class GotoActionView extends AbstractAction {
             }
             
             if (viewFile == null) {
-                Utilities.setStatusBoldText(target, "View not found");
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoActionView.class, "ViewNotFound"));
 
                 return;
             }
@@ -204,7 +204,7 @@ public class GotoActionView extends AbstractAction {
         String ext = file.getExt();
         if (!RubyUtils.isRhtmlFile(file) && !ext.equalsIgnoreCase("mab") && // NOI18N
                 !ext.equalsIgnoreCase("rjs") && !ext.equalsIgnoreCase("haml")) { // NOI18N
-            Utilities.setStatusBoldText(target, "This action only applies to Views");
+            Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoActionView.class, "AppliesToViews"));
 
             return;
         }
@@ -262,6 +262,6 @@ public class GotoActionView extends AbstractAction {
         // TODO: Find the position of the #view method
         int offset = AstUtilities.findOffset(controllerFile, action);
 
-        NbUtilities.open(controllerFile, offset, "def " + action);
+        NbUtilities.open(controllerFile, offset, "def " + action); // NOI18N
     }
 }

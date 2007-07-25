@@ -154,7 +154,7 @@ public final class RubyConfigurationProvider implements ProjectConfigurationProv
         configs = new HashMap<String,Config>();
         if (configDir != null) {
             for (FileObject kid : configDir.getChildren()) {
-                if (!kid.hasExt("properties")) {
+                if (!kid.hasExt("properties")) { // NOI18N
                     continue;
                 }
                 try {

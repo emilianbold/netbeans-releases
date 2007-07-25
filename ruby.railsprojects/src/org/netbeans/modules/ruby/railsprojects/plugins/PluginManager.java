@@ -185,7 +185,7 @@ public class PluginManager {
         }
         
         String[] args = argList.toArray(new String[argList.size()]);
-        boolean ok = pluginRunner("list", null, false, null, null, null, null, null, lines, args);
+        boolean ok = pluginRunner("list", null, false, null, null, null, null, null, lines, args); // NOI18N
         
         if (ok) {
             parsePluginList(lines, list, local);
@@ -205,7 +205,7 @@ public class PluginManager {
             // However, with the verbose flag there's more output. Even though I'm not
             // using --verbose right now, prepare for it in case it's being picked up by
             // user configuration files etc.           
-            if (line.trim().length() == 0 || line.startsWith("/") || line.startsWith("Discovering plugins in ")) {
+            if (line.trim().length() == 0 || line.startsWith("/") || line.startsWith("Discovering plugins in ")) { // NOI18N
                 continue;
             }
 
@@ -339,7 +339,7 @@ public class PluginManager {
         
         File cmd = new File(RubyInstallation.getInstance().getRuby());
         
-        if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) {
+        if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
             argList.add(cmd.getPath());
         }
         
@@ -362,7 +362,7 @@ public class PluginManager {
         
         // PATH additions for JRuby etc.
         Map<String, String> env = pb.environment();
-        new RubyExecution(new ExecutionDescriptor("plugin", pb.directory()).cmd(cmd)).setupProcessEnvironment(env);
+        new RubyExecution(new ExecutionDescriptor("plugin", pb.directory()).cmd(cmd)).setupProcessEnvironment(env); // NOI18N
         
         // Proxy
         String proxy = getNetbeansHttpProxy();
@@ -379,7 +379,7 @@ public class PluginManager {
             // Running plugins list -p or --http-proxy triggers this so for now
             // work around with environment variables instead - which still work
             if ((env.get("HTTP_PROXY") == null) && (env.get("http_proxy") == null)) { // NOI18N
-                env.put("HTTP_PROXY", proxy);
+                env.put("HTTP_PROXY", proxy); // NOI18N
             }
             
             // PENDING - what if proxy was null so the user has TURNED off proxies while
@@ -430,7 +430,7 @@ public class PluginManager {
                 // When we cancel we call Process.destroy which may quite possibly
                 // raise an IO Exception in this thread reading text out of the
                 // process. Silently ignore that.
-                String message = "*** Plugin Process Killed ***\n";
+                String message = "*** Plugin Process Killed ***\n"; // NOI18N
                 lines.add(message);
                 
                 if (progressPanel != null) {
@@ -461,7 +461,7 @@ public class PluginManager {
                     // When we cancel we call Process.destroy which may quite possibly
                     // raise an IO Exception in this thread reading text out of the
                     // process. Silently ignore that.
-                    String message = "*** Plugin Process Killed ***\n";
+                    String message = "*** Plugin Process Killed ***\n"; // NOI18N
                     lines.add(message);
                     
                     if (progressPanel != null) {
@@ -513,9 +513,9 @@ public class PluginManager {
         }
         
         if (svnExternals) {
-            argList.add("--externals");
+            argList.add("--externals"); // NOI18N
         } else if (svnCheckout) {
-            argList.add("--checkout");
+            argList.add("--checkout"); // NOI18N
         }
         
         if (revision != null && (svnExternals || svnCheckout)) {
@@ -664,12 +664,12 @@ public class PluginManager {
     
     public boolean removeRepositories(String[] repositories, JComponent parent, ProgressHandle progressHandle,
             boolean asynchronous, Runnable asyncCompletionTask) {
-        return modifyRepositories("unsource", repositories, parent, progressHandle, asynchronous, asyncCompletionTask);
+        return modifyRepositories("unsource", repositories, parent, progressHandle, asynchronous, asyncCompletionTask); // NOI18N
     }
 
     public boolean addRepositories(String[] repositories, JComponent parent, ProgressHandle progressHandle,
             boolean asynchronous, Runnable asyncCompletionTask) {
-        return modifyRepositories("source", repositories, parent, progressHandle, asynchronous, asyncCompletionTask);
+        return modifyRepositories("source", repositories, parent, progressHandle, asynchronous, asyncCompletionTask); // NOI18N
     }
     
     public boolean modifyRepositories(String pluginCmd, String[] repositories, JComponent parent, ProgressHandle progressHandle,
@@ -731,7 +731,7 @@ public class PluginManager {
             host = "http://" + host; // NOI18N
         }
         
-        return host + ":" + port;
+        return host + ":" + port; // NOI18N
     }
     
     public List<String> getRepositories(boolean local) {
@@ -747,7 +747,7 @@ public class PluginManager {
         argList.add("--list"); // NOI18N
         
         String[] args = argList.toArray(new String[argList.size()]);
-        boolean ok = pluginRunner("discover", null, false, null, null, null, null, null, lines, args);
+        boolean ok = pluginRunner("discover", null, false, null, null, null, null, null, lines, args); // NOI18N
 
         if (ok) {
             return lines;
@@ -765,7 +765,7 @@ public class PluginManager {
         //argList.add("--check"); // NOI18N
         
         String[] args = argList.toArray(new String[argList.size()]);
-        boolean ok = pluginRunner("sources", null, false, null, null, null, null, null, lines, args);
+        boolean ok = pluginRunner("sources", null, false, null, null, null, null, null, lines, args); // NOI18N
 
         if (ok) {
             return lines;
@@ -850,17 +850,17 @@ public class PluginManager {
     }
     
     private static File getCacheFile() {
-        return new File(getCacheFolder(), "remotePlugins.txt");
+        return new File(getCacheFolder(), "remotePlugins.txt"); // NOI18N
     }
     
     private static File getCacheFolder() {
-        final String nbUserProp = System.getProperty("netbeans.user");
+        final String nbUserProp = System.getProperty("netbeans.user"); // NOI18N
         assert nbUserProp != null;
         
         final File nbUserDir = new File(nbUserProp);
         File cacheFolder =
                 FileUtil.normalizeFile(new File(nbUserDir,
-                "var" + File.separator + "cache" + File.separatorChar));
+                "var" + File.separator + "cache" + File.separatorChar)); // NOI18N
         
         if (!cacheFolder.exists()) {
             boolean created = cacheFolder.mkdirs();

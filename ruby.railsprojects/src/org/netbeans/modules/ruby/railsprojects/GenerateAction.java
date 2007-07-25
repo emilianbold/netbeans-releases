@@ -180,8 +180,9 @@ public final class GenerateAction extends NodeAction {
                                 StatefulRecognizer recognizer =
                                     new StatefulRecognizer(RailsProjectGenerator.RAILS_GENERATOR);
                                 FileLocator locator = new DirectoryFileLocator(dir);
+                                String displayName = NbBundle.getMessage(GenerateAction.class, "RailsGenerator");
                                 Task task =
-                                    new RubyExecution(new ExecutionDescriptor("Rails Generator", pwd, script).
+                                    new RubyExecution(new ExecutionDescriptor(displayName, pwd, script).
                                             additionalArgs(argv).fileLocator(locator).
                                             addOutputRecognizer(recognizer), charsetName).run();
 
@@ -260,7 +261,7 @@ public final class GenerateAction extends NodeAction {
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
     @Override

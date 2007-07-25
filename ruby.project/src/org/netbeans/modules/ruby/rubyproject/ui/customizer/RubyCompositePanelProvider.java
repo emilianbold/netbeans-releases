@@ -34,10 +34,10 @@ import org.openide.util.NbBundle;
  */
 public class RubyCompositePanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
-    private static final String SOURCES = "Sources";
+    private static final String SOURCES = "Sources"; // NOI18N
     
-    private static final String BUILD = "Build";
-    public static final String RUN = "Run";
+    private static final String BUILD = "Build"; // NOI18N
+    public static final String RUN = "Run"; // NOI18N
     
     private String name;
     

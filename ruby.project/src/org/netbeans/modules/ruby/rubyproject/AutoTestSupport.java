@@ -70,7 +70,7 @@ public class AutoTestSupport {
         File pwd = FileUtil.toFile(project.getProjectDirectory());
 
         RubyFileLocator fileLocator = new RubyFileLocator(context, project);
-        String displayName = "AutoTest";
+        String displayName = NbBundle.getMessage(AutoTestSupport.class, "AutoTest");
         ExecutionDescriptor desc = new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getAutoTest());
         desc.additionalArgs("-v"); // NOI18N
         desc.fileLocator(fileLocator);
@@ -86,12 +86,12 @@ public class AutoTestSupport {
 
         @Override
         public FileLocation processLine(String line) {
-            if (line.matches("\\d+ tests, \\d+ assertions, \\d+ failures, \\d+ errors")) {
+            if (line.matches("\\d+ tests, \\d+ assertions, \\d+ failures, \\d+ errors")) { // NOI18N
                 // NOI18N
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(AutoTestSupport.class, "AutoTestCompleted", line));
 
                 // Extra attention on failures
-                if ((line.indexOf(" 0 failures") == -1) || (line.indexOf(" 0 errors") == -1)) {
+                if ((line.indexOf(" 0 failures") == -1) || (line.indexOf(" 0 errors") == -1)) { // NOI18N
                     // NOI18N
                     message = NbBundle.getMessage(AutoTestSupport.class, "AutoTestFailure", line);
                     run(); // might redispatch to event thread

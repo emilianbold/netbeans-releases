@@ -52,9 +52,9 @@ import org.netbeans.modules.ruby.spi.project.support.rake.GeneratedFilesHelper;
  */
 public class UpdateHelper {
 
-    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("j2seproject.transparentUpdate");
+    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("j2seproject.transparentUpdate"); // NOI18N
     private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
-    private static final String MINIMUM_ANT_VERSION_ELEMENT = "minimum-ant-version";
+    //private static final String MINIMUM_ANT_VERSION_ELEMENT = "minimum-ant-version";
 
     private final Project project;
     private final RakeProjectHelper helper;

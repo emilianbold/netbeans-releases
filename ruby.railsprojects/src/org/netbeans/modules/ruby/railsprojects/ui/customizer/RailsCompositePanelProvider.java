@@ -34,8 +34,8 @@ import org.openide.util.NbBundle;
  */
 public class RailsCompositePanelProvider implements ProjectCustomizer.CompositeCategoryProvider {
     
-    private static final String BUILD = "Build";
-    public static final String RAILS = "Rails";
+    private static final String BUILD = "Build"; // NOI18N
+    public static final String RAILS = "Rails"; // NOI18N
     
     private String name;
     
@@ -66,7 +66,7 @@ public class RailsCompositePanelProvider implements ProjectCustomizer.CompositeC
 
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
-        RailsProjectProperties uiProps = (RailsProjectProperties)context.lookup(RailsProjectProperties.class);
+        RailsProjectProperties uiProps = context.lookup(RailsProjectProperties.class);
         if (BUILD.equals(nm)) {
             return new CustomizerCompile(uiProps);
         } else if (RAILS.equals(nm)) {
