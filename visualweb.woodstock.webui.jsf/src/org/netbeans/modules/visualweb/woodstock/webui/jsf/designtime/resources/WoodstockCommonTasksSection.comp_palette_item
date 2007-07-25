@@ -6,5 +6,6 @@
   <!--icon32 urlvalue="nbres:/com/sun/webui/jsf/component/CommonTasksSection_C32.png" /-->
   <description localizing-bundle="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"
                display-name-key="NAME_com-sun-webui-jsf-component-CommonTasksSection"
-               tooltip-key="HINT_com-sun-webui-jsf-component-CommonTasksSection" />
+               tooltip-key="HINT_com-sun-webui-jsf-component-CommonTasksSection" 
+               help-key="projrave_ui_elements_palette_wdstk-jsf1_2_common_tasks_section"/>
 </palette_item>
