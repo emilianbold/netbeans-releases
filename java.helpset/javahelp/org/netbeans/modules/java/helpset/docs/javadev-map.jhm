@@ -189,6 +189,17 @@
 <mapID target="ant_exp-classpath" url="ant/exp-classpath.html" />
 <mapID target="ant_debugging" url="ant/ant_debugging.html" />
 
+<mapID target="propfiles.intro" url="propfiles/about_resourcebundles.html" />
+<mapID target="propfiles.creating" url="propfiles/creating_resourcebundles.html" />
+<mapID target="propfiles.adding" url="propfiles/addingprops.html" />
+<mapID target="propfiles.modifying" url="propfiles/modifyprops.html" />
+<!--<mapID target="propfiles.removing" url="propfiles/removingprops.html" />-->
+<mapID target="propfiles.addlocale" url="propfiles/addinglocale.html" />
+
+<!--this topic also a CSH ID for .properties files in Source Editor-->
+<mapID target="propfiles.editlocale" url="propfiles/editinglocale.html" />
+
+
 
     <!-- Start of "CSH" section -->
 <!-- New J2SE app Project wizard:-->

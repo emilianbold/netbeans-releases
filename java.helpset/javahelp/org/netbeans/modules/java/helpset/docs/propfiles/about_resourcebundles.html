@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>About Resource Bundles</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>About Resource Bundles</h2>
+<p><small><a href="#seealso">See Also</a>&nbsp;</small> 
+<p> Resource bundles store selected characteristics of an object as key and value
+  pairs in a set of <tt>.properties</tt> files. You can store a variety of characteristics
+  in resource bundles, like localized strings used to internationalize your code
+  or properties for an Ant script. The IDE displays resource bundles as properties
+  object nodes (<img src="./images/propertiesObject.gif" alt="Properties Object Node">)
+  that contain nodes for each of its locales (<img src="./images/propertiesLocale.gif" alt="Properties locale node icon">)
+  and keys (<img src="./images/propertiesKey.gif" alt="Properties key node icon">).
+  <!--PENDING : this info would be helpful in the Internationalization section-->
+</p>
+<h3>Editing Resource Bundles</h3>
+<p>The IDE enables you to manage an object's properties that are stored  in resource
+	bundles. </p>
+<p>There are two primary ways of editing the properties files stored in resource
+	bundles in the IDE.</p>
+<ul>
+	<li><b>In the Source Editor.</b> You can edit properties files in the Source
+		Editor as standard text files. Initially, the default locale opens in the
+		enabling you to edit existing keys and their values. 
+	<li><b>In the Properties Editor.</b> You can edit the key and value pairs for
+			all locales of a resource bundle in table layout. You can also add a new property
+			to all of the locales in your resource bundle. 
+</ul>
+<ul class="note">
+	<li>You can also manage a resource bundle's contents through the pop-up
+		menu available on its Files window nodes.</li>
+</ul>
+<h3>Resource Bundles and Internationalization</h3>
+<p>When used for internationalizing source code, the IDE stores each locale's
+	characteristics in a<tt> .properties</tt> file which is contained within the
+	resource bundle. Each key corresponds to the name of a property and
+	must be the same for each locale. The key value is the localized string displayed
+	by the object at runtime and can vary for each locale.
+<ul class="note">
+		<li>Though  resource bundles and locales are both <tt>.properties</tt> files, the
+			IDE displays   
+   resource bundles and the locales they contain using different icons
+ in the Files window to avoid confusion.
+</ul>
+<p>The IDE also enables you to automate the process of internationalizing your
+	source code. You can use the IDE's internationalization features to:
+<ul>
+	<li>Automatically replace hard-coded strings with internationalized ones</li>
+	<li>Insert new internationalized strings as you write code</li>
+	<li>Check your resource bundles to ensure they contain all of the necessary
+		keys</li>
+</ul>
+<p>For more information, see: <a href="internationalize/international.html">Internationalizing
+		Source Code</a>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd>  <a href="creating_resourcebundles.html">Creating a Resource Bundle</a></dd>
+    <dd><a href="addingprops.html">Adding and Removing a Property</a></dd>
+    <dd><a href="addinglocale.html">Adding and Removing a Locale</a></dd>
+</dl>
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font> 
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table>
+</body>
+</html>

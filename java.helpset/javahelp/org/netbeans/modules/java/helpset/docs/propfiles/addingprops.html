@@ -1,0 +1,91 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Adding and Removing a Property</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Adding and Removing a Property</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>The IDE's Properties Editor enables you to manage the properties in all of
+	the locales in your resource bundle. You can also add a property
+to or remove a property from only one locale.
+<p> <b>To add a new property to all locales in a resource bundle:</b> 
+<ol>
+  <li>In the Files  window, right-click the properties object node (<img src="images/propertiesObject.gif" alt="Properties object node icon">)
+  	and choose Open. 
+    <p> The Properties Editor is displayed showing all existing keys and their
+    	values for each locale.</p>
+  </li>
+  <li>In the Properties Editor, click the New Property button.</li>
+  <li>Enter a key and its default value for the new property. You can also add 
+    a comment along with the key and value. The comment is displayed when you 
+    click the value for that locale's key.</li>
+  <li>Click OK. The property appears in the Properties Editor with the default
+  	value entered  for each existing locale. 
+  </li>
+  <li>If you want to set a different value for each locale, enter the new values 
+    in each locale's column.</li>
+  <li>Choose File  &gt; Save to 
+    save the file.<p>The IDE adds the property's key and  all localized values
+    	to each of the locales.
+</li>
+</ol>
+<p><b>To add a new property to a specific locale:</b>
+<ol>
+  <li>In the Files window, expand the properties object node for the resource
+  	bundle that contains the locale.</li>
+  <li>Right-click the node of the locale to which you want to add a property and 
+    choose Add Property.</li>
+  <li>Enter a key and a value for the new property and click OK. </li>
+  <li>Choose File  &gt; Save to save 
+    the file.<p>The IDE adds the property's key and  localized value to
+    	the specified locale.
+</li>
+</ol>
+
+<p><b>To remove a property from all locales in a resource bundle:</b> </p>
+<ol>
+	<li> In the Files window, right-click the properties object node and choose
+		Open.</li>
+	<li>In the Properties Editor, select the key for the property you want to remove.</li>
+	<li>Click the Remove Property button.</li>
+	<li>Click Yes in the verification dialog box.
+   		<p>The IDE removes the property's key and all localized values from all
+   			locales.
+	</li>
+</ol>
+<p><b>To remove a property from a specific locale:</b></p>
+<ol>
+	<li> In the Files window, right-click the properties object node and choose
+		Delete.</li>
+	<li>Click Yes in the verification dialog box
+   		<p>The IDE removes the property's key and localized value from the specified
+   			locale. The property is not deleted from other locales.
+	</li>
+</ol>
+<ul class="note">
+	<li>You can also delete an entire resource bundle and all of the <tt>.properties</tt> files
+		contained within it by right-clicking its properties object node (<img src="images/propertiesObject.gif" alt="Properties object node icon">)<b>&nbsp;</b> and
+		choosing Delete.</li>
+</ul>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="modifyprops.html">Modifying a Properties File</a></dd>
+    <dd><a href="addinglocale.html">Adding and Removing a Locale</a></dd>
+    <dd><a href="about_resourcebundles.html">About Resource Bundles</a></dd>
+</dl>
+
+
+<hr><font size=-2><a href="../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
