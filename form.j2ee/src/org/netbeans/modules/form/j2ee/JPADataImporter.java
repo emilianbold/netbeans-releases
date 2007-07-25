@@ -19,7 +19,9 @@
 package org.netbeans.modules.form.j2ee;
 
 import java.awt.Dialog;
+import java.awt.EventQueue;
 import java.sql.Connection;
+import java.util.concurrent.*;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -43,6 +45,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Importer of list of JPA entities.
@@ -148,7 +151,7 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
      * @param formModel form to import the data into.
      * @return the component encapsulating the imported data.
      */
-    public RADComponent importData(FormModel formModel) {
+    public Future<RADComponent> importData(final FormModel formModel) {
         removeAll();
         if (FormJavaSource.isInDefaultPackage(formModel)) {
             // 97982: default package
@@ -166,57 +169,72 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.setVisible(true);
         if (dd.getValue() != DialogDescriptor.OK_OPTION) return null;
-        RADComponent resultList = null;
-        try {
-            J2EEUtils.DBColumnInfo table = (J2EEUtils.DBColumnInfo)tableCombo.getSelectedItem();
-            if ((table == null) || !table.isValid()) return null;
-            String tableName = table.getName();
-            DatabaseConnection connection = (DatabaseConnection)connectionCombo.getSelectedItem();
-            FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
-            Project project = FileOwnerQuery.getOwner(formFile);
+        FutureTask<RADComponent> task = new FutureTask<RADComponent>(new Callable<RADComponent>() {
+            public RADComponent call() throws Exception {
+                final RADComponent[] resultList = new RADComponent[1];
+                try {
+                    J2EEUtils.DBColumnInfo table = (J2EEUtils.DBColumnInfo)tableCombo.getSelectedItem();
+                    if ((table == null) || !table.isValid()) return null;
+                    String tableName = table.getName();
+                    DatabaseConnection connection = (DatabaseConnection)connectionCombo.getSelectedItem();
+                    FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
+                    Project project = FileOwnerQuery.getOwner(formFile);
 
-            // Make sure persistence.xml file exists
-            FileObject persistenceXML = J2EEUtils.getPersistenceXML(project, true);
+                    // Make sure persistence.xml file exists
+                    FileObject persistenceXML = J2EEUtils.getPersistenceXML(project, true);
 
-            // Initializes persistence unit and persistence descriptor
-            PersistenceUnit unit = J2EEUtils.initPersistenceUnit(persistenceXML, connection);
+                    // Initializes persistence unit and persistence descriptor
+                    PersistenceUnit unit = J2EEUtils.initPersistenceUnit(persistenceXML, connection);
 
-            // Initializes project's classpath
-            JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(connection.getDriverClass());
-            J2EEUtils.updateProjectForUnit(persistenceXML, unit, driver[0]);
+                    // Initializes project's classpath
+                    JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(connection.getDriverClass());
+                    J2EEUtils.updateProjectForUnit(persistenceXML, unit, driver[0]);
 
-            // Obtain description of entity mappings
-            PersistenceScope scope = PersistenceScope.getPersistenceScope(formFile);
-            MetadataModel<EntityMappingsMetadata> mappings = scope.getEntityMappingsModel(unit.getName());
+                    // Obtain description of entity mappings
+                    PersistenceScope scope = PersistenceScope.getPersistenceScope(formFile);
+                    MetadataModel<EntityMappingsMetadata> mappings = scope.getEntityMappingsModel(unit.getName());
 
-            // Find entity that corresponds to the dragged table
-            String[] entityInfo = J2EEUtils.findEntity(mappings, tableName);
+                    // Find entity that corresponds to the dragged table
+                    String[] entityInfo = J2EEUtils.findEntity(mappings, tableName);
 
-            // Create a new entity (if there isn't one that corresponds to the dragged table)
-            if (entityInfo == null) {
-                // Generates a Java class for the entity
-                J2EEUtils.createEntity(formFile.getParent(), scope, unit, connection, tableName, null);
+                    // Create a new entity (if there isn't one that corresponds to the dragged table)
+                    if (entityInfo == null) {
+                        // Generates a Java class for the entity
+                        J2EEUtils.createEntity(formFile.getParent(), scope, unit, connection, tableName, null);
 
-                mappings = scope.getEntityMappingsModel(unit.getName());
-                entityInfo = J2EEUtils.findEntity(mappings, tableName);
-            } else {
-                // Add the entity into the persistence unit if it is not there already
-                J2EEUtils.addEntityToUnit(entityInfo[1], unit, project);
+                        mappings = scope.getEntityMappingsModel(unit.getName());
+                        entityInfo = J2EEUtils.findEntity(mappings, tableName);
+                    } else {
+                        // Add the entity into the persistence unit if it is not there already
+                        J2EEUtils.addEntityToUnit(entityInfo[1], unit, project);
+                    }
+
+                    J2EEUtils.makeEntityObservable(formFile, entityInfo, mappings);
+
+                    final String puName = unit.getName();
+                    final String[] info = entityInfo;
+                    EventQueue.invokeAndWait(new Runnable() {
+                        public void run() {
+                            try {
+                                RADComponent entityManager = J2EEUtils.findEntityManager(formModel, puName);
+                                if (entityManager == null) {
+                                    entityManager = J2EEUtils.createEntityManager(formModel, puName);
+                                }
+                                RADComponent queryBean = DBTableDrop.createQueryBean(formModel, entityManager, info[0]);
+                                resultList[0] = DBTableDrop.createResultListBean(formModel, queryBean, info);
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    });
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                return resultList[0];
             }
-            
-            J2EEUtils.makeEntityObservable(formFile, entityInfo, mappings);
-
-            String puName = unit.getName();
-            RADComponent entityManager = J2EEUtils.findEntityManager(formModel, puName);
-            if (entityManager == null) {
-                entityManager = J2EEUtils.createEntityManager(formModel, puName);
-            }
-            RADComponent queryBean = DBTableDrop.createQueryBean(formModel, entityManager, entityInfo[0]);
-            resultList = DBTableDrop.createResultListBean(formModel, queryBean, entityInfo);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        return resultList;
+        });
+        RequestProcessor.getDefault().post(task);
+        return task;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

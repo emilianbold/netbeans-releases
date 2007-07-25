@@ -18,6 +18,8 @@
  */
 package org.netbeans.modules.form;
 
+import java.util.concurrent.*;
+
 /**
  * Provider of component with data (for example collection of JPA entities).
  *
@@ -32,6 +34,6 @@ public interface DataImporter {
      * @param form form to import the data into.
      * @return the component encapsulating the imported data.
      */
-    RADComponent importData(FormModel form);
+    Future<RADComponent> importData(FormModel form);
 
 }

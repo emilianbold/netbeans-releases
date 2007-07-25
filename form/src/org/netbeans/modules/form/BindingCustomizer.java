@@ -27,6 +27,7 @@ import java.lang.reflect.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.*;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -36,12 +37,14 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.jdesktop.layout.GroupLayout;
-import org.netbeans.api.java.classpath.ClassPath;
+import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.form.FormUtils.TypeHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertyPanel;
-import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -977,13 +980,46 @@ public class BindingCustomizer extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importDataButtonActionPerformed
-    DataImporter importer = Lookup.getDefault().lookup(DataImporter.class);
+    final DataImporter importer = Lookup.getDefault().lookup(DataImporter.class);
     if (importer != null) {
-        RADComponent data = importer.importData(bindingComponent.getFormModel());
-        if (data != null) {
-            // refresh source components combo
-            fillSourceComponentsCombo();
-            sourceCombo.setSelectedItem(data.getName());
+        final Future<RADComponent> task = importer.importData(bindingComponent.getFormModel());
+        if (task != null) {
+            final ProgressHandle handle = ProgressHandleFactory.createHandle(null, (Cancellable)null);
+            JComponent handlePanel = panelForHandle(handle);
+            handle.start();
+            handle.progress(FormUtils.getBundleString("MSG_BindingCustomizer_Importing")); // NOI18N
+            String cancelString = FormUtils.getBundleString("MSG_BindingCustomizer_Cancel"); // NOI18N
+            DialogDescriptor dd = new DialogDescriptor(
+                    handlePanel,
+                    FormUtils.getBundleString("MSG_BindingCustomizer_Please_Wait"), // NOI18N
+                    true,
+                    new Object[] {cancelString},
+                    cancelString,
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    null);
+            final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        final RADComponent data = task.get();
+                        EventQueue.invokeLater(new Runnable() {
+                            public void run() {
+                                if (data != null) {
+                                    // refresh source components combo
+                                    fillSourceComponentsCombo();
+                                    sourceCombo.setSelectedItem(data.getName());
+                                }
+                                dialog.setVisible(false);
+                                handle.finish();                            
+                            }
+                        });
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }).start();
+            dialog.setVisible(true);
         }
     }
 }//GEN-LAST:event_importDataButtonActionPerformed
@@ -1064,6 +1100,32 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     org.openide.explorer.propertysheet.PropertyPanel validatorPanel;
     // End of variables declaration//GEN-END:variables
 
+    private static JPanel panelForHandle(ProgressHandle handle) {
+        JLabel label = ProgressHandleFactory.createDetailLabelComponent(handle);
+        JComponent progress = ProgressHandleFactory.createProgressComponent(handle);
+        JPanel panel = new JPanel();
+        GroupLayout layout = new GroupLayout(panel);
+        panel.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(label)
+                    .add(progress))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createSequentialGroup()
+                .addContainerGap()
+                .add(label)
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(progress)
+                .addContainerGap()
+        );
+        return panel;
+    }
+    
     /**
      * Comparator of <code>RADComponent</code>s.
      */
