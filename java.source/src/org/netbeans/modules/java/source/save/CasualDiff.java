@@ -172,9 +172,11 @@ public class CasualDiff {
                 
             // package statement was deleted.    
             case DELETE:
-                TokenUtilities.movePrevious(tokenSequence, oldT.pid.getStartPosition());
+                tokenSequence.move(oldT.pid.getStartPosition());
+                PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
                 copyTo(localPointer, tokenSequence.offset());
-                TokenUtilities.moveNext(tokenSequence, endPos(oldT.pid));
+                tokenSequence.move(endPos(oldT.pid));
+                PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                 localPointer = tokenSequence.offset() + 1;
                 // todo (#pf): check the declaration:
                 // package org.netbeans /* aa */;
@@ -214,7 +216,8 @@ public class CasualDiff {
         tokenSequence.move(oldT.pos);
         tokenSequence.moveNext(); // First skip as move() does not position to token directly
         tokenSequence.moveNext();
-        insertHint = TokenUtilities.moveNext(tokenSequence, tokenSequence.offset());
+        PositionEstimator.moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+        insertHint = tokenSequence.offset();
         localPointer = diffModifiers(oldT.mods, newT.mods, oldT, localPointer);
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(localPointer, insertHint);
@@ -302,9 +305,9 @@ public class CasualDiff {
         }
         tokenSequence.move(insertHint);
         tokenSequence.moveNext();
-        insertHint = TokenUtilities.moveBackToToken(tokenSequence, insertHint, JavaTokenId.LBRACE) + 1;
+        insertHint = PositionEstimator.moveBackToToken(tokenSequence, insertHint, JavaTokenId.LBRACE) + 1;
         } else {
-            insertHint = TokenUtilities.moveFwdToToken(tokenSequence, getOldPos(oldT), JavaTokenId.LBRACE);
+            insertHint = PositionEstimator.moveFwdToToken(tokenSequence, getOldPos(oldT), JavaTokenId.LBRACE);
             tokenSequence.moveNext();
             insertHint = tokenSequence.offset();
         }
@@ -413,7 +416,7 @@ public class CasualDiff {
             // there was not any parameter in original tree.
             int startOffset = oldT.restype != null ? oldT.restype.getStartPosition() : oldT.getStartPosition();
             
-            TokenUtilities.moveFwdToToken(tokenSequence, startOffset, JavaTokenId.RPAREN);
+            PositionEstimator.moveFwdToToken(tokenSequence, startOffset, JavaTokenId.RPAREN);
             posHint = tokenSequence.offset();
         } else {
             // take the position of the first old parameter
@@ -604,7 +607,7 @@ public class CasualDiff {
         localPointer = diffTree(oldT.body, newT.body, bodyBounds, oldT.getKind());
         int[] condBounds = getBounds(oldT.cond);
         if (oldT.body.getKind() != Kind.BLOCK && newT.body.getKind() == Kind.BLOCK) {
-            TokenUtilities.moveBackToToken(tokenSequence, condBounds[0], JavaTokenId.WHILE);
+            PositionEstimator.moveBackToToken(tokenSequence, condBounds[0], JavaTokenId.WHILE);
             localPointer = tokenSequence.offset();
         } else {
             copyTo(localPointer, condBounds[0]);
@@ -637,7 +640,7 @@ public class CasualDiff {
             // there is something in the init section, using start offset
             localPointer = getOldPos(oldT.init.head);
         } else {
-            TokenUtilities.moveFwdToToken(tokenSequence, bounds[0], JavaTokenId.SEMICOLON);
+            PositionEstimator.moveFwdToToken(tokenSequence, bounds[0], JavaTokenId.SEMICOLON);
             localPointer = tokenSequence.offset();
         }
         copyTo(bounds[0], localPointer);
@@ -648,7 +651,7 @@ public class CasualDiff {
             copyTo(localPointer, localPointer = getOldPos(oldT.cond));
             localPointer = diffTree(oldT.cond, newT.cond, getBounds(oldT.cond));
         } else {
-            TokenUtilities.moveFwdToToken(tokenSequence, localPointer, JavaTokenId.SEMICOLON);
+            PositionEstimator.moveFwdToToken(tokenSequence, localPointer, JavaTokenId.SEMICOLON);
             copyTo(localPointer, localPointer = tokenSequence.offset());
         }
         
@@ -656,7 +659,7 @@ public class CasualDiff {
         if (oldT.step.nonEmpty()) 
             copyTo(localPointer, localPointer = getOldPos(oldT.step.head));
         else {
-            TokenUtilities.moveFwdToToken(tokenSequence, localPointer, JavaTokenId.SEMICOLON);
+            PositionEstimator.moveFwdToToken(tokenSequence, localPointer, JavaTokenId.SEMICOLON);
             tokenSequence.moveNext();
             copyTo(localPointer, localPointer = tokenSequence.offset());
         }
@@ -946,7 +949,7 @@ public class CasualDiff {
         if (oldT.args.nonEmpty()) {
             copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
         } else {
-            TokenUtilities.moveFwdToToken(tokenSequence, oldT.pos, JavaTokenId.LPAREN);
+            PositionEstimator.moveFwdToToken(tokenSequence, oldT.pos, JavaTokenId.LPAREN);
             tokenSequence.moveNext();
             copyTo(localPointer, localPointer = tokenSequence.offset());
         }
@@ -1673,7 +1676,7 @@ public class CasualDiff {
             int endPos = endPos(oldList);
             if (printParens) {
                 tokenSequence.move(endPos);
-                TokenUtilities.moveFwdToToken(tokenSequence, endPos, makeAround[1]);
+                PositionEstimator.moveFwdToToken(tokenSequence, endPos, makeAround[1]);
                 tokenSequence.moveNext();
                 endPos = tokenSequence.offset();
                 if (!PositionEstimator.nonRelevant.contains(tokenSequence.token()))
@@ -1771,7 +1774,7 @@ public class CasualDiff {
             int endPos = endPos(oldList);
             if (printParens) {
                 tokenSequence.move(endPos);
-                TokenUtilities.moveFwdToToken(tokenSequence, endPos, makeAround[1]);
+                PositionEstimator.moveFwdToToken(tokenSequence, endPos, makeAround[1]);
                 tokenSequence.moveNext();
                 endPos = tokenSequence.offset();
                 if (!PositionEstimator.nonRelevant.contains(tokenSequence.token()))
