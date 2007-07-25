@@ -206,7 +206,6 @@ public class FormatterHelper
                        //Jyothi: Deleting an element from a diagram causes DOM errors
                        //and javax.xml.transform.TransformerException: javax.xml.transform.TransformerException: org.w3c.dom.DOMException: Not supported yet
                        if (node.getDocument() == null) {
-                           System.out.println(" node.getDocument() resulting in null.. Hence cannot transform...");
                            return format;
                        }
                        //Jyothi : end
