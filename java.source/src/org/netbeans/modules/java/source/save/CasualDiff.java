@@ -2728,25 +2728,7 @@ public class CasualDiff {
          * The tree was deleted; which means that it exists in the
          * old parent tree, but not the new one.
          */
-        DELETE("delete"), 
-        
-        /**
-         * The comment has been modified; that is, different versions
-         * of it exist in the old and new parent trees.
-         */
-        MODIFY_COMMENT("modify_comment"), 
-        
-        /**
-         * The comment is an insertion; that is, it exists in the
-         * new tree, but not the old.
-         */
-        INSERT_COMMENT("insert_comment"), 
-        
-        /**
-         * The comment was deleted; which means that it exists in the
-         * old parent tree, but not the new one.
-         */
-        DELETE_COMMENT("delete_comment");
+        DELETE("delete");
 
         DiffTypes(String name) {
             this.name = name;
@@ -2768,18 +2750,6 @@ public class CasualDiff {
         protected Comment newComment;
         private String text;
         boolean trailing;
-
-        static Diff delete(JCTree oldTree, JCTree newTree, Comment oldC) {
-            return new Diff(DiffTypes.DELETE_COMMENT, oldC.pos(), oldTree, newTree, oldC, null, false);
-        }
-
-        static Diff insert(int pos, JCTree oldTree, JCTree newTree, Comment newC, boolean trailing) {
-            return new Diff(DiffTypes.INSERT_COMMENT, pos, oldTree, newTree, null, newC, trailing);
-        }
-
-        static Diff modify(JCTree oldTree, JCTree newTree, Comment oldC, Comment newC) {
-            return new Diff(DiffTypes.MODIFY_COMMENT, oldC.pos(), oldTree, newTree, oldC, newC, false);
-        }
         
         static Diff insert(int pos, String text) {
             return new Diff(DiffTypes.INSERT, pos, Position.NOPOS /* does not matter */, text);
