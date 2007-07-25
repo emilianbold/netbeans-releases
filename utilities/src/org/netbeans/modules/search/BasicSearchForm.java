@@ -21,9 +21,9 @@ package org.netbeans.modules.search;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.ItemSelectable;
+import java.awt.SystemColor;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.HierarchyEvent;
@@ -162,8 +162,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 getText("BasicSearchForm.lblTextToFind.text"));         //NOI18N
         lblHintTextToFind.setText(
                 getText("BasicSearchForm.lblHintTextToFind.text"));     //NOI18N
-        lblHintTextToFind.setEnabled(false);
-        lowerFontSize(lblHintTextToFind);
+        lblHintTextToFind.setForeground(SystemColor.textInactiveText);
         cboxTextToFind.setEditable(true);
         
         if (searchAndReplace) {
@@ -171,9 +170,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                     lblReplacement,
                     getText("BasicSearchForm.lblReplacement.text"));        //NOI18N
             lblDummyReplacement.setText("dummy");                           //NOI18N
-            lblDummyReplacement.setEnabled(false);
+            lblDummyReplacement.setForeground(SystemColor.textInactiveText);
             lblDummyReplacement.setVisible(false);
-            lowerFontSize(lblDummyReplacement);
             cboxReplacement.setEditable(true);
         }
 
@@ -182,8 +180,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                 getText("BasicSearchForm.lblFileNamePattern.text"));    //NOI18N
         lblHintFileNamePattern.setText(
                 getText("BasicSearchForm.lblHintFileNamePattern.text"));//NOI18N
-        lblHintFileNamePattern.setEnabled(false);
-        lowerFontSize(lblHintFileNamePattern);
+        lblHintFileNamePattern.setForeground(SystemColor.textInactiveText);
         cboxFileNamePattern.setEditable(true);
         
         final Border emptyBorder = BorderFactory.createEmptyBorder(0, 0, 0, 0);
@@ -906,11 +903,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     
     private String getText(String bundleKey) {
         return NbBundle.getMessage(getClass(), bundleKey);
-    }
-    
-    private void lowerFontSize(Component comp) {
-        Font currentFont = comp.getFont();
-        comp.setFont(currentFont.deriveFont(currentFont.getSize() * .84f + .505f));
     }
     
     private ButtonGroup radioBtnGroup;
