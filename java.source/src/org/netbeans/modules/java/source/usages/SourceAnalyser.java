@@ -335,8 +335,10 @@ public class SourceAnalyser {
                 }
             }
             else if (sym != null && (sym.getKind().isClass() || sym.getKind().isInterface())) {
-                    final String className = encodeClassName(sym);
+                final String className = encodeClassName(sym);
+                if (className != null) {
                     this.imports.add(className);
+                }
             }
         }
         
