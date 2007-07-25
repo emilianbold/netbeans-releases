@@ -103,7 +103,7 @@ public final class Controller {
         }
         
         public void run() {
-            Installer.displaySummary("WELCOME_URL", true, false); // NOI18N
+            Installer.displaySummary("WELCOME_URL", true, false,true); // NOI18N
         }
     }
 }

@@ -97,7 +97,7 @@ implements ActionListener, Runnable, Callable<JButton> {
     }
     
     public void run() {
-        Installer.displaySummary("ERROR_URL", true, false); // NOI18N
+        Installer.displaySummary("ERROR_URL", true, false,true); // NOI18N
     }
 
     private JButton button;

@@ -87,6 +87,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullOutputStream;
+import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -94,7 +95,7 @@ import org.xml.sax.SAXException;
 /**
  * Registers and unregisters loggers.
  */
-public class Installer extends ModuleInstall {
+public class Installer extends ModuleInstall implements Runnable {
     /**
      *
      */
@@ -125,7 +126,15 @@ public class Installer extends ModuleInstall {
         }
         
         if (logsSize >= UIHandler.MAX_LOGS) {
-            displaySummary("INIT_URL", false, false);
+            WindowManager.getDefault().invokeWhenUIReady(this);
+        }
+    }
+    
+    public void run() {
+        if (RP.isRequestProcessorThread()) {
+            displaySummary("INIT_URL", false, false, false); // NOI18N
+        } else {
+            RP.post(this);
         }
     }
     
@@ -153,7 +162,7 @@ public class Installer extends ModuleInstall {
                 if (isHintsMode()) {
                     class Auto implements Runnable {
                         public void run() {
-                            displaySummary("WELCOME_URL", true, true);
+                            displaySummary("WELCOME_URL", true, true,true);
                         }
                     }
                     RP.post(new Auto()).waitFinished();
@@ -328,11 +337,11 @@ public class Installer extends ModuleInstall {
             return true;
         }
         
-        return displaySummary("EXIT_URL", false, false); // NOI18N
+        return displaySummary("EXIT_URL", false, false,true); // NOI18N
     }
     
     private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
-    public static boolean displaySummary(String msg, boolean explicit, boolean auto) {
+    public static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog) {
         if (!DISPLAYING.compareAndSet(null, msg)) {
             return true;
         }
@@ -347,7 +356,7 @@ public class Installer extends ModuleInstall {
                 }
             }
             
-            v = doDisplaySummary(msg, auto);
+            v = doDisplaySummary(msg, auto, connectDialog);
         } finally {
             DISPLAYING.set(null);
         }
@@ -369,8 +378,8 @@ public class Installer extends ModuleInstall {
         return null;// no throwable found
     }
     
-    private static boolean doDisplaySummary(String msg, boolean auto) {
-        Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT) : new SubmitInteractive(msg);
+    private static boolean doDisplaySummary(String msg, boolean auto, boolean connectDialog) {
+        Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT) : new SubmitInteractive(msg, connectDialog);
         submit.doShow();
         return submit.okToExit;
     }
@@ -974,12 +983,15 @@ public class Installer extends ModuleInstall {
     } // end of Submit
     
     private static final class SubmitInteractive extends Submit {
+        private boolean connectDialog;
         private Dialog d;
         private SubmitPanel panel;
         private HtmlBrowser browser;
+        private boolean urlAssigned;
         
-        public SubmitInteractive(String msg) {
+        public SubmitInteractive(String msg, boolean connectDialog) {
             super(msg);
+            this.connectDialog = connectDialog;
         }
         
         protected void createDialog() {
@@ -1058,10 +1070,12 @@ public class Installer extends ModuleInstall {
             view.setVisible(true);
             return false;
         }
-        protected void assignInternalURL(URL u) {
+        protected synchronized void assignInternalURL(URL u) {
             if (browser != null) {
                 browser.setURL(u);
             }
+            urlAssigned = true;
+            notifyAll();
         }
         protected void showURL(URL u) {
             HtmlBrowser.URLDisplayer.getDefault().showURL(u);
@@ -1081,7 +1095,18 @@ public class Installer extends ModuleInstall {
             }
         }
         protected Object showDialogAndGetValue(DialogDescriptor dd) {
-            d.setVisible(true);
+            if (!connectDialog) {
+                synchronized (this) {
+                    while (!urlAssigned) {
+                        try {
+                            wait();
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+                d.setVisible(true);
+            }
             return dd.getValue();
         }
         protected void alterMessage(DialogDescriptor dd) {

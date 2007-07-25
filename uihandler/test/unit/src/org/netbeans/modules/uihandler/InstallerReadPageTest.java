@@ -109,7 +109,7 @@ public class InstallerReadPageTest extends NbTestCase {
         
         MemoryURL.registerURL("memory://kun.html", is);
         
-        boolean res = Installer.displaySummary("KUN", true, false);
+        boolean res = Installer.displaySummary("KUN", true, false,true);
         assertFalse("Close options was pressed", res);
         assertNotNull("DD.d assigned", DD.d);
         

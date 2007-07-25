@@ -138,13 +138,13 @@ public class InstallerInitTest extends NbTestCase {
         assertNull("No dialogs so far", DD.d);
         
         installer.close();
-        waitAWT();
+        waitForGestures();
         
         assertNull("No dialogs at close", DD.d);
         
         installer.restored();
         
-        waitAWT();
+        waitForGestures();
 
         assertNotNull("A dialog shown at begining", DD.d);
     }
@@ -173,13 +173,13 @@ public class InstallerInitTest extends NbTestCase {
         assertNull("No dialogs so far", DD.d);
         
         installer.close();
-        waitAWT();
+        waitForGestures();
         
         assertNull("No dialogs at close", DD.d);
         
         installer.restored();
         
-        waitAWT();
+        waitForGestures();
 
         assertNull("No dialog shown at begining", DD.d);
     }
@@ -225,10 +225,17 @@ public class InstallerInitTest extends NbTestCase {
         
     }
 
-    private void waitAWT() throws InterruptedException, InvocationTargetException {
-        SwingUtilities.invokeAndWait(new Runnable() {
+    private void waitForGestures() throws InterruptedException, InvocationTargetException {
+        class RunnableImpl implements Runnable {
+            
+            private RunnableImpl() {
+            }
+            
             public void run() {
             }
-        });
+        }
+        SwingUtilities.invokeAndWait(new RunnableImpl());
+        Installer.RP.post(new RunnableImpl()).waitFinished();
     }
+
 }
