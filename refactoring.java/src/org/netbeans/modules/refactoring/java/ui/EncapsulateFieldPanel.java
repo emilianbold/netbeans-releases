@@ -68,6 +68,7 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
     private ChangeListener parent;
     private String classname;
     private String[][] methodNames; // array of String {getterName, setterName}
+    private static boolean ALWAYS_USE_ACCESSORS = true;
     
     private static final String modifierNames[] = {
         "public", // NOI18N
@@ -107,6 +108,7 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
         model = new TabM(columnNames, 0);
         initComponents();
         setName(title);
+        jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
         // *** initialize table
         // set renderer for the column "Field" to display name of the feature (with icon)
         jTableFields.setDefaultRenderer(MemberInfo.class, new UIUtilities.JavaElementTableCellRenderer());
@@ -414,7 +416,8 @@ public final class EncapsulateFieldPanel extends JPanel implements CustomRefacto
     }
     
     public boolean isCheckAccess() {
-        return jCheckAccess.isSelected();
+        ALWAYS_USE_ACCESSORS = jCheckAccess.isSelected();
+        return ALWAYS_USE_ACCESSORS;
     }
     
     public Set<Modifier> getFieldModifiers() {
