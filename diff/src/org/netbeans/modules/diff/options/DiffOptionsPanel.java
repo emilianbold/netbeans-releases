@@ -24,6 +24,8 @@ import org.openide.filesystems.FileUtil;
 
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.DocumentEvent;
 import javax.swing.*;
 import java.io.File;
 
@@ -32,13 +34,17 @@ import java.io.File;
  *
  * @author  Maros Sandor
  */
-class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener {
+class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, DocumentListener {
+
+    private boolean isChanged;
     
     /** Creates new form DiffOptionsPanel */
     public DiffOptionsPanel() {
         initComponents();
         internalDiff.addChangeListener(this);
         externalDiff.addChangeListener(this);
+        ignoreWhitespace.addChangeListener(this);
+        externalCommand.getDocument().addDocumentListener(this);
         refreshComponents();
     }
 
@@ -65,6 +71,14 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener {
         return internalDiff;
     }
 
+    public void setChanged(boolean changed) {
+        isChanged = changed;
+    }
+
+    public boolean isChanged() {
+        return isChanged;
+    }    
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -193,6 +207,19 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener {
     // End of variables declaration//GEN-END:variables
 
     public void stateChanged(ChangeEvent e) {
+        isChanged = true;
         refreshComponents();
+    }
+
+    public void insertUpdate(DocumentEvent e) {
+        isChanged = true;
+    }
+
+    public void removeUpdate(DocumentEvent e) {
+        isChanged = true;
+    }
+
+    public void changedUpdate(DocumentEvent e) {
+        isChanged = true;
     }
 }

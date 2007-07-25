@@ -44,6 +44,7 @@ class DiffOptionsController extends OptionsPanelController {
         panel.getExternalDiff().setSelected(!DiffModuleConfig.getDefault().isUseInteralDiff());
         panel.getIgnoreWhitespace().setSelected(DiffModuleConfig.getDefault().isIgnoreWhitespace());
         panel.getExternalCommand().setText(DiffModuleConfig.getDefault().getPreferences().get(DiffModuleConfig.PREF_EXTERNAL_DIFF_COMMAND, "diff {0} {1}")); // NOI18N
+        panel.setChanged(false);
     }
 
     public void applyChanges() {
@@ -51,6 +52,7 @@ class DiffOptionsController extends OptionsPanelController {
         DiffModuleConfig.getDefault().setUseInteralDiff(panel.getInternalDiff().isSelected());
         DiffModuleConfig.getDefault().setIgnoreWhitespace(panel.getIgnoreWhitespace().isSelected());
         DiffModuleConfig.getDefault().getPreferences().put(DiffModuleConfig.PREF_EXTERNAL_DIFF_COMMAND, panel.getExternalCommand().getText());
+        panel.setChanged(false);
     }
 
     private void checkExternalCommand() {
@@ -76,7 +78,7 @@ class DiffOptionsController extends OptionsPanelController {
     }
 
     public boolean isChanged() {
-        return true;
+        return panel.isChanged();
     }
 
     public JComponent getComponent(Lookup masterLookup) {
