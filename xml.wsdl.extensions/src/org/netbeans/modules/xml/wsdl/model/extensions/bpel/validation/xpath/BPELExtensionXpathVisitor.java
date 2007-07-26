@@ -66,7 +66,7 @@ public class BPELExtensionXpathVisitor extends ValidationVisitor {
             return;
         }
         String queryText = query.getContent();
-        if (queryText == null && queryText.length() == 0) {
+        if (queryText == null || queryText.length() == 0) {
             return;
         }
         //
