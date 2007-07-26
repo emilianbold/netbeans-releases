@@ -20,16 +20,13 @@
 package org.netbeans.modules.compapp.projects.jbi;
 
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.projects.jbi.ui.NoSelectedServerWarning;
-import org.netbeans.modules.compapp.projects.jbi.ui.actions.OpenEditorAction;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathItem;
@@ -58,7 +55,6 @@ import java.awt.Dialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
-import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 import org.netbeans.modules.compapp.projects.jbi.api.ProjectValidator;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.execution.ExecutorTask;
@@ -457,7 +453,6 @@ public class JbiActionProvider implements ActionProvider {
         String instance = antProjectHelper.getStandardPropertyEvaluator().getProperty(
                 JbiProjectProperties.J2EE_SERVER_INSTANCE
                 );
-        boolean selected = true;
         
         if ((instance == null) || !JbiManager.isAppServer(instance)) {
             String[] serverIDs = JbiManager.getAppServers();
@@ -488,18 +483,11 @@ public class JbiActionProvider implements ActionProvider {
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
             dlg.setVisible(true);
             
-            if (desc.getValue() != options[0]) {
-                selected = false;
+            if (desc.getValue() != options[0]) { // cancel
+                return false;
             } else {
-                instance = panel.getSelectedInstance();
-                selected = instance != null;
-                
-                if (selected) {
-//                    JbiProjectProperties wpp = new JbiProjectProperties(
-//                            project, antProjectHelper, refHelper
-//                        );
-//                    wpp.put(JbiProjectProperties.J2EE_SERVER_INSTANCE, instance);
-//                    wpp.store();
+                instance = panel.getSelectedInstance();                
+                if (instance != null) {
                     JbiProjectProperties projectProperties = project.getProjectProperties();
                     projectProperties.put(JbiProjectProperties.J2EE_SERVER_INSTANCE, instance);
                     projectProperties.store();
@@ -509,7 +497,7 @@ public class JbiActionProvider implements ActionProvider {
             dlg.dispose();
         }
         
-        if ((instance == null) || (!selected)) {
+        if (instance == null) {
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(
                     NbBundle.getMessage(
