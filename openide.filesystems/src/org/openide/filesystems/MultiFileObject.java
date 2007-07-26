@@ -597,6 +597,11 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         }
     }
 
+    @Override
+    public synchronized boolean isLocked() {
+        return lock != null && lock.get() != null;
+    }
+    
     /* Lock this file.
     * @return lock that can be used to perform various modifications on the file
     * @throws FileAlreadyLockedException if the file is already locked

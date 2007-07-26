@@ -532,6 +532,24 @@ public abstract class FileObject extends Object implements Serializable {
     */
     public abstract FileLock lock() throws IOException;
 
+    /**
+     * Test if file is locked
+     * @return true if file is locked
+     * @since 7.3
+     */
+    public boolean isLocked() {
+        FileLock fLock = null;
+        try {
+            fLock = lock();
+        } catch (IOException ex) {
+        } finally {
+            if (fLock != null) {
+                fLock.releaseLock();
+            }
+        }
+        return fLock == null;
+    }
+
     /** Indicate whether this file is important from a user perspective.
     * This method allows a filesystem to distingush between important and
     * unimportant files when this distinction is possible.

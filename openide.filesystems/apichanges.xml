@@ -23,6 +23,21 @@ Microsystems, Inc. All Rights Reserved.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileObject.isLocked">
+            <api name="filesystems"/>
+            <summary>Added method to test if file is locked</summary>
+            <version major="7" minor="3"/>
+            <date day="26" month="7" year="2007"/>
+            <author login="rmatous"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added method <code>isLocked</code> to <code>FileObject</code>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileObject"/>
+            <issue number="110549"/>
+        </change>        
         <change id="FileUtil.order">
             <api name="filesystems"/>
             <summary>Added methods to order files in a folder</summary>

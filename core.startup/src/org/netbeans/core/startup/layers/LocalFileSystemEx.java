@@ -80,7 +80,8 @@ public final class LocalFileSystemEx extends LocalFileSystem {
         Iterator i = names.iterator ();
         while (i.hasNext ()) {
             String name = (String) i.next ();
-            if (null == sfs.findResource (name)) {
+            FileObject fo = sfs.findResource (name);
+            if (null == fo || !fo.isLocked()) {
                 // file lock recorded in potentialLock has been used
                 // in operation which masked file as hidden and nothing
                 // was actually locked

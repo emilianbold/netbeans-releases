@@ -253,6 +253,12 @@ final class AbstractFileObject extends AbstractFolder {
         }        
     }
 
+    @Override
+    public synchronized boolean isLocked() {
+        return lock != null && lock.get() != null;
+    }
+        
+
     /** Tests the lock if it is valid, if not throws exception.
     * @param l lock to test
     */

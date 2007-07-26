@@ -1925,9 +1925,11 @@ public class FileObjectTestHid extends TestBaseHid {
         checkSetUp();
         
         FileObject fo1 = getTestFile1 (root);
+        assertFalse(fo1.isLocked());
         FileLock lock = null;
         try {
             lock = fo1.lock ();   
+            assertTrue(fo1.isLocked());
         } catch (IOException iex) {
             fsAssert("FileObject could not be locked",            
             fs.isReadOnly() || fo1.isReadOnly() ) ;
@@ -1939,8 +1941,11 @@ public class FileObjectTestHid extends TestBaseHid {
         } catch (FileAlreadyLockedException fax) {
             return;
         } finally {
-            if (lock != null) lock.releaseLock();
+            if (lock != null) {
+                lock.releaseLock();
+                assertFalse(fo1.isLocked());
         }       
+    }
     }
 
     public void testUseWrongLock()  throws IOException {

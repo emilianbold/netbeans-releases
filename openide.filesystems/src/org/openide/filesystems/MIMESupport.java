@@ -458,6 +458,11 @@ final class MIMESupport extends Object {
             return fileObj.move(lock, target, name, ext);
         }
 
+        @Override
+        public synchronized boolean isLocked() {
+            return fileObj.isLocked();
+        }
+        
         public FileLock lock() throws IOException {
             return fileObj.lock();
         }
