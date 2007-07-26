@@ -129,7 +129,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
                 return key;
             }
         }
-        return "n/a"; // NOI18N
+        return NbBundle.getMessage(PropertyEditorComboBox.class, "LBL_MULTIPLE"); // NOI18N
     }
     
     public void setTextForPropertyValue (String text) {

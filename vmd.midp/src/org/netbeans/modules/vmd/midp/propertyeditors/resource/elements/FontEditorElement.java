@@ -62,19 +62,21 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         inputRadioButton.addActionListener(kindActionListener);
         customRadioButton.addActionListener(kindActionListener);
 
-        ActionListener faceStyleSizeActionListener = new FaceStyleSizeActionListener();
-        systemRadioButton.addActionListener(faceStyleSizeActionListener);
-        monospaceRadioButton.addActionListener(faceStyleSizeActionListener);
-        proportionalRadioButton.addActionListener(faceStyleSizeActionListener);
+        ActionListener faceActionListener = new FaceActionListener();
+        systemRadioButton.addActionListener(faceActionListener);
+        monospaceRadioButton.addActionListener(faceActionListener);
+        proportionalRadioButton.addActionListener(faceActionListener);
 
-        plainCheckBox.addActionListener(faceStyleSizeActionListener);
-        boldCheckBox.addActionListener(faceStyleSizeActionListener);
-        italicCheckBox.addActionListener(faceStyleSizeActionListener);
-        underlinedCheckBox.addActionListener(faceStyleSizeActionListener);
+        ActionListener styleActionListener = new StyleActionListener();
+        plainCheckBox.addActionListener(styleActionListener);
+        boldCheckBox.addActionListener(styleActionListener);
+        italicCheckBox.addActionListener(styleActionListener);
+        underlinedCheckBox.addActionListener(styleActionListener);
 
-        smallRadioButton.addActionListener(faceStyleSizeActionListener);
-        mediumRadioButton.addActionListener(faceStyleSizeActionListener);
-        largeRadioButton.addActionListener(faceStyleSizeActionListener);
+        ActionListener sizeActionListener = new SizeActionListener();
+        smallRadioButton.addActionListener(sizeActionListener);
+        mediumRadioButton.addActionListener(sizeActionListener);
+        largeRadioButton.addActionListener(sizeActionListener);
     }
 
     private void setKindUnselected() {
@@ -175,18 +177,12 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     private void setStyleSelected(int styleCode) {
-        switch (styleCode) {
-            case FontCD.VALUE_STYLE_PLAIN:
-                plainCheckBox.setSelected(true);
-                break;
-            case FontCD.VALUE_STYLE_BOLD:
-                boldCheckBox.setSelected(true);
-                break;
-            case FontCD.VALUE_STYLE_ITALIC:
-                italicCheckBox.setSelected(true);
-                break;
-            case FontCD.VALUE_STYLE_UNDERLINED:
-                underlinedCheckBox.setSelected(true);
+        if (styleCode == FontCD.VALUE_STYLE_PLAIN) {
+            plainCheckBox.setSelected(true);
+        } else {
+            boldCheckBox.setSelected((styleCode & FontCD.VALUE_STYLE_BOLD) != 0);
+            italicCheckBox.setSelected((styleCode & FontCD.VALUE_STYLE_ITALIC) != 0);
+            underlinedCheckBox.setSelected((styleCode & FontCD.VALUE_STYLE_UNDERLINED) != 0);
         }
     }
 
@@ -349,7 +345,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     private class KindActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
-            int code = -1;
+            int code = FontCD.VALUE_KIND_DEFAULT;
 
             if (src == customRadioButton) {
                 setFaceSizeStyleEnabled(true);
@@ -371,59 +367,70 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         }
     }
 
-    private class FaceStyleSizeActionListener implements ActionListener {
+    private class SizeActionListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             Object src = e.getSource();
-            int code = -1;
-            String propertyName = FontCD.PROP_FACE;
+            int code = FontCD.VALUE_SIZE_MEDIUM;
 
-            if (src == systemRadioButton) {
-                code = FontCD.VALUE_FACE_SYSTEM;
-                propertyName = FontCD.PROP_FACE;
-                currentStub.setFace(code);
-            } else if (src == monospaceRadioButton) {
-                code = FontCD.VALUE_FACE_MONOSPACE;
-                propertyName = FontCD.PROP_FACE;
-                currentStub.setFace(code);
-            } else if (src == proportionalRadioButton) {
-                code = FontCD.VALUE_FACE_PROPORTIONAL;
-                propertyName = FontCD.PROP_FACE;
-                currentStub.setFace(code);
-            } else if (src == smallRadioButton) {
+            if (src == smallRadioButton) {
                 code = FontCD.VALUE_SIZE_SMALL;
-                propertyName = FontCD.PROP_SIZE;
-                currentStub.setSize(code);
-            } else if (src == mediumRadioButton) {
-                code = FontCD.VALUE_SIZE_MEDIUM;
-                propertyName = FontCD.PROP_SIZE;
-                currentStub.setSize(code);
             } else if (src == largeRadioButton) {
                 code = FontCD.VALUE_SIZE_LARGE;
-                propertyName = FontCD.PROP_SIZE;
-                currentStub.setSize(code);
-            } else if (src == plainCheckBox) {
-                code = FontCD.VALUE_STYLE_PLAIN;
-                propertyName = FontCD.PROP_STYLE;
-                currentStub.setStyle(code);
-            } else if (src == boldCheckBox) {
-                code = FontCD.VALUE_STYLE_BOLD;
-                propertyName = FontCD.PROP_STYLE;
-                currentStub.setStyle(code);
-            } else if (src == italicCheckBox) {
-                code = FontCD.VALUE_STYLE_ITALIC;
-                propertyName = FontCD.PROP_STYLE;
-                currentStub.setStyle(code);
-            } else if (src == underlinedCheckBox) {
-                code = FontCD.VALUE_STYLE_UNDERLINED;
-                propertyName = FontCD.PROP_STYLE;
-                currentStub.setStyle(code);
-            }
+            } 
 
+            currentStub.setSize(code);
             setSampleFont(false);
-            fireElementChanged(currentStub.getComponentID(), propertyName, MidpTypes.createIntegerValue(code));
+            fireElementChanged(currentStub.getComponentID(), FontCD.PROP_SIZE, MidpTypes.createIntegerValue(code));
         }
     }
 
+    private class FaceActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            Object src = e.getSource();
+            int code = FontCD.VALUE_FACE_SYSTEM;
+
+            if (src == monospaceRadioButton) {
+                code = FontCD.VALUE_FACE_MONOSPACE;
+            } else if (src == proportionalRadioButton) {
+                code = FontCD.VALUE_FACE_PROPORTIONAL;
+            } 
+
+            currentStub.setFace(code);
+            setSampleFont(false);
+            fireElementChanged(currentStub.getComponentID(), FontCD.PROP_FACE, MidpTypes.createIntegerValue(code));
+        }
+    }
+
+    private class StyleActionListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            Object src = e.getSource();
+            int code = FontCD.VALUE_STYLE_PLAIN;
+            if (src == plainCheckBox) {
+                if (plainCheckBox.isSelected()) {
+                    boldCheckBox.setSelected(false);
+                    italicCheckBox.setSelected(false);
+                    underlinedCheckBox.setSelected(false);
+                }
+            } else {
+                plainCheckBox.setSelected(!(boldCheckBox.isSelected() || italicCheckBox.isSelected() || underlinedCheckBox.isSelected()));
+                
+                if (boldCheckBox.isSelected()) {
+                    code |= FontCD.VALUE_STYLE_BOLD;
+                }
+                if (italicCheckBox.isSelected()) {
+                    code |= FontCD.VALUE_STYLE_ITALIC;
+                }
+                if (underlinedCheckBox.isSelected()) {
+                    code |= FontCD.VALUE_STYLE_UNDERLINED;
+                }
+            }
+            
+            currentStub.setStyle(code);
+            setSampleFont(false);
+            fireElementChanged(currentStub.getComponentID(), FontCD.PROP_STYLE, MidpTypes.createIntegerValue(code));
+        }
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -434,7 +441,6 @@ public class FontEditorElement extends PropertyEditorResourceElement {
 
         kindButtonGroup = new javax.swing.ButtonGroup();
         faceButtonGroup = new javax.swing.ButtonGroup();
-        styleButtonGroup = new javax.swing.ButtonGroup();
         sizeButtonGroup = new javax.swing.ButtonGroup();
         defaultRadioButton = new javax.swing.JRadioButton();
         staticRadioButton = new javax.swing.JRadioButton();
@@ -460,22 +466,22 @@ public class FontEditorElement extends PropertyEditorResourceElement {
 
         kindButtonGroup.add(defaultRadioButton);
         defaultRadioButton.setSelected(true);
-        defaultRadioButton.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.defaultRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(defaultRadioButton, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.defaultRadioButton.text")); // NOI18N
         defaultRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         defaultRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         kindButtonGroup.add(staticRadioButton);
-        staticRadioButton.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.staticRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(staticRadioButton, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.staticRadioButton.text")); // NOI18N
         staticRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         staticRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         kindButtonGroup.add(inputRadioButton);
-        inputRadioButton.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.inputRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(inputRadioButton, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.inputRadioButton.text")); // NOI18N
         inputRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         inputRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         kindButtonGroup.add(customRadioButton);
-        customRadioButton.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.customRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(customRadioButton, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.customRadioButton.text")); // NOI18N
         customRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         customRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -497,19 +503,19 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         faceLabel.setEnabled(false);
 
         faceButtonGroup.add(systemRadioButton);
-        systemRadioButton.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.systemRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(systemRadioButton, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.systemRadioButton.text")); // NOI18N
         systemRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         systemRadioButton.setEnabled(false);
         systemRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         faceButtonGroup.add(monospaceRadioButton);
-        monospaceRadioButton.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.monospaceRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(monospaceRadioButton, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.monospaceRadioButton.text")); // NOI18N
         monospaceRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         monospaceRadioButton.setEnabled(false);
         monospaceRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         faceButtonGroup.add(proportionalRadioButton);
-        proportionalRadioButton.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.proportionalRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(proportionalRadioButton, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.proportionalRadioButton.text")); // NOI18N
         proportionalRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         proportionalRadioButton.setEnabled(false);
         proportionalRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -518,19 +524,19 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         sizeLabel.setEnabled(false);
 
         sizeButtonGroup.add(smallRadioButton);
-        smallRadioButton.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.smallRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(smallRadioButton, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.smallRadioButton.text")); // NOI18N
         smallRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         smallRadioButton.setEnabled(false);
         smallRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         sizeButtonGroup.add(mediumRadioButton);
-        mediumRadioButton.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.mediumRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(mediumRadioButton, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.mediumRadioButton.text")); // NOI18N
         mediumRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         mediumRadioButton.setEnabled(false);
         mediumRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         sizeButtonGroup.add(largeRadioButton);
-        largeRadioButton.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.largeRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(largeRadioButton, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.largeRadioButton.text")); // NOI18N
         largeRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         largeRadioButton.setEnabled(false);
         largeRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -538,26 +544,22 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         styleLabel.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.styleLabel.text")); // NOI18N
         styleLabel.setEnabled(false);
 
-        styleButtonGroup.add(plainCheckBox);
-        plainCheckBox.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.plainCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(plainCheckBox, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.plainCheckBox.text")); // NOI18N
         plainCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         plainCheckBox.setEnabled(false);
         plainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        styleButtonGroup.add(boldCheckBox);
-        boldCheckBox.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.boldCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(boldCheckBox, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.boldCheckBox.text")); // NOI18N
         boldCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         boldCheckBox.setEnabled(false);
         boldCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        styleButtonGroup.add(italicCheckBox);
-        italicCheckBox.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.italicCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(italicCheckBox, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.italicCheckBox.text")); // NOI18N
         italicCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         italicCheckBox.setEnabled(false);
         italicCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        styleButtonGroup.add(underlinedCheckBox);
-        underlinedCheckBox.setText(org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.underlinedCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(underlinedCheckBox, org.openide.util.NbBundle.getMessage(FontEditorElement.class, "FontEditorElement.underlinedCheckBox.text")); // NOI18N
         underlinedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         underlinedCheckBox.setEnabled(false);
         underlinedCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -669,7 +671,6 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     private javax.swing.JLabel sizeLabel;
     private javax.swing.JRadioButton smallRadioButton;
     private javax.swing.JRadioButton staticRadioButton;
-    private javax.swing.ButtonGroup styleButtonGroup;
     private javax.swing.JLabel styleLabel;
     private javax.swing.JRadioButton systemRadioButton;
     private javax.swing.JCheckBox underlinedCheckBox;

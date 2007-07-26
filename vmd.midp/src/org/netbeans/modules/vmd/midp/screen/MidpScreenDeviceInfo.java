@@ -19,6 +19,7 @@ import java.awt.Font;
 import java.awt.font.TextAttribute;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.vmd.api.screen.display.DeviceBorder;
@@ -172,7 +173,7 @@ public class MidpScreenDeviceInfo extends ScreenDeviceInfo {
             }
         }
         
-        public Font getFont(FontFace face, FontStyle style, FontSize size) {
+        public Font getFont(FontFace face, EnumSet<FontStyle>  style, FontSize size) {
             String name = FONT_FACE_SYSTEM;
             if (face == FontFace.MONOSPACE) {
                 name = FONT_FACE_MONOSPACE;
@@ -181,10 +182,10 @@ public class MidpScreenDeviceInfo extends ScreenDeviceInfo {
             }
             
             int styleInt = Font.PLAIN;
-            if (style == FontStyle.BOLD) {
+            if (style.contains(FontStyle.BOLD)) {
                 styleInt |= Font.BOLD;
             }
-            if (style == FontStyle.ITALIC) {
+            if (style.contains(FontStyle.ITALIC)) {
                 styleInt |= Font.ITALIC;
             }
             
@@ -196,7 +197,7 @@ public class MidpScreenDeviceInfo extends ScreenDeviceInfo {
             }
             
             Font font = new Font(name, styleInt, sizeInt);
-            if (style == FontStyle.UNDERLINED) {
+            if (style.contains(FontStyle.UNDERLINED)) {
                 font = font.deriveFont(ATTR_MAP);
             }
             

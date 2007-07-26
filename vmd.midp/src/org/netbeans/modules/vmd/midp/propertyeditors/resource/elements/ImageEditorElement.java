@@ -292,7 +292,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         heightTextField = new javax.swing.JTextField();
         chooserButton = new javax.swing.JButton();
 
-        pathLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
+        pathLabel.setLabelFor(pathTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(pathLabel, org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
         pathLabel.setEnabled(false);
 
         pathTextField.setEnabled(false);

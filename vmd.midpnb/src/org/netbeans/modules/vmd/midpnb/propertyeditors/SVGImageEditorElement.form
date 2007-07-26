@@ -31,11 +31,11 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="widthTextField" pref="85" max="32767" attributes="0"/>
-                          <Component id="heightTextField" alignment="0" pref="85" max="32767" attributes="0"/>
+                          <Component id="widthTextField" pref="92" max="32767" attributes="0"/>
+                          <Component id="heightTextField" alignment="0" pref="92" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="pathTextField" alignment="1" pref="288" max="32767" attributes="0"/>
+                  <Component id="pathTextField" alignment="1" pref="295" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="chooserButton" min="-2" pref="30" max="-2" attributes="0"/>
@@ -74,11 +74,17 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="pathLabel">
       <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="pathTextField"/>
+        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/vmd/midp/propertyeditors/resource/elements/Bundle.properties" key="ImageEditorElement.pathLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="pathTextField">
       <Properties>

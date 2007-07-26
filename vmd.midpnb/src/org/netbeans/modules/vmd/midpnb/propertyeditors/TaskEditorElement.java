@@ -107,7 +107,8 @@ public class TaskEditorElement extends PropertyEditorResourceElement implements 
         taskLabel = new javax.swing.JLabel();
         gotoLabel = new javax.swing.JLabel();
 
-        taskLabel.setText(org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "TaskEditorElement.taskLabel.text")); // NOI18N
+        taskLabel.setLabelFor(gotoLabel);
+        org.openide.awt.Mnemonics.setLocalizedText(taskLabel, org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "TaskEditorElement.taskLabel.text")); // NOI18N
         taskLabel.setEnabled(false);
 
         gotoLabel.setText(org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "TaskEditorElement.gotoLabel.text")); // NOI18N

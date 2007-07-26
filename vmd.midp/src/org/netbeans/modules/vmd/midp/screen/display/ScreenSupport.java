@@ -38,6 +38,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.Map;
 
 /**
@@ -75,13 +76,15 @@ public final class ScreenSupport {
             face = FontFace.PROPORTIONAL;
         }
 
-        FontStyle style = FontStyle.PLAIN;
-        if (styleCode == FontCD.VALUE_STYLE_BOLD) {
-            style = FontStyle.BOLD;
-        } else if (styleCode == FontCD.VALUE_STYLE_ITALIC) {
-            style = FontStyle.ITALIC;
-        } else if (styleCode == FontCD.VALUE_STYLE_UNDERLINED) {
-            style = FontStyle.UNDERLINED;
+        EnumSet<FontStyle> style = EnumSet.of(FontStyle.PLAIN);
+        if ((styleCode & FontCD.VALUE_STYLE_BOLD) != 0) {
+            style.add(FontStyle.BOLD);
+        }
+        if ((styleCode & FontCD.VALUE_STYLE_ITALIC) != 0) {
+            style.add(FontStyle.ITALIC);
+        } 
+        if ((styleCode & FontCD.VALUE_STYLE_UNDERLINED) != 0) {
+            style.add(FontStyle.UNDERLINED);
         }
 
         FontSize size = FontSize.MEDIUM;

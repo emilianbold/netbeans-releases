@@ -20,6 +20,7 @@ package org.netbeans.modules.vmd.api.screen.display;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.EnumSet;
 
 /**
  * Describes basic device resource.
@@ -37,7 +38,7 @@ public abstract class DeviceTheme {
     
     public abstract Font getFont(FontType type);
     
-    public abstract Font getFont(FontFace face, FontStyle style, FontSize size);
+    public abstract Font getFont(FontFace face, EnumSet<FontStyle> style, FontSize size);
     
     public abstract Color getColor(Colors color);
     

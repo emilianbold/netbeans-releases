@@ -129,7 +129,8 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
         tickerLabel = new javax.swing.JLabel();
         tickerTextField = new javax.swing.JTextField();
 
-        tickerLabel.setText(org.openide.util.NbBundle.getMessage(TickerEditorElement.class, "TickerEditorElement.tickerLabel.text")); // NOI18N
+        tickerLabel.setLabelFor(tickerTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(tickerLabel, org.openide.util.NbBundle.getMessage(TickerEditorElement.class, "TickerEditorElement.tickerLabel.text")); // NOI18N
         tickerLabel.setEnabled(false);
 
         tickerTextField.setEnabled(false);

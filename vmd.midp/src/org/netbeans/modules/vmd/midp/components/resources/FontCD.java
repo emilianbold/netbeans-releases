@@ -326,12 +326,28 @@ public final class FontCD extends ComponentDescriptor {
 
                     propertyValue = component.readProperty (PROP_STYLE);
                     if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
-                        switch (MidpTypes.getInteger (propertyValue)) {
-                            case VALUE_STYLE_PLAIN: writer.write ("Font.STYLE_PLAIN"); break; // NOI18N
-                            case VALUE_STYLE_BOLD: writer.write ("Font.STYLE_BOLD"); break; // NOI18N
-                            case VALUE_STYLE_ITALIC: writer.write ("Font.STYLE_ITALIC"); break; // NOI18N
-                            case VALUE_STYLE_UNDERLINED: writer.write ("Font.STYLE_UNDERLINED"); break; // NOI18N
-                            default: throw Debug.illegalState ();
+                        int code = MidpTypes.getInteger(propertyValue);
+                        if (VALUE_STYLE_PLAIN == code) {
+                            writer.write("Font.STYLE_PLAIN"); // NOI18N
+                        } else {
+                            boolean needOR = false;
+                            if ((code & VALUE_STYLE_BOLD) != 0) {
+                                writer.write("Font.STYLE_BOLD"); // NOI18N
+                                needOR = true;
+                            }
+                            if ((code & VALUE_STYLE_ITALIC) != 0) {
+                                if (needOR) {
+                                    writer.write(" | "); // NOI18N
+                                }
+                                writer.write("Font.STYLE_ITALIC"); // NOI18N
+                                needOR = true;
+                            }
+                            if ((code & VALUE_STYLE_UNDERLINED) != 0) {
+                                if (needOR) {
+                                    writer.write(" | "); // NOI18N
+                                }
+                                writer.write("Font.STYLE_UNDERLINED"); // NOI18N
+                            }
                         }
                     } else
                         MidpCodeSupport.generateCodeForPropertyValue (writer, propertyValue);
