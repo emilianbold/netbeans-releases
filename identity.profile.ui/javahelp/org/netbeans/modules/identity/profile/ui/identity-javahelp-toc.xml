@@ -17,6 +17,7 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+    <tocitem text="Enterprise Applications">
 	<tocitem text="Identity Management Tools">
 		<tocitem text="About Identity Management Tools" target="idmtools_about" />
 		<tocitem text="Web Service Providers">
@@ -42,4 +43,5 @@
 			<tocitem text="Configuring Support for the Liberty SAML Token Profile" target="idmtools_am_config_support_libertysaml" />
 		</tocitem>
 	</tocitem>
+    </tocitem>
 </toc>
