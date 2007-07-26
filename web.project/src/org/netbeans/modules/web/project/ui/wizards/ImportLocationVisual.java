@@ -433,7 +433,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         jLabelPrjLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         jLabelPrjLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelPrjLocation.setLabelFor(projectLocationTextField);
-        jLabelPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel")); // NOI18N
+        jLabelPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;

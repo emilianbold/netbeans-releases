@@ -123,7 +123,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(projectLocationTextField, gridBagConstraints);
 
-        browseButton.setMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_Browse_LablelMnemonic").charAt(0));
+        browseButton.setMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_Browse_LabelMnemonic").charAt(0));
         browseButton.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
         browseButton.setActionCommand("BROWSE");
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -140,9 +140,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSN_browseButton"));
         browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(PanelProjectLocationVisual.class).getString("ACSD_browseButton"));
 
-        createdFolderLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
+        createdFolderLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_LabelMnemonic").charAt(0));
         createdFolderLabel.setLabelFor(createdFolderTextField);
-        createdFolderLabel.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
+        createdFolderLabel.setText(org.openide.util.NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
