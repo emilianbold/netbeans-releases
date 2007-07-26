@@ -95,7 +95,6 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.samples.postrel</friend>
                 <package>org.netbeans.modules.visualweb.samples.bundled.wizard</package>
