@@ -54,6 +54,8 @@ public final class TreeGraphLayout<N,E> extends GraphLayout<N,E> {
         if (rootNode == null)
             return;
         Collection<N> allNodes = graph.getNodes ();
+        if (! allNodes.contains (rootNode))
+            return;
         ArrayList<N> nodesToResolve = new ArrayList<N> (allNodes);
 
         HashSet<N> loadedSet = new HashSet<N> ();
