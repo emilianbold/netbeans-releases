@@ -99,13 +99,12 @@ public class LineBreakpointPanel extends JPanel implements Controller, org.openi
 
         tfLineNumber.setText(Integer.toString(b.getLineNumber()));
         conditionsPanel = new ConditionsPanel();
+        setupConditionPane();
         conditionsPanel.showClassFilter(false);
         conditionsPanel.setCondition(b.getCondition());
         conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());
         conditionsPanel.setHitCount(b.getHitCountFilter());
         cPanel.add(conditionsPanel, "Center");
-        
-        setupConditionPane();
         
         actionsPanel = new ActionsPanel (b);
         pActions.add (actionsPanel, "Center");
