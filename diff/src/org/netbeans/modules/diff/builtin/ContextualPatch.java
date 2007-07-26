@@ -122,6 +122,7 @@ public final class ContextualPatch {
         patch.targetFile = computeTargetFile(patch, context);
         if (patch.targetFile.exists()) {
             target = readFile(patch.targetFile);
+            if (patchCreatesNewFileThatAlreadyExists(patch, target)) return;
         } else {
             target = new ArrayList<String>();
         }
@@ -132,6 +133,16 @@ public final class ContextualPatch {
             backup(patch.targetFile);
             writeFile(patch, target);
         }
+    }
+
+    private boolean patchCreatesNewFileThatAlreadyExists(SinglePatch patch, List<String> originalFile) throws PatchException {
+        if (patch.hunks.length != 1) return false;
+        Hunk hunk = patch.hunks[0];
+        if (hunk.baseStart != 0 || hunk.baseCount != 0 || hunk.modifiedStart != 1 || hunk.modifiedCount != originalFile.size()) return false;
+
+        List<String> target = new ArrayList<String>(hunk.modifiedCount);
+        applyHunk(target, hunk);
+        return target.equals(originalFile);
     }
 
     private void backup(File target) throws IOException {
