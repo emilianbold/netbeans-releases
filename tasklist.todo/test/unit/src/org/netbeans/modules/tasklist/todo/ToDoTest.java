@@ -114,7 +114,9 @@ public class ToDoTest extends TestBase {
        return scanTasks(MainProjectScanningScope.create());
     }
     private List<Task> scanCurrentEditorTasks() { 
-        return scanTasks(CurrentEditorScanningScope.create());
+        CurrentEditorScanningScope scanScope = CurrentEditorScanningScope.create();
+        scanScope.run();
+        return scanTasks(scanScope);
     }
     
     public void testProject1() throws IOException {
