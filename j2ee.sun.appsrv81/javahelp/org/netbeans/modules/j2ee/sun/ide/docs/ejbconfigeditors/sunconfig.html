@@ -12,21 +12,30 @@
 
         -->
 
-        <title>sun-ejb-jar.xml Visual Editor: Sun Configuration</title>
+        <title>sun-ejb-jar.xml Visual Editor</title>
 
         <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 
     </head>
 
-    <h2><tt>sun-ejb-jar.xml</tt> Visual Editor: Sun Configuration</h2>
+    <h2><tt>sun-ejb-jar.xml</tt> Visual Editor</h2>
     <p><small><a href="#seealso">See Also</a></small></p> 
+    <p>The <tt>sun-ejb-jar.xml</tt> visual editor enables you to configure descriptor settings for an EJB module
+    when your target server is the Sun Java System Application Server/GlassFish.</p>
     <p>You open the visual editor by expanding your project's Configuration Files node in 
-    the Projects window and double-clicking the <tt>sun-ejb-jar.xml</tt> file or the <tt>sun-cmp-mappings.xml</tt> file. 
-    The Sun Configuration pane of the visual editor enables you to set <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/editing/define_cmp_field.html">CMP resource 
-    properties</a> and properties for the persistent manager and Java messaging. Additional properties can be
-    set in the <a href="sunconfig_tabs.html">Sun configuration tabs in the visual editor</a>.</p>
-    <p>The visual editor displays a tree in the left pane with the configurable beans displayed below
-    the Sun Configuration node (&nbsp;<img src="../images/dd.gif">&nbsp;).  The following bean types may be visible in the tree:</p>
+    the Projects window and double-clicking the <tt>sun-ejb-jar.xml</tt> file or the <tt>sun-cmp-mappings.xml</tt> file.</p>
+    
+    <p>The visual editor groups descriptor settings under the following tabs.</p>
+    <ul>
+        <li><b>General.</b> </li>
+        <li><b>EJB.</b> This tab enables you to set resource references in the EJBs in the module.</li>
+        <li><b>Security.</b> This tab enables you to create and set properties for security roles in the EJB module.</li>
+        <li><b>Web Services.</b> This tab enables you to add web services used by the EJB and specify a WSDL publish location.</li>
+        <li><b>Messaging.</b> This tab enables you to add JMS message destinations used by the EJB and specify the JNDI name of the destination.</li>
+    </il>
+    <p>Additionally, clicking the XML tab enables you to view and edit the xml file directly in the xml editor.</p>
+    
+    <!--The following bean types may be visible in the tree:</p>
     <ul>
         <li><a href="sessionbean.html">Session Bean</a>. A session bean (&nbsp;<img src="../images/SessionNodeIcon.gif">&nbsp;)
         provides a service to a particular user session. A session bean can be one of two types: stateless or stateful.</li>
@@ -36,7 +45,7 @@
         <li><a href="messagebean.html">Message Bean</a>. A message bean (&nbsp;<img src="../images/MessageNodeIcon.gif">&nbsp;)
         enables enterprise applications to process messages asynchronously.</li>
     </ul>
-
+-->
     <p>Clicking on a bean node opens the 
     configuration panel for the selected bean in the visual editor.
     The configuration panes vary according to the type of bean, and 
@@ -63,7 +72,6 @@
     are visible in the Sun Configuration pane:</p>
     <ul>
         <li><b>Name.</b> (optional) This field contains the name of the module.</li>
-        <!--<li><b>Unique ID.</b> This field cannot be modified in the visual editor.</li>-->
         <li><b>CMP resource properties.</b> The CMP resource specifies the database to be used for storing CMP beans. The JNDI
 	name is required. You can modify the following resource elements in the visual editor:</p>
         <ul>

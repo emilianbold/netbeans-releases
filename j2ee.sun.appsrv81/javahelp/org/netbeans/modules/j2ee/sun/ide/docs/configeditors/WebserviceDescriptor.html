@@ -5,39 +5,48 @@
  * Copyright 2006 Sun Microsystems, Inc.
  * All rights reserved. Use is subject to license terms.
 -->
-  <title>sun-web.xml/sun-ejb-jar.xml Visual Editor: Web Service Descriptor</title>
+  <title>sun-web.xml/sun-ejb-jar.xml Visual Editor: Web Services</title>
   
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2> <tt>sun-web.xml</tt>/<tt>sun-ejb-jar.xml</tt> Visual Editor: Web Service Descriptor</h2>
+<h2> <tt>sun-web.xml</tt>/<tt>sun-ejb-jar.xml</tt> Visual Editor: Web Services</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>The <tt>sun-web.xml</tt> (or <tt>sun-ejb-jar.xml</tt>) visual editor lets you edit the platform-specific 
-  web (or enterprise bean) deployment descriptor for the Sun Java System Application Server. You open the 
-  visual editor by expanding your project's Configuration Files node in the Projects 
-  window and double-clicking the <tt>sun-web.xml</tt> (or <tt>sun-ejb-jar.xml</tt> or <tt>sun-cmp-mappings.xml</tt>) 
-  file. A web application (or enterprise bean) only contains a <tt>sun-web.xml</tt> (or <tt>sun-ejb-jar.xml</tt> or <tt>sun-cmp-mappings.xml</tt>)
-  deployment descriptor if its target server is the Sun Java System Application Server. </p>
-<p>You get to this pane by expanding the Web Services node
-  in the <tt>sun-web.xml</tt> (or <tt>sun-ejb-jar.xml</tt>) visual editor and clicking the
-  web service descriptor node (&nbsp;<img src="../images/WebServiceDescriptorIcon16.png">&nbsp;) 
-  for the web service whose runtime properties you wish to edit.</p>
-<ul class="note">
-<li>The Web Services node is visible when a <tt>webservices.xml</tt> also exists in the project.  
-  In other words, this node only appears for web and enterprise bean projects that implement web services.</li>
-</ul>
+<p>The <tt>sun-web.xml</tt>/<tt>sun-ejb-jar.xml</tt> visual editor lets you edit the platform-specific 
+    deployment descriptors for Sun Java System Application Server/GlassFish. 
+The pane lists the web services in the project.</p>
+  
+<p>A web or enterprise application will only contain the <tt>sun-web.xml</tt> or <tt>sun-ejb-jar.xml</tt> 
+deployment descriptors if the target server is the Sun Java System Application Server/GlassFish.</p>
+
+<p>You get to this pane by expanding your project's Configuration Files node in the Projects window 
+and double-clicking <tt>sun-web.xml</tt> or <tt>sun-ejb-jar.xml</tt> and clicking the Web Services tab.</p>
+  
+<p>Click Add Web Service to add a descriptor properties for a web service.
+Each web service has the following properties.</p>
+
+
+
 <h3>Web Service Description Name</h3>
 <p>This is the web service description name as read from the corresponding entry for this service in your <tt>webservices.xml</tt> file.
 <h3>WSDL Publish Location</h3>
 <p>Optionally enter a URL of a directory to which this web service's WSDL and any dependent
   files are published during deployment.</p>
-<h3><a name="endpointprops">Web Service Endpoints</a></h3>
+
+  <ul class="note">
+    <li>The Web Services node is visible when a <tt>webservices.xml</tt> also exists in the project.  
+    In other words, this node only appears for web and enterprise bean projects that implement web services.</li>
+</ul>
+  
+  <!--
+  <h3><a name="endpointprops">Web Service Endpoints</a></h3>
 <p>Use this table to edit the properties of any endpoints exposed by this web service.  
   An endpoint identifies the final destination of a service or a message.
   In the web service context, an endpoint is the URL at which the service can be reached.
   The table should automatically be prepopulated with entries corresponding to the ports
   defined for this service in <tt>webservices.xml</tt>.  
-</p>
+</p>-->
+<!--
 <table border="1">
   <tr> 
     <th scope="col" valign="top">Name</th>
@@ -91,7 +100,7 @@
 </table>
 <br>
 <p>For more information, see <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/webservice/build/about_build_ws.html">About Building Web Services</a>.</p>
-
+-->
 <dl>
         <dt><a name="seealso">See Also</a></dt>
       <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>

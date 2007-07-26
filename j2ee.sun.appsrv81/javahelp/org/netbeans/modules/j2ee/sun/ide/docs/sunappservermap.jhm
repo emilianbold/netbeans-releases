@@ -46,9 +46,9 @@
     <mapID target="AS_CFG_SecurityRoleEditPrincipal"		url="configeditors/SecurityWebEditPrincipal.html"  />
     <mapID target="AS_CFG_SecurityRoleNewGroup"                 url="configeditors/SecurityWebAddGroup.html"  />
     <mapID target="AS_CFG_SecurityRoleEditGroup"                url="configeditors/SecurityWebEditGroup.html"  />
-    <mapID target="AS_CFG_SecurityRoleAssignment"		url="configeditors/SecurityWebRoleMapping.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingView"		url="configeditors/SecurityWebRoleMapping.html"  />
     <mapID target="AS_CFG_SecurityRoleMapping"  		url="configeditors/SecurityWebRoleMapping.html"  />
-    <mapID target="AS_CFG_WebAppGeneral"			url="configeditors/WebAppGeneral.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode"		url="configeditors/WebAppGeneral.html"  />
     <mapID target="AS_CFG_WebAppJspConfigProperty" 		url="configeditors/WebAppGeneral.html"  />
     <mapID target="AS_CFG_WebAppProperty" 			url="configeditors/WebAppGeneral.html"  />
     <mapID target="AS_CFG_WebAppMessageDestination" 		url="configeditors/WebAppMessages.html"  />
@@ -64,26 +64,17 @@
     <mapID target="AS_CFG_WebAppCacheMappingKeyField" 		url="configeditors/WebAppCacheMappingPolicy.html"  />
     <mapID target="AS_CFG_WebAppCacheMappingConstraintField" 		url="configeditors/WebAppCacheMappingConstraintField.html"  />
     <mapID target="AS_CFG_WebAppCacheMappingConstraintFieldValue" 	url="configeditors/WebAppCacheMappingConstraintField.html"  />
-    <mapID target="AS_CFG_WebAppClassloader"           		url="configeditors/WebAppClassloader.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"           		url="configeditors/WebAppClassloader.html"  />
     <mapID target="AS_CFG_WebAppMessages"           		url="configeditors/WebAppMessages.html"  />
     <mapID target="AS_CFG_SessionConfigurationManager" 			url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationManagerProperty" 		url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationStoreProperty" 		url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationCookie" 			url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationCookieProperty" 		url="configeditors/SessionConfigurationManager.html"  />
-    <mapID target="AS_CFG_Servlet" 				url="configeditors/Servlet.html"  />
-    <mapID target="AS_CFG_EjbRef" 				url="configeditors/EjbRef.html"  />
-    <mapID target="AS_CFG_ResourceRef" 				url="configeditors/ResourceRef.html"  />
-    <mapID target="AS_CFG_ResourceEnvRef" 			url="configeditors/ResourceEnvRef.html"  />
-    <mapID target="AS_CFG_ServiceRefGeneral" 			url="configeditors/ServiceRefGeneral.html"  />
-    <mapID target="AS_CFG_ServiceRefCallProperty" 		url="configeditors/ServiceRefCallProperty.html"  />
-    <mapID target="AS_CFG_ServiceRefPortInfo" 			url="configeditors/ServiceRefPortInfo.html"  />
-    <mapID target="AS_CFG_ServiceRefPortInfoStubProperty" 	url="configeditors/ServiceRefPortInfoStubProperty.html"  />
-    <mapID target="AS_CFG_ServiceRefPortInfoCallProperty" 	url="configeditors/ServiceRefPortInfoCallProperty.html"  />
-    <mapID target="AS_CFG_WebServices" 	url="configeditors/WebserviceDescriptor.html"  />
-    <mapID target="AS_CFG_WebServiceDescriptor" 	url="configeditors/WebserviceDescriptor.html"  />
-    <mapID target="AS_CFG_WebServiceEndpoint" 	url="configeditors/WebserviceDescriptor.html"  />
-    <mapID target="AS_CFG_ChangeDocTypePanelHelp" 	url="configeditors/ChangeDocType.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView"                   url="configeditors/Servlet.html"  />
+    <mapID target="AS_CFG_ServiceRefPortInfoStubProperty"                                               url="configeditors/ServiceRefPortInfoStubProperty.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceNode" 	url="configeditors/WebserviceDescriptor.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode"             url="configeditors/WebserviceClients.html"  />
 
    <!-- Sun Resource New File wizard and property sheet CSH pages: -->
    <mapID target="AS_Wiz_ConnPool_chooseDB" 		url="resourcewizards/ConnPool_chooseDB.html"  />
@@ -105,13 +96,13 @@
     <mapID target="AS_RegServ_DefinePorts"      				url="runtimetab/RegServ_Create.html" />
   
     <!-- sun-ejb-jar.xml DD editor CSH: -->
-  <mapID target="AS_CFG_EjbJarCmpResource"              			url="ejbconfigeditors/sunconfig.html" />
+  <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"              			url="ejbconfigeditors/sunconfig.html" />
   <mapID target="AS_CFG_StatefulEjb"            				url="ejbconfigeditors/sessionbean.html" />
   <mapID target="AS_CFG_StatelessEjb"            				url="ejbconfigeditors/sessionbean.html" />
-  <mapID target="AS_CFG_EntityEjb"              				url="ejbconfigeditors/entitybean.html" />
+  <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode"              				url="ejbconfigeditors/entitybean.html" />
   <mapID target="AS_CFG_CmpEntityEjb"            				url="ejbconfigeditors/entitybean.html" />
   <mapID target="AS_CFG_MDEjb"                  				url="ejbconfigeditors/messagebean.html" />
-  <mapID target="AS_CFG_EjbJarMessages"            				url="ejbconfigeditors/sun-msgdestination.html" />
+  <!-- <mapID target="AS_CFG_EjbJarMessages"            				url="ejbconfigeditors/sun-msgdestination.html" /> -->
   <mapID target="AS_CFG_OneOneFinder"            				url="ejbconfigeditors/ent-finder.html" />
   <mapID target="AS_CFG_EjbJarPmDescriptors"            			url="ejbconfigeditors/sun-pmdescriptor.html" />
   <mapID target="AS_CFG_EjbJarCmpProperty"                                      url="ejbconfigeditors/sun-cmpproperty.html" />
