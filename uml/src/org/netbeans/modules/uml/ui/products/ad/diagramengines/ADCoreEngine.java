@@ -4851,8 +4851,8 @@ public class ADCoreEngine extends DiagramEngine
 	
 	public void addNormalAccelerators(ETList<String> accelsToRegister, boolean bAddLayoutAccelerators)
 	{
-		accelsToRegister.add(IDrawingAreaAcceleratorKind.DAVK_DOWN);
-		accelsToRegister.add(IDrawingAreaAcceleratorKind.DAVK_UP);
+//		accelsToRegister.add(IDrawingAreaAcceleratorKind.DAVK_DOWN);
+//		accelsToRegister.add(IDrawingAreaAcceleratorKind.DAVK_UP);
 		accelsToRegister.add(IDrawingAreaAcceleratorKind.DAVK_TAB);
                 
                 String copy = IDrawingAreaAcceleratorKind.DAVK_COPY;
@@ -4939,8 +4939,9 @@ public class ADCoreEngine extends DiagramEngine
 				boolean bFoundAccel = true;
 	
 				// register accels when we have focus
-				if (nKind.equals(IDrawingAreaAcceleratorKind.DAVK_DOWN) ||
-					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_UP) ||
+				if (
+//                                      nKind.equals(IDrawingAreaAcceleratorKind.DAVK_DOWN) ||
+//					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_UP) ||
 					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_TAB) ||
 					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_ATTRIBUTE) ||
 					nKind.equals(IDrawingAreaAcceleratorKind.DAVK_CREATE_OPERATION) ||

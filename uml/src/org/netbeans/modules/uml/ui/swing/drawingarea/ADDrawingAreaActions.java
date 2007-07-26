@@ -283,29 +283,30 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
     {
         //Jyothi: Pan only when nothing is selected on the diagram
         ETList <IPresentationElement> graphObjects =  m_drawingArea.getSelected();
-        if (graphObjects == null)
+        ADGraphWindow graphWindow = getGraphWindow();
+        if (graphObjects == null || graphObjects.size() == 0)
         {
             switch (direction)
             {
             case KeyEvent.VK_LEFT :
-                getGraphWindow().scrollBy(-20, 0, true);
+                graphWindow.scrollBy(-20, 0, true);
                 break;
                 
             case KeyEvent.VK_RIGHT :
-                getGraphWindow().scrollBy(20, 0, true);
+                graphWindow.scrollBy(20, 0, true);
                 break;
                 
             case KeyEvent.VK_UP :
-                getGraphWindow().scrollBy(0, -20, true);
+                graphWindow.scrollBy(0, -20, true);
                 break;
                 
             case KeyEvent.VK_DOWN :
-                getGraphWindow().scrollBy(0, 20, true);
+                graphWindow.scrollBy(0, 20, true);
                 break;
             }
         }
     }
-    
+
     /**
      * This method selects all the visible objects in the selected graph
      * window.
@@ -322,8 +323,9 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
      */
     public void onSelectNodes()
     {
-        getGraphWindow().deselectAll(false);
-        getGraphWindow().selectAllNodes(true);
+        ADGraphWindow graphWindow = getGraphWindow();
+        graphWindow.deselectAll(false);
+        graphWindow.selectAllNodes(true);
     }
     
     /**
@@ -332,8 +334,9 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
      */
     public void onSelectEdges()
     {
-        getGraphWindow().deselectAll(false);
-        getGraphWindow().selectAllEdges(true);
+        ADGraphWindow graphWindow = getGraphWindow();
+        graphWindow.deselectAll(false);
+        graphWindow.selectAllEdges(true);
     }
     
     /**
@@ -342,12 +345,12 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
      */
     public void onSelectLabels()
     {
-        getGraphWindow().deselectAll(false);
+        ADGraphWindow graphWindow = getGraphWindow();
+        graphWindow.deselectAll(false);
         
         // don't fire events here, we don't want three.
-        
-        getGraphWindow().selectAllEdgeLabels(true);
-        getGraphWindow().selectAllNodeLabels(true);
+        graphWindow.selectAllEdgeLabels(true);
+        graphWindow.selectAllNodeLabels(true);
     }
     
     /**
@@ -500,8 +503,9 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
      */
     public void onCustomZoom()
     {
+        ADGraphWindow graphWindow = getGraphWindow();
         // fetch the current zoom level from the graph window
-        double currentZoom = 100 * getGraphWindow().getZoomLevel();
+        double currentZoom = 100 * graphWindow.getZoomLevel();
         currentZoom = java.lang.Math.round(currentZoom * 100.0) / 100.0;
         
         String string = String.valueOf(currentZoom);
@@ -532,7 +536,7 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
                 
                 //if out of bounds, throw an exception to be caught below.
                 
-                if ((newZoomLevel < (getGraphWindow().getMinZoomLevel() * 100)) || (newZoomLevel > (getGraphWindow().getMaxZoomLevel() * 100)))
+                if ((newZoomLevel < (graphWindow.getMinZoomLevel() * 100)) || (newZoomLevel > (graphWindow.getMaxZoomLevel() * 100)))
                 {
                     throw new Exception();
                 }
@@ -543,16 +547,16 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
                 
                 if (zoomFraction != currentZoom)
                 {
-                    getGraphWindow().setZoomLevel(zoomFraction, true);
+                    graphWindow.setZoomLevel(zoomFraction, true);
                 }
                 
             }
             catch (Exception e)
             {
                 // inform the user of the error
-                String message = TSSystem.replace(getResources().getStringResource("dialog.zoomError.message"), ADDrawingAreaConstants.X_PLACEHOLDER, "" + getGraphWindow().getMinZoomLevel() * 100);
+                String message = TSSystem.replace(getResources().getStringResource("dialog.zoomError.message"), ADDrawingAreaConstants.X_PLACEHOLDER, "" + graphWindow.getMinZoomLevel() * 100);
                 
-                message = TSSystem.replace(message, ADDrawingAreaConstants.Y_PLACEHOLDER, "" + getGraphWindow().getMaxZoomLevel() * 100);
+                message = TSSystem.replace(message, ADDrawingAreaConstants.Y_PLACEHOLDER, "" + graphWindow.getMaxZoomLevel() * 100);
                 
                 JOptionPane.showMessageDialog(this.m_drawingArea,
                         message,
@@ -561,7 +565,7 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
             }
         }
         
-        getGraphWindow().fastRepaint();
+        graphWindow.fastRepaint();
     }
     
     /**
@@ -862,9 +866,11 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
         Debug.out.println(" ADDrawingAreaActions : actionPerformed");
         String command = event.getActionCommand();
         
+        ADGraphWindow graphWindow = getGraphWindow();
+        
         if (this.m_drawingArea.hasGraphWindow())
         {
-            getGraphWindow().getCanvas().requestFocus();
+            graphWindow.getCanvas().requestFocus();
         }
         
         // if the command is not a key release,
@@ -882,31 +888,31 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
             if (ADDrawingAreaConstants.MOVE_LEFT.equals(command))
             {
                 onPreMoveObjects();
-                getGraphWindow().move(ADMoveSelectedKeyAdapter.LEFT);
-                getGraphWindow().finalizeMove();
+                graphWindow.move(ADMoveSelectedKeyAdapter.LEFT);
+                graphWindow.finalizeMove();
             }
             else if (ADDrawingAreaConstants.MOVE_RIGHT.equals(command))
             {
                 onPreMoveObjects();
-                getGraphWindow().move(ADMoveSelectedKeyAdapter.RIGHT);
-                getGraphWindow().finalizeMove();
+                graphWindow.move(ADMoveSelectedKeyAdapter.RIGHT);
+                graphWindow.finalizeMove();
             }
             else if (ADDrawingAreaConstants.MOVE_UP.equals(command))
             {
                 onPreMoveObjects();
-                getGraphWindow().move(ADMoveSelectedKeyAdapter.UP);
-                getGraphWindow().finalizeMove();
+                graphWindow.move(ADMoveSelectedKeyAdapter.UP);
+                graphWindow.finalizeMove();
             }
             else if (ADDrawingAreaConstants.MOVE_DOWN.equals(command))
             {
                 onPreMoveObjects();
-                getGraphWindow().move(ADMoveSelectedKeyAdapter.DOWN);
-                getGraphWindow().finalizeMove();
+                graphWindow.move(ADMoveSelectedKeyAdapter.DOWN);
+                graphWindow.finalizeMove();
             }
             else
             {
                 // if it's not a move, finalize any pending moves.
-                getGraphWindow().finalizeMove();
+                graphWindow.finalizeMove();
             }
         }
         
@@ -1254,24 +1260,25 @@ public class ADDrawingAreaActions extends Object implements ActionListener, TSGr
     //jyothi
     public void graphChanged(TSGraphChangeEvent event)
     {
-        if (    (event.getType() == TSGraphChangeEvent.GRAPH_INSERTED) ||
-                (event.getType() == TSGraphChangeEvent.GRAPH_REMOVED) ||
-                (event.getType() == TSGraphChangeEvent.GRAPH_RENAMED) ||
-                (event.getType() == TSGraphChangeEvent.GRAPH_DISCARDED) ||
-                (event.getType() == TSGraphChangeEvent.NODE_INSERTED) ||
-                (event.getType() == TSGraphChangeEvent.NODE_REMOVED) ||
-                (event.getType() == TSGraphChangeEvent.NODE_RENAMED) ||
-                (event.getType() == TSGraphChangeEvent.NODE_DISCARDED) ||
-                (event.getType() == TSGraphChangeEvent.EDGE_INSERTED) ||
-                (event.getType() == TSGraphChangeEvent.EDGE_REMOVED) ||
-                (event.getType() == TSGraphChangeEvent.EDGE_RENAMED) ||
-                (event.getType() == TSGraphChangeEvent.EDGE_DISCARDED) ||
-                (event.getType() == TSGraphChangeEvent.EDGE_ENDNODE_CHANGED)
+        long type = event.getType();
+        if (    (type == TSGraphChangeEvent.GRAPH_INSERTED) ||
+                (type == TSGraphChangeEvent.GRAPH_REMOVED) ||
+                (type == TSGraphChangeEvent.GRAPH_RENAMED) ||
+                (type == TSGraphChangeEvent.GRAPH_DISCARDED) ||
+                (type == TSGraphChangeEvent.NODE_INSERTED) ||
+                (type == TSGraphChangeEvent.NODE_REMOVED) ||
+                (type == TSGraphChangeEvent.NODE_RENAMED) ||
+                (type == TSGraphChangeEvent.NODE_DISCARDED) ||
+                (type == TSGraphChangeEvent.EDGE_INSERTED) ||
+                (type == TSGraphChangeEvent.EDGE_REMOVED) ||
+                (type == TSGraphChangeEvent.EDGE_RENAMED) ||
+                (type == TSGraphChangeEvent.EDGE_DISCARDED) ||
+                (type == TSGraphChangeEvent.EDGE_ENDNODE_CHANGED)
                 )
         {
             this.m_drawingArea.setChanged(true);
         }
-        if ((event.getType() == TSGraphChangeEvent.GRAPH_INSERTED || event.getType() == TSGraphChangeEvent.ANY_CHANGE) && this.m_drawingArea.isAutoFitInWindow())
+        if ((type == TSGraphChangeEvent.GRAPH_INSERTED || type == TSGraphChangeEvent.ANY_CHANGE) && this.m_drawingArea.isAutoFitInWindow())
         {
             getGraphWindow().fitInWindow(true);
         }
