@@ -40,7 +40,8 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel1.text")); // NOI18N
+        jLabel1.setLabelFor(daysTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.jLabel1.text")); // NOI18N
 
         daysTextField.setText(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
 
@@ -57,7 +58,7 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
                 .add(daysTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel3)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -69,6 +70,9 @@ public class LocalHistoryOptionsPanel extends javax.swing.JPanel {
                     .add(jLabel3))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        daysTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "ACSN_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
+        daysTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(LocalHistoryOptionsPanel.class, "ACSD_LocalHistoryOptionsPanel.daysTextField.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
