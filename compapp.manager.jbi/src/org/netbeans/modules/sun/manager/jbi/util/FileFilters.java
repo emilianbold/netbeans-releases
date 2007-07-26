@@ -64,7 +64,7 @@ public class FileFilters {
         
         public static FileFilter getInstance() {
             if (instance == null) {
-                instance = new ZipFileFilter();
+                instance = new JarFileFilter();
             }
             return instance;
         }
@@ -85,7 +85,7 @@ public class FileFilters {
         
         public static FileFilter getInstance() {
             if (instance == null) {
-                instance = new ZipFileFilter();
+                instance = new ArchiveFileFilter();
             }
             return instance;
         }
