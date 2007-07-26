@@ -223,7 +223,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         }
 
         if ( tree != null ) {
-            String declaration = tree.toString();
+            String declaration = unicodeToUtf(tree.toString());
             if (element.getKind() ==  ElementKind.CONSTRUCTOR) {
                 String constructorName = element.getEnclosingElement().getSimpleName().toString();
                 declaration = declaration.replaceAll(Pattern.quote("<init>"), Matcher.quoteReplacement(constructorName));
@@ -242,10 +242,74 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                         }
                     }
                 }
+            } else if ( element.getKind() == ElementKind.FIELD ) {
+                declaration = declaration + ";"; // NOI18N 
             }
             setDeclaration(declaration);
             return;
         }
+    }
+    
+    private String unicodeToUtf( String s ) {
+        
+        char buf[] = new char[s.length()];
+        s.getChars(0, s.length(), buf, 0);
+        
+        int j = 0;
+        for( int i = 0; i < buf.length; i++ ) {
+            
+            if (buf[i] == '\\' ) {                
+                i++;
+                char ch = buf[i];
+                if (ch == 'u') {
+                    do {
+                        i++; 
+                        ch = buf[i];
+                    } 
+                    while (ch == 'u');
+                    
+                    int limit = i + 3;
+                    if (limit < buf.length) {
+                        int d = digit(16, buf[i]);
+                        int code = d;
+                        while (i < limit && d >= 0) {
+                            i++; 
+                            ch = buf[i];
+                            d = digit(16, ch);
+                            code = (code << 4) + d;
+                        }
+                        if (d >= 0) {
+                            ch = (char)code;
+                            buf[j] = ch;
+                            j++;
+                            //unicodeConversionBp = bp;
+                            // return;
+                        }
+                    }
+                    // lexError(bp, "illegal.unicode.esc");
+                } else {
+                    i--;
+                    j++;
+                    // buf = '\\';
+                }
+            }
+            else {
+                buf[j] = buf[i];
+                j++;
+            }
+	}
+        
+        return new String( buf, 0, j);
+    }
+    
+     private int digit(int base, char ch) {
+	char c = ch;
+	int result = Character.digit(c, base);
+	if (result >= 0 && c > 0x7f) {
+	    // lexError(pos+1, "illegal.nonascii.digit");
+	    ch = "0123456789abcdef".charAt(result);
+	}
+	return result;
     }
     
     private void updateNavigatorSelection(CompilationInfo ci, TreePath tp) {
