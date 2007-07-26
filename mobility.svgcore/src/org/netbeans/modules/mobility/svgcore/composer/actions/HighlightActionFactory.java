@@ -31,8 +31,10 @@ public class HighlightActionFactory extends AbstractComposerActionFactory {
         super(sceneMgr);
     }
 
-    public synchronized ComposerAction startAction(InputEvent e) {        
-        if ( e.getID() == MouseEvent.MOUSE_MOVED && 
+    public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
+        if ( !isOutsideEvent &&
+             !m_sceneMgr.isReadOnly() &&                
+             e.getID() == MouseEvent.MOUSE_MOVED && 
              !m_sceneMgr.containsAction(HighlightAction.class)) {
             MouseEvent me = (MouseEvent)e;
             SVGObject [] objects = m_sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());

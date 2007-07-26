@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
+import com.sun.perseus.j2d.Transform;
 import com.sun.perseus.model.*;
 import com.sun.perseus.model.Animate;
 import com.sun.perseus.model.DocumentNode;
@@ -54,5 +55,5 @@ public final class PatchedAnimate extends Animate implements PatchedElement {
     
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedAnimate(doc, getLocalName());
-    }    
+    }   
 }

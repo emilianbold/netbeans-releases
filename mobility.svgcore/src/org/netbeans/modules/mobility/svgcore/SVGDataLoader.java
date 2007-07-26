@@ -48,6 +48,5 @@ public class SVGDataLoader extends UniFileLoader {
     
     protected String actionsContext() {
         return "Loaders/" + REQUIRED_MIME + "/Actions";
-    }
-    
+    }    
 }

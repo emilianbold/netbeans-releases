@@ -16,7 +16,6 @@ package org.netbeans.modules.mobility.svgcore.composer.actions;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -40,25 +39,23 @@ public class RotateActionFactory extends AbstractComposerActionFactory {
     private static final int   ROTATE_PIVOT_SIZE          = 4;
     private static final Color COLOR_ROTATE_PIVOT_BODY    = Color.BLACK;
     private static final Color COLOR_ROTATE_PIVOT_OUTLINE = Color.WHITE;
-    private static final Image ROTATE_CURSOR_ICON = org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/rotate_cursor.png"); // NOI18N        
+    private static final ActionMouseCursor ROTATE_MOUSE_CURSOR = new ActionMouseCursor( 
+                Toolkit.getDefaultToolkit().createCustomCursor(org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/rotate_cursor.png"), // NOI18N
+                new Point(8,8), "rotateCursor"), 3);
     
-    //TODO use specific rotate cursor
-    private static final ActionMouseCursor ROTATE_MOUSE_CURSOR = new ActionMouseCursor( Toolkit.getDefaultToolkit().createCustomCursor(ROTATE_CURSOR_ICON, new Point(8,8), "rotateCursor"), 3);
-    
-    //TODO make it non-static inner class
-    private static class RotateAction extends AbstractComposerAction {
+    private class RotateAction extends AbstractComposerAction {
         private final SVGObject m_rotated;
         private final float     m_initialAngle;
 
-        public RotateAction(ComposerActionFactory factory, SVGObject rotated, MouseEvent me) {
-            super(factory);
+        public RotateAction(SVGObject rotated, MouseEvent me) {
+            super(RotateActionFactory.this);
             m_rotated = rotated;
             repaintRotatePivot();
             m_initialAngle = calculateRotate(me.getX(), me.getY());
         }
 
-        public boolean consumeEvent(InputEvent evt) {
-            if ( evt.getID() == MouseEvent.MOUSE_DRAGGED) {
+        public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
+            if ( !isOutsideEvent && evt.getID() == MouseEvent.MOUSE_DRAGGED) {
                 MouseEvent me = (MouseEvent)evt;
                 
                 //calculate area to repaint
@@ -83,12 +80,16 @@ public class RotateActionFactory extends AbstractComposerActionFactory {
             GraphicUtils.drawRoundSelectorCorner(g, COLOR_ROTATE_PIVOT_OUTLINE,
                     COLOR_ROTATE_PIVOT_BODY, (int) (pt[0] + x),(int)(pt[1] + y),
                     ROTATE_PIVOT_SIZE);
-        }   
+        }
+
+        public ActionMouseCursor getMouseCursor(boolean isOutsideEvent) {
+            return isOutsideEvent ? null : ROTATE_MOUSE_CURSOR;
+        }        
         
         public void actionCompleted() {
             m_rotated.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
             repaintRotatePivot();
-            applyChanges(m_rotated);
+            m_rotated.applyTextChanges();
             super.actionCompleted();
         }
         
@@ -110,19 +111,21 @@ public class RotateActionFactory extends AbstractComposerActionFactory {
         super(sceneMgr);
     }
     
-    public synchronized ComposerAction startAction(InputEvent e) {        
-        if ( e.getID() == MouseEvent.MOUSE_PRESSED) {
+    public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
+        if ( !isOutsideEvent &&
+             !m_sceneMgr.isReadOnly() &&
+             e.getID() == MouseEvent.MOUSE_PRESSED) {
             MouseEvent me = (MouseEvent)e;
             SVGObject selObj = getObjectToRotateAt(me);
             if ( selObj != null) {
-                return new RotateAction(this, selObj, me);
+                return new RotateAction(selObj, me);
             }
         } 
         return null;
     }
 
-    public ActionMouseCursor getMouseCursor(InputEvent evt) {
-        if ( getObjectToRotateAt((MouseEvent)evt) != null) {
+    public ActionMouseCursor getMouseCursor(MouseEvent evt, boolean isOutsideEvent) {
+        if ( !isOutsideEvent && getObjectToRotateAt(evt) != null) {
             return ROTATE_MOUSE_CURSOR;
         }
         return null;

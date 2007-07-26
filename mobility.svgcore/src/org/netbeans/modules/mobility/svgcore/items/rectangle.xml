@@ -8,8 +8,8 @@
 height="50" fill="blue" stroke="black" stroke-width="1" opacity="0.5"/>]]>
      </body>
      
-     <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/icon16.png" />
-     <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/icon32.png" />
+     <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/rectangle_16.png" />
+     <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/rectangle_32.png" />
      
      <description 
          localizing-bundle="org.netbeans.modules.mobility.svgcore.Bundle"

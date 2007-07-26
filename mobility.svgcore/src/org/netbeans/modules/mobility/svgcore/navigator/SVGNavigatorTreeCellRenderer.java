@@ -26,7 +26,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeCellRenderer;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.awt.HtmlRenderer;
@@ -40,12 +39,12 @@ import org.openide.util.Utilities;
  */
 class SVGNavigatorTreeCellRenderer extends DefaultTreeCellRenderer {    
     private static final String TAG_16      = "org/netbeans/modules/xml/text/navigator/resources/tag.png";
-    private static final String TAG_GRAY_16 = "org/netbeans/modules/mobility/svgcore/resources/tag_gray.png";
     private static final String PI_16       = "org/netbeans/modules/xml/text/navigator/resources/xml_declaration.png";
     private static final String DOCTYPE_16  = "org/netbeans/modules/xml/text/navigator/resources/doc_type.png";
     private static final String CDATA_16    = "org/netbeans/modules/xml/text/navigator/resources/cdata.png";    
     private static final String ERROR_16    = "org/netbeans/modules/xml/text/navigator/resources/badge_error.png";
     private static final String ANIMATE_16  = "org/netbeans/modules/mobility/svgcore/resources/badge_animate.png";
+    private static final String TAG_GRAY_16 = "org/netbeans/modules/mobility/svgcore/resources/tag_gray.png";
     
     private final Image  ERROR_IMAGE   = Utilities.loadImage(ERROR_16, true);   
     private final Image  ANIMATE_IMAGE = Utilities.loadImage(ANIMATE_16, true);   

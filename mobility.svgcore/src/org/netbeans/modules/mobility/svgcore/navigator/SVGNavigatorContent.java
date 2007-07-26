@@ -41,6 +41,8 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.modules.mobility.svgcore.view.source.SVGSourceMultiViewElement;
 import org.netbeans.modules.mobility.svgcore.view.svg.AnimationCookie;
@@ -55,10 +57,10 @@ import org.openide.windows.TopComponent;
  *
  * @author Pavel Benes (based on the class NavigatorContent by Marek Fukala)
  */
-public class SVGNavigatorContent extends JPanel implements SVGFileModel.SelectionListener {
-    public static final String ATTRIBUTES_FILTER = "attrs";
-    public static final String ID_FILTER         = "id";
-    public static final String ANIMATION_FILTER  = "anim";
+public class SVGNavigatorContent extends JPanel implements SceneManager.SelectionListener {
+    public static final String ATTRIBUTES_FILTER = "attrs"; //NOI18N
+    public static final String ID_FILTER         = "id";    //NOI18N
+    public static final String ANIMATION_FILTER  = "anim";  //NOI18N
     
     //private static final boolean DEBUG = false;
     private static SVGNavigatorContent navigatorContentInstance = null;
@@ -86,19 +88,21 @@ public class SVGNavigatorContent extends JPanel implements SVGFileModel.Selectio
         emptyPanel.add(msgLabel, BorderLayout.CENTER);
     }
 
-    public void selectionChanged(String id) {
-        select(id);
+    public void selectionChanged( SVGObject [] newSelection, SVGObject [] oldSelection, boolean isReadOnly) {
+        if (newSelection != null) {
+            select( newSelection[0].getElementId());
+        } 
     }
     
     public synchronized void navigate(final SVGDataObject d) {   
         if (d != peerDO) {
             if (peerDO != null) {
-                peerDO.getModel().removeSelectionListener(this);
+                peerDO.getSceneManager().removeSelectionListener(this);
             }
             peerDO = d;
             
             if (d != null) {
-                d.getModel().addSelectionListener( this);
+                d.getSceneManager().addSelectionListener( this);
                 
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
@@ -175,7 +179,7 @@ public class SVGNavigatorContent extends JPanel implements SVGFileModel.Selectio
 
      private class NavigatorContentPanel extends JPanel implements 
                  FiltersManager.FilterChangeListener {
-        private final SVGDataObject    doj;
+        private final SVGDataObject    m_doj;
         private final SVGNavigatorTree tree;
         private final FiltersManager   filters;
 
@@ -199,7 +203,7 @@ public class SVGNavigatorContent extends JPanel implements SVGFileModel.Selectio
         };       
         
         public NavigatorContentPanel(SVGDataObject doj) throws Exception {
-            this.doj = doj;
+            m_doj = doj;
             setLayout(new BorderLayout());
             
             //create the JTree pane
@@ -216,19 +220,19 @@ public class SVGNavigatorContent extends JPanel implements SVGFileModel.Selectio
                         
                         switch( e.getClickCount()) {
                             case 1:
-                                TopComponent tc = NavigatorContentPanel.this.doj.getMTVC();
+                                TopComponent tc = m_doj.getMTVC();
 
                                 if ( tc != null) {
                                     Lookup           lkp     = tc.getLookup();                                
                                     SelectionCookie  cookie  = (SelectionCookie)lkp.lookup(SelectionCookie.class);
 
                                     if ( cookie != null) {
-                                        cookie.updateSelection(NavigatorContentPanel.this.doj, de, false);
+                                        cookie.updateSelection(m_doj, de, false);
                                     }
                                 }
                                 break;
                             case 2:
-                                SVGSourceMultiViewElement.selectElement(NavigatorContentPanel.this.doj, de, true);
+                                SVGSourceMultiViewElement.selectElement(m_doj, de, true);
                                 break;
                         }
                     }
@@ -263,25 +267,28 @@ public class SVGNavigatorContent extends JPanel implements SVGFileModel.Selectio
                         
                         final AnimationCookie animCookie = (AnimationCookie) getCookie(AnimationCookie.class);
                         final DocumentElement de         = getElementAt(e.getX(), e.getY());
+                        boolean               isReadOnly = m_doj.getSceneManager().isReadOnly();
                         
                         if (animCookie != null && de != null && 
                             SVGFileModel.isAnimation(de)) {
-                            JMenuItem animStart = new JMenuItem("Start animation");
+
+                            JMenuItem animStart = new JMenuItem(NbBundle.getMessage(SVGNavigatorContent.class, "LBL_AnimStart")); //NOI18N
                             animStart.addActionListener(new ActionListener() {
                                 public void actionPerformed(ActionEvent evt) {
-                                    animCookie.startAnimation(NavigatorContentPanel.this.doj, de);
+                                    animCookie.startAnimation(m_doj, de);
                                 }
                             });
-
+                            animStart.setEnabled(isReadOnly);
                             pm.add(animStart);
 
-                            JMenuItem animStop = new JMenuItem("Stop animation");
+                            JMenuItem animStop = new JMenuItem(NbBundle.getMessage(SVGNavigatorContent.class, "LBL_AnimStop")); //NOI18N
                             animStop.addActionListener(new java.awt.event.ActionListener() {
                                 public void actionPerformed(ActionEvent evt) {
-                                    animCookie.stopAnimation(NavigatorContentPanel.this.doj, de);
+                                    animCookie.stopAnimation(m_doj, de);
                                 }
                             });
 
+                            animStop.setEnabled(isReadOnly);
                             pm.add(animStop);
                         }
                         
@@ -331,7 +338,7 @@ public class SVGNavigatorContent extends JPanel implements SVGFileModel.Selectio
 
         protected Cookie getCookie(Class clazz) {
             Cookie       cookie = null;;
-            TopComponent tc     = NavigatorContentPanel.this.doj.getMTVC();
+            TopComponent tc     = m_doj.getMTVC();
 
             if ( tc != null) {
                 cookie = (Cookie) tc.getLookup().lookup(clazz);

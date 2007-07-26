@@ -16,8 +16,7 @@ package org.netbeans.modules.mobility.svgcore.composer;
 
 import com.sun.perseus.j2d.Transform;
 import java.awt.Rectangle;
-import javax.swing.text.BadLocationException;
-import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
+import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedTransformableElement;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.util.Exceptions;
 import org.w3c.dom.svg.SVGLocatableElement;
@@ -29,7 +28,8 @@ import org.w3c.dom.svg.SVGRect;
  */
 public class SVGObject {
     private final SceneManager        m_sceneMgr;
-    private       SVGLocatableElement m_elem;
+    private final SVGLocatableElement m_elem;
+    private final Transform           m_initialTransform;
     private       SVGObjectOutline    m_outline = null;
     private       boolean             m_isDeleted = false;
 
@@ -42,11 +42,18 @@ public class SVGObject {
     private       float               m_tempTranslateDy = 0;
     private       float               m_tempScale  = 1;
     private       float               m_tempRotate = 0;
+
+    private static final String ATTR_TRANSFORM = "transform";
     
     public SVGObject(SceneManager sceneMgr, SVGLocatableElement elem) {
         m_sceneMgr = sceneMgr;
         m_elem     = elem;
-        readUserTransform();            
+        
+        if (m_elem instanceof PatchedTransformableElement) {
+            m_initialTransform = ((PatchedTransformableElement) m_elem).getTransform();
+        } else {
+            m_initialTransform = null;
+        }
     }
     
     public SceneManager getSceneManager() {
@@ -70,13 +77,13 @@ public class SVGObject {
     public synchronized SVGRect getInitialScreenBBox() {
         SVGLocatableElement elem = getSVGElement();
         
-        PatchedGroup pg  = null;
-        Transform    tfm = null;
+        PatchedTransformableElement pg  = null;
+        Transform                   tfm = null;
         
-        if (elem instanceof PatchedGroup) {
-            pg = (PatchedGroup) elem;
+        if (elem instanceof PatchedTransformableElement) {
+            pg = (PatchedTransformableElement) elem;
             tfm = pg.getTransform();
-            pg.setTransform(null);
+            pg.setTransform(m_initialTransform);
         } 
         
         SVGRect rect = PerseusController.getSafeScreenBBox(elem);
@@ -131,13 +138,17 @@ public class SVGObject {
         return m_outline;
     }
     
-    public void translate(final float dx, final float dy) {
+    public void translate(final float dx, final float dy, final boolean isRelative) {
         m_sceneMgr.getPerseusController().execute(new Runnable() {
             public void run() {
                 try {
-                    checkWrapped();
-                    m_tempTranslateDx = dx;
-                    m_tempTranslateDy = dy;
+                    if ( isRelative) {
+                        m_tempTranslateDx += dx;
+                        m_tempTranslateDy += dy;
+                    } else {
+                        m_tempTranslateDx = dx;
+                        m_tempTranslateDy = dy;
+                    }
                     applyUserTransform();
                 } catch (Exception ex) {
                     System.err.println("Translate operation failed!");
@@ -146,12 +157,11 @@ public class SVGObject {
             }            
         });
     }
-
+    
     public void scale(final float scale) {
         m_sceneMgr.getPerseusController().execute(new Runnable() {
             public void run() {
                 try {
-                    checkWrapped();
                     m_tempScale = scale;
                     applyUserTransform();
                 } catch (Exception ex) {
@@ -166,10 +176,9 @@ public class SVGObject {
         m_sceneMgr.getPerseusController().execute(new Runnable() {
             public void run() {
                 try {
-                    checkWrapped();
                     m_tempRotate = rotate;
                     applyUserTransform();
-                } catch (BadLocationException ex) {
+                } catch (Exception ex) {
                     System.err.println("Rotate operation failed!");
                     Exceptions.printStackTrace(ex);
                 }
@@ -178,51 +187,31 @@ public class SVGObject {
     }
 
     public void moveToTop() {
-        try {
-            String id = getElementId();
-            getPerseusController().moveToTop(m_elem);
-            getFileModel().moveToTop(id);
-            repaint();
-        } catch(Exception e) {
-            System.err.println("MoveToTop failed");
-            e.printStackTrace();
-        }
+        String id = getElementId();
+        getPerseusController().moveToTop(m_elem);
+        getFileModel().moveToTop(id);
+        repaint();
     }
 
     public void moveToBottom() {
-        try {
-            String id = getElementId();
-            getPerseusController().moveToBottom(m_elem);
-            getFileModel().moveToBottom(id);
-            repaint();
-        } catch(Exception e) {
-            System.err.println("MoveToBottom failed");
-            e.printStackTrace();
-        }
+        String id = getElementId();
+        getPerseusController().moveToBottom(m_elem);
+        getFileModel().moveToBottom(id);
+        repaint();
     }
 
     public void moveForward() {
-        try {
-            String id = getElementId();
-            getPerseusController().moveForward(m_elem);
-            getFileModel().moveForward(id);
-            repaint();
-        } catch(Exception e) {
-            System.err.println("MoveForward failed");
-            e.printStackTrace();
-        }
+        String id = getElementId();
+        getPerseusController().moveForward(m_elem);
+        getFileModel().moveForward(id);
+        repaint();
     }
 
     public void moveBackward() {
-        try {
-            String id = getElementId();
-            getPerseusController().moveBackward(m_elem);
-            getFileModel().moveBackward(id);
-            repaint();
-        } catch(Exception e) {
-            System.err.println("MoveBackWard failed");
-            e.printStackTrace();
-        }
+        String id = getElementId();
+        getPerseusController().moveBackward(m_elem);
+        getFileModel().moveBackward(id);
+        repaint();
     }
     
     public void delete() {
@@ -236,13 +225,16 @@ public class SVGObject {
             String id = getElementId();
                     
             getPerseusController().delete(m_elem);
-            try {
-                getFileModel().deleteElement(id);
-            } catch(BadLocationException e) {
-                e.printStackTrace();
-            }
+            getFileModel().deleteElement(id);
         } else {
             System.err.println("Already deleted!");
+        }
+    }
+    
+    public void applyTextChanges() {
+        if (m_elem != null && m_elem instanceof PatchedTransformableElement) {
+        String transform = getTransformAsText((PatchedTransformableElement) m_elem);
+        m_sceneMgr.getDataObject().getModel().setAttribute(getElementId(), ATTR_TRANSFORM, transform);
         }
     }
     
@@ -283,66 +275,56 @@ public class SVGObject {
         return (m_rotate + m_tempRotate) % 360;
     }
     
+    /*
     protected synchronized boolean isWrappedObject() {
         return PatchedGroup.getWrapper(m_elem) != null;
     }
-      
+    */  
+    /*
     protected void checkWrapped() throws BadLocationException {
         if (!isWrappedObject()) {
-            wrapObject();
+            _wrapObject();
         }
         assert isWrappedObject() : "Wrapping failed";
     }
-    
-    protected synchronized void wrapObject() throws BadLocationException {
+    */
+    /*
+    protected synchronized void _wrapObject() throws BadLocationException {
         String id = getElementId();
         
         m_elem = getPerseusController().wrapElement(this);
-        getFileModel().wrapElement(id, ((PatchedGroup)m_elem).getText(false));
+        getFileModel().wrapElement(id, m_elem.getId());
     }
-        
-    public static boolean isWrapperID(String id) {
-        return id != null && id.startsWith("w_");
-    }
-            
+    */
+    
     protected void applyUserTransform() {
-        if (isWrappedObject()) {
+        if (m_elem instanceof PatchedTransformableElement) {
             getOutline().setDirty();
-            PatchedGroup pg = (PatchedGroup) m_elem;
-            SVGRect rect = PerseusController.getSafeBBox(pg);
+            PatchedTransformableElement pg = (PatchedTransformableElement) m_elem;
+            SVGRect rect = PerseusController.getSafeBBox(m_elem);
             if (rect != null) {
-                pg.setTransform(null);
                 float rotatePivotX = rect.getX() + rect.getWidth() / 2;
                 float rotatePivotY = rect.getY() + rect.getHeight() / 2;
 
                 Transform txf = new Transform( 1, 0, 0, 1, 0, 0);
+                                
                 txf.mTranslate(getCurrentTranslateX() + rotatePivotX,
                     getCurrentTranslateY() + rotatePivotY);
                 txf.mScale(getCurrentScale());
                 txf.mRotate(getCurrentRotate());
                 txf.mTranslate( -rotatePivotX, -rotatePivotY);
-
-                pg.setUserTransform(txf);
+                
+                if (m_initialTransform != null) {
+                    txf.mMultiply(m_initialTransform);
+                } 
+                
+                pg.setTransform(txf);
             } else {
                 System.err.println("Null BBox for " + pg);
             }
         }
     }
 
-    protected void readUserTransform() {
-        PatchedGroup pg = PatchedGroup.getWrapper(m_elem);
-        
-        if (pg != null) {
-            Transform txf = pg.getTransform();
-            if (txf != null) {
-                m_scale = txf.getComponent(0);
-                m_translateDx = txf.getComponent(4);
-                m_translateDy = txf.getComponent(5);
-                //TODO read rotate as well
-                m_rotate = 0;
-            }
-        }
-    }
             
     protected final PerseusController getPerseusController() {
         return m_sceneMgr.getPerseusController();
@@ -351,4 +333,20 @@ public class SVGObject {
     protected final SVGFileModel getFileModel() {
         return m_sceneMgr.getDataObject().getModel();
     }
+    
+    private static String getTransformAsText(PatchedTransformableElement telem) {
+        Transform     tfm = telem.getTransform();
+        StringBuilder sb  = new StringBuilder();
+
+        if (tfm != null) {
+            sb.append("matrix(");
+            for (int i = 0; i < 5; i++) {
+                sb.append( tfm.getComponent(i));
+                sb.append(',');
+            }
+            sb.append(tfm.getComponent(5));
+            sb.append(")");
+        }
+        return sb.toString();
+    }    
 }

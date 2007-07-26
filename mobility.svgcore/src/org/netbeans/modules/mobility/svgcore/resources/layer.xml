@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <filesystem>
     <folder name="SVGXMLPalette">
-        <folder name="Shapes">
+        <folder name="Basic Shapes">
             <file name="line.xml" url="/org/netbeans/modules/mobility/svgcore/items/line.xml"/>
             <file name="rectangle.xml" url="/org/netbeans/modules/mobility/svgcore/items/rectangle.xml"/>
             <file name="round_rectangle.xml" url="/org/netbeans/modules/mobility/svgcore/items/round_rectangle.xml"/>
@@ -168,14 +168,12 @@ Microsystems, Inc. All Rights Reserved.
      </folder>
      </folder>
    </folder>  
-    <!--
     <folder name="Templates">
         <folder name="Other">
-            <file name="SVGFileTemplate.svg" url="SVGFileTemplate.svg">
+            <file name="SVGFileTemplate.svg" url="nbres:/org/netbeans/modules/mobility/svgcore/SVGFileTemplate.svg">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
                 <attr name="template" boolvalue="true"/>
             </file>
         </folder>
     </folder>
-    -->
 </filesystem>

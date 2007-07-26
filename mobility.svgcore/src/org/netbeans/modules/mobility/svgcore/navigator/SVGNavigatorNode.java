@@ -125,6 +125,18 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
         return node;
     }
     
+    SVGNavigatorNode getChildByElemenent( DocumentElement de) {
+        checkChildrenAdapters();
+        if (children != null) {
+            for (SVGNavigatorNode child : children) {
+                if (child.getDocumentElement() == de) {
+                    return child;
+                }
+            }
+        }
+        return null;
+    }
+    
     TreePath getNodePath() {
         int depth = 0;
         TreeNode node = this;
@@ -493,7 +505,8 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
 
     public synchronized void refresh() {
         if (children != null) {
-            int        elemNum   = de.getElementCount();
+            List<DocumentElement> childElems = de.getChildren();
+            int        elemNum   = childElems.size();
             int        childNum  = children.size();
             boolean [] processed = new boolean[elemNum];
             SVGNavigatorNode [] removedChildren = new SVGNavigatorNode[childNum];
@@ -501,7 +514,7 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
             int        processedElemNum  = 0;
 
             for (int j = 0; j < elemNum; j++) {
-                if (!SVGNavigatorTree.isTreeElement((DocumentElement) de.getElement(j))) {
+                if (!SVGNavigatorTree.isTreeElement( childElems.get(j))) {
                     processedElemNum++;
                     processed[j] = true;
                 }
@@ -512,7 +525,7 @@ final class SVGNavigatorNode implements TreeNode, DocumentElementListener {
 
                 for (int j = 0; j < elemNum; j++) {
                     if (!processed[j]) {
-                        DocumentElement childElem = (DocumentElement) de.getElement(j);
+                        DocumentElement childElem = childElems.get(j);
                         if ( childNode.de.equals(childElem)) {
                             byte visibility = nodeTree.checkVisibility(childElem, true);
                             if (visibility == SVGNavigatorTree.VISIBILITY_NO) {

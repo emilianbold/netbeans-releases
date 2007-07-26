@@ -21,12 +21,14 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.event.KeyListener;
 import java.util.Stack;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.mobility.svgcore.view.svg.SVGImagePanel;
+import org.netbeans.modules.mobility.svgcore.view.svg.SVGStatusBar;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGPoint;
 import org.w3c.dom.svg.SVGRect;
@@ -43,22 +45,26 @@ public class ScreenManager {
     private static final float MINIMUM_ZOOM = 0.01f;
     private static final float MAXIMUM_ZOOM = 100f;
     
-    private final SceneManager        m_sceneMgr;
-    private       JScrollPane         m_topComponent;
-    private       JComponent          m_animatorView;
-    private       SVGImagePanel       m_imageContainer;
-    private       SVGLocatableElement m_popupElement = null;
-    private       Cursor              m_cursor = null;    
-    private       boolean             m_showAllArea;
-    private       boolean             m_showTooltip     = true;
-    private       boolean             m_highlightObject = true;
-    private       float               m_zoomRatio = 1;
-    private       short               m_changeTicker = 0;
+    private final SceneManager   m_sceneMgr;
+    private final SVGStatusBar   m_statusBar;
+    private       JScrollPane    m_topComponent;
+    private       JComponent     m_animatorView;
+    private       SVGImagePanel  m_imageContainer;
+    private       Cursor         m_cursor;    
+    private       boolean        m_showAllArea;
+    private       boolean        m_showTooltip;
+    private       boolean        m_highlightObject;
+    private       short          m_changeTicker = 0;
     
     ScreenManager(SceneManager sceneMgr) {
-        m_sceneMgr = sceneMgr;
+        m_sceneMgr        = sceneMgr;
+        m_statusBar       = new SVGStatusBar();
+        m_showAllArea     = false;
+        m_showTooltip     = true;
+        m_highlightObject = true;
+        reset();
     }
-
+    
     void initialize() {
         PerseusController perseus = m_sceneMgr.getPerseusController();
         m_animatorView = perseus.getAnimatorGUI();
@@ -98,13 +104,30 @@ public class ScreenManager {
         };
         
         m_topComponent = new JScrollPane(m_imageContainer);
+        incrementChangeTicker();
+    }
+    
+    public void reset() {
+        m_topComponent    = null;
+        m_animatorView    = null;
+        m_imageContainer  = null;
+        m_cursor          = null;    
+    }
+    
+    public SVGStatusBar getStatusBar() {
+        return m_statusBar;
     }
     
     public void registerMouseController( InputControlManager.MouseController mouseListener) {
         m_animatorView.addMouseListener(mouseListener);
         m_animatorView.addMouseMotionListener(mouseListener);
+        m_imageContainer.addMouseListener(mouseListener);
     }
 
+    public void registerKeyController( KeyListener keyListener) {
+        m_animatorView.addKeyListener(keyListener);
+    }
+    
     public void registerPopupMenu( final JPopupMenu popup) {
         m_topComponent.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
@@ -114,31 +137,12 @@ public class ScreenManager {
 
         m_animatorView.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
-                popupAt(e.getX(), e.getY());
+                m_sceneMgr.popupAt(e.getX(), e.getY());
                 popup.show(m_animatorView, e.getX(), e.getY());
             }
         });        
     }
     
-    /**
-     * Sets the position of the cursor. The position is in the component's coordinate
-     * system.
-     *
-     * @param x the new position of the cursor along the x-axis.
-     * @param y the new position of the cursor along the y-axis.
-     */
-    private void popupAt(final int x, final int y) {
-        SVGLocatableElement elem = m_sceneMgr.getPerseusController()._findElementAt(x, y);
-        if (m_popupElement != null) {
-            m_sceneMgr.getLoookupContent().remove(m_popupElement);
-        }
-        
-        m_popupElement = elem;
-        if (m_popupElement != null){
-            m_sceneMgr.getLoookupContent().add(m_popupElement);
-        }
-        m_animatorView.repaint();
-    }
     
     public JComponent getComponent() {
         return m_topComponent;
@@ -176,6 +180,7 @@ public class ScreenManager {
         if (showAllArea != m_showAllArea) {
             m_showAllArea = showAllArea;
             refresh();
+            incrementChangeTicker();
         }
     }
 
@@ -200,7 +205,7 @@ public class ScreenManager {
     }
     
     public float getZoomRatio() {
-        return m_zoomRatio;
+        return m_sceneMgr.m_zoomRatio;
     }
     
     public void setZoomRatio(float zoomRatio) {
@@ -210,9 +215,10 @@ public class ScreenManager {
             zoomRatio = MAXIMUM_ZOOM;
         }
         
-        if ( zoomRatio != m_zoomRatio) {
-            m_zoomRatio = zoomRatio;
+        if ( zoomRatio != m_sceneMgr.m_zoomRatio) {
+            m_sceneMgr.m_zoomRatio = zoomRatio;
             refresh();
+            incrementChangeTicker();
         }
     } 
     
@@ -230,31 +236,52 @@ public class ScreenManager {
         SVGRect   rect           = null;
         Dimension size;
 
-        if (!m_showAllArea) {
-            translatePoint.setX(0);
-            translatePoint.setY(0);
-            rect = viewBoxRect;
-        } else {
-            rect = m_sceneMgr.getPerseusController().getSVGRootElement().getScreenBBox();
-            
-            translatePoint.setX( m_zoomRatio * ((rect.getWidth() - rect.getWidth()) / 2 - rect.getX() ));
-            translatePoint.setY( m_zoomRatio * ((rect.getHeight() - rect.getHeight()) / 2 - rect.getY() ));
-        }
-        size = new Dimension((int) (rect.getWidth() * m_zoomRatio),
-                             (int) (rect.getHeight() * m_zoomRatio));
-        SVGImage svgImage = m_sceneMgr.getSVGImage();
-        svgImage.setViewportWidth(size.width); 
-        svgImage.setViewportHeight(size.height); 
+        // show all area in case the view box is not defined
+        boolean showAll = viewBoxRect == null ? true : m_showAllArea;
+        
+        //System.out.println("ViewBox: " + viewBoxRect);
+        //System.out.println("TotalBox: " + svg.getBBox());
+        //System.out.println("TotalScreenBBox: " + svg.getScreenBBox());
 
-        m_animatorView.setSize(size);
-        if (++m_changeTicker < 0) {
-            m_changeTicker = 0;
+        translatePoint.setX(0);
+        translatePoint.setY(0);
+        svg.setCurrentScale(1.0f);
+        
+        rect = showAll ? svg.getBBox() : viewBoxRect;
+        if (rect != null) {
+            size = new Dimension((int) (rect.getWidth() * m_sceneMgr.m_zoomRatio),
+                                 (int) (rect.getHeight() * m_sceneMgr.m_zoomRatio));
+            SVGImage svgImage = m_sceneMgr.getSVGImage();
+            svgImage.setViewportWidth(size.width); 
+            svgImage.setViewportHeight(size.height);        
+
+            if ( showAll) {
+                double xRatio = viewBoxRect.getWidth() / rect.getWidth();
+                double yRatio = viewBoxRect.getHeight() / rect.getHeight();
+                float  ratio  = (float) Math.max(xRatio, yRatio);
+                //System.out.println("Scale ratio: " + ratio);
+                svg.setCurrentScale( ratio);
+
+                SVGRect screenBBox = svg.getScreenBBox();
+                //System.out.println("Actual TotalScreenBBox: " + screenBBox);
+
+                translatePoint.setX(-screenBBox.getX());
+                translatePoint.setY(-screenBBox.getY());            
+            }
+        } else {
+            size = new Dimension(100, 100);
         }
-        //imageHolderPanel.setPreferredSize(size);
+        m_animatorView.setSize(size);
         repaint();
     }
     
     public short getChangeTicker() {
         return m_changeTicker;
+    }
+    
+    private void incrementChangeTicker() {
+        if (++m_changeTicker < 0) {
+            m_changeTicker = 0;
+        }
     }
 }

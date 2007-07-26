@@ -15,6 +15,7 @@ package org.netbeans.modules.mobility.svgcore.composer;
 
 import com.sun.perseus.awt.SVGAnimatorImpl;
 import com.sun.perseus.builder.ModelBuilder;
+import com.sun.perseus.j2d.Point;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ModelNode;
 import com.sun.perseus.model.SVG;
@@ -30,7 +31,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPInputStream;
 import javax.microedition.m2g.ExternalResourceHandler;
 import javax.microedition.m2g.SVGAnimator;
 import javax.microedition.m2g.SVGImage;
@@ -44,6 +48,7 @@ import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.netbeans.modules.mobility.svgcore.SVGDataLoader;
+import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedElement;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.SVGComposerPrototypeFactory;
@@ -55,6 +60,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.svg.SVGAnimationElement;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGMatrix;
+import org.w3c.dom.svg.SVGPoint;
 import org.w3c.dom.svg.SVGRect;
 import org.w3c.dom.svg.SVGSVGElement;
 
@@ -73,12 +80,14 @@ public class PerseusController {
     public static final float DEFAULT_MAX           = 30.0f;
     public static final float DEFAULT_STEP          = 0.1f;
     public static final String ID_VIEWBOX_MARKER    = "$VIEWBOX$";
+    public static final String ID_BBOX_MARKER       = "$BBOX$";
         
     protected final SceneManager        m_sceneMgr;
     protected       SVGAnimatorImpl     m_animator;
     protected       SVGImage            m_svgImage;
     protected       DocumentNode        m_svgDoc;
     protected       SVGLocatableElement m_viewBoxMarker;
+    //protected       SVGLocatableElement m_bBoxMarker;
     protected       int                 m_animationState = ANIMATION_NOT_AVAILABLE;
     protected       float               m_currentTime  = 0.0f;
     
@@ -116,10 +125,30 @@ public class PerseusController {
             m_viewBoxMarker = null;
         }
         
+        /*
+        rect = svg.getBBox();
+        m_bBoxMarker = (SVGLocatableElement) m_svgDoc.createElementNS(SVGConstants.SVG_NAMESPACE_URI,
+                SVGConstants.SVG_RECT_TAG);
+        m_bBoxMarker.setId(ID_BBOX_MARKER);
+        m_bBoxMarker.setTrait(SVGConstants.SVG_FILL_ATTRIBUTE, "none"); //NOI18N
+        m_bBoxMarker.setTrait(SVGConstants.SVG_STROKE_ATTRIBUTE, "red"); //NOI18N
+        m_bBoxMarker.setFloatTrait(SVGConstants.SVG_X_ATTRIBUTE, rect.getX());
+        m_bBoxMarker.setFloatTrait(SVGConstants.SVG_Y_ATTRIBUTE, rect.getY());
+        m_bBoxMarker.setFloatTrait(SVGConstants.SVG_WIDTH_ATTRIBUTE, rect.getWidth());
+        m_bBoxMarker.setFloatTrait(SVGConstants.SVG_HEIGHT_ATTRIBUTE, rect.getHeight());
+        svg.appendChild(m_bBoxMarker);
+         */
+        
         // we need to get the animator into the 'paused' state so that
         // all changes are immediately visible
         m_animator.play();
         m_animator.pause();
+    }
+    
+    public SVGPoint convertCoords(float x, float y) {
+        SVGMatrix m = getSVGRootElement().getScreenCTM().inverse();
+        return new Point( m.getComponent(0) * x + m.getComponent(2) * y + m.getComponent(4),
+                          m.getComponent(1) * x + m.getComponent(3) * y + m.getComponent(5));        
     }
     
     public SVGLocatableElement getViewBoxMarker() {
@@ -151,7 +180,7 @@ public class PerseusController {
         SVGElement elem = getElementById(id);
         if ( elem != null && elem instanceof SVGLocatableElement) {
             SVGLocatableElement locElem = (SVGLocatableElement) elem;
-            if ( locElem.getScreenBBox() != null) {
+            if ( getSafeScreenBBox(locElem) != null) {
                 return getSVGObject( locElem);
             }
         }
@@ -162,18 +191,16 @@ public class PerseusController {
         SVGLocatableElement elem = _findElementAt(x,y);
         
         if (elem != null) {
+            //try to find an parent envelope node if any
             Node node = elem;
             while( node != null) {
-                if ( node instanceof PatchedGroup) {
-                    PatchedGroup pg = (PatchedGroup) node;
-                    if ( pg.isWrapper()) {
-                        assert pg.getSVGObject() != null : "The wrapper cannot have null object";
-                        return new SVGObject [] {pg.getSVGObject()};
-                    }
-                }
+                if ( PatchedGroup.isWrapper(node)) {
+                    elem = (SVGLocatableElement) node;
+                    break;
+                } 
                 node = node.getParentNode();
             }
-
+                        
             SVGObject obj = getSVGObject(elem);
             if (obj != null) {
                 return new SVGObject [] {obj};
@@ -181,7 +208,7 @@ public class PerseusController {
         }
         return null;
     }
-
+/*
     public SVGLocatableElement wrapElement(final SVGObject svgObj) {
         SVGLocatableElement elem = svgObj.getSVGElement();
         Node parent = elem.getParentNode();
@@ -196,9 +223,10 @@ public class PerseusController {
         // HACK - restore element ids
         parent.appendChild(wrapper);
         setNullIds(elem, false);
-        wrapper.setId(generateWrapperID());
+        wrapper.setId( m_sceneMgr.getDataObject().getModel().createUniqueId("", true));
         return wrapper;
     }
+  */
     
     public void delete(final SVGLocatableElement elem) {
         execute(new Runnable() {
@@ -338,7 +366,7 @@ public class PerseusController {
     
     protected SVGElement getElementById(String id) {
         SVGElement elem = getElementById( (ModelNode) getSVGRootElement(), id);
-        assert elem != null;
+        //assert elem != null;
         return elem;
     }
     
@@ -419,18 +447,22 @@ public class PerseusController {
     
     public void startAnimation(String id) {
         SVGElement elem = getElementById(id);
-        if (elem instanceof SVGAnimationElement) {
-            System.out.println("Starting animation ...");
+        if (elem != null && elem instanceof SVGAnimationElement) {
+            //System.out.println("Starting animation ...");
             ((SVGAnimationElement) elem).beginElementAt(0);
-        }        
+        } else {
+            System.err.println("Animation element not found: " + id);
+        }       
     }
 
     public void stopAnimation(String id) {
         SVGElement elem = getElementById(id);
-        if (elem instanceof SVGAnimationElement) {
-            System.out.println("Stopping animation ...");
+        if (elem != null && elem instanceof SVGAnimationElement) {
+            //System.out.println("Stopping animation ...");
             ((SVGAnimationElement) elem).endElementAt(0);
-        }        
+        } else {
+            System.err.println("Animation element not found: " + id);
+        }
     }
     
     public static ModelNode getRootElement(ModelNode node) {
@@ -478,102 +510,7 @@ public class PerseusController {
         "begin=\"{0}.",
         "end=\"{0}."
     };
-    
-    //Show dialog with id conversion mapping
-    @SuppressWarnings({"deprecation"})
-    public void mergeImage(File file) throws FileNotFoundException, IOException, DocumentModelException, BadLocationException {
-        FileInputStream     fin = null;
-        DocumentModel       docModel;
         
-        try {
-            fin = new FileInputStream(file);
-            docModel = loadTextDocumentModel(new BufferedInputStream(fin));
-        } finally {
-            fin.close();
-        }
-                
-        DocumentElement svgElem = SVGFileModel.getSVGRoot(docModel);
-        int childElemNum;
-        
-        if (svgElem != null && (childElemNum=svgElem.getElementCount()) > 0) {
-            int startOff = svgElem.getElement(0).getStartOffset();
-            int endOff   = svgElem.getElement(childElemNum - 1).getEndOffset();
-
-            String insertedText = docModel.getDocument().getText(startOff, endOff - startOff + 1);
-            
-            Set<String> oldIds = new HashSet<String>();
-            collectIDs(m_svgDoc, oldIds);
-
-            Set<String> newIds = new HashSet<String>();
-            collectIDs( svgElem, newIds);
-
-            Set<String> conflicts = new HashSet<String>();
-            for (String id  : newIds) {
-                if (oldIds.contains(id)) {
-                    conflicts.add(id);
-                }
-            }
-
-            BaseDocument doc  = (BaseDocument) docModel.getDocument();
-            if ( !conflicts.isEmpty()) {
-                for (String id : conflicts) {
-                    String newID = id+System.currentTimeMillis();
-                    for (String pattern : REPLACE_PATTERNS) {
-                        String oldStr = MessageFormat.format(pattern, id);
-                        String newStr = MessageFormat.format(pattern, newID);
-                        replaceAllOccurences(doc, oldStr, newStr);
-                    }
-                }
-            }
-
-            String       text = doc.getText(0, doc.getLength());
-            java.io.StringBufferInputStream in = new java.io.StringBufferInputStream(text);
-            ModelBuilder.loadDocument(in, m_svgDoc,
-                    SVGComposerPrototypeFactory.getPrototypes(m_svgDoc));
-
-
-            SVG svgRoot = (SVG)getSVGRootElement();
-            System.out.println("Before children transfer");
-            printTree(m_svgDoc, 0);
-
-            ModelNode sibling = svgRoot;
-            while( (sibling=sibling.getNextSiblingNode()) != null) {
-                if (sibling instanceof SVG && 
-                    sibling.getFirstChildNode() != null) {
-
-                    PatchedGroup wrapper = (PatchedGroup) m_svgDoc.createElementNS(SVGConstants.SVG_NAMESPACE_URI,
-                        SVGConstants.SVG_G_TAG);
-                    ((SVG)svgRoot).appendChild(wrapper);
-                    //wrapper.setPath( new int[] { 0, getChildrenCount(svgRoot)});
-                    wrapper.setId(generateWrapperID());
-                    wrapper.attachSVGObject( new SVGObject(m_sceneMgr, wrapper));
-
-                    transferChildren(wrapper, (SVG)sibling);
-                    m_sceneMgr.getDataObject().getModel().appendElement(wrapper.getText(false), insertedText);
-                    break;
-                }
-            }
-            
-            System.out.println("After children transfer");
-            printTree(m_svgDoc, 0);                    
-        }       
-    }
-    
-    
-    protected DocumentModel loadTextDocumentModel(InputStream in) throws IOException, DocumentModelException {
-        EditorKit    kit    = JEditorPane.createEditorKitForContentType(SVGDataLoader.REQUIRED_MIME);
-        BaseDocument doc    = (BaseDocument) kit.createDefaultDocument();
-        try {
-            kit.read( in, doc, 0);
-        } catch (BadLocationException ex) {
-            ex.printStackTrace();
-        } finally {
-            in.close();
-        }
-        DocumentModel model = DocumentModel.getDocumentModel(doc);
-        return model;
-    }    
-    
     public static SVGImage createImage(InputStream stream) throws IOException {
         if (stream == null) {
             throw new NullPointerException();
@@ -607,8 +544,9 @@ public class PerseusController {
             }
         }
         
-        for (int i = de.getElementCount() - 1; i>= 0; i--) {
-            collectIDs( de.getElement(i), ids);
+        List<DocumentElement> children = de.getChildren();
+        for (int i = children.size() - 1; i >= 0; i--) {
+            collectIDs( children.get(i), ids);
         }
     }
     
@@ -668,58 +606,6 @@ public class PerseusController {
         
         return img;        
     }
-
-    /*
-    protected static SVGImage __loadDocument( final InputStream is, final ExternalResourceHandler handler) 
-        throws IOException {
-
-        //TODO Find a better way how to uses Perseus prototypes
-        SVGImageImpl sii = (SVGImageImpl) SVGImageImpl.createEmptyImage(handler);
-        DocumentNode documentNode = (DocumentNode) sii.getDocument();
-        //System.out.println("Empty document:");
-        //printTree(documentNode, 0);
-                
-        UpdateAdapter updateAdapter = new UpdateAdapter();
-        documentNode.setUpdateListener(updateAdapter);
-        
-        ModelBuilder.loadDocument(is, documentNode,
-                SVGComposerPrototypeFactory.getPrototypes(documentNode));
-
-        //System.out.println("After document loaded: " + sii);
-        //printTree(documentNode, 0);
-        
-        ModelNode root1 = documentNode.getFirstChildNode();
-        
-        if (root1 != null && root1 instanceof SVG) {
-            SVG svg1 = (SVG) root1;
-            
-            ModelNode root2 = root1.getNextSiblingNode();
-            if (root2 != null && root2 instanceof SVG) {
-                SVG svg2 = (SVG) root2;
-                transferChildren(svg1, svg2);
-                svg1.setViewBox(svg2.getViewBox());
-                svg1.setWidth(svg2.getWidth());
-                svg1.setHeight(svg2.getHeight());
-            }
-        }
-                
-        //System.out.println("After document rearranged: " + sii);
-        //printTree(documentNode, 0);
-
-        if (updateAdapter.hasLoadingFailed()) {
-            if (updateAdapter.getLoadingFailedException() != null) {
-                throw new IOException
-                    (updateAdapter.getLoadingFailedException().getMessage());
-            }
-            throw new IOException();
-        }
-
-        // Now, initialize the timing engine and sample at zero.
-        documentNode.initializeTimingEngine();
-        documentNode.sample(new Time(0));
-        return sii;        
-    }
-*/
     
     protected static int getChildrenCount( ModelNode node) {
         int count = 0;
@@ -795,7 +681,7 @@ public class PerseusController {
         SVGRect bBox = elem.getBBox();
         if ( bBox == null) {
             //TODO solve the issue with null bounding box
-            System.err.println("Null screen BBox for element:" + elem);
+            System.err.println("Null BBox for element:" + elem);
             ModelNode child = ((ModelNode)elem).getFirstChildNode();
             if (child != null && child instanceof SVGLocatableElement) {
                 bBox = ((SVGLocatableElement) child).getBBox();
@@ -803,12 +689,7 @@ public class PerseusController {
         }
         return bBox;
     }
-    
-    //TODO revisit (use filename for inserted files)
-    protected static String generateWrapperID() {
-        return "w_" + System.currentTimeMillis();
-    }
-    
+        
     protected static Document getOwnerDocument(Node elem) {
         Node parent;
         

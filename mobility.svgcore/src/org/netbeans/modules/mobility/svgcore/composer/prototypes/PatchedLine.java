@@ -23,7 +23,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
  *
  * @author Pavel Benes
  */
-public final class PatchedLine extends Line implements PatchedElement {
+public final class PatchedLine extends Line implements PatchedTransformableElement {
     private String m_idBackup    = null;
     
     public PatchedLine(final DocumentNode ownerDocument) {

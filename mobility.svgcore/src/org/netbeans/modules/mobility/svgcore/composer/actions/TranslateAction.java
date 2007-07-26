@@ -16,6 +16,7 @@ package org.netbeans.modules.mobility.svgcore.composer.actions;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;
 import org.netbeans.modules.mobility.svgcore.composer.ComposerActionFactory;
@@ -40,29 +41,57 @@ public class TranslateAction extends AbstractComposerAction {
         //m_selected.repaint(GraphicUtils.SELECTOR_OVERLAP);
     }
 
-    public boolean consumeEvent(InputEvent evt) {
-        if ( evt.getID() == MouseEvent.MOUSE_DRAGGED) {
-            MouseEvent me = (MouseEvent)evt;
-            int dx = me.getX() - m_x;
-            int dy = me.getY() - m_y;
-            //System.out.println("Dragging " + dx + "," + dy);
-            Rectangle bBox = m_translated.getScreenBBox();
-            float zoomRatio = m_translated.getScreenManager().getZoomRatio();
-            m_translated.translate(dx / zoomRatio, dy / zoomRatio);
-            bBox.add(m_translated.getScreenBBox());
-            m_factory.getSceneManager().getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
-        } else {
-            actionCompleted();
-            m_translated.commitChanges();
+    public TranslateAction(ComposerActionFactory factory, SVGObject translated, KeyEvent ke) {
+        super(factory);
+        m_translated = translated;
+        assert m_translated != null : "The translated object cannot be null";
+        int [] diffs = TranslateActionFactory.getCoordDiff(ke);
+        m_x = diffs[0];
+        m_y = diffs[1];
+        translate(m_x, m_y, true);
+        System.out.println("Action started.");
+        //m_selected.repaint(GraphicUtils.SELECTOR_OVERLAP);
+    }
+    
+    public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
+        if ( !isOutsideEvent)  {
+            if (evt.getID() == MouseEvent.MOUSE_DRAGGED) {
+                MouseEvent me = (MouseEvent)evt;
+                int dx = me.getX() - m_x;
+                int dy = me.getY() - m_y;
+                //System.out.println("Dragging " + dx + "," + dy);
+                
+                float zoomRatio = m_translated.getScreenManager().getZoomRatio();
+                translate(dx / zoomRatio, dy / zoomRatio, false);
+                return false;
+            } else {
+                int [] diffs = TranslateActionFactory.getCoordDiff(evt);
+                
+                if (diffs != null) {
+                    translate(m_x, m_y, true);
+                    return true;
+                }
+            }
+            
+            actionCompleted();        
         }
+        
         return false;
     }
 
+    private void translate(float dx, float dy, boolean isRelative) {
+        Rectangle bBox = m_translated.getScreenBBox();
+        m_translated.translate(dx, dy, isRelative);
+        bBox.add(m_translated.getScreenBBox());
+        m_factory.getSceneManager().getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
+    }
+    
     public void paint(Graphics g, int x, int y) {
     }
 
     public void actionCompleted() {
-        applyChanges(m_translated);
+        m_translated.applyTextChanges();
+        m_translated.commitChanges();        
         super.actionCompleted();
     }
 }

@@ -23,7 +23,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
  *
  * @author Pavel Benes
  */
-public final class PatchedLinearGradient extends LinearGradient implements PatchedElement {
+public final class PatchedLinearGradient extends LinearGradient implements PatchedTransformableElement {
     private String m_idBackup = null;
     
     public PatchedLinearGradient(final DocumentNode ownerDocument) {

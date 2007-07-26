@@ -14,9 +14,10 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
-import java.awt.Cursor;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;
@@ -33,7 +34,9 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
  * @author Pavel Benes
  */
 public class ScaleActionFactory extends AbstractComposerActionFactory {
-    private static final ActionMouseCursor SCALE_MOUSE_CURSOR = new ActionMouseCursor( Cursor.HAND_CURSOR, 2);
+    private static final ActionMouseCursor SCALE_MOUSE_CURSOR = new ActionMouseCursor( 
+                Toolkit.getDefaultToolkit().createCustomCursor(org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/resize_cursor.png"), // NOI18N
+                new Point(8,8), "rotateCursor"), 2);
     
     //TODO make it non-static inner class
     private static class ScaleAction extends AbstractComposerAction {
@@ -48,8 +51,8 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
             m_y = me.getY();
         }
 
-        public boolean consumeEvent(InputEvent evt) {
-            if ( evt.getID() == MouseEvent.MOUSE_DRAGGED) {
+        public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
+            if ( !isOutsideEvent && evt.getID() == MouseEvent.MOUSE_DRAGGED) {
                 MouseEvent me = (MouseEvent)evt;
                 
                 //calculate area to repaint
@@ -66,6 +69,10 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
         }
 
         public void paint(Graphics g, int x, int y) {}   
+        
+        public ActionMouseCursor getMouseCursor(boolean isOutsideEvent) {
+            return isOutsideEvent ? null : SCALE_MOUSE_CURSOR;
+        }        
         
         protected float calculateScale( int x, int y) {
             float[] pt = m_scaled.getOutline().getScalePivotPoint();
@@ -86,8 +93,10 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
         super(sceneMgr);
     }
     
-    public synchronized ComposerAction startAction(InputEvent e) {        
-        if ( e.getID() == MouseEvent.MOUSE_PRESSED) {
+    public synchronized ComposerAction startAction(InputEvent e, boolean isOutsideEvent) {        
+        if ( !isOutsideEvent &&
+             !m_sceneMgr.isReadOnly() &&
+             e.getID() == MouseEvent.MOUSE_PRESSED) {
             MouseEvent me = (MouseEvent)e;
             SVGObject selObj = getObjectToScaleAt(me);
             if ( selObj != null) {
@@ -97,8 +106,8 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
         return null;
     }
 
-    public ActionMouseCursor getMouseCursor(InputEvent evt) {
-        if ( getObjectToScaleAt((MouseEvent)evt) != null) {
+    public ActionMouseCursor getMouseCursor(MouseEvent evt, boolean isOutsideEvent) {
+        if ( !isOutsideEvent && getObjectToScaleAt(evt) != null) {
             return SCALE_MOUSE_CURSOR;
         }
         return null;

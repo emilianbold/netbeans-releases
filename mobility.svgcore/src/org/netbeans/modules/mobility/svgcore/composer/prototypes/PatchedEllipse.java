@@ -19,13 +19,12 @@ import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
 import com.sun.perseus.model.Ellipse;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
-import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 
 /**
  *
  * @author Pavel Benes
  */
-public final class PatchedEllipse extends Ellipse implements PatchedElement {
+public final class PatchedEllipse extends Ellipse implements PatchedTransformableElement {
     private String    m_idBackup  = null;
     private SVGObject m_svgObject = null; 
 

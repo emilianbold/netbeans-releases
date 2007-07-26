@@ -7,8 +7,8 @@
          <![CDATA[ <polyline points="0,0 0,20 20,20 20,40 40,40 40,60" fill="blue" stroke="black" stroke-width="1"/>]]>
      </body>
      
-     <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/icon16.png" />
-     <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/icon32.png" />
+     <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/polyline_16.png" />
+     <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/polyline_32.png" />
      
      <description 
          localizing-bundle="org.netbeans.modules.mobility.svgcore.Bundle"

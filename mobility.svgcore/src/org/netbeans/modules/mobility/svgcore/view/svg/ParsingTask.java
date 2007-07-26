@@ -18,19 +18,20 @@ package org.netbeans.modules.mobility.svgcore.view.svg;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
 import java.io.IOException;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
-import org.netbeans.modules.mobility.svgcore.model.ElementMapping;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
+import org.netbeans.modules.mobility.svgcore.view.source.SVGSourceMultiViewElement;
 import org.openide.util.NbBundle;
 import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
@@ -43,24 +44,28 @@ import org.xml.sax.SAXParseException;
  *
  * @author Pavel Benes
  */
-final class ParsingTask extends Thread { 
-    private final JPanel              panel;
-    private final JTextArea           textArea;
-    private final SVGViewTopComponent svgView;
+final class ParsingTask extends Thread implements HyperlinkListener { 
+    private final JPanel              m_panel;
+    private final JEditorPane         m_textPane;
+    private final SVGViewTopComponent m_svgView;
     private final SVGFileModel        m_fileModel;
     private final DocumentModel       m_docModel;
 
     public ParsingTask(SVGDataObject dObj, SVGViewTopComponent svgView) throws Exception {
-        this.svgView = svgView;
-        panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        String errorMsg = NbBundle.getMessage(SVGViewTopComponent.class, "MSG_Parsing");
-        textArea = new JTextArea(errorMsg); //NOI18N
-        textArea.setBackground(Color.WHITE);
-        Font font = textArea.getFont();
-        textArea.setFont(font.deriveFont(16.0f));
-        panel.add(new JScrollPane(textArea), BorderLayout.CENTER);
+        m_svgView = svgView;
+        m_panel = new javax.swing.JPanel();
+        m_panel.setLayout(new java.awt.BorderLayout());
+        m_panel.setBackground(Color.WHITE);
+        StringBuilder sb = new StringBuilder(NbBundle.getMessage(SVGViewTopComponent.class, "MSG_Parsing"));
+        wrapAsHtml(sb);
+        m_textPane = new JEditorPane("text/html", sb.toString());
+        m_textPane.setBackground(Color.WHITE);
+        m_textPane.setEditable(false);
+        
+        m_textPane.addHyperlinkListener( this);
+        //Font font = m_textArea.getFont();
+        //m_textArea.setFont(font.deriveFont(16.0F));
+        m_panel.add(new JScrollPane(m_textPane), BorderLayout.CENTER);
         setPriority( Thread.MIN_PRIORITY);
         m_fileModel = dObj.getModel();
         // ensure that model is valid
@@ -68,7 +73,7 @@ final class ParsingTask extends Thread {
     }
 
     public JComponent getPanel() {
-        return panel;
+        return m_panel;
     }
 
     public void cancel() {
@@ -84,7 +89,7 @@ final class ParsingTask extends Thread {
                 assert svgImage != null;
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        svgView.showImage(svgImage);
+                        m_svgView.showImage(svgImage);
                     }
                 });  
             } catch (IOException e) {
@@ -99,25 +104,46 @@ final class ParsingTask extends Thread {
             e.printStackTrace();
         }
     }
+
+    public void hyperlinkUpdate(HyperlinkEvent e) {
+        if ( e.getEventType() == HyperlinkEvent.EventType.ACTIVATED &&
+             e.getDescription() != null) {            
+            int [] position = string2position(e.getDescription());
+            if (position != null) {
+                int offset = m_fileModel.getOffsetByPosition(position[0], position[1]);
+                SVGSourceMultiViewElement.selectPosition(m_fileModel.getDataObject(),
+                                                         offset, true);
+            }
+        }        
+    }
     
     private String composeMessageText( StringBuffer perseusError,
                                        StringBuffer saxErrors, int [] errNum) {
-        StringBuilder sb = new StringBuilder(NbBundle.getMessage(SVGViewTopComponent.class, "ERR_NotSvgTiny"));
+        StringBuilder sb = new StringBuilder();
+        sb.append(NbBundle.getMessage(SVGViewTopComponent.class, "ERR_NotSvgTiny"));
         if (perseusError.length() > 0) {
-            sb.append("\n");
+            sb.append("<br>");
             sb.append( perseusError);
         }
+        sb.append( "<font size=\"4\" color=\"blue\">");
         sb.append(saxErrors);
-        sb.append("\n");
+        sb.append( "</font>");
+        sb.append("<br>");
         if ( errNum == null) {
             sb.append(NbBundle.getMessage(SVGViewTopComponent.class, "ERR_Additional"));                            
         } else {
             sb.append(NbBundle.getMessage(SVGViewTopComponent.class, "ERR_ErrorWarnings",
                     Integer.toString(errNum[0]), Integer.toString(errNum[1]), Integer.toString(errNum[2]))); 
         }
+        wrapAsHtml(sb);
         return sb.toString();
     }
 
+    private static void wrapAsHtml(StringBuilder sb) {
+        sb.insert( 0, "<html><body><font face=\"Monospaced\" size=\"4\" color=\"black\">");
+        sb.append("</font></body><html>");
+    }
+    
     @SuppressWarnings({"deprecation"})
     private void showParsingError(String fileText, Exception perseusException) {            
         final StringBuffer saxErrors    = new StringBuffer();
@@ -150,7 +176,10 @@ final class ParsingTask extends Thread {
                 if ( msg.equals(perseusError.toString())) {
                     perseusError.setLength(0);
                 }
-                saxErrors.append("\n");
+                saxErrors.append("<br>");
+                saxErrors.append("<a href=\"");
+                saxErrors.append( position2string(e.getLineNumber(), e.getColumnNumber()));
+                saxErrors.append( "\">");
                 saxErrors.append(errorType);
                 saxErrors.append( ": ");
                 saxErrors.append( e.getLineNumber());
@@ -158,6 +187,7 @@ final class ParsingTask extends Thread {
                 saxErrors.append( e.getColumnNumber());
                 saxErrors.append( ":"); 
                 saxErrors.append( msg); 
+                saxErrors.append("</a>");
                 updateText(composeMessageText(perseusError, saxErrors, null));
             }
         };
@@ -189,10 +219,30 @@ final class ParsingTask extends Thread {
     private void updateText(final String errorMsg) {
         SwingUtilities.invokeLater( new Runnable() {
             public void run() {
-                textArea.setText(errorMsg);
-                textArea.validate();
-                textArea.repaint();
+                m_textPane.setText(errorMsg);
+                m_textPane.validate();
+                m_textPane.repaint();
             }
         });
+    }
+    
+    private static String position2string(int lineNum, int colNumber) {
+        return lineNum + "_" + colNumber;
+    }
+    
+    private static int [] string2position(String str) {
+        int [] position = null;
+        String [] parts = str.split("_");
+        
+        if (parts.length == 2) {
+            try {
+                position = new int[] { Integer.parseInt(parts[0]),
+                                       Integer.parseInt(parts[1])};            
+            } catch( NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        return position;
     }
 }

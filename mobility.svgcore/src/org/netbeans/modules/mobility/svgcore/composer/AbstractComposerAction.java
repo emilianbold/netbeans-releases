@@ -16,27 +16,25 @@ package org.netbeans.modules.mobility.svgcore.composer;
 
 import java.awt.Graphics;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
-import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedGroup;
-import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
  *
  * @author Pavel Benes
  */
 public abstract class AbstractComposerAction implements ComposerAction{
-    protected ComposerActionFactory m_factory;
-    protected boolean               m_isCompleted;
+    protected final ComposerActionFactory m_factory;
+    protected       boolean               m_isCompleted;
 
     protected AbstractComposerAction(ComposerActionFactory factory) {
         m_factory     = factory;
         m_isCompleted = false;
     }
 
-    public void actionCompleted() {
+    public synchronized void actionCompleted() {
         m_isCompleted = true;
     }
 
-    public boolean isCompleted() {
+    public synchronized boolean isCompleted() {
         return m_isCompleted;
     }
 
@@ -54,11 +52,8 @@ public abstract class AbstractComposerAction implements ComposerAction{
     protected SVGDataObject getDataObject() {
         return m_factory.getSceneManager().getDataObject();
     }
-    
-    protected void applyChanges(SVGObject obj) {
-        SVGLocatableElement elem = obj.getSVGElement();
-        if (elem != null && elem instanceof PatchedGroup) {
-            ((PatchedGroup) elem).applyChangesToText();
-        }
+
+    public ActionMouseCursor getMouseCursor(boolean isOutsideEvent) {
+        return null;
     }
 }

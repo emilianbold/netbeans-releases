@@ -40,11 +40,11 @@ public class HighlightAction extends AbstractComposerAction {
         m_highlighted.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
     }
 
-    public boolean consumeEvent(InputEvent evt) {
+    public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
         SceneManager sceneMgr = m_factory.getSceneManager();
         assert sceneMgr.containsAction(HighlightAction.class);
  
-        if ( evt.getID() == MouseEvent.MOUSE_MOVED) {
+        if ( !isOutsideEvent && evt.getID() == MouseEvent.MOUSE_MOVED) {
             MouseEvent me = (MouseEvent) evt;
             SVGObject [] objects = sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
             if (objects == null || objects.length == 0 || 

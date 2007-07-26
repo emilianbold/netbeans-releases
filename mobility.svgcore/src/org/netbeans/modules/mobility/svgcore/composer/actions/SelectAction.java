@@ -54,14 +54,18 @@ public class SelectAction extends AbstractComposerAction {
         m_selected.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
     }
 
-    public boolean consumeEvent(InputEvent evt) {
+    public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
         SceneManager sceneMgr = m_factory.getSceneManager();
         assert sceneMgr.containsAction(SelectAction.class);
 
         MouseEvent me = SelectActionFactory.getSelectionEvent(evt);
 
         if ( me != null) {
-            SVGObject [] objects = sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
+            SVGObject [] objects = null;
+            
+            if (!isOutsideEvent) {
+                objects = sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
+            }
             if (objects == null || objects.length == 0 || 
                 objects[0] != m_selected)  {
                 actionCompleted();

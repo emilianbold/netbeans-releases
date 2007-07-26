@@ -23,7 +23,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
  *
  * @author Pavel Benes
  */
-public final class PatchedImageNode extends ImageNode implements PatchedElement {
+public final class PatchedImageNode extends ImageNode implements PatchedTransformableElement {
     private String m_idBackup    = null;
     
     public PatchedImageNode(final DocumentNode ownerDocument) {

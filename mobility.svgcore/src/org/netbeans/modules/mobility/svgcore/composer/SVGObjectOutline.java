@@ -34,13 +34,13 @@ public class SVGObjectOutline {
     
     private final SVGObject m_svgObject;
     private final float[][] m_coords = new float[4][2];
-    private final SVGRect   m_screenBBox;
+    private       SVGRect   m_screenBBox;
     private       short     m_tickerCopy;
         
     public SVGObjectOutline(SVGObject svgObject) {
         assert svgObject != null : "The SVGObject reference cannot be null";
         m_svgObject  = svgObject;
-        m_screenBBox = m_svgObject.getInitialScreenBBox();
+        //m_screenBBox = m_svgObject.getInitialScreenBBox();
         setDirty();
     }
     
@@ -98,13 +98,14 @@ public class SVGObjectOutline {
     
     public float [] getCenter() {
         checkObject();
-        float zoomRatio = getZoomRatio();
+        float sx, sy;
+        sx = sy = 0;
         
-        float [] pt = new float[2];
-        pt[0] = zoomRatio * (m_svgObject.getCurrentTranslateX() + m_screenBBox.getX() + m_screenBBox.getWidth() / 2);
-        pt[1] = zoomRatio * (m_svgObject.getCurrentTranslateY() + m_screenBBox.getY() + m_screenBBox.getHeight() / 2);
-        System.out.println("Center: {" + pt[0] + "," + pt[1] + "}");
-        return pt;
+        for (int i = 0; i < m_coords.length; i++) {
+            sx += m_coords[i][0];
+            sy += m_coords[i][1];
+        }
+        return new float[] { sx /4, sy/4 };
     }
     
     public boolean isAtRotateHandlePoint(float x, float y) {
@@ -147,11 +148,12 @@ public class SVGObjectOutline {
         
         if (ticker != m_tickerCopy) {
             float zoomRatio = getZoomRatio();
-            //TODO use actual rotate pivot
+            m_screenBBox = m_svgObject.getInitialScreenBBox();
             
-            SVGRect bBox = GraphicUtils.scale(m_screenBBox, zoomRatio);
-            float px = bBox.getX() + bBox.getWidth()  / 2;
-            float py = bBox.getY() + bBox.getHeight() / 2;
+            //SVGRect bBox = GraphicUtils.scale(m_screenBBox, zoomRatio);
+            //SVGRect bBox = m_screenBBox;
+            float px = m_screenBBox.getX() + m_screenBBox.getWidth()  / 2;
+            float py = m_screenBBox.getY() + m_screenBBox.getHeight() / 2;
 
             float scale = m_svgObject.getCurrentScale();
             Transform txf = new Transform( scale, 0, 0, scale, 0, 0);
@@ -159,27 +161,26 @@ public class SVGObjectOutline {
 
             float [] point = new float[2];
 
-            point[0] = (bBox.getX() - px);
-            point[1] = (bBox.getY() - py);
+            point[0] = (m_screenBBox.getX() - px);
+            point[1] = (m_screenBBox.getY() - py);
             txf.transformPoint(point, m_coords[0]);
 
-            point[0] += bBox.getWidth();
+            point[0] += m_screenBBox.getWidth();
             txf.transformPoint(point, m_coords[1]);
 
-            point[1] += bBox.getHeight();
+            point[1] += m_screenBBox.getHeight();
             txf.transformPoint(point, m_coords[2]);
 
-            point[0] -= bBox.getWidth();
+            point[0] -= m_screenBBox.getWidth();
             txf.transformPoint(point, m_coords[3]);
 
-            px = (px + m_svgObject.getCurrentTranslateX() * zoomRatio) ;
-            py = (py + m_svgObject.getCurrentTranslateY() * zoomRatio) ;
+            px += m_svgObject.getCurrentTranslateX() * zoomRatio;
+            py += m_svgObject.getCurrentTranslateY() * zoomRatio;
 
             for (int i = 0; i < 4; i++) {
                 m_coords[i][0] += px;
                 m_coords[i][1] += py;
             }          
-            bBox = m_svgObject.getSVGScreenBBox();
 
             m_tickerCopy = ticker;
         }        

@@ -17,7 +17,9 @@
 package org.netbeans.modules.mobility.svgcore.navigator;
 
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.JTree;
 import javax.swing.text.AttributeSet;
 import javax.swing.tree.DefaultTreeModel;
@@ -101,22 +103,38 @@ public class SVGNavigatorTree extends JTree {
                de.getType().equals(SVGNavigatorNode.XML_EMPTY_TAG);
     }
     
-    public void selectNode( String id) {
+    public TreePath selectNode( String id) {
         DocumentElement de = dObj.getModel().getElementById(id);
         if (de != null) {
-            SVGNavigatorNode node = ((SVGNavigatorNode) treeModel.getRoot()).findNode(de);
-            if ( node != null) {
-                TreePath treePath = node.getNodePath();
-                makeVisible(treePath);
-                setSelectionPath(treePath);
-                repaint();
-            } else {
-                //TODO expand navigator node representing the element
-                System.out.println("Node not expanded");
+            SVGNavigatorNode rootNode = (SVGNavigatorNode) treeModel.getRoot();
+            SVGNavigatorNode node = rootNode.findNode(de);
+            if ( node == null) {
+                List<DocumentElement> parents = SVGFileModel.getParents(de);
+                int parentIndex = parents.size() - 1;
+                assert parentIndex >= 0 : "The element must have at least one parent";
+                node = rootNode.findNode( parents.get(parentIndex));
+                assert node != null : "Tree node not found";
+                
+                while( parentIndex > 0) {
+                    SVGNavigatorNode childNode = node.getChildByElemenent(parents.get(--parentIndex));
+                    if ( childNode != null) {
+                        node = childNode;
+                    } else {
+                        break;
+                    }
+                }
             }
-        } else {
-            System.err.println("Element not found");
-        }
+            
+            TreePath treePath = node.getNodePath();
+            makeVisible(treePath);
+            setSelectionPath(treePath);
+            Rectangle rect = getPathBounds(treePath);
+            scrollRectToVisible(rect);
+            repaint();
+            
+            return treePath;
+        } 
+        return null;
     }
     
     byte checkVisibility(DocumentElement docElem, boolean deepCheck) {

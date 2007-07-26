@@ -14,20 +14,22 @@
 
 package org.netbeans.modules.mobility.svgcore.composer;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import javax.swing.JComponent;
 
 /**
  *
  * @author Pavel Benes
  */
 public class InputControlManager {
-    private final SceneManager    m_sceneMgr;
-    private final MouseController m_mouseCtrl;
+    private final SceneManager       m_sceneMgr;
+    private final MouseController    m_mouseCtrl;
+    private final KeyboardController m_keyCtrl;
 
-    public class MouseController implements MouseListener, MouseMotionListener {
+    class MouseController implements MouseListener, MouseMotionListener {
         public void mouseClicked(MouseEvent e) {
             m_sceneMgr.processEvent(e);
         }
@@ -54,15 +56,32 @@ public class InputControlManager {
 
         public void mouseReleased(MouseEvent e) {
             m_sceneMgr.processEvent(e);
-        }        
+        }           
     }
 
+    private class KeyboardController implements KeyListener {
+        public void keyTyped(KeyEvent e) {
+            //System.out.println("keyTyped");
+            m_sceneMgr.processEvent(e);
+        }
+        public void keyPressed(KeyEvent e) {
+            //System.out.println("keyPressed");
+            m_sceneMgr.processEvent(e);
+        }
+        public void keyReleased(KeyEvent e) {
+            //System.out.println("keyReleased");
+            m_sceneMgr.processEvent(e);
+        }
+    } 
+    
     public InputControlManager(SceneManager sceneMgr) {
-        m_sceneMgr = sceneMgr;
+        m_sceneMgr  = sceneMgr;
         m_mouseCtrl = new MouseController();
+        m_keyCtrl   = new KeyboardController();
     }
 
     void initialize() {        
         m_sceneMgr.getScreenManager().registerMouseController(m_mouseCtrl);
+        m_sceneMgr.getScreenManager().registerKeyController(m_keyCtrl);
     }
 }

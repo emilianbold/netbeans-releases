@@ -28,9 +28,6 @@ import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -49,7 +46,6 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
@@ -77,11 +73,9 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
-
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
@@ -92,7 +86,6 @@ import org.netbeans.modules.mobility.svgcore.navigator.SVGNavigatorContent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.FilterNode;
-import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.svg.SVGLocatableElement;
 
@@ -108,13 +101,11 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     private static final String    PREFERRED_ID = "SVGViewTopComponent"; //NOI18N    
     private static final String [] ZOOM_VALUES  = new String[] { "400%", "300%", "200%", "100%", "75%", "50%", "25%" };
         
-    private transient final InstanceContent content = new InstanceContent();
-    private transient SVGDataObject         svgDataObject;
-    private transient SceneManager          m_sceneMgr;
-    private transient SVGImage              m_img;
+    private transient SVGDataObject   m_svgDataObject;
+    private transient SceneManager    m_sceneMgr;
     
-    private transient ParsingTask           parsingTask;
-    private transient Lookup                lookup = null;
+    private transient ParsingTask     parsingTask;
+    private transient Lookup          lookup = null;
     
     private transient JPanel         basePanel;    
     //UI controls
@@ -140,7 +131,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     private transient float   currentMaximum = DEFAULT_MAX;
         
     //decoration
-    private transient ButtonMouseListener buttonListener;
+    private transient ButtonMouseListener    buttonListener;
     private transient PropertyChangeListener nameChangeL;
     
     //actions
@@ -191,6 +182,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             }
     };            
 
+    
     private transient AbstractSVGAction       insertGraphicsAction = 
         new AbstractSVGAction("animate_stop.png", "HINT_InsertGraphics", "LBL_InsertGraphics", false) {
             public void actionPerformed(ActionEvent e) {
@@ -209,23 +201,18 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
                         return;
                     } else {
                         try {
-                            m_sceneMgr.getPerseusController().mergeImage(file);
+                            m_sceneMgr.getDataObject().getModel().mergeImage(file);
                         } catch (Exception ex) {
                             Exceptions.printStackTrace(ex);                        
                         }
-                        repaintAll();
                     }
                 }
             }
     };            
     
-    // Serialization constructor
-    public SVGViewTopComponent() {    
-        super();
-    } 
-    
-    private SVGViewTopComponent(SVGDataObject svgDataObject) {
-        this.svgDataObject = svgDataObject;
+    public SVGViewTopComponent(SceneManager sceneManager) {
+        m_sceneMgr = sceneManager;
+        m_svgDataObject = m_sceneMgr.getDataObject();
         initialize();
     }
 
@@ -234,13 +221,13 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     }
         
     private Lookup createLookup() {        
-        Lookup elementLookup = new AbstractLookup(content);
+        Lookup elementLookup = m_sceneMgr.getLoookup();
 
         Lookup _lookup = Lookups.fixed( new Object[]{ 
-            new FilterNode( svgDataObject.getNodeDelegate(), 
+            new FilterNode( m_svgDataObject.getNodeDelegate(), 
                             null, 
                             new ProxyLookup(new Lookup[]{new SVGElementNode(elementLookup).getLookup(),
-                                                         svgDataObject.getNodeDelegate().getLookup()
+                                                         m_svgDataObject.getNodeDelegate().getLookup()
                                                          })),
             new SVGCookie()
         });
@@ -248,8 +235,6 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     }
     
     private void initialize(){
-        m_sceneMgr         = new SceneManager(svgDataObject, content);
-        m_sceneMgr.initialize();
         lookup = createLookup();
         associateLookup(lookup);
         
@@ -261,11 +246,23 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
                 DataObject.PROP_NAME.equals(evt.getPropertyName())) {
                     updateName();
                 }
+                
+                if ( isVisible()) {
+                    if ( SVGDataObject.PROP_EXT_CHANGE.equals(evt.getPropertyName())) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                //externally modified, refresh image
+                                System.out.println("Refreshing image ...");
+                                updateImage();
+                            }
+                        });
+                    }
+                }
             }
         };
         
         //Project p = null;// = svgDataObject.getPrimaryFile();
-        svgDataObject.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeL, svgDataObject));
+        m_svgDataObject.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeL, m_svgDataObject));
                 
         //add(toolbar  = createToolBar(), BorderLayout.NORTH);
         toolbar = createToolBar();
@@ -302,6 +299,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         basePanel = new JPanel();
         basePanel.setBackground(Color.WHITE);
         add(basePanel, BorderLayout.CENTER);
+        add( m_sceneMgr.getScreenManager().getStatusBar() , BorderLayout.SOUTH);
         updateName();
     }
     
@@ -320,15 +318,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
-    
-    /**
-     * Obtain the SVGViewTopComponent instance. Never call {@link #getDefault} directly!
-     */
-    public static synchronized SVGViewTopComponent findInstance(SVGDataObject svgDataObject) {
-        SVGViewTopComponent component = new SVGViewTopComponent(svgDataObject);
-        return component;
-    }
-    
+        
     public JComponent getToolbar() {
         return toolbar;
     }
@@ -341,7 +331,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         getModel().setChanged(true);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                SVGNavigatorContent.getDefault().navigate(svgDataObject);
+                SVGNavigatorContent.getDefault().navigate(m_svgDataObject);
             }            
         });
         addSvgPanel();
@@ -381,11 +371,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     
     private void removeSvgPanel(){
         assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread";  //NOI18N
-        if (m_img != null){
-            content.remove(m_img);
-            m_img = null;
-        }
-        
+        m_sceneMgr.resetImage();
         basePanel.removeAll();
             //TODO
 /*
@@ -406,7 +392,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     
     /** Creates cloned object which uses the same underlying data object. */
     protected CloneableTopComponent createClonedObject () {
-        return new SVGViewTopComponent(svgDataObject);
+        return new SVGViewTopComponent(m_sceneMgr);
     }
          
     protected String preferredID() {
@@ -416,10 +402,10 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     /** Updates the name and tooltip of this top component according to associated data object. */
     private void updateName () {
         // update name
-        String name = svgDataObject.getNodeDelegate().getDisplayName();
+        String name = m_svgDataObject.getNodeDelegate().getDisplayName();
         setName(name);
         // update tooltip
-        FileObject fo = svgDataObject.getPrimaryFile();
+        FileObject fo = m_svgDataObject.getPrimaryFile();
         setToolTipText(FileUtil.getFileDisplayName(fo));
     }
 
@@ -440,6 +426,13 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         slider = new JSlider(JSlider.HORIZONTAL, 0, (int)(currentMaximum/DEFAULT_STEP),0);
         constrains = new GridBagConstraints();
         constrains.anchor = GridBagConstraints.WEST;
+        
+        AbstractSVGAction [] selectActions = m_sceneMgr.m_selectActionFactory.getActions();
+        for (AbstractSVGAction action : selectActions) {
+            initButton(toolbar, new JButton(action));
+        }
+        toolbar.add(createToolBarSeparator(), constrains);
+                
         toolbar.add(slider, constrains);
         toolbar.add(Box.createHorizontalStrut(11));
         currentTimeSpinner = new JSpinner();
@@ -503,19 +496,22 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         initCombo( toolbar, zoomComboBox = new JComboBox( ZOOM_VALUES));
         zoomComboBox.addActionListener( new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-                String selection = (String) zoomComboBox.getSelectedItem();
-                if (selection != null) {
-                    selection = selection.trim();
-                    if (selection.endsWith("%")) {
-                        selection = selection.substring(0, selection.length() - 1);
-                    }
-                    try {
-                        float zoom = Float.parseFloat(selection) / 100;
-                        if (zoom > 0 && zoom < 100) {
-                            m_sceneMgr.getScreenManager().setZoomRatio(zoom);
+                ScreenManager scMgr = m_sceneMgr.getScreenManager();
+                if (scMgr != null) {
+                    String selection = (String) zoomComboBox.getSelectedItem();
+                    if (selection != null) {
+                        selection = selection.trim();
+                        if (selection.endsWith("%")) {
+                            selection = selection.substring(0, selection.length() - 1);
                         }
-                    } catch( NumberFormatException e) {
-                        e.printStackTrace();
+                        try {
+                            float zoom = Float.parseFloat(selection) / 100;
+                            if (zoom > 0 && zoom < 100) {
+                                scMgr.setZoomRatio(zoom);
+                            }
+                        } catch( NumberFormatException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }            
@@ -625,22 +621,17 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         toolBarSeparator.setMinimumSize(dim);
         return toolBarSeparator;
     }
-/*
-    private static void enableComponentsInToolbar(Container component, boolean enable){
-        Component[] components = component.getComponents();
-        for (int i = 0; i < components.length; i++) {
-            components[i].setEnabled(enable);
-            enableComponentsInToolbar((Container) components[i], enable);
-        }
-    }
-*/    
+
     /** Serialize this top component. Serializes its data object in addition
      * to common superclass behaviour.
      * @param out the stream to serialize to
      */
+    /*
     public void writeExternal (ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(svgDataObject);
+        ScreenManager smgr = m_sceneMgr.getScreenManager();
+        out.writeFloat(smgr.getZoomRatio());
         //out.writeFloat(currentTime);
         //out.writeFloat(currentMaximum);
         //out.writeBoolean(showToolTip);        
@@ -648,17 +639,19 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         //out.writeBoolean(showViewBox);
         //out.writeFloat(zoomRatio);
     }
+     */
     
     /** Deserialize this top component.
      * Reads its data object and initializes itself in addition
      * to common superclass behaviour.
      * @param in the stream to deserialize from
      */
+    /*
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
-        System.out.println("> readExternal()");
         try {
             super.readExternal(in);
-            svgDataObject  = (SVGDataObject)in.readObject();
+            svgDataObject   = (SVGDataObject)in.readObject();
+            float zoomRatio = in.readFloat();
             //currentTime    = in.readFloat();
             //currentMaximum = in.readFloat();
             //showToolTip    = in.readBoolean();
@@ -670,12 +663,14 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             //TODO replace???
             //((SVGOpenSupport)svgDataObject.getCookie(SVGOpenSupport.class)).prepareViewer();
             initialize();
-            System.out.println("< readExternal()");
+            ScreenManager smgr = m_sceneMgr.getScreenManager();
+            System.out.println("Setting zoom ratio: " + zoomRatio);
+            smgr.setZoomRatio(zoomRatio);
         } catch( Exception e) {
             e.printStackTrace();
         }        
     }    
-
+*/
     protected void updateZoomCombo() {
         zoomComboBox.getEditor().setItem( Integer.toString( (int) (m_sceneMgr.getScreenManager().getZoomRatio() * 100 + 0.5)) + "%");
     }
@@ -683,13 +678,14 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     public synchronized void updateImage() {
         assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread";  //NOI18N
 
+        m_sceneMgr.saveSelection();
         basePanel.removeAll();
         
         if ( parsingTask != null) {
             parsingTask.cancel();
         }
         try {
-            parsingTask = new ParsingTask(svgDataObject, this);
+            parsingTask = new ParsingTask(m_svgDataObject, this);
             basePanel.add( parsingTask.getPanel(), BorderLayout.CENTER);
             parsingTask.start();
         } catch (Exception ex) {
@@ -700,10 +696,8 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     void showImage(SVGImage img) {
         assert SwingUtilities.isEventDispatchThread() : "Not in AWT event dispach thread";  //NOI18N
         basePanel.removeAll();
-        m_img = img;
-        content.add(img);
-        
         m_sceneMgr.setImage(img);
+        m_sceneMgr.restoreSelection();
         final JComponent topComponent = m_sceneMgr.getComposerGUI();
         basePanel.add( topComponent, BorderLayout.CENTER);
         m_sceneMgr.registerPopupActions( new Action[]{
@@ -759,7 +753,7 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
     }
     
     private SVGFileModel getModel() {
-        return svgDataObject.getModel();
+        return m_svgDataObject.getModel();
     }
     
     /**
@@ -835,10 +829,9 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             doScale = !doScale;
             if (doScale) {
                 m_previousZoomRatio = smgr.getZoomRatio();
-
                 
                 String activeConfiguration = null;
-                final FileObject primaryFile = svgDataObject.getPrimaryFile ();
+                final FileObject primaryFile = m_svgDataObject.getPrimaryFile ();
                 Project p = FileOwnerQuery.getOwner (primaryFile);
                 if (p != null && p instanceof J2MEProject){
                     J2MEProject project = (J2MEProject) p;
@@ -859,62 +852,6 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
             repaint();
         }
     }    
-/*    
-    
-    private class ImageScaleHelper {
-        private SVGSVGElement element;
-        private J2MEProject project;
-        private PropertyChangeListener pcl;
-        private boolean scale;
-        
-        ImageScaleHelper(final SVGSVGElement element){
-            this.element = element;                    
-            final FileObject primaryFile = svgDataObject.getPrimaryFile ();
-            Project p = FileOwnerQuery.getOwner (primaryFile);
-            if (p != null && p instanceof J2MEProject){
-                project = (J2MEProject) p;
-                final ProjectConfigurationsHelper helper = project.getConfigurationHelper();
-                helper.addPropertyChangeListener( WeakListeners.propertyChange(pcl = new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        scale(scale);
-                    }
-                }, helper));
-            }
-        }
-        
-        void scale(final boolean scale){
-            this.scale = scale;
-            if (svgAnimator != null && svgAnimator.getState() != SVGAnimatorImpl.STATE_STOPPED){
-                svgAnimator.invokeLater(new Runnable() {
-                    public void run() {
-                        if (!scale){
-                            element.setCurrentScale(1.0f);
-                            SVGViewTopComponent.this.imagePanel.repaint();
-                            return;
-                        }
-                        String activeConfiguration = null;
-                        final FileObject primaryFile = svgDataObject.getPrimaryFile ();
-                        Project p = FileOwnerQuery.getOwner (primaryFile);
-                        if (p != null && p instanceof J2MEProject){
-                            project = (J2MEProject) p;
-                            activeConfiguration = project.getConfigurationHelper().getActiveConfiguration().getDisplayName();
-                        }
-                        Dimension dim = ScreenSizeHelper.getCurrentDeviceScreenSize(primaryFile, activeConfiguration);
-                        Dimension dim2 = imagePanel.getSize();
-                        double ratio = dim.getHeight() / dim2.getHeight();
-                        element.setCurrentScale((float)ratio);                        
-                        SVGViewTopComponent.this.imagePanel.repaint();
-                    }
-                });
-            }                
-        }
-    }
-    
-    
-  */  
-    
-    
-    
     
     private class ToggleHighlightAction extends AbstractAction implements Presenter.Popup {
         ToggleHighlightAction (){
@@ -1046,11 +983,11 @@ final public class SVGViewTopComponent extends CloneableTopComponent {
         public void updateSelection(final SVGDataObject doj, final DocumentElement de, boolean doubleClick) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    System.out.println("Updating selection");
+                    //System.out.println("Updating selection");
                     String id = doj.getModel().getElementId(de);
                     m_sceneMgr.setSelection(id);
                 }
             });
         }        
-    }    
+    }       
 }

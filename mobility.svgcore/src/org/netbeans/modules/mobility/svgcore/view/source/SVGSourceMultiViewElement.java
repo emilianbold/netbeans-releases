@@ -37,12 +37,12 @@ import org.openide.windows.TopComponent;
 public class SVGSourceMultiViewElement extends XmlMultiViewElement {
     private static final long serialVersionUID = 7525761714575627761L;        
     
-    protected final int index;
+    //protected final int index;
     
     /** Creates a new instance of SVGXmlMultiViewElement */
-    public SVGSourceMultiViewElement( SVGDataObject dObj, int index) {
+    public SVGSourceMultiViewElement( SVGDataObject dObj) {
         super(dObj);
-        this.index = index;
+        //this.index = index;
     }    
 
     public Lookup getLookup() {
@@ -74,10 +74,17 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
 
     public void componentShowing() {
         super.componentShowing();
-        dObj.setLastOpenView(index);
+        dObj.setLastOpenView(SVGDataObject.XML_VIEW_INDEX);
     }
     
     public static void selectElement( final SVGDataObject svgDoj, final DocumentElement de, final boolean requestFocus) {
+        int startOffset = de.getStartOffset();
+        if ( startOffset != -1) {
+            selectPosition(svgDoj, startOffset, requestFocus);
+        }
+    }
+    
+    public static void selectPosition( final SVGDataObject svgDoj, final int position, final boolean requestFocus) {
         openFileInEditor(svgDoj);
 
         SwingUtilities.invokeLater( new Runnable() {
@@ -90,11 +97,8 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
                         JEditorPane [] opened = ed.getOpenedPanes();
                         if ( opened != null && opened.length > 0) {
                             final JEditorPane  pane = opened[0];
-                            int startOffset = de.getStartOffset();
-                            if ( startOffset != -1) {
-                                pane.setSelectionStart(startOffset);
-                                pane.setSelectionEnd(startOffset);
-                            }
+                            pane.setSelectionStart(position);
+                            pane.setSelectionEnd(position);
 
                             if ( requestFocus) {
                                 TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass( TopComponent.class, pane);

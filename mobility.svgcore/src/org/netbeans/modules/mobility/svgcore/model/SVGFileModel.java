@@ -12,10 +12,16 @@
  */   
 package org.netbeans.modules.mobility.svgcore.model;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -24,14 +30,19 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
+import javax.swing.text.Element;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.BaseDocumentEvent;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.netbeans.modules.editor.structure.api.DocumentModelListener;
+import org.netbeans.modules.editor.structure.api.DocumentModelStateListener;
 import org.netbeans.modules.mobility.svgcore.SVGDataLoader;
+import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.model.ElementMapping;
 import org.netbeans.modules.xml.multiview.XmlMultiViewEditorSupport;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -39,48 +50,85 @@ import org.openide.util.Exceptions;
  * @author Pavel Benes
  */
 public class SVGFileModel {
-    protected static final String XML_TAG       = "tag";
-    protected static final String XML_EMPTY_TAG = "empty_tag";
-    protected static final String XML_ERROR_TAG = "error";
-    protected static String [] ANIMATION_TAGS = { "animate", "animateTransform", "animateMotion", "animateColor"};
+    protected static final String    XML_TAG        = "tag";
+    protected static final String    XML_EMPTY_TAG  = "empty_tag";
+    protected static final String    XML_ERROR_TAG  = "error";
+    protected static final String [] ANIMATION_TAGS = { "animate", "animateTransform", "animateMotion", "animateColor"};
         
     public interface ModelListener {
         public void modelChanged();
         public void modelSwitched();
     }
 
-    public interface SelectionListener {
-        public void selectionChanged( String id);
-    }
+    public abstract class FileModelTransaction implements Runnable {
+        private final boolean m_fireUpdate;
+        
+        public FileModelTransaction(boolean fireUpdate) {
+            m_fireUpdate = fireUpdate;
+        }
 
-    private final XmlMultiViewEditorSupport edSup;
+        public FileModelTransaction() {
+            this(false);
+        }
+        
+        public void run() {
+            System.out.println("Transaction started.");
+            try {
+                assert SwingUtilities.isEventDispatchThread() : "Transaction must be called in AWT thread.";                
+                m_bDoc.atomicLock();
+                //m_isTransactionInProgress = true;
+                transaction();
+            } catch(Exception e) {
+                m_bDoc.atomicUndo();
+                System.out.println("Transaction failed!");
+                e.printStackTrace();
+            } finally {
+                //m_isTransactionInProgress = false;
+                m_bDoc.atomicUnlock();
+                System.out.println("Transaction completed.");
+                if ( m_fireUpdate) {
+                    getDataObject().fireContentChanged();
+                } else {
+                    m_model.forceUpdate();
+                }
+            }
+        }
+        
+        protected abstract void transaction() throws Exception;        
+    }
+    
+    private final XmlMultiViewEditorSupport m_edSup;
     private final ElementMapping            m_mapping;
-    private       List<ModelListener>       modelListeners     = new ArrayList<ModelListener>();
-    private       List<SelectionListener>   selectionListeners = new ArrayList<SelectionListener>();
-    private       BaseDocument              bDoc;
-    private       EditorKit                 kit;
+    private       List<ModelListener>       m_modelListeners = new ArrayList<ModelListener>();
+    private       BaseDocument              m_bDoc;
+    private       EditorKit                 m_kit;
     private       DocumentModel             m_model;
-    private       boolean                   isChanged = true;
+    private       boolean                   m_isChanged = true;
+    private volatile boolean                m_eventInProgress = false;
+    private volatile boolean                m_sourceChanged = false;
+    private volatile boolean                m_updateInProgress = false;
+    //private volatile boolean                m_isTransactionInProgress = false;
+    private          Object                 m_lock = new Object();
     
     private final DocumentListener          docListener = new DocumentListener() {
-        public void removeUpdate(DocumentEvent e) {documentModified();}
+        public void removeUpdate(DocumentEvent e) {documentModified(e);}
         
-        public void insertUpdate(DocumentEvent e) {documentModified();}
+        public void insertUpdate(DocumentEvent e) {documentModified(e);}
         
-        public void changedUpdate(DocumentEvent e) {documentModified();}
+        public void changedUpdate(DocumentEvent e) {documentModified(e);}
     };
     
     private final DocumentModelListener    modelListener = new DocumentModelListener() {
         public void documentElementRemoved(DocumentElement de) {
             if (isTagElement(de)) {
-                System.out.println("Element removed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
+                //System.out.println("Element removed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
                 fireModelChange();
             }
         }
 
         public void documentElementChanged(DocumentElement de) {
             if (isTagElement(de)) {
-                System.out.println("Element changed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
+                //System.out.println("Element changed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
                 fireModelChange();
             }
         }
@@ -94,7 +142,7 @@ public class SVGFileModel {
                     at org.netbeans.modules.editor.structure.api.DocumentElement.getElementCount(DocumentElement.java:145)
                     at org.netbeans.modules.mobility.svgcore.model.SVGFileModel$2.documentElementAttributesChanged(SVGFileModel.java:84)
                  */
-                System.out.println("Element attrs changed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
+                //System.out.println("Element attrs changed " + de.getName() + " " + de.toString()  + "[" + de.getElementCount() + "]");
                 fireModelChange();
             }
         }
@@ -105,73 +153,115 @@ public class SVGFileModel {
                 if (id != null) {
                     m_mapping.add( id, de);
                 }
-                System.out.println("Element added " + de.getName() + " " + de.toString() + "[" + de.getElementCount() + "]");
+                //System.out.println("Element added " + de.getName() + " " + de.toString() + "[" + de.getElementCount() + "]");
                 fireModelChange();
             }
-        }        
+        }
+    };
+    
+    private final DocumentModelStateListener modelStateListener = new DocumentModelStateListener() {    
+        public void sourceChanged() {
+            synchronized(m_lock) {
+                System.out.println("Event: source-changed");
+                m_sourceChanged = true;
+                m_lock.notifyAll();
+            }
+        }
+
+        public void scanningStarted() {
+            synchronized(m_lock) {
+                System.out.println("Event: update-started");
+                m_updateInProgress = true;
+                m_sourceChanged = false;
+                m_lock.notifyAll();
+            }            
+        }
+        
+        public void updateStarted() {
+
+        }
+
+        public void updateFinished() {
+            synchronized(m_lock) {
+                System.out.println("Event: update-finished");
+                m_updateInProgress = false;
+                m_lock.notifyAll();
+            }
+        }
     };
 
+    private final Runnable updateTask = new Runnable() {
+        public void run() {
+            System.out.println("Updating ...");
+            try {
+                synchronized( m_modelListeners) {
+                    for (int i = 0; i < m_modelListeners.size(); i++) {
+                        ((ModelListener) m_modelListeners.get(i)).modelChanged();
+                    }
+                }
+            } finally {
+                System.out.println("Update completed");
+                m_eventInProgress = false;
+            }
+        }
+    };
+    
     /** Creates a new instance of SVGFileModel */
     public SVGFileModel(XmlMultiViewEditorSupport edSup) {
-        this.edSup = edSup;
-        m_model    = null;
-        m_mapping  = new ElementMapping();
+        m_edSup   = edSup;
+        m_model   = null;
+        m_mapping = new ElementMapping();
     }        
 
+    public SVGDataObject getDataObject() {
+        return (SVGDataObject) m_edSup.getDataObject();
+    }
+    
     public SVGImage parseSVGImage() throws IOException, BadLocationException {
         SVGImage svgImage = m_mapping.parseDocument(this, m_model);
         return svgImage;
-    }
-        
+    }       
+    
     public boolean isChanged() {
-        return isChanged;
+        return m_isChanged;
     }
     
     public void setChanged(boolean isChanged) {
-        this.isChanged = isChanged;
+        m_isChanged = isChanged;
     }
     
     public void addModelListener( ModelListener listener) {
-        synchronized( modelListeners) {
-            modelListeners.add(listener);
+        synchronized( m_modelListeners) {
+            m_modelListeners.add(listener);
         }
     }
 
     public void removeModelListener( ModelListener listener) {
-        synchronized( modelListeners) {
-            modelListeners.remove(listener);
-        }
-    }
-
-    public void addSelectionListener( SelectionListener listener) {
-        synchronized( selectionListeners) {
-            selectionListeners.add(listener);
-        }
-    }
-
-    public void removeSelectionListener( SelectionListener listener) {
-        synchronized( selectionListeners) {
-            selectionListeners.remove(listener);
+        synchronized( m_modelListeners) {
+            m_modelListeners.remove(listener);
         }
     }
     
-    public void setSelected(String selectedId) {
-        synchronized(selectionListeners) {
-            for (int i = 0; i < selectionListeners.size(); i++) {
-                ((SelectionListener) selectionListeners.get(i)).selectionChanged(selectedId);
+    private volatile boolean m_undoInProcess = false;
+    
+    protected void documentModified(DocumentEvent e) {
+        if ( e instanceof BaseDocumentEvent) {
+            BaseDocumentEvent bde = (BaseDocumentEvent) e;
+            if (bde.isInRedo() || bde.isInUndo()) {
+                synchronized(this) {
+                    if ( !m_undoInProcess) {
+                        m_undoInProcess = true;
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                m_undoInProcess = false;
+                                ((SVGDataObject) m_edSup.getDataObject()).fireContentChanged();
+                            }
+                        });
+                    }
+                }
             }
         }
-    }
-    
-    private long m_changedTime;
-    
-    protected void documentModified() {
-        m_changedTime = System.currentTimeMillis();
         setChanged(true);
-    }
-    
-    public boolean isModelStable() {
-        return System.currentTimeMillis() - m_changedTime > 2100;
     }
     
     public boolean containsAnimations() {
@@ -191,7 +281,7 @@ public class SVGFileModel {
         final JEditorPane [] panes = new JEditorPane[1];
                 
         if ( SwingUtilities.isEventDispatchThread()) {
-            JEditorPane [] temp = edSup.getOpenedPanes();
+            JEditorPane [] temp = m_edSup.getOpenedPanes();
             if (temp != null && temp.length > 0) {
                 panes[0] = temp[0];
             }
@@ -199,7 +289,7 @@ public class SVGFileModel {
             try {
                 SwingUtilities.invokeAndWait( new Runnable() {
                     public void run() {
-                        JEditorPane [] temp = edSup.getOpenedPanes();
+                        JEditorPane [] temp = m_edSup.getOpenedPanes();
                         if (temp != null && temp.length > 0) {
                             panes[0] = temp[0];
                         }
@@ -217,21 +307,21 @@ public class SVGFileModel {
     private void checkDocument() throws IOException, DocumentModelException {
         JEditorPane editor = getOpenedEditor();
         
-        if (bDoc == null) {
+        if (m_bDoc == null) {
             if (editor != null) {
                 // reuse document from opened editor, if exists
-                kit = editor.getEditorKit();
+                m_kit = editor.getEditorKit();
                 createModel( (BaseDocument) editor.getDocument(), true);
             } else {
                 // otherwise create the document from scratch
-                kit = JEditorPane.createEditorKitForContentType(SVGDataLoader.REQUIRED_MIME);
+                //m_kit = JEditorPane.createEditorKitForContentType(SVGDataLoader.REQUIRED_MIME);
                 //Use in NB 6.0
-                //Editor kit = CloneableEditorSupport.getEditorKit( SVGDataLoader.REQUIRED_MIME);
+                m_kit = CloneableEditorSupport.getEditorKit( SVGDataLoader.REQUIRED_MIME);
                 
                 //TODO Read file content in another thread
-                createModel( (BaseDocument) kit.createDefaultDocument(), false);
+                createModel( (BaseDocument) m_kit.createDefaultDocument(), false);
                 try {
-                    kit.read( edSup.getInputStream(), bDoc, 0);
+                    m_kit.read( m_edSup.getInputStream(), m_bDoc, 0);
                 } catch (BadLocationException ex) {
                     ex.printStackTrace();
                 }
@@ -239,26 +329,31 @@ public class SVGFileModel {
         } else {
             if (editor != null) {
                 BaseDocument opened = (BaseDocument) editor.getDocument();
-                if ( opened != bDoc) {
-                    bDoc.removeDocumentListener(docListener);
-                    kit   = editor.getEditorKit();
+                if ( opened != m_bDoc) {
+                    m_bDoc.removeDocumentListener(docListener);
+                    m_kit   = editor.getEditorKit();
                     createModel(opened, true);
                 }
             }
         }
         assert m_model != null;
-        assert kit   != null;
-        assert bDoc  != null;
+        assert m_kit   != null;
+        assert m_bDoc    != null;
     }
-
+    
     private void createModel( BaseDocument doc, boolean addListener) throws DocumentModelException {
         boolean modelChanged = m_model != null;
-        bDoc  = doc;
-        m_model = DocumentModel.getDocumentModel(bDoc);
+        m_bDoc  = doc;
+        m_model = DocumentModel.getDocumentModel(m_bDoc);
+        //System.out.println("******** Creating model");
+        //m_testModel = new TestSVGFileModel(doc, edSup.getDataObject());
+        //System.out.println("******** dumping model");
+        //m_testModel.dump(null, 0);
         
         if (addListener) {
-            bDoc.addDocumentListener(docListener);
+            m_bDoc.addDocumentListener(docListener);
             m_model.addDocumentModelListener(modelListener);
+            m_model.addDocumentModelStateListener(modelStateListener);
         }
         
         if (modelChanged) {
@@ -270,25 +365,7 @@ public class SVGFileModel {
         checkDocument();
         return m_model;
     }
-    
-    public synchronized int getElementStartOffset( DocumentElement del) throws IOException, DocumentModelException {
-        return del.getStartOffset();
-    }
-    
-    public synchronized int getElementStartOffset( String id) throws IOException, DocumentModelException {
-        checkDocument();
-        int             offset;
-        DocumentElement elem = getElementById(id);
         
-        if ( elem != null) {
-            offset = elem.getStartOffset();
-        } else {
-            offset = -1;
-        }
-        
-        return offset;
-    }
-    
     public static boolean isTagElement(DocumentElement elem) {
         return elem != null && (elem.getType().equals(XML_TAG) ||
                elem.getType().equals(XML_EMPTY_TAG));
@@ -298,10 +375,25 @@ public class SVGFileModel {
         return elem.getType().equals(XML_ERROR_TAG);
     }
     
+    /**
+     * Convenience helper method.
+     */ 
     public static String getIdAttribute(DocumentElement de) {
         AttributeSet attrs = de.getAttributes();
         String id = (String) attrs.getAttribute("id");
         return id;
+    }
+
+    /**
+     * Convenience helper method.
+     */ 
+    public static List<DocumentElement> getParents(DocumentElement elem) {
+        List<DocumentElement> list = new ArrayList<DocumentElement>();
+        while( elem != null) {
+            list.add(elem);
+            elem = elem.getParentElement();
+        }
+        return list;
     }
     
     public DocumentElement getElementById(String id) {
@@ -309,69 +401,19 @@ public class SVGFileModel {
         return elem;
     }
     
+    
     public String getElementId(DocumentElement de) {
         String id = m_mapping.element2id(de);
         assert id != null : "Element " + de + " could not be found!";
         return id;
     }
     
-    public DocumentModel _getDocumentModel() {
-        return m_model;
+    public String createUniqueId(String prefix, boolean isWrapper) {
+        return m_mapping.generateId(prefix, isWrapper);
     }
     
-    protected static boolean isEqual(String str1, String str2, int pos1, int pos2, int length) {
-        if ( pos1 + length <= str1.length() &&
-             pos2 + length <= str2.length()) {
-            for (int i = 0; i < length; i++) {
-                if ( str1.charAt(pos1 + i) != str2.charAt(pos2+i)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        
-        return false;
-    }
-    
-    public boolean isLeaf(String id) {
-        DocumentElement elem = getElementById(id); 
-        return elem != null ? elem.isLeaf() : true;
-    }
-
-    public List getChildElements( DocumentElement parent) {
-        int  elemCount = parent.getElementCount();  
-        List<DocumentElement> elemList  = new ArrayList<DocumentElement>(elemCount/2);
-        for (int i = 0; i < elemCount; i++) {
-            DocumentElement deChild = parent.getElement(i);
-            if ( isTagElement(deChild)) {
-                elemList.add(deChild);
-            }
-        }
-        return elemList;
-    }
-        
-    public List getChildElements( String id) {
-        DocumentElement parent = getElementById(id);
-        if (parent != null) {
-            StringBuilder sb = new StringBuilder(id);
-            int size = sb.length();
-            
-            int  elemCount = parent.getElementCount();  
-            List<String> elemList  = new ArrayList<String>(elemCount/2);
-            int index = 0;
-            for (int i = 0; i < elemCount; i++) {
-                DocumentElement deChild = parent.getElement(i);
-                if ( isTagElement(deChild)) {
-                    sb.append(index++);
-                    sb.append(deChild.getName());
-                    elemList.add(sb.toString());
-                    sb.setLength(size);
-                }
-            }  
-            return elemList;
-        } else {
-            return null;
-        }
+    public static boolean isWrapperId(String id) {
+        return ElementMapping.isWrapperId(id);        
     }
     
     public synchronized String describeElement(String id, boolean showTag, boolean showAttributes, String lineSep) {
@@ -384,40 +426,14 @@ public class SVGFileModel {
         }
     }
 
-    private boolean eventInProgress = false;
-
-    private final Runnable updateTask = new Runnable() {
-        public void run() {
-            System.out.println("Updating ...");
-            try {
-                synchronized( modelListeners) {
-                    for (int i = 0; i < modelListeners.size(); i++) {
-                        ((ModelListener) modelListeners.get(i)).modelChanged();
-                    }
-                }
-            } finally {
-                System.out.println("Update completed");
-                eventInProgress = false;
-            }
-        }
-    };
-    
-    protected synchronized void fireModelChange() {
-        if ( !eventInProgress) {
-            System.out.println("Asking for update");
-            SwingUtilities.invokeLater( updateTask);
-            eventInProgress = true;
-        }
+    public int getOffsetByPosition(int line, int column) {
+        Element root = m_bDoc.getDefaultRootElement();
+        line = Math.max(line, 1);
+        line = Math.min(line, root.getElementCount());
+        int pos = root.getElement(line - 1).getStartOffset() + column;
+        return pos;
     }
-    
-    protected void fireModelSwitched() {
-        synchronized( modelListeners) {
-            for (int i = 0; i < modelListeners.size(); i++) {
-                ((ModelListener) modelListeners.get(i)).modelSwitched();
-            }
-        }
-    }
-    
+            
     public static String describeElement( DocumentElement el, boolean showTag, boolean showAttributes, String lineSep) {
         StringBuilder sb = new StringBuilder();
         
@@ -441,7 +457,7 @@ public class SVGFileModel {
         }
         
         return sb.toString();
-    }   
+    }       
     
     public static boolean isAnimation(DocumentElement elem) {
         String tagName = elem.getName();        
@@ -454,29 +470,217 @@ public class SVGFileModel {
         return false;
     }
     
-    public void deleteElement(String id) throws BadLocationException {
-        DocumentElement de = checkIntegrity(id);
-        
-        //TODO any locking??
-        int startOff = de.getStartOffset();
-        bDoc.remove(startOff, de.getEndOffset() - startOff + 1);
+    public void deleteElement(final String id)  {
+        runTransaction(new FileModelTransaction() {
+            protected void transaction() throws BadLocationException {
+                DocumentElement de       = checkIntegrity(id);
+                int             startOff = de.getStartOffset();
+                m_bDoc.remove(startOff, de.getEndOffset() - startOff + 1);
+            }
+        });
+    }
+    /*
+    public void wrapElement(final String id, final String wrapperId) {
+        runTransaction(new FileModelTransaction() {
+            protected void transaction() throws BadLocationException {
+                DocumentElement de       = checkIntegrity(id);
+                int             startOff = de.getStartOffset();
+                int             length   = de.getEndOffset() - startOff + 1;
+
+                m_bDoc.replace(startOff, length,
+                             PatchedGroup.wrapText( wrapperId, m_bDoc.getText(startOff, length)), null);
+            }
+        });
+    }
+    */
+    public void _appendElement( final String insertString) {
+        runTransaction(new FileModelTransaction(true) {
+            protected void transaction() throws BadLocationException {
+                DocumentElement svgRoot = getSVGRoot(m_model);
+
+                if (svgRoot != null) {
+                    DocumentElement lastChild = getLastTagChild(svgRoot);
+                    int    insertPosition;
+                    if (lastChild != null) {
+                        //insert new text after last child
+                        insertPosition = lastChild.getEndOffset()+1;
+                        m_bDoc.insertString(insertPosition, insertString, null);
+                    } else {
+                        String docText  = m_bDoc.getText(0, m_bDoc.getLength());
+                        int    startOff = svgRoot.getStartOffset();
+                        int    c = 0;
+                        
+                        insertPosition = svgRoot.getEndOffset() - 1;
+                        while( insertPosition > startOff &&
+                                (c=docText.charAt(insertPosition--)) != '/') {}
+                        
+                        if (c == '/') {
+                            if (docText.charAt(insertPosition) == '<') {
+                                m_bDoc.insertString(insertPosition, insertString, null);
+                            } else {
+                                StringBuilder sb = new StringBuilder( docText.substring(startOff, insertPosition+1));
+                                sb.append(">");
+                                sb.append(insertString);
+                                sb.append("\n</svg>");
+                                m_bDoc.replace(startOff, svgRoot.getEndOffset() - startOff + 1, sb.toString(), null);
+                            }    
+                        } else {
+                            //TODO report invalid svg doc
+                        }
+                    }
+                } else {
+                    //TODO report invalid svg doc
+                }
+            }
+        });
     }
     
-    public void wrapElement(String id, String text) throws BadLocationException {
-        DocumentElement de = checkIntegrity(id);
-        
-        //TODO any locking??
-        int startOff = de.getStartOffset();
-        int length   = de.getEndOffset() - startOff + 1;
+    public void setAttribute( final String id, final String attrName, final String attrValue) {
+        runTransaction(new FileModelTransaction() {
+            protected void transaction() throws BadLocationException {
+                DocumentElement elem = checkIntegrity(id);
+                assert isTagElement(elem) : "Attribute change allowed only for tag elements";
 
-        bDoc.replace(startOff, length,
-                     wrapText(text, bDoc.getText(startOff, length)), null);
+                int startOff = elem.getStartOffset() + 1 + elem.getName().length();        
+                int endOff;
+
+                List<DocumentElement> children = elem.getChildren();
+
+                if ( children.size() > 0) {
+                    endOff = children.get(0).getStartOffset() - 1;
+                } else {
+                    endOff = elem.getEndOffset() - 1;
+                }
+
+                String fragment = m_bDoc.getText(startOff, endOff - startOff + 1);
+                int p;
+                if ( (p=fragment.indexOf(attrName)) != -1) {
+                    p += attrName.length();
+                    while( ++p < fragment.length()) {
+                        if (fragment.charAt(p) =='"') {
+                            int q = p;
+
+                            while( ++q < fragment.length()) {
+                                if (fragment.charAt(q) =='"') {
+                                    p++;
+                                    m_bDoc.replace(startOff + p, q-p , attrValue, null);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    System.err.println("Attribute " + attrName + " not changed: \"" + fragment + "\"");
+                } else {
+                    StringBuilder sb = new StringBuilder(" ");
+                    sb.append(attrName);
+                    sb.append("=\"");
+                    sb.append(attrValue);
+                    sb.append( "\" ");
+                    m_bDoc.insertString(startOff, sb.toString(), null);
+                }            
+            }
+        });
+    }
+    
+    /**
+     * Make the selected element to become the first child of its parent.
+     */
+    public void moveToBottom(final String id) {
+        runTransaction(new FileModelTransaction() {
+            protected void transaction() throws BadLocationException {
+                DocumentElement de         = checkIntegrity(id);
+                DocumentElement firstChild = getFirstTagChild(de.getParentElement());
+
+                if (de != firstChild) {
+                    int    startOffset = de.getStartOffset();
+                    int    length      = de.getEndOffset() - startOffset + 1;
+                    String elemText    = getElementText(de, id);
+
+                    int insertOffset = firstChild.getStartOffset();
+                    assert insertOffset < startOffset;
+
+                    m_bDoc.remove(startOffset, length);
+                    m_bDoc.insertString(insertOffset, elemText, null);
+                }        
+            }
+        });       
+    }
+        
+    /**
+     * Make the selected element to become the last child of its parent.
+     */
+    public void moveToTop(final String id) {
+        runTransaction(new FileModelTransaction() {
+            protected void transaction() throws BadLocationException {
+                DocumentElement de        = checkIntegrity(id);
+                DocumentElement lastChild = getLastTagChild(de.getParentElement());
+
+                if (de != lastChild) {
+                    int startOffset = de.getStartOffset();
+                    int length      = de.getEndOffset() - startOffset + 1;
+                    String elemText = getElementText(de, id);
+
+                    int insertOffset = lastChild.getEndOffset() + 1;
+                    assert startOffset < insertOffset;
+
+                    m_bDoc.insertString(insertOffset, elemText, null);
+                    m_bDoc.remove(startOffset, length);
+                }
+            }
+        });
+    }
+
+    /**
+     * Move the selected element one position to the end of a list of its siblings.
+     */
+    public void moveForward(final String id) {
+        runTransaction(new FileModelTransaction() {
+            protected void transaction() throws BadLocationException {
+                DocumentElement de        = checkIntegrity(id);
+                DocumentElement nextChild = getNextTagSibling(de);
+
+                if (nextChild != null) {
+                    int startOffset = de.getStartOffset();
+                    int length      = de.getEndOffset() - startOffset + 1;
+                    String elemText = m_bDoc.getText(startOffset, length);
+
+                    int insertOffset = nextChild.getEndOffset() + 1;
+                    assert startOffset < insertOffset;
+
+                    m_bDoc.insertString(insertOffset, elemText, null);
+                    m_bDoc.remove(startOffset, length);
+                }
+            }
+        });
+    }
+
+    /**
+     * Move the selected element one position to the beginning of a list of its siblings.
+     */
+    public void moveBackward(final String id) {
+        runTransaction(new FileModelTransaction() {
+            protected void transaction() throws BadLocationException {
+                DocumentElement de            = checkIntegrity(id);
+                DocumentElement previousChild = getPreviousTagSibling(de);
+
+                if (previousChild != null) {
+                    int startOffset = de.getStartOffset();
+                    int length      = de.getEndOffset() - startOffset + 1;
+                    String elemText = m_bDoc.getText(startOffset, length);
+
+                    int insertOffset = previousChild.getStartOffset();
+                    assert startOffset > insertOffset;
+
+                    m_bDoc.remove(startOffset, length);
+                    m_bDoc.insertString(insertOffset, elemText, null);
+                }
+            }
+        });
     }
     
     public static DocumentElement getSVGRoot(final DocumentModel model) {
         DocumentElement root = model.getRootElement();
-        for (int i = root.getElementCount() - 1; i >= 0; i--) {
-            DocumentElement de = root.getElement(i);
+        for (DocumentElement de : root.getChildren()) {
             if (isTagElement(de) && "svg".equals(de.getName())) {
                 return de;
             }
@@ -484,264 +688,292 @@ public class SVGFileModel {
         return null;
     }
     
-    private static String wrapText(String group, String text) {
+    protected synchronized void fireModelChange() {
+        if ( !m_eventInProgress) {
+            System.out.println("Asking for update");
+            SwingUtilities.invokeLater( updateTask);
+        }
+    }
+    
+    protected void fireModelSwitched() {
+        synchronized( m_modelListeners) {
+            for (int i = 0; i < m_modelListeners.size(); i++) {
+                ((ModelListener) m_modelListeners.get(i)).modelSwitched();
+            }
+        }
+    }
+    
+    public void runTransaction( final FileModelTransaction transaction) {
+        new Thread("TransactionWrapper") {
+            public void run() {
+                updateModel();
+                SwingUtilities.invokeLater(transaction);
+            }
+            
+        }.start();
+    }    
+    
+    /*
+     * Verify that the DocumentModel is up to date and no change of the
+     * source file is being processed. If the method is called called from
+     * the AWT thread, a deadlock will occur since DocumentModel update
+     * implementation calls SwingUtilitis.inwokeAndWait() method.
+     */ 
+    void updateModel() {
+        System.out.println("Updating model ...");
+        assert SwingUtilities.isEventDispatchThread() == false : "Model update cannot be called in AWT thread.";
+        
+        synchronized(m_lock) {
+            if (m_sourceChanged) {
+                System.out.println("Forcing model update");
+                m_model.forceUpdate();
+            } else if (!m_updateInProgress) {
+                System.out.println("Model already up to date.");
+                return;
+            } 
+            
+            while( m_sourceChanged || m_updateInProgress) {
+                System.out.print( " Waiting for model update...");
+                try {
+                    m_lock.wait();
+                    System.out.println( " Wait ended."); 
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }            
+        }    
+        System.out.println("Model update completed.");
+    }
+        
+    //TODO Show dialog with id conversion mapping
+    @SuppressWarnings({"deprecation"})
+    public void mergeImage(File file) throws FileNotFoundException, IOException, DocumentModelException, BadLocationException {
+        DocumentModel   modelToInsert = loadDocumentModel(file);
+        String          wrapperId     = createUniqueId(file.getName().replace('.', '_'), true);
+        String          textToInsert  = m_mapping.getWithUniqueIds(modelToInsert, wrapperId);
+
+        textToInsert = wrapText( wrapperId, textToInsert);
+        _appendElement(textToInsert);
+    } 
+
+    protected static String wrapText(String wrapperId, String textToWrap) {
         //TODO indent the wrapped text
         StringBuilder sb = new StringBuilder();
-        sb.append( "\n");
-        sb.append(group);
-        sb.append("\n");
-        sb.append(text);
+        sb.append( "<g id=\"");
+        sb.append(wrapperId);
+        sb.append("\">\n");
+        sb.append(textToWrap);
         sb.append("\n</g>");
         return sb.toString();
     }
     
-    public void appendElement( String groupHeader, String childXMLText) throws BadLocationException {
-        DocumentElement svgRoot = getSVGRoot(m_model);
-        
-        if (svgRoot != null) {
-            int svgRootChildNum = svgRoot.getElementCount();
-            int insertPosition;
+/*            
+                    wrapper.attachSVGObject( new SVGObject(m_sceneMgr, wrapper));
 
-            if (svgRootChildNum > 0) {
-                // insert new text after last child
-                insertPosition = svgRoot.getElement(svgRootChildNum-1).getEndOffset();
-                bDoc.insertString(insertPosition, wrapText(groupHeader, childXMLText), null);
-            } else {
-                //TODO implement
-                throw new RuntimeException("Insert into empty document not implemented.");
+                    transferChildren(wrapper, (SVG)sibling);
+                    fileModel.appendElement(wrapper.getText(false), insertedText);
+            
+            DocumentElement svgElem       = getSVGRoot(modelToInsert);
+            
+            int childElemNum;
+            if (svgElem != null &&
+                (childElemNum=svgElem.getElementCount()) > 0) {
+                int startOff = svgElem.getElement(0).getStartOffset();
+                int endOff   = svgElem.getElement(childElemNum - 1).getEndOffset();
+
+                String insertedText = modelToInsert.getDocument().getText(startOff, endOff - startOff + 1);
+                
             }
-        } else {
-            //TODO handle situation when no SVG root element is found
-        }
-    }
+        
+        SVGFileModel fileModel = m_sceneMgr.getDataObject().getModel();
+        
+        if (svgElem != null && ) {
+            
+            Set<String> oldIds = new HashSet<String>();
+            collectIDs(m_svgDoc, oldIds);
 
-    /**
-     * Make the selected element to become the first child of its parent.
-     */
-    public void moveToBottom(String id) throws BadLocationException {
-        DocumentElement de = checkIntegrity(id);
-        
-        DocumentElement parent = de.getParentElement();
-        DocumentElement firstChild = parent.getElement(0);
-        if (de != firstChild) {
-            //TODO lock document??
-            int startOffset = de.getStartOffset();
-            int length      = de.getEndOffset() - startOffset + 1;
-            String elemText = bDoc.getText(startOffset, length);
-            
-            int insertOffset = firstChild.getStartOffset();
-            assert insertOffset < startOffset;
-            
-            bDoc.remove(startOffset, length);
-            bDoc.insertString(insertOffset, elemText, null);
-        }
-    }
-    
-    /**
-     * Make the selected element to become the last child of its parent.
-     */
-    public void moveToTop(String id) throws BadLocationException {
-        DocumentElement de = checkIntegrity(id);
-        
-        DocumentElement parent = de.getParentElement();
-        DocumentElement lastChild = parent.getElement(parent.getElementCount() - 1);
-        if (de != lastChild) {
-            //TODO lock document??
-            int startOffset = de.getStartOffset();
-            int length      = de.getEndOffset() - startOffset + 1;
-            String elemText = bDoc.getText(startOffset, length);
-            
-            int insertOffset = lastChild.getEndOffset();
-            assert startOffset < insertOffset;
-            
-            bDoc.insertString(insertOffset, elemText, null);
-            bDoc.remove(startOffset, length);
-        }
-    }
+            Set<String> newIds = new HashSet<String>();
+            collectIDs( svgElem, newIds);
 
-    /**
-     * Move the selected element one position to the end of a list of its siblings.
-     */
-    public void moveForward(String id) throws BadLocationException {
-        DocumentElement de = checkIntegrity(id);
-        
-        DocumentElement parent = de.getParentElement();
-        DocumentElement lastChild = parent.getElement(parent.getElementCount() - 1);
-        if (de != lastChild) {
-            //TODO lock document??
-            int startOffset = de.getStartOffset();
-            int length      = de.getEndOffset() - startOffset + 1;
-            String elemText = bDoc.getText(startOffset, length);
-            
-            int index = getDocumentElementIndex(de);
-            DocumentElement nextChild = parent.getElement(index+1);
-                        
-            int insertOffset = nextChild.getEndOffset() + 1;
-            assert startOffset < insertOffset;
-            
-            bDoc.insertString(insertOffset, elemText, null);
-            bDoc.remove(startOffset, length);
-        }
-    }
-
-    /**
-     * Move the selected element one position to the beginning of a list of its siblings.
-     */
-    public void moveBackward(String id) throws BadLocationException {
-        DocumentElement de            = checkIntegrity(id);
-        DocumentElement previousChild = getPreviousTagElement(de);
-        
-        if (previousChild != null) {
-            //TODO lock document??
-            int startOffset = de.getStartOffset();
-            int length      = de.getEndOffset() - startOffset + 1;
-            String elemText = bDoc.getText(startOffset, length);
-            
-            int insertOffset = previousChild.getStartOffset();
-            assert startOffset > insertOffset;
-            
-            bDoc.remove(startOffset, length);
-            bDoc.insertString(insertOffset, elemText, null);
-        }
-    }
-    
-    private static DocumentElement getPreviousTagElement( DocumentElement elem) {
-        DocumentElement parent   = elem.getParentElement();
-        int             childNum = parent.getElementCount();
-        
-        DocumentElement previous = null;
-        
-        for (int i = 0; i < childNum; i++) {
-            DocumentElement de = parent.getElement(i);
-            if (de == elem) {
-                return previous;
-            } else {
-                if ( isTagElement(de)) {
-                    previous = de;
+            Set<String> conflicts = new HashSet<String>();
+            for (String id  : newIds) {
+                if (oldIds.contains(id)) {
+                    conflicts.add(id);
                 }
             }
-        }
-        throw new RuntimeException("The document element " + elem + " is no longer part of the document");
-    }
-    
-    private static int getDocumentElementIndex(DocumentElement de) {
-        DocumentElement parent = de.getParentElement();
-        int childNum = parent.getElementCount();
-        for (int i = 0; i < childNum; i++) {
-            if (parent.getElement(i) == de) {
-                return i;
-            }
-        }
-        throw new RuntimeException("The document element " + de + " is no longer part of the document");
-    }
-    
-    /*
-    public void synchronize(ModelNode perseusRoot) throws BadLocationException {
-        System.out.println("Synchronization started ...");
-        DocumentElement element = m_model.getRootElement();
-        //TODO lock document?
-        synchronize( element, perseusRoot, 0);
-        System.out.println("Synchronization ended.");
-    }
-    */
-    
-    public void setAttributeLater(final String id, final String attrName, final String attrValue) throws BadLocationException {
-        DocumentElement de = m_mapping.id2element(id);
-        if (de != null) {
-            setAttribute(id, attrName, attrValue);
-        } else {
-            m_mapping.scheduleTask(id,new Runnable() {
-                public void run() {
-                    try {
-                        setAttribute(id, attrName, attrValue);
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-        }
-    }
-    
-    private void setAttribute( String id, String attrName, String attrValue) throws BadLocationException {
-        DocumentElement elem = checkIntegrity(id);
-        assert isTagElement(elem) : "Attribute change allowed only for tag elements";
-        
-        int startOff = elem.getStartOffset() + 1 + elem.getName().length();        
-        int endOff;
-        
-        if ( elem.getElementCount() > 0) {
-            endOff = elem.getElement(0).getStartOffset() - 1;
-        } else {
-            endOff = elem.getEndOffset() - 1;
-        }
-        String fragment = bDoc.getText(startOff, endOff - startOff + 1);
-        int p;
-        if ( (p=fragment.indexOf(attrName)) != -1) {
-            p += attrName.length();
-            while( ++p < fragment.length()) {
-                if (fragment.charAt(p) =='"') {
-                    int q = p;
 
-                    while( ++q < fragment.length()) {
-                        if (fragment.charAt(q) =='"') {
-                            p++;
-                            bDoc.replace(startOff + p, q-p , attrValue, null);
-                            return;
-                        }
+            BaseDocument doc  = (BaseDocument) docModel.getDocument();
+            if ( !conflicts.isEmpty()) {
+                for (String id : conflicts) {
+                    String newID = fileModel.createUniqueId(id, false);
+                    for (String pattern : REPLACE_PATTERNS) {
+                        String oldStr = MessageFormat.format(pattern, id);
+                        String newStr = MessageFormat.format(pattern, newID);
+                        replaceAllOccurences(doc, oldStr, newStr);
                     }
                 }
             }
-            System.err.println("Attribute " + attrName + " not changed: \"" + fragment + "\"");
-        } else {
-            StringBuilder sb = new StringBuilder(" ");
-            sb.append(attrName);
-            sb.append("=\"");
-            sb.append(attrValue);
-            sb.append( "\" ");
-            bDoc.insertString(startOff, sb.toString(), null);
-        }
-    }
-    /*
-    private void synchronize(DocumentElement docElem, ModelNode perseusNode, int level) throws BadLocationException {
-        assert docElem != null;
-        assert perseusNode != null;
-        
-        //TODO check if works for multiple synchronisation changes
-        if ( perseusNode instanceof PatchedGroup) {
-            PatchedGroup pg = (PatchedGroup) perseusNode;
-            
-            if (pg.isChanged()) {
-                changeAttribute(docElem, "transform", ((PatchedGroup)perseusNode).getTransformAsText());
-                pg.setChanged(false);
-            }
-        }
-        
-        int childElemNum = docElem.getElementCount();
-        ModelNode childNode = perseusNode.getFirstChildNode();
-        System.out.println(level+"synchronizing " + perseusNode + "->" + docElem);
-        for (int i = 0; i < childElemNum; i++) {
-            DocumentElement childElem = docElem.getElement(i);
-            if ( isTagElement(childElem)) {
-                if (childNode != null) {
-                    synchronize(childElem, childNode, level + 1);
-                    childNode = childNode.getNextSiblingNode();
-                } else {
-                    System.err.println("Extra element:" + childElem);
+
+            String text = doc.getText(0, doc.getLength());
+            java.io.StringBufferInputStream strIn = new java.io.StringBufferInputStream(text);
+            try {
+                ModelBuilder.loadDocument(strIn, m_svgDoc,
+                        SVGComposerPrototypeFactory.getPrototypes(m_svgDoc));
+            } finally {
+                strIn.close();
+            }                            
+
+            SVG svgRoot = (SVG)getSVGRootElement();
+            System.out.println("Before children transfer");
+            printTree(m_svgDoc, 0);
+
+            ModelNode sibling = svgRoot;
+            while( (sibling=sibling.getNextSiblingNode()) != null) {
+                if (sibling instanceof SVG && 
+                    sibling.getFirstChildNode() != null) {
+
+                    PatchedGroup wrapper = (PatchedGroup) m_svgDoc.createElementNS(SVGConstants.SVG_NAMESPACE_URI,
+                        SVGConstants.SVG_G_TAG);
+                    ((SVG)svgRoot).appendChild(wrapper);
+                    //wrapper.setPath( new int[] { 0, getChildrenCount(svgRoot)});
+                    wrapper.setId( fileModel.createUniqueId(file.getName(), true));
+                    wrapper.attachSVGObject( new SVGObject(m_sceneMgr, wrapper));
+
+                    transferChildren(wrapper, (SVG)sibling);
+                    fileModel.appendElement(wrapper.getText(false), insertedText);
                     break;
                 }
             }
-        }
+            
+            System.out.println("After children transfer");
+            printTree(m_svgDoc, 0);                    
+        }       
+    }    
+    
+    
+  */  
+    
+    
+    public static DocumentModel loadDocumentModel( File file) throws FileNotFoundException, IOException, DocumentModelException {
+        InputStream in = null;
         
-        if (childNode != null &&
-            !(childNode instanceof SVGSVGElement) &&    
-            !PerseusController.isViewBoxMarker(childNode)) {
-            System.err.println("Inconsistent tree structure");
+        try {
+            FileInputStream fin = new FileInputStream(file);
+            in = new BufferedInputStream(fin);
+
+            String fileName = file.getName();
+
+            int p;
+            if ( (p=fileName.indexOf('.')) != -1) {
+                if (SVGDataObject.isSVGZ(fileName.substring(p+1))) {
+                    in = new BufferedInputStream(new GZIPInputStream(in));
+                }
+            }
+            
+            return loadDocumentModel(in);
+        } finally {
+            in.close();
         }
     }
-    */
+    
+    protected static DocumentModel loadDocumentModel(InputStream in) throws IOException, DocumentModelException {
+        EditorKit    kit = JEditorPane.createEditorKitForContentType(SVGDataLoader.REQUIRED_MIME);
+        BaseDocument doc = (BaseDocument) kit.createDefaultDocument();
+        try {
+            kit.read( in, doc, 0);
+        } catch (BadLocationException ex) {
+            ex.printStackTrace();
+        } finally {
+            in.close();
+        }
+        DocumentModel model = DocumentModel.getDocumentModel(doc);
+        return model;
+    }    
+    
+    
+    /** 
+     * Get text for the given element and inject provided id if no id
+     * is defined.
+     */
+    private String getElementText( DocumentElement de, String id) throws BadLocationException {
+        int    startOffset = de.getStartOffset();
+        int    length      = de.getEndOffset() - startOffset + 1;
+
+        String elemText = m_bDoc.getText(startOffset, length);
+
+        if (id != null && !de.getAttributes().isDefined("id")) {
+            StringBuilder sb = new StringBuilder(elemText);
+            sb.insert(de.getName().length() + 1, " id=\"" + id + "\"");
+            elemText = sb.toString();
+        }
+        
+        return elemText;
+    }
+    
+    private static DocumentElement getFirstTagChild( DocumentElement parent) {
+        assert parent != null;
+        for (DocumentElement child : parent.getChildren()) {
+            if (isTagElement(child)) {
+                return child;
+            }
+        }
+        return null;
+    }
+
+    private static DocumentElement getLastTagChild( DocumentElement parent) {
+        assert parent != null;
+        List<DocumentElement> children = parent.getChildren();
+        
+        for (int i = children.size() - 1; i >= 0; i--) {
+            DocumentElement child = children.get(i);
+            if ( isTagElement(child)) {
+                return child;
+            }
+        }
+        return null;
+    }
+    
+    private static DocumentElement getPreviousTagSibling( DocumentElement elem) {
+        DocumentElement parent   = elem.getParentElement();
+        DocumentElement previous = null;
+        assert parent != null;
+        
+        for (DocumentElement child : parent.getChildren()) {
+            if (child == elem) {
+                return previous;
+            } else {
+                if ( isTagElement(child)) {
+                    previous = child;
+                }
+            }
+        }
+        assert false : "The document element " + elem + " is no longer part of the document";
+        return null;
+    }
+
+    private static DocumentElement getNextTagSibling( DocumentElement elem) {
+        DocumentElement parent = elem.getParentElement();
+        DocumentElement next   = null;
+        assert parent != null;
+        List<DocumentElement> children = parent.getChildren();
+        
+        for ( int i = children.size() - 1; i >= 0; i--) {
+            DocumentElement child = children.get(i);
+            if (child == elem) {
+                return next;
+            } else {
+                if ( isTagElement(child)) {
+                    next = child;
+                }
+            }
+        }
+        assert false : "The document element " + elem + " is no longer part of the document";
+        return null;
+    }
+        
     private void checkIntegrity(DocumentElement de) {        
         assert de != null;
-        assert de.getDocument() == bDoc : "Element is not part of the current document";
+        assert de.getDocument() == m_bDoc : "Element is not part of the current document";
         assert de.getDocumentModel() == m_model : "Element is not part of the current document model";
     }    
     

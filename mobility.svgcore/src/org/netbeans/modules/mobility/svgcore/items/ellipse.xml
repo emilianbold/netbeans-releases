@@ -7,8 +7,8 @@
          <![CDATA[ <ellipse cx="0" cy="0" rx="100" ry="50" fill="red" stroke="black" stroke-width="1"/>]]>
      </body>
      
-     <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/icon16.png" />
-     <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/icon32.png" />
+     <icon16 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/ellipse_16.png" />
+     <icon32 urlvalue="org/netbeans/modules/mobility/svgcore/resources/palette/ellipse_32.png" />
      
      <description 
          localizing-bundle="org.netbeans.modules.mobility.svgcore.Bundle"

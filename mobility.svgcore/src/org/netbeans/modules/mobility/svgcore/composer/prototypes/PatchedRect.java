@@ -24,7 +24,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
  *
  * @author Pavel Benes
  */
-public final class PatchedRect extends Rect implements PatchedElement {
+public final class PatchedRect extends Rect implements PatchedTransformableElement {
     private String    m_idBackup  = null;
     private SVGObject m_svgObject = null; 
     

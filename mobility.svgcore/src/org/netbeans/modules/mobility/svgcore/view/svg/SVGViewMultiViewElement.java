@@ -12,9 +12,12 @@
  */   
 package org.netbeans.modules.mobility.svgcore.view.svg;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.xml.multiview.AbstractMultiViewElement;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ProxyLookup;
@@ -26,13 +29,12 @@ import org.openide.util.lookup.ProxyLookup;
 public class SVGViewMultiViewElement extends AbstractMultiViewElement {
     private static final long serialVersionUID = 7526471457562007148L;        
     
-    private transient final SVGViewTopComponent svgView;
-    private transient final int                 index;
+    //private final     int                 index;
+    private transient SVGViewTopComponent svgView    = null;
 
-    public SVGViewMultiViewElement(SVGDataObject obj, int index) {
+    public SVGViewMultiViewElement(SVGDataObject obj) {
         super(obj);
-        this.index = index;
-        svgView = SVGViewTopComponent.findInstance(obj);
+//        this.index = index;
     }
     
     public void componentActivated() {
@@ -43,21 +45,27 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
     
     public void componentClosed() {
         super.componentClosed();
-        svgView.componentClosed();
+        if (svgView != null) {
+            svgView.componentClosed();
+        }
     }
 
     public void componentHidden() {
-        svgView.componentHidden();
+        if (svgView != null) {
+            svgView.componentHidden();
+        }
     }
 
     public void componentOpened() {
         super.componentOpened();
-        svgView.componentOpened();
+        if (svgView != null) {
+            svgView.componentOpened();
+        }
     }
 
     public void componentShowing() {
         svgView.onShow();
-        dObj.setLastOpenView( index );
+        dObj.setLastOpenView( SVGDataObject.SVG_VIEW_INDEX);
     }
     
     public Action[] getActions() {
@@ -73,11 +81,38 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
     }
 
     public JComponent getToolbarRepresentation() {
+        getVisualRepresentation();
         return svgView.getToolbar();
     }
 
-    public JComponent getVisualRepresentation() {
+    public synchronized JComponent getVisualRepresentation() {
+        if (svgView == null) {
+            svgView = new SVGViewTopComponent(getSceneManager());
+            
+        }
         return svgView;
+    }
+    
+    private SceneManager getSceneManager() {
+        return ((SVGDataObject) this.dObj).getSceneManager();
+    }
+    
+    private void readObject(ObjectInputStream in) {
+        try {
+            in.defaultReadObject();
+            getSceneManager().deserialize(in);        
+        } catch( Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void writeObject(ObjectOutputStream out) {
+        try {
+            out.defaultWriteObject();
+            getSceneManager().serialize(out);
+        } catch( Exception e) {
+            e.printStackTrace();
+        }    
     }
     
     /*
@@ -90,5 +125,5 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
             }            
         });
     } 
-     */   
+     */       
 }

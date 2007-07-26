@@ -51,41 +51,6 @@ public class SVGNavigatorPanel implements NavigatorPanel {
     
     /** public no arg constructor needed for system to instantiate the provider. */
     public SVGNavigatorPanel() {
-        /*
-        Thread th = new Thread( new Runnable() {
-            public void run() {
-                while(true) {
-                    try {
-                        Thread.sleep(5000);
-
-                        if (dataObjectSelection != null) {
-                            System.out.println("################################################");
-                            System.out.print("Lookup content: ");
-                            Collection col = dataObjectSelection.allInstances();
-                            for (Object o : col) {
-                                System.out.print( o + ",");
-                            }
-                            System.out.println("");
-                        }
-                        if (testSelection != null) {
-                            System.out.println("################################################");
-                            System.out.print("SVG cookies: ");
-                            Collection col = testSelection.allInstances();
-                            for (Object o : col) {
-                                System.out.print( o + ",");
-                            }
-                            System.out.println("");
-                        }
-
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }            
-        });
-        th.setDaemon(true);
-        th.start();
-         */
     }
     
     public String getDisplayHint() {
@@ -145,13 +110,4 @@ public class SVGNavigatorPanel implements NavigatorPanel {
                 break;
         }
     }    
-    
-    /*
-    public void select(Collection selectedPath){
-        if (selectedPath.size() == 1){
-            SelectionPathBean path = (SelectionPathBean) selectedPath.iterator().next();
-            navigator.select(path.getActualSelection());
-        }
-    }
-    */
 }
