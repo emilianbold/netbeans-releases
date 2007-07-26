@@ -129,30 +129,30 @@ public class CallEjbDialog {
         DataObject dataObject = ejbNode.getCookie(DataObject.class);
         Project nodeProject = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
         
+        boolean remoteInterfaceSelected = panel.isRemoteInterfaceSelected();
+        
         Utils.addReference(referencingFileObject, referencingClassName, ref, panel.getServiceLocator(), 
-                panel.isRemoteInterfaceSelected(), throwExceptions, 
-                referenceNameFromPanel, nodeProject);
+                remoteInterfaceSelected, throwExceptions, referenceNameFromPanel, nodeProject);
         
         // generate the server-specific resources
 
-        String referencedEjbClassName = _RetoucheUtil.getJavaClassFromNode(ejbNode).getQualifiedName();
-        String referencedEjbName = getEjbName(dataObject.getPrimaryFile(), referencedEjbClassName);
+        if (remoteInterfaceSelected) {
+            String referencedEjbClassName = _RetoucheUtil.getJavaClassFromNode(ejbNode).getQualifiedName();
+            String referencedEjbName = getEjbName(dataObject.getPrimaryFile(), referencedEjbClassName);
 
-        J2eeModuleProvider j2eeModuleProvider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
-        try {
-            if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
-                j2eeModuleProvider.getConfigSupport().bindEjbReference(referenceNameFromPanel,referencedEjbName);
+            J2eeModuleProvider j2eeModuleProvider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
+            try {
+                if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
+                    j2eeModuleProvider.getConfigSupport().bindEjbReference(referenceNameFromPanel,referencedEjbName);
+                } else if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
+                    String ejbName = getEjbName(referencingFileObject, referencingClassName);
+                    String ejbType = getEjbType(referencingFileObject, referencingClassName);
+                    j2eeModuleProvider.getConfigSupport().bindEjbReferenceForEjb(
+                            ejbName, ejbType, referenceNameFromPanel, referencedEjbName);
+                }
+            } catch (ConfigurationException ce) {
+                Logger.getLogger("global").log(Level.WARNING, null, ce);
             }
-            else
-            if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
-                String ejbName = getEjbName(referencingFileObject, referencingClassName);
-                String ejbType = getEjbType(referencingFileObject, referencingClassName);
-                j2eeModuleProvider.getConfigSupport().bindEjbReferenceForEjb(
-                        ejbName, ejbType, referenceNameFromPanel, referencedEjbName);
-            }
-        }
-        catch (ConfigurationException ce) {
-            Logger.getLogger("global").log(Level.WARNING, null, ce);
         }
 
         return true;
