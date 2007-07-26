@@ -338,6 +338,9 @@ Microsystems, Inc. All Rights Reserved.
                           </xsl:otherwise>
                          </xsl:choose>                          
                         </xsl:if>
+                         <copy todir="${{basedir}}/${{meta.inf}}/wsdl/{$wsname}">
+                            <fileset dir="${{basedir}}/${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/" />
+                        </copy> 
                     </target>
                     <target name="wsimport-service-clean-{$wsname}" depends="-init-project">
                         <delete dir="${{build.generated.dir}}/wsimport/service/{$package_path}"/>

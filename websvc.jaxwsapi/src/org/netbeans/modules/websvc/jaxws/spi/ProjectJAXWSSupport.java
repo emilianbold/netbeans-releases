@@ -221,9 +221,6 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                     if (catalog!=null) service.setCatalogFile(CATALOG_FILE);
                     writeJaxWsModel(jaxWsModel);
                     serviceAdded=true;
-                    // copy resources to WEB-INF/wsdl/${serviceName}
-                    FileObject wsdlFolder = getWsdlFolderForService(finalServiceName);
-                    WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
                 }
                 
             } catch (URISyntaxException ex) {
