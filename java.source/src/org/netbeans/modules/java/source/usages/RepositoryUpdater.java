@@ -242,8 +242,35 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 URL root = classPath2Root.get(changedCp);
 
                 if (root != null) {
-                    scheduleCompilation(root,root, true);
-                }
+                    List<URL> oldDeps = this.deps.get(root);
+                    if (oldDeps != null) {
+                        final FileObject rootFo = URLMapper.findFileObject(root);
+                        if (rootFo != null) {
+                            final ClassPath bootPath = ClassPath.getClassPath(rootFo, ClassPath.BOOT);
+                            final ClassPath compilePath = ClassPath.getClassPath(rootFo, ClassPath.COMPILE);
+                            final ClassPath[] pathsToResolve = new ClassPath[] {bootPath,compilePath};
+                            final List<URL> newDeps = new LinkedList<URL> ();
+                            for (int i=0; i< pathsToResolve.length; i++) {
+                                final ClassPath pathToResolve = pathsToResolve[i];
+                                if (pathToResolve != null) {
+                                    for (ClassPath.Entry entry : pathToResolve.entries()) {
+                                        final URL url = entry.getURL();
+                                        final URL[] sourceRoots = RepositoryUpdater.this.cpImpl.getSourceRootForBinaryRoot(url, pathToResolve, false);
+                                        if (sourceRoots != null) {
+                                            for (URL sourceRoot : sourceRoots) {
+                                                if (!sourceRoot.equals (root)) {
+                                                    newDeps.add (sourceRoot);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            this.deps.put(root, newDeps);
+                        }
+                    }
+                    scheduleCompilation(root,root, true);                    
+                }                
             }
             return ;
         }
