@@ -127,14 +127,15 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             debugDesc.setEnvironment(getJRubyEnvironment(descriptor));
         }
         RubyDebuggerProxy proxy;
+        int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 10); // NOI18N
         String interpreter = RubyInstallation.getInstance().getRuby();
         if (jrubySet || prefs.isUseClassicDebugger()) {
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
-                    PATH_TO_CLASSIC_DEBUG_DIR, interpreter);
+                    PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
         } else { // ruby-debug
             File rDebugF = new File(Util.findRDebugExecutable());
-            proxy = RubyDebuggerFactory.startRubyDebug(
-                    debugDesc, rDebugF.getAbsolutePath(), interpreter);
+            proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
+                    rDebugF.getAbsolutePath(), interpreter, timeout);
         }
         
         intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());

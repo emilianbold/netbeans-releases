@@ -32,7 +32,6 @@ import org.netbeans.spi.debugger.SessionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
-import org.openide.util.Exceptions;
 import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.model.RubyThreadInfo;
