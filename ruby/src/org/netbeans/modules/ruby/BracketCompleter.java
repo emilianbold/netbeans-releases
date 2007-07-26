@@ -847,9 +847,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 // If you have the caret right at the beginning of a token, try
                 // the token to the right too - this means that if you have
                 //  "   |def" it will show the matching "end" for the "def".
-                ts.move(offset + 1);
+                offset++;
+                ts.move(offset);
 
-                if (ts.moveNext() && (ts.offset() <= (offset + 1))) {
+                if (ts.moveNext() && (ts.offset() <= offset)) {
                     token = ts.token();
                     id = token.id();
                 }
@@ -869,6 +870,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     if (r != OffsetRange.NONE) {
                         return r;
                     }
+                    ts.move(offset);
                 }
                 return LexUtilities.findBwd(doc, ts, RubyTokenId.QUOTED_STRING_BEGIN,
                     RubyTokenId.QUOTED_STRING_END);
@@ -885,6 +887,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     if (r != OffsetRange.NONE) {
                         return r;
                     }
+                    ts.move(offset);
                 }
                 return LexUtilities.findBwd(doc, ts, RubyTokenId.STRING_BEGIN, RubyTokenId.STRING_END);
             } else if (id == RubyTokenId.REGEXP_BEGIN) {
