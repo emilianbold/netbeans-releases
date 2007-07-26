@@ -258,7 +258,7 @@ public final class VerifyUpdateCenter extends Task {
                 Element failure = reportDoc.createElement("failure");
                 testcase.appendChild(failure);
                 failure.setAttribute("type", "junit.framework.AssertionFailedError");
-                failure.setAttribute("message", msg.replaceFirst("^[^\n]+", "$1"));
+                failure.setAttribute("message", msg.replaceFirst("(?s)\n.*", ""));
                 failure.appendChild(reportDoc.createTextNode(msg));
             } else {
                 successes++;
