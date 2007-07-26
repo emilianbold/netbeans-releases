@@ -46,6 +46,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
+import org.openide.awt.Actions;
+import org.openide.awt.Mnemonics;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
@@ -331,12 +333,12 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                 return new JButton[] {rerunButton};
             }
         } else {
-            refactorButton = new JButton(NbBundle.getMessage(RefactoringPanel.class, "LBL_DoRefactor")); // NOI18N
+            refactorButton = new JButton(); // NOI18N
+            Mnemonics.setLocalizedText(refactorButton, NbBundle.getMessage(RefactoringPanel.class, "LBL_DoRefactor"));
             refactorButton.setToolTipText(NbBundle.getMessage(RefactoringPanel.class, "HINT_DoRefactor")); // NOI18N
-            refactorButton.setMnemonic(NbBundle.getMessage(RefactoringPanel.class, "MNEM_DoRefactor").charAt(0));
             refactorButton.addActionListener(getButtonListener());
             cancelButton = new JButton(NbBundle.getMessage(RefactoringPanel.class, "LBL_CancelRefactor")); // NOI18N
-            cancelButton.setMnemonic(NbBundle.getMessage(RefactoringPanel.class, "MNEM_CancelRefactor").charAt(0));
+            Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(RefactoringPanel.class, "LBL_CancelRefactor"));
             cancelButton.setToolTipText(NbBundle.getMessage(RefactoringPanel.class, "HINT_CancelRefactor")); // NOI18N
             cancelButton.addActionListener(getButtonListener());
             return new JButton[] {refactorButton, cancelButton};

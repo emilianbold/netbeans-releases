@@ -13,9 +13,10 @@
     </Property>
   </Properties>
   <AuxValues>
-    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
-    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -35,9 +36,6 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="modifiersLabel">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection code="getString(&quot;LBL_ChangeParsMods_MNEM&quot;).charAt(0)" type="code"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="modifiersCombo"/>
             </Property>
@@ -100,9 +98,6 @@
           <SubComponents>
             <Component class="javax.swing.JButton" name="addButton">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="getString(&quot;LBL_ChangeParsAdd_MNEM&quot;).charAt(0)" type="code"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="LBL_ChangeParsAdd" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
@@ -123,9 +118,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="removeButton">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="getString(&quot;LBL_ChangeParsRemove_MNEM&quot;).charAt(0)" type="code"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="LBL_ChangeParsRemove" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
@@ -147,9 +139,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="moveUpButton">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="getString(&quot;LBL_ChangeParsMoveUp_MNEM&quot;).charAt(0)" type="code"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="LBL_ChangeParsMoveUp" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
@@ -171,9 +160,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="moveDownButton">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="getString(&quot;LBL_ChangeParsMoveDown_MNEM&quot;).charAt(0)" type="code"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/refactoring/java/ui/Bundle.properties" key="LBL_ChangeParsMoveDown" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
@@ -239,9 +225,6 @@
     </Container>
     <Component class="javax.swing.JLabel" name="paramTitle">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="getString(&quot;LBL_ChangeParsParameters_MNEM&quot;).charAt(0)" type="code"/>
-        </Property>
         <Property name="horizontalAlignment" type="int" value="2"/>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="paramTable"/>

@@ -178,6 +178,7 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         namePanel = new javax.swing.JPanel();
         nameLabel = new javax.swing.JLabel();
         chooseLabel = new javax.swing.JLabel();
@@ -185,37 +186,37 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
         scrollPane = new javax.swing.JScrollPane();
         membersTable = new javax.swing.JTable();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
         setLayout(new java.awt.BorderLayout());
 
-        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
+        namePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         namePanel.setLayout(new java.awt.BorderLayout(12, 0));
 
-        namePanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         nameLabel.setLabelFor(nameText);
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(ExtractSuperclassPanel.class, "LBL_ExtractSC_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(ExtractSuperclassPanel.class, "LBL_ExtractSC_Name")); // NOI18N
         namePanel.add(nameLabel, java.awt.BorderLayout.WEST);
+        nameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractSuperclassPanel.class, "ExtractSuperclassPanel.nameLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         chooseLabel.setLabelFor(membersTable);
-        org.openide.awt.Mnemonics.setLocalizedText(chooseLabel, org.openide.util.NbBundle.getMessage(ExtractSuperclassPanel.class, "LBL_ExtractSCLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(chooseLabel, org.openide.util.NbBundle.getMessage(ExtractSuperclassPanel.class, "LBL_ExtractSCLabel")); // NOI18N
         chooseLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 0, 0, 0));
         namePanel.add(chooseLabel, java.awt.BorderLayout.SOUTH);
+        chooseLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractSuperclassPanel.class, "ExtractSuperclassPanel.chooseLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
         namePanel.add(nameText, java.awt.BorderLayout.CENTER);
-        nameText.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExtractSuperclassPanel.class, "ACSD_SupeclassName"));
-        nameText.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractSuperclassPanel.class, "ACSD_SuperclassNameDescription"));
+        nameText.getAccessibleContext().setAccessibleName(null);
+        nameText.getAccessibleContext().setAccessibleDescription(null);
 
         add(namePanel, java.awt.BorderLayout.NORTH);
 
         membersTable.setModel(tableModel);
         membersTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_NEXT_COLUMN);
         scrollPane.setViewportView(membersTable);
-        membersTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExtractSuperclassPanel.class, "ACSD_MembersToExtract"));
-        membersTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractSuperclassPanel.class, "ACSD_MembersToExtractDescription"));
+        membersTable.getAccessibleContext().setAccessibleName(null);
+        membersTable.getAccessibleContext().setAccessibleDescription(null);
 
         add(scrollPane, java.awt.BorderLayout.CENTER);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

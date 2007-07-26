@@ -197,13 +197,15 @@ public final class ExtractInterfacePanel extends JPanel implements CustomRefacto
         nameLabel.setLabelFor(nameText);
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(ExtractInterfacePanel.class, "LBL_ExtractInterface_Name")); // NOI18N
         namePanel.add(nameLabel, java.awt.BorderLayout.WEST);
-        nameLabel.getAccessibleContext().setAccessibleName(null);
-        nameLabel.getAccessibleContext().setAccessibleDescription(null);
+        nameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExtractInterfacePanel.class, "ACSD_InterfaceName")); // NOI18N
+        nameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractInterfacePanel.class, "ACSD_InterfaceNameDescription")); // NOI18N
 
         chooseLabel.setLabelFor(membersTable);
         org.openide.awt.Mnemonics.setLocalizedText(chooseLabel, org.openide.util.NbBundle.getMessage(ExtractInterfacePanel.class, "LBL_ExtractInterfaceLabel")); // NOI18N
         chooseLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(6, 0, 0, 0));
         namePanel.add(chooseLabel, java.awt.BorderLayout.SOUTH);
+        chooseLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ExtractInterfacePanel.class, "ExtractInterfacePanel.chooseLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         namePanel.add(nameText, java.awt.BorderLayout.CENTER);
 
         add(namePanel, java.awt.BorderLayout.NORTH);

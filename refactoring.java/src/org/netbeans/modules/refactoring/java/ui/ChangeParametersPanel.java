@@ -180,10 +180,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
         modifiersPanel.setLayout(new java.awt.GridBagLayout());
 
-        modifiersLabel.setDisplayedMnemonic(getString("LBL_ChangeParsMods_MNEM").charAt(0));
         modifiersLabel.setLabelFor(modifiersCombo);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/java/ui/Bundle"); // NOI18N
-        modifiersLabel.setText(bundle.getString("LBL_ChangeParsMods")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(modifiersLabel, bundle.getString("LBL_ChangeParsMods")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -216,8 +215,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         buttonsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 11, 1, 1));
         buttonsPanel.setLayout(new java.awt.GridBagLayout());
 
-        addButton.setMnemonic(getString("LBL_ChangeParsAdd_MNEM").charAt(0));
-        addButton.setText(bundle.getString("LBL_ChangeParsAdd")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, bundle.getString("LBL_ChangeParsAdd")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -229,8 +227,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         buttonsPanel.add(addButton, gridBagConstraints);
         addButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ChangeParsAdd")); // NOI18N
 
-        removeButton.setMnemonic(getString("LBL_ChangeParsRemove_MNEM").charAt(0));
-        removeButton.setText(bundle.getString("LBL_ChangeParsRemove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, bundle.getString("LBL_ChangeParsRemove")); // NOI18N
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -245,8 +242,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         buttonsPanel.add(removeButton, gridBagConstraints);
         removeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ChangeParsRemove")); // NOI18N
 
-        moveUpButton.setMnemonic(getString("LBL_ChangeParsMoveUp_MNEM").charAt(0));
-        moveUpButton.setText(bundle.getString("LBL_ChangeParsMoveUp")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(moveUpButton, bundle.getString("LBL_ChangeParsMoveUp")); // NOI18N
         moveUpButton.setEnabled(false);
         moveUpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -261,8 +257,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         buttonsPanel.add(moveUpButton, gridBagConstraints);
         moveUpButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ChangeParsMoveUp")); // NOI18N
 
-        moveDownButton.setMnemonic(getString("LBL_ChangeParsMoveDown_MNEM").charAt(0));
-        moveDownButton.setText(bundle.getString("LBL_ChangeParsMoveDown")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(moveDownButton, bundle.getString("LBL_ChangeParsMoveDown")); // NOI18N
         moveDownButton.setEnabled(false);
         moveDownButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -320,10 +315,9 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         gridBagConstraints.weighty = 1.0;
         add(westPanel, gridBagConstraints);
 
-        paramTitle.setDisplayedMnemonic(getString("LBL_ChangeParsParameters_MNEM").charAt(0));
         paramTitle.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         paramTitle.setLabelFor(paramTable);
-        paramTitle.setText(bundle.getString("LBL_ChangeParsParameters")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(paramTitle, bundle.getString("LBL_ChangeParsParameters")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;

@@ -184,7 +184,6 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         buttonsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         buttonsPanel.setLayout(new java.awt.GridLayout(1, 0, 4, 0));
 
-        back.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("MNEM_Back").charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(back, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Back")); // NOI18N
         back.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -201,6 +200,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             }
         });
         buttonsPanel.add(previewButton);
+        previewButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ParametersPanel.class, "ParametersPanel.previewButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(next, org.openide.util.NbBundle.getBundle("org/netbeans/modules/refactoring/spi/impl/Bundle").getString("CTL_Finish")); // NOI18N
         next.addActionListener(new java.awt.event.ActionListener() {

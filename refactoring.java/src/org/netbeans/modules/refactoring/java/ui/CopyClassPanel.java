@@ -160,6 +160,8 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(labelProject, gridBagConstraints);
+        labelProject.getAccessibleContext().setAccessibleDescription("N/A");
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -178,6 +180,8 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(labelLocation, gridBagConstraints);
+        labelLocation.getAccessibleContext().setAccessibleDescription("N/A");
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -196,6 +200,7 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(labelPackage, gridBagConstraints);
+        labelPackage.getAccessibleContext().setAccessibleDescription("N/A");
 
         packageComboBox.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -215,6 +220,7 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         gridBagConstraints.weighty = 1.0;
         add(bottomPanel, gridBagConstraints);
 
+        newNameLabel.setLabelFor(newNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(newNameLabel, org.openide.util.NbBundle.getMessage(CopyClassPanel.class, "LBL_NewName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -222,8 +228,9 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(newNameLabel, gridBagConstraints);
+        newNameLabel.getAccessibleContext().setAccessibleDescription("N/A");
 
-        newNameTextField.setText("NewClass");
+        newNameTextField.setText(org.openide.util.NbBundle.getMessage(CopyClassPanel.class, "CopyClassPanel.newNameTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
