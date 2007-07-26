@@ -263,15 +263,93 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         handleChange(line, 0);
     }
     
-    public void removeUpdate(DocumentEvent e) {
-        DocumentEvent.ElementChange change = e.getChange(doc.getDefaultRootElement());
-        
-        if (change != null) {
-            handleChange(change.getIndex(), change.getChildrenRemoved().length - 1);
-        } else {
-            int line = NbDocument.findLineNumber((StyledDocument) doc, e.getOffset());
-            
-            handleChange(line, 0);
+    public synchronized void removeUpdate(DocumentEvent e) {
+        try {
+            Position current = null;
+            int index = -1;
+            int startOffset = Utilities.getRowStart(doc, e.getOffset());
+
+            while (current == null) {
+                index = findPositionGE(startOffset);
+
+                if (knownPositions.size() == 0) {
+                    break;
+                }
+                if (index == knownPositions.size()) {
+                    return;
+                }
+                current = knownPositions.get(index).get();
+            }
+
+            if (current == null) {
+                //nothing to do:
+                return;
+            }
+
+            assert index != (-1);
+
+            //find the first:
+            while (index > 0) {
+                Position minusOne = knownPositions.get(index - 1).get();
+
+                if (minusOne == null) {
+                    index--;
+                    continue;
+                }
+
+                if (minusOne.getOffset() != current.getOffset()) {
+                    break;
+                }
+
+                index--;
+            }
+
+            List<Position> modifiedLinesTokens = new LinkedList<Position>();
+
+            while (index < knownPositions.size()) {
+                Position next = knownPositions.get(index).get();
+
+                if (next == null) {
+                    index++;
+                    continue;
+                }
+
+                if (next.getOffset() != current.getOffset()) {
+                    break;
+                }
+
+                modifiedLinesTokens.add(next);
+                index++;
+            }
+
+            for (Position line : modifiedLinesTokens) {
+                List<ErrorDescription> eds = line2Errors.get(line);
+
+                if (eds == null || eds.isEmpty()) {
+                    continue;
+                }
+                eds = new LinkedList<ErrorDescription>(eds);
+
+                for (ErrorDescription ed : eds) {
+                    for (Position i : errors2Lines.remove(ed)) {
+                        line2Errors.get(i).remove(ed);
+                    }
+                    for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
+                        edsForLayer.remove(ed);
+                    }
+                }
+
+                line2Errors.remove(line);
+            }
+
+            for (Position line : modifiedLinesTokens) {
+                updateAnnotationOnLine(line);
+                updateHighlightsOnLine(line);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
