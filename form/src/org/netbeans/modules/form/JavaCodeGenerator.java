@@ -3834,11 +3834,14 @@ class JavaCodeGenerator extends CodeGenerator {
         private boolean isJavaEditorDisplayed() {
             boolean showing = false;
             if (EventQueue.isDispatchThread()) { // issue 91715
-                JEditorPane[] jeditPane = FormEditor.getFormDataObject(formModel).getFormEditorSupport().getOpenedPanes();
-                if (jeditPane != null) {
-                    for (int i=0; i<jeditPane.length; i++) {
-                        if (showing = jeditPane[i].isShowing()) {
-                            break;
+                FormDataObject dobj = FormEditor.getFormDataObject(formModel);
+                if (dobj != null) { // #89793, #70439
+                    JEditorPane[] jeditPane = dobj.getFormEditorSupport().getOpenedPanes();
+                    if (jeditPane != null) {
+                        for (int i=0; i<jeditPane.length; i++) {
+                            if (showing = jeditPane[i].isShowing()) {
+                                break;
+                            }
                         }
                     }
                 }
