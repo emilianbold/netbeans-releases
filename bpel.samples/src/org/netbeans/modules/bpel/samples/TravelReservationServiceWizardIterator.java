@@ -63,10 +63,6 @@ public class TravelReservationServiceWizardIterator extends SampleWizardIterator
         SoaSampleUtils.unZipFile(j2eeSamples.getInputStream(), j2eeReservationProjectDir);
         resultSet.add(j2eeReservationProjectDir);
 
-//        // vlv # 108313 todo r
-//        if ( !System.getProperty("java.version").startsWith("1.5")) {
-//          SoaSampleUtils.renameInProperties(j2eeReservationProjectDir, "j2ee.server.type=J2EE", "j2ee.server.type=SJSAS");
-//        }
         return resultSet;
     }
     
