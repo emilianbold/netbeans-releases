@@ -20,6 +20,7 @@
 package org.netbeans.modules.j2ee.ejbcore.action;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,9 +30,13 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -67,22 +72,34 @@ public final class BusinessMethodGenerator extends AbstractMethodGenerator {
             addMethodToInterface(methodModelCopy, local);
         }
         
-        // remote interface, add RemoteException if it's not there
+        // remote interface, add RemoteException if it's not there (in EJB 2.1)
         if (generateRemote && remote != null) {
             
             final List<String> exceptions = new ArrayList<String>(methodModel.getExceptions());
 
+            MetadataModel<EjbJarMetadata> metadataModel = EjbJar.getEjbJar(ejbClassFileObject).getMetadataModel();
+            BigDecimal version = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, BigDecimal>() {
+                public BigDecimal run(EjbJarMetadata metadata) throws Exception {
+                    return metadata.getRoot().getVersion();
+                }
+            });
+            final boolean isEjb2x = (version != null && version.doubleValue() <= 2.1);
+            
             JavaSource javaSource = JavaSource.forFileObject(ejbClassFileObject);
             javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller) throws IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    TypeElement typeElement = controller.getElements().getTypeElement(remote);
-                    TypeMirror remoteType = controller.getElements().getTypeElement("java.rmi.Remote").asType(); // NOI18N
-                    if (typeElement != null) {
-                        for (TypeMirror typeMirror : typeElement.getInterfaces()) {
-                            if (controller.getTypes().isSameType(remoteType, typeMirror)) {
-                                if (!methodModel.getExceptions().contains("java.rmi.RemoteException")) { // NOI18N
-                                    exceptions.add("java.rmi.RemoteException"); // NOI18N
+                    if (isEjb2x) {
+                        exceptions.add("java.rmi.RemoteException"); // NOI18N
+                    } else {
+                        TypeElement typeElement = controller.getElements().getTypeElement(ejbClass);
+                        TypeMirror remoteType = controller.getElements().getTypeElement("java.rmi.Remote").asType(); // NOI18N
+                        if (typeElement != null) {
+                            for (TypeMirror typeMirror : typeElement.getInterfaces()) {
+                                if (controller.getTypes().isSameType(remoteType, typeMirror)) {
+                                    if (!methodModel.getExceptions().contains("java.rmi.RemoteException")) { // NOI18N
+                                        exceptions.add("java.rmi.RemoteException"); // NOI18N
+                                    }
                                 }
                             }
                         }

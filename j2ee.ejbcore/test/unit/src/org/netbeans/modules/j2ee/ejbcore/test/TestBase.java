@@ -25,9 +25,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
@@ -224,4 +227,17 @@ public class TestBase extends NbTestCase
         }
         return false;
     }
+
+    protected static boolean containsType(CompilationController controller, List<? extends TypeMirror> typeMirrors, String typeFqn) {
+        TypeElement typeElement = controller.getElements().getTypeElement(typeFqn);
+        TypeMirror searchedTypeMirror = typeElement.asType();
+        Types types = controller.getTypes();
+        for (TypeMirror typeMirror : typeMirrors) {
+            if (types.isSameType(typeMirror, searchedTypeMirror)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }
