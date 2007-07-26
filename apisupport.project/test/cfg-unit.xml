@@ -25,6 +25,8 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- Elaborate. Very slow, sometime seems to end in endless
                 wait-for-condition cycle. Also read through #87973. -->
                 <exclude name="**/ServiceNodeHandlerTest.class"/>
+                <!-- XXX #107995: random failures -->
+                <exclude name="**/SuiteCustomizerModuleListTest.class"/>
                 <!-- XXX Following test might need CVS repository. Double check them: -->
                 <exclude name="**/BrandingSupportTest.class"/>
                 <exclude name="**/GlobalSourceForBinaryImplTest.class"/>
