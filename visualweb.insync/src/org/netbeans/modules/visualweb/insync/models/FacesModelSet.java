@@ -571,7 +571,7 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
                         DesignProperty[] props = beans[bi].getProperties();
                         for (int pi = 0; pi < props.length; pi++) {
                             String ps = props[pi].getValueSource();
-                            if (ps != null && ps.startsWith(match))
+                            if (ps != null && ps.contains(match))
                                 props[pi].unset();
                         }
                     }
