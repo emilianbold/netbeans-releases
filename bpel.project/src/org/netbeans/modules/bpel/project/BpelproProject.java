@@ -44,11 +44,9 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileLock;
-
 import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
-
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
@@ -379,7 +377,8 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         }
         myCatalogListener = new CatalogListener(getProjectDirectory(), catalog);
         catalog.getCatalogFileObject().addFileChangeListener(myCatalogListener);
-
+/* vlv # 111020
+//System.out.println("== SAVE ==");
         // save catalog.xml
         FileObject fileObject = catalog.getCatalogFileObject();
 
@@ -405,6 +404,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         catch (IOException e) {
 //          e.printStackTrace();
         }
+        */
       }
 
       // vlv
@@ -420,7 +420,6 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
       private CatalogListener myCatalogListener;
 
       protected void projectClosed() {
-//System.out.println("PRJ CLOSED");
         if (myCatalogListener != null) {
           CatalogWriteModel catalog = getCatalog();
 
@@ -494,7 +493,8 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         myCatalog = catalog;
         myProject = project;
         myEntries = null;
-        updateEntries();
+        // vlv # 111020
+        //updateEntries();
       }
 
       public void fileChanged(FileEvent event) {
@@ -514,6 +514,9 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
       }
 
       public void fileRenamed(FileRenameEvent event) {
+      }
+
+      private void readEntries() {
       }
 
       private void updateEntries() {
