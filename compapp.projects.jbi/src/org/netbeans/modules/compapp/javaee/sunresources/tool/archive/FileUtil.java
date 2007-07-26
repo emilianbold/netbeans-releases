@@ -80,10 +80,12 @@ public class FileUtil {
             outputDir.mkdir();
         }
         
+        FileInputStream fis = null;
         BufferedInputStream bis = null;
         ZipInputStream zis = null;
         try {
-            bis = new BufferedInputStream(new FileInputStream(source), BUFFER_SIZE);
+            fis = new FileInputStream(source);
+            bis = new BufferedInputStream(fis, BUFFER_SIZE);
             zis = new ZipInputStream(bis);
             ZipEntry ze = null;
             while ( (ze = zis.getNextEntry()) != null ) {
@@ -106,6 +108,8 @@ public class FileUtil {
             }
         } finally {
             safeclose(zis);
+            safeclose(bis);
+            safeclose(fis);
         }
         
         return outputDir;
@@ -115,17 +119,21 @@ public class FileUtil {
      * zip directory into target archive file, one level zipping
      */
     public static void compress(File sourceDir, File targetArchive) throws Exception {
+        FileOutputStream fos = null;
         BufferedOutputStream bos = null;
         ZipOutputStream zos = null;
         
         try {
-            bos = new BufferedOutputStream(new FileOutputStream(targetArchive), BUFFER_SIZE);
+            fos = new FileOutputStream(targetArchive);
+            bos = new BufferedOutputStream(fos, BUFFER_SIZE);
             zos = new ZipOutputStream(bos);
             
             recurse(sourceDir, zos, ""); // NOI18N
             
         } finally {
             safeclose(zos);
+            safeclose(bos);
+            safeclose(fos);
         }
     }
     
@@ -142,9 +150,10 @@ public class FileUtil {
                 recurse(curFile, zos, curName);
             } else {
                 zos.putNextEntry(new ZipEntry(curName));
+                FileInputStream fis = new FileInputStream(curFile);
                 BufferedInputStream bis = null;
                 try {
-                    bis = new BufferedInputStream(new FileInputStream(curFile), BUFFER_SIZE);
+                    bis = new BufferedInputStream(fis, BUFFER_SIZE);
                     for (int numBytes = bis.read(buffer); numBytes > 0;
                         numBytes = bis.read(buffer)) {
                         zos.write(buffer, 0, numBytes);
@@ -152,6 +161,7 @@ public class FileUtil {
                     zos.closeEntry();
                 } finally {
                     safeclose(bis);
+                    safeclose(fis);
                 }
             }
         }

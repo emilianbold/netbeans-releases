@@ -20,11 +20,12 @@
 package org.netbeans.modules.compapp.javaee.sunresources;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -40,6 +41,7 @@ import org.netbeans.modules.compapp.javaee.sunresources.generated.sunresources13
 import org.netbeans.modules.compapp.javaee.sunresources.generated.sunresources13.ObjectFactory;
 import org.netbeans.modules.compapp.javaee.sunresources.generated.sunresources13.Property;
 import org.netbeans.modules.compapp.javaee.sunresources.generated.sunresources13.Resources;
+import org.netbeans.modules.compapp.javaee.sunresources.tool.archive.FileUtil;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -109,21 +111,33 @@ public class ResourceAggregator {
     
     
     public void addResource(FileObject fo) throws Exception {
-        Resources inputResources = (Resources) unmarshaller.unmarshal(fo.getInputStream());
-        List inputList = inputResources.getCustomResourceOrExternalJndiResourceOrJdbcResourceOrMailResourceOrPersistenceManagerFactoryResourceOrAdminObjectResourceOrConnectorResourceOrResourceAdapterConfigOrJdbcConnectionPoolOrConnectorConnectionPool();
-        for (Iterator iter = inputList.iterator(); iter.hasNext(); ) {
-            Object resource = iter.next();
-            if (resource instanceof ConnectorConnectionPool ||
-                    resource instanceof JdbcConnectionPool) {
-                PoolEntry entry = new PoolEntry();
-                entry.pool = resource;
-                entry.fileObject = fo;
-                pools.add(entry);
-            } else {
-                ResourceEntry entry = new ResourceEntry();
-                entry.resource = resource;
-                entry.fileObject = fo;
-                resources.add(entry);
+        InputStream is = null;
+        try {
+            is = fo.getInputStream();
+            Resources inputResources = (Resources) unmarshaller.unmarshal(is);
+            List inputList = inputResources.getCustomResourceOrExternalJndiResourceOrJdbcResourceOrMailResourceOrPersistenceManagerFactoryResourceOrAdminObjectResourceOrConnectorResourceOrResourceAdapterConfigOrJdbcConnectionPoolOrConnectorConnectionPool();
+            for (Iterator iter = inputList.iterator(); iter.hasNext(); ) {
+                Object resource = iter.next();
+                if (resource instanceof ConnectorConnectionPool ||
+                        resource instanceof JdbcConnectionPool) {
+                    PoolEntry entry = new PoolEntry();
+                    entry.pool = resource;
+                    entry.fileObject = fo;
+                    pools.add(entry);
+                } else {
+                    ResourceEntry entry = new ResourceEntry();
+                    entry.resource = resource;
+                    entry.fileObject = fo;
+                    resources.add(entry);
+                }
+            }
+        } finally {
+            if (is != null){
+                try {
+                    is.close();
+                } catch (Exception ex){
+                    // Ignore.
+                }
             }
         }
     }
@@ -182,13 +196,15 @@ public class ResourceAggregator {
         
         FileLock lock = fileObject.lock();
         try {
-            PrintWriter out = new PrintWriter(fileObject.getOutputStream(lock));
+            OutputStream os = fileObject.getOutputStream(lock);
+            PrintWriter out = new PrintWriter(os);
             try {
                 Marshaller marshaller = jc.createMarshaller();
                 marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
                 marshaller.marshal(jaxbRoot, out);
             } finally {
-                out.close();
+                FileUtil.safeclose(out);                
+                FileUtil.safeclose(os);
             }
         } finally {
             lock.releaseLock();

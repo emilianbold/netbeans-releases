@@ -19,33 +19,19 @@
 
 package org.netbeans.modules.compapp.javaee.sunresources.tool.archive;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.compapp.javaee.sunresources.ResourceAggregator;
 import org.netbeans.modules.compapp.javaee.sunresources.SunResourcesUtil;
-import org.netbeans.modules.compapp.javaee.sunresources.generated.sunresources13.Resources;
 
-import org.netbeans.modules.compapp.javaee.sunresources.tool.annotation.JavaEEAnnotationProcessor;
-import org.netbeans.modules.compapp.javaee.sunresources.tool.archive.ArchiveConstants.ArchiveType;
 import org.netbeans.modules.compapp.javaee.sunresources.tool.cmap.CMap;
 import org.netbeans.modules.compapp.javaee.sunresources.tool.cmap.CMapNode;
-import org.netbeans.modules.compapp.javaee.sunresources.tool.cmap.EJBDepend;
 import org.netbeans.modules.compapp.javaee.sunresources.tool.cmap.EJBNode;
-import org.netbeans.modules.compapp.javaee.sunresources.tool.cmap.MDBNode;
-import org.netbeans.modules.compapp.javaee.sunresources.tool.cmap.ResourceDepend;
-import org.netbeans.modules.compapp.javaee.sunresources.tool.cmap.ResourceNode;
-import org.netbeans.modules.compapp.javaee.sunresources.tool.cmap.ResourceNode.ResourceType;
 import org.netbeans.modules.compapp.javaee.sunresources.tool.graph.JAXBHandler;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;

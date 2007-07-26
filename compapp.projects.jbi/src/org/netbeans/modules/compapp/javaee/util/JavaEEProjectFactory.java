@@ -32,8 +32,6 @@ import org.netbeans.modules.compapp.javaee.codegen.model.EJBProject;
 import org.netbeans.modules.compapp.javaee.codegen.model.EnterpriseAppProject;
 import org.netbeans.modules.compapp.javaee.codegen.model.JavaEEProject;
 import org.netbeans.modules.compapp.javaee.codegen.model.WebappProject;
-import java.net.URL;
-import java.util.List;
 
 /**
  *

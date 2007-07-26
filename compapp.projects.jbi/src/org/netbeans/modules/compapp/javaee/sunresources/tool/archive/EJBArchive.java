@@ -19,26 +19,18 @@
 
 package org.netbeans.modules.compapp.javaee.sunresources.tool.archive;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.classfile.ClassFile;
 import org.netbeans.modules.compapp.javaee.sunresources.ResourceAggregator;
 import org.netbeans.modules.compapp.javaee.sunresources.SunResourcesUtil;
-import org.netbeans.modules.compapp.javaee.sunresources.generated.sunresources13.Resources;
 import org.netbeans.modules.compapp.javaee.sunresources.tool.annotation.JavaEEAnnotationProcessor;
 import org.netbeans.modules.compapp.javaee.sunresources.tool.cmap.CMap;
 
-import org.netbeans.modules.compapp.javaee.sunresources.tool.cmap.CMapNode;
 import org.netbeans.modules.compapp.javaee.sunresources.tool.graph.JAXBHandler;
 import org.netbeans.modules.compapp.projects.jbi.jeese.actions.ServerResourcesAction;
 import org.openide.filesystems.FileObject;

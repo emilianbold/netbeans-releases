@@ -30,9 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -41,14 +39,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -95,10 +91,22 @@ public class ProjectUtil {
         String jName = null;
         String srcPath = proj.getProjectDirectory().getPath() + File.separator + PROJECT_PROP_FILE;
         Properties prop = new Properties();
-        prop.load(new FileInputStream(srcPath));
-        jName = prop.getProperty(PROP_JAR_NAME);
-        if (jName == null){
-            jName = prop.getProperty(PROP_WAR_NAME);
+        
+        FileInputStream fis = new FileInputStream(srcPath);
+        try {
+            prop.load(fis);
+            jName = prop.getProperty(PROP_JAR_NAME);
+            if (jName == null){
+                jName = prop.getProperty(PROP_WAR_NAME);
+            }
+        } finally {
+            if (fis != null){
+                try {
+                    fis.close();
+                } catch (Exception ex) {
+                    //ignore
+                }
+            }
         }
         return jName;
     }
@@ -109,7 +117,18 @@ public class ProjectUtil {
         String projDir = proj.getProjectDirectory().getPath();
         String srcPath = projDir + File.separator + PROJECT_PROP_FILE;
         Properties prop = new Properties();
-        prop.load(new FileInputStream(srcPath));
+        FileInputStream fis = new FileInputStream(srcPath);
+        try {
+            prop.load(fis);
+        } finally {
+            if (fis != null){
+                try {
+                    fis.close();
+                } catch (Exception ex){
+                    // Ignore
+                }
+            }
+        }
         
         jName = prop.getProperty(PROP_JAR_NAME);
         if (jName == null){
@@ -127,7 +146,7 @@ public class ProjectUtil {
     
     public static Set getSubprojects(Project proj){
         Set ret = null;
-        SubprojectProvider sp = (SubprojectProvider) proj.getLookup().lookup(SubprojectProvider.class);
+        SubprojectProvider sp = proj.getLookup().lookup(SubprojectProvider.class);
         if (sp != null){
             ret = sp.getSubprojects();
         } else {
@@ -143,7 +162,8 @@ public class ProjectUtil {
         proj = getProject(projBaseDir);
         
         if (proj != null){
-            SubprojectProvider sp = (SubprojectProvider) proj.getLookup().lookup(SubprojectProvider.class);
+            SubprojectProvider sp = proj.getLookup().lookup(
+                    SubprojectProvider.class);
             if (sp != null){
                 ret = sp.getSubprojects();
             }
@@ -162,7 +182,7 @@ public class ProjectUtil {
         proj = getProject(projBaseDir);
         
         if (proj != null){
-            sp = (SubprojectProvider) proj.getLookup().lookup(SubprojectProvider.class);
+            sp = proj.getLookup().lookup(SubprojectProvider.class);
             if (sp != null){
                 sprjs = sp.getSubprojects();
                 Iterator itr = sprjs.iterator();
@@ -200,7 +220,7 @@ public class ProjectUtil {
         proj = getProject(projBaseDir);
         
         if (proj != null){
-            sp = (SubprojectProvider) proj.getLookup().lookup(SubprojectProvider.class);
+            sp = proj.getLookup().lookup(SubprojectProvider.class);
             
             JbiProject jbiProject = (JbiProject)  proj ; // proj.getLookup().lookup(JbiProject.class);
             Properties javaeeProjsProp = getJavaEECustomProperty(jbiProject);
@@ -213,7 +233,7 @@ public class ProjectUtil {
                     sprj = (Project) itr.next();
                     if (isJavaEEProject(sprj)){
                         deployThruCA = true;
-                        sProjInfo = (ProjectInformation) sprj.getLookup().lookup(ProjectInformation.class);
+                        sProjInfo = sprj.getLookup().lookup(ProjectInformation.class);
                         
                         if (sProjInfo != null){
                             sProjName = sProjInfo.getName();
@@ -230,7 +250,7 @@ public class ProjectUtil {
                         subProjects.add(jProj);
                         
                         // Check whether we have sub projects for each of these...
-                        nestedSPProvider =  (SubprojectProvider) sprj.getLookup().lookup(SubprojectProvider.class);
+                        nestedSPProvider =  sprj.getLookup().lookup(SubprojectProvider.class);
                         if (nestedSPProvider != null){
                             nestedSubPrjs = nestedSPProvider.getSubprojects();
                             nestedItr = nestedSubPrjs.iterator();
@@ -277,23 +297,16 @@ public class ProjectUtil {
     public static List<String> getSubJavaEEJarPath(String projBaseDir, boolean normalize) throws IOException{
         List<String> subProjects = new ArrayList<String>();
         Set subPrjs = null;
-        Set nestedSubPrjs = null;
         Iterator itr = null;
-        Iterator nestedItr = null;
         Project proj = null;
         Project sprj = null;
-        Project grandChildProject = null;
-        JavaEEProject jProj = null;
-        JavaEEProject javaeeGrandChild = null;
         String jarPath = null;
-        List<URL> cpEntries = null;
         SubprojectProvider sp = null;
-        SubprojectProvider nestedSPProvider =  null;
         
         proj = getProject(projBaseDir);
         
         if (proj != null){
-            sp = (SubprojectProvider) proj.getLookup().lookup(SubprojectProvider.class);
+            sp = proj.getLookup().lookup(SubprojectProvider.class);
             
             if (sp != null){
                 subPrjs = sp.getSubprojects();
@@ -350,22 +363,23 @@ public class ProjectUtil {
     
     public static Properties readProperties(String javaeeConfigFile) {
         Properties ret = new Properties();
-        InputStream is = null;
+        FileInputStream fis = null;
         File configFile = new File( javaeeConfigFile );
         
         try {
             if ( !configFile.exists() ) {
                 configFile.createNewFile();
             }
-            ret.load( new FileInputStream( configFile ) );
+            fis = new FileInputStream(configFile);
+            ret.load( fis );
         } catch (FileNotFoundException ex) {
             ex.printStackTrace();
         } catch (IOException ex) {
             ex.printStackTrace();
         } finally {
-            if (is != null){
+            if (fis != null){
                 try {
-                    is.close();
+                    fis.close();
                 } catch (Exception ex){
                     // ignore
                 }

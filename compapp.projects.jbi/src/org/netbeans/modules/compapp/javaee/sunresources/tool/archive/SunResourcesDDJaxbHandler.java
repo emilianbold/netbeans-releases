@@ -129,10 +129,16 @@ public class SunResourcesDDJaxbHandler {
             marshaller.setProperty("com.sun.xml.bind.xmlDeclaration", Boolean.FALSE); // NOI18N
         }
         // write preamble
-        PrintWriter out = new PrintWriter(new FileOutputStream(resourceFile));
-        out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
-        out.println("<!DOCTYPE resources PUBLIC \"-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN\" \"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">"); // NOI18N
-        marshaller.marshal(resources, out);
+        FileOutputStream fos = new FileOutputStream(resourceFile);
+        PrintWriter out = new PrintWriter(fos);
+        try {
+            out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
+            out.println("<!DOCTYPE resources PUBLIC \"-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN\" \"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">"); // NOI18N
+            marshaller.marshal(resources, out);
+        } finally {
+            FileUtil.safeclose(out);
+            FileUtil.safeclose(fos);
+        }
     }
 
     public void addAdminObjectResource(String jndiName, String resType, 

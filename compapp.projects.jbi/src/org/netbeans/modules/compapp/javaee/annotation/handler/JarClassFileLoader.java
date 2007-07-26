@@ -50,8 +50,8 @@ public class JarClassFileLoader {
     }
     
     private String getClassPath(ClassName cn){
-        String ret = cn.getExternalName(true).replaceAll("\\.", "\\/");        
-        ret = ret + ".class" ;
+        String ret = cn.getExternalName(true).replaceAll("\\.", "\\/");//NOI18N
+        ret = ret + ".class" ; //NOI18N
         return ret;
     }
     

@@ -34,6 +34,7 @@ import javax.xml.bind.Unmarshaller;
 
 import org.netbeans.modules.compapp.javaee.sunresources.generated.graph.GraphType;
 import org.netbeans.modules.compapp.javaee.sunresources.generated.graph.ObjectFactory;
+import org.netbeans.modules.compapp.javaee.sunresources.tool.archive.FileUtil;
 
 /**
  * @author echou
@@ -113,11 +114,16 @@ public class JAXBHandler {
             marshaller.setProperty("com.sun.xml.bind.xmlDeclaration", Boolean.FALSE); // NOI18N
         }
         // write the prolog here
-        PrintWriter out = new PrintWriter(new FileOutputStream(xmlFile));
-        out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
-        out.println("<!DOCTYPE resources PUBLIC \"-//Sun Microsystems Inc.//DTD Application Server 9.0 Domain//EN\" \"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">"); // NOI18N
-        
-        marshaller.marshal(graphElement, out);
+        FileOutputStream fos = new FileOutputStream(xmlFile);
+        PrintWriter out = new PrintWriter(fos);
+        try {
+            out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
+            out.println("<!DOCTYPE resources PUBLIC \"-//Sun Microsystems Inc.//DTD Application Server 9.0 Domain//EN\" \"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">"); // NOI18N
+            marshaller.marshal(graphElement, out);
+        } finally {
+            FileUtil.safeclose(out);
+            FileUtil.safeclose(fos);
+        }
     }
     
     /*

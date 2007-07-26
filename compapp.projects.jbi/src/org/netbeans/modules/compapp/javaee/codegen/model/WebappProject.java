@@ -57,16 +57,26 @@ public class WebappProject extends AbstractProject{
         
     protected void scanForEndpoints() throws IOException {
         JarFile jf = new JarFile(this.jarPath);
-        JarClassFileLoader cl = new JarClassFileLoader(jf, CLASSES_DIR);        
-        Enumeration<JarEntry> jes = jf.entries();
-        while(jes.hasMoreElements()){
-            JarEntry je = jes.nextElement();
-            if (je.getName().startsWith(CLASSES_DIR) && je.getName().endsWith(".class")){
-                logger.finest("Checking Annotation in:" + je.getName());
-                // Load the class only if annotations are present.
-                if (ClassInfo.containsAnnotation(Channels.newChannel(jf.getInputStream(je)), je.getSize(), annotations)) {
-                    logger.finest("Found Annotation in:" + je.getName());;
-                    handleAnnotations(cl, je);                    
+        try {
+            JarClassFileLoader cl = new JarClassFileLoader(jf, CLASSES_DIR);        
+            Enumeration<JarEntry> jes = jf.entries();
+            while(jes.hasMoreElements()){
+                JarEntry je = jes.nextElement();
+                if (je.getName().startsWith(CLASSES_DIR) && je.getName().endsWith(".class")){
+                    logger.finest("Checking Annotation in:" + je.getName());
+                    // Load the class only if annotations are present.
+                    if (ClassInfo.containsAnnotation(Channels.newChannel(jf.getInputStream(je)), je.getSize(), annotations)) {
+                        logger.finest("Found Annotation in:" + je.getName());
+                        handleAnnotations(cl, je);                    
+                    }
+                }
+            }
+        } finally {
+            if (jf != null){
+                try {
+                    jf.close();
+                } catch (Exception ex){
+                    // Ignore
                 }
             }
         }
