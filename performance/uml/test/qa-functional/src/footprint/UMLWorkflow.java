@@ -1,4 +1,4 @@
-/*
+5/*
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
@@ -79,7 +79,7 @@ public class UMLWorkflow extends org.netbeans.performance.test.utilities.MemoryF
     
     public ComponentOperator open(){
         // Create, edit, build and execute a sample J2SE project
-        String j2seprojectName = UMLFootprintUtilities.createproject("Samples|General", "Anagram Game", true);
+        String j2seprojectName = UMLFootprintUtilities.createproject("Samples|Java", "Anagram Game", true);
         j2seproject = new ProjectsTabOperator().getProjectRootNode(j2seprojectName);
         
         new OutputWindowViewAction().performAPI();
