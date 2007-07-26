@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-commit-CommitAction.instance"/>
                 </file>
                 <file name="Diff.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-diff-DiffAction.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-DiffAction.instance"/>
                 </file>
                 <file name="ExportDiffPatch.shadow">
                     <attr name="originalFile" stringvalue="Actions/Repository/org-netbeans-modules-versioning-system-cvss-ui-actions-diff-ExportDiffAction.instance"/>
