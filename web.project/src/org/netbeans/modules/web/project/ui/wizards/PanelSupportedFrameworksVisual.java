@@ -227,24 +227,17 @@ public class PanelSupportedFrameworksVisual extends JPanel implements HelpCtx.Pr
     // End of variables declaration//GEN-END:variables
 
     boolean valid(WizardDescriptor wizardDescriptor) {
-        boolean retVal = true;
+        wizardDescriptor.putProperty("WizardPanel_errorMessage","");//NOI18N
         for (int i = 0; i < model.getRowCount(); i++) {
             if (model.getItem(i).isSelected().booleanValue()) {
-                retVal = false;
-                break;
+                FrameworkModelItem item = model.getItem(i);
+                FrameworkConfigurationPanel configPanel = (FrameworkConfigurationPanel) configPanels.get(item.getFramework());
+                if (configPanel != null && !configPanel.isValid()) {
+                    return false;
+                }
             }
         }
-        //none framework selected, enable Finish
-        if (retVal)
-            return true;
-        
-        for (int i = 0; i < model.getRowCount(); i++) {
-            FrameworkModelItem item = model.getItem(i);
-            FrameworkConfigurationPanel configPanel = (FrameworkConfigurationPanel) configPanels.get(item.getFramework());
-            if (configPanel != null && !configPanel.isValid())
-                return false;
-        }
-        
+
         return true;
     }
 
