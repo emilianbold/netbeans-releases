@@ -114,6 +114,7 @@ public class SvnClientExceptionHandler {
     public final static int EX_FILE_ALREADY_EXISTS = 8192;
     public final static int EX_IS_OUT_OF_DATE = 16384;            
     public final static int EX_NO_SVN_CLIENT = 32768;            
+    public final static int EX_HTTP_FORBIDDEN = 65536;      
           
   
     public final static int EX_HANDLED_EXCEPTIONS = EX_AUTHENTICATION | EX_NO_CERTIFICATE | EX_NO_HOST_CONNECTION;
@@ -518,6 +519,8 @@ public class SvnClientExceptionHandler {
             return EX_COMMIT_FAILED;
         } else if(isNoSvnClient(msg)) {               
             return EX_NO_SVN_CLIENT;
+        } else if(isHTTP403(msg)) {
+            return EX_HTTP_FORBIDDEN;
         }
         return EX_UNKNOWN;
     }
@@ -572,6 +575,10 @@ public class SvnClientExceptionHandler {
         return msg.indexOf("405") > -1;                                                     // NOI18N
     }
 
+    public static boolean isHTTP403(String msg) {
+        return msg.indexOf("403") > -1;                                                     // NOI18N
+    }
+    
     public static boolean isReportOf200(String msg) {  
         msg = msg.toLowerCase();
         int idx = msg.indexOf("svn: report of");            // NOI18N

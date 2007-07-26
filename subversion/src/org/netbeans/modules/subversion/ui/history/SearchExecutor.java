@@ -175,7 +175,23 @@ class SearchExecutor implements Runnable {
                 }
                 ISVNLogMessage [] messages = client.getLogMessages(rootUrl, paths, fromRevision, toRevision, false, true);
                 appendResults(rootUrl, messages);
-            } catch (SVNClientException e) {
+            } catch (SVNClientException e) {                
+                try {    
+                    // XXX WORKAROUND issue #110034 
+                    // the client.getLogMessages(rootUrl, paths[] ... seems to touch also the repository root even if it's not 
+                    // listed in paths[]. This causes problems when the given user has restricted access only to a specific folder.
+                    if(SvnClientExceptionHandler.isHTTP403(e.getMessage())) { // 403 forbidden
+                        for(String path : paths) {                        
+                            ISVNLogMessage [] messages = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, false, true, 0);
+                            appendResults(rootUrl, messages);
+                        }
+                    }  
+                    return;
+                } catch (SVNClientException ex) {                    
+                    if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
+                        progressSupport.annotate(ex);
+                    }    
+                }
                 if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
                     progressSupport.annotate(e);
                 }
