@@ -117,15 +117,6 @@ public class CvsVersioningSystem {
         filesystemHandler  = new FilesystemHandler(this);
         annotator = new Annotator(this);
         fileStatusProvider = new FileStatusProvider();
-        cleanup();
-    }
-
-    private void cleanup() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                fileStatusCache.cleanUp();
-            }
-        }, 3000);
     }
 
     void shutdown() {

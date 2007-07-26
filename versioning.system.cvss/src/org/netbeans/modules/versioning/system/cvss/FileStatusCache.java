@@ -390,28 +390,6 @@ public class FileStatusCache {
         }
     }
     
-    /**
-     * Cleans up the cache by removing or correcting entries that are no longer valid or correct.
-     */
-    void cleanUp() {
-        long t0 = System.currentTimeMillis();
-        Map files = cacheProvider.getAllModifiedValues();
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            File file = (File) i.next();
-            FileInformation info = (FileInformation) files.get(file);
-            if ((info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
-                refresh(file, REPOSITORY_STATUS_UNKNOWN);
-            } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                // remove entries that were excluded but no longer exist
-                // cannot simply call refresh on excluded files because of 'excluded on server' status
-                if (!exists(file)) {
-                    refresh(file, REPOSITORY_STATUS_UNKNOWN);
-                }
-            }
-            if (System.currentTimeMillis() - t0 > 15000) break; // lots of files in the cache, abort cleanup
-        }
-    }
-        
     // --- Private methods ---------------------------------------------------
 
     private Map<File, FileInformation> getScannedFiles(File dir) {
