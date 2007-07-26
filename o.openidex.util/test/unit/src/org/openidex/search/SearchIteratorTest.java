@@ -181,9 +181,9 @@ public final class SearchIteratorTest extends NbTestCase {
         
         assertTrue("project root not searchable", searchInfo.canSearch());
         
-        List foundFilesPaths = new ArrayList(16);
-        for (Iterator i = searchInfo.objectsToSearch(); i.hasNext(); ) {
-            FileObject primaryFile = ((DataObject) i.next()).getPrimaryFile();
+        List<String> foundFilesPaths = new ArrayList<String>(16);
+        for (Iterator<DataObject> i = searchInfo.objectsToSearch(); i.hasNext(); ) {
+            FileObject primaryFile = i.next().getPrimaryFile();
             String relativePath = FileUtil.getRelativePath(projectRoot,
                                                            primaryFile);
             foundFilesPaths.add(relativePath);
@@ -191,8 +191,8 @@ public final class SearchIteratorTest extends NbTestCase {
         
         Collections.sort(foundFilesPaths);
         
-        for (Iterator i = foundFilesPaths.iterator(); i.hasNext(); ) {
-            refPrintStream.println((String) i.next());
+        for (String path : foundFilesPaths) {
+            refPrintStream.println(path);
         }
     }
 
