@@ -18,84 +18,163 @@
  */
 package org.netbeans.modules.websvc.rest.model.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
+import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
+import org.netbeans.modules.websvc.rest.model.impl.RestServicesImpl.Status;
 
 /**
  *
  * @author Peter Liu
  */
 public class RestServiceDescriptionImpl extends PersistentObject implements RestServiceDescription {
-    
+
     private String name;
     private String uriTemplate;
-    
+    private Map<String, RestMethodDescriptionImpl> methods;
+    private boolean isRest;
+
     public RestServiceDescriptionImpl(AnnotationModelHelper helper, TypeElement typeElement) {
         super(helper, typeElement);
-        
+
         this.name = typeElement.getSimpleName().toString();
-        this.uriTemplate = getUriTemplate(typeElement);
+        this.uriTemplate = Utils.getUriTemplate(typeElement);
+        this.isRest = true;
+
+        initMethods(typeElement);
     }
-    
-    private String getUriTemplate(TypeElement element) {
-        for (AnnotationMirror annotation: element.getAnnotationMirrors()) {
-            if (annotation.getAnnotationType().toString().equals("javax.ws.rs.UriTemplate")) {
-                for (ExecutableElement key : annotation.getElementValues().keySet()) {
-                    //System.out.println("key = " + key.getSimpleName());
-                    if (key.getSimpleName().toString().equals("value")) {
-                        uriTemplate = annotation.getElementValues().get(key).toString();
-                        uriTemplate = uriTemplate.substring(1, uriTemplate.length()-1);
-                        
-                        return uriTemplate;
+
+
+    private void initMethods(TypeElement typeElement) {
+        methods = new HashMap<String, RestMethodDescriptionImpl>();
+        AnnotationModelHelper helper = getHelper();
+
+        for (Element element : typeElement.getEnclosedElements()) {
+            if (element.getKind() == ElementKind.METHOD) {
+                addMethod(element);
+            }
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getUriTemplate() {
+        return uriTemplate;
+    }
+
+    public List<RestMethodDescription> getMethods() {
+        List<RestMethodDescription> list = new ArrayList<RestMethodDescription>();
+
+        for (RestMethodDescriptionImpl method : methods.values()) {
+            list.add((RestMethodDescription) method);
+        }
+
+        return list;
+    }
+
+    public boolean isRest() {
+        return isRest;
+    }
+
+    public Status refresh(TypeElement typeElement) {
+        if (typeElement.getKind() == ElementKind.INTERFACE) {
+            return Status.REMOVED;
+        }
+
+        boolean isRest = false;
+        boolean isModified = false;
+
+        if (Utils.hasUriTemplate(typeElement)) {
+            isRest = true;
+        }
+
+        String name = Utils.getUriTemplate(typeElement);
+        if (!this.name.equals(name)) {
+            this.name = name;
+            isModified = true;
+        }
+
+        Map<String, RestMethodDescriptionImpl> prevMethods = methods;
+        methods = new HashMap<String, RestMethodDescriptionImpl>();
+        
+        for (Element element : typeElement.getEnclosedElements()) {
+            if (element.getKind() == ElementKind.METHOD) {
+                String methodName = element.getSimpleName().toString();
+
+                RestMethodDescriptionImpl method = prevMethods.get(methodName);
+
+                if (method != null) {
+                    Status status = method.refresh(element);
+
+                    switch (status) {
+                        case REMOVED:
+                            if (addMethod(element)) {
+                                isRest = true;
+                            }
+                            isModified = true;
+                            break;
+                        case MODIFIED:
+                            isRest = true;
+                            isModified = true;
+                            methods.put(name, method);
+                            break;
+                        case UNMODIFIED:
+                            isRest = true;
+                            methods.put(name, method);
+                            break;
+                    }
+                } else {
+                    if (addMethod(element)) {
+                        isRest = true;
+                        isModified = true;
                     }
                 }
             }
         }
-        
-        return "";
-    }
-    
-    public String getName() {
-        return name;
-    }
-    
-    public String getUriTemplate() {
-        return uriTemplate;
-    }
-    
-    boolean refresh(TypeElement typeElement) {
-        if (typeElement.getKind() == ElementKind.INTERFACE) {
-            // don't consider interfaces (SEI classes)
-            return false;
+
+        if (methods.size() != prevMethods.size()) {
+            isModified = true;
         }
-        AnnotationModelHelper helper = getHelper();
-        Map<String, ? extends AnnotationMirror> annByType = helper.getAnnotationsByType(typeElement.getAnnotationMirrors());
-        if (annByType.get("javax.ws.rs.UriTemplate") != null) {
-            return true;// NOI18N
+
+        if (!isRest) {
+            this.isRest = false;
+            return Status.REMOVED;
         }
-        
-        for (Element element : typeElement.getEnclosedElements()) {
-            if (element.getKind() == ElementKind.METHOD) {
-                if (helper.hasAnnotation(element.getAnnotationMirrors(), "javax.ws.rs.HttpMethod")) {    //NOI18N
-                    return true;
-                }
-            }
+
+        if (isModified) {
+            return Status.MODIFIED;
         }
-        
+
+        return Status.UNMODIFIED;
+    }
+
+    private boolean removeMethod(RestMethodDescriptionImpl method) {
+        return methods.remove(method.getName()) != null;
+    }
+
+    private boolean addMethod(Element element) {
+        RestMethodDescriptionImpl method = RestMethodDescriptionFactory.create(element);
+
+        if (method != null) {
+            methods.put(element.getSimpleName().toString(), method);
+
+            return true;
+        }
         return false;
     }
-    
-    
+
     public String toString() {
-        return name + "[" + uriTemplate + "]";   //NOI18N
+        return name + "[" + uriTemplate + "]"; //NOI18N
     }
 }

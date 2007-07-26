@@ -57,11 +57,15 @@ import org.openide.filesystems.FileObject;
  */
 public class RestServicesImpl implements RestServices {
     
+    public enum Status {
+        UNMODIFIED, MODIFIED, REMOVED
+    }
+    
     private AnnotationModelHelper helper;
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     private volatile PersistentObjectManager<RestServiceDescriptionImpl> restServiceManager;
     private boolean disableChangeSupport;
-   
+    
     public static RestServicesImpl create(AnnotationModelHelper helper) {
         RestServicesImpl instance =  new RestServicesImpl(helper);
         instance.initialize();
@@ -83,10 +87,10 @@ public class RestServicesImpl implements RestServices {
         restServiceManager.addChangeListener(new ChangeListener() {
             private boolean isBusy;
             
-            public void stateChanged(ChangeEvent e) {
+            public synchronized void stateChanged(ChangeEvent e) {
                 System.out.println("RestServices.stateChanged");
                 //(new Exception()).printStackTrace();
-                
+                System.out.println("changeEvent source = " + e.getSource());
                 if (disableChangeSupport) {
                     System.out.println("skipping");
                     return;
@@ -130,7 +134,7 @@ public class RestServicesImpl implements RestServices {
     
     private final class RestServiceProvider implements ObjectProvider<RestServiceDescriptionImpl> {
         
-        public synchronized List<RestServiceDescriptionImpl> createInitialObjects() throws InterruptedException {
+        public List<RestServiceDescriptionImpl> createInitialObjects() throws InterruptedException {
             System.out.println("createInitialObjects()");
             //(new Exception()).printStackTrace();
             final Map<TypeElement, RestServiceDescriptionImpl> result =
@@ -153,7 +157,7 @@ public class RestServicesImpl implements RestServices {
                     (Set<ElementKind>) EnumSet.of(ElementKind.METHOD),
                     new AnnotationHandler() { // NOI18N
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
-                    //System.out.println("ElementKind.METHOD type = " + type + 
+                    //System.out.println("ElementKind.METHOD type = " + type +
                     //        " element = " + element +
                     //        " annotation = " + annotation);
                     if (!result.containsKey(type)) {
@@ -166,7 +170,7 @@ public class RestServicesImpl implements RestServices {
             return new ArrayList<RestServiceDescriptionImpl>(result.values());
         }
         
-        public synchronized List<RestServiceDescriptionImpl> createObjects(TypeElement type) {
+        public List<RestServiceDescriptionImpl> createObjects(TypeElement type) {
             //System.out.println("createObjects() type = " + type);
             //(new Exception()).printStackTrace();
             
@@ -193,15 +197,23 @@ public class RestServicesImpl implements RestServices {
             return Collections.emptyList();
         }
         
-        public synchronized boolean modifyObjects(TypeElement type, List<RestServiceDescriptionImpl> objects) {
+        public boolean modifyObjects(TypeElement type, List<RestServiceDescriptionImpl> objects) {
             System.out.println("modifyObject type = " + type);
             assert objects.size() == 1;
             RestServiceDescriptionImpl restService = objects.get(0);
-            if (!restService.refresh(type)) {
+            Status status = restService.refresh(type);
+            
+            switch (status) {
+            case REMOVED:
                 System.out.println("removing RestServiceDescImpl for " + type.getQualifiedName().toString());
                 objects.remove(0);
                 return true;
+            case MODIFIED:
+                return true;
+            case UNMODIFIED:
+                return false;
             }
+            
             return false;
         }
     }

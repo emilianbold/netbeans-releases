@@ -12,26 +12,27 @@
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *//**
- * This interface has all of the bean info accessor methods.
- *
- * @Generated
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.websvc.rest.model.impl;
 
-package org.netbeans.modules.websvc.rest.model.api;
+import javax.lang.model.element.Element;
+import org.netbeans.modules.websvc.rest.model.impl.RestServicesImpl.Status;
 
-import java.util.List;
-
-public interface RestServiceDescription {
-
-    public String getName();
-
-    public String getUriTemplate();
-
-    public List<RestMethodDescription> getMethods();
+/**
+ *
+ * @author Peter Liu
+ */
+public abstract class RestMethodDescriptionImpl {
+    protected String name;
     
-    public boolean isRest();
+    public RestMethodDescriptionImpl(Element methodElement) {       
+        this.name = methodElement.getSimpleName().toString();
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
+    public abstract Status refresh(Element element);
 }
