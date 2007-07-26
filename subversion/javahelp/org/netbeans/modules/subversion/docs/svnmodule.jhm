@@ -3,6 +3,7 @@
 *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
+
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
          "http://java.sun.com/products/javahelp/map_2_0.dtd">
 
@@ -26,9 +27,10 @@
     <mapID target="svn_mergeresolve" url="svnmodule/svn_mergeresolve.html" />
     <mapID target="svn_patch" url="svnmodule/svn_patch.html" />
 
-
 <!-- ========================== -->
+
 <!--CSH topics-->
+
     <!--TODO find out what this is for-->
     <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="pending.html" />
 
@@ -36,31 +38,34 @@
     <mapID target="org.netbeans.modules.subversion.ui.browser.Browser" url="pending.html" />
 
     <!--Checkout wizard, step 1-->	
-    <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep" url="pending.html" />
+    <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep" url="svnmodule/csh/svn_chkout_wizard_p1.html" />
 
     <!--Checkout wizard, step 2-->	
-    <mapID target="org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep" url="pending.html" />
+    <mapID target="org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep" url="svnmodule/csh/svn_chkout_wizard_p2.html" />
 
-<!--Commit dialog-->
-    <mapID target="org.netbeans.modules.subversion.ui.commit.CommitAction" url="pending.html" />
+    <!--Commit dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.commit.CommitAction" url="svnmodule/csh/svn_commit.html" />
 
-<!--Create Copy dialog-->
-    <mapID target="org.netbeans.modules.subversion.ui.copy.CreateCopy" url="pending.html" />
+    <!--Create Copy dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.copy.CreateCopy" url="svnmodule/csh/svn_copyto_dialog.html" />
 
-<!--Subversion Diff window-->
+    <!--Subversion Diff window-->
     <mapID target="org.netbeans.modules.subversion.ui.diff.DiffTopComponent" url="pending.html" />
-<!--Subversion Versioning window-->
+    
+    <!--Subversion Versioning window-->
     <mapID target="org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" url="pending.html" />
-<!--Subversion Switch To dialog-->
-    <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="pending.html" />
-<!--Subversion Search History window-->
-    <mapID target="org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent" url="pending.html" />
-<!--Subversion Revert Modifications dialog-->
-    <mapID target="org.netbeans.modules.subversion.ui.update.RevertModifications" url="pending.html" />
 
-<!--Merge dialog-->
-<!--TODO create CSH topic-->
-    <mapID target="org.netbeans.modules.subversion.ui.copy.Merge" url="svnmodule/svn_merge.html" />
+    <!--Subversion Switch To dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="svnmodule/csh/svn_switch_dialog.html" />
+
+    <!--Subversion Search History window-->
+    <mapID target="org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent" url="svnmodule/csh/svn_search_rev_dialog.html" />
+    
+    <!--Subversion Revert Modifications dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.update.RevertModifications" url="svnmodule/csh/revert_mod_dialog.html" />
+
+    <!--Merge dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.copy.Merge" url="svnmodule/csh/svn_merge_dialog.html" />
 
 </map>
 
