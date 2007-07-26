@@ -493,11 +493,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             return;
         }
 
+        recentRevisionCanBeRolledBack = al.canBeRolledBack();
+        
         // handle unchanged lines
         String revision = al.getRevision();
         if (revision.equals(recentRevision) == false) {
-            recentRevision = revision;
-            recentRevisionCanBeRolledBack = al.canBeRolledBack();
+            recentRevision = revision;            
             repaint();
 
             AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
