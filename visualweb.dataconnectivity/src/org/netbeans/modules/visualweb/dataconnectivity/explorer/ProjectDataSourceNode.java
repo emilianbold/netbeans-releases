@@ -32,6 +32,7 @@ import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.modules.visualweb.dataconnectivity.actions.RefreshProjectDataSourceAction;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.datasource.DataSourceResolver;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
@@ -89,26 +90,23 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
     }
 
     // Create the popup menu:
-    public Action[] getActions(boolean context) {
-        if (ImportDataSource.isLegacyProject(nbProject)) {
-            return new Action[] {
-                SystemAction.get(ResolveProjectDataSourceAction.class),
-                SystemAction.get(RefreshProjectDataSourceAction.class)
-            };
-        } else {
-            return new Action[] {         
-                SystemAction.get(RefreshProjectDataSourceAction.class)
-            };
-        }
-    }
+//    public Action[] getActions(boolean context) {
+////        if (ImportDataSource.isLegacyProject(nbProject)) {
+////            return new Action[] {
+////                SystemAction.get(ResolveProjectDataSourceAction.class),
+////                SystemAction.get(RefreshProjectDataSourceAction.class)
+////            };
+////        } else {
+////            return new Action[] {         
+////                SystemAction.get(RefreshProjectDataSourceAction.class)
+////            };
+//        }
+//    }
 
     public Action getPreferredAction() {
-        return SystemAction.get(ResolveProjectDataSourceAction.class);
+//        return SystemAction.get(ResolveProjectDataSourceAction.class);
+        return null;
     }
-
-//    public HelpCtx getHelpCtx() {
-//        return new HelpCtx("projrave_ui_elements_project_nav_data_source_ref_node"); // NOI18N
-//    }
 
     public org.netbeans.api.project.Project getNbProject(){
         return nbProject;
@@ -126,16 +124,7 @@ public class ProjectDataSourceNode extends AbstractNode implements Node.Cookie, 
         boolean isBroken = false;         
         
         if (ImportDataSource.isLegacyProject(nbProject)) {
-            javax.swing.SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (!firstTimeShowAlert) {
-                        if (!ProjectDataSourceTracker.isProjectModeled(nbProject) || BrokenDataSourceSupport.isBroken(nbProject) ) {
-                            ImportDataSource.showAlert();
-                        }                                                  
-                        firstTimeShowAlert = true;                        
-                    }
-                }
-            });
+            DataSourceResolver.getInstance().modelProjectForDataSources(nbProject);
         }                            
         
         // Check if Data Source Reference node has any child nodes, if it does, check if any data sources are missing
