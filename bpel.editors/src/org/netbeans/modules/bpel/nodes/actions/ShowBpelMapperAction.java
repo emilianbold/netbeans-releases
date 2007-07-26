@@ -52,6 +52,7 @@ public class ShowBpelMapperAction extends BpelNodeAction {
             mapperTC.open();
         }
         mapperTC.requestVisible();
+        mapperTC.requestActive();
     }
     
     public boolean isChangeAction() {
