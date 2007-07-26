@@ -120,10 +120,7 @@ public final class Deployment {
             }
 
             jmp.deployDatasources();
-            
-if (System.getProperties().getProperty("resource-api-redesign") != null) {
             deployMessageDestinations(jmp);
-}
 
             modules = targetserver.deploy(progress, forceRedeploy);
             // inform the plugin about the deploy action, even if there was
@@ -148,7 +145,7 @@ if (System.getProperties().getProperty("resource-api-redesign") != null) {
         }
     }
     
-    public void deployMessageDestinations(J2eeModuleProvider jmp) throws ConfigurationException {
+    private static void deployMessageDestinations(J2eeModuleProvider jmp) throws ConfigurationException {
         ServerInstance si = ServerRegistry.getInstance ().getServerInstance (jmp.getServerInstanceID ());
         if (si != null) {
             si.deployMessageDestinations(jmp.getConfigSupport().getMessageDestinations());
