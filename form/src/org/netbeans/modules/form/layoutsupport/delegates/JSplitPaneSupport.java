@@ -333,18 +333,19 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
         if (params.length != 1)
             return null;
 
-        String position;
-
+        String position = null;
         Object connectingObject = statement.getMetaObject();
-        if (getSetLeftComponentMethod().equals(connectingObject))
+        if (getSimpleAddMethod().equals(connectingObject)) {
+            position = getComponentCount() == 0 ? JSplitPane.LEFT : JSplitPane.RIGHT;
+        } else if (getSetLeftComponentMethod().equals(connectingObject)) {
             position = JSplitPane.LEFT;
-        else if (getSetRightComponentMethod().equals(connectingObject))
+        } else if (getSetRightComponentMethod().equals(connectingObject)) {
             position = JSplitPane.RIGHT;
-        else if (getSetTopComponentMethod().equals(connectingObject))
+        } else if (getSetTopComponentMethod().equals(connectingObject)) {
             position = JSplitPane.TOP;
-        else if (getSetBottomComponentMethod().equals(connectingObject))
+        } else if (getSetBottomComponentMethod().equals(connectingObject)) {
             position = JSplitPane.BOTTOM;
-        else return null;
+        }
 
         SplitConstraints constr = new SplitConstraints(position);
         getConstraintsList().add(constr);
@@ -388,11 +389,13 @@ public class JSplitPaneSupport extends AbstractLayoutSupport {
     // ------------
 
     private int convertPosition(LayoutConstraints desc) {
-        Object position = desc.getConstraintsObject();
-        if (JSplitPane.LEFT.equals(position) || JSplitPane.TOP.equals(position))
-            return 0;
-        if (JSplitPane.RIGHT.equals(position) || JSplitPane.BOTTOM.equals(position))
-            return 1;
+        if (desc != null) {
+            Object position = desc.getConstraintsObject();
+            if (JSplitPane.LEFT.equals(position) || JSplitPane.TOP.equals(position))
+                return 0;
+            if (JSplitPane.RIGHT.equals(position) || JSplitPane.BOTTOM.equals(position))
+                return 1;
+        }
         return -1;
     }
 
