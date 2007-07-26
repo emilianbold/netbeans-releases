@@ -7,6 +7,8 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+    <tocitem text="IDE Basics">   
+        <tocitem text="XML Documents" >
 	<tocitem text="XML Schema Tools">
 		<tocitem text="About XML Schema Tools" target="xmltools_about" />
 		<tocitem text="Schema View">
@@ -66,4 +68,6 @@
 			<tocitem text="Using Code Completion in XML Files Constrained by an XML Catalog" target="xmltools_tasks_usingcodecompletion-xml-catalog" />
 		</tocitem>
 	</tocitem>
+     </tocitem>
+ </tocitem>
 </toc>

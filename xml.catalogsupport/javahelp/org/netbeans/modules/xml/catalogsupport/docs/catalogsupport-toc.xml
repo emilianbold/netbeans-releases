@@ -3,10 +3,14 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+<tocitem text="IDE Basics">   
+        <tocitem text="XML Documents" >
 	<tocitem text="Cross-Project XML File References">
 		<tocitem text="About Cross-Project XML File References" target="org.netbeans.modules.xml.catalogsupport.about" />
 		<tocitem text="Working With Project References" target="catalogsupport-ww-projectreferences" />
 		<tocitem text="Using Cross-Project XML File References" target="catalogsupport-using-cpr" />
 		<tocitem text="Refreshing Cached XML File References" target="catalogsupport-refreshing-cached-refs" />
 	</tocitem>
+    </tocitem>
+</tocitem>
 </toc>
