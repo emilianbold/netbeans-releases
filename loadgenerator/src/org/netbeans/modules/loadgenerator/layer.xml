@@ -6,6 +6,7 @@
       <file name="org-netbeans-modules-loadgenerator-nodes-ManagerNode.instance">
         <attr name="instanceClass" stringvalue="org.netbeans.modules.loadgenerator.nodes.ManagerNode"/>
         <attr name="instanceCreate" methodvalue="org.netbeans.modules.loadgenerator.nodes.ManagerNode.getInstance"/>
+        <attr name="position" intvalue="533"/>
       </file>
     </folder>
   </folder>

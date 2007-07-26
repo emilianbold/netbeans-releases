@@ -34,6 +34,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Project">
             <folder name="Samples">
                 <folder name="JMX">
+                    <attr name="position" intvalue="346"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/jmx/examples/resources/descriptions/jmxSamplesCategory.html"/>
                     <file name="jmx_anagrams.zip" url="examples/resources/jmx_anagrams.zip">
@@ -48,6 +49,7 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         <folder name="ManagementFile">
+            <attr name="position" intvalue="523"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.jmx.Bundle"/>
 
             <file name="MBeanImpl.java" url="resources/templates/StandardMBean.java.template">
