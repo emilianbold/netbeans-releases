@@ -1,5 +1,5 @@
 build.xml
-build.xml~
+build_invisible.xml
 manifest.mf
 nbproject/build-impl.xml
 nbproject/genfiles.properties
@@ -8,5 +8,5 @@ nbproject/project.properties
 nbproject/project.xml
 src/RootClass.java
 src/foo/bar/baz/SampleClass.java
-src/foo/bar/baz/SampleClass.java~
+src/foo/bar/baz/SampleClass_invisible.java
 test/abc/xyz/SimpleTest.java

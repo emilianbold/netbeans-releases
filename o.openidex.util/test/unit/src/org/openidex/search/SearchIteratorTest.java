@@ -19,6 +19,7 @@
 
 package org.openidex.search;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -65,25 +66,37 @@ public final class SearchIteratorTest extends NbTestCase {
         
         FileObject testDir;
 
+        ensurePrivateSettingsFileExists();
+
         testDir = projectRoot;
-        ensureTildeCopyExists(testDir, "build", "xml");             //NOI18N
+        ensureInvisibleCopyExists(testDir, "build", "xml");             //NOI18N
 
         testDir = projectRoot.getFileObject("src/foo/bar/baz");     //NOI18N
-        ensureTildeCopyExists(testDir, "SampleClass", "java");      //NOI18N
+        ensureInvisibleCopyExists(testDir, "SampleClass", "java");      //NOI18N
+    }
+
+    /**
+     */
+    private void ensurePrivateSettingsFileExists() throws IOException {
+        String relPath = "nbproject/private/private.properties";
+        FileObject settingsFile = projectRoot.getFileObject(relPath);
+        if (settingsFile == null) {
+            FileUtil.createData(new File(FileUtil.toFile(projectRoot), relPath));
+        }
     }
     
     /**
      */
-    private void ensureTildeCopyExists(FileObject folder,
-                                       String name,
-                                       String ext) throws IOException {
-        String tildeExt = ext + '~';
-        
+    private void ensureInvisibleCopyExists(FileObject folder,
+                                           String name,
+                                           String ext) throws IOException {
         FileObject orig = folder.getFileObject(name, ext);
         assert orig != null;
-        FileObject copy = folder.getFileObject(name, tildeExt);
+        String invisibleCopyName = name + VisibilityQueryImpl.INVISIBLE_SUFFIX;
+        FileObject copy = folder.getFileObject(invisibleCopyName,
+                                               ext);
         if (copy == null) {
-            orig.copy(folder, name, tildeExt);
+            orig.copy(folder, invisibleCopyName, ext);
         }
     }
     
