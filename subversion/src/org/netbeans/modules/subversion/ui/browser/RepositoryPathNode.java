@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.subversion.ui.browser;
 
+import java.awt.Component;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.nodes.AbstractNode;
@@ -28,14 +29,15 @@ import org.openide.util.RequestProcessor;
 
 import javax.swing.*;
 import java.util.Collections;
-import java.awt.*;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.openide.ErrorManager;
@@ -57,27 +59,40 @@ public class RepositoryPathNode extends AbstractNode {
     private RepositoryPathEntry entry;
     private final BrowserClient client;    
     private boolean repositoryFolder;
-    private int expanded = 0;
-           
+
+    private boolean isListed = false;
+    
     static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryFile file) {
         return createRepositoryPathNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""));
-    }   
-    
-    static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {        
+    }          
+
+    private static RepositoryPathNode createRepositoryPathNode(BrowserClient client, RepositoryPathEntry entry) {        
         RepositoryPathNode node = new RepositoryPathNode(client, entry, true);
         return node;
+    }    
+
+    static RepositoryPathNode createPreselectedPathNode(BrowserClient client, RepositoryFile file) {
+        return createDelayedExpandNode(client, file);
+    }
+
+    static RepositoryPathNode createRepositoryRootNode(BrowserClient client, RepositoryFile file) {
+        return createDelayedExpandNode(client, file);
     }
     
-    static RepositoryPathNode createBrowserPathNode(BrowserClient client, RepositoryPathEntry entry) {
-        return new BrowserPathNode(client, entry, false);
+    private static RepositoryPathNode createDelayedExpandNode(BrowserClient client, RepositoryFile file) {
+        return new DelayedExpandNode(client, new RepositoryPathEntry(file, SVNNodeKind.DIR, new SVNRevision(0), null, ""), false);
     }
-            
+    
+    static RepositoryPathNode createNewBrowserNode(BrowserClient client, RepositoryPathEntry entry) {
+        return new NewBrowserNode(client, entry, false);
+    }            
+    
     private RepositoryPathNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
-        super(entry.getSvnNodeKind() == SVNNodeKind.DIR ? new Children.Array() : Children.LEAF);
+        super(entry.getSvnNodeKind() == SVNNodeKind.DIR ? new RepositoryPathChildren(client) : Children.LEAF);
         this.entry = entry;
         this.client = client;
-        this.repositoryFolder = repositoryFolder;
-
+        this.repositoryFolder = repositoryFolder;        
+        
         if(entry.getSvnNodeKind() == SVNNodeKind.DIR) {
             setIconBaseWithExtension("org/openide/loaders/defaultFolder.gif");       // NOI18N
         } else {
@@ -118,7 +133,7 @@ public class RepositoryPathNode extends AbstractNode {
             this.fireNameChange(oldName, name);
         }                
     }
-
+    
     private void renameNode (RepositoryPathNode node, String newParentsName, int level) {        
         node.entry = new RepositoryPathEntry(
                         node.entry.getRepositoryFile().replaceLastSegment(newParentsName, level),
@@ -157,17 +172,17 @@ public class RepositoryPathNode extends AbstractNode {
         repositoryFolder = bl;
     }
     
-    void expand() {
-        switch(expanded) {
-            case 0: 
-                expanded += 1;
-                break;
-            case 1:    
-                setChildren(new RepositoryPathChildren(client, entry));            
-                expanded += 1;
-                break;    
-            default:    
-                // do nothing    
+    /**
+     * List the repository path from entry and sets up the Nodes children with the retrieved values
+     */ 
+    void expand() {         
+        if(isListed) {
+            return; 
+        }
+        isListed = true;
+        Children ch = getChildren();
+        if(ch instanceof RepositoryPathChildren) {
+            ((RepositoryPathChildren) getChildren()).listRepositoryPath(entry);                                       
         }        
     }
     
@@ -175,21 +190,20 @@ public class RepositoryPathNode extends AbstractNode {
 
         private RequestProcessor.Task task;
 
-        private final RepositoryPathEntry pathEntry;
         private final BrowserClient client;
 
-        public RepositoryPathChildren(BrowserClient client, RepositoryPathEntry pathEntry) {
+        private Node[] previousNodes = null;
+        
+        public RepositoryPathChildren(BrowserClient client) {
             this.client = client;
-            this.pathEntry = pathEntry;
         }
 
+        @Override
         protected void addNotify() {
             super.addNotify();
-            AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2001")); // NOI18N
-            setKeys(Collections.singleton(waitNode));            
-            listRepositoryPath();
         }
-
+        
+        @Override
         protected void removeNotify() {
             task.cancel();
             setKeys(Collections.EMPTY_LIST);
@@ -204,42 +218,95 @@ public class RepositoryPathNode extends AbstractNode {
             RepositoryPathEntry entry = (RepositoryPathEntry) key;                        
             Node node = this.findChild(entry.getRepositoryFile().getName());
             if(node != null) {
-                //return new Node[] {node};
                 return null;
             }
+            
+            // reuse nodes 
+            if(previousNodes != null) {
+                for(Node n : previousNodes) {
+                    if(n instanceof RepositoryPathNode) {
+                        if(((RepositoryPathNode)n).entry.getRepositoryFile().getName().equals(entry.getRepositoryFile().getName())) {
+                            return new Node[] {n};
+                        }
+                    }
+                }
+            }
+            
             Node pathNode = RepositoryPathNode.createRepositoryPathNode(client, entry);
             return new Node[] {pathNode};
         }
 
-        public void listRepositoryPath() {
+        public void listRepositoryPath(final RepositoryPathEntry pathEntry) {
+            
+            previousNodes = getNodes();
+            AbstractNode waitNode = new WaitNode(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "BK2001")); // NOI18N
+            setKeys(Collections.singleton(waitNode));                        
+            
             RequestProcessor rp = Subversion.getInstance().getRequestProcessor(pathEntry.getRepositoryFile().getRepositoryUrl());
             SvnProgressSupport support = new SvnProgressSupport() {
-                public void perform() {
-                    try {
-                        Collection cl = client.listRepositoryPath(pathEntry, this);
+                public void perform() {                    
+                    try {                                                
+                        Collection<RepositoryPathEntry> listedEntries = client.listRepositoryPath(pathEntry, this);
                         if(isCanceled()) {
                             return;
                         }
-                        if(cl == null) {
+
+                        Collection<RepositoryPathEntry> entries = getPreviousNodeEntries();
+                        if(listedEntries == null) {
                             // is not a folder in the repository
-                            setKeys(Collections.EMPTY_LIST);
                             RepositoryPathNode node = (RepositoryPathNode) getNode();
-                            node.setRepositoryFolder(false);
+                            node.setRepositoryFolder(false);                                       
                         } else {
                             if(!isCreativeBrowser(client)) {
-                                removePreselectedFolders(cl);
-                            }                            
-                            setKeys(cl);
+                                removePreselectedFolders(listedEntries);                                
+                            }                               
+                           
+                            // keep nodes which were created in the browser
+                            Collection<RepositoryPathEntry> accepptedEntries = new ArrayList<RepositoryPathEntry>();
+                            for(RepositoryPathEntry listedEntry : listedEntries) {
+                                boolean found = false;
+                                for(RepositoryPathEntry entry : entries) {
+                                    if(entry.getRepositoryFile().getName().equals(listedEntry.getRepositoryFile().getName())) {
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if(!found) {
+                                    accepptedEntries.add(listedEntry);
+                                }
+                            }
+                            entries.addAll(accepptedEntries);        
                         }
+                        setKeys(entries);                            
+                        
                     } catch (SVNClientException ex) {
-                        setKeys(Collections.singleton(errorNode(ex)));
+                        Collection entries = getPreviousNodeEntries();
+                        if(entries.size() > 0) {                            
+                            setKeys(entries);
+                        } else {
+                            setKeys(Collections.singleton(errorNode(ex)));                            
+                        }
                         return;
+                    } finally {
+                        previousNodes = null;
                     }
                 }
             };
             support.start(rp, pathEntry.getRepositoryFile().getRepositoryUrl(), org.openide.util.NbBundle.getMessage(Browser.class, "BK2001")); // NOI18N
         }
 
+        private Collection<RepositoryPathEntry> getPreviousNodeEntries() {
+            List<RepositoryPathEntry> l = new ArrayList<RepositoryPathEntry>();
+            if(previousNodes != null) {
+                for(Node node : previousNodes) {
+                    if(node instanceof RepositoryPathNode) {
+                        l.add( ((RepositoryPathNode)node).entry);    
+                    }                                
+                }
+            }            
+            return l;
+        }
+        
         private String getLastPathSegment(RepositoryPathEntry entry) {            
             String[] childSegments = entry.getRepositoryFile().getPathSegments();
             return childSegments.length > 0 ? childSegments[childSegments.length-1] : null;            
@@ -406,7 +473,7 @@ public class RepositoryPathNode extends AbstractNode {
         RepositoryPathEntry (RepositoryFile file, SVNNodeKind svnNodeKind, SVNRevision revision, Date date, String author) {
             this.svnNodeKind = svnNodeKind;
             this.file = file;
-            this.revision =revision;
+            this.revision = revision;
             this.date = date;
             this.author = author;
         }
@@ -427,13 +494,40 @@ public class RepositoryPathNode extends AbstractNode {
         }                       
     }        
 
-    private static class BrowserPathNode extends RepositoryPathNode {
-        public BrowserPathNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
+    /**
+     * Created in the Browser. Never lists it's children from the repository as they don't exist
+     */ 
+    private static class NewBrowserNode extends RepositoryPathNode {
+        public NewBrowserNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
             super(client, entry, repositoryFolder);
         }       
         @Override
         void expand() {
-            // do nothing
+             // do nothing
+        }
+    }
+
+    /**
+     * Lists it's children from the repository after the second expand in the browser
+     */ 
+    private static class DelayedExpandNode extends RepositoryPathNode {
+        private final int IGNORE_EXPANDS = 1;
+        private int expanded = 0;    
+        public DelayedExpandNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
+            super(client, entry, repositoryFolder);            
+        }       
+        @Override
+        void expand() {
+            try {
+                if(expanded < IGNORE_EXPANDS) {
+                    return; 
+                }
+                super.expand();
+            } finally {
+                if(expanded <= IGNORE_EXPANDS) {
+                    ++expanded;
+                }
+            }        
         }
     }
     

@@ -30,7 +30,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeWillExpandListener;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.ExpandVetoException;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
@@ -54,7 +54,7 @@ import org.tigris.subversion.svnclientadapter.SVNNodeKind;
  *
  * @author Tomas Stupka
  */
-public class Browser implements VetoableChangeListener, BrowserClient, TreeWillExpandListener {        
+public class Browser implements VetoableChangeListener, BrowserClient, TreeExpansionListener {        
     
     public final static int BROWSER_SHOW_FILES                  = 1;
     public final static int BROWSER_SINGLE_SELECTION_ONLY       = 2;
@@ -98,7 +98,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeWillE
                                  (mode & BROWSER_SINGLE_SELECTION_ONLY) == BROWSER_SINGLE_SELECTION_ONLY);
         
         panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryPathNode.class, "CTL_Browser_Prompt"));    // NOI18N
-        panel.addTreeWillExpandListener(this);
+        panel.addTreeExpansionListener(this);
         getExplorerManager().addVetoableChangeListener(this);                        
                 
         if(nodeActions!=null) {
@@ -112,7 +112,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeWillE
         }        
         this.repositoryRoot = repositoryRoot;
         
-        RepositoryPathNode rootNode = RepositoryPathNode.createRepositoryPathNode(this, repositoryRoot);                        
+        RepositoryPathNode rootNode = RepositoryPathNode.createRepositoryRootNode(this, repositoryRoot);                        
         rootNode.expand();
         
         Node[] selectedNodes = getSelectedNodes(rootNode, repositoryRoot, select);   
@@ -129,6 +129,8 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeWillE
             }   
             if(selectedNodes.length > 0) {
                 ((RepositoryPathNode) selectedNodes[selectedNodes.length - 1]).expand();
+            } else {
+                rootNode.expand();        
             }
         } catch (PropertyVetoException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -193,8 +195,10 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeWillE
             segmentParentNode = rootNode;
             RepositoryFile segmentFile = repositoryRoot;
             for (int j = 0; j < segments.length; j++) {
-                segmentFile = segmentFile.appendPath(segments[j]);                                                
-                RepositoryPathNode segmentNode = RepositoryPathNode.createRepositoryPathNode(this, segmentFile);    
+                segmentFile = segmentFile.appendPath(segments[j]);                                                                
+                RepositoryPathNode segmentNode = j == segments.length - 1 ?  
+                    RepositoryPathNode.createRepositoryPathNode(this, segmentFile) : 
+                    RepositoryPathNode.createPreselectedPathNode(this, segmentFile);    
                 segmentParentNode.getChildren().add(new Node[] {segmentNode});                
                 segmentParentNode = segmentNode;
             }   
@@ -231,30 +235,29 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeWillE
         }
     }
             
-    public List listRepositoryPath(final RepositoryPathNode.RepositoryPathEntry entry, SvnProgressSupport support) throws SVNClientException {
+    public List<RepositoryPathNode.RepositoryPathEntry> listRepositoryPath(final RepositoryPathNode.RepositoryPathEntry entry, SvnProgressSupport support) throws SVNClientException {
 
+        List<RepositoryPathNode.RepositoryPathEntry> ret = new ArrayList<RepositoryPathNode.RepositoryPathEntry>();
+        
         synchronized (supportList) {
             if(cancelled) {
                 support.cancel();
-                return Collections.EMPTY_LIST;
+                return ret;
             }            
             supportList.add(support);                                
         }        
         
-        List<RepositoryPathNode.RepositoryPathEntry> ret;
         try {            
             
             if(entry.getSvnNodeKind().equals(SVNNodeKind.FILE)) {
-                return Collections.EMPTY_LIST; // nothing to do...
+                return ret; // nothing to do...
             }
 
             SvnClient client = Subversion.getInstance().getClient(this.repositoryRoot.getRepositoryUrl(), support);
             if(support.isCanceled()) {
                 return null;
             }
-
-            ret = new ArrayList<RepositoryPathNode.RepositoryPathEntry>();
-
+            
             ISVNDirEntry[] dirEntries = client.getList(
                                             entry.getRepositoryFile().getFileUrl(),
                                             entry.getRepositoryFile().getRevision(),
@@ -262,7 +265,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeWillE
                                         );             
 
             if(dirEntries == null || dirEntries.length == 0) {
-                return Collections.EMPTY_LIST; // nothing to do...
+                return ret; // nothing to do...
             }
                         
             for (int i = 0; i < dirEntries.length; i++) {
@@ -446,7 +449,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeWillE
         getExplorerManager().setSelectedNodes(selection);
     }
 
-    public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {        
+    public void treeExpanded(TreeExpansionEvent event) {
         Object obj = event.getPath().getLastPathComponent();                                
         if(obj == null) return;
         Node n = Visualizer.findNode(obj);
@@ -456,7 +459,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeWillE
         }
     }
 
-    public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+    public void treeCollapsed(TreeExpansionEvent event) {
         // do nothing
     }
 

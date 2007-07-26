@@ -33,6 +33,7 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -149,12 +150,12 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         return manager;
     }
     
-    void addTreeWillExpandListener(TreeWillExpandListener l) {
-        treeView.getTree().addTreeWillExpandListener(l);
+    void addTreeExpansionListener(TreeExpansionListener l) {
+        treeView.getTree().addTreeExpansionListener(l);
     }
     
-    void removeTreeWillExpandListener(TreeWillExpandListener l) {
-        treeView.getTree().removeTreeWillExpandListener(l);
+    void removeTreeExpansionListener(TreeExpansionListener l) {
+        treeView.getTree().removeTreeExpansionListener(l);
     }
     
     private class BrowserTreeTableView extends TreeTableView {        

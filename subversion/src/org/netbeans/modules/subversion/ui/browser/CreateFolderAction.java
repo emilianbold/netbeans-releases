@@ -144,7 +144,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                     
                     RepositoryFile newFile = parentFile.appendPath(segments[i]);
                     RepositoryPathEntry entry = new RepositoryPathEntry(newFile, SVNNodeKind.DIR, new SVNRevision(0), new Date(System.currentTimeMillis()), ""); // XXX gget author
-                    Node node = RepositoryPathNode.createBrowserPathNode(getBrowser(), entry);    
+                    Node node = RepositoryPathNode.createNewBrowserNode(getBrowser(), entry);    
                     Node[] newChild = new Node[] {node};
                     segmentNode.getChildren().add(newChild);    
                     segmentNode = node;
