@@ -14,7 +14,9 @@
     </Property>
   </AccessibilityProperties>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -31,7 +33,7 @@
                       <EmptySpace min="17" pref="17" max="17" attributes="0"/>
                       <Component id="lblNewPLTypeName1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="myWsdlWrapperName" pref="338" max="32767" attributes="0"/>
+                      <Component id="myWsdlWrapperName" pref="366" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="myBrowseButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -46,8 +48,8 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" attributes="0">
-                                  <Component id="fldPartnerLinkName" pref="465" max="32767" attributes="0"/>
-                                  <Component id="cbxWsdlFile" alignment="0" pref="465" max="32767" attributes="0"/>
+                                  <Component id="fldPartnerLinkName" pref="480" max="32767" attributes="0"/>
+                                  <Component id="cbxWsdlFile" alignment="0" pref="480" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
@@ -59,13 +61,13 @@
                               </Group>
                               <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbxPartnerLinkType" alignment="1" pref="411" max="32767" attributes="0"/>
+                                  <Component id="cbxPartnerLinkType" alignment="1" pref="430" max="32767" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="btnSwapRoles" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace pref="300" max="32767" attributes="0"/>
+                                      <EmptySpace pref="335" max="32767" attributes="0"/>
                                   </Group>
-                                  <Component id="fldMyRole" alignment="1" pref="411" max="32767" attributes="0"/>
-                                  <Component id="fldPartnerRole" alignment="1" pref="411" max="32767" attributes="0"/>
+                                  <Component id="fldMyRole" alignment="1" pref="430" max="32767" attributes="0"/>
+                                  <Component id="fldPartnerRole" alignment="1" pref="430" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -84,8 +86,8 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbxProcessPortType" alignment="0" pref="427" max="32767" attributes="0"/>
-                                  <Component id="fldProcessRoleName" alignment="0" pref="427" max="32767" attributes="0"/>
+                                  <Component id="cbxProcessPortType" alignment="0" pref="442" max="32767" attributes="0"/>
+                                  <Component id="fldProcessRoleName" alignment="0" pref="442" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Component id="chbxPartnerWillImpement" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -97,14 +99,14 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbxPartnerPortType" alignment="0" pref="427" max="32767" attributes="0"/>
-                                  <Component id="fldPartnerRoleName" alignment="0" pref="427" max="32767" attributes="0"/>
+                                  <Component id="cbxPartnerPortType" alignment="0" pref="442" max="32767" attributes="0"/>
+                                  <Component id="fldPartnerRoleName" alignment="0" pref="442" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="lblNewPLTypeName" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="fldNewPLTName" pref="369" max="32767" attributes="0"/>
+                              <Component id="fldNewPLTName" pref="396" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>

@@ -161,6 +161,37 @@ public final class ResolverUtility {
     }
     
     /**
+     * Returns projectSource related to the given bpelModel which is in lookup
+     * Could return null
+     */ 
+    public static FileObject getProjectSource(Lookup lookup) {
+        BpelModel bpelModel = lookup.lookup(BpelModel.class);
+        if (bpelModel == null) {
+            return null;
+        }
+        Sources sources = getProjectSources(bpelModel);
+        FileObject bpelFo = Util.getFileObjectByModel(bpelModel);
+        if (bpelFo == null) {
+            return null;
+        }
+        String bpelFoPath = bpelFo.getPath();
+        
+        if (sources != null) {
+            SourceGroup[] sourceGroupArr = sources.getSourceGroups(
+                    ProjectConstants.SOURCES_TYPE_BPELPRO);
+            //
+            for (SourceGroup srcGroup : sourceGroupArr) {
+                String srcFolderName = srcGroup.getRootFolder().getPath();
+                //
+                if (bpelFoPath.startsWith(srcFolderName)) {
+                    return srcGroup.getRootFolder();
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
      * This methos calculate the relative path from project source root folder to the
      * specified target file object.
      */

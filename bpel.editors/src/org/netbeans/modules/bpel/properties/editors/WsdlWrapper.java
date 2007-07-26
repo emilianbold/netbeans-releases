@@ -38,8 +38,15 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
  */
 final class WsdlWrapper {
 
+  /**
+   * 
+   * @param folder is projectSource Root
+   * @param name is relative path from project source 
+   * @param isCreate said is it required to create related wsdl with all path if needed
+   * 
+   */ 
   WsdlWrapper(FileObject folder, String name, boolean isCreate) {
-    myFolder = prepareFolder(folder, name);
+    myFolder = prepareFolder(folder, name, isCreate);
     myName = prepareName(name);
     myIsCreate = isCreate;
   }
@@ -101,7 +108,11 @@ final class WsdlWrapper {
     return null;
   }
 
-  private FileObject prepareFolder(FileObject folder, String name) {
+  private FileObject prepareFolder(FileObject folder, String name, boolean isCreate) {
+    if (folder == null) {
+        return null;
+    }
+    
     int k1 = name.lastIndexOf("/"); // NOI18N
     int k2 = name.lastIndexOf("\\"); // NOI18N
     int k = Math.max(k1, k2);
@@ -119,8 +130,7 @@ final class WsdlWrapper {
 
       if (child != null) {
         folder = child;
-      }
-      else {
+      } else if (isCreate) {
         try {
           folder = folder.createFolder(token);
         }

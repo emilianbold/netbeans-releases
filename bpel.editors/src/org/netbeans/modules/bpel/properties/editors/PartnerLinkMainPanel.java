@@ -80,6 +80,7 @@ import org.netbeans.modules.bpel.properties.importchooser.WSDLFileImportDialog;
 import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author nk160297
@@ -598,10 +599,12 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     private WSDLModel getCurrentWsdlModel(boolean isWsdlWrapperSet, boolean isCreate) {
         FileObject currentFile = getCurrentWsdlFile();
         WSDLModel currentModel = getWsdlModel(currentFile);
-        WsdlWrapper wsdlWrapper =
-                new WsdlWrapper(getSource().getParent(), myWsdlWrapperName.getText(), isCreate);
         
         if (isWsdlWrapperSet) {
+            WsdlWrapper wsdlWrapper =
+                    new WsdlWrapper(/*getSource().getParent()*/
+                        ResolverUtility.getProjectSource(myEditor.getLookup()), 
+                        myWsdlWrapperName.getText(), isCreate);
             WSDLModel wrapperModel = wsdlWrapper.getModel();
             
             if (wrapperModel == null) {
@@ -845,7 +848,10 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
                 public boolean doFastValidation() {
                     // vlv
                     WsdlWrapper wrapper =
-                       new WsdlWrapper(getSource().getParent(), myWsdlWrapperName.getText(), false);
+                       new WsdlWrapper(/*getSource().getParent()*/
+                        ResolverUtility.getProjectSource(myEditor.getLookup()), 
+                        myWsdlWrapperName.getText(), false);
+                       
                     FileObject file = wrapper.getFile();
 
                     if (file != null && !file.canWrite()) {
@@ -1331,7 +1337,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
             myWsdlWrapperName.setText(getRelativeName(file) + "Wrapper"); // NOI18N
         }
     }
-    
+
     // vlv
     private String getRelativeName(FileObject file) {
         String name = ResolverUtility.calculateRelativePathName(file, myEditor.getLookup());
