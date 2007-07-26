@@ -71,7 +71,9 @@ public class WsdlSupport {
         mWsdlUrl = "file:" + FileUtil.toFile(wsdlFile).getPath();
         
         try {
-            ModelSource wsdlModelSource = Utilities.createModelSource(wsdlFile, false);                
+            // Although we are not modifying the WSDL, we still create an
+            // editable ModelSource. See #111034.
+            ModelSource wsdlModelSource = Utilities.createModelSource(wsdlFile, true);                      
             mWsdlModel = WSDLModelFactory.getDefault().getModel(wsdlModelSource);
         
             mSchemaTypeLoader = loadSchemaTypes(mWsdlUrl);
