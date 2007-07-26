@@ -33,9 +33,11 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.modules.versioning.Utils;
 import org.openide.ErrorManager;
+import org.openide.nodes.CookieSet;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.MultiDataObject;
 import org.openide.filesystems.*;
 import org.openide.awt.UndoRedo;
 import org.openide.windows.TopComponent;
@@ -738,8 +740,21 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         try {
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
             DataObject dao = DataObject.find(fo);
-            EditorCookie ec = dao.getCookie(EditorCookie.class);
-            Document doc = ec.openDocument();
+            Document doc = null;            
+            if (dao instanceof MultiDataObject) {
+                MultiDataObject mdao = (MultiDataObject) dao;
+                for (MultiDataObject.Entry entry : mdao.secondaryEntries()) {
+                    if (fo.equals(entry.getFile()) && entry instanceof CookieSet.Factory) {
+                        CookieSet.Factory factory = (CookieSet.Factory) entry;
+                        EditorCookie ec = factory.createCookie(EditorCookie.class);
+                        doc = ec.openDocument();
+                    }
+                }
+            }
+            if (doc == null) {
+                EditorCookie ec = dao.getCookie(EditorCookie.class);
+                doc = ec.openDocument();
+            }
             return new StringReader(doc.getText(0, doc.getLength()));
         } catch (Exception e) {
             // something's wrong, read the file from disk

@@ -22,9 +22,12 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.versioning.VersioningConfig;
 import org.netbeans.modules.versioning.Utils;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.MultiDataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
+import org.openide.cookies.EditorCookie;
+import org.openide.nodes.CookieSet;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
@@ -119,13 +122,8 @@ public class DiffSidebarManager implements PreferenceChangeListener {
                 }
             }
             if (sideBar == null) {
-                File file = null;
                 Document doc = target.getDocument();
-                DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-                if (dobj != null) {
-                    FileObject fo = dobj.getPrimaryFile();
-                    file = FileUtil.toFile(fo);
-                }
+                File file = fileForDocument(doc);
                 if (file == null) return null;
     
                 sideBar = new DiffSidebar(target, file);
@@ -134,6 +132,33 @@ public class DiffSidebarManager implements PreferenceChangeListener {
             }
             return sideBar;
         }
+    }
+
+    private File fileForDocument(Document doc) {
+        DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        if (dobj == null) return null;
+        if (dobj instanceof MultiDataObject) {
+            return fileForDataobject(doc, (MultiDataObject) dobj);
+        } else if (dobj != null) {
+            FileObject fo = dobj.getPrimaryFile();
+            return FileUtil.toFile(fo);
+        } else {
+            return null;
+        }
+    }
+
+    private File fileForDataobject(Document doc, MultiDataObject dobj) {
+        for (MultiDataObject.Entry entry : dobj.secondaryEntries()) {
+            if (entry instanceof CookieSet.Factory) {
+                CookieSet.Factory factory = (CookieSet.Factory) entry;
+                EditorCookie ec = factory.createCookie(EditorCookie.class);
+                Document entryDocument = ec.getDocument();
+                if (entryDocument == doc) {
+                    return FileUtil.toFile(entry.getFile());
+                }
+            }
+        }
+        return FileUtil.toFile(dobj.getPrimaryFile());
     }
 
     private void setSidebarEnabled(boolean enable) {
