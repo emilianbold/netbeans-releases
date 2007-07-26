@@ -71,7 +71,7 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
 
         setLayout(new java.awt.GridBagLayout());
 
-        panelDescLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.panelDescLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(panelDescLabel, org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.panelDescLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -80,40 +80,55 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         add(panelDescLabel, gridBagConstraints);
+        panelDescLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_CommonAppProps_Label")); // NOI18N
+        panelDescLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_CommonAppProps_Label")); // NOI18N
 
-        titleLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.titleLabel.text")); // NOI18N
+        titleLabel.setLabelFor(titleTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(titleLabel, org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.titleLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(9, 0, 0, 0);
         add(titleLabel, gridBagConstraints);
+        titleLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_Title_Label")); // NOI18N
+        titleLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_Title_Label")); // NOI18N
 
-        vendorLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.vendorLabel.text")); // NOI18N
+        vendorLabel.setLabelFor(vendorTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(vendorLabel, org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.vendorLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(7, 0, 0, 0);
         add(vendorLabel, gridBagConstraints);
+        vendorLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_Vendor_Label")); // NOI18N
+        vendorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_Vendor_Label")); // NOI18N
 
-        descLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.descLabel.text")); // NOI18N
+        descLabel.setLabelFor(descTextArea);
+        org.openide.awt.Mnemonics.setLocalizedText(descLabel, org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.descLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(7, 0, 0, 0);
         add(descLabel, gridBagConstraints);
+        descLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_Description_Label")); // NOI18N
+        descLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_Description_Label")); // NOI18N
 
-        homepageLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.homepageLabel.text")); // NOI18N
+        homepageLabel.setLabelFor(homepageTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(homepageLabel, org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.homepageLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(homepageLabel, gridBagConstraints);
+        homepageLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_Homepage_Label")); // NOI18N
+        homepageLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_Homepage_Label")); // NOI18N
 
-        splashLabel.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.splashLabel.text")); // NOI18N
+        splashLabel.setLabelFor(splashTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(splashLabel, org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.splashLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -122,6 +137,8 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(splashLabel, gridBagConstraints);
+        splashLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_SplashScreen_Label")); // NOI18N
+        splashLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_SplashScreen_Label")); // NOI18N
 
         titleTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.titleTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -132,6 +149,8 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(titleTextField, gridBagConstraints);
+        titleTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_Title_TextField")); // NOI18N
+        titleTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_Title_TextField")); // NOI18N
 
         vendorTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.vendorTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -142,6 +161,8 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
         add(vendorTextField, gridBagConstraints);
+        vendorTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_Vendor_TextField")); // NOI18N
+        vendorTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_Vendor_TextField")); // NOI18N
 
         homepageTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.homepageTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -152,6 +173,8 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
         add(homepageTextField, gridBagConstraints);
+        homepageTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_Homepage_TextField")); // NOI18N
+        homepageTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_Homepage_TextField")); // NOI18N
 
         splashTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.splashTextField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -164,8 +187,10 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
         add(splashTextField, gridBagConstraints);
+        splashTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_SplashScreen_TextField")); // NOI18N
+        splashTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_SplashScreen_TextField")); // NOI18N
 
-        browseButton.setText(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "CustomizerApplication.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
@@ -180,16 +205,21 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 6, 0, 0);
         add(browseButton, gridBagConstraints);
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_Browse_Button")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_Browse_Button")); // NOI18N
 
         descTextArea.setColumns(20);
         descTextArea.setRows(4);
         jScrollPane1.setViewportView(descTextArea);
+        descTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSN_Description_TextArea")); // NOI18N
+        descTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerApplication.class, "ACSD_Description_TextArea")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jScrollPane1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
