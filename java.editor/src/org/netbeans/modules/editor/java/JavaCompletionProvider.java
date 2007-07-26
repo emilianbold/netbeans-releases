@@ -3674,20 +3674,20 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
 
         private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
+            controller.toPhase(Phase.PARSED);
             int offset = controller.getPositionConverter().getJavaSourcePosition(caretOffset);
             String prefix = null;
             if (upToOffset && offset > 0) {
                 TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                if (ts.move(offset) == 0) // When right at the token end
-                    ts.movePrevious(); // Move to previous token
-                else
-                    ts.moveNext(); // otherwise move to the token that "contains" the offset
-                if (ts.offset() < offset && (ts.token().id() == JavaTokenId.IDENTIFIER || ts.token().id().primaryCategory().startsWith("keyword"))) { //TODO: Use isKeyword(...) when available
-                    prefix = ts.token().toString().substring(0, offset - ts.offset());
+                 // When right at the token end move to previous token; otherwise move to the token that "contains" the offset
+                if (ts.move(offset) == 0 || !ts.moveNext())
+                    ts.movePrevious();
+                int len = offset - ts.offset();
+                if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER || ts.token().id().primaryCategory().startsWith("keyword")) && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
+                    prefix = ts.token().toString().substring(0, len);
                     offset = ts.offset();
                 }
             }
-            controller.toPhase(Phase.PARSED);
             TreePath path = controller.getTreeUtilities().pathFor(offset);
             if (upToOffset) {
                 TreePath treePath = path;
