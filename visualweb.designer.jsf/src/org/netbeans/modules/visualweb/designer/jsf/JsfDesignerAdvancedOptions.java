@@ -93,7 +93,7 @@ public class JsfDesignerAdvancedOptions extends AdvancedOption {
         }
 
         public HelpCtx getHelpCtx() {
-            return HelpCtx.DEFAULT_HELP;
+            return HelpCtx.findHelp("projrave_ui_elements_options_visual_editor"); // NOI18N
         }
 
         public void cancel() {
