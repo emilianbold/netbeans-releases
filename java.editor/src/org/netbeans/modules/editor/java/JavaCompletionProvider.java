@@ -328,7 +328,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                 resolveToolTip(controller);
             else if (queryType == DOCUMENTATION_QUERY_TYPE)
                 resolveDocumentation(controller);
-            component.putClientProperty("completion-active", Boolean.TRUE); //NOI18N
+            if (component != null)
+                component.putClientProperty("completion-active", Boolean.TRUE); //NOI18N
         }
         
         
