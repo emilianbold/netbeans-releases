@@ -23,6 +23,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import javax.lang.model.element.*;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.WorkingCopy;
 
 /**
@@ -52,13 +53,13 @@ public class FindUsagesVisitor extends FindVisitor {
         Trees trees = workingCopy.getTrees();
         ClassTree classTree = ((NewClassTree) node).getClassBody();
         if (classTree != null && p.getKind()==ElementKind.CONSTRUCTOR) {
-            for (Tree t : classTree.getMembers()) {
-                if (t.getKind() == Tree.Kind.METHOD) {
-                    TreePath superCall = trees.getPath(workingCopy.getCompilationUnit(), ((ExpressionStatementTree) ((MethodTree) t).getBody().getStatements().get(0)).getExpression());
-                    Element superCallElement = trees.getElement(superCall);
-                    if (superCallElement != null && superCallElement.equals(p)) {
-                        addUsage(superCall);
-                    }
+            Element anonClass = workingCopy.getTrees().getElement(TreePath.getPath(workingCopy.getCompilationUnit(), classTree));
+            for (ExecutableElement c: ElementFilter.constructorsIn(anonClass.getEnclosedElements())) {
+                MethodTree t = workingCopy.getTrees().getTree(c);
+                TreePath superCall = trees.getPath(workingCopy.getCompilationUnit(), ((ExpressionStatementTree) t.getBody().getStatements().get(0)).getExpression());
+                Element superCallElement = trees.getElement(superCall);
+                if (superCallElement != null && superCallElement.equals(p)) {
+                    addUsage(superCall);
                 }
             }
         } else {
