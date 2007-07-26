@@ -698,7 +698,6 @@ public class BindingCustomizer extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(updateWhenLabel, org.openide.util.NbBundle.getMessage(BindingCustomizer.class, "MSG_BindingCustomizer_UpdateWhen")); // NOI18N
 
         nullValuePanel.setEnabled(false);
-        nullValuePanel.setPreferences(PropertyPanel.PREF_TABLEUI);
 
         org.jdesktop.layout.GroupLayout nullValuePanelLayout = new org.jdesktop.layout.GroupLayout(nullValuePanel);
         nullValuePanel.setLayout(nullValuePanelLayout);
@@ -712,7 +711,6 @@ public class BindingCustomizer extends JPanel {
         );
 
         incompletePathValuePanel.setEnabled(false);
-        incompletePathValuePanel.setPreferences(PropertyPanel.PREF_TABLEUI);
 
         org.jdesktop.layout.GroupLayout incompletePathValuePanelLayout = new org.jdesktop.layout.GroupLayout(incompletePathValuePanel);
         incompletePathValuePanel.setLayout(incompletePathValuePanelLayout);
@@ -750,13 +748,12 @@ public class BindingCustomizer extends JPanel {
         if (false) {
             converterPanel.setEnabled(false);
         }
-        converterPanel.setPreferences(PropertyPanel.PREF_TABLEUI);
 
         org.jdesktop.layout.GroupLayout converterPanelLayout = new org.jdesktop.layout.GroupLayout(converterPanel);
         converterPanel.setLayout(converterPanelLayout);
         converterPanelLayout.setHorizontalGroup(
             converterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 395, Short.MAX_VALUE)
+            .add(0, 378, Short.MAX_VALUE)
         );
         converterPanelLayout.setVerticalGroup(
             converterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -766,13 +763,12 @@ public class BindingCustomizer extends JPanel {
         if (false) {
             validatorPanel.setEnabled(false);
         }
-        validatorPanel.setPreferences(PropertyPanel.PREF_TABLEUI);
 
         org.jdesktop.layout.GroupLayout validatorPanelLayout = new org.jdesktop.layout.GroupLayout(validatorPanel);
         validatorPanel.setLayout(validatorPanelLayout);
         validatorPanelLayout.setHorizontalGroup(
             validatorPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 395, Short.MAX_VALUE)
+            .add(0, 378, Short.MAX_VALUE)
         );
         validatorPanelLayout.setVerticalGroup(
             validatorPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -795,13 +791,12 @@ public class BindingCustomizer extends JPanel {
         if (false) {
             namePanel.setEnabled(false);
         }
-        namePanel.setPreferences(PropertyPanel.PREF_TABLEUI);
 
         org.jdesktop.layout.GroupLayout namePanelLayout = new org.jdesktop.layout.GroupLayout(namePanel);
         namePanel.setLayout(namePanelLayout);
         namePanelLayout.setHorizontalGroup(
             namePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 395, Short.MAX_VALUE)
+            .add(0, 378, Short.MAX_VALUE)
         );
         namePanelLayout.setVerticalGroup(
             namePanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -813,73 +808,59 @@ public class BindingCustomizer extends JPanel {
         advancedPanelLayout.setHorizontalGroup(
             advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
                 .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(converterLabel)
-                    .add(validatorLabel)
-                    .add(nameLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(converterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(validatorPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(converterLabel)
+                            .add(validatorLabel)
+                            .add(nameLabel)
+                            .add(updateModeLabel)
+                            .add(updateWhenLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(namePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(updateModeCombo, 0, 378, Short.MAX_VALUE)
+                            .add(updateWhenCombo, 0, 378, Short.MAX_VALUE)
+                            .add(converterPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(validatorPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(validationLabel))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(validatorMessage))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(converterMessage))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(conversionLabel))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(displayValuesLabel))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(nullValueCheckBox)
+                            .add(incompletePathValueCheckBox))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(incompletePathValuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(nullValuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .add(10, 10, 10)
+                        .add(updatePropertiesLabel))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(specialValuesLabel))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(updateLabel))
+                    .add(advancedPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(identificationLabel)))
                 .addContainerGap())
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(identificationLabel)
-                .addContainerGap(386, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(updateLabel)
-                .addContainerGap(234, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(specialValuesLabel)
-                .addContainerGap(368, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(updateModeLabel)
-                    .add(updateWhenLabel))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(updateWhenCombo, 0, 378, Short.MAX_VALUE)
-                    .add(updateModeCombo, 0, 378, Short.MAX_VALUE))
-                .add(10, 10, 10))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .add(10, 10, 10)
-                .add(updatePropertiesLabel)
-                .addContainerGap(359, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(nullValueCheckBox)
-                    .add(incompletePathValueCheckBox))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(incompletePathValuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(nullValuePanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(displayValuesLabel)
-                .addContainerGap(155, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(conversionLabel)
-                .addContainerGap(368, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(converterMessage)
-                .addContainerGap(266, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(validatorMessage)
-                .addContainerGap(349, Short.MAX_VALUE))
-            .add(advancedPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .add(validationLabel)
-                .addContainerGap(406, Short.MAX_VALUE))
         );
         advancedPanelLayout.setVerticalGroup(
             advancedPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)

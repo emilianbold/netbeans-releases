@@ -488,9 +488,6 @@
             <Container class="org.openide.explorer.propertysheet.PropertyPanel" name="columnTitlePanel">
               <Properties>
                 <Property name="enabled" type="boolean" value="false"/>
-                <Property name="preferences" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="PropertyPanel.PREF_TABLEUI" type="code"/>
-                </Property>
               </Properties>
 
               <Layout>
@@ -517,9 +514,6 @@
             <Container class="org.openide.explorer.propertysheet.PropertyPanel" name="columnEditorPanel">
               <Properties>
                 <Property name="enabled" type="boolean" value="false"/>
-                <Property name="preferences" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="PropertyPanel.PREF_TABLEUI" type="code"/>
-                </Property>
               </Properties>
 
               <Layout>
@@ -538,9 +532,6 @@
             <Container class="org.openide.explorer.propertysheet.PropertyPanel" name="columnRendererPanel">
               <Properties>
                 <Property name="enabled" type="boolean" value="false"/>
-                <Property name="preferences" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="PropertyPanel.PREF_TABLEUI" type="code"/>
-                </Property>
               </Properties>
 
               <Layout>

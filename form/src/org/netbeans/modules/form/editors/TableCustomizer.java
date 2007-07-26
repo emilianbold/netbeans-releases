@@ -353,7 +353,6 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         columnRendererLabel.setText(org.openide.util.NbBundle.getMessage(TableCustomizer.class, "LBL_TableCustomizer_Column_Renderer")); // NOI18N
 
         columnTitlePanel.setEnabled(false);
-        columnTitlePanel.setPreferences(PropertyPanel.PREF_TABLEUI);
 
         org.jdesktop.layout.GroupLayout columnTitlePanelLayout = new org.jdesktop.layout.GroupLayout(columnTitlePanel);
         columnTitlePanel.setLayout(columnTitlePanelLayout);
@@ -370,7 +369,6 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         columnTypeCombo.addActionListener(formListener);
 
         columnEditorPanel.setEnabled(false);
-        columnEditorPanel.setPreferences(PropertyPanel.PREF_TABLEUI);
 
         org.jdesktop.layout.GroupLayout columnEditorPanelLayout = new org.jdesktop.layout.GroupLayout(columnEditorPanel);
         columnEditorPanel.setLayout(columnEditorPanelLayout);
@@ -384,7 +382,6 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         );
 
         columnRendererPanel.setEnabled(false);
-        columnRendererPanel.setPreferences(PropertyPanel.PREF_TABLEUI);
 
         org.jdesktop.layout.GroupLayout columnRendererPanelLayout = new org.jdesktop.layout.GroupLayout(columnRendererPanel);
         columnRendererPanel.setLayout(columnRendererPanelLayout);
