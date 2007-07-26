@@ -1162,12 +1162,15 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private Map<String,String> columnToType;
     
     // Updates also displayExpressionCombo
+    private TypeHelper lastElemType;
     private void updateColumnSelector() {
         boolean showDisplayExpression = showDisplayExpression();
         if (!showDisplayExpression && (columnSelector == null)) return;
         TypeHelper type = getSelectedType();
         if ((type != null) && Collection.class.isAssignableFrom(FormUtils.typeToClass(type))) {
             TypeHelper elemType = BindingDesignSupport.typeOfElement(type);
+            if ((elemType != null) && elemType.equals(lastElemType)) return;
+            lastElemType = elemType;
             if (columnSelector != null) {
                 List<BindingDescriptor> descriptors = designSupport.getAllBindingDescriptors(elemType);
                 columnSelector.setVisible(descriptors.size() > 0);
@@ -1187,6 +1190,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             }
             displayExpressionModel.setRoot(new ExpressionNode(elemType));
         } else {
+            lastElemType = null;
             if (columnSelector != null) {
                 columnSelector.setVisible(false);
             } else {

@@ -1336,6 +1336,25 @@ public class FormUtils
             }
             return t;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof TypeHelper) {
+                TypeHelper t = (TypeHelper)o;
+                return ((name == null) ? (t.name == null) : t.name.equals(name))
+                        && ((type == null) ? (t.type == null) : t.type.equals(type));
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 67 * hash + (this.type != null ? this.type.hashCode() : 0);
+            hash = 67 * hash + (this.name != null ? this.name.hashCode() : 0);
+            return hash;
+        }
     }
 
     public static String autobox(String className) {
