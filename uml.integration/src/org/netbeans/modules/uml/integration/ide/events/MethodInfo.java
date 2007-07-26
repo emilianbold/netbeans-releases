@@ -632,6 +632,10 @@ public class MethodInfo extends ConstructorInfo
 		     && getContainingClass().isInterface())); 
     }
 
+    public boolean isNative() {
+	return Modifier.isNative(getModifiers()); 
+    }
+
 
     public ArrayList<MethodParameterInfo> getParameterInfos() 
     {

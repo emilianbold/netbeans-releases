@@ -218,9 +218,9 @@ ${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getName()!}
 <@MethodDeclarationComment methodInfo nestingLevel />
 <@ident nestingLevel /><@compress single_line=true><@compress single_line=true>
 ${classInfo.getModifierText(methodInfo.getModifiers())} ${methodInfo.getCodeGenReturnType()!} ${methodInfo.getName()!} <@MethodDeclarationFormalParameters methodInfo /> <@MethodDeclarationThrows methodInfo /> 
-</@compress><#if methodInfo.isAbstract() >;</#if>
+</@compress><#if (methodInfo.isAbstract() || methodInfo.isNative() ) >;</#if>
 </@compress> 
-<#if ! methodInfo.isAbstract() >
+<#if ! ( methodInfo.isAbstract() || methodInfo.isNative() ) >
 <@MethodDeclarationBody methodInfo nestingLevel />
 </#if>
 </#macro>
