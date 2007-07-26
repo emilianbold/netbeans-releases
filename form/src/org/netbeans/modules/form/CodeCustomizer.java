@@ -24,10 +24,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.editor.guards.SimpleSection;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -54,7 +56,7 @@ public class CodeCustomizer implements CustomCodeView.Listener {
 
     private CodeCustomizer(FormModel formModel) {
         this.formModel = formModel;
-        codeView = new CustomCodeView(this, FormEditor.getFormDataObject(formModel));
+        codeView = new CustomCodeView(this);
         setupComponentNames();
     }
 
@@ -97,7 +99,23 @@ public class CodeCustomizer implements CustomCodeView.Listener {
             codeData = JavaCodeGenerator.getCodeData(metacomp);
             codeData.check();
         }
-        codeView.setCodeData(customizedComponent.getName(), codeData);
+        codeView.setCodeData(customizedComponent.getName(), codeData, getSourceFile(), getSourcePositions());
+    }
+
+    private FileObject getSourceFile() {
+        return FormEditor.getFormDataObject(formModel).getPrimaryFile();
+    }
+
+    /**
+     * @return array of 2 ints - positions of the customized code within entire
+     *         source to be used for code completion; the first is the position
+     *         of the init code, the second is position for the field variable
+     *         declaration code
+     */
+    private int[] getSourcePositions() {
+        SimpleSection sec = FormEditor.getFormDataObject(formModel).getFormEditorSupport().getInitComponentSection();
+        return new int[] { sec.getText().indexOf('{') + 2 + sec.getStartPosition().getOffset(),
+                           sec.getEndPosition().getOffset() + 1 };
     }
 
     private void retreiveCurrentData() {
@@ -262,7 +280,7 @@ public class CodeCustomizer implements CustomCodeView.Listener {
             setupComponentNames();
             codeData = JavaCodeGenerator.getCodeData(customizedComponent);
             codeData.check();
-            codeView.setCodeData(customizedComponent.getName(), codeData);
+            codeView.setCodeData(customizedComponent.getName(), codeData, getSourceFile(), getSourcePositions());
         }
     }
 
@@ -279,6 +297,6 @@ public class CodeCustomizer implements CustomCodeView.Listener {
         // restore the original data in the component
         storeComponent(customizedComponent, original, false);
         // set the new data to the view
-        codeView.setCodeData(customizedComponent.getName(), renewed);
+        codeView.setCodeData(customizedComponent.getName(), renewed, getSourceFile(), getSourcePositions());
     }
 }

@@ -43,10 +43,11 @@ import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
+import javax.swing.undo.UndoManager;
+import org.netbeans.editor.BaseDocument;
 
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
@@ -93,13 +94,10 @@ class CustomCodeView extends javax.swing.JPanel {
     private Map<CodeCategory, EditBlockInfo[]> editBlockInfos;
     private Map<CodeCategory, GuardBlockInfo[]> guardBlockInfos;
 
-    private Object documentContext;
-
     // -----
 
-    CustomCodeView(Listener controller, Object documentContext) {
+    CustomCodeView(Listener controller) {
         this.controller = controller;
-        this.documentContext = documentContext;
 
         initComponents();
 
@@ -132,13 +130,10 @@ class CustomCodeView extends javax.swing.JPanel {
         componentCombo.setModel(new DefaultComboBoxModel(compNames));
     }
 
-    void setCodeData(String componentName, CustomCodeData codeData) {
+    void setCodeData(String componentName, CustomCodeData codeData, FileObject srcFile, int[] positions) {
         if (this.codeData != null) { // clean up
             initCodeEditor.getDocument().removeDocumentListener(docListener);
             declareCodeEditor.getDocument().removeDocumentListener(docListener);
-            // reset content type to get new document
-            initCodeEditor.setContentType("text/plain"); // NOI18N
-            declareCodeEditor.setContentType("text/plain"); // NOI18N
 
             initGutter.removeAll();
             declareGutter.removeAll();
@@ -156,20 +151,23 @@ class CustomCodeView extends javax.swing.JPanel {
             guardBlockInfos = new HashMap();
         }
 
-        initCodeEditor.setContentType("text/x-java"); // NOI18N
-        declareCodeEditor.setContentType("text/x-java"); // NOI18N
-
-        // do not highlight current row
-        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(initCodeEditor);
-        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-        eui = org.netbeans.editor.Utilities.getEditorUI(declareCodeEditor);
-        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        FormUtils.setupEditorPane(initCodeEditor, srcFile, positions[0]);
+        FormUtils.setupEditorPane(declareCodeEditor, srcFile, positions[1]);
 
         this.codeData = codeData;
         selectInComboBox(componentCombo, componentName);
 
         buildCodeView(CodeCategory.CREATE_AND_INIT);
         buildCodeView(CodeCategory.DECLARATION);
+
+        Object um = initCodeEditor.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        if (um instanceof UndoManager) {
+            ((UndoManager)um).discardAllEdits();
+        }
+        um = declareCodeEditor.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        if (um instanceof UndoManager) {
+            ((UndoManager)um).discardAllEdits();
+        }
 
         VariableDeclaration decl = codeData.getDeclarationData();
         boolean local = decl.local;
@@ -207,9 +205,6 @@ class CustomCodeView extends javax.swing.JPanel {
             docListener = new DocumentL();
         initCodeEditor.getDocument().addDocumentListener(docListener);
         declareCodeEditor.getDocument().addDocumentListener(docListener);
-
-        initCodeEditor.getDocument().putProperty(Document.StreamDescriptionProperty, documentContext);
-        declareCodeEditor.getDocument().putProperty(Document.StreamDescriptionProperty, documentContext);
 
         initCodeEditor.setCaretPosition(0);
         declareCodeEditor.setCaretPosition(0);
@@ -677,6 +672,7 @@ class CustomCodeView extends javax.swing.JPanel {
                 gutter.revalidate();
                 gutter.repaint();
             }
+            ((BaseDocument)doc).resetUndoMerge();
         }
     }
 

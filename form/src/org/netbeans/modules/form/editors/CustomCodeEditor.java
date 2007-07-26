@@ -20,6 +20,8 @@
 package org.netbeans.modules.form.editors;
 
 
+import javax.swing.undo.UndoManager;
+import org.netbeans.editor.BaseDocument;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
@@ -41,6 +43,10 @@ public class CustomCodeEditor extends javax.swing.JPanel
         }
         catch (Exception ex) { // ignore - should not happen
             ex.printStackTrace();
+        }
+        Object um = editorPane.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        if (um instanceof UndoManager) {
+            ((UndoManager)um).discardAllEdits();
         }
 
         java.util.ResourceBundle bundle =

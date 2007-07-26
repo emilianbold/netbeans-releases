@@ -923,13 +923,9 @@ public class FormEditor {
         codeGen.regenerateCode();
 
         JEditorPane codePane = new JEditorPane();
-        codePane.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-java")); // NOI18N
         SimpleSection sec = dobj.getFormEditorSupport().getInitComponentSection();
         int pos = sec.getText().indexOf('{') + 2 + sec.getStartPosition().getOffset();
-        DialogBinding.bindComponentToFile(dobj.getPrimaryFile(), pos, 0, codePane);
-//        codePane.getDocument().putProperty(Document.StreamDescriptionProperty, dobj);
-        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(codePane);
-        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+        FormUtils.setupEditorPane(codePane, dobj.getPrimaryFile(), pos);
         return codePane;
     }
 

@@ -20,18 +20,29 @@
 package org.netbeans.modules.form;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
 import java.util.List;
+import javax.swing.Action;
+import javax.swing.KeyStroke;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.Keymap;
+import javax.swing.undo.UndoManager;
+import org.netbeans.api.java.source.ui.DialogBinding;
+import org.netbeans.editor.ActionFactory;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtCaret;
 
 import org.openide.ErrorManager;
 import org.openide.util.*;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  * A class that contains utility methods for the formeditor.
@@ -705,6 +716,35 @@ public class FormUtils
             }
         }
         return method;
+    }
+
+    public static void setupEditorPane(javax.swing.JEditorPane editor, FileObject srcFile, int ccPosition) {
+        editor.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-java")); // NOI18N
+        DialogBinding.bindComponentToFile(srcFile, ccPosition, 0, editor);
+
+        // don't use global undo/redo actions, register basic ones
+        KeyStroke[] undoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_UNDO, 0),
+                                                 KeyStroke.getKeyStroke(KeyEvent.VK_Z, 130) };
+        KeyStroke[] redoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_AGAIN, 0),
+                                                 KeyStroke.getKeyStroke(KeyEvent.VK_Y, 130) };
+        Keymap keymap = editor.getKeymap();
+        Action undoAction = new ActionFactory.UndoAction();
+        for (KeyStroke k : undoKeys) {
+            keymap.removeKeyStrokeBinding(k);
+            keymap.addActionForKeyStroke(k, undoAction);
+        }
+        Action redoAction = new ActionFactory.RedoAction();
+        for (KeyStroke k : redoKeys) {
+            keymap.removeKeyStrokeBinding(k);
+            keymap.addActionForKeyStroke(k, redoAction);
+        }
+        UndoManager um = new UndoManager();
+        editor.getDocument().addUndoableEditListener(um);
+        editor.getDocument().putProperty(BaseDocument.UNDO_MANAGER_PROP, um);
+
+        // do not highlight current row
+        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editor);
+        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
     }
 
     // ---------
