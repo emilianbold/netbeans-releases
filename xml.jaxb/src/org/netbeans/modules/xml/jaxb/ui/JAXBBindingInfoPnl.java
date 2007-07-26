@@ -563,6 +563,14 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
                     JAXBWizModuleConstants.LAST_BROWSED_SCHEMA_DIR);
             if (filePath != null){
                 this.txtFilePath.setText(filePath);
+
+                if ((this.prevSchemaPath != null) 
+                        && (this.prevSchemaPath.equals(filePath))){
+                    //Field has not changed, skip guessing 
+                } else {
+                    guessSchemaType(filePath);
+                    this.prevSchemaPath = filePath;
+                }                        
             }
         }
 
@@ -764,6 +772,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         this.txtURL.setText(url);
         this.rdoSelectURL.setSelected(true);
         this.prevSchemaURL = url;
+        localFileSelected(false);
     }
 
     public void setPackageName(String pkgName){
