@@ -152,8 +152,6 @@ public class DerbySystemHomePanel extends javax.swing.JPanel {
             if (!Util.isDerbyInstallLocation(locationFile)) {
                 error = NbBundle.getMessage(DerbyOptions.class, "ERR_InvalidDerbyLocation", locationFile);
             }
-        } else {
-            error = NbBundle.getMessage(DerbyOptions.class, "ERR_InvalidDerbyLocation", location);
         }
 
         if (error == null) {
