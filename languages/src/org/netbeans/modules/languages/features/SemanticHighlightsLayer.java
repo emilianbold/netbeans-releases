@@ -117,6 +117,8 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
                 if (endOffset1 > startOffset1)
                     return true;
                 endOffset1 = path.getLeaf ().getEndOffset ();
+                if (endOffset1 == startOffset1)
+                    endOffset1++;
             } while (endOffset1 < endOffset);
             return false;
         }
