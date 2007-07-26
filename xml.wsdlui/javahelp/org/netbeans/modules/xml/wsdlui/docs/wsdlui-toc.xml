@@ -3,6 +3,8 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+<tocitem text="Enterprise Applications">
+<tocitem text="Developing Web Services">
 	<tocitem text="WSDL Editor">
 		<tocitem text="About the WSDL Editor" target="org.netbeans.modules.xml.wsdlui.about" />
 		<tocitem text="Source View">
@@ -50,4 +52,6 @@
 			<tocitem text="Validating WSDL Files" target="wsdlui_validation" />
 		</tocitem>
 	</tocitem>
+</tocitem>
+</tocitem>
 </toc>
