@@ -21,9 +21,11 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
+<tocitem text="IDE Basics">
 <tocitem text="Servers and Databases">
 <tocitem text="Working With Databases">
 <tocitem text="Generating WSDL from a JDBC Data Source" target="jdbc_about" />
+</tocitem>
 </tocitem>
 </tocitem>
 </toc>
