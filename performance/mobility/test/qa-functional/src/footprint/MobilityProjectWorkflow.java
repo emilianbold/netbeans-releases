@@ -76,7 +76,7 @@ public class MobilityProjectWorkflow extends org.netbeans.performance.test.utili
         // get opened editor
         Operator.StringComparator defaultOperator = Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(new Operator.DefaultStringComparator(true, true));
-        TopComponentOperator midletEditor = new TopComponentOperator("HelloMidlet");
+        TopComponentOperator midletEditor = new TopComponentOperator("HelloMIDlet.java");
         Operator.setDefaultStringComparator(defaultOperator);
             
         // switch to Screen Design
