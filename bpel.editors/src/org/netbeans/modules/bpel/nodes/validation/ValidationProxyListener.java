@@ -103,18 +103,20 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
         
         Map<Component, Validator.ResultType> removedResults
                 = getRemovedComponentResultMap(cachedResultMap, newResultMap);
+        
+        Map<Component, Validator.ResultType> changedResults
+                = getChangedComponentResultMap(cachedResultMap, newResultMap);
+        
+        cachedResultMap = newResultMap;
+
         if (removedResults != null && removedResults.size() > 0) {
             myValidationSupport
                     .fireRemoveValidation(new ArrayList(removedResults.keySet()));
         }
-        
-        Map<Component, Validator.ResultType> changedResults
-                = getChangedComponentResultMap(cachedResultMap, newResultMap);
         if (changedResults != null && changedResults.size() > 0) {
             myValidationSupport.fireChangeValidation(changedResults);
         }
         
-        cachedResultMap = newResultMap;
 //        List<Validator.ResultItem> changedItems = new ArrayList<Validator.ResultItem>();
         
 //        List<Validator.ResultItem> removedResultItem = ValidationUtil
@@ -292,11 +294,29 @@ public class ValidationProxyListener implements BPELValidationListener, Annotati
         return componentResultMap;
     }
     
+    public static Validator.ResultType getPriorytestType(
+            List<Validator.ResultType> resultTypes) 
+    {
+        assert resultTypes != null;
+        if (resultTypes.size() == 0) {
+            return null;
+        }
+        
+        Validator.ResultType priorytestResult = null;
+        priorytestResult = resultTypes.get(0);
+        for (int i = 1; i < resultTypes.size(); i++) {
+            priorytestResult = getPriorytestType(
+                    priorytestResult, resultTypes.get(i));
+        }
+
+        return priorytestResult;
+    }
+    
     /**
      * Utility method
      * TODO r | m
      */
-    private Validator.ResultType getPriorytestType(Validator.ResultType type1
+    public static Validator.ResultType getPriorytestType(Validator.ResultType type1
             , Validator.ResultType type2) {
         if (type1 == null && type2 == null) {
             return null;

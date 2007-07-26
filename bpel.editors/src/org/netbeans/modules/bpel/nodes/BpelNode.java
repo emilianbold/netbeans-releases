@@ -52,6 +52,7 @@ import org.netbeans.modules.bpel.model.api.events.EntityRemoveEvent;
 import org.netbeans.modules.bpel.model.api.events.EntityUpdateEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
+import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.soa.ui.nodes.NodeTypeHolder;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
@@ -320,7 +321,7 @@ public abstract class BpelNode<T>
     public void setDecorationProvider(DecorationProvider decorationProvider) {
         this.decorationProvider = decorationProvider;
     }
-    
+
     /**
      * Set default tooltip provider
      */
@@ -332,6 +333,72 @@ public abstract class BpelNode<T>
         return decorationProvider;
     }
 
+    protected boolean isValidationAnnotatedEntity(Component component) {
+        Object reference = BpelNode.this instanceof ContainerBpelNode
+                ? ((ContainerBpelNode)BpelNode.this).getContainerReference()
+                : getReference();
+        if (reference == null) {
+            return false;
+        }
+        return reference.equals(component);
+    }
+    
+    protected Validator.ResultType getValidationStatus(
+            ValidationProxyListener vpl) 
+    {
+        assert vpl != null;
+        Object ref = (this instanceof ContainerBpelNode)?
+                    ((ContainerBpelNode) this).getContainerReference() :
+                    getReference();
+        Validator.ResultType resultType = vpl
+                .getValidationStatusForElement(ref);
+
+        return resultType;
+    }
+
+    /**
+     * true means that validation status from child elements should be accounted
+     */ 
+    protected boolean isComplexValidationStatus() {
+        return false;
+    }
+// TODO r | m    
+//    private Validator.ResultType getValidationStatus(
+//            ValidationProxyListener vpl, List<BpelEntity> children) 
+//    {
+//        assert vpl != null;
+//        if (children == null || children.size() == 0) {
+//            return null;
+//        }
+//        Validator.ResultType resultType = null;
+//        
+//        List<Validator.ResultType> resultTypes = 
+//                new ArrayList<Validator.ResultType>();
+//        Validator.ResultType tmpResult = null;
+//        for (BpelEntity entity : children) {
+//            tmpResult = vpl
+//                .getValidationStatusForElement(entity);
+//            if (tmpResult != null) {
+//                resultTypes.add(tmpResult);
+//            }
+//        }
+//
+//        resultType = ValidationProxyListener.getPriorytestType(resultTypes);
+//        
+//        if (resultType == null) {
+//            for (BpelEntity entity : children) {
+//                if (entity instanceof BpelContainer) {
+//                    resultType = getValidationStatus(vpl, entity.getChildren());
+//                }
+//                if (resultType != null) {
+//                    break;
+//                }
+//            }
+//        }
+//        
+//        return resultType;
+//    }
+//        
     /**
      *  Attach listener to validation changes.
      */
@@ -348,11 +415,8 @@ public abstract class BpelNode<T>
         }
         
         vpl.addChangeValidationListener(listener);
+        Validator.ResultType resultType = getValidationStatus(vpl);
         
-        Validator.ResultType resultType = vpl
-                .getValidationStatusForElement((this instanceof ContainerBpelNode)?
-                    ((ContainerBpelNode) this).getContainerReference() :
-                    getReference());
         if (resultType == null) {
             isErrorBadged = false;
             isWarningBadged = false;
@@ -528,6 +592,24 @@ public abstract class BpelNode<T>
         return false;
     }
     
+    /**
+     * This method is called each time when an event is come.
+     * It is intended to be overridden only by the subclasses which
+     * require update name for unusual events.
+     */ 
+    private void updateComplexNames(ChangeEvent event) {
+        if (isRequireNameUpdate(event)) {
+            updateName();
+        }
+    }
+    
+    protected boolean isRequireNameUpdate(ChangeEvent event) {
+        if (event instanceof PropertyUpdateEvent) {
+            return true;
+        }
+        return false;
+    }
+
     
     /**
      * This method is called each time when an event is come.
@@ -1017,6 +1099,7 @@ public abstract class BpelNode<T>
             //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
+            updateComplexNames(event);
         }
         
         public void notifyPropertyRemoved(PropertyRemoveEvent event) {
@@ -1063,6 +1146,7 @@ public abstract class BpelNode<T>
             //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
+            updateComplexNames(event);
         }
         
         public void notifyPropertyUpdated(PropertyUpdateEvent event) {
@@ -1107,6 +1191,7 @@ public abstract class BpelNode<T>
             //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
+            updateComplexNames(event);
         }
         
         public void notifyEntityUpdated(EntityUpdateEvent event) {
@@ -1125,6 +1210,7 @@ public abstract class BpelNode<T>
             //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
+            updateComplexNames(event);
         }
         
         public void notifyEntityInserted(EntityInsertEvent event) {
@@ -1144,6 +1230,7 @@ public abstract class BpelNode<T>
             //
             // Perform update processing of complex ptoperties
             updateComplexProperties(event);
+            updateComplexNames(event);
         }
         
     }
@@ -1197,48 +1284,52 @@ public abstract class BpelNode<T>
 //            }
 //        }
         public void validationUpdated(Component component, Validator.ResultType resultType) {
-            Object reference = BpelNode.this instanceof ContainerBpelNode
-                    ? ((ContainerBpelNode)BpelNode.this).getContainerReference()
-                    : getReference();
-            if (reference == null) {
-                return;
-            }
-            if (reference.equals(component)) {
-                
-                switch (resultType) {
-                    case ERROR :
-                        isErrorBadged = true;
-                        isWarningBadged = false;
-                        fireIconChange();
-                        fireOpenedIconChange();
-                        break;
-                    case WARNING :
-                        isErrorBadged = false;
-                        isWarningBadged = true;
-                        fireIconChange();
-                        fireOpenedIconChange();
-                        break;
-                    default :
-                        isErrorBadged = false;
-                        isWarningBadged = false;
-                        fireIconChange();
-                        fireOpenedIconChange();
+            if (isValidationAnnotatedEntity(component)) {
+
+                if (isComplexValidationStatus()) {
+                    resultType = getValidationStatus(getValidationProxyListener());
                 }
+                updateValidationIcons(resultType);
             }
         }
         
-        public void validationRemoved(Component component) {
-            Object reference = BpelNode.this instanceof ContainerBpelNode
-                    ? ((ContainerBpelNode)BpelNode.this).getContainerReference()
-                    : getReference();
-            if (reference == null) {
-                return;
-            }
-            if (reference.equals(component)) {
+        private void updateValidationIcons(Validator.ResultType resultType) {
+            if (resultType == null) {
                 isErrorBadged = false;
                 isWarningBadged = false;
                 fireIconChange();
                 fireOpenedIconChange();
+                return;
+            }
+            
+            switch (resultType) {
+                case ERROR :
+                    isErrorBadged = true;
+                    isWarningBadged = false;
+                    fireIconChange();
+                    fireOpenedIconChange();
+                    break;
+                case WARNING :
+                    isErrorBadged = false;
+                    isWarningBadged = true;
+                    fireIconChange();
+                    fireOpenedIconChange();
+                    break;
+                default :
+                    isErrorBadged = false;
+                    isWarningBadged = false;
+                    fireIconChange();
+                    fireOpenedIconChange();
+            }
+        }
+        
+        public void validationRemoved(Component component) {
+            if (isValidationAnnotatedEntity(component)) {
+                Validator.ResultType resultType = null;
+                if (isComplexValidationStatus()) {
+                    resultType = getValidationStatus(getValidationProxyListener());
+                } 
+                updateValidationIcons(resultType);
             }
         }
         

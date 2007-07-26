@@ -29,17 +29,23 @@ import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Roles;
+import org.netbeans.modules.bpel.nodes.validation.ValidationProxyListener;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
+import org.netbeans.modules.bpel.model.api.events.EntityInsertEvent;
+import org.netbeans.modules.bpel.model.api.events.EntityRemoveEvent;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.bpel.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
+import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -97,6 +103,72 @@ public class CopyNode extends BpelNode<Copy> {
                 );
     }
 
+    @Override
+    protected boolean isRequireNameUpdate(ChangeEvent event) {
+        assert event != null;
+        if (super.isRequireNameUpdate(event)) {
+            return true;
+        }
+        
+        BpelEntity entity = event.getParent();
+        Copy ref = getReference();
+        
+        if (entity == null || ref == null || ref != entity) {
+            return false;
+        }
+
+        return event instanceof EntityRemoveEvent 
+                || event instanceof EntityInsertEvent;
+    }
+
+    @Override
+    protected ResultType getValidationStatus(ValidationProxyListener vpl) {
+        ResultType resultType = super.getValidationStatus(vpl);
+        if (resultType != null) {
+            return resultType;
+        }
+        
+        Copy ref = getReference();
+        From from = ref.getFrom();
+        To to = ref.getTo();
+        
+        ResultType fromResType = vpl
+                .getValidationStatusForElement(from);
+        ResultType toResType = vpl
+                .getValidationStatusForElement(to);
+        
+        resultType = ValidationProxyListener.getPriorytestType(fromResType, toResType);
+        return resultType;
+    }
+
+    @Override
+    protected boolean isValidationAnnotatedEntity(Component component) {
+        boolean isSupportedEntity = 
+                super.isValidationAnnotatedEntity(component);
+        if (isSupportedEntity) {
+            return true;
+        }
+
+        Copy ref = getReference();
+        From from = ref.getFrom();
+        
+        if (from != null && from.equals(component)) {
+            return true;
+        }
+        
+        To to = ref.getTo();
+        if (to != null && to.equals(component)) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    @Override
+    protected boolean isComplexValidationStatus() {
+        return true;
+    }
+    
     // TODO Need to be corrected!!!
     public static String serializeFrom(From from) {
         if (from == null) {
