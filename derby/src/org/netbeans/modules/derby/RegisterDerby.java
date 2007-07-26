@@ -164,7 +164,7 @@ public class RegisterDerby implements DatabaseRuntime {
                         ph.finish();
                     }
                } catch (Exception e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+                    LOGGER.log(Level.WARNING, null, e);
                     String message = NbBundle.getMessage(RegisterDerby.class, "ERR_CreateDatabase", e.getMessage());
                     Util.showInformation(message);
                }
@@ -195,13 +195,13 @@ public class RegisterDerby implements DatabaseRuntime {
             fileos = new FileOutputStream(derbyProperties);
             derbyProps.store(fileos, NbBundle.getMessage(RegisterDerby.class, "MSG_DerbyPropsFile"));
         } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            LOGGER.log(Level.WARNING, null, ex);
         } finally {
             if (fileos != null) {
                 try {
                     fileos.close();
                 } catch (IOException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                    LOGGER.log(Level.WARNING, null, ex);
                 }
             }
         }

@@ -286,7 +286,7 @@ public class DerbyOptions {
                 try {
                     JDBCDriverManager.getDefault().removeDriver(driver);
                 } catch (DatabaseException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+                    LOGGER.log(Level.WARNING, null, e);
                     // better to return if the existing driver could not be registered
                     // otherwise we would register yet another one
                     return;
@@ -302,9 +302,9 @@ public class DerbyOptions {
                     JDBCDriver newDriver = JDBCDriver.create(driverName, driverDisplayName, driverClass, new URL[] { newDriverFile.toURI().toURL() });
                     JDBCDriverManager.getDefault().addDriver(newDriver);
                 } catch (MalformedURLException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+                    LOGGER.log(Level.WARNING, null, e);
                 } catch (DatabaseException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
+                    LOGGER.log(Level.WARNING, null, e);
                 }
             }
         }
