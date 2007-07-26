@@ -57,8 +57,6 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
     // Make sure list of steps is accurate.
     private static final String[] STEPS = new String[] {
                                 NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectTitleName"), //NOI18N
-                                //need this after EA1
-                                ///NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_ProjectAppName") //NOI18N
                             };
 
     private WizardDescriptor.Panel[] createPanels() {
