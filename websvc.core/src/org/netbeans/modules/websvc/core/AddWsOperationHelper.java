@@ -122,6 +122,9 @@ public class AddWsOperationHelper {
                 ErrorManager.getDefault().notify(ioe);
             }
         }
+        else{  //user pressed cancel button
+            method = null;
+        }
     }
     
     /**
