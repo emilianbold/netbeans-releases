@@ -82,13 +82,11 @@
             <folder name="Lookup">
                 <file name="org.netbeans.modules.websvc.rest.projects.WebRestSupportLookupProvider.instance"/>
             </folder> 
-            <!--
             <folder name="Nodes">
-                <file name="org-netbeans-modules-websvc-core-jaxws-nodes-WebServicesNodeFactory.instance">
+                <file name="org-netbeans-modules-websvc-rest-nodes-RestServicesNodeFactory.instance">
                     <attr name="position" intvalue="400"/>
                 </file>
             </folder>
-            -->
         </folder>
     </folder>
 </filesystem>

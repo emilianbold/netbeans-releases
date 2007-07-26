@@ -123,18 +123,11 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                 wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
                         RestServices root = metadata.getRoot();
-                        //System.out.println("RestServices = " + root);
-     
-                        RestServiceDescription[] descriptions = root.getRestServiceDescription();
+                   
+                        if (root.sizeRestServiceDescription() > 0) {
+                            //TODO turn on rest support.
+                        }
                         
-                        System.out.println("count = " + descriptions.length);
-                        for (RestServiceDescription desc : descriptions) {
-                            System.out.println("desc = " + desc);
-                        }
-   
-                        if (descriptions.length > 0) {
-                            //TODO turn on rest support
-                        }
                         return null;
                     }
                 });
