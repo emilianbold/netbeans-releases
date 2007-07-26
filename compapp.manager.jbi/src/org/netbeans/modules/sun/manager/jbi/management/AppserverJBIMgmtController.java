@@ -35,6 +35,9 @@ import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
 import org.netbeans.modules.sun.manager.jbi.management.JBIFrameworkService;
 import org.netbeans.modules.sun.manager.jbi.management.connectors.HTTPServerConnector;
 import org.netbeans.modules.sun.manager.jbi.management.JBIClassLoader;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -177,6 +180,13 @@ public class AppserverJBIMgmtController {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }              
+        
+        if (adminService == null) {
+            String msg = NbBundle.getMessage(getClass(), "NULL_ADMIN_SERVICE_MSG"); // NOI18N
+            NotifyDescriptor d = 
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(d);
         }
         
         return adminService;
