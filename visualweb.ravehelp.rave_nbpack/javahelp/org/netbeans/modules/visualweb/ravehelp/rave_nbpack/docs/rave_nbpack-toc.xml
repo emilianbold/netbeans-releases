@@ -3,7 +3,7 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-	<tocitem text="Web Application Development">
+	<tocitem text="Web Applications" expand="false">
 		<tocitem text="About Web Applications">
 			<tocitem text="About Web Applications" target="about_webapps" />
 			<tocitem text="Working with Web Applications" target="webapps_process" />
