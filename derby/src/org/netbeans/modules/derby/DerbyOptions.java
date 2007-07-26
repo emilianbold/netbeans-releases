@@ -107,7 +107,7 @@ public class DerbyOptions {
      * is not set. Never returns null.
      */
     public String getLocation() {
-        String location = (String)getProperty(PROP_DERBY_LOCATION);
+        String location = getProperty(PROP_DERBY_LOCATION);
         if (location == null) {
             location = ""; // NOI18N
         }
@@ -175,7 +175,7 @@ public class DerbyOptions {
      * is not set. Never returns null.
      */
     public String getSystemHome() {
-        String systemHome = (String)getProperty(PROP_DERBY_SYSTEM_HOME);
+        String systemHome = getProperty(PROP_DERBY_SYSTEM_HOME);
         if (systemHome == null) {
             systemHome = System.getProperty(NETBEANS_DERBY_SYSTEM_HOME);
         }
