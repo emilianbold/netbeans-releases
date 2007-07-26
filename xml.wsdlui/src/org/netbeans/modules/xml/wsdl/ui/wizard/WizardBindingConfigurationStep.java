@@ -167,8 +167,8 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
         this.mPortType = (PortType) templateWizard.getProperty(WizardPortTypeConfigurationStep.PORTTYPE);
         this.mTempModel = (WSDLModel) templateWizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
         
-/*        LocalizedTemplate bindingSubType = this.mPanel.getBindingSubType();
-        processBindingSubType(bindingSubType);*/
+        LocalizedTemplate bindingSubType = this.mPanel.getBindingSubType();
+        processBindingSubType(bindingSubType, true);
     }
 
     public void storeSettings(Object settings) {
@@ -277,6 +277,10 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
     }
     
     private void processBindingSubType(LocalizedTemplate bindingSubType) {
+        processBindingSubType(bindingSubType, false);
+    }
+    
+    private void processBindingSubType(LocalizedTemplate bindingSubType, boolean validateOnly) {
         if(bindingSubType != null) {
             String bindingName = this.mPanel.getBindingName();
             LocalizedTemplateGroup bindingType = this.mPanel.getBindingType();
@@ -313,16 +317,16 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
                 
                 List<ValidationInfo> vBindingInfos = bindingSubType.getMProvider().validate(this.mBinding);
                 if(vBindingInfos != null) {
-                	vAllInfos.addAll(vBindingInfos);
+                    vAllInfos.addAll(vBindingInfos);
                 }
                 
                 if(this.mPort != null) {
-                	List<ValidationInfo> vPortInfos = bindingSubType.getMProvider().validate(this.mPort);
-                	if(vPortInfos != null) {
-                    	vAllInfos.addAll(vPortInfos);
+                    List<ValidationInfo> vPortInfos = bindingSubType.getMProvider().validate(this.mPort);
+                    if(vPortInfos != null) {
+                        vAllInfos.addAll(vPortInfos);
                     }
                 }
-                if(vAllInfos != null && vAllInfos.size() > 0) {
+                if(vAllInfos.size() > 0) {
                     ValidationInfo vInfo = vAllInfos.get(0);
                     this.mBindingSubTypeError =  vInfo.getDescription();
                     IOProvider.getDefault().getStdOut().print(this.mBindingSubTypeError);
@@ -343,7 +347,14 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
                 }
             }
             
-            this.mTempModel.endTransaction();
+            if (validateOnly) {
+                mTempModel.rollbackTransaction();
+                mBinding = null;
+                mService = null;
+                mPort = null;
+            } else {
+                mTempModel.endTransaction();
+            }
         }
     }
     
@@ -368,9 +379,9 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
             String propertyName = evt.getPropertyName();
             if(BindingConfigurationPanel.PROP_BINDING_SUBTYPE.equals(propertyName)) {
                 LocalizedTemplate bindingSubType = (LocalizedTemplate) evt.getNewValue();
-                processBindingSubType(bindingSubType);
+                processBindingSubType(bindingSubType, true);
             } else if(BindingConfigurationPanel.PROP_BINDING_TYPE.equals(propertyName)) {
-                processBindingSubType(mPanel.getBindingSubType());
+                processBindingSubType(mPanel.getBindingSubType(), true);
             }
         }
     }
