@@ -494,7 +494,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         myProject = project;
         myEntries = null;
         // vlv # 111020
-        //updateEntries();
+        updateEntries();
       }
 
       public void fileChanged(FileEvent event) {
