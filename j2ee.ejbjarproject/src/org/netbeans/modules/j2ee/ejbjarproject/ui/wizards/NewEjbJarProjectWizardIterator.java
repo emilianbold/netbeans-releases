@@ -64,8 +64,6 @@ public class NewEjbJarProjectWizardIterator implements WizardDescriptor.Progress
     private WizardDescriptor.Panel[] createPanels() {
         return new WizardDescriptor.Panel[] {
             new PanelConfigureProject(),
-            //need this after EA1
-            ///new PanelConfigureProjectApp(),
         };
     }
 
