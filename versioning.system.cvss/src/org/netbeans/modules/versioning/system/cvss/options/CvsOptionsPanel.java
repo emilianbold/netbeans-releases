@@ -81,6 +81,7 @@ class CvsOptionsPanel extends javax.swing.JPanel {
 
         jLabel1.setLabelFor(statusLabelFormat);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.jLabel1.text")); // NOI18N
+        jLabel1.setToolTipText(org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.jLabel1.toolTipText")); // NOI18N
 
         statusLabelFormat.setText(org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.statusLabelFormat.text")); // NOI18N
         statusLabelFormat.setToolTipText(org.openide.util.NbBundle.getMessage(CvsOptionsPanel.class, "CvsOptionsPanel.statusLabelFormat.toolTipText")); // NOI18N
