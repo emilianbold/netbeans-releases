@@ -613,6 +613,19 @@ public class MethodInfo extends ConstructorInfo
     //
 
 
+    public Integer getModifiers() {
+	Integer mods = super.getModifiers();
+	if (getOperation() != null && getOperation().getIsConstructor()
+	    && getContainingClass().isEnumeration())
+	{
+	    int m = mods.intValue();
+	    m &= ( ~ ( Modifier.PUBLIC | Modifier.PROTECTED ) );
+	    mods = new Integer(m);
+	}
+        return mods;
+    }
+
+
     public boolean isAbstract() {
 	return ( Modifier.isAbstract(getModifiers()) 
 		 || (getContainingClass() != null 

@@ -9205,11 +9205,36 @@ public class ADDrawingAreaControl extends ApplicationView
                pTransformAction.setPresentationElement(pPE);
                pTransformAction.setNewElementType(sToElement);
                postDelayedAction(pTransformAction);
+               postDelayedAction(new ReSelectionAction());
             }
          }
       }
    }
    
+
+   class ReSelectionAction implements IExecutableAction, IDelayedAction
+   {
+       public String getDescription()
+       {
+	   return "ReSelectionAction";
+       }
+       
+       public void execute(IDrawingAreaControl pControl)
+       {
+	   if (pControl.getGraphWindow().getGraph() != null 
+	       && pControl.getGraphWindow().getGraph() instanceof ETGraph)
+	   {
+	       ETGraph etGraph =  (ETGraph) pControl.getGraphWindow().getGraph();
+	       ETList < TSGraphObject > selectedObjs = etGraph.getSelectedObjects(false, false);
+	       if (selectedObjs != null) 
+	       {
+		   pControl.fireSelectEvent(selectedObjs);
+	       }
+	   }
+       }
+   }
+    
+
     /* (non-Javadoc)
      * @see org.netbeans.modules.uml.ui.swing.drawingarea.IAxDrawingAreaControl#unfoldNode(com.tomsawyer.graph.TSNode)
      */

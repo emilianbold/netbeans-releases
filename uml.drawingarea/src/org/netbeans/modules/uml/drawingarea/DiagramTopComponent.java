@@ -874,9 +874,9 @@ public class DiagramTopComponent extends CloneableTopComponent
         {
             IPresentationElement presEle = selectedItems.get(0);
             
-            if (presEle != null) 
+            if (presEle != null) {
                 pEle = presEle.getFirstSubject();
-                
+                }
             addSelectedActionCallbacks();
         }
         
@@ -1229,7 +1229,7 @@ public class DiagramTopComponent extends CloneableTopComponent
     private class LocalUMLModelElementNode extends UMLModelElementNode
     {
         private DiagramPrintCookie printCookie;
-        
+       
         public LocalUMLModelElementNode()
         {
             super();
@@ -1278,6 +1278,13 @@ public class DiagramTopComponent extends CloneableTopComponent
         {
             getCookieSet().remove(getDiagramPrintCookie());
         }
+	
+	public boolean equals(Object obj) {
+	    if (this.hashCode() == obj.hashCode())
+		return true;
+	    return false;	    
+	}
+	
     }
     
     

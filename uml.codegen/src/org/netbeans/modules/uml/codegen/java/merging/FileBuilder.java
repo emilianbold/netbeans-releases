@@ -198,8 +198,24 @@ public class FileBuilder
 				insertPos,
 				HEADER_AND_BODY,
 				-1,
-				";");
-	    mods.add(m);
+				";",
+				true);
+	mods.add(m);
+    }
+
+    public void removeLiteralSectionTerminator(ElementDescriptor oldElem) 
+    {
+	ModDesc m = new ModDesc(ModDesc.REMOVE, 
+				-1,
+				-1,
+				oldElem.getPosition("Literal Section Terminator"),
+				oldElem.getPosition("Literal Section Terminator") + 1,
+				oldElem.getPosition("Literal Section Terminator"),
+				HEADER_AND_BODY,
+				-1,
+				null, 
+				true);
+	mods.add(m);
     }
 
 
@@ -634,7 +650,7 @@ public class FileBuilder
 	    {
 		valid = false;
 	    }
-	    if (!valid) 
+	    if (!valid && !m.forceValid) 
 	    {
 		deletes.add(m);
 	    }
@@ -663,7 +679,7 @@ public class FileBuilder
 	long oldEdPoint;
 	int scope;
 	int pr = 0;
-
+	boolean forceValid = false;
 	private String patchContent;
 
 	public ModDesc(int type, 
@@ -674,7 +690,8 @@ public class FileBuilder
 		       long oldEdPoint,
 		       int scope,
 		       int pr,
-		       String patchContent)
+		       String patchContent,
+                       boolean forceValid)
 	{
 	    this.type = type;
 	    this.newStart = newStart;
@@ -685,6 +702,7 @@ public class FileBuilder
 	    this.scope = scope;
 	    this.pr = pr;
 	    this.patchContent = patchContent;
+	    this.forceValid = forceValid;
 	}
 
 	public ModDesc(int type, 

@@ -327,7 +327,7 @@ public class Merger implements IUMLParserEventsSink {
 	List<IEnumerationLiteral> newLits = getEnumLiterals(newClass);
 	List<IEnumerationLiteral> oldLits = getEnumLiterals(oldClass);
 	mergeLiterals(newClass, oldClass, newLits, oldLits);
-	mergelLiteralSectionTerminators(newClass, oldClass);
+	mergeLiteralSectionTerminators(newClass, oldClass);
 
 	List<IAttribute> newAttrs = getAttributes(newClass);
 	List<IAttribute> oldAttrs = getAttributes(oldClass);
@@ -353,7 +353,6 @@ public class Merger implements IUMLParserEventsSink {
 
 	for(ElementMatcher.MatchType mt : ElementMatcher.MatchType.values()) 
 	{
-	    // marker ID based matching
 	    for(INamedElement newElem : newElems) 
 	    {
 		if (mt == ElementMatcher.MatchType.SHORT_PARAM_TYPES 
@@ -607,7 +606,7 @@ public class Merger implements IUMLParserEventsSink {
     }
 
 
-    private void mergelLiteralSectionTerminators(IClassifier newClass, IClassifier oldClass) 
+    private void mergeLiteralSectionTerminators(IClassifier newClass, IClassifier oldClass) 
     { 
 	if (newClass == null || oldClass == null) 
 	{
@@ -615,13 +614,24 @@ public class Merger implements IUMLParserEventsSink {
 	}
 	ElementDescriptor nd = new ElementDescriptor(newClass.getNode());
 	ElementDescriptor od = new ElementDescriptor(oldClass.getNode());
-	if ("Enumeration".equals(od.getModelElemType()) 
-	    && od.getPosition("Literal Section Terminator") < 0 
-	    && "Enumeration".equals(nd.getModelElemType())
-	    && nd.getPosition("Literal Section Terminator") > -1) 
-	{
-	    fileBuilder.insertLiteralSectionTerminator(nd, od);
-	}	
+
+	if (ElementMatcher.isMarked(oldClass)) 
+	{		 
+	    if ("Enumeration".equals(nd.getModelElemType())) 
+	    {
+		if (od.getPosition("Literal Section Terminator") < 0) 
+		{
+		    fileBuilder.insertLiteralSectionTerminator(nd, od);
+		}
+	    }
+	    else 
+	    {
+		if (od.getPosition("Literal Section Terminator") > -1) 
+		{
+		    fileBuilder.removeLiteralSectionTerminator(od);
+		}
+	    }
+	}
     }
 
     private boolean addToMatched(HashSet<IElement> list, IElement elem) 
