@@ -173,6 +173,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="SVGFileTemplate.svg" url="nbres:/org/netbeans/modules/mobility/svgcore/SVGFileTemplate.svg">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.svgcore.Bundle"/>
                 <attr name="template" boolvalue="true"/>
+		<attr name="position" intvalue="250"/>
             </file>
         </folder>
     </folder>
