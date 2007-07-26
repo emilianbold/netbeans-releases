@@ -137,7 +137,6 @@ public class CustomizerGeneral extends javax.swing.JPanel {
         shutdownPortSpinner.setModel(custData.getShutdownPortModel());
         shutdownPortSpinner.setEditor(new JSpinner.NumberEditor(shutdownPortSpinner, "#"));
 
-        monitorCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "MNE_EnableHttpMonitor", new Object[] {}).charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(monitorCheckBox, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.monitorCheckBox.text")); // NOI18N
         monitorCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         monitorCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
