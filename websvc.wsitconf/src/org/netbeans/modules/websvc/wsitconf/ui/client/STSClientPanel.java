@@ -382,6 +382,19 @@ public class STSClientPanel extends SectionInnerPanel {
                     .add(namespaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        endpointLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_Endpoint_ACSN")); // NOI18N
+        endpointLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_Endpoint_ACSD")); // NOI18N
+        wsdlLocationLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_WsdlLocation_ACSN")); // NOI18N
+        wsdlLocationLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_WsdlLocation_ACSD")); // NOI18N
+        serviceNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_ServiceName_ACSN")); // NOI18N
+        serviceNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_ServiceName_ACSD")); // NOI18N
+        portNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_PortName_ACSN")); // NOI18N
+        portNameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_PortName_ACSD")); // NOI18N
+        namespaceLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_Namespace_ACSN")); // NOI18N
+        namespaceLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_Namespace_ACSD")); // NOI18N
+        metadataLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_Metadata_ACSN")); // NOI18N
+        metadataLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_Metadata_ACSD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained

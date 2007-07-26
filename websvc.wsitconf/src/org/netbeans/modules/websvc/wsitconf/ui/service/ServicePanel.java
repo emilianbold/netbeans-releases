@@ -635,8 +635,8 @@ public class ServicePanel extends SectionInnerPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
-                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
                     .add(mtomChBox)
                     .add(rmChBox)
                     .add(layout.createSequentialGroup()
@@ -661,7 +661,7 @@ public class ServicePanel extends SectionInnerPanel {
                     .add(layout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(devDefaultsChBox))
-                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                    .add(jSeparator3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(stsChBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -720,6 +720,41 @@ public class ServicePanel extends SectionInnerPanel {
                 .add(fiChBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        mtomChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mtomChBox_ACSN")); // NOI18N
+        mtomChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_mtomChBox_ACSD")); // NOI18N
+        rmChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_rmChBox_ACSN")); // NOI18N
+        rmChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_rmChBox_ACSD")); // NOI18N
+        securityChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_securityChBox_ACSN")); // NOI18N
+        securityChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_securityChBox_ACSD")); // NOI18N
+        orderedChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_OrderedChBox_ACSN")); // NOI18N
+        orderedChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_OrderedChBox_ACSD")); // NOI18N
+        profileComboLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_profileComboLabel_ACSN")); // NOI18N
+        profileComboLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_profileComboLabel_ACSD")); // NOI18N
+        rmAdvanced.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Advanced_ACSN")); // NOI18N
+        rmAdvanced.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Advanced_ACSD")); // NOI18N
+        stsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsChBox_ACSN")); // NOI18N
+        stsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsChBox_ACSD")); // NOI18N
+        tcpChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_tcpChBox_ACSN")); // NOI18N
+        tcpChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_tcpChBox_ACSD")); // NOI18N
+        keyButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keystoreButton_ACSN")); // NOI18N
+        keyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keystoreButton_ACSD")); // NOI18N
+        trustButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_truststoreButton_ACSN")); // NOI18N
+        trustButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_truststoreButton_ACSD")); // NOI18N
+        stsConfigButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsConfigButton_ACSN")); // NOI18N
+        stsConfigButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_stsConfigButton_ACSD")); // NOI18N
+        profConfigButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keyConfigButton_ACSN")); // NOI18N
+        profConfigButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_keyConfigButton_ACSD")); // NOI18N
+        fiChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_fiChBox_ACSN")); // NOI18N
+        fiChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_fiChBox_ACSD")); // NOI18N
+        validatorsButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_validatorsButton_ACSN")); // NOI18N
+        validatorsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_validatorsButton_ACSD")); // NOI18N
+        devDefaultsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Defaults_ACSN")); // NOI18N
+        devDefaultsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "LBL_Section_Service_Defaults_ACSD")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ServicePanel.class, "Panel_ACSN")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ServicePanel.class, "Panel_ACSD")); // NOI18N
+        getAccessibleContext().setAccessibleParent(this);
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained

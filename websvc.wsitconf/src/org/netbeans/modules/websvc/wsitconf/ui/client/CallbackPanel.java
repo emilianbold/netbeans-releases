@@ -405,6 +405,7 @@ public class CallbackPanel extends SectionInnerPanel {
 
         credTypeCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Static", "Dynamic" }));
 
+        credTypeLabel.setLabelFor(credTypeCombo);
         org.openide.awt.Mnemonics.setLocalizedText(credTypeLabel, org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_AuthTypeLabel")); // NOI18N
 
         org.jdesktop.layout.GroupLayout credPanelLayout = new org.jdesktop.layout.GroupLayout(credPanel);
@@ -418,21 +419,21 @@ public class CallbackPanel extends SectionInnerPanel {
             .add(0, 64, Short.MAX_VALUE)
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(keyStoreButton, "Keystore...");
+        org.openide.awt.Mnemonics.setLocalizedText(keyStoreButton, org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStore")); // NOI18N
         keyStoreButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 keyStoreButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(trustStoreButton, "Truststore...");
+        org.openide.awt.Mnemonics.setLocalizedText(trustStoreButton, org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_Truststore")); // NOI18N
         trustStoreButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 trustStoreButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(devDefaultsChBox, "Use development defaults");
+        org.openide.awt.Mnemonics.setLocalizedText(devDefaultsChBox, org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_DevDefaults")); // NOI18N
         devDefaultsChBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -464,7 +465,7 @@ public class CallbackPanel extends SectionInnerPanel {
                             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(samlBrowseButton))
                         .add(org.jdesktop.layout.GroupLayout.LEADING, credPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 475, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -491,6 +492,19 @@ public class CallbackPanel extends SectionInnerPanel {
                     .add(samlBrowseButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        samlHandlerLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_SamlLabel_ACSN")); // NOI18N
+        samlHandlerLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_SamlLabel_ACSD")); // NOI18N
+        samlBrowseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_AuthPanel_SCHBrowseButton_ACSN")); // NOI18N
+        samlBrowseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_AuthPanel_SCHBrowseButton_ACSD")); // NOI18N
+        credTypeLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_AuthTypeLabel_ACSN")); // NOI18N
+        credTypeLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStorePanel_AuthTypeLabel_ACSD")); // NOI18N
+        keyStoreButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStore_ACSN")); // NOI18N
+        keyStoreButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_KeyStore_ACSD")); // NOI18N
+        trustStoreButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_Truststore_ACSN")); // NOI18N
+        trustStoreButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_Truststore_ACSD")); // NOI18N
+        devDefaultsChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_DevDefaults_ACSN")); // NOI18N
+        devDefaultsChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallbackPanel.class, "LBL_DevDefaults_ACSD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void trustStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trustStoreButtonActionPerformed

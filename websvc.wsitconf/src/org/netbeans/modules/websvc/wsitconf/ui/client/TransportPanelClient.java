@@ -175,6 +175,11 @@ public class TransportPanelClient extends SectionInnerPanel {
                 .add(optimalTransportChBox)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        optimalEncChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransportPanelClient.class, "LBL_Transport_OptimalEncoding_ACSN")); // NOI18N
+        optimalEncChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransportPanelClient.class, "LBL_Transport_OptimalEncoding_ACSD")); // NOI18N
+        optimalTransportChBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TransportPanelClient.class, "LBL_Transport_OptimalTransport_ACSN")); // NOI18N
+        optimalTransportChBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TransportPanelClient.class, "LBL_Transport_OptimalTransport_ACSD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void formFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusGained
