@@ -130,9 +130,9 @@ public class CasualDiff {
         // todo (#pf): make package annotation diffing correctly
         // diffList(oldT.packageAnnotations, newT.packageAnnotations, LineInsertionType.NONE, 0);
         localPointer = diffPackageStatement(oldT, newT, localPointer);
-        PositionEstimator est = EstimatorFactory.imports(((CompilationUnitTree) oldT).getImports(), ((CompilationUnitTree) newT).getImports(), workingCopy);
+        PositionEstimator est = EstimatorFactory.imports(oldT.getImports(), newT.getImports(), workingCopy);
         localPointer = diffList(oldT.getImports(), newT.getImports(), localPointer, est, Measure.DEFAULT, printer);
-        est = EstimatorFactory.toplevel(((CompilationUnitTree) oldT).getTypeDecls(), ((CompilationUnitTree) newT).getTypeDecls(), workingCopy);
+        est = EstimatorFactory.toplevel(oldT.getTypeDecls(), newT.getTypeDecls(), workingCopy);
         localPointer = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), localPointer, est, Measure.MEMBER, printer);
         printer.print(origText.substring(localPointer));
     }
@@ -289,8 +289,8 @@ public class CasualDiff {
         }
         long flags = oldT.sym != null ? oldT.sym.flags() : oldT.mods.flags;
         PositionEstimator estimator = (flags & INTERFACE) == 0 ? 
-            EstimatorFactory.implementz(((ClassTree) oldT).getImplementsClause(), ((ClassTree) newT).getImplementsClause(), workingCopy) : 
-            EstimatorFactory.extendz(((ClassTree) oldT).getImplementsClause(), ((ClassTree) newT).getImplementsClause(), workingCopy);
+            EstimatorFactory.implementz(oldT.getImplementsClause(), newT.getImplementsClause(), workingCopy) : 
+            EstimatorFactory.extendz(oldT.getImplementsClause(), newT.getImplementsClause(), workingCopy);
         if (!newT.implementing.isEmpty())
             copyTo(localPointer, insertHint);
         localPointer = diffList2(oldT.implementing, newT.implementing, insertHint, estimator);
@@ -444,7 +444,7 @@ public class CasualDiff {
             posHint = oldT.thrown.iterator().next().getStartPosition();
         }
         copyTo(localPointer, localPointer = posHint);
-        PositionEstimator est = EstimatorFactory.throwz(((MethodTree) oldT).getThrows(), ((MethodTree) newT).getThrows(), workingCopy);
+        PositionEstimator est = EstimatorFactory.throwz(oldT.getThrows(), newT.getThrows(), workingCopy);
         localPointer = diffList2(oldT.thrown, newT.thrown, posHint, est);
         if (newT.body == null && oldT.body != null) {
             localPointer = endPos(oldT.body);
@@ -1307,7 +1307,7 @@ public class CasualDiff {
                 }
             }
             copyTo(localPointer, startPos);
-            PositionEstimator est = EstimatorFactory.annotations(((ModifiersTree) oldT).getAnnotations(), ((ModifiersTree) newT).getAnnotations(), workingCopy);
+            PositionEstimator est = EstimatorFactory.annotations(oldT.getAnnotations(),newT.getAnnotations(), workingCopy);
             localPointer = diffList(oldT.annotations, newT.annotations, startPos, est, Measure.DEFAULT, printer);
         }
         if (oldT.flags != newT.flags) {
