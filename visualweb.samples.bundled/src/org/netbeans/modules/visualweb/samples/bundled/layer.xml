@@ -1,37 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <!-- Sample web applications in the New Project wizard. -->
     <!--
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
-                <folder name="VisualWeb">
-                    <attr name="position" intvalue="300" />
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/webSamplesCategory.html"/>
-                    <file name="ExampleOne" url="ExampleOne.zip">
-                       <attr name="template" boolvalue="true"/>
-                       <attr name="templateCategory" stringvalue="web-types"/>
-                       <attr name="position" intvalue="100"/>
-                       <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/ExampleOne.html"/>
-                       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
-                       <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
-                       <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
-                    </file>
+                <folder name="Web">
+                    <folder name="VisualJsf">
+                        <attr name="position" intvalue="500" />
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/webSamplesCategory.html"/>
+                        <file name="ExampleOne" url="ExampleOne.zip">
+                           <attr name="template" boolvalue="true"/>
+                           <attr name="templateCategory" stringvalue="web-types"/>
+                           <attr name="position" intvalue="100"/>
+                           <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/ExampleOne.html"/>
+                           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
+                           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
+                           <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
+                        </file>
+                    </folder>
                 </folder>
             </folder>
         </folder>
-    </folder> 
+    </folder>  
     -->
 
     <!-- Java Code Clips in palette -->
     <folder name="CreatorJavaPalette">
-        <attr name="OpenIDE-Folder-SortMode" stringvalue="O"/>
-        <attr name="Samples/DatabaseandWebServices" boolvalue="true"/>
         <folder name="Samples"> 
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
+            <attr name="position" intvalue="0"/>
             
             <!-- Ordering -->
             <!-- End Ordering --> 
@@ -42,12 +44,11 @@
         </folder>
     </folder>
     <folder name="CreatorJavaPalette5">
-        <attr name="OpenIDE-Folder-SortMode" stringvalue="O"/>
-        <attr name="Samples/DatabaseandWebServices" boolvalue="true"/>
         <folder name="Samples"> 
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.codeclips.Bundle"/>
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
+            <attr name="position" intvalue="0"/>
             
             <!-- Ordering -->
             <!-- End Ordering --> 
