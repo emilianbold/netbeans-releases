@@ -116,7 +116,8 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     private void refreshOriginalContent() {
         File file = FileUtil.toFile(fileObject);
         ownerVersioningSystem = VersioningManager.getInstance().getOwner(file);
-        originalContentSerial++;        
+        originalContentSerial++;
+        refreshDiff();
     }
     
     JTextComponent getTextComponent() {

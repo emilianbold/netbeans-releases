@@ -50,12 +50,14 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
+import org.openide.nodes.CookieSet;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.MultiDataObject;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.DiffView;
@@ -769,11 +771,28 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         if (sdoc != null && ss.isEditable()) {
             DataObject dao = (DataObject) sdoc.getProperty(Document.StreamDescriptionProperty);
             if (dao != null) {
-                EditorCookie cookie = dao.getCookie(EditorCookie.class);
-                if (cookie instanceof EditorCookie.Observable) {
-                    editableCookie = (EditorCookie.Observable) cookie;
-                    editableDocument = sdoc;
-                    editorUndoRedo = getUndoRedo(cookie);
+                if (dao instanceof MultiDataObject) {
+                    MultiDataObject mdao = (MultiDataObject) dao;
+                    for (MultiDataObject.Entry entry : mdao.secondaryEntries()) {
+                        if (entry instanceof CookieSet.Factory) {
+                            CookieSet.Factory factory = (CookieSet.Factory) entry;
+                            EditorCookie ec = factory.createCookie(EditorCookie.class);
+                            Document entryDocument = ec.getDocument();
+                            if (entryDocument == sdoc && ec instanceof EditorCookie.Observable) {
+                                editableCookie = (EditorCookie.Observable) ec;
+                                editableDocument = sdoc;
+                                editorUndoRedo = getUndoRedo(ec);
+                            }
+                        }
+                    }
+                }
+                if (editableCookie == null) {
+                    EditorCookie cookie = dao.getCookie(EditorCookie.class);
+                    if (cookie instanceof EditorCookie.Observable) {
+                        editableCookie = (EditorCookie.Observable) cookie;
+                        editableDocument = sdoc;
+                        editorUndoRedo = getUndoRedo(cookie);
+                    }
                 }
             }
         }
