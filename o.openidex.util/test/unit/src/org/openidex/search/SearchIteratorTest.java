@@ -55,8 +55,7 @@ public final class SearchIteratorTest extends NbTestCase {
         TestRunner.run(new NbTestSuite(SearchIteratorTest.class));
     }
 
-    /**
-     */
+    @Override
     protected void setUp() throws Exception {
         dataDir = FileUtil.toFileObject(getDataDir());
         assert dataDir != null;
