@@ -47,7 +47,6 @@ public class ValidateBPEL {
         try {
             model = BPELCatalogModel.getDefault().getBPELModel(bpelFileUri);
         }catch (Exception ex) {
-            ex.printStackTrace();
             throw new RuntimeException("Error while trying to create BPEL Model ",ex);
         }
         Validation validation = new Validation();

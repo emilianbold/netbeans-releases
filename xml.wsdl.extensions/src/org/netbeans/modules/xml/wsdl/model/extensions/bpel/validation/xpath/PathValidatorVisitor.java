@@ -31,6 +31,7 @@ import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.TypeContainer;
+import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
@@ -154,6 +155,10 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
             //
             // Here the parentComponent has to reference to the last element of the XPath
             GlobalType gType = getComponentType(parentComponent);
+
+            if (gType == null) {
+              return;
+            }
             //
             // Check if the type of the last element of the XPath
             if (!propType.equals(gType)) {
@@ -326,12 +331,15 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
      */ 
     private GlobalType getComponentType(SchemaComponent comp) {
         NamedComponentReference<? extends GlobalType> gTypeRef = null;
+
         if (comp instanceof TypeContainer) {
             gTypeRef = ((TypeContainer)comp).getType();
         } else if (comp instanceof LocalAttribute) {
             gTypeRef = ((LocalAttribute)comp).getType();
         } else if (comp instanceof GlobalAttribute) {
             gTypeRef = ((GlobalAttribute)comp).getType();
+        } else if (comp instanceof ElementReference) {
+          return null;
         } else {
             // Error. Can not resolve type of the last location path element.
             addResultItem(ResultType.ERROR, "UNRESOLVED_XPATH_TAIL",

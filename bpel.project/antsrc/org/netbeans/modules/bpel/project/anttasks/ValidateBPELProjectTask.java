@@ -31,8 +31,6 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Ant task wrapper invokes Validate BPEL Model
@@ -45,7 +43,6 @@ public class ValidateBPELProjectTask extends Task {
     private static final String WSDL_EXT = ".wsdl";
     private static final String XSD_EXT = ".xsd";
 
-    private Logger logger = Logger.getLogger(ValidateBPELProjectTask.class.getName());
     private String mSourceDirectory = null;
     private String mBuildDirectory = null;    
     private String mProjectClassPath= null;
@@ -95,7 +92,9 @@ public class ValidateBPELProjectTask extends Task {
         }
     }  
     
-    public void execute() throws BuildException { 
+    public void execute() throws BuildException {
+        Boolean isErrors = null;
+
         try {
 //System.out.println("1111");
             m_myClassLoader = new AntClassLoader(); 
@@ -115,6 +114,10 @@ public class ValidateBPELProjectTask extends Task {
             driver = antTaskClass.getMethod("setSourceDirectory", new Class[] { java.lang.String.class });
             param = new Object[] { this.mSourceDirectory};
             driver.invoke(validateBPELObj, param);
+
+            driver = antTaskClass.getMethod("setAllowBuildWithError", new Class[] { java.lang.String.class });
+            param = new Object[] { "" + this.mAllowBuildWithError};
+            driver.invoke(validateBPELObj, param);
 //System.out.println("5555");
                       
             driver = antTaskClass.getMethod("setProjectClassPath", new Class[] { java.lang.String.class });
@@ -125,27 +128,25 @@ public class ValidateBPELProjectTask extends Task {
             driver = antTaskClass.getMethod("setBuildDependentProjectDir", new Class[] { java.lang.String.class });
             param = new Object[] { this.mBuildDependentProjectFilesDirectory};
             driver.invoke(validateBPELObj, param);
-System.out.println("=========");
+//System.out.println("=========");
             
             driver = antTaskClass.getMethod("execute", null);
             driver.invoke(validateBPELObj, null);                    
-System.out.println("8888");
+//System.out.println("8888");
             
             driver = antTaskClass.getMethod("isFoundErrors", null);
-            Boolean isErrors = (Boolean) driver.invoke(validateBPELObj, null);
-System.out.println("9999");
-
-            if (isErrors.booleanValue()) {
-                throw new BuildException("Found validation errors.");
-            }
-        }
-        catch (Throwable ex) {
-ex.printStackTrace();
-            if ( !mAllowBuildWithError) {
-                logger.log(Level.FINE, "Validation has errors!!",ex );
-                throw new BuildException("!!! Found compilation errors.");
-            }
-        }
+            isErrors = (Boolean) driver.invoke(validateBPELObj, null);
+//System.out.println("isErrors: " + isErrors);
+         }
+         catch (Throwable e) {
+//e.printStackTrace();
+                 throw new BuildException("Found error: " + e.getMessage());
+         }
+         if (isErrors != null && isErrors.booleanValue()) {
+             if ( !mAllowBuildWithError) {
+                 throw new BuildException("Found validation error(s).");
+             }
+         }
     }
     
     private void initClassLoader() {

@@ -23,143 +23,69 @@ import org.apache.tools.ant.Task;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
-
 import java.lang.reflect.Method;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 
 /**
  * Ant task wrapper which invokes the JBI Generation task
  * @author Sreenivasan Genipudi
  */
 public class GenerateJBIDescriptorTask extends org.apache.tools.ant.Task{
-    // Member variable representing source directory
-    /**
-     * Source directory
-     */
     private String mSourceDirectory = null;
-    // Member variable representing build directory
-    /**
-     * Build directory
-     */
     private String mBuildDirectory = null;    
-    // Member variable representing project classpath
-    /**
-     * Project classpath
-     */
     private String mProjectClassPath= null;
-    /**
-     * Custom classloader used to invoke the JBI Generation task
-     */
     private AntClassLoader m_myClassLoader = null;
-    /**
-     * Classpath Reference
-     */
     private Reference m_ref = null;
+
+    public GenerateJBIDescriptorTask() {}
     
-    /**
-     * Logger instance
-     */
-    private Logger logger = Logger.getLogger(GenerateJBIDescriptorTask.class.getName());    
-    /**
-     * Constructor
-     */
-    public GenerateJBIDescriptorTask() {
-    }
-    
-    /**
-     * Set the classpath reference
-     * @param ref Classpath Reference
-     */
     public void setClasspathRef(Reference ref) {
         this.m_ref = ref;
     }
     
-    /**
-     * Set the build directory
-     * @param buildDir build directory
-     */
     public void setBuildDirectory(String buildDir) {
         mBuildDirectory = buildDir;
     }
-    /**
-     * Set the source directory
-     * @param srcDir source directory
-     */
+
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
     }
     
-    /**
-     * Get the source directory
-     * @return String value of the source directory
-     */
     public String getSourceDirectory() {
         return this.mSourceDirectory;
     }
     
-    /**
-     * Set the project classpath
-     * @param projectClassPath Project classpath
-     */
     public void setProjectClassPath(String projectClassPath) {
         this.mProjectClassPath = projectClassPath;
     }
         
-    
-    /**
-     * Invoke the task that generates the JBI.xml
-     */
     public void execute() throws BuildException { 
         try {
             m_myClassLoader = new AntClassLoader(); 
             initClassLoader();
-             Class antTaskClass =  Class.forName("org.netbeans.modules.bpel.project.anttasks.GenerateJBIDescriptor", true,m_myClassLoader );
-             Thread.currentThread().setContextClassLoader(m_myClassLoader);
-             // m_myClassLoader.forceLoadClass("org.netbeans.modules.bpel.project.anttasks.BPELCatalogModel");
-         //   m_myClassLoader.forceLoadClass("org.openide.util.Lookup");
-             Object genJBIInstObj = antTaskClass.newInstance();
+            Class antTaskClass =  Class.forName("org.netbeans.modules.bpel.project.anttasks.GenerateJBIDescriptor", true,m_myClassLoader );
+            Thread.currentThread().setContextClassLoader(m_myClassLoader);
+            Object genJBIInstObj = antTaskClass.newInstance();
 
-             Method driver = antTaskClass.getMethod("setBuildDirectory",
-                            new Class[] { java.lang.String.class });
-             Object[] param = new Object[] {
-                            this.mBuildDirectory
-                        };
-            driver.invoke(genJBIInstObj,
-                        param);
-                        
-            driver = antTaskClass.getMethod("setSourceDirectory",
-                           new Class[] { java.lang.String.class });
-            param = new Object[] {
-                           this.mSourceDirectory
-                       };
-            driver.invoke(genJBIInstObj,
-                       param);   
+            Method driver = antTaskClass.getMethod("setBuildDirectory", new Class[] { java.lang.String.class });
+            Object[] param = new Object[] { this.mBuildDirectory};
+            driver.invoke(genJBIInstObj, param);
                        
-            driver = antTaskClass.getMethod("setProjectClassPath",
-                           new Class[] { java.lang.String.class });
-            param = new Object[] {
-                           this.mProjectClassPath
-                       };
-            driver.invoke(genJBIInstObj,
-                       param);                          
-                     
-            driver = antTaskClass.getMethod("execute",
-                            null);
+            driver = antTaskClass.getMethod("setSourceDirectory", new Class[] { java.lang.String.class });
+            param = new Object[] { this.mSourceDirectory };
+            driver.invoke(genJBIInstObj, param);   
+                      
+            driver = antTaskClass.getMethod("setProjectClassPath", new Class[] { java.lang.String.class });
+            param = new Object[] { this.mProjectClassPath};
+            driver.invoke(genJBIInstObj, param);                          
+                    
+            driver = antTaskClass.getMethod("execute", null);
             driver.invoke(genJBIInstObj, null);
-
-        }catch (Exception ex) {
-            logger.log(Level.FINE, "Compilation Errors found", ex);
-            throw new BuildException("Compilation Errors found");
+        }
+        catch (Exception e) {
+            throw new BuildException("Errors found");
         }
     }
     
-    /**
-     * Set the custom classloader and make the parent first reference 
-     * by the classloader to False
-     */
     private void initClassLoader() {
         Path path = new Path(getProject());
         path.setRefid(m_ref);

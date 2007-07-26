@@ -16,7 +16,7 @@
     
     <types>
         <xsd:schema xmlns="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace" 
-                    targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSample"  >
+                    targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSample">
             <xsd:import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace" schemaLocation="AsynchronousSample.xsd"/>
         </xsd:schema>
     </types>
@@ -66,13 +66,13 @@
         propertyName="tns:correlatorProp"
         messageType="tns:requestMessageClient"
         part="inputType">
-        <bpws:query>/xs:typeA/id</bpws:query>
+        <bpws:query>/xs:typeA/xs:id</bpws:query>
     </bpws:propertyAlias>
     
     <bpws:propertyAlias 
         propertyName="tns:correlatorProp"
         messageType="partnerNS:responseMessage"
         part="resultType">
-        <bpws:query>/xs:typeA/id</bpws:query>        
+        <bpws:query>/xs:typeA/xs:id</bpws:query>
     </bpws:propertyAlias>
 </wsdl:definitions>

@@ -148,7 +148,15 @@ public class FindChildSchemaVisitor extends DefaultSchemaVisitor {
     // --------------- References ------------------
     
     public void visit(ElementReference er) {
+        // vlv # 105159
+        if ( !isAttribute) {
+            checkComponent(er);
+        }
+        if (isChildFound()) {
+            return;
+        }
         NamedComponentReference<GlobalElement> geRef = er.getRef();
+
         if (geRef != null) {
             GlobalElement ge = geRef.get();
             if (ge != null) {

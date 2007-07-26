@@ -16,18 +16,14 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.project.anttasks;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-
 import org.netbeans.modules.bpel.project.CommandlineBpelProjectXmlCatalogProvider;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-
 import org.apache.tools.ant.types.Reference;
 
 /**
@@ -35,91 +31,53 @@ import org.apache.tools.ant.types.Reference;
  * @author Sreenivasan Genipudi
  */
 public class GenerateJBIDescriptor extends Task {
-    // Member variable representing source directory
     private String mSourceDirectory = null;
-    // Member variable representing build directory
     private String mBuildDirectory = null;    
-    // Member variable representing project classpath
     private String mProjectClassPath= null;
     
+    public GenerateJBIDescriptor() {}
     
-    /**
-     * Constructor
-     */
-    public GenerateJBIDescriptor() {
-    }
-    
-    /**
-     * Set the build directory
-     * @param buildDir build directory
-     */
     public void setBuildDirectory(String buildDir) {
         mBuildDirectory = buildDir;
     }
-    /**
-     * Set the source directory
-     * @param srcDir source directory
-     */
+
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
     }
-    /**
-     * Set the classpath reference
-     * @param ref Classpath Reference
-     */
+
     public void setClasspathRef(Reference ref) {
     }    
     
-    /**
-     * Get the source directory
-     * @return String value of the source directory
-     */
     public String getSourceDirectory() {
         return this.mSourceDirectory;
     }
     
-    /**
-     * Set the project classpath
-     * @param projectClassPath Set the project classpath
-     */
     public void setProjectClassPath(String projectClassPath) {
         this.mProjectClassPath = projectClassPath;
     }
     
-    /**
-     * generate JBI xml
-     * @throws org.apache.tools.ant.BuildException 
-     */
     public void execute() throws BuildException {
-        
-        if(this.mSourceDirectory == null) {
+        if (this.mSourceDirectory == null) {
             throw new BuildException("No directory is set for source files.");
         }
-        
         File sourceDirectory = new File(this.mSourceDirectory);
-        
-        //read project classpath
-        //TODO: refactor this to use wsdl classpath
         ArrayList projectDirs = new ArrayList();
-        if(this.mProjectClassPath != null
-                && !this.mProjectClassPath.trim().equals("")
-                && !this.mProjectClassPath.trim().equals("${javac.classpath}")) {
+
+        if (this.mProjectClassPath != null && !this.mProjectClassPath.trim().equals("") && !this.mProjectClassPath.trim().equals("${javac.classpath}")) {
             StringTokenizer st = new StringTokenizer(this.mProjectClassPath, ";");
+           
             while (st.hasMoreTokens()) {
                 String spath = st.nextToken();
                 try {
-                    
                     File sFile =  new File(sourceDirectory.getParentFile().getCanonicalPath() + File.separator + spath);
-                    
                     File srcFolder = new File(sFile.getParentFile().getParentFile().getCanonicalFile(), "src");
                     projectDirs.add(srcFolder);
-                } catch(Exception ex) {
+                } 
+                catch(Exception e) {
                     throw new BuildException("Failed to create File object for dependent project path "+ spath);
                 }
             }
         }
-        
-        //find the owner project
         if(sourceDirectory != null) {
             ArrayList srcList = new ArrayList();
             srcList.add(sourceDirectory);
@@ -128,5 +86,4 @@ public class GenerateJBIDescriptor extends Task {
             generator.generate(new File(mBuildDirectory));
         }
     }
-    
 }

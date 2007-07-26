@@ -375,15 +375,9 @@ public class IDEValidateBPELProject extends Task {
         validateBPEL(bpelFile);
       }
       catch (Throwable ex) {
-//        logger.log(Level.SEVERE, "Validation has errors on "+ bpelFile.getAbsolutePath());
-
-        if (ex.getMessage() != null) {
-//          logger.severe( ex.getMessage());
-        }
         if ( !mAllowBuildWithError) {
           StringWriter writer = new StringWriter();
           PrintWriter pWriter = new PrintWriter(writer);
-//          ex.printStackTrace(pWriter);
           throw new BuildException(ex);
         }
       }

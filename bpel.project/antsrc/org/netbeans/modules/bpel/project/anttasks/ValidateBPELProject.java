@@ -19,11 +19,9 @@
 package org.netbeans.modules.bpel.project.anttasks;
 
 import java.io.File;
-
 import java.io.FileReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
 import java.net.URI;
 
 import java.util.ArrayList;
@@ -65,9 +63,6 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 /**
  * Validates BPEL Module
  * @author Sreenivasan Genipudi
@@ -83,42 +78,22 @@ public class ValidateBPELProject extends Task {
     private Map mBpelFileNamesToFileInBuildDir = new HashMap();
     private boolean isFoundErrors = false;
     private boolean mAllowBuildWithError = false;
-    private Logger logger = Logger.getLogger(ValidateBPELProject.class.getName());
 
-    /**
-     * Constructor
-     */
-    public ValidateBPELProject() {
-    }
+    public ValidateBPELProject() {}
     
-    /**
-     * Set the source directory
-     * @param srcDir Source directory
-     */
     public void setSourceDirectory(String srcDir) {
-    this.mSourceDirectory = srcDir;
+      this.mSourceDirectory = srcDir;
     }
     
-    /**
-     * Set the build directory
-     * @param buildDir build directory
-     */
     public void setBuildDirectory(String buildDir) {
-    this.mBuildDirectory = buildDir;
+      this.mBuildDirectory = buildDir;
     }
-    /**
-     * Run validation
-     * @param srcDir source directory
-     */
+
     public void setRunValidation(String flag) {
         setAllowBuildWithError(flag);
         mAllowBuildWithError = !mAllowBuildWithError;
     }
             
-    /**
-     * Run validation
-     * @param srcDir source directory
-     */
     public void setAllowBuildWithError(String flag) {
         if (flag != null) {
             if (flag.equals("false")) {
@@ -127,41 +102,23 @@ public class ValidateBPELProject extends Task {
                 mAllowBuildWithError = true;
             }
         }
-        
     }  
             
-    
-    /**
-     * Set the classpath reference
-     * @param ref Classpath Reference
-     */
     public void setClasspathRef(Reference ref) {
-
     }    
-    
-    /**
-     * Set the project classpath
-     * @param projectClassPath Project classpath
-     */
+
     public void setProjectClassPath(String projectClassPath) {
-    this.mProjectClassPath = projectClassPath;
+      this.mProjectClassPath = projectClassPath;
     }
     
-    /**
-     * Set the dependent project files directory
-     * @param dependentProjectFilesDir dependent project files directory
-     */
     public void setBuildDependentProjectDir(String dependentProjectFilesDir) {
-    this.mBuildDependentProjectFilesDirectory = dependentProjectFilesDir;
+      this.mBuildDependentProjectFilesDirectory = dependentProjectFilesDir;
     }
     
     public boolean isFoundErrors() {
         return this.isFoundErrors;
     }
     
-    /**
-     * Validate the BPEL Model
-     */
     public void execute() throws BuildException {
 //System.out.println("11");
         if(this.mSourceDirectory == null) {
@@ -230,14 +187,6 @@ public class ValidateBPELProject extends Task {
     }    
     
     private void processBpelFilesInBuildDir(File bpelFile) {
-        //always get relative path from build directory.
-        //this relative path later is compared with relative path of 
-        //a file from source dir
-        //(for a same file both should be equal)
-        //example : c:\bpelproject\build\bank\bank.bpel
-        //and  c:\bpelproject\src\bank\bank.bpel
-        //so relative path will be bank\bank.bpel
-        //from build as well as from src directory.
         String relativePath = RelativePath.getRelativePath(this.mBuildDir, bpelFile);
                 this.mBpelFileNamesToFileInBuildDir.put(relativePath, bpelFile);
     }
@@ -281,7 +230,6 @@ public class ValidateBPELProject extends Task {
                                 processBpelFile(file);
                         } 
                 }
-                        
         }
         
         private void processBpelFiles(File[]bpelFiles) {
@@ -314,28 +262,24 @@ public class ValidateBPELProject extends Task {
         }
         
         private void validateBPEL(File bpel) throws BuildException {
-System.out.println("111");
+//System.out.println("111");
             BpelModel model = null;
             
             try {
-System.out.println("222");
+//System.out.println("222");
                 model = BPELCatalogModel.getDefault().getBPELModel(bpel.toURI());
-System.out.println("333");
+//System.out.println("333");
             }
             catch (Exception e) {
                 throw new RuntimeException("Error while trying to create BPEL Model", e);
             }
-System.out.println("444");
-            //Validator validator = (Validator) Lookups.metaInfServices(getClass().getClassLoader()).lookup(Validator.class);
-            try {
-
+//System.out.println("444");
             Validation validation = new Validation();
             validation.validate((org.netbeans.modules.xml.xam.Model) model, ValidationType.COMPLETE);
             Collection col = validation.getValidationResult();
             boolean isError = false;
-            //Collection col = validation.getValidationResult();
 
-System.out.println("555");
+//System.out.println("555");
             for (Iterator itr = col.iterator(); itr.hasNext();) {
                ResultItem resultItem = (ResultItem) itr.next();
                logValidationErrors(bpel, resultItem);
@@ -344,15 +288,9 @@ System.out.println("555");
                    isError = true;
                }
             }
-System.out.println("666");
-            if(isError) {
+//System.out.println("666");
+            if (isError) {
                 this.isFoundErrors = true;
-            }
-            }
-            catch (Throwable e) {
-System.out.println();
-System.out.println("ERROR");
-                e.printStackTrace();
             }
         }
         
@@ -368,13 +306,13 @@ System.out.println("ERROR");
             lineNumber = ModelUtil.getLineNumber(component);
             columnNumber = ModelUtil.getColumnNumber(component);
             file = (File) component.getModel().getModelSource().getLookup().lookup(File.class);        
-            showError(file,columnNumber, lineNumber,errorDescription,msgType );
+            showError(file,columnNumber, lineNumber, errorDescription, msgType);
           }
           else {
             columnNumber = resultItem.getColumnNumber();
             lineNumber = resultItem.getLineNumber(); 
             file =(File)resultItem.getModel().getModelSource().getLookup().lookup(File.class);  
-            showError(file,columnNumber, lineNumber,errorDescription ,msgType);
+            showError(file,columnNumber, lineNumber, errorDescription, msgType);
           }
         }
         
@@ -383,44 +321,44 @@ System.out.println("ERROR");
             StringBuffer columnNumStr = new StringBuffer(5);
 
             if(lineNumber != -1) {
-            lineNumStr.append(":");
-            lineNumStr.append(lineNumber);
-            lineNumStr.append(":");
-
+              lineNumStr.append(":");
+              lineNumStr.append(lineNumber);
+              lineNumStr.append(",");
             }
-
             if(columnNumber != -1) {
-            columnNumStr.append(" column:"); 
-            columnNumStr.append(columnNumber);
-            columnNumStr.append(" ");
+              columnNumStr.append(" column:"); 
+              columnNumStr.append(columnNumber);
+              columnNumStr.append(" ");
             }
             msgType = msgType + ": "; 
-
             StringBuffer msg = new StringBuffer(100);
-            if(file != null) {
-                msg.append(file.getPath());
-            }
-
-            msg.append(lineNumStr);
-            msg.append(columnNumStr);
             msg.append(msgType);
+
+            if (file != null) {
+              msg.append(file.getPath());
+            }
+            msg.append(lineNumStr);
+            msg.append(columnNumStr + "\n");
             msg.append(errorDescription);
+
+            if ( !mAllowBuildWithError) {
+              System.out.println(msg);
+              System.out.println();
+            }
         }
         
         private void loadAndValidateExistingBusinessProcess(File bpelFile) throws BuildException {
                 try {
                     validateBPEL(bpelFile);
-                } catch (Throwable ex) {
-                        logger.log(Level.SEVERE, "Validation has errors on " + bpelFile.getAbsolutePath());
-                        
-                        if (ex.getMessage() != null) {
-                            logger.severe( ex.getMessage());
-                        }
+                } catch (Throwable e) {
+//System.out.println();
+//System.out.println();
+//System.out.println("---------");
+//System.out.println();
+//System.out.println();
+//e.printStackTrace();
                         if ( !mAllowBuildWithError) {
-                            StringWriter writer = new StringWriter();
-                            PrintWriter pWriter = new PrintWriter(writer);
-                            ex.printStackTrace(pWriter);
-                            throw new BuildException(ex);
+                            throw new BuildException(e);
                         }
                 }
         }

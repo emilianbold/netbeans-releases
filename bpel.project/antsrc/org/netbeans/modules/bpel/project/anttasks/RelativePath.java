@@ -113,18 +113,4 @@ public class RelativePath {
 
         return s;
     }
-
-    /**
-       * test the function
-       */
-    public static void main(String args[]) {
-        if (args.length != 2) {
-            System.out.println("RelativePath <home> <file>");
-            return;
-        }
-        System.out.println("home = " + args[0]);
-        System.out.println("file = " + args[1]);
-        System.out.println("path = " + getRelativePath(new File(args[0]),new
-                File(args[1])));
-    }
 }

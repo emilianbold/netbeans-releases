@@ -39,7 +39,6 @@ Microsystems, Inc. All Rights Reserved.
         - dist
         - execution
         - debugging
-        - javadoc
         - cleanup
 
         ]]></xsl:comment>
@@ -50,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:attribute name="basedir">..</xsl:attribute>
 
             <target name="default">
-                <xsl:attribute name="depends">dist,javadoc</xsl:attribute>
+                <xsl:attribute name="depends">dist</xsl:attribute>
                 <xsl:attribute name="description">Build whole project.</xsl:attribute>
             </target>
 
@@ -144,41 +143,37 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- we need to seperate bpel model into standalone jars so that we
                 can use them in ant tasks. for now we need to add the jars of this modules 
                 -->
-                <path id="ant.task.classpath.models">
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/> 
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/> 
-            
-                </path>
-                <path id="ant.task.classpath.validation">
-            
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-core.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xml-xpath.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/ext/jxpath/jxpath1.1.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/>      
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/>            
-            
-            
-                </path>        
+      <path id="ant.task.classpath.models">
+          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
+          <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
+          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-model.jar"/>
+          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
+          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
+          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+          <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+          <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
+          <pathelement location="${{netbeans.home}}/../xml1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+          <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
+          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/> 
+          <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/> 
+      </path>
+      <path id="ant.task.classpath.validation">
+          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-core.jar"/>
+          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
+          <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
+          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-model.jar"/>
+          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
+          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
+          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+          <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+          <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
+          <pathelement location="${{netbeans.home}}/../xml1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+          <pathelement location="${{netbeans.home}}/../xml1/modules/org-netbeans-modules-xml-xpath.jar"/>
+          <pathelement location="${{netbeans.home}}/../xml1/modules/ext/jxpath/jxpath1.1.jar"/>
+          <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
+          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/>      
+          <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/>            
+      </path>        
                 
                 <!--
                 <taskdef name="generate-portmap-descriptors" classname="org.netbeans.modules.bpel.project.anttasks.GeneratePortmapDescriptors">
