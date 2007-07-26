@@ -39,7 +39,7 @@ import org.openide.util.NbBundle;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class TMapLogicalNavigatorPanel implements NavigatorPanelWithUndo {
+public class TMapLogicalNavigatorPanel implements NavigatorPanel/*WithUndo*/ {
 
     private AtomicReference<UndoRedo.Manager> myUndoRedoRef = 
             new AtomicReference<UndoRedo.Manager>();
@@ -110,22 +110,22 @@ public class TMapLogicalNavigatorPanel implements NavigatorPanelWithUndo {
     }
     
     /** {@inheritDoc} */
-    public UndoRedo getUndoRedo() {
-        if (myUndoRedoRef.get() == null) {
-            myUndoRedoRef.compareAndSet(null, createUndoRedo());
-        }
-        return myUndoRedoRef.get();
-    }
-
-    private UndoRedo.Manager createUndoRedo() {
-        UndoRedo.Manager undoRedo = null;
-        TMapDataObject dObj = getTMapDataObject();
-        if (dObj != null) {
-             undoRedo = dObj.getEditorSupport().getUndoManager();
-        }
-
-        return undoRedo;
-    }
+//    public UndoRedo getUndoRedo() {
+//        if (myUndoRedoRef.get() == null) {
+//            myUndoRedoRef.compareAndSet(null, createUndoRedo());
+//        }
+//        return myUndoRedoRef.get();
+//    }
+//
+//    private UndoRedo.Manager createUndoRedo() {
+//        UndoRedo.Manager undoRedo = null;
+//        TMapDataObject dObj = getTMapDataObject();
+//        if (dObj != null) {
+//             undoRedo = dObj.getEditorSupport().getUndoManager();
+//        }
+//
+//        return undoRedo;
+//    }
 
     private TMapDataObject getTMapDataObject() {
         TMapDataObject dObj = null;

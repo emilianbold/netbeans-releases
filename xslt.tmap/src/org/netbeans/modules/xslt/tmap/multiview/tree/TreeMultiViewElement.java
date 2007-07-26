@@ -292,7 +292,7 @@ public class TreeMultiViewElement extends TopComponent
         setLayout(new GridBagLayout());
         
         myTreeView = createTreeView();
-        JScrollPane scroll = new JScrollPane(new JPanel()/*myTreeView*/);
+        JScrollPane scroll = new JScrollPane(/*new JPanel()*/myTreeView);
         scroll.setBorder(null);
         GridBagConstraints gc = createGBConstraints();
         gc.gridx = 0;
