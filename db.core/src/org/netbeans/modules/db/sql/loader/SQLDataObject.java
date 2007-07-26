@@ -19,20 +19,26 @@
 
 package org.netbeans.modules.db.sql.loader;
 
-import org.openide.cookies.SaveCookie;
+import java.nio.charset.Charset;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
  * @author Andrei Badea
  */
 public class SQLDataObject extends MultiDataObject {
+
+    private Lookup lookup;
 
     public SQLDataObject(FileObject primaryFile, UniFileLoader loader) throws DataObjectExistsException {
         super(primaryFile, loader);
@@ -43,12 +49,39 @@ public class SQLDataObject extends MultiDataObject {
     protected Node createNodeDelegate() {
         return new SQLNode(this);
     }
-    
+
+    public synchronized Lookup getLookup() {
+        if (lookup == null) {
+            lookup = new ProxyLookup(getCookieSet().getLookup(), Lookups.singleton(new FileEncodingQueryImpl()));
+        }
+        return lookup;
+    }
+
+    public boolean isConsole() {
+        try {
+            // the "console" files are stored in the SFS
+            return "nbfs".equals(getPrimaryFile().getURL().getProtocol()); // NOI18N
+        } catch (FileStateInvalidException e) {
+            return false;
+        }
+    }
+
     void addCookie(Node.Cookie cookie) {
         getCookieSet().add(cookie);
     }
-    
+
     void removeCookie(Node.Cookie cookie) {
         getCookieSet().remove(cookie);
+    }
+
+    private final class FileEncodingQueryImpl extends FileEncodingQueryImplementation {
+
+        public Charset getEncoding(FileObject file) {
+            // the "console" files are always in UTF-8
+            if (isConsole()) {
+                return Charset.forName("UTF-8"); // NOI18N
+            }
+            return null;
+        }
     }
 }
