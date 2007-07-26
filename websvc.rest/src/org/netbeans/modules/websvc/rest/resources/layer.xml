@@ -84,7 +84,7 @@
             </folder> 
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-rest-nodes-RestServicesNodeFactory.instance">
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="450"/>
                 </file>
             </folder>
         </folder>
