@@ -837,4 +837,67 @@ public class JavaSourceHelper {
         }
         return null;
     }
+    
+    static List<? extends AnnotationMirror> classAnons = null;
+    public synchronized static List<? extends AnnotationMirror> getClassAnnotations(JavaSource source) {
+        try {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller)
+                        throws IOException {
+                    controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    
+                    TypeElement classElement = getTopLevelClassElement(controller);
+                    if (classElement == null) {
+                        return;
+                    }
+                    
+                    classAnons = controller.getElements().getAllAnnotationMirrors(classElement);
+                }
+            }, true);
+        } catch (IOException ex) {
+            
+        }
+        
+        return classAnons;
+    }
+    
+    static List<? extends Tree> allTree = null;
+    public synchronized static List<? extends Tree> getAllTree(JavaSource source) {
+        try {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller)
+                        throws IOException {
+                    String className = controller.getFileObject().getName();        
+                    CompilationUnitTree cu = controller.getCompilationUnit();
+                    if (cu != null) {
+                        allTree = cu.getTypeDecls();
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return allTree;
+    }
+    
+    static List<MethodTree> allMethods = new ArrayList<MethodTree>();
+    public synchronized static List<MethodTree> getAllMethods(JavaSource source) {
+        allMethods.clear();
+        try {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller)
+                        throws IOException {
+                    TypeElement classElement = getTopLevelClassElement(controller);
+                    List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
+                    
+                    for (ExecutableElement method : methods) {
+                        allMethods.add(controller.getTrees().getTree(method));
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            
+        }
+        return allMethods;
+    }    
 }

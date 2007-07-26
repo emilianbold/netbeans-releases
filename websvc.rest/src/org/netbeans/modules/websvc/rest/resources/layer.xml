@@ -65,6 +65,15 @@
             <file name="RefConverter.java" url="/org/netbeans/modules/websvc/rest/codegen/resources/RefConverter.template">
                 <attr name="position" intvalue="0"/>
             </file>
+            <file name="projectstub.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/projectstub.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="support.js" url="/org/netbeans/modules/websvc/rest/codegen/resources/stubsupport.template">
+                <attr name="position" intvalue="0"/>
+            </file>
+            <file name="reststub.html" url="/org/netbeans/modules/websvc/rest/codegen/resources/reststub.template">
+                <attr name="position" intvalue="0"/>
+            </file>
         </folder>
     </folder>
     
