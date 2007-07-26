@@ -20,36 +20,37 @@ package org.netbeans.modules.websvc.rest.nodes;
 
 import java.awt.Image;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
 import org.openide.nodes.AbstractNode;
-import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.openide.nodes.Children;
 
-public class RestServiceNode extends AbstractNode{
-    private String serviceName;
-    private String uriTemplate;
-    
+public class HttpMethodNode extends AbstractNode{
+    private String methodName;
+    private String produceMime;
+    private String consumeMime;
     private MetadataModel<RestServicesMetadata> model;
     
-    public RestServiceNode(MetadataModel<RestServicesMetadata> model,
-            RestServiceDescription desc) {
-        super(new RestServiceChildren(model, desc.getName()));
-        this.serviceName = desc.getName();
-        this.uriTemplate = desc.getUriTemplate();
+    public HttpMethodNode(MetadataModel<RestServicesMetadata> model, HttpMethod method) {
+        super(Children.LEAF);
+        this.methodName = method.getName();
+        this.produceMime = method.getProduceMime();
+        this.consumeMime = method.getConsumeMime();
     }
     
     public String getDisplayName() {
-        return serviceName + " [\"" + uriTemplate + "\"]";
+        return methodName + "() : [\"" + consumeMime + "\" : \"" + produceMime + "\"]";
     }
     
     public String getShortDescription() {
         return "";
     }
 
-    private static final java.awt.Image SERVICE_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservice.png" ); //NOI18N
+    private static final java.awt.Image METHOD_BADGE =
+            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/method.png" ); //NOI18N
     
     public java.awt.Image getIcon(int type) {
-        return SERVICE_BADGE;
+        return METHOD_BADGE;
     }
     
     void changeIcon() {

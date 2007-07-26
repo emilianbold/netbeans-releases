@@ -24,31 +24,28 @@ import java.beans.BeanInfo;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 
-public class RestServicesNode extends AbstractNode { //implements PropertyChangeListener{
-    private Project project;
-    private static final Image REST_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservices.png", true ); // NOI18N
+public class HttpMethodsNode extends AbstractNode { //implements PropertyChangeListener{
+    private static final Image HTTP_METHODS_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservices.png", true ); // NOI18N
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
     
-    public RestServicesNode(Project project, MetadataModel<RestServicesMetadata> model) {
-        super(new RestServicesChildren(model));
-        setDisplayName(NbBundle.getBundle(RestServicesNode.class).getString("LBL_RestServices"));
-        this.project=project;
+    private String serviceName;
+    
+    public HttpMethodsNode(MetadataModel<RestServicesMetadata> model, String serviceName) {
+        super(new HttpMethodsChildren(model, serviceName));
+        this.serviceName = serviceName;
+        setDisplayName(NbBundle.getBundle(HttpMethodsNode.class).getString("LBL_HttpMethods"));
+        
     }
     
     public Image getIcon( int type ) {
@@ -81,7 +78,7 @@ public class RestServicesNode extends AbstractNode { //implements PropertyChange
     private Image computeIcon( boolean opened, int type ) {        
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, REST_SERVICES_BADGE, 7, 7 );
+        image = Utilities.mergeImages(image, HTTP_METHODS_BADGE, 7, 7 );
         return image;        
     }
 

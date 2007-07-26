@@ -39,16 +39,18 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
-public class RestServicesNode extends AbstractNode { //implements PropertyChangeListener{
+public class SubResourceLocatorsNode extends AbstractNode { //implements PropertyChangeListener{
     private Project project;
-    private static final Image REST_SERVICES_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservices.png", true ); // NOI18N
+    private static final Image SUB_RESOURCE_LOCATORS_BADGE = Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservices.png", true ); // NOI18N
     static Icon folderIconCache;
     static Icon openedFolderIconCache;
     
-    public RestServicesNode(Project project, MetadataModel<RestServicesMetadata> model) {
-        super(new RestServicesChildren(model));
-        setDisplayName(NbBundle.getBundle(RestServicesNode.class).getString("LBL_RestServices"));
-        this.project=project;
+    private String serviceName;
+    
+    public SubResourceLocatorsNode(MetadataModel<RestServicesMetadata> model, String serviceName) {
+        super(new SubResourceLocatorsChildren(model, serviceName));
+        this.serviceName = serviceName;
+        setDisplayName(NbBundle.getBundle(SubResourceLocatorsNode.class).getString("LBL_SubResourceLocators"));
     }
     
     public Image getIcon( int type ) {
@@ -81,7 +83,7 @@ public class RestServicesNode extends AbstractNode { //implements PropertyChange
     private Image computeIcon( boolean opened, int type ) {        
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, REST_SERVICES_BADGE, 7, 7 );
+        image = Utilities.mergeImages(image, SUB_RESOURCE_LOCATORS_BADGE, 7, 7 );
         return image;        
     }
 

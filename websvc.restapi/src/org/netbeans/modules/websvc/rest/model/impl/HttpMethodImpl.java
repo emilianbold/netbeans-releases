@@ -34,7 +34,7 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
         super(methodElement);   
         
         this.type = Utils.getHttpMethod(methodElement);
-        this.consumeMime = Utils.getProduceMime(methodElement);
+        this.consumeMime = Utils.getConsumeMime(methodElement);
         this.produceMime = Utils.getProduceMime(methodElement);
     }
 

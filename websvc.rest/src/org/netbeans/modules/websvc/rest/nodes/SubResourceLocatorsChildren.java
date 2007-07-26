@@ -28,15 +28,18 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
 import org.openide.util.RequestProcessor;
 
 
 
-public class RestServicesChildren extends Children.Keys {
+public class SubResourceLocatorsChildren extends Children.Keys {
     private MetadataModel<RestServicesMetadata> model;
+    private String serviceName;
     private RestServicesListener listener;
     
     private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
@@ -45,8 +48,9 @@ public class RestServicesChildren extends Children.Keys {
         }
     });
     
-    public RestServicesChildren(MetadataModel<RestServicesMetadata> model) {
+    public SubResourceLocatorsChildren(MetadataModel<RestServicesMetadata> model, String serviceName) {
         this.model = model;
+        this.serviceName = serviceName;
     }
     
     protected void addNotify() {
@@ -90,9 +94,14 @@ public class RestServicesChildren extends Children.Keys {
             model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                 public Void run(RestServicesMetadata metadata) throws IOException {
                     RestServices root = metadata.getRoot();
+                    RestServiceDescription desc = root.getRestServiceDescription(serviceName);
                     
-                    for (RestServiceDescription desc : root.getRestServiceDescription()) {
-                        keys.add(desc.getName());
+                    if (desc != null) {
+                        for (RestMethodDescription method : desc.getMethods()) {
+                            if (method instanceof SubResourceLocator) {
+                                keys.add(method.getName());
+                            }
+                        }
                     }
                     
                     return null;
@@ -110,10 +119,14 @@ public class RestServicesChildren extends Children.Keys {
             Node[] nodes = model.runReadAction(new MetadataModelAction<RestServicesMetadata, Node[]>() {
                 public Node[] run(RestServicesMetadata metadata) throws IOException {
                     RestServices root = metadata.getRoot();
-                    RestServiceDescription desc = root.getRestServiceDescription((String) key);
+                    RestServiceDescription desc = root.getRestServiceDescription(serviceName);
                     
-                    if (desc != null) {
-                        return new Node[] {new RestServiceNode(model, desc)};
+                    for (RestMethodDescription method : desc.getMethods()) {
+                        if (method instanceof SubResourceLocator) {
+                            if (method.getName().equals(key)) {
+                                return new Node[] { new SubResourceLocatorNode(model, (SubResourceLocator) method) };
+                            }
+                        }
                     }
                     
                     return new Node[0];

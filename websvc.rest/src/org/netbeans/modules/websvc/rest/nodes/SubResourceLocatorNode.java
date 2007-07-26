@@ -21,35 +21,34 @@ package org.netbeans.modules.websvc.rest.nodes;
 import java.awt.Image;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.nodes.AbstractNode;
-import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
+import org.openide.nodes.Children;
 
-public class RestServiceNode extends AbstractNode{
-    private String serviceName;
+public class SubResourceLocatorNode extends AbstractNode{
+    private String methodName;
     private String uriTemplate;
-    
     private MetadataModel<RestServicesMetadata> model;
     
-    public RestServiceNode(MetadataModel<RestServicesMetadata> model,
-            RestServiceDescription desc) {
-        super(new RestServiceChildren(model, desc.getName()));
-        this.serviceName = desc.getName();
-        this.uriTemplate = desc.getUriTemplate();
+    public SubResourceLocatorNode(MetadataModel<RestServicesMetadata> model, SubResourceLocator method) {
+        super(Children.LEAF);
+        this.methodName = method.getName();
+        this.uriTemplate = method.getUriTemplate();
     }
     
     public String getDisplayName() {
-        return serviceName + " [\"" + uriTemplate + "\"]";
+        return methodName + "() : [\"" + uriTemplate+ "\"]";
     }
     
     public String getShortDescription() {
         return "";
     }
 
-    private static final java.awt.Image SERVICE_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservice.png" ); //NOI18N
+    private static final java.awt.Image METHOD_BADGE =
+            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/method.png" ); //NOI18N
     
     public java.awt.Image getIcon(int type) {
-        return SERVICE_BADGE;
+        return METHOD_BADGE;
     }
     
     void changeIcon() {

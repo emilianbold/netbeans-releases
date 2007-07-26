@@ -93,6 +93,6 @@ public class Utils {
     }
 
     private static String stripQuotes(String value) {
-        return value.substring(1, value.length() - 1);
+        return value.substring(value.indexOf("\"") + 1, value.lastIndexOf("\""));
     }
 }

@@ -106,8 +106,14 @@ public class RestServicesImpl implements RestServices {
         return restServices.toArray(new RestServiceDescriptionImpl[restServices.size()]);
     }
     
-    public RestServiceDescription getRestServiceDescription(int index) {
-        return getRestServiceDescription()[index];
+    public RestServiceDescription getRestServiceDescription(String name) {
+        for (RestServiceDescription desc : getRestServiceDescription()) {
+            if (desc.getName().equals(name)) {
+                return desc;
+            }
+        }
+        
+        return null;
     }
     
     public int sizeRestServiceDescription() {

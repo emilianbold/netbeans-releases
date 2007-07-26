@@ -32,7 +32,7 @@ public interface RestServices extends RootInterface {
     
     public RestServiceDescription[] getRestServiceDescription();
     
-    public RestServiceDescription getRestServiceDescription(int index);
+    public RestServiceDescription getRestServiceDescription(String name);
     
     public int sizeRestServiceDescription();
     

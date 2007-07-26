@@ -28,16 +28,23 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
+import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
 import org.openide.util.RequestProcessor;
 
 
 
-public class RestServicesChildren extends Children.Keys {
+public class RestServiceChildren extends Children.Keys {
     private MetadataModel<RestServicesMetadata> model;
+    private String serviceName;
     private RestServicesListener listener;
+    
+    private static final String KEY_HTTP_METHODS = "http_methods";  //NOI18N
+    private static final String KEY_SUB_RESOURCE_LOCATORS = "sub_resource_locators";        //NOI18N
     
     private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
         public void run() {
@@ -45,8 +52,9 @@ public class RestServicesChildren extends Children.Keys {
         }
     });
     
-    public RestServicesChildren(MetadataModel<RestServicesMetadata> model) {
+    public RestServiceChildren(MetadataModel<RestServicesMetadata> model, String serviceName) {
         this.model = model;
+        this.serviceName = serviceName;
     }
     
     protected void addNotify() {
@@ -90,11 +98,28 @@ public class RestServicesChildren extends Children.Keys {
             model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                 public Void run(RestServicesMetadata metadata) throws IOException {
                     RestServices root = metadata.getRoot();
+                    RestServiceDescription desc = root.getRestServiceDescription(serviceName);
                     
-                    for (RestServiceDescription desc : root.getRestServiceDescription()) {
-                        keys.add(desc.getName());
+                    if (desc != null) {
+                        int httpMethodCount = 0;
+                        int subResLocatorCount = 0;
+                        
+                        for (RestMethodDescription methodDesc : desc.getMethods()) {
+                            if (methodDesc instanceof HttpMethod) {
+                                httpMethodCount++;
+                            } else if (methodDesc instanceof SubResourceLocator) {
+                                subResLocatorCount++;
+                            }
+                        }
+                        
+                        if (httpMethodCount > 0) {
+                            keys.add(KEY_HTTP_METHODS);
+                        }
+                        
+                        if (subResLocatorCount > 0) {
+                            keys.add(KEY_SUB_RESOURCE_LOCATORS);
+                        }
                     }
-                    
                     return null;
                 }
             });
@@ -106,23 +131,10 @@ public class RestServicesChildren extends Children.Keys {
     }
     
     protected Node[] createNodes(final Object key) {
-        try {
-            Node[] nodes = model.runReadAction(new MetadataModelAction<RestServicesMetadata, Node[]>() {
-                public Node[] run(RestServicesMetadata metadata) throws IOException {
-                    RestServices root = metadata.getRoot();
-                    RestServiceDescription desc = root.getRestServiceDescription((String) key);
-                    
-                    if (desc != null) {
-                        return new Node[] {new RestServiceNode(model, desc)};
-                    }
-                    
-                    return new Node[0];
-                }
-            });
-            
-            return nodes;
-        } catch (IOException ex) {
-            
+        if (key.equals(KEY_HTTP_METHODS)) {
+            return new Node[] { new HttpMethodsNode(model, serviceName) };
+        } else if (key.equals(KEY_SUB_RESOURCE_LOCATORS)) {
+            return new Node[] { new SubResourceLocatorsNode(model, serviceName) };
         }
         
         return new Node[0];

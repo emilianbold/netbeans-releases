@@ -99,9 +99,16 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
             isRest = true;
         }
 
-        String name = Utils.getUriTemplate(typeElement);
-        if (!this.name.equals(name)) {
-            this.name = name;
+        String newValue = typeElement.getSimpleName().toString();
+        
+        if (this.name != newValue) {
+            this.name = newValue;
+            isModified = true;
+        }
+        
+        newValue = Utils.getUriTemplate(typeElement);
+        if (!this.uriTemplate.equals(newValue)) {
+            this.uriTemplate = newValue;
             isModified = true;
         }
 
