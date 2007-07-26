@@ -22,6 +22,7 @@ package org.netbeans.modules.derby;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -257,14 +258,24 @@ public class DerbyOptions {
             boolean fromCurrentLocation = true;
 
             for (int j = 0; j < urls.length; j++) {
-                FileObject fo = URLMapper.findFileObject(urls[j]);
-                if (fo != null) {
-                    File file = FileUtil.toFile(fo);
-                    if (file != null) {
-                        String driverFile = file.getAbsolutePath();
-                        if (driverFile.startsWith(currentLocation)) {
-                            continue;
-                        }
+                File file = null;
+                if ("file".equals(urls[i].getProtocol())) { // NOI18N
+                    // FileObject's do not work nice if the file urls[i] points to doesn't exist
+                    try {
+                        file = new File(urls[i].toURI());
+                    } catch (URISyntaxException e) {
+                        LOGGER.log(Level.WARNING, null, e);
+                    }
+                } else {
+                    FileObject fo = URLMapper.findFileObject(urls[j]);
+                    if (fo != null) {
+                        file = FileUtil.toFile(fo);
+                    }
+                }
+                if (file != null) {
+                    String driverFile = file.getAbsolutePath();
+                    if (driverFile.startsWith(currentLocation)) {
+                        continue;
                     }
                 }
                 fromCurrentLocation = false;
