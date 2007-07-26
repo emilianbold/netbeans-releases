@@ -36,8 +36,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -246,7 +248,7 @@ public class OptionsPanel extends JPanel {
     
     private void addCategoryButtons () {
         // remove old buttons
-        Iterator it = buttons.values().iterator ();
+        Iterator<CategoryButton> it = buttons.values().iterator ();
         while (it.hasNext ()) {
             removeButton ((CategoryButton) it.next ());
         }
@@ -254,16 +256,25 @@ public class OptionsPanel extends JPanel {
         buttons = new LinkedHashMap<String, CategoryButton>();
         
         // add new buttons
+        Dimension maxSize = new Dimension(0,0);        
         String[] names = CategoryModel.getInstance().getCategoryIDs();
         for (int i = 0; i < names.length; i++) {
             CategoryModel.Category category = CategoryModel.getInstance().getCategory(names[i]);
-            addButton (category);            
+            CategoryButton button = addButton (category);            
+            Dimension d = button.getPreferredSize();
+            maxSize.setSize(Math.max(maxSize.getWidth(), d.getWidth()), 
+                    Math.max(maxSize.getHeight(), d.getHeight()));
+            
+        }        
+        it = buttons.values().iterator ();
+        while (it.hasNext ()) {
+            ((CategoryButton) it.next ()).setPreferredSize(maxSize);
         }
         
         addFakeButton ();
     }
                 
-    private void addButton (CategoryModel.Category category) {
+    private CategoryButton addButton (CategoryModel.Category category) {
         int index = buttons.size ();
         CategoryButton button = new CategoryButton (category);
 
@@ -276,12 +287,13 @@ public class OptionsPanel extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
+        gbc.weightx = 0.0;
+        gbc.weighty = 0.0;
         gbc.gridx = index;
         gbc.gridy = 0;
         pCategories2.add(button, gbc);
         buttons.put (category.getID(), button);
+        return button;
     }
     
     private void removeButton (CategoryButton button) {
@@ -408,7 +420,7 @@ public class OptionsPanel extends JPanel {
             
             setNormal ();
         }
-        
+            
         void setNormal () {
             if (isMac) {
                 setBorder (new EmptyBorder (5, 6, 3, 6));
