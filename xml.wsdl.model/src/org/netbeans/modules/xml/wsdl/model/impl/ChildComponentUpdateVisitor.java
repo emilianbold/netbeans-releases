@@ -300,13 +300,17 @@ public class ChildComponentUpdateVisitor<T extends WSDLComponent> implements WSD
     public void visit(Fault child) {
         if (parent instanceof org.netbeans.modules.xml.wsdl.model.Operation) {
             org.netbeans.modules.xml.wsdl.model.Operation target = 
-                    (org.netbeans.modules.xml.wsdl.model.Operation)parent;
-            if (operation == Operation.ADD) {
+                (org.netbeans.modules.xml.wsdl.model.Operation)parent;
+            boolean operationWithFaults = 
+                parent instanceof RequestResponseOperation || 
+                parent instanceof SolicitResponseOperation;
+
+            if (operationWithFaults && operation == Operation.ADD) {
                 target.addFault(child);
             } else if (operation == Operation.REMOVE) {
                 target.removeFault(child);
             } else if (operation == null) {
-                canAdd = true;
+                canAdd = operationWithFaults;
             }
         } else {
             checkOperationOnUnmatchedParent();

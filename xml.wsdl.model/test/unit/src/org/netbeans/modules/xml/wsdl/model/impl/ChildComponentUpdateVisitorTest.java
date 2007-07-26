@@ -8,6 +8,7 @@
 package org.netbeans.modules.xml.wsdl.model.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import junit.framework.*;
 import org.netbeans.modules.xml.wsdl.model.*;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.impl.SOAPHeaderImpl;
@@ -130,5 +131,14 @@ public class ChildComponentUpdateVisitorTest extends TestCase {
     public void testCannotAddSoapExtensibilityElement() throws Exception {
         model = TestCatalogModel.getDefault().getWSDLModel(NamespaceLocation.VEHICLE);
         assertFalse(model.getDefinitions().canPaste(new SOAPHeaderImpl(model)));
+    }
+    
+    public void testCannotAddFaultInOnewayOperation() throws Exception {
+        model = TestCatalogModel.getDefault().getWSDLModel(NamespaceLocation.VEHICLE);
+        Iterator<PortType> iterator = model.getDefinitions().getPortTypes().iterator();
+        PortType oneWayOperationPortType = iterator.next();
+        Operation onewayOperation = oneWayOperationPortType.getOperations().iterator().next();
+            
+        assertFalse(onewayOperation.canPaste(new FaultImpl(model)));
     }
 }
