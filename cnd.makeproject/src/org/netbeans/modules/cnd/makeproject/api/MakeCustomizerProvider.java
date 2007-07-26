@@ -194,13 +194,13 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
 		((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();// FIXUP: should be moved into ProjectDescriptorHelper...
                 
-                // And save the project
-                try {
-                    ProjectManager.getDefault().saveProject(project);
-                }
-                catch ( IOException ex ) {
-                    ErrorManager.getDefault().notify( ex );
-                }
+//                // And save the project
+//                try {
+//                    ProjectManager.getDefault().saveProject(project);
+//                }
+//                catch ( IOException ex ) {
+//                    ErrorManager.getDefault().notify( ex );
+//                }
             }
             if (command.equals(COMMAND_APPLY)) {
 		makeCustomizer.refresh();

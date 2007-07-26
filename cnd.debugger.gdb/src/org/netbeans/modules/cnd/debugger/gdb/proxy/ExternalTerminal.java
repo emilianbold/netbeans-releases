@@ -5,7 +5,7 @@
  *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
-
+ 
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
@@ -26,12 +26,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  * Create, open, and manage an external terminal for a Unix debug session.
@@ -46,11 +47,26 @@ public class ExternalTerminal implements PropertyChangeListener {
     private File gdbHelperScript = null;
     
     /** Creates a new instance of ExternalTerminal */
-    public ExternalTerminal(GdbDebugger debugger, String termpath) throws IOException {
+    public ExternalTerminal(GdbDebugger debugger, String termpath, String[] env) throws IOException {
         initGdbHelpers();
         debugger.addPropertyChangeListener(this);
         
         ProcessBuilder pb = new ProcessBuilder(getTermOptions(termpath));
+        
+        // Set "DISPLAY" environment variable if not already set (Mac OSX only)
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            Map<String,String> map = pb.environment();
+            if (map.get("DISPLAY") == null) { // NOI18N
+                String display = ":0.0"; // NOI18N
+                for (int i = 0; i < env.length; i++) {
+                    if (env[i].startsWith("DISPLAY=") && env[i].length() >= 8) { // NOI18N
+                        display = env[i].substring(8);
+                    }
+                }
+                map.put("DISPLAY", display); // NOI18N
+            }
+        }
+        
         Process proc = pb.start();
         
         final BufferedReader fromTerm = new BufferedReader(new FileReader(gdbHelperLog.getAbsolutePath()));

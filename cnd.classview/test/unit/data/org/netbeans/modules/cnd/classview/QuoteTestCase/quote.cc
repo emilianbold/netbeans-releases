@@ -26,6 +26,7 @@
 #include "disk.h"
 #include "cpu.h"
 #include "memory.h"
+#include "typedef_test.h"
 
 namespace {
     list<Customer> customers;

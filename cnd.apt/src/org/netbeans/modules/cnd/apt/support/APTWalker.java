@@ -163,8 +163,26 @@ public abstract class APTWalker {
         // do nothing
     }
     
+    /**
+     * Callback for #error node.
+     */
+    protected void onErrorNode(APT apt) {
+        // do nothing
+    }
+    
     protected void onOtherNode(APT apt) {
         // do nothing
+    }
+
+    /**
+     * Determines whether the walker should stop or proceed
+     * as soon as it encounteres #error directive
+     *
+     * @return true if the walker should stop on #error directive,
+     * otherwise false
+     */
+    protected boolean stopOnErrorDirective() {
+	return true;
     }
     
     // tokens stream generating/callback for token
@@ -230,8 +248,10 @@ public abstract class APTWalker {
             case APT.Type.TOKEN_STREAM:
 //                onStreamNode(node);
                 break;
-            case APT.Type.INVALID:
             case APT.Type.ERROR:
+		onErrorNode(node);
+		break;
+            case APT.Type.INVALID:
             case APT.Type.LINE:
             case APT.Type.PRAGMA:
             case APT.Type.PREPROC_UNKNOWN:   
@@ -353,6 +373,12 @@ public abstract class APTWalker {
                 }
                 curWasInChild = false;
             }
+	    else if( curAPT.getType() == APT.Type.ERROR ) {
+		if (stopOnErrorDirective()) {
+		    stop();
+		    return;
+		}
+	    }
             curAPT = curAPT.getNextSibling();
             while (curAPT == null && !finished()) {
                 popState();

@@ -51,7 +51,7 @@ public class FileMagic {
             reader.readFully(bytes);
         } catch (IOException ex) {
             dispose();
-            throw new WrongFileFormatException("Not an ELF/PE/COFF file"); // NOI18N
+            throw new WrongFileFormatException("Not an ELF/PE/COFF/MACH-O file"); // NOI18N
         }
         if (isElfMagic(bytes)) {
             magic = Magic.Elf;
@@ -61,11 +61,13 @@ public class FileMagic {
             magic = Magic.Exe;
         } else if (isPeMagic(bytes)) {
             magic = Magic.Pe;
+        } else if (isMachoMagic(bytes)) {
+            magic = Magic.Macho;
         } else if (isArchiveMagic(bytes)) {
             magic = Magic.Arch;
         } else {
             dispose();
-            throw new WrongFileFormatException("Not an ELF/PE/COFF file"); // NOI18N
+            throw new WrongFileFormatException("Not an ELF/PE/COFF/MACH-O file"); // NOI18N
         }
     }
 
@@ -94,6 +96,10 @@ public class FileMagic {
     
     public static boolean isElfMagic(byte[] bytes){
         return bytes[0] == 0x7f && bytes[1] == 'E' && bytes[2] == 'L' && bytes[3] == 'F';
+    }
+    
+    public static boolean isMachoMagic(byte[] bytes){
+        return (bytes[0] == (byte)0xce || bytes[0] == (byte)0xcf) && bytes[1] == (byte)0xfa && bytes[2] == (byte)0xed && bytes[3] == (byte)0xfe;
     }
     
     public static boolean isArchiveMagic(byte[] bytes){

@@ -1136,12 +1136,12 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 		    if (dynamicLast && !lastEnabled &&
 					getMakefileData().isComplete(true)) {
 			lastEnabled = true;
-			MakefileWizard.getMakefileWizard().setFinishEnabled(true);
+			//MakefileWizard.getMakefileWizard().setFinishEnabled(true);
 		    }
 		} else {
 		    if (dynamicLast && lastEnabled) {
 			lastEnabled = false;
-			MakefileWizard.getMakefileWizard().setFinishEnabled(false);
+			//MakefileWizard.getMakefileWizard().setFinishEnabled(false);
 		    }
 		}
 	    }
@@ -1154,7 +1154,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 		    }
 		    if (dynamicLast && lastEnabled) {
 			lastEnabled = false;
-			MakefileWizard.getMakefileWizard().setFinishEnabled(false);
+			//MakefileWizard.getMakefileWizard().setFinishEnabled(false);
 		    }
 		}
 	    }
@@ -1167,7 +1167,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 		if (dynamicLast && !lastEnabled &&
 				    getMakefileData().isComplete(true)) {
 		    lastEnabled = true;
-		    MakefileWizard.getMakefileWizard().setFinishEnabled(true);
+		    //MakefileWizard.getMakefileWizard().setFinishEnabled(true);
 		}
 	    }
 	});

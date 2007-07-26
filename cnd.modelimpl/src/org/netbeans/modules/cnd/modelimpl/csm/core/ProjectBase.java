@@ -254,7 +254,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     }
     
     public CsmClassifier findClassifier(String qualifiedName) {
-        CsmClassifier result = _getClassifier(qualifiedName);
+        CsmClassifier result = classifierContainer.getClassifier(qualifiedName);
         return result;
     }
     
@@ -277,37 +277,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     public static boolean isCppFile(CsmFile file){
         return (file instanceof FileImpl) && ((FileImpl)file).isCppFile();
     }
-    
-    private CsmClassifier _getClassifier(String qualifiedName) {
-        CsmClassifier result;
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmClassifier> uid = classifiers.get(qualifiedName);
-            result = UIDCsmConverter.UIDtoDeclaration(uid);
-        } else {
-            result = (CsmClassifier) classifiersOLD.get(qualifiedName);
-        }
-        return result;
-    }
-    
-    private boolean _putClassifier(CsmClassifier decl) {
-        String qn = decl.getQualifiedName();
-        if (TraceFlags.USE_REPOSITORY) {
-            if (!classifiers.containsKey(qn)) {
-                CsmUID<CsmClassifier> uid = UIDCsmConverter.declarationToUID(decl);
-                assert uid != null;
-                classifiers.put(qn, uid);
-                assert (UIDCsmConverter.UIDtoDeclaration(uid) != null);
-                return true;
-            }
-        } else {
-            if (!classifiersOLD.containsKey(qn)){
-                classifiersOLD.put(qn, decl);
-                return true;
-            }
-        }
-        return false;
-    }
-    
     
 //    public void registerClassifier(ClassEnumBase ce) {
 //        classifiers.put(ce.getNestedNamespaceQualifiedName(), ce);
@@ -354,8 +323,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         
         if( decl instanceof CsmClassifier ) {
             String qn = decl.getQualifiedName();
-            if (!_putClassifier((CsmClassifier)decl) && TraceFlags.CHECK_DECLARATIONS) {
-                CsmClassifier old = _getClassifier(qn);
+            if (!classifierContainer.putClassifier((CsmClassifier)decl) && TraceFlags.CHECK_DECLARATIONS) {
+                CsmClassifier old = classifierContainer.getClassifier(qn);
                 if (old != null && old != decl) {
                     System.err.println("\n\nRegistering different classifier with the same name:" + qn);
                     System.err.print("ALREADY EXISTS:");
@@ -382,19 +351,9 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             }
         }
         if( decl instanceof CsmClassifier ) {
-            _removeClassifier(decl);
+            classifierContainer.removeClassifier(decl);
         }
         getDeclarationsSorage().removeDeclaration(decl);
-    }
-    
-    
-    private void _removeClassifier(CsmDeclaration decl) {
-        if (TraceFlags.USE_REPOSITORY) {
-            CsmUID<CsmClassifier> uid = classifiers.remove(decl.getQualifiedName());
-            assert (uid == null) || (UIDCsmConverter.UIDtoCsmObject(uid) != null) : " no object for UID " + uid;
-        } else {
-            classifiersOLD.remove(decl.getQualifiedName());
-        }
     }
     
     public void waitParse() {
@@ -1151,7 +1110,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             // that stores the instance of the project
             // and does not release it upon project closure
             _clearNamespaces();
-            _clearClassifiers();
+            classifierContainer.clearClassifiers();
             getDeclarationsSorage().clearDeclarations();
             if (TraceFlags.USE_DEEP_REPARSING) {
                 getGraph().clear();
@@ -1173,14 +1132,6 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
             requiredUnits.add(dependent.getUnit());
         }
         return requiredUnits;
-    }
-    
-    private void _clearClassifiers() {
-        if (TraceFlags.USE_REPOSITORY) {
-            classifiers.clear();
-        } else {
-            classifiersOLD.clear();
-        }
     }
     
     private void disposeFiles() {
@@ -1579,9 +1530,8 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
     // only one of namespaces/namespacesOLD must be used (based on USE_REPOSITORY)
     private Map<String, NamespaceImpl> namespacesOLD = new ConcurrentHashMap<String, NamespaceImpl>();
     private Map<String, CsmUID<CsmNamespace>> namespaces =new ConcurrentHashMap<String, CsmUID<CsmNamespace>>();
-    
-    private Map/*<String, ClassImpl>*/ classifiersOLD = new ConcurrentHashMap(/*<String, ClassImpl>*/);
-    private Map<String, CsmUID<CsmClassifier>> classifiers = new ConcurrentHashMap<String, CsmUID<CsmClassifier>>();
+   
+    private ClassifierContainer classifierContainer = new ClassifierContainer();
     
     // collection of sharable system macros and system includes
     private APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
@@ -1626,7 +1576,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
         aStream.writeUTF(RepositoryUtils.getUnitName(getUID()));
         aFactory.writeUID(this.globalNamespaceUID, aStream);
         aFactory.writeStringToUIDMap(this.namespaces, aStream, false);
-        aFactory.writeStringToUIDMap(this.classifiers, aStream, false);
+        classifierContainer.write(aStream);
         
         ProjectComponent.writeKey(fileContainerKey, aStream);
         ProjectComponent.writeKey(declarationsSorageKey, aStream);
@@ -1652,7 +1602,7 @@ public abstract class ProjectBase implements CsmProject, Disposable, Persistent,
 	assert  globalNamespaceUID != null : "globalNamespaceUID can not be null";
 	
         aFactory.readStringToUIDMap(this.namespaces, aStream, QualifiedNameCache.getManager());
-        aFactory.readStringToUIDMap(this.classifiers, aStream, QualifiedNameCache.getManager());
+        this.classifierContainer = new ClassifierContainer(aStream);
         
         fileContainerKey = ProjectComponent.readKey(aStream);
 	assert fileContainerKey != null : "fileContainerKey can not be null";

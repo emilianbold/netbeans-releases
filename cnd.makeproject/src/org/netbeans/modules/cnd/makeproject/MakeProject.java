@@ -21,6 +21,7 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,15 +30,13 @@ import java.util.Set;
 import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.actions.BuildToolsAction;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSetConfiguration;
@@ -50,11 +49,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.settings.CppSettings;
-import org.netbeans.modules.cnd.ui.options.LocalToolsPanelModel;
-import org.netbeans.modules.cnd.ui.options.ToolsPanelModel;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -74,9 +71,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openidex.search.SearchInfo;
 import org.w3c.dom.Element;
@@ -342,30 +337,47 @@ public final class MakeProject implements Project, AntProjectListener {
 	// Get a set of projects which this project can be considered to depend upon somehow.
 	public Set getSubprojects() {
 	    Set subProjects = new HashSet();
+	    Set<String> subProjectLocations = new HashSet();
 
-	    ConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-            if (projectDescriptor == null) {
-                // Something serious wrong. Return nothing...
-                return subProjects;
+            // Try project.xml first (this is cheap)
+            Element data = helper.getPrimaryConfigurationData(true);
+            if (data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECTS).getLength() > 0) {
+                NodeList nl4 = data.getElementsByTagName(MakeProjectType.MAKE_DEP_PROJECT);
+                if (nl4.getLength() > 0) {
+                    for (int i = 0; i < nl4.getLength(); i++) {
+                        Node node = nl4.item(i);
+                        NodeList nl2 = node.getChildNodes();
+                        for (int j = 0; j < nl2.getLength(); j++) {
+                            String typeTxt = (String)nl2.item(j).getNodeValue();
+                            subProjectLocations.add(typeTxt);
+                        }
+                    }
+                }
             }
-	    Configuration[] confs = projectDescriptor.getConfs().getConfs();
-	    for (int i = 0; i < confs.length; i++) {
-		MakeConfiguration makeConfiguration = (MakeConfiguration)confs[i];
-		LibrariesConfiguration librariesConfiguration = makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration();
-		LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-		for (int j = 0; j < libraryItems.length; j++) {
-		    if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
-			LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem)libraryItems[j];
-			Project project = projectItem.getProject(makeConfiguration.getBaseDir());
-			if (project != null) {
-			    subProjects.add(project);
-			}
-			else {
-			    ; // FIXUP ERROR
-			}
-		    }
+            else {
+                // Then read subprojects from configuration.zml (expensive)
+                ConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+                if (projectDescriptor == null) {
+                    // Something serious wrong. Return nothing...
+                    return subProjects;
+                }
+                subProjectLocations = ((MakeConfigurationDescriptor)projectDescriptor).getSubprojectLocations();
+            }
+            
+            String baseDir = FileUtil.toFile(getProjectDirectory()).getPath();
+            for (String loc : subProjectLocations) {
+		String location = IpeUtils.toAbsolutePath(baseDir, loc);
+		location = FilePathAdaptor.mapToLocal(location); // PC path
+		try {
+		    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile()); 
+		    Project project = ProjectManager.getDefault().findProject(fo);
+                    subProjects.add(project);
 		}
-	    }
+		catch (Exception e) {
+		    System.err.println(e); // FIXUP
+		}
+            }
+            
 	    return subProjects;
 	}
 

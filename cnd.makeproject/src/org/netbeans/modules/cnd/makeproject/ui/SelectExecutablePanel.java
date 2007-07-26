@@ -31,7 +31,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.utils.AllFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.api.utils.MachOExecutableFileFilter;
+import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -43,7 +43,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
     private JList exeList;
     private FileFilter elfExecutableFileFilter = ElfExecutableFileFilter.getInstance();
     private FileFilter exeExecutableFileFilter = PeExecutableFileFilter.getInstance();
-    private FileFilter machOExecutableFileFilter = MachOExecutableFileFilter.getInstance();
+    private FileFilter machOExecutableFileFilter = MacOSXExecutableFileFilter.getInstance();
     private DocumentListener documentListener;
     private DialogDescriptor dialogDescriptor;
     private MakeConfiguration conf;
@@ -277,7 +277,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
             filters = new FileFilter[] {PeExecutableFileFilter.getInstance()};
         } if (conf.getPlatform().getValue() == Platform.PLATFORM_MACOSX) {
-            filters = new FileFilter[] {MachOExecutableFileFilter.getInstance()};
+            filters = new FileFilter[] {MacOSXExecutableFileFilter.getInstance()};
         } else {
             filters = new FileFilter[] {ElfExecutableFileFilter.getInstance()};
         }

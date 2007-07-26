@@ -564,12 +564,14 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         if (includeMakefileDescription)
             descriptions.add(createMakefileDescription(project));
         if (includeNewDescription) {
-            if (!includeLinkerDescription) {
-                CustomizerNode librariesNode = new LibrariesGeneralCustomizerNode("Libraries", getString("LBL_DEPENDENCIES"), null); // NOI18N
-               descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, librariesNode));
-            } else {
-                descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, null));
-            }
+            //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
+            //if (!includeLinkerDescription) {
+            //    CustomizerNode librariesNode = new LibrariesGeneralCustomizerNode("Libraries", getString("LBL_DEPENDENCIES"), null); // NOI18N
+            //   descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, librariesNode));
+            //} else {
+            //    descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, null));
+            //}
+            descriptions.add(createNewDescription(project, compilerSet, -1, null, null, isCompileConfiguration, null));
         }
         if (includeLinkerDescription)
             descriptions.add(createLinkerDescription());

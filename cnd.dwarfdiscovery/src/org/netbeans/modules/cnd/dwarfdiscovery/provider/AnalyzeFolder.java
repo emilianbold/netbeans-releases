@@ -188,6 +188,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                         String name = ff[i].getName();
                         if (name.endsWith(".o") ||  // NOI18N
                             name.endsWith(".so") ||  // NOI18N
+                            name.endsWith(".dylib") ||  // NOI18N
                             name.endsWith(".a") ||  // NOI18N
                             isExecutable(ff[i])){
                             String path = ff[i].getAbsolutePath();

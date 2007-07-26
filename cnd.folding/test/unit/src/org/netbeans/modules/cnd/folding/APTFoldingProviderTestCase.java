@@ -46,6 +46,10 @@ public class APTFoldingProviderTestCase extends BaseTestCase {
         performTest("simpleFolding.cc");
     }
     
+    public void testErrorDirective() throws Exception {
+        performTest("error_directive.cc");
+    }
+    
     private void performTest(String source) throws Exception {
         System.out.println(getWorkDir());
         File testSourceFile = getDataFile(source);

@@ -44,16 +44,24 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefileWriter;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWriter;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
     public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
@@ -108,9 +116,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
                 // will cause creating new MakeProject project
                 // because there are no opened /net/endif/export/home1/deimos/dev/... project in system
                 // there is only /set/ide/mars/... project in system
-                // 
-                // in fact ProjectManager should solve such problems in more general way 
-                // because even for java it's possible to open the same project from two different 
+                //
+                // in fact ProjectManager should solve such problems in more general way
+                // because even for java it's possible to open the same project from two different
                 // locations /set/ide/mars/... and /net/endif/export/home1/deimos/dev/...
                 FileObject fo = FileUtil.toFileObject(new File(location));
                 project = ProjectManager.getDefault().findProject(fo);
@@ -298,7 +306,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
                 newPath = IpeUtils.toRelativePath(getBaseDir(), path);
             else
                 newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
-            item = (Item)projectItems.get(FilePathAdaptor.normalize(newPath)); 
+            item = (Item)projectItems.get(FilePathAdaptor.normalize(newPath));
         }
         return item;
     }
@@ -329,7 +337,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         if (getNativeProject() != null)
             getNativeProject().fireFilesRemoved(fileItems);
     }
-
+    
     public void fireFileRenamed(String oldPath, NativeFileItem newFileItem) {
         getNativeProject().fireFileRenamed(oldPath, newFileItem);
     }
@@ -455,12 +463,79 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
         if (fo != null) {
             new ConfigurationXMLWriter(fo, this).write();
             new ConfigurationMakefileWriter(this).write();
+            ConfigurationProjectXMLWriter();
         }
         
         // Clear flag
         setModified(false);
         
         return allOk;
+    }
+    
+    private void ConfigurationProjectXMLWriter() {
+        // And save the project
+        try {
+            AntProjectHelper helper = ((MakeProject)getProject()).getAntProjectHelper();
+            Element data = helper.getPrimaryConfigurationData(true);
+            Document doc = data.getOwnerDocument();
+            
+            // Read dep projects
+            NodeList nl4 = data.getElementsByTagName("make-dep-project"); // NOI18N
+            if (nl4.getLength() > 0) {
+                for (int i = 0; i < nl4.getLength(); i++) {
+                    Node node = nl4.item(i);
+                    NodeList nl2 = node.getChildNodes();
+                    for (int j = 0; j < nl2.getLength(); j++) {
+                        String typeTxt = (String)nl2.item(j).getNodeValue();
+                        System.out.println("dep " + typeTxt);
+                    }
+                }
+            }
+            // Remove old node
+            NodeList nodeList = data.getElementsByTagName("make-dep-projects"); // NOI18N
+            if (nodeList != null && nodeList.getLength() > 0) {
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    Node node = nodeList.item(i);
+                    data.removeChild(node);
+                }
+            }
+            // Create new node
+            Element element = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectType.MAKE_DEP_PROJECTS);
+            Set<String> subprojectLocations = getSubprojectLocations();
+            for (String loc : subprojectLocations) {
+                Node n1;
+                n1 = doc.createElement(MakeProjectType.MAKE_DEP_PROJECT);
+                n1.appendChild(doc.createTextNode(loc));
+                element.appendChild(n1);
+            }
+            data.appendChild(element);
+            helper.putPrimaryConfigurationData(data, true);
+            ProjectManager.getDefault().saveProject(project);
+        } catch ( IOException ex ) {
+            ErrorManager.getDefault().notify( ex );
+        }
+    }
+    
+    /**
+     * Returns project locations (rel or abs) or all subprojects in all configurations.
+     */
+    public Set<String> getSubprojectLocations() {
+        Set subProjects = new HashSet();
+        
+        Configuration[] confs = getConfs().getConfs();
+        for (int i = 0; i < confs.length; i++) {
+            MakeConfiguration makeConfiguration = (MakeConfiguration)confs[i];
+            LibrariesConfiguration librariesConfiguration = makeConfiguration.getLinkerConfiguration().getLibrariesConfiguration();
+            LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
+            for (int j = 0; j < libraryItems.length; j++) {
+                if (libraryItems[j] instanceof LibraryItem.ProjectItem) {
+                    LibraryItem.ProjectItem projectItem = (LibraryItem.ProjectItem)libraryItems[j];
+                    subProjects.add(projectItem.getMakeArtifact().getProjectLocation());
+                }
+            }
+        }
+        
+        return subProjects;
     }
     
     private NativeProjectProvider getNativeProject() {
@@ -542,8 +617,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
                     addFiles(top, folderEntry.getFile(), folderEntry.isAddSubfoldersSelected(), folderEntry.getFileFilter(), handle, filesAdded);
                     folder.addFolder(top);
                 }
-            }
-            finally {
+            } finally {
                 handle.finish();
             }
             getNativeProject().fireFilesAdded(filesAdded);

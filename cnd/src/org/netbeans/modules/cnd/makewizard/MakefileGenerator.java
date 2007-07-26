@@ -1439,7 +1439,7 @@ public class MakefileGenerator {
 
     private void sharedLibFlags(TargetData t) throws IOException {
 	StringBuffer bufx = new StringBuffer(1024);
-	appendOSDepMacro(bufx, var.makeName("SHAREDLIB_FLAGS_"), "-G -norunpath -h " + t.getName() + " " , "-shared "); // NOI18N
+	appendOSDepMacro(bufx, var.makeName("SHAREDLIB_FLAGS_"), "-G -norunpath -h " + t.getName() + " " , "-shared ", "-dynamiclib -install_name " + t.getName()); // NOI18N
 	out.write(bufx.toString(), 0, bufx.length());
     }
 
@@ -1683,7 +1683,7 @@ public class MakefileGenerator {
 		String lib = ulibs[i];
 
 		if (lib.charAt(0) !=  '-' && lib.charAt(0) != '/' &&
-			(lib.endsWith(".a") || lib.endsWith(".so"))) {	// NOI18N
+			(lib.endsWith(".a") || lib.endsWith(".so") || lib.endsWith(".dylib") || lib.endsWith(".dll"))) {	// NOI18N
 		    buf.append(lib);
 		    buf.append(' ');
 		}
@@ -2261,14 +2261,14 @@ public class MakefileGenerator {
     /**
      * Append an OS dependent macro to the global stringbuffer buf.
      */
-    private void appendOSDepMacro(String macro, String sunVal, String gnuVal) {
-	appendOSDepMacro(buf, macro, sunVal, gnuVal);
+    private void appendOSDepMacro(String macro, String sunVal, String gnuVal, String macosxVal) {
+	appendOSDepMacro(buf, macro, sunVal, gnuVal, macosxVal);
     }
 
     /**
      * Append an OS dependent macro to the stringbuffer sbuf.
      */
-    private void appendOSDepMacro(StringBuffer sbuf, String macro, String sunVal, String gnuVal) {
+    private void appendOSDepMacro(StringBuffer sbuf, String macro, String sunVal, String gnuVal, String macosxVal) {
 	int os = md.getMakefileOS();
 	if (os == MakefileData.SOLARIS_OS_TYPE) {
 	    sbuf.append(macro);
@@ -2280,6 +2280,12 @@ public class MakefileGenerator {
 	    sbuf.append(macro);
 	    sbuf.append(" = ");	// NOI18N
 	    sbuf.append(gnuVal);
+	    sbuf.append('\n');	// NOI18N
+	}
+	else if (os == MakefileData.MACOSX_OS_TYPE) {
+	    sbuf.append(macro);
+	    sbuf.append(" = ");	// NOI18N
+	    sbuf.append(macosxVal);
 	    sbuf.append('\n');	// NOI18N
 	}
 	else if (os == MakefileData.UNIX_OS_TYPE) {

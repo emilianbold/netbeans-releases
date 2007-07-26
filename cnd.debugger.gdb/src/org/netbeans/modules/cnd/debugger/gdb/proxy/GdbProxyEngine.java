@@ -69,7 +69,7 @@ public class GdbProxyEngine {
                     String[] debuggerEnvironment, String workingDirectory, String termpath) throws IOException {
         
         if (Utilities.isUnix() && termpath != null) {
-            ExternalTerminal eterm = new ExternalTerminal(debugger, termpath);
+            ExternalTerminal eterm = new ExternalTerminal(debugger, termpath, debuggerEnvironment);
             String tty = eterm.getTty();
             if (tty != null) {
                 debuggerCommand.add("-tty"); // NOI18N

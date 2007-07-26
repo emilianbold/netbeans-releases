@@ -150,7 +150,7 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	targetChooserDescriptorPanel = wd.targetChooser();
 	baseDirectoryDescriptorPanel = new MakefileWizardDescriptorPanel(new BaseDirectoryPanel(this), "base_directory"); // NOI18N
 	targetNameDescriptorPanel = new MakefileWizardDescriptorPanel(new TargetNamePanel(this), "target_name"); // NOI18N
-	makefileSourcesDescriptorPanel = new MakefileWizardDescriptorFinishPanel(new MakefileSourcesPanel(this), "source_files"); // NOI18N
+	makefileSourcesDescriptorPanel = new MakefileWizardDescriptorPanel(new MakefileSourcesPanel(this), "source_files"); // NOI18N
 	//compilerTypeDescriptorPanel = new MakefileWizardDescriptorPanel(new CompilerTypePanel(this));
 	selectPreferencesDescriptorPanel = new MakefileWizardDescriptorPanel(new SelectPreferencesPanel(this), "compiling_preference"); // NOI18N
 
@@ -161,8 +161,8 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	makefileIncludesDescriptorPanel = new MakefileWizardDescriptorPanel(new MakefileIncludesPanel(this), "include_directories"); // NOI18N
 	standardLibsDescriptorPanel = new MakefileWizardDescriptorPanel(new StandardLibsPanel(this), "standard_libraries"); // NOI18N
 	userLibsDescriptorPanel = new MakefileWizardDescriptorPanel(new UserLibsPanel(this), "libraries"); // NOI18N
-	basicFlagsDescriptorPanel = new MakefileWizardDescriptorFinishPanel(new BasicFlagsPanel(this), "basic_options"); // NOI18N
-	compilerPathDescriptorPanel = new MakefileWizardDescriptorFinishPanel(new CompilerPathPanel(this), "compiler_paths"); // NOI18N
+	basicFlagsDescriptorPanel = new MakefileWizardDescriptorPanel(new BasicFlagsPanel(this), "basic_options"); // NOI18N
+	compilerPathDescriptorPanel = new MakefileWizardDescriptorPanel(new CompilerPathPanel(this), "compiler_paths"); // NOI18N
 	//makeTargetDescriptorPanel = new MakefileWizardDescriptorPanel(new MakeTargetPanel(this));
 	//customTargetDescriptorPanel = new MakefileWizardDescriptorPanel(new CustomTargetPanel(this));
 	compilerOptionsDescriptorPanel = new MakefileWizardDescriptorPanel(new CompilerOptionsPanel(this), "advanced_options"); // NOI18N
@@ -745,10 +745,10 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 	    finishButton = (JButton) objs[1];
 	    finishLabel = finishButton.getText();
 	    finishMnemonic = finishButton.getMnemonic();
-	    finishButton.setText(NbBundle.getBundle(MakefileWizard.class).
-			    getString("BTN_Last"));			// NOI18N
-	    finishButton.setMnemonic(NbBundle.getBundle(MakefileWizard.class).
-			    getString("MNEM_Last").charAt(0));		// NOI18N
+//	    finishButton.setText(NbBundle.getBundle(MakefileWizard.class).
+//			    getString("BTN_Last"));			// NOI18N
+//	    finishButton.setMnemonic(NbBundle.getBundle(MakefileWizard.class).
+//			    getString("MNEM_Last").charAt(0));		// NOI18N
 
 	    cancelButton = (JButton)objs[2];
 	}
@@ -758,8 +758,8 @@ public class MakefileWizard  implements TemplateWizard.Iterator {
 
     private void unsetupWizardButtons(WizardDescriptor wd) {
 	setFinishClosingEnabled(true);
-	finishButton.setText(finishLabel);
-	finishButton.setMnemonic(finishMnemonic);
+//	finishButton.setText(finishLabel);
+//	finishButton.setMnemonic(finishMnemonic);
     }
 
     /**

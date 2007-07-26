@@ -42,7 +42,8 @@ import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.api.utils.ElfDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
-import org.netbeans.modules.cnd.api.utils.MachOExecutableFileFilter;
+import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.openide.DialogDescriptor;
@@ -316,9 +317,9 @@ public class ProviderControl {
                 ElfStaticLibraryFileFilter.getInstance(),
                 PeDynamicLibraryFileFilter.getInstance()};
             } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                filters = new FileFilter[] {MachOExecutableFileFilter.getInstance(),
+                filters = new FileFilter[] {MacOSXExecutableFileFilter.getInstance(),
                 ElfStaticLibraryFileFilter.getInstance(),
-                ElfDynamicLibraryFileFilter.getInstance()};
+                MacOSXDynamicLibraryFileFilter.getInstance()};
             }  else {
                 filters = new FileFilter[] {ElfExecutableFileFilter.getInstance(),
                 ElfStaticLibraryFileFilter.getInstance(),

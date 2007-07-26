@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/net/techpubs/export/set/techpubs4/Work/arice/CND1Help/cnd/core/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/set/pubs/Work/arice/CND1Help/cnd/core/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>

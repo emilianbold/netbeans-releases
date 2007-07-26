@@ -262,6 +262,8 @@ public final class APTBuilderImpl {
                 newNode = new APTUndefineNode(token);
                 break;
             case APTTokenTypes.ERROR:
+		newNode = new APTErrorNode(token);
+		break;
             case APTTokenTypes.PRAGMA:
             case APTTokenTypes.LINE:
             case APTTokenTypes.PREPROC_DIRECTIVE:                

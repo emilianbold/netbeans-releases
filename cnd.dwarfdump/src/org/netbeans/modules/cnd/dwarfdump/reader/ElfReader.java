@@ -30,7 +30,9 @@ import org.netbeans.modules.cnd.dwarfdump.elf.ProgramHeaderTable;
 import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
 import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -38,6 +40,7 @@ import java.util.HashMap;
  */
 public class ElfReader extends ByteStreamReader {
     private boolean isCoffFormat;
+    private boolean isMachoFormat;
     private ElfHeader elfHeader = null;
     private ProgramHeaderTable programHeaderTable;
     private SectionHeader[] sectionHeadersTable;
@@ -59,23 +62,24 @@ public class ElfReader extends ByteStreamReader {
         
         // Before reading all sections need to read ElfStringTable section.
         int elfStringTableIdx = elfHeader.getELFStringTableSectionIndex();
-        if (!isCoffFormat) {
+        if (!isCoffFormat && !isMachoFormat) {
             stringTableSection = new StringTableSection(this, elfStringTableIdx);
         }
         sections[elfStringTableIdx] = stringTableSection;
         
         // Initialize Name-To-Idx map
-        for (int i = 1; i < sections.length; i++) {
+        
+        for (int i = 0; i < sections.length; i++) {
             sectionsMap.put(getSectionName(i), i);
         }
     }
-        
+    
     public String getSectionName(int sectionIdx) {
-        if (!isCoffFormat) {
+        if (!isCoffFormat && !isMachoFormat) {
             if (stringTableSection == null) {
                 return ".shstrtab"; // NOI18N
             }
-        
+            
             long nameOffset = sectionHeadersTable[sectionIdx].sh_name;
             return stringTableSection.getString(nameOffset);
         } else {
@@ -101,8 +105,11 @@ public class ElfReader extends ByteStreamReader {
             case Pe:
                 readPeHeader(false);
                 return;
+            case Macho:
+                readMachoHeader();
+                return;
         }
-        throw new WrongFileFormatException("Not an ELF/PE/COFF file"); // NOI18N
+        throw new WrongFileFormatException("Not an ELF/PE/COFF/MACH-O file"); // NOI18N
     }
     
     private void readElfHeader( byte[] bytes) throws IOException{
@@ -143,7 +150,7 @@ public class ElfReader extends ByteStreamReader {
             byte[] bytes = new byte[4];
             read(bytes);
             if (!FileMagic.isPeMagic(bytes)) {
-                throw new WrongFileFormatException("Not an ELF/PE/COFF file"); // NOI18N
+                throw new WrongFileFormatException("Not an PE/COFF file"); // NOI18N
             }
         }
         // skip PE magic
@@ -172,7 +179,7 @@ public class ElfReader extends ByteStreamReader {
         read(strings);
         stringTableSection = new StringTableSection(this, strings);
         seek(pointer);
-        // 
+        //
         int optionalHeaderSize = readShort();
         // flags
         int flags = readShort();
@@ -181,6 +188,117 @@ public class ElfReader extends ByteStreamReader {
         }
         elfHeader.e_shoff = getFilePointer();
     }
+    
+    private void readMachoHeader() throws IOException{
+        isMachoFormat = true;
+        elfHeader.elfData = LSB;
+        elfHeader.elfClass = ElfConstants.ELFCLASS32;
+        setDataEncoding(elfHeader.elfData);
+        setFileClass(elfHeader.elfClass);
+        seek(shiftIvArchive);
+        boolean is64 = readByte() == (byte)0xcf;
+        seek(shiftIvArchive+16);
+        int ncmds = readInt();
+        int sizeOfCmds = readInt();
+        int flags = readInt();
+        if (is64){
+            skipBytes(4);
+        }
+        List<SectionHeader> headers = new ArrayList<SectionHeader>();
+        for (int j = 0; j < ncmds; j++){
+            int cmd = readInt();
+            int cmdSize = readInt();
+            if (cmd == 1 || cmd == 25) { //LC_SEGMENT LC_SEGMENT64
+                skipBytes(16);
+                if (is64) {
+                    long vmAddr = readLong();
+                    long vmSize = readLong();
+                    long fileOff = readLong();
+                    long fileSize = readLong();
+                } else {
+                    int vmAddr = readInt();
+                    int vmSize = readInt();
+                    int fileOff = readInt();
+                    int fileSize = readInt();
+                }
+                int vmMaxPort = readInt();
+                int vmInitPort = readInt();
+                int nSects = readInt();
+                int cmdFlags = readInt();
+                for (int i = 0; i < nSects; i++){
+                    SectionHeader h = readMachoSection(is64);
+                    if (h != null){
+                        headers.add(h);
+                    }
+                }
+            } else if (cmd == 2){ //LC_SYMTAB
+                int symOffset = readInt();
+                int nsyms = readInt();
+                long strOffset = readInt()+shiftIvArchive;
+                int strSize = readInt();
+                // read string table
+                long pointer = getFilePointer();
+                seek(strOffset);
+                byte[] strings = new byte[strSize];
+                read(strings);
+                stringTableSection = new StringTableSection(this, strings);
+                seek(pointer);
+            } else {
+                skipBytes(cmdSize - 8);
+            }
+        }
+        if (headers.size()==0 || stringTableSection == null){
+            throw new WrongFileFormatException("Dwarf section not found in Mach-O file"); // NOI18N
+        }
+        sectionHeadersTable = new SectionHeader[headers.size()];
+        for(int i = 0; i < headers.size(); i++){
+            sectionHeadersTable[i] = headers.get(i);
+        }
+        elfHeader.e_shstrndx = (short)(headers.size()-1);
+    }
+    
+    
+    private SectionHeader readMachoSection(boolean is64) throws IOException {
+        byte[] sectName = new byte[16];
+        read(sectName);
+        String section = getName(sectName, 0);
+        byte[] segName = new byte[16];
+        read(segName);
+        String segment = getName(segName, 0);
+        long addr;
+        long size;
+        if (is64) {
+            addr = readLong();
+            size = readLong();
+        } else {
+            addr = readInt();
+            size = readInt();
+        }
+        long offset = readInt()+shiftIvArchive;
+        int align = readInt();
+        int reloff = readInt();
+        int nreloc = readInt();
+        int segFlags = readInt();
+        readInt();
+        readInt();
+        if (is64) {
+            readInt();
+        }
+        if ("__DWARF".equals(segment)){// NOI18N
+            SectionHeader h = new SectionHeader();
+            if (section.startsWith("__debug")){// NOI18N
+                // convert to elf standard
+                section = "."+section.substring(2);// NOI18N
+            }
+            h.name = section;
+            h.sh_size = size;
+            h.sh_offset = offset;
+            h.sh_flags = segFlags;
+            return h;
+        }
+        return null;
+    }
+    
     
     private String getName(byte[] stringtable, int offset){
         StringBuilder str = new StringBuilder();

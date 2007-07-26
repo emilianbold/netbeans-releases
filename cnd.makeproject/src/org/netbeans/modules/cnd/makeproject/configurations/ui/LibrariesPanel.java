@@ -37,6 +37,7 @@ import org.netbeans.modules.cnd.api.utils.ElfStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.DialogDescriptor;
@@ -252,6 +253,10 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 filters = new FileFilter[] {
                 ElfStaticLibraryFileFilter.getInstance(),
                 PeDynamicLibraryFileFilter.getInstance()};
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                filters = new FileFilter[] {
+                ElfStaticLibraryFileFilter.getInstance(),
+                MacOSXDynamicLibraryFileFilter.getInstance()};
             } else {
                 filters = new FileFilter[] {
                 ElfStaticLibraryFileFilter.getInstance(),
@@ -265,12 +270,13 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
 	    String libName = fileChooser.getSelectedFile().getName();
 	    if (libName.startsWith("lib")) // NOI18N
 		libName = libName.substring(3);
-	    int i = libName.indexOf(".so"); // NOI18N
-	    if (i > 0)
-		libName = libName.substring(0, i);
-	    i = libName.indexOf(".a"); // NOI18N
-	    if (i > 0)
-		libName = libName.substring(0, i);
+	    if (libName.endsWith(".so") || // NOI18N
+                libName.endsWith(".dll") || // NOI18N
+                libName.endsWith(".dylib") || // NOI18N
+                libName.endsWith(".a")) { // NOI18N
+                int i = libName.lastIndexOf('.');
+                libName = libName.substring(0, i);
+            }
 	    myListEditorPanel.addObjectAction(new LibraryItem.LibItem(libName));
 	}
     }
@@ -287,6 +293,10 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 filters = new FileFilter[] {
                 ElfStaticLibraryFileFilter.getInstance(),
                 PeDynamicLibraryFileFilter.getInstance()};
+            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                filters = new FileFilter[] {
+                ElfStaticLibraryFileFilter.getInstance(),
+                MacOSXDynamicLibraryFileFilter.getInstance()};
             } else {
                 filters = new FileFilter[] {
                 ElfStaticLibraryFileFilter.getInstance(),

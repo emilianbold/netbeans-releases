@@ -3,4 +3,4 @@ OpenIDE-Module: org.netbeans.modules.cnd.highlight
 OpenIDE-Module-Install: org/netbeans/modules/cnd/highlight/HighlightInstaller.class
 OpenIDE-Module-Layer: org/netbeans/modules/cnd/highlight/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/highlight/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.1.1

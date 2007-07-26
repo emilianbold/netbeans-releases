@@ -197,7 +197,7 @@ public class UserLibsPanel extends EnterItemsPanel {
 		continue;
 	    if (name.indexOf(File.separator) >= 0)
 		continue;
-	    if (name.endsWith(".a") || name.endsWith(".so")) // NOI18N
+	    if (name.endsWith(".a") || name.endsWith(".so") || name.endsWith(".dylib") || name.endsWith(".dll")) // NOI18N
 		continue;
 
 	    // it is most likely a standard libray. Prefix it with "-l".

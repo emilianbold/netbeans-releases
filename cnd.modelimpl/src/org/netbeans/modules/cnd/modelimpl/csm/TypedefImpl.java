@@ -223,6 +223,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         super.write(output);
         assert this.name != null;
         output.writeUTF(this.name);
+        output.writeBoolean(typeUnnamed);
         assert this.type != null;
         PersistentUtils.writeType(this.type, output);
 
@@ -235,6 +236,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef>  implemen
         super(input);
         this.name = TextCache.getString(input.readUTF());
         assert this.name != null;
+        typeUnnamed = input.readBoolean();
         this.type = PersistentUtils.readType(input);
         assert this.type != null;
         

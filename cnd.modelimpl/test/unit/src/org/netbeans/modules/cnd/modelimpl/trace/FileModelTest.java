@@ -125,6 +125,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("function_expanded_unnamed_params.cc"); // NOI18N
     }
     
+    public void testErrorDirective() throws Exception {
+	performTest("error_directive.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

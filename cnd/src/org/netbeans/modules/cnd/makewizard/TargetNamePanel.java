@@ -126,7 +126,7 @@ public class TargetNamePanel extends ItemChooser {
 			}
 			tlist.set(0, target);
 		    }
-		    setup(type, true);
+		    setup(getMakefileData(), type, true);
 		    return target;
 		}
 	    }
@@ -142,7 +142,7 @@ public class TargetNamePanel extends ItemChooser {
 	return target;
     }
 
-    private void setup(int type, boolean reinit) {
+    private void setup(MakefileData makefileData, int type, boolean reinit) {
 
 	if (type == MakefileData.EXECUTABLE_MAKEFILE_TYPE) {
 	    label = getString("LBL_ExecutableName");			// NOI18N
@@ -155,9 +155,16 @@ public class TargetNamePanel extends ItemChooser {
 	    tname = getString("DFLT_ArchiveName");	    		// NOI18N
 
 	} else if (type == MakefileData.SHAREDLIB_MAKEFILE_TYPE) {
+            String suffix;
+            if (makefileData.getMakefileOS() == MakefileData.WINDOWS_OS_TYPE)
+                suffix = ".dll"; // NOI18N
+            else if (makefileData.getMakefileOS() == MakefileData.MACOSX_OS_TYPE)
+                suffix = ".dylib"; // NOI18N
+            else
+                suffix = ".so"; // NOI18N
 	    label = getString("LBL_ShobjName");				// NOI18N
 	    mnemonic = getString("MNEM_ShobjName").charAt(0);		// NOI18N
-	    tname = getString("DFLT_ShobjName");			// NOI18N
+	    tname = getString("DFLT_ShobjName") + suffix;		// NOI18N
 
 	} else {
 	    throw(new IllegalStateException());
@@ -170,7 +177,7 @@ public class TargetNamePanel extends ItemChooser {
     }
 
     private TargetData createTarget(int type) {
-	setup(type, true);
+	setup(getMakefileData(), type, true);
 	String dir = getMakefileData().defaultOutputDirectory();
 	return new TargetData(type, tname, dir, 0);
     }
@@ -184,7 +191,7 @@ public class TargetNamePanel extends ItemChooser {
 	TargetData target;
 
 	if (!initialized) {
-	    setup(type, false);
+	    setup(getMakefileData(), type, false);
 	    create(getString("LBL_TargetDirectory"),			// NOI18N
 			getString("MNEM_TargetDirectory").charAt(0),	// NOI18N
 			label, mnemonic);

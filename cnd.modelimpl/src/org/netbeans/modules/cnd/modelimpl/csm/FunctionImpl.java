@@ -598,6 +598,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         PersistentUtils.writeUTF(this.signature, output);
         output.writeBoolean(isVoidParameterList);
+        output.writeUTF(this.getScopeSuffix());
+        output.writeBoolean(this.template);
+        if (this.template) {
+            output.writeUTF(this.templateSuffix);
+        }
     }
 
     public List<CsmScopeElement> getScopeElements() {
@@ -629,5 +634,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             this.signature = QualifiedNameCache.getString(this.signature);
         }
         this.isVoidParameterList = input.readBoolean();
+        this.classTemplateSuffix = input.readUTF();
+        this.template = input.readBoolean();
+        if (this.template) {
+            this.templateSuffix = input.readUTF();
+        }
     }
 }

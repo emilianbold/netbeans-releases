@@ -48,6 +48,7 @@ final public class MakefileData {
     public final static int LINUX_OS_TYPE = 1;
     public final static int UNIX_OS_TYPE = 2;
     public final static int WINDOWS_OS_TYPE = 3;
+    public final static int MACOSX_OS_TYPE = 4;
 
     // Conformance Level C SUN
     private int conformLevelCSun = 1; // Default
@@ -226,6 +227,8 @@ final public class MakefileData {
 	    OS = "Linux"; // NOI18N
 	} else if (getMakefileOS() == WINDOWS_OS_TYPE) {
 	    OS = "Windows"; // NOI18N
+	} else if (getMakefileOS() == MACOSX_OS_TYPE) {
+	    OS = "MacOSX"; // NOI18N
 	}
 
 	dir = toolset + "-" + System.getProperty("os.arch") + "-" + OS; // NOI18N

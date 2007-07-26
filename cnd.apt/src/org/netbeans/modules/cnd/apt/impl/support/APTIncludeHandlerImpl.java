@@ -203,6 +203,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                 final Iterator<Entry<String, Integer>> setIterator = entrySet.iterator();
                 assert entrySet != null;
                 assert setIterator != null;
+                output.writeInt(entrySet.size());
                 
                 while (setIterator.hasNext()) {
                     final Entry<String, Integer> entry = setIterator.next();

@@ -46,10 +46,10 @@ public class GNUCCCompiler extends CCCCompiler {
     
     private static final String[] DEVELOPMENT_MODE_OPTIONS = {
         "",  // Fast Build // NOI18N
-        "-g", // Debug" // NOI18N
-        "-g -O", // Performance Debug" // NOI18N
-        "-g", // Test Coverage // NOI18N
-        "-g -O2", // Dianosable Release // NOI18N
+        "-g3 -gdwarf-2", // Debug" // NOI18N
+        "-g -gdwarf-2 -O", // Performance Debug" // NOI18N
+        "-g -gdwarf-2", // Test Coverage // NOI18N
+        "-g -gdwarf-2 -O2", // Dianosable Release // NOI18N
         "-O2", // Release // NOI18N
         "-O3", // Performance Release // NOI18N
     };

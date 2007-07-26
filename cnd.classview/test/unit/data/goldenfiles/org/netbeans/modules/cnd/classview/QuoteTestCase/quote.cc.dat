@@ -24,6 +24,11 @@ Customer / class_16.png
 	GetDiscount() const / methods.png
 	GetName() const / methods.png
 	operator <<(ostream& , const Customer& ) / global_operator.png
+Direction / enumeration_16.png
+	down / enumeration_item_16.png
+	left / enumeration_item_16.png
+	right / enumeration_item_16.png
+	up / enumeration_item_16.png
 Disk / class_16.png
 	DiskCapacity / enumeration_16.png
 		T100 / enumeration_item_16.png
@@ -36,6 +41,9 @@ Disk / class_16.png
 	Disk(int type, int size, int units) / constructors.png
 	GetCategory() const / methods.png
 	GetType() const / methods.png
+Horisont / struct_16.png
+	down / fields.png
+	up / fields.png
 Memory / class_16.png
 	MemoryCategory / enumeration_16.png
 		BIG / enumeration_item_16.png
@@ -77,6 +85,9 @@ Module / class_16.png
 	operator <<(ostream& , const Module& ) / global_operator.png
 	operator =(const Module& obj) / operator_public.png
 	~Module() / deconstructors.png
+Pair / typedef_16.png
+	left / fields.png
+	right / fields.png
 System / class_16.png
 	moduleList / fields_private.png
 	supportMetric / fields_private.png
@@ -87,6 +98,9 @@ System / class_16.png
 	System() / constructors.png
 	System(const System& obj) / constructors.png
 	operator <<(ostream& , const System& ) / global_operator.png
+Tangage / typedef_16.png
+	toDown / enumeration_item_16.png
+	toUp / enumeration_item_16.png
 main(int argc, char** argv) / global_function.png
 operator <<(ostream& , const Customer& ) / global_operator.png
 operator <<(ostream& , const Module& ) / global_operator.png

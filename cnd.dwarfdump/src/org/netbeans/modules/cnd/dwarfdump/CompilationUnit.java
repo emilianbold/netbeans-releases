@@ -101,14 +101,16 @@ public class CompilationUnit {
         try {
             String dir = getCompilationDir();
             String name = getSourceFileName();
-            if (dir != null) {
-                if (name.startsWith("/")) { // NOI18N
-                    result = new File(name).getCanonicalPath();
+            if (name != null) {
+                if (dir != null) {
+                    if (name.startsWith("/")) { // NOI18N
+                        result = new File(name).getCanonicalPath();
+                    } else {
+                        result = new File(dir + File.separator + name).getCanonicalPath();
+                    }
                 } else {
-                    result = new File(dir + File.separator + name).getCanonicalPath();
+                    result = new File(name).getCanonicalPath();
                 }
-            } else {
-                result = new File(name).getCanonicalPath();
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -537,7 +539,10 @@ public class CompilationUnit {
         getPubnamesTable();
         
         getDebugInfo(true).dump(out);
-        getStatementList().dump(out);
+        DwarfStatementList stList = getStatementList();
+        if (stList != null) {
+            stList.dump(out);
+        }
         
         // Still pubnamesTable could be null (if not present for this
         // Compilation Unit)

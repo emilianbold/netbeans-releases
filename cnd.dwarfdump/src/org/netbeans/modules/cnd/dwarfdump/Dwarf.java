@@ -85,35 +85,44 @@ public class Dwarf {
                 break;
             }
             reader.readFully(next);
-            int length = 0;
-            for (int i = 0; i < 10; i++){
-                byte c = next[i+48];
-                if (c == ' '){
-                    break;
-                }
-                length*=10;
-                length+=(c-'0');
-            }
+            int length = readNumber(next, 48);
+            int nameLength = 0;
             //System.out.println(new String(next, 0, 16));
             if (next[0] == '/' && next[1] == '/') {
                 // skip long name section;
                 reader.skipBytes(length);
                 continue;
+            } else if (next[0] == '#' && next[1] == '1' && next[2] == '/') {
+                nameLength = readNumber(next, 3);
+                reader.skipBytes(nameLength);
             } else if (next[0] == '\n') {
                 break;
             }
             long pointer = reader.getFilePointer();
             byte[] bytes = new byte[8];
             reader.readFully(bytes);
-            if (FileMagic.isElfMagic(bytes) || FileMagic.isCoffMagic(bytes)) {
+            if (FileMagic.isElfMagic(bytes) || FileMagic.isCoffMagic(bytes) || FileMagic.isMachoMagic(bytes)) {
                 offsets.add(new MemberHeader(pointer,length));
             }
-            reader.skipBytes(length-8);
+            reader.skipBytes(length-8-nameLength);
             if (length % 2 == 1){
                 reader.skipBytes(1);
             }
         }
         return offsets;
+    }
+
+    private int readNumber(final byte[] next, int shift) {
+        int length = 0;
+        for (int i = 0; i < 10; i++){
+            byte c = next[i+shift];
+            if (c == ' '){
+                break;
+            }
+            length*=10;
+            length+=(c-'0');
+        }
+        return length;
     }
     
     public void dispose(){
@@ -190,6 +199,8 @@ public class Dwarf {
                     dwarfReader = new DwarfReader(fileName, reader, Magic.Elf, shiftIvArchive, length);
                 } else if (FileMagic.isCoffMagic(bytes)) {
                     dwarfReader = new DwarfReader(fileName, reader, Magic.Coff, shiftIvArchive, length);
+                } else if (FileMagic.isMachoMagic(bytes)) {
+                    dwarfReader = new DwarfReader(fileName, reader, Magic.Macho, shiftIvArchive, length);
                 }
                 result.addAll(getFileCompilationUnits());
             } catch (IOException ex) {

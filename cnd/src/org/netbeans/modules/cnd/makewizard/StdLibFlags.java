@@ -61,6 +61,13 @@ public final class StdLibFlags {
 	curses,
     };
 
+    private StdLib[] macosxStdLibs = {
+	math,
+	posixthread,
+	dynamiclib,
+	curses,
+    };
+
     /** Determine the link type */
     private int linkType;
     public final static int STATIC_LINK_TYPE = 0;
@@ -95,6 +102,10 @@ public final class StdLibFlags {
 
     public StdLib[] getLinuxStdLibs() {
 	return linuxStdLibs;
+    }
+
+    public StdLib[] getMacOSXStdLibs() {
+	return macosxStdLibs;
     }
 
     /** Getter for the boolean Motif library flag */
@@ -170,6 +181,9 @@ public final class StdLibFlags {
 	StdLib[] stdLibs;
 	if (os == MakefileData.SOLARIS_OS_TYPE) {
 	    stdLibs = getSolarisStdLibs();
+	}
+	else if (os == MakefileData.MACOSX_OS_TYPE) {
+	    stdLibs = getMacOSXStdLibs();
 	}
 	else {
 	    stdLibs = getLinuxStdLibs();

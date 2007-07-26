@@ -374,6 +374,13 @@ public class MakeActionProvider implements ActionProvider {
                                 path.append(":" + extPath); // NOI18N
                             runProfile.getEnvironment().putenv("DYLD_LIBRARY_PATH", path.toString()); // NOI18N
                         }
+                        // Make sure DISPLAY variable has been set
+                        if (System.getenv("DISPLAY") == null && conf.getProfile().getEnvironment().getenv("DISPLAY") == null) { // NOI18N
+                            // DISPLAY hasn't been set
+                            if (runProfile == null)
+                                runProfile = conf.getProfile().cloneProfile();
+                            runProfile.getEnvironment().putenv("DISPLAY", ":0.0"); // NOI18N
+                        }
                     }
                     
                     MakeArtifact makeArtifact = new MakeArtifact(pd, conf);

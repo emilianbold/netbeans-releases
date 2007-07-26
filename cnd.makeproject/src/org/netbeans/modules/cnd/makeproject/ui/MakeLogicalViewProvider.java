@@ -1292,7 +1292,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 //            File file = new File(item.getAbsPath());
 //            if (file.exists())
 //                file.delete();
-            folder.removeItem(item);
+            folder.removeItemAction(item);
             super.destroy();
         }
         

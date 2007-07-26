@@ -48,6 +48,7 @@ public class PlatformTypePanel extends MakefileWizardPanel {
     private JRadioButton solarisRadioButton;
     private JRadioButton linuxRadioButton;
     private JRadioButton windowsRadioButton;
+    private JRadioButton macosxRadioButton;
 
     /**
      * Constructor for the Makefile name panel. Remember, most of the panel is
@@ -89,6 +90,7 @@ public class PlatformTypePanel extends MakefileWizardPanel {
         solarisRadioButton = new JRadioButton();
         linuxRadioButton = new JRadioButton();
         windowsRadioButton = new JRadioButton();
+        macosxRadioButton = new JRadioButton();
         panel2.setLayout(new java.awt.GridBagLayout());
 
         makefileTypeLabel.setText(getString("LBL_CompilerType"));		    // NOI18N
@@ -178,6 +180,26 @@ public class PlatformTypePanel extends MakefileWizardPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         panel2.add(windowsRadioButton, gridBagConstraints);
 
+        macosxRadioButton.setText(getString("RB_PlatformTypeMasOSX"));		    // NOI18N
+	macosxRadioButton.setMnemonic(getString("MNEM_PlatformTypeMasOSX").charAt(0));  // NOI18N
+	macosxRadioButton.addItemListener(new ItemListener() {
+	    public void itemStateChanged(ItemEvent event) {
+		if (event.getStateChange() == ItemEvent.SELECTED) {
+		    if (sunCollectionRadioButton.isSelected()) {
+			gnuCollectionRadioButton.setSelected(true);
+		    }
+		    sunCollectionRadioButton.setEnabled(false);
+		} else {
+		    sunCollectionRadioButton.setEnabled(true);
+		}
+	    }
+	});
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        panel2.add(macosxRadioButton, gridBagConstraints);
+
         message2.setBackground(panel.getBackground());
         message2.setEditable(false);
         message2.setLineWrap(true);
@@ -187,7 +209,7 @@ public class PlatformTypePanel extends MakefileWizardPanel {
         message2.setFocusable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -209,6 +231,7 @@ public class PlatformTypePanel extends MakefileWizardPanel {
 	platformButtonGroup.add(solarisRadioButton);
 	platformButtonGroup.add(linuxRadioButton);
 	platformButtonGroup.add(windowsRadioButton);
+	platformButtonGroup.add(macosxRadioButton);
     }
 
 
@@ -230,6 +253,9 @@ public class PlatformTypePanel extends MakefileWizardPanel {
 	    } else if (osname.startsWith("windows")) { // NOI18N
 		getMakefileData().setToolset(MakefileData.GNU_TOOLSET_TYPE);
 		getMakefileData().setMakefileOS(MakefileData.WINDOWS_OS_TYPE);
+	    } else if (osname.startsWith("mac")) { // NOI18N
+		getMakefileData().setToolset(MakefileData.GNU_TOOLSET_TYPE);
+		getMakefileData().setMakefileOS(MakefileData.MACOSX_OS_TYPE);
 	    } else {
 		getMakefileData().setToolset(MakefileData.GNU_TOOLSET_TYPE);
 		getMakefileData().setMakefileOS(MakefileData.LINUX_OS_TYPE);
@@ -248,6 +274,8 @@ public class PlatformTypePanel extends MakefileWizardPanel {
 	    linuxRadioButton.setSelected(true);
 	} else if (getMakefileData().getMakefileOS() == MakefileData.WINDOWS_OS_TYPE) {
 	    windowsRadioButton.setSelected(true);
+	} else if (getMakefileData().getMakefileOS() == MakefileData.MACOSX_OS_TYPE) {
+	    macosxRadioButton.setSelected(true);
 	}
 
 	super.addNotify();
@@ -269,6 +297,8 @@ public class PlatformTypePanel extends MakefileWizardPanel {
 	    getMakefileData().setMakefileOS(MakefileData.LINUX_OS_TYPE);
 	} else if (windowsRadioButton.isSelected()) {
 	    getMakefileData().setMakefileOS(MakefileData.WINDOWS_OS_TYPE);
+	} else if (macosxRadioButton.isSelected()) {
+	    getMakefileData().setMakefileOS(MakefileData.MACOSX_OS_TYPE);
 	}
     }
 

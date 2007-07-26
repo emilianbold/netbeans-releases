@@ -34,7 +34,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
 import org.netbeans.modules.cnd.api.utils.ElfExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.api.utils.MachOExecutableFileFilter;
+import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -355,7 +355,7 @@ public class RunDialogPanel extends javax.swing.JPanel {
         if (Utilities.isWindows()){
             filter = new FileFilter[] {PeExecutableFileFilter.getInstance()};
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-            filter = new FileFilter[] {MachOExecutableFileFilter.getInstance()};
+            filter = new FileFilter[] {MacOSXExecutableFileFilter.getInstance()};
         } else {
             filter = new FileFilter[] {ElfExecutableFileFilter.getInstance()};
         }

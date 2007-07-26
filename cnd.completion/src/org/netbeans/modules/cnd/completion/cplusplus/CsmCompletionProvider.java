@@ -33,6 +33,7 @@ import javax.swing.text.Position;
 
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtEditorUI;
@@ -123,18 +124,21 @@ public class CsmCompletionProvider implements CompletionProvider {
             // TODO: scanning-in-progress
 //            if (JavaMetamodel.getManager().isScanInProgress())
 //                resultSet.setWaitText(NbBundle.getMessage(CsmCompletionProvider.class, "scanning-in-progress")); //NOI18N
-            CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
-            NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery();
-            NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, sup);
-            if (res != null) {
-                queryCaretOffset = caretOffset;
-                queryAnchorOffset = res.getSubstituteOffset();
-                Collection items = res.getData();
-                resultSet.estimateItems(items.size(), -1);
-                resultSet.setTitle(res.getTitle());
-                resultSet.setAnchorOffset(queryAnchorOffset);
-                resultSet.addAllItems(items);
-                queryResult = res;
+            SyntaxSupport syntSupp = Utilities.getSyntaxSupport(component);
+            if (syntSupp != null){
+                CsmSyntaxSupport sup = (CsmSyntaxSupport)syntSupp.get(CsmSyntaxSupport.class);
+                NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery();
+                NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, sup);
+                if (res != null) {
+                    queryCaretOffset = caretOffset;
+                    queryAnchorOffset = res.getSubstituteOffset();
+                    Collection items = res.getData();
+                    resultSet.estimateItems(items.size(), -1);
+                    resultSet.setTitle(res.getTitle());
+                    resultSet.setAnchorOffset(queryAnchorOffset);
+                    resultSet.addAllItems(items);
+                    queryResult = res;
+                }
             }
             resultSet.finish();
         }

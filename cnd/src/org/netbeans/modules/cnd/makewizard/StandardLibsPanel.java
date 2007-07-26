@@ -45,9 +45,11 @@ public class StandardLibsPanel extends MakefileWizardPanel {
     private JPanel currentCheckBoxPanel;
     private JPanel solarisCheckBoxPanel;
     private JPanel linuxCheckBoxPanel;
+    private JPanel macosxCheckBoxPanel;
 
     private JCheckBox[]	solarisCheckBoxes;
     private JCheckBox[]	linuxCheckBoxes;
+    private JCheckBox[]	macosxCheckBoxes;
 
     private JComboBox linkModeCB;
 
@@ -169,6 +171,14 @@ public class StandardLibsPanel extends MakefileWizardPanel {
 	    }
 	    p = solarisCheckBoxPanel;
 	}
+	else if (getMakefileData().getMakefileOS() == MakefileData.MACOSX_OS_TYPE) {
+	    if (macosxCheckBoxPanel == null) {
+		StdLib[] stdLibs = getMakefileData().getCurrentTarget().getStdLibFlags().getMacOSXStdLibs();
+		macosxCheckBoxes =  new JCheckBox[stdLibs.length];
+		macosxCheckBoxPanel = constructCheckBoxPanel(stdLibs, macosxCheckBoxes);
+	    }
+	    p = macosxCheckBoxPanel;
+	}
 	else {
 	    if (linuxCheckBoxPanel == null) {
 		StdLib[] stdLibs = getMakefileData().getCurrentTarget().getStdLibFlags().getLinuxStdLibs();
@@ -186,6 +196,9 @@ public class StandardLibsPanel extends MakefileWizardPanel {
     private JCheckBox[] getCheckBoxes() {
 	if (getMakefileData().getMakefileOS() == MakefileData.SOLARIS_OS_TYPE) {
 	    return solarisCheckBoxes;
+	}
+        else if (getMakefileData().getMakefileOS() == MakefileData.MACOSX_OS_TYPE) {
+	    return macosxCheckBoxes;
 	}
 	else {
 	    return linuxCheckBoxes;
@@ -218,6 +231,9 @@ public class StandardLibsPanel extends MakefileWizardPanel {
 	StdLib[] stdLibs;
 	if (getMakefileData().getMakefileOS() == MakefileData.SOLARIS_OS_TYPE) {
 	    stdLibs = stdLibFlags.getSolarisStdLibs();
+	}
+        else if (getMakefileData().getMakefileOS() == MakefileData.MACOSX_OS_TYPE) {
+	    stdLibs = stdLibFlags.getMacOSXStdLibs();
 	}
 	else {
 	    stdLibs = stdLibFlags.getLinuxStdLibs();
@@ -275,6 +291,9 @@ public class StandardLibsPanel extends MakefileWizardPanel {
 	StdLib[] stdLibs;
 	if (getMakefileData().getMakefileOS() == MakefileData.SOLARIS_OS_TYPE) {
 	    stdLibs = stdLibFlags.getSolarisStdLibs();
+	}
+        else if (getMakefileData().getMakefileOS() == MakefileData.MACOSX_OS_TYPE) {
+	    stdLibs = stdLibFlags.getMacOSXStdLibs();
 	}
 	else {
 	    stdLibs = stdLibFlags.getLinuxStdLibs();

@@ -303,7 +303,7 @@ public class LibraryItem {
 	}
 
 	public String getIconName() {
-	    if (getPath().endsWith(".so") || getPath().endsWith(".dll")) // NOI18N
+	    if (getPath().endsWith(".so") || getPath().endsWith(".dll") || getPath().endsWith(".dylib")) // NOI18N
 		return "org/netbeans/modules/cnd/loaders/DllIcon.gif"; // NOI18N
 	    else if (getPath().endsWith(".a")) // NOI18N
 		return "org/netbeans/modules/cnd/loaders/static_library.gif"; // NOI18N

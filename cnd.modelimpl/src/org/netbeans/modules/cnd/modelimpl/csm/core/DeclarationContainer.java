@@ -484,7 +484,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         }
     }
     
-    public void read(DataInput aStream) throws IOException {
+    private void read(DataInput aStream) throws IOException {
         UIDObjectFactory.getDefaultFactory().readStringToArrayUIDMap(this.declarations, aStream, TextCache.getManager());
     }
     

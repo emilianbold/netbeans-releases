@@ -179,6 +179,14 @@ import org.netbeans.modules.cnd.apt.support.*;
         addIncludesIfNeeded();
     }    
     
+    /** 
+     * overrides APTWalker.stopOnErrorDirective 
+     * We should be able to make folds after #error as well
+     */
+    protected boolean stopOnErrorDirective() {
+	return false;
+    }
+    
     private APT firstInclude = null;
     private APT lastInclude = null;
 }
