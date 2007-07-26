@@ -86,12 +86,14 @@ public class CustomizerGeneral extends javax.swing.JPanel {
         monitorCheckBox = new javax.swing.JCheckBox();
         NoteChangesLabel = new javax.swing.JLabel();
 
+        homeLabel.setLabelFor(homeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(homeLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.homeLabel.text")); // NOI18N
 
         homeTextField.setColumns(30);
         homeTextField.setDocument(custData.getCatalinaHomeModel());
         homeTextField.setEditable(false);
 
+        baseLabel.setLabelFor(baseTextField);
         org.openide.awt.Mnemonics.setLocalizedText(baseLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.baseLabel.text")); // NOI18N
 
         baseTextField.setColumns(30);
@@ -101,12 +103,14 @@ public class CustomizerGeneral extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(credentialsLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.credentialsLabel.text")); // NOI18N
         credentialsLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.credentialsLabel.toolTipText")); // NOI18N
 
+        usernameLabel.setLabelFor(usernameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.usernameLabel.text")); // NOI18N
         usernameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.usernameLabel.toolTipText")); // NOI18N
 
         usernameTextField.setColumns(15);
         usernameTextField.setDocument(custData.getUsernameModel());
 
+        passwordLabel.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.passwordLabel.text")); // NOI18N
         passwordLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.passwordLabel.toolTipText")); // NOI18N
 
@@ -121,16 +125,19 @@ public class CustomizerGeneral extends javax.swing.JPanel {
             }
         });
 
+        serverPortLabel.setLabelFor(serverPortSpinner);
         org.openide.awt.Mnemonics.setLocalizedText(serverPortLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.serverPortLabel.text")); // NOI18N
 
         serverPortSpinner.setModel(custData.getServerPortModel());
         serverPortSpinner.setEditor(new JSpinner.NumberEditor(serverPortSpinner, "#"));
 
+        shutdownPortLabel.setLabelFor(shutdownPortSpinner);
         org.openide.awt.Mnemonics.setLocalizedText(shutdownPortLabel, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.shutdownPortLabel.text")); // NOI18N
 
         shutdownPortSpinner.setModel(custData.getShutdownPortModel());
         shutdownPortSpinner.setEditor(new JSpinner.NumberEditor(shutdownPortSpinner, "#"));
 
+        monitorCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "MNE_EnableHttpMonitor", new Object[] {}).charAt(0));
         org.openide.awt.Mnemonics.setLocalizedText(monitorCheckBox, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.monitorCheckBox.text")); // NOI18N
         monitorCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         monitorCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -213,6 +220,15 @@ public class CustomizerGeneral extends javax.swing.JPanel {
                 .add(NoteChangesLabel)
                 .addContainerGap())
         );
+
+        homeTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_CatalinaHome")); // NOI18N
+        homeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CatalinaHome")); // NOI18N
+        baseTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_CatalinaBase")); // NOI18N
+        baseTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CatalinaBase")); // NOI18N
+        usernameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_Username")); // NOI18N
+        usernameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_Username")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSN_Password")); // NOI18N
+        passwordField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACSD_Password")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void showButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showButtonActionPerformed
