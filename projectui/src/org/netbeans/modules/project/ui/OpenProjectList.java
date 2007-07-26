@@ -1121,8 +1121,15 @@ public final class OpenProjectList {
                         break;
                     }
                 }
-                if (toRemove != null) {
-                    close(new Project[] {toRemove}, false);
+                final Project fRemove = toRemove;
+                if (fRemove != null) {
+                    //#108376 avoid deadlock in org.netbeans.modules.project.ui.ProjectUtilities$1.close(ProjectUtilities.java:106)
+                    // alternatively removing the close() metod from synchronized block could help as well..
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run () {
+                            close(new Project[] {fRemove}, false);
+                        }
+                    });
                 }
             }
         }
