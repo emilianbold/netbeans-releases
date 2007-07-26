@@ -243,7 +243,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         FileObject fo = ServerRegistry.getInstanceFileObject(url);
         if (fo == null) {
             String msg = NbBundle.getMessage(ServerInstance.class, "MSG_NullInstanceFileObject", url);
-            throw new IllegalStateException(msg);
+            throw new DeploymentManagerCreationException(msg);
         }
         disconnectedManagerTmp = server.getDisconnectedDeploymentManager(url);
         synchronized (this) {
@@ -494,7 +494,8 @@ public class ServerInstance implements Node.Cookie, Comparable {
         try {
             dm = getDisconnectedDeploymentManager();
         }  catch (DeploymentManagerCreationException dmce) {
-            throw new RuntimeException(dmce);
+            Logger.getLogger(ServerInstance.class.getName()).log(Level.INFO, null, dmce);
+            return null;
         }
         synchronized (this) {
             if (startServer == null) {
