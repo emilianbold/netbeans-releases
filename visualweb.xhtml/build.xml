@@ -19,13 +19,13 @@
             <pathelement location="${cluster}/modules/ext/webui-dt.jar"/>
         </path>    
         <path id="digester.jars">
-            <pathelement location="${cluster}/modules/ext/commons-beanutils.jar"/>
-            <pathelement location="${cluster}/modules/ext/commons-digester.jar"/>
+            <pathelement location="../ravelibs/commons-beanutils/release/modules/ext/commons-beanutils.jar"/>
+            <pathelement location="../ravelibs/commons-digester/release/modules/ext/commons-digester.jar"/>
         </path>
         
         <path id="jsf.jars">
             <pathelement location="${netbeans.dest.dir}/ide8/modules/ext/commons-logging-1.0.4.jar"/>
-            <pathelement location="${cluster}/modules/ext/commons-collections.jar"/>
+            <pathelement location="../ravelibs/commons-collections/release/modules/ext/commons-collections.jar"/>
             <pathelement location="${netbeans.dest.dir}/enterprise2/modules/ext/servlet-api-2.4.jar"/>
             <pathelement location="${cluster}/modules/ext/jsp-api.jar"/>
             <pathelement location="${cluster}/modules/ext/jstl.jar"/>
@@ -41,7 +41,7 @@
             <arg line="-c com.sun.rave.designtime.base.CategoryDescriptors"/>
             <arg line="--cpBeanInfo"/>
             <classpath>
-                <pathelement path="${cluster}/modules/ext/jsf-metadata.jar"/>
+                <pathelement path="../ravelibs/jsf-metadata/library/dist/jsf-metadata.jar"/>
                 <path refid="digester.jars"/>
                 <path refid="jsf.jars"/>
                 <path refid="webui-dt.jars"/>
