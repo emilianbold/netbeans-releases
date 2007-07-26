@@ -35,6 +35,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DatasourceConfiguration;
@@ -48,14 +49,10 @@ import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 
@@ -100,30 +97,30 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         }
         
         // Support build extension for new resource persistence strategy
-// TODO : re-enable this when server team resolves 3317
-//        File f = module.getResourceDirectory();
-//        while (null != f && !f.exists()) {
-//            f = f.getParentFile();
-//        }
-//        if (null != f) {
-//            Project p = FileOwnerQuery.getOwner(f.toURI());
-//            FileObject pdfo = p.getProjectDirectory();
-//            if (pdfo == null) {
-//                return;
-//            }
-//            FileObject nbProjectFO = pdfo.getFileObject("nbproject");
-//            if (nbProjectFO == null) {
-//                return;
-//            }
-//            FileObject privateFO = nbProjectFO.getFileObject("private");
-//            if (privateFO == null) {
-//                return;
-//            }
-//            
-//            privateFO.addFileChangeListener(new StaticBuildExtensionListener((ModuleType) module.getModuleType()));
-//        } else {
-//            Logger.getLogger(ModuleConfigurationImpl.class.getName()).finer("Could not find project for J2eeModule");
-//        }
+        File f = module.getResourceDirectory();
+        while (null != f && !f.exists()) {
+            f = f.getParentFile();
+        }
+        if (null != f) {
+            Project p = FileOwnerQuery.getOwner(f.toURI());
+            if (null != p) {
+                J2eeModuleProvider jmp = getProvider(p);
+                if (null != jmp) {
+                    InstanceListener il = new StaticBuildExtensionListener(f);
+                    
+                    // TODO : reenable when GF 3317 is resolved
+                    //jmp.addInstanceListener(il);
+                    
+                    // migrate existing projects to currently supported resource
+                    // registration strategy
+                    il.instanceAdded("ignored");    // NOI18N
+                }
+            } else {
+                Logger.getLogger(ModuleConfigurationImpl.class.getName()).finer("Could not find project for J2eeModule");   // NOI18N
+            }
+        } else {
+            Logger.getLogger(ModuleConfigurationImpl.class.getName()).finer("Could not find project root directory for J2eeModule");   // NOI18N
+        }
     }
     
     
@@ -290,51 +287,21 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
                 connectionFactoryName, destName, type);
     }
     
-    static class StaticBuildExtensionListener extends FileChangeAdapter {
-        ModuleType type;
-        StaticBuildExtensionListener(ModuleType t) {
-            type = t;
+    static private J2eeModuleProvider getProvider(Project project) {
+        J2eeModuleProvider provider = null;
+        if (project != null) {
+            org.openide.util.Lookup lookup = project.getLookup();
+            provider = lookup.lookup(J2eeModuleProvider.class);
         }
-        
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            FileObject  tmp = fe.getFile();
-            FileChangeListener fcl = this;
-            if (tmp!=null) {
-                react(tmp, fcl);
-            }
+        return provider;
+    }
+
+    static class StaticBuildExtensionListener  implements InstanceListener {
+        File projectDirectory;
+        StaticBuildExtensionListener(File pd) {
+            projectDirectory = pd;
         }
-        
-        @Override
-        public void fileChanged(FileEvent fe) {
-            FileObject  tmp = fe.getFile();
-            FileChangeListener fcl = this;
-            if (tmp!=null) {
-                react(tmp, fcl);
-            }
-        }
-        
-        private void react(final FileObject tmp, final FileChangeListener fcl) {
-            if (tmp.getNameExt().equals("private.properties")) { // NOI18N
-                // get out of the thread that has write access
-                (new RequestProcessor()).post(new Runnable() {
-                    public void run() {
-                        // so that this request can queue up behind
-                        // the currently active "write"
-                        ProjectManager.mutex(). writeAccess(new Runnable() {
-                            public void run() {
-                                // Do not react to the file cheange events
-                                // that this code is about to generate
-                                tmp.removeFileChangeListener(fcl);
-                                rewriteBuildImpl(tmp);
-                                tmp.addFileChangeListener(fcl);
-                            }
-                        });
-                    }
-                });
-            }
-        }
-        
+                
         private void rewriteBuildImpl(FileObject tmp) {
             File f = FileUtil.toFile(tmp);
             Project p = null;
@@ -342,7 +309,9 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
                 p = FileOwnerQuery.getOwner(f.toURI());
             }
             if (null != p) {
-                boolean addExtension = true;
+                // TODO : change addExtension default value to true after GF 3317 is resolved
+                //boolean addExtension = true;
+                boolean addExtension = false;
                 DeploymentManager dm = getDeploymentManager(p);
                 if (null == dm) {
                     addExtension = false;
@@ -358,7 +327,11 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
                     // for us anymore
                     addExtension = false;
                 }
-                String target = ModuleType.EAR.equals(type) ? "pre-dist" : "-pre-dist"; // NOI18N
+                J2eeModuleProvider jmp = getProvider(p);
+                if (null == jmp) {
+                    return;
+                }
+                String target = ModuleType.EAR.equals(jmp.getJ2eeModule().getModuleType()) ? "pre-dist" : "-pre-dist"; // NOI18N
                 try {
                     if (addExtension) {
                         BuildExtension.copyTemplate(p);
@@ -389,13 +362,39 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
             return dm;
         }
         
-        private J2eeModuleProvider getProvider(Project project) {
-            J2eeModuleProvider provider = null;
-            if (project != null) {
-                org.openide.util.Lookup lookup = project.getLookup();
-                provider = lookup.lookup(J2eeModuleProvider.class);
-            }
-            return provider;
+        public void changeDefaultInstance(String oldServerInstanceID,
+                                          String newServerInstanceID) {
+            // Ignored
+        }
+
+        public void instanceAdded(String serverInstanceID) {
+            //Thread.dumpStack();
+            reactToInstanceChange(this);
+        }
+
+        public void instanceRemoved(String serverInstanceID) {
+            // Ignored
+        }
+        
+        private void reactToInstanceChange(final InstanceListener il) {
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                public void run() {
+                    Project p = FileOwnerQuery.getOwner(projectDirectory.toURI());
+                    J2eeModuleProvider jmp = null;
+                    if (null != p) {
+                        jmp = getProvider(p);
+                    }
+                    if (null != jmp) {
+                        jmp.removeInstanceListener(il);
+                        FileObject tmp[] = jmp.getSourceRoots();
+                        if (null != tmp && tmp.length > 0) {
+                            rewriteBuildImpl(tmp[0]);
+                        }
+                        // TODO : reenable this when GF 3317 is resolved
+                        //jmp.addInstanceListener(il);
+                    }
+                }
+            });
         }
     }
 }
