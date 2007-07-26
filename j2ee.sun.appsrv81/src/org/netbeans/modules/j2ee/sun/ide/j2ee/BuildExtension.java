@@ -88,7 +88,7 @@ public class BuildExtension {
             }
             ProjectManager.getDefault().saveProject(proj);
         } else {
-            Logger.getLogger(BuildExtension.class.getName()).log(Level.INFO,
+            Logger.getLogger(BuildExtension.class.getName()).log(Level.FINER,
                     "Trying to include GF build snippet in project type that doesn't support AntBuildExtender API contract."); // NOI18N
         }
     }
@@ -115,9 +115,9 @@ public class BuildExtension {
                 extender.removeExtension("gfarchiveextend"); // NOI18N
             }
             ProjectManager.getDefault().saveProject(proj);
-        } else {
-            Logger.getLogger(BuildExtension.class.getName()).log(Level.INFO,
-                    "Trying to include GF build snippet in project type that doesn't support AntBuildExtender API contract."); // NOI18N
+        } else if (null == extender) {
+            Logger.getLogger(BuildExtension.class.getName()).log(Level.FINER,
+                    "Trying to remove GF build snippet in project type that doesn't support AntBuildExtender API contract."); // NOI18N
         }
     }
 }
