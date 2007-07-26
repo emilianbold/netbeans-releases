@@ -516,9 +516,6 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
       public void fileRenamed(FileRenameEvent event) {
       }
 
-      private void readEntries() {
-      }
-
       private void updateEntries() {
         removeEntries();
 
