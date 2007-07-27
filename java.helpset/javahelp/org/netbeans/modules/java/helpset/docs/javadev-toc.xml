@@ -126,7 +126,9 @@
       <tocitem text="Evaluating an Expression" target="debug.expression"/>
     </tocitem>
   </tocitem>
-  
+  <tocitem text="Profiling Java Applications">
+      <tocitem text="About Profiling Java Applications" target="debug.expression"/>
+  </tocitem>
   <tocitem text="Building Java GUIs">
     <tocitem text="About Java GUIs" target="gui.about"/>
     <tocitem text="Working with the GUI Builder" target="gui.overview"/>
