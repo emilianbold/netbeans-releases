@@ -60,7 +60,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
     */
     private Map<VisualizerNode, Info> childrenCount;
 
-    /** Creates new NodeTreeModel
+    /** Creates new model.
     */
     public NodeListModel() {
         parent = VisualizerNode.EMPTY;
@@ -68,7 +68,7 @@ public class NodeListModel extends AbstractListModel implements ComboBoxModel {
         clearChildrenCount();
     }
 
-    /** Creates new NodeTreeModel
+    /** Creates new model.
     * @param root the root of the model
     */
     public NodeListModel(Node root) {
