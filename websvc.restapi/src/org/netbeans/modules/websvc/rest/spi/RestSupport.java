@@ -257,6 +257,11 @@ public abstract class RestSupport {
         for (String type : classPathTypes) {
             try {
                 ProjectClassPathModifier.addLibraries(new Library[] { swdpLibrary }, sourceRoot, type);
+                
+                Library library = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+                if (library != null) {
+                    ProjectClassPathModifier.removeLibraries(new Library[] {library}, sourceRoot, ClassPath.COMPILE);
+                }
             } catch(UnsupportedOperationException ex) {
                 Logger.getLogger(getClass().getName()).log(Level.ALL, type+" not supported.");
                 
