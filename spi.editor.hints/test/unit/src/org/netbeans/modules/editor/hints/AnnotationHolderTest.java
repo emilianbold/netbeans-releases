@@ -43,6 +43,7 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionTestSupport;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
+import org.openide.LifecycleManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -248,6 +249,46 @@ public class AnnotationHolderTest extends NbTestCase {
         AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed2, ed4));
         
         assertEquals(Severity.VERIFIER, impl.annotation.getSeverity());
+        
+        ec.close();
+    }
+    
+    public void testTypeIntoLine() throws Exception {
+        performTypingTest(25, "a", new int[0], new AttributeSet[0]);
+    }
+    
+    public void testTypeOnLineStart() throws Exception {
+        performTypingTest(21, "a", new int[0], new AttributeSet[0]);
+    }
+    
+    public void testTypeOnLineStartWithNewline() throws Exception {
+        performTypingTest(21, "a\n", new int[0], new AttributeSet[0]);
+    }
+    
+    public void testTypeOnLineStartWithNewlines() throws Exception {
+        performTypingTest(21, "a\na\na\na\n", new int[0], new AttributeSet[0]);
+    }
+    
+    private void performTypingTest(int index, String insertWhat, int[] highlightSpans, AttributeSet[] highlightValues) throws Exception {
+        ErrorDescription ed1 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "1", file, 21, 32);
+        
+        ec.open();
+        
+        //these tests currently ignore annotations:
+        class AttacherImpl implements Attacher {
+            public void attachAnnotation(Position line, ParseErrorAnnotation a) throws BadLocationException {}
+            public void detachAnnotation(Annotation a) {}
+        }
+        
+        AnnotationHolder.getInstance(file).attacher = new AttacherImpl();
+        
+        AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed1));
+        
+        doc.insertString(index, insertWhat, null);
+
+        assertHighlights("highlights correct", AnnotationHolder.getBag(doc), highlightSpans, highlightValues);
+        
+        LifecycleManager.getDefault().saveAll();
         
         ec.close();
     }

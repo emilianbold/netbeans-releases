@@ -197,17 +197,21 @@ Microsystems, Inc. All Rights Reserved.
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.openide.dialogs</code-name-base>
+                        <code-name-base>org.netbeans.core</code-name-base>
+                        <recursive/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.openide.options</code-name-base>
+                        <code-name-base>org.netbeans.modules.editor</code-name-base>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.util</code-name-base>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.editor</code-name-base>
-                        <compile-dependency/>
+                        <code-name-base>org.openide.dialogs</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.openide.options</code-name-base>
                     </test-dependency>
                 </test-type>
             </test-dependencies>

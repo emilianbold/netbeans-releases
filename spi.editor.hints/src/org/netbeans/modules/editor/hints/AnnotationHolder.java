@@ -257,10 +257,50 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         });
     }
     
-    public void insertUpdate(DocumentEvent e) {
-        int line = NbDocument.findLineNumber((StyledDocument) doc, e.getOffset());
+    public synchronized void insertUpdate(DocumentEvent e) {
+        try {
+            int offset = Utilities.getRowStart(doc, e.getOffset());
         
-        handleChange(line, 0);
+            Set<Position> modifiedLines = new HashSet<Position>();
+            
+            int index = findPositionGE(offset);
+            
+            if (index == knownPositions.size())
+                return ;
+            
+            Position line = knownPositions.get(index).get();
+                
+            if (line == null)
+                return ;
+                
+            List<ErrorDescription> eds = getErrorsForLine(line, false);
+
+            if (eds == null)
+                return ;
+                
+            eds = new LinkedList<ErrorDescription>(eds);
+                
+            for (ErrorDescription ed : eds) {
+                for (Position i : errors2Lines.remove(ed)) {
+                    line2Errors.get(i).remove(ed);
+                    modifiedLines.add(i);
+                }
+                for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
+                    edsForLayer.remove(ed);
+                }
+            }
+                
+            line2Errors.remove(line);
+            
+            for (Position lineToken : modifiedLines) {
+                updateAnnotationOnLine(lineToken);
+                updateHighlightsOnLine(lineToken);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public synchronized void removeUpdate(DocumentEvent e) {
@@ -304,7 +344,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 index--;
             }
 
-            List<Position> modifiedLinesTokens = new LinkedList<Position>();
+            Set<Position> modifiedLinesTokens = new HashSet<Position>();
 
             while (index < knownPositions.size()) {
                 Position next = knownPositions.get(index).get();
@@ -333,6 +373,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 for (ErrorDescription ed : eds) {
                     for (Position i : errors2Lines.remove(ed)) {
                         line2Errors.get(i).remove(ed);
+                        modifiedLinesTokens.add(i);
                     }
                     for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
                         edsForLayer.remove(ed);
@@ -343,48 +384,6 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             }
 
             for (Position line : modifiedLinesTokens) {
-                updateAnnotationOnLine(line);
-                updateHighlightsOnLine(line);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
-    private synchronized void handleChange(int start, int size) {
-        size = size < 0 ? 0 : size;
-        try {
-            Set<Position> modifiedLines = new HashSet<Position>();
-            
-            for (int lineOffset = start; lineOffset <= (start + size); lineOffset++) {
-                Position line = getPosition(lineOffset, false);
-                
-                if (line == null)
-                    continue;
-                
-                List<ErrorDescription> eds = line2Errors.get(line);
-                
-                if (eds == null || eds.isEmpty())
-                    continue ;
-                
-                eds = new LinkedList<ErrorDescription>(eds);
-                
-                for (ErrorDescription ed : eds) {
-                    for (Position i : errors2Lines.remove(ed)) {
-                        line2Errors.get(i).remove(ed);
-                        modifiedLines.add(i);
-                    }
-                    for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {
-                        edsForLayer.remove(ed);
-                    }
-                }
-                
-                line2Errors.remove(line);
-            }
-            
-            for (Position line : modifiedLines) {
                 updateAnnotationOnLine(line);
                 updateHighlightsOnLine(line);
             }
@@ -873,7 +872,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                     if (!create)
                         return null;
 
-                    Position p = NbDocument.createPosition(doc, lineStart, Position.Bias.Backward);
+                    Position p = NbDocument.createPosition(doc, lineStart, Position.Bias.Forward);
 
                     knownPositions.add(- (index + 1), new WeakReference<Position>(p));
 
