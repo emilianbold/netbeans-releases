@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.loader.CssDataObject;
 import org.netbeans.modules.css.model.CssModel;
@@ -227,8 +228,13 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
             if (panes != null){
                 final JEditorPane activePane = panes[0];
                 if(activePane != null){
+                    Document document = activePane.getDocument();
+                    if(document == null) {
+                        //pane about to closed, document unloaded
+                        return ;
+                    }
                     //listen on the model and update selected rule
-                    getModel().addPropertyChangeListener(new PropertyChangeListener() {
+                    CssModel.get(document).addPropertyChangeListener(new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent evt) {
                             if(evt.getPropertyName().equals(CssModel.MODEL_UPDATED)) {
                                 SwingUtilities.invokeLater(new Runnable() {
@@ -272,10 +278,6 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
         }
     }
     
-    private CssModel getModel() {
-        return CssModel.get(getDocument());
-    }
-    
     void cssTCActivated(CssCloneableEditor editor) {
         //we need to refresh the StyleBuilder content when switching between more css files
         if(selected != null) {
@@ -289,13 +291,21 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
     }
     
     private synchronized void updateSelectedRule(int dotPos) {
+        Document document = getDocument();
+        if(document == null) {
+            //document unloaded, just return
+            return ;
+        }
+        
+        CssModel model = CssModel.get(document);
+        
         LOGGER.log(Level.FINE, "updateSelectedRule(" + dotPos + ")");
-        if(getModel().rules() == null) {
+        if(model.rules() == null) {
             return ;//css not parsed yet, we need to wait for a parser event
         }
         
         //find rule on the offset
-        final CssRule selectedRule = getModel().ruleForOffset(dotPos);
+        final CssRule selectedRule = model.ruleForOffset(dotPos);
         
         LOGGER.log(Level.FINE, selectedRule == null ? "NO rule" : "found a rule");
         
@@ -333,7 +343,7 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
             
             //update the css preview
             CssPreviewable.Content content =
-                    new CssPreviewable.Content(selectedRule, getDocument(), getDataObject().getPrimaryFile());
+                    new CssPreviewable.Content(selectedRule, document, getDataObject().getPrimaryFile());
 
             //activate the selected rule in stylebuilder
             StyleBuilderTopComponent sbTC = StyleBuilderTopComponent.findInstance();
@@ -354,10 +364,15 @@ public class CssEditorSupport extends DataEditorSupport implements OpenCookie, E
     }
     
     public CssPreviewable.Content content() {
+        Document document = getDocument();
+        if(document == null) {
+            //already unloaded
+            return null;
+        }
         if(selected == null) {
             return null;
         } else {
-            return new CssPreviewable.Content(selected, getDocument(), getDataObject().getPrimaryFile());
+            return new CssPreviewable.Content(selected, document, getDataObject().getPrimaryFile());
         }
     }
     
