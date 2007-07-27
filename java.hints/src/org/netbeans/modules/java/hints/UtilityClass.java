@@ -158,7 +158,7 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
             if (span[0] != (-1) && span[1] != (-1)) {
                 ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
                         getSeverity().toEditorSeverity(),
-                        NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_PrivateConstructor" : "MSG_MakePrivate"), // NOI18N
+                        NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_UtilityClass" : "MSG_PublicConstructor"), // NOI18N
                         fixes,
                         doc,
                         doc.createPosition(span[0]),
@@ -249,7 +249,7 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
         }
         
         public String getText() {
-            return NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_UtilityClass" : "MSG_PublicConstructor"); // NOI18N
+            return NbBundle.getMessage(UtilityClass.class, clazz ? "MSG_PrivateConstructor" : "MSG_MakePrivate"); // NOI18N
         }
         
         public ChangeInfo implement() throws IOException {
