@@ -65,6 +65,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassMemberTest("testAddMethodWithDoc"));
 //        suite.addTest(new ClassMemberTest("testAddFieldWithDoc1"));
 //        suite.addTest(new ClassMemberTest("testAddFieldWithDoc2"));
+//        suite.addTest(new ClassMemberTest("test111024"));
         return suite;
     }
 
@@ -1329,6 +1330,153 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             }
         };
         src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void test111024() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+             "/*\n" +
+            " * TestClass.java\n" +
+            " *\n" +
+            " * Created on January 31, 2007, 11:23 AM\n" +
+            " *\n" +
+            " * To change this template, choose Tools | Template Manager\n" +
+            " * and open the template in the editor.\n" +
+            " */\n" +
+            "\n" +
+            "package org.netbeans.retouchebugs;\n" +
+            "\n" +
+            "/**\n" +
+            " *\n" +
+            " * @author jdeva\n" +
+            " */\n" +
+            "public class TestClass {\n" +
+            "    // <editor-fold desc=\"VWP managed Component Definition\">\n" +
+            "    private String foox = new String(\"Test\");\n" +
+            "    String getFoo() {\n" +
+            "        return this.foox;\n" +
+            "    }\n" +
+            "    \n" +
+            "    void setFoo(String foox) {\n" +
+            "        this.foox = foox;\n" +
+            "    }\n" +
+            "    \n" +
+            "    private String foo = new String();\n" +
+            "    //</editor-fold>\n" +
+            "    \n" +
+            "    /** Creates a new instance of TestClass */\n" +
+            "    public TestClass() {\n" +
+            "        getFoo().toCharArray();\n" +
+            "        Thread.currentThread();\n" +
+            "        System.out.println(\"Message\");\n" +
+            "    }\n" +
+            "    \n" +
+            "    public void replace() {\n" +
+            "        ;\n" +
+            "        for(int i = 0; i < 10; i++) {\n" +
+            "            System.out.println(\"In loop\");\n" +
+            "        }\n" +
+            "        Thread.currentThread();\n" +
+            "        this.setFoo(\"Hello\");\n" +
+            "        \n" +
+            "        TestClass testClass = new TestClass();\n" +
+            "        testClass.setFoo(\"World!\");\n" +
+            "        testClass.getFoo().toString().toString();\n" +
+            "    }\n" +
+            " }\n");
+        String golden =
+             "/*\n" +
+            " * TestClass.java\n" +
+            " *\n" +
+            " * Created on January 31, 2007, 11:23 AM\n" +
+            " *\n" +
+            " * To change this template, choose Tools | Template Manager\n" +
+            " * and open the template in the editor.\n" +
+            " */\n" +
+            "\n" +
+            "package org.netbeans.retouchebugs;\n" +
+            "\n" +
+            "import java.awt.List;\n" +
+            "\n" +
+            "/**\n" +
+            " *\n" +
+            " * @author jdeva\n" +
+            " */\n" +
+            "public class TestClass {\n" +
+            "    // <editor-fold desc=\"VWP managed Component Definition\">\n" +
+            "    private String foox = new String(\"Test\");\n" +
+            "    String getFoo() {\n" +
+            "        return this.foox;\n" +
+            "    }\n" +
+            "    \n" +
+            "    void setFoo(String foox) {\n" +
+            "        this.foox = foox;\n" +
+            "    }\n" +
+            "    \n" +
+            "    private String foo = new String();\n" +
+            "    //</editor-fold>\n" +
+            "    \n" +
+            "    /** Creates a new instance of TestClass */\n" +
+            "    public TestClass() {\n" +
+            "        getFoo().toCharArray();\n" +
+            "        Thread.currentThread();\n" +
+            "        System.out.println(\"Message\");\n" +
+            "    }\n" +
+            "    \n" +
+            "    public void replace() {\n" +
+            "        ;\n" +
+            "        for(int i = 0; i < 10; i++) {\n" +
+            "            System.out.println(\"In loop\");\n" +
+            "        }\n" +
+            "        Thread.currentThread();\n" +
+            "        this.setFoo(\"Hello\");\n" +
+            "        \n" +
+            "        TestClass testClass = new TestClass();\n" +
+            "        testClass.setFoo(\"World!\");\n" +
+            "        testClass.getFoo().toString().toString();\n" +
+            "    }\n" +
+            "    public List foo = new List();\n" +
+            " }\n";
+        JavaSource testSource = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED); // is it neccessary?
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = null;
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        clazz = (ClassTree) typeDecl;
+                        break;
+                    }
+                }
+
+                TypeElement typeElement = workingCopy.getElements().getTypeElement("java.awt.List");
+                Tree typeTree = make.QualIdent(typeElement);
+                ExpressionTree initializer = make.NewClass(
+                        null,
+                        Collections.<ExpressionTree>emptyList(),
+                        (ExpressionTree) typeTree,
+                        Collections.<ExpressionTree>emptyList(), null
+                );
+                VariableTree vtree = make.Variable(
+                    make.Modifiers(
+                        java.lang.reflect.Modifier.PUBLIC,
+                        Collections.<AnnotationTree>emptyList()
+                    ),
+                    "foo",
+                    typeTree,
+                    initializer
+                );
+                ClassTree newClazz = make.addClassMember(clazz, vtree);
+                workingCopy.rewrite(clazz, newClazz);
+            }
+        };
+        testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
