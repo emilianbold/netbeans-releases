@@ -1632,12 +1632,18 @@ public final class VeryPretty extends JCTree.Visitor {
 
     private void printPrecedingComments(JCTree tree) {
         CommentSet commentSet = commentHandler.getComments(tree);
-        if (commentSet.getPrecedingComments().isEmpty() && cInfo != null) {
+        if (!commentSet.getPrecedingComments().isEmpty()) {
+            for (Comment c : commentSet.getPrecedingComments())
+                printComment(c, true);
+            return;
+        }
+        LinkedList<Comment> comments = new LinkedList<Comment>();
+        if (cInfo != null) {
             int startPos = TreeInfo.getStartPos(tree);
             int endPos = TreeInfo.getEndPos(tree, origUnit.endPositions);
             if (startPos >= 0 && endPos >= 0) {
                 if (pendingComments != null) {
-                    commentSet.addPrecedingComments(pendingComments);
+                    comments.addAll(pendingComments);
                     pendingComments = null;
                 }
                 TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
@@ -1649,20 +1655,20 @@ public final class VeryPretty extends JCTree.Visitor {
                     if (tokens.index() > lastReadCommentIdx) {
                         switch (tokens.token().id()) {
                             case LINE_COMMENT:
-                                commentSet.addPrecedingComment(Comment.create(Style.LINE, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
+                                comments.add(Comment.create(Style.LINE, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
                                 indent = 0;
                                 break;
                             case BLOCK_COMMENT:
-                                commentSet.addPrecedingComment(Comment.create(Style.BLOCK, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
+                                comments.add(Comment.create(Style.BLOCK, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
                                 indent = Query.NOPOS;
                                 break;
                             case JAVADOC_COMMENT:
-                                commentSet.addPrecedingComment(Comment.create(Style.JAVADOC, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
+                                comments.add(Comment.create(Style.JAVADOC, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
                                 indent = Query.NOPOS;
                                 break;
                             case WHITESPACE:
                                 String tokenText = tokens.token().toString();
-                                commentSet.addPrecedingComment(Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, tokenText));
+                                comments.add(Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, tokenText));
                                 int newLinePos = tokenText.lastIndexOf('\n');
                                 if (newLinePos < 0) {
                                     if (indent >= 0)
@@ -1677,15 +1683,19 @@ public final class VeryPretty extends JCTree.Visitor {
                 }
             }
         }
-        if (!commentSet.hasComments())
-            return;
-        for (Comment c : commentSet.getPrecedingComments())
+        for (Comment c : comments)
             printComment(c, true);
     }
 
     private void printTrailingComments(JCTree tree) {
         CommentSet commentSet = commentHandler.getComments(tree);
-        if (commentSet.getTrailingComments().isEmpty() && cInfo != null) {
+        if (!commentSet.getTrailingComments().isEmpty()) {
+            for (Comment c : commentSet.getTrailingComments())
+                printComment(c, false);
+            return;
+        }
+        LinkedList<Comment> comments = new LinkedList<Comment>();
+        if (cInfo != null) {
             int pos = TreeInfo.getEndPos(tree, origUnit.endPositions);
             if (pos >= 0) {
                 if (pendingComments == null)
@@ -1693,6 +1703,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                 tokens.move(pos);
                 boolean afterNewline = false;
+                boolean afterEmptyline = false;
                 int indent = Query.NOPOS;
                 outer:
                 while (tokens.moveNext() && (nonRelevant.contains(tokens.token().id()) || isSeparator(tokens.token().id()))) {
@@ -1701,7 +1712,7 @@ public final class VeryPretty extends JCTree.Visitor {
                             case LINE_COMMENT:
                                 pendingComments.add(Comment.create(Style.LINE, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
                                 if (!afterNewline) {
-                                    commentSet.addTrailingComments(pendingComments);
+                                    comments.addAll(pendingComments);
                                     pendingComments = new LinkedList<Comment>();
                                     afterNewline = true;
                                 }
@@ -1719,9 +1730,17 @@ public final class VeryPretty extends JCTree.Visitor {
                                 String tokenText = tokens.token().toString();
                                 pendingComments.add(Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, tokenText));
                                 int newLinePos = tokenText.lastIndexOf('\n');
-                                if (!afterNewline && newLinePos >= 0) {
-                                    commentSet.addTrailingComments(pendingComments);
-                                    pendingComments = new LinkedList<Comment>();
+                                if (newLinePos >= 0) {
+                                    if (indent == 0) {
+                                        if (!afterEmptyline) {
+                                            comments.addAll(pendingComments);
+                                            pendingComments = new LinkedList<Comment>();
+                                        }
+                                        afterEmptyline = true;
+                                    } else if (!afterNewline) {
+                                        comments.addAll(pendingComments);
+                                        pendingComments = new LinkedList<Comment>();
+                                    }
                                     afterNewline = true;
                                 }
                                 if (newLinePos < 0) {
@@ -1734,7 +1753,7 @@ public final class VeryPretty extends JCTree.Visitor {
                             case LBRACE:
                             case RBRACE:
                             case SEMICOLON:
-                                commentSet.addTrailingComments(pendingComments);
+                                comments.addAll(pendingComments);
                                 pendingComments = null;
                                 indent = Query.NOPOS;
                                 break outer;
@@ -1744,9 +1763,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 }
             }
         }
-        if (!commentSet.hasComments())
-            return;
-        for (Comment c : commentSet.getTrailingComments())
+        for (Comment c : comments)
             printComment(c, false);
     }
 
