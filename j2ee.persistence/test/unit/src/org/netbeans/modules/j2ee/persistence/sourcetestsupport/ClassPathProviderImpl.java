@@ -19,8 +19,10 @@
 
 package org.netbeans.modules.j2ee.persistence.sourcetestsupport;
 
+import java.io.Serializable;
 import java.net.URL;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -51,6 +53,9 @@ public class ClassPathProviderImpl implements ClassPathProvider {
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
+        }
+        if (ClassPath.BOOT.equals(type)){
+            return JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
         }
         return null;
     }
