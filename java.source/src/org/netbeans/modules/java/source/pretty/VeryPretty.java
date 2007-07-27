@@ -227,9 +227,9 @@ public final class VeryPretty extends JCTree.Visitor {
         JCClassDecl tree = (JCClassDecl) t;
         printAnnotations(tree.mods.annotations);
         s = replace(s, UiUtils.PrintPart.ANNOTATIONS);
-        long flags = tree.sym != null ? tree.sym.flags() : tree.mods.flags;
+        long flags = tree.mods.flags;
         if ((flags & ENUM) != 0)
-            printFlags(flags & ~(INTERFACE | STATIC | FINAL));
+            printFlags(flags & ~(INTERFACE | FINAL));
         else
             printFlags(flags & ~(INTERFACE | ABSTRACT));
         s = replace(s, UiUtils.PrintPart.FLAGS);
@@ -328,9 +328,9 @@ public final class VeryPretty extends JCTree.Visitor {
 	enclClassName = tree.name;
 	toLeftMargin();
         printAnnotations(tree.mods.annotations);
-	long flags = tree.sym != null ? tree.sym.flags() : tree.mods.flags;
+	long flags = tree.mods.flags;
 	if ((flags & ENUM) != 0)
-	    printFlags(flags & ~(INTERFACE | STATIC | FINAL));
+	    printFlags(flags & ~(INTERFACE | FINAL));
 	else
 	    printFlags(flags & ~(INTERFACE | ABSTRACT));
 	if ((flags & INTERFACE) != 0 || (flags & ANNOTATION) != 0) {
