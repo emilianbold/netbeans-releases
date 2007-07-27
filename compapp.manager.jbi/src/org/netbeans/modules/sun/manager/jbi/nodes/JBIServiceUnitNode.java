@@ -125,8 +125,7 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
     public Transferable drag() throws IOException {
         ExTransferable retValue = ExTransferable.create( super.drag() );
         //add the 'data' into the Transferable
-        String saDD = getSADeploymentDescriptor();
-        final String suDD = getSUDeploymentDescriptor();
+        final String suDD = getDeploymentDescriptor();
         
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -175,21 +174,16 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
         return retValue;
     }
     
-    private String getSUDeploymentDescriptor() {
+    public String getDeploymentDescriptor() {
         String assemblyName = getParentNode().getName();
         String suDD = getAdminService().getServiceUnitDeploymentDescriptor(assemblyName, getName());
         return suDD;
     }
-    
-    private String getSADeploymentDescriptor() {
-        String assemblyName = getParentNode().getName();
-        String saDD = getAdminService().getServiceAssemblyDeploymentDescriptor(assemblyName);
-        return saDD;
-    }
-    
+        
     private String getComponentName() {
         if (componentName == null) {
-            String saDD = getSADeploymentDescriptor();
+            JBIServiceAssemblyNode saNode = (JBIServiceAssemblyNode)getParentNode(); 
+            String saDD = saNode.getDeploymentDescriptor();
             String myName = getName();
             
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();

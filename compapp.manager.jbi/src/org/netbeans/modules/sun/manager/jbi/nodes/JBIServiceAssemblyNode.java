@@ -427,4 +427,66 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             });            
         }
     }
+
+    // DnD Support for CASA
+
+    /*
+    public static final DataFlavor ServiceAssemblyDataFlavor =
+            new DataFlavor(Object.class, "JBIServiceAssemblyDataFlavor" ) {  // NOI18N
+    };
+    
+    public Transferable drag() throws IOException {
+        ExTransferable retValue = ExTransferable.create( super.drag() );
+        //add the 'data' into the Transferable
+        
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+
+            // parse SA DD
+            String saDD = getDeploymentDescriptor();
+            final Document saDoc = builder.parse(new InputSource(new StringReader(saDD)));
+
+            final List<Document> bcsuDocList = new ArrayList<Document>();
+            final List<Document> sesuDocList = new ArrayList<Document>();
+
+            for (Node child : getChildren().getNodes()) {        
+                final String suDD = ((JBIServiceUnitNode) child).getDeploymentDescriptor();
+
+                // parse SU DD
+                Document suDoc = builder.parse(new InputSource(new StringReader(suDD)));
+                Element services = (Element) suDoc.getElementsByTagName("services").item(0);
+                boolean isBC = services.getAttribute("binding-component").equals("true");
+
+                if (isBC) {
+                    bcsuDocList.add(suDoc);
+                } else {
+                    sesuDocList.add(suDoc);
+                }
+            }
+
+            retValue.put( new ExTransferable.Single(ServiceAssemblyDataFlavor) {
+                            protected Object getData() throws IOException, UnsupportedFlavorException {
+                                List<Object> ret = new ArrayList<Object>();
+                                ret.add("JBIMGR_SA_TRANSFER"); // NOI18N
+                                ret.add(saDoc); 
+                                ret.add(bcsuDocList); 
+                                ret.add(sesuDocList); 
+                                return ret;
+                            }
+                        });
+        } catch (Exception e) {
+
+        }
+        
+        return retValue;
+    }
+    */
+
+    public String getDeploymentDescriptor() {
+        String assemblyName = getName();
+        String saDD = getAdminService().getServiceAssemblyDeploymentDescriptor(assemblyName);
+        return saDD;
+    }
 }
