@@ -367,6 +367,7 @@ public class TransformPerformer {
         private void fileOutput() throws IOException, FileStateInvalidException, TransformerException {
             OutputStream outputStream = null;
             FileLock fileLock = null;
+
             try {
                 fileLock = resultFO.lock();
                 outputStream = resultFO.getOutputStream(fileLock);
@@ -377,7 +378,6 @@ public class TransformPerformer {
                     Util.THIS.debug("    resultFO = " + resultFO);
                     Util.THIS.debug("    outputResult = " + outputResult);
                 }
-                
                 String xmlName = data.getInput();
                 String xslName = data.getXSL();
                 TransformPerformer.this.getCookieObserver().message(Util.THIS.getString("MSG_transformation_1", xmlName, xslName));
@@ -392,22 +392,21 @@ public class TransformPerformer {
                 } catch (PropertyVetoException pve) {
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot invalidate " + resultFO);
                 }
-                
-                if ( data.getProcessOutput() == TransformHistory.APPLY_DEFAULT_ACTION ) {
-                    GuiUtil.performDefaultAction(resultFO);
-                    GuiUtil.performDefaultAction(resultFO);
-                } else if ( data.getProcessOutput() == TransformHistory.OPEN_IN_BROWSER ) {
-                    showURL(resultFO.getURL());
-                }
             } catch (FileAlreadyLockedException exc) {
                 throw (FileAlreadyLockedException) ErrorManager.getDefault().annotate(exc, Util.THIS.getString("ERR_FileAlreadyLockedException_output"));
             } finally {
-                if ( outputStream != null ) {
-                    outputStream.close();
-                }
                 if ( fileLock != null ) {
                     fileLock.releaseLock();
                 }
+                if ( outputStream != null ) {
+                    outputStream.close();
+                }
+            }
+            // vlv # 103384
+            if ( data.getProcessOutput() == TransformHistory.APPLY_DEFAULT_ACTION ) {
+                GuiUtil.performDefaultAction(resultFO);
+            } else if ( data.getProcessOutput() == TransformHistory.OPEN_IN_BROWSER ) {
+                showURL(resultFO.getURL());
             }
         }
         
@@ -415,7 +414,6 @@ public class TransformPerformer {
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
             GuiUtil.setStatusText(Util.THIS.getString("MSG_opening_browser"));
         }
-        
         
         //
         // from ActionListener
