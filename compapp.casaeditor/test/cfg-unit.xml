@@ -17,18 +17,9 @@
  Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  Microsystems, Inc. All Rights Reserved.
 -->
+<mconfig name="CasaEditor">
 
-<mconfig name="Unit config">
-
-    <testbag testattribs="stable" executor="unit-executor" name="Unit tests">
-        <testset dir="unit/src">
-            <patternset>
-                <include name="**/*Test.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
-    <testbag testattribs="ide" executor="ide-executor" name="IDE tests">
+    <testbag testattribs="stable" executor="unit-executor" name="CasaEditor">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
@@ -38,6 +29,6 @@
 
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
     <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
-    <executor name="ide-executor" antfile="build-unit.xml" target="run-ide-test"/>
 
 </mconfig>
+

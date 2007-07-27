@@ -18,53 +18,18 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="org.netbeans.modules.compapp.casaeditor/test-unit" basedir="." default="all">
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-    <property name="build.compiler.source" value="1.5"/>
-    <property file="../nbproject/project.properties"/>
-    
-    <target name="default-compiler">
-        <!-- Build application before tests -->
-        <ant dir=".." target="jar"/>
-        <buildTests srcdir="unit/src" compileexcludes="**/data/**">
-            <property name="javac.source" value="1.5"/>
-	    <property name="package.tests.includes" value="**/*"/>
-	    <property name="package.tests.excludes" value="**/*.java"/>
+<project name="CasaEditor/test-unit" basedir="." default="all">
+    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
+
+    <!-- Need to override target from xtest-unit.xml because standard module
+         build script need external directory which is not available on test4u. -->
+ 
+    <target name="default-compiler" depends="init-cp">
+        <buildTests srcDir="unit/src" compileExcludes="**/data/**">
             <classpath>
-                <!-- Add classpath elements needed to compile tests -->
-                <pathelement path="${test.unit.cp}"/>
-                <pathelement path="${test.unit.cp.extra}"/>
+                <path refid="test.unit.compile.cp"/>
             </classpath>
         </buildTests>
-    </target>
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <target name="run-unit-test">
-        <executeTests pluginname="jvm">
-             <classpath>
-                <!-- Add classpath elements needed to run tests -->
-                <pathelement path="${test.unit.cp}"/>
-                <pathelement path="${test.unit.cp.extra}"/>
-                <pathelement path="${test.unit.run.cp.extra}"/>
-            </classpath>
-        </executeTests>
-    </target>
-
-    <target name="run-ide-test">
-        <property name="xtest.ide.use.classloader" value="org.netbeans.modules.compapp.casaeditor"/>
-        <executeTests pluginName="ide">
-             <classpath>
-                <!-- Add classpath elements needed to run tests -->
-                <pathelement path="${test.unit.cp}"/>
-                <pathelement path="${test.unit.cp.extra}"/>
-                <pathelement path="${test.unit.run.cp.extra}"/>
-            </classpath>
-        </executeTests>
     </target>
     
 </project>
