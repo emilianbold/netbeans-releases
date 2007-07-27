@@ -31,19 +31,24 @@ import javax.swing.text.JTextComponent;
 
 import org.jruby.ast.NewlineNode;
 import org.jruby.ast.Node;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.gsf.CompilationInfo;
+import org.netbeans.api.gsf.EditorOptions;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 
 /** 
@@ -128,7 +133,12 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
         //Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
         //return b == null || b.booleanValue();
-        return true; // TODO - look up
+        EditorOptions options = EditorOptions.get(RubyInstallation.RUBY_MIME_TYPE);
+        if (options != null) {
+            return options.getMatchBrackets();
+        }
+        
+        return true;
     }
 
     public int beforeBreak(Document document, int offset, JTextComponent target)
@@ -692,6 +702,12 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         case ']':
         case '(':
         case '[': {
+            
+            if (!isInsertMatchingEnabled(doc)) {
+                return false;
+            }
+
+            
             Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
             TokenId id = token.id();
 
@@ -757,6 +773,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             break;
             
         case '/': {
+            if (!isInsertMatchingEnabled(doc)) {
+                return false;
+            }
+
             // Bracket matching for regular expressions has to be done AFTER the
             // character is inserted into the document such that I can use the lexer
             // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)

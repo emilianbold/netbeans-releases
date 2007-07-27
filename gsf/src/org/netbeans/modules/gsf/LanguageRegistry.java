@@ -19,6 +19,8 @@
 package org.netbeans.modules.gsf;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +31,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -419,11 +422,32 @@ public class LanguageRegistry implements Iterable<Language> {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         final FileObject root = fs.findResource("Editors/" + l.getMimeType()); // NOI18N
 
-        // Compatibility....
-        FileObject oldSettingsFile = root.getFileObject("Settings.settings"); // NOI18N
-        if (oldSettingsFile != null) {
+        if (root.getFileObject("Settings.settings") == null) { // NOI18N
             try {
-                oldSettingsFile.delete();
+                fs.runAtomicAction(new AtomicAction() {
+                        public void run() {
+                            try {
+                                InputStream is =
+                                    getClass().getClassLoader()
+                                        .getResourceAsStream("org/netbeans/modules/gsf/GsfOptions.settings"); // NOI18N
+
+                                try {
+                                    FileObject fo = root.createData("Settings.settings"); // NOI18N
+                                    OutputStream os = fo.getOutputStream();
+
+                                    try {
+                                        FileUtil.copy(is, os);
+                                    } finally {
+                                        os.close();
+                                    }
+                                } finally {
+                                    is.close();
+                                }
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

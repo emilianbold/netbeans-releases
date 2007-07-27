@@ -23,6 +23,8 @@ import org.netbeans.api.gsf.GsfLanguage;
 import org.netbeans.editor.DrawLayer;
 import org.netbeans.editor.DrawLayerFactory;
 import org.netbeans.editor.Formatter;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.NbEditorDocument;
 
 /**
@@ -33,6 +35,7 @@ import org.netbeans.modules.editor.NbEditorDocument;
 public class GsfDocument extends NbEditorDocument {
     private Language language;
     private Formatter formatter;
+    private Class kitClass;
     
     public GsfDocument(Class kitClass, Language language) {
         super(kitClass);
@@ -59,5 +62,19 @@ public class GsfDocument extends NbEditorDocument {
             return false;
         
         return super.addLayer(layer, visibility);
+    }
+
+    /** Get the formatter for this document. */
+    public Formatter getFormatter() {
+        if (formatter == null) {
+            // NbDocument will go looking in the settings map for a formatter - let's make
+            // sure it finds one with -MY- kit associated with it (without this it finds
+            // a BaseKit one which has the wrong formatting defaults!
+            Settings.setValue(getKitClass(), FORMATTER, 
+                    new ExtFormatter(GsfEditorKitFactory.GsfEditorKit.class));
+            formatter = super.getFormatter();
+        }
+        
+        return formatter;
     }
 }

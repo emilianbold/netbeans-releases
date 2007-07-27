@@ -36,6 +36,7 @@ import org.jruby.ast.visitor.rewriter.FormatHelper;
 import org.jruby.ast.visitor.rewriter.ReWriteVisitor;
 import org.jruby.ast.visitor.rewriter.ReWriterFactory;
 import org.jruby.ast.visitor.rewriter.utils.ReWriterContext;
+import org.netbeans.api.gsf.EditorOptions;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
@@ -587,6 +588,10 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             
             int indentSize = preferences != null ? preferences.getIndentation() : 2;
             int hangingIndentSize = preferences != null ? preferences.getHangingIndentation() : indentSize;
+            // XXX Look up RHTML too
+            //int indentSize = EditorOptions.get(RubyInstallation.RUBY_MIME_TYPE).getSpacesPerTab();
+            //int hangingIndentSize = indentSize;
+            
 
             // Build up a set of offsets and indents for lines where I know I need
             // to adjust the offset. I will then go back over the document and adjust

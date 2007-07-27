@@ -17,11 +17,16 @@
 package org.netbeans.modules.gsf;
 
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.gsf.Formatter;
 import org.netbeans.api.gsf.FormattingPreferences;
+import org.netbeans.editor.SettingsNames;
+import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
 import org.netbeans.spi.editor.indent.IndentTask;
+import org.openide.util.Lookup;
 
 public class GsfIndentTask implements IndentTask {
 
@@ -34,7 +39,11 @@ public class GsfIndentTask implements IndentTask {
     }
 
     public void reindent() throws BadLocationException {
-        getFormatter().reindent(context.document(), context.startOffset(), context.endOffset(), null, preferences);
+        Formatter f = getFormatter();
+        
+        if (f != null) {
+            f.reindent(context.document(), context.startOffset(), context.endOffset(), null, preferences);
+        }
     }
     
     public ExtraLock indentLock() {
@@ -43,10 +52,24 @@ public class GsfIndentTask implements IndentTask {
 
     private synchronized Formatter getFormatter() {
         if(formatter == null) {
-            String mime = context.mimePath();
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mime);
+            String mimeType = context.mimePath();
+            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
             formatter = language.getFormatter();
+            
+            if (formatter == null) {
+                return null;
+            }
+
+            Lookup lookup = MimeLookup.getLookup(MimePath.parse(mimeType));
+            BaseOptions options = lookup.lookup(BaseOptions.class);
             int indentSize = formatter.indentSize();
+            if (options != null) {
+                Object o = options.getSettingValue(SettingsNames.SPACES_PER_TAB);
+                if (o instanceof Number) {
+                    indentSize = ((Number)o).intValue();
+                }
+            }
+            
             int hangingIndentSize = formatter.hangingIndentSize();
             preferences = new GsfFormattingPreferences(indentSize, hangingIndentSize);
         }
