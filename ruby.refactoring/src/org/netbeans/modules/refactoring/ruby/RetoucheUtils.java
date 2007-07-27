@@ -36,6 +36,7 @@ import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
 import org.jruby.ast.AliasNode;
 import org.jruby.ast.Colon2Node;
+import org.jruby.ast.IScopingNode;
 import org.jruby.ast.Node;
 import org.jruby.ast.types.INameNode;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -171,6 +172,15 @@ public class RetoucheUtils {
         if (name == null && node instanceof INameNode) {
             name = ((INameNode)node).getName();
         }
+        if (name == null && node instanceof IScopingNode) {
+            if (((IScopingNode)node).getCPath() instanceof Colon2Node) {
+                Colon2Node c2n = (Colon2Node)((IScopingNode)node).getCPath();
+                simpleName = c2n.getName();
+                name = AstUtilities.getFqn(c2n);
+            } else {
+                name = AstUtilities.getClassOrModuleName((IScopingNode)node);
+            }
+        }
         if (simpleName == null) {
             simpleName = name;
         }
@@ -300,15 +310,20 @@ public class RetoucheUtils {
     
     public static boolean isOnSourceClasspath(FileObject fo) {
         Project p = FileOwnerQuery.getOwner(fo);
-        if (p==null) return false;
+        if (p==null) {
+            return false;
+        }
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
             if (p==opened[i]) {
                 SourceGroup[] gr = ProjectUtils.getSources(p).getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
                 for (int j = 0; j < gr.length; j++) {
-                    if (fo==gr[j].getRootFolder()) return true;
-                    if (FileUtil.isParentOf(gr[j].getRootFolder(), fo))
+                    if (fo==gr[j].getRootFolder()) {
                         return true;
+                    }
+                    if (FileUtil.isParentOf(gr[j].getRootFolder(), fo)) {
+                        return true;
+                    }
                 }
                 return false;
             }
@@ -317,7 +332,15 @@ public class RetoucheUtils {
     }
 
     public static boolean isClasspathRoot(FileObject fo) {
-        return fo.equals(ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo));
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (cp != null) {
+            FileObject f = cp.findOwnerRoot(fo);
+            if (f != null) {
+                return fo.equals(f);
+            }
+        }
+        
+        return false;
     }
     
     public static boolean isRefactorable(FileObject file) {

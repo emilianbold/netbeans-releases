@@ -302,6 +302,7 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
         }
         
         // TODO - get a better ruby name picker - and check for invalid Ruby symbol names etc.
+        // TODO - call RubyUtils.isValidLocalVariableName if we're renaming a local symbol!
         if (kind == ElementKind.CLASS && !RubyUtils.isValidRubyClassName(newName)) {
             String s = getString("ERR_InvalidClassName"); //NOI18N
             String msg = new MessageFormat(s).format(
