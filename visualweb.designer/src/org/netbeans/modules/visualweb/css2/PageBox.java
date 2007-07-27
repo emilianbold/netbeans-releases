@@ -403,8 +403,9 @@ public class PageBox extends DocumentBox implements ChangeListener {
                     componentVisibleHeight = extentSize.height;
 
                     if (layoutValid) {
-                        layoutValid = false;
-                        pane.repaint();
+//                        layoutValid = false;
+//                        pane.repaint();
+                        redoLayout(true);
                     }
 
                     return;
@@ -413,12 +414,13 @@ public class PageBox extends DocumentBox implements ChangeListener {
 
                     // we already know componentVisibleWidth is right
                     if (layoutValid) { // XXX should I force a recompute even if layoutValid? is ok?
-                        layoutValid = false;
+//                        layoutValid = false;
                         // XXX #110849 Fixing the issue with bad relayout.
                         // All this construct (layoutValid = false; repaint is very suspiscous
                         // investigate whether rather relayout shouldn't be used instead.
 //                        currWidth = -1; // force recompute
-                        pane.repaint();
+//                        pane.repaint();
+                        redoLayout(true);
                     }
 
                     return;

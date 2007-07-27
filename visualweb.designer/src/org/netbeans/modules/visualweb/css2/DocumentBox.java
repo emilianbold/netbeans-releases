@@ -23,6 +23,7 @@ import org.netbeans.modules.visualweb.api.designer.cssengine.CssValue;
 import org.netbeans.modules.visualweb.designer.CssUtilities;
 
 import javax.swing.JViewport;
+import org.netbeans.modules.visualweb.api.designer.DomProvider;
 
 import org.openide.ErrorManager;
 import org.w3c.dom.Element;
@@ -193,7 +194,12 @@ public abstract class DocumentBox extends ContainerBox {
 //            if (engine != null) {
 //                engine.clearTransientStyleSheetNodes();
 //            }
-            CssProvider.getEngineService().clearTransientStyleSheetNodesForDocument(body.getOwnerDocument());
+            
+            // XXX #110849 Fixing the relayout. It seems it depends on uncomputed CSS values,
+            // which seems to be wrong, but it is hard to fix that.
+            // This fixes the layout, but might be a potential performance issue (with larger pages, projects).
+//            CssProvider.getEngineService().clearTransientStyleSheetNodesForDocument(body.getOwnerDocument());
+            CssProvider.getEngineService().clearComputedStylesForElement(body); // TEMP
 
             createChildren(null);
 
