@@ -16,7 +16,7 @@
  */
 package org.netbeans.modules.web.jsf.navigation;
 
-import org.netbeans.modules.web.jsf.navigation.*;
+
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 
@@ -33,7 +33,7 @@ public class JSFConfigMimeResovler extends MIMEResolver{
         System.out.println("Trying to find FileObject MIME Type." + fo);
         
         if( fo.getExt().equals("xml")){
-            return "ext/x-jsf+xml";
+            return "text/x-jsf+xml";
         }
         return null;
     }
