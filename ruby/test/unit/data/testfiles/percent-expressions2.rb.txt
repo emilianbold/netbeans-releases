@@ -20,5 +20,11 @@ class Apple
     blah
   end
 end
+.e.o.f.
 
+.t.e.s.t. Test issue 110985
+snark %w;f;
+snark %w,f,
+%w(asdfasdf asdfasdf #{3})
+%w,asdfasdf asdfasdf #{3},
 .e.o.f.
