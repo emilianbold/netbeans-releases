@@ -39,6 +39,7 @@ import org.openide.filesystems.*;
 import org.openide.text.*;
 import org.openide.util.*;
 import org.openide.xml.*;
+import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import javax.swing.*;
@@ -54,7 +55,10 @@ import java.util.List;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -289,6 +293,15 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         onCurrentLine();
         revalidate();
         repaint();
+    }
+
+    private ISVNNotifyListener svnClientListener;
+    
+    void setSVNClienListener(ISVNNotifyListener svnClientListener) {
+        this.svnClientListener = svnClientListener;
+        
+        File file = getCurrentFile();        
+        Subversion.getInstance().addSVNNotifyListener(svnClientListener);        
     }
 
     // implementation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -631,7 +644,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             amp.setMarks(Collections.<AnnotationMark>emptyList());
         }
 
+        Subversion.getInstance().removeSVNNotifyListener(svnClientListener);
+
         clearRecentFeedback();
+        
     }
 
     /**

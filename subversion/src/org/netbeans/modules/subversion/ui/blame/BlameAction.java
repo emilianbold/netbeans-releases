@@ -95,7 +95,9 @@ public class BlameAction extends ContextAction {
             
             final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
             ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
-
+            
+            long revision = Subversion.getInstance().getStatusCache().getStatus(file).getEntry(file).getRevision().getNumber();                        
+            
             SVNUrl repository;
             try {            
                 repository = SvnUtils.getRepositoryRootUrl(file);
@@ -103,16 +105,24 @@ public class BlameAction extends ContextAction {
                 SvnClientExceptionHandler.notifyException(ex, true, true);
                 return;
             }                                                     
-            RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
-            SvnProgressSupport support = new SvnProgressSupport() {
-                public void perform() {                    
-                    computeAnnotations(file, this, ab);
-                }
-            };
-            support.start(rp, repository, NbBundle.getMessage(BlameAction.class, "MSG_Annotation_Progress")); // NOI18N
+            
+            ab.setSVNClienListener(new SVNClientListener(revision, repository, file, ab));
+            
+            computeAnnotations(repository, file, ab);                        
         }
     }
 
+    private void computeAnnotations(SVNUrl repository, final File file, final AnnotationBar ab) {
+        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
+        SvnProgressSupport support = new SvnProgressSupport() {
+            public void perform() {                    
+                computeAnnotations(file, this, ab);
+            }
+        };
+        support.start(rp, repository, NbBundle.getMessage(BlameAction.class, "MSG_Annotation_Progress")); // NOI18N        
+    }
+            
+    
     private void computeAnnotations(File file, SvnProgressSupport progress, AnnotationBar ab) {
         SvnClient client;
         try {
@@ -232,6 +242,59 @@ public class BlameAction extends ContextAction {
             }
         }
         return null;
+    }
+
+    private class SVNClientListener implements ISVNNotifyListener {
+        
+        private final SVNUrl repository;
+        private final File file;
+        private final AnnotationBar ab;
+        
+        private long revision = -1;
+        
+        private File notifiedFile = null;
+        
+        public SVNClientListener(long revision, SVNUrl repository, final File file, final AnnotationBar ab) {
+            this.revision = revision;
+            this.repository = repository;
+            this.ab = ab;
+            this.file = file;
+        }                
+        
+        public void setCommand(int arg0) {            
+            // do nothing
+        }
+
+        public void logCommandLine(String arg0) {
+            // do nothing
+        }
+
+        public void logMessage(String arg0) {
+            // do nothing
+        }
+
+        public void logError(String arg0) {
+            // do nothing
+        }
+
+        public void logRevision(long newRevision, String path) {
+            if(notifiedFile == null) {
+                return;
+            }
+            if(notifiedFile.getAbsolutePath().equals(file.getAbsolutePath()) && revision != newRevision) {
+                computeAnnotations(repository, file, ab);
+                revision = newRevision;
+                notifiedFile = null;
+            }
+        }
+
+        public void logCompleted(String arg0) {
+            // do nothing
+        }
+
+        public void onNotify(File file, SVNNodeKind nodeKind) {
+            notifiedFile = file;
+        }        
     }
     
 }

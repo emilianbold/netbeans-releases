@@ -78,6 +78,8 @@ public class Subversion {
 
     private SvnClient noUrlClientWithoutListeners;
     private SvnClient noUrlClientWithListeners;
+    private List<ISVNNotifyListener> svnNotifyListeners;
+    
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -355,8 +357,19 @@ public class Subversion {
     }
 
     private void attachListeners(SvnClient client) {
+        // XXX let the cache and logger register by themself (addXXXListener)
         client.addNotifyListener(getLogger(client.getSvnUrl())); 
         client.addNotifyListener(fileStatusCache);
+        
+        List<ISVNNotifyListener> l = getSVNNotifyListeners();
+        
+        ISVNNotifyListener[] listeners = null;
+        synchronized(l) {
+            listeners = l.toArray(new ISVNNotifyListener[l.size()]);
+        }
+        for(ISVNNotifyListener listener : listeners) {
+            client.addNotifyListener(listener);
+        }
     }
 
     /**
@@ -470,6 +483,13 @@ public class Subversion {
         return filesystemHandler;
     }
 
+    private List<ISVNNotifyListener> getSVNNotifyListeners() {
+        if(svnNotifyListeners == null) {
+            svnNotifyListeners = new ArrayList<ISVNNotifyListener>();
+        }
+        return svnNotifyListeners;
+    }
+    
     /**
      * Refreshes all textual annotations and badges.
      */
@@ -485,6 +505,20 @@ public class Subversion {
         support.removePropertyChangeListener(listener);
     }
 
+    public void addSVNNotifyListener(ISVNNotifyListener listener) {
+        List<ISVNNotifyListener> listeners = getSVNNotifyListeners();
+        synchronized(listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeSVNNotifyListener(ISVNNotifyListener listener) {
+        List<ISVNNotifyListener> listeners = getSVNNotifyListeners();
+        synchronized(listeners) {
+            listeners.remove(listener);
+        }
+    }
+    
     public void getOriginalFile(File workingCopy, File originalFile) {
         FileInformation info = fileStatusCache.getStatus(workingCopy);
         if ((info.getStatus() & STATUS_DIFFABLE) == 0) return;
