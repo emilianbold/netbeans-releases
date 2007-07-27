@@ -140,7 +140,6 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             a.putValue( "control", displayer ); //NO18N
             btnScrollLeft = TabControlButtonFactory.createScrollLeftButton( displayer, a, isGTK );
             buttonsPanel.add( btnScrollLeft );
-            Icon icon = btnScrollLeft.getIcon();
             Dimension prefDim = btnScrollLeft.getPreferredSize();
             btnScrollLeft.setBounds( width, 0, prefDim.width, prefDim.height );
             width += prefDim.width;
@@ -154,7 +153,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             prefDim = btnScrollRight.getPreferredSize();
             btnScrollRight.setBounds( width, 0, prefDim.width, prefDim.height );
             width += prefDim.width;
-            height = Math.max (width, prefDim.height );
+            height = Math.max ( height, prefDim.height );
 
             //create drop down button
             btnDropDown = TabControlButtonFactory.createDropDownButton( displayer, isGTK );
@@ -164,7 +163,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
             prefDim = btnDropDown.getPreferredSize();
             btnDropDown.setBounds( width, 0, prefDim.width, prefDim.height );
             width += prefDim.width;
-            height = Math.max( width, prefDim.height );
+            height = Math.max ( height, prefDim.height );
             
             //maximize / restore button
             if( null != displayer.getWinsysInfo() ) {
@@ -174,7 +173,7 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
                 prefDim = btnMaximizeRestore.getPreferredSize();
                 btnMaximizeRestore.setBounds( width, 0, prefDim.width, prefDim.height );
                 width += prefDim.width;
-                height = Math.max( width, prefDim.height );
+                height = Math.max ( height, prefDim.height );
             }
             
             Dimension size = new Dimension( width, height );
