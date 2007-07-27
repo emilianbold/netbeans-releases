@@ -124,14 +124,15 @@ public class HttpMethodsChildren extends Children.Keys {
                     RestServices root = metadata.getRoot();
                     RestServiceDescription desc = root.getRestServiceDescription(serviceName);
                     
-                    for (RestMethodDescription method : desc.getMethods()) {
-                        if (method instanceof HttpMethod) {
-                            if (method.getName().equals(key)) {
-                                return new Node[] { new HttpMethodNode(model, (HttpMethod) method) };
+                    if (desc != null) {
+                        for (RestMethodDescription method : desc.getMethods()) {
+                            if (method instanceof HttpMethod) {
+                                if (method.getName().equals(key)) {
+                                    return new Node[] { new HttpMethodNode(model, (HttpMethod) method) };
+                                }
                             }
                         }
                     }
-                    
                     return new Node[0];
                 }
             });
