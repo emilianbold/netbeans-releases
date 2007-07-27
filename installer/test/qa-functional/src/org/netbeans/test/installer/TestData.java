@@ -85,6 +85,10 @@ public class TestData implements Serializable {
         return platformExt;
     }
 
+    public String getPaltformName() {
+        return platformName;
+    }
+    
     public String getInstallerMainClassName() {
         return "org.netbeans.installer.Installer";
     }
