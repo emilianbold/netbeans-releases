@@ -98,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Templates">
         <folder name="SOA">
-            <file name="SQLTemplate.sql" url="SQLTemplate.sql">
+            <file name="SQL.sql" url="SQLTemplate.sql">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.sql.project.ui.resources.Bundle"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="SOA"/>
