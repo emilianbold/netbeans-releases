@@ -1963,6 +1963,51 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         return rootDCBean;
     }
 
+    /** Determine the value of a jndi name from the vendor specific descriptor
+     * 
+     * Returns null if the value is not available from the file.
+     * 
+     * @param referenceName the logical name of the bean
+     * @return the jndi-name element stored in the sun-ejb-jar.xml
+     * @throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException 
+     */
+    public String findJndiNameForEjb(String referenceName) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
+        // validation
+        if (Utils.strEmpty(referenceName)) {
+            return null;
+        }
+
+        String jndiName = null;
+        try {
+            RootInterface sunDDRoot = getSunDDRoot(false);
+            if (sunDDRoot instanceof SunEjbJar) {
+                SunEjbJar sunEjbJar = (SunEjbJar) sunDDRoot;
+                EnterpriseBeans eb = sunEjbJar.getEnterpriseBeans();
+                if (eb != null) {
+                    org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb ejb = findNamedBean(eb, referenceName, EnterpriseBeans.EJB, Ejb.EJB_NAME);
+                    if (ejb != null) {
+                        // get jndi name of existing reference.
+                        assert referenceName.equals(ejb.getEjbName());
+                        jndiName = ejb.getJndiName();
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            // This is a legitimate exception that could occur, such as a problem
+            // writing the changed descriptor to disk.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_ExceptionReadingEjb", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        } catch (Exception ex) {
+            // This would probably be a runtime exception due to a bug, but we
+            // must trap it here so it doesn't cause trouble upstream.
+            // We handle it the same as above for now.
+            String message = NbBundle.getMessage(SunONEDeploymentConfiguration.class, "ERR_ExceptionReadingEjb", ex.getClass().getSimpleName()); // NOI18N
+            throw new org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException(message, ex);
+        }
+
+        return jndiName;
+    }
+
     /** extend the vendor specific descriptor
      *
      * @param referenceName

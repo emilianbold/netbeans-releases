@@ -245,7 +245,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     /****************************  EjbResourceConfiguration ************************************/
     public String findJndiNameForEjb(String ejbName) throws ConfigurationException {
         // TODO
-        return null;
+        return config.findJndiNameForEjb(ejbName);
     }
     
     public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException {
