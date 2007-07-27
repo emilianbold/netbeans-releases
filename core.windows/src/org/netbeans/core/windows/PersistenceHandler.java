@@ -24,6 +24,8 @@ package org.netbeans.core.windows;
 
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.io.IOException;
@@ -955,6 +957,23 @@ final public class PersistenceHandler implements PersistenceObserver {
         Debug.log(PersistenceHandler.class, message);
     }
     
+    /**
+     * @return False if the given point is not inside any screen device that are currently available.
+     */
+    private static boolean isOutOfScreen( int x, int y ) {
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice[] gs = ge.getScreenDevices();
+        for( int j=0; j<gs.length; j++ ) { 
+            GraphicsDevice gd = gs[j];
+            if( gd.getType() != GraphicsDevice.TYPE_RASTER_SCREEN )
+                continue;
+            Rectangle bounds = gd.getDefaultConfiguration().getBounds();
+            if( bounds.contains( x, y ) )
+                return false;
+        } 
+        return true;
+    }
+   
     private static Rectangle computeBounds(boolean centeredHorizontaly, boolean centeredVerticaly,
     int x, int y, int width, int height, float relativeX, float relativeY, float relativeWidth, float relativeHeight) {
         Rectangle bounds; 
@@ -966,11 +985,13 @@ final public class PersistenceHandler implements PersistenceObserver {
             int xlimit = screen.x + screen.width - 20; // 20 = let's have some buffer area..
             int ylimit = screen.y + screen.height - 20; // 20 = let's have some buffer area..
             // will make sure that the out-of-screen windows get thrown in.
-            while (bounds.x > xlimit) {
-                bounds.x = Math.max(bounds.x - screen.width, screen.x);
-            }
-            while (bounds.y > ylimit) {
-                bounds.y = Math.max(bounds.y - ylimit, screen.y);
+            if( isOutOfScreen( bounds.x, bounds.y ) ) {
+                while (bounds.x > xlimit) {
+                    bounds.x = Math.max(bounds.x - screen.width, screen.x);
+                }
+                while (bounds.y > ylimit) {
+                    bounds.y = Math.max(bounds.y - ylimit, screen.y);
+                }
             }
             // #33288 fix end
         } else if(relativeWidth > 0F && relativeHeight > 0F) {
