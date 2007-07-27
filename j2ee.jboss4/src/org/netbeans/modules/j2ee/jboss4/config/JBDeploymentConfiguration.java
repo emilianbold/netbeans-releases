@@ -139,9 +139,13 @@ public abstract class JBDeploymentConfiguration
     
 // -------------------------------------- EjbResourceConfiguration  -----------------------------------------
     
-    public void bindEjbReference(String referenceName, String ejbName) throws ConfigurationException {}
+    public String findJndiNameForEjb(String ejbName) throws ConfigurationException {
+        return null;
+    }
+    
+    public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException {}
 
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
-            String referenceName, String referencedEjbName) throws ConfigurationException {}
+            String referenceName, String jndiName) throws ConfigurationException {}
     
 }

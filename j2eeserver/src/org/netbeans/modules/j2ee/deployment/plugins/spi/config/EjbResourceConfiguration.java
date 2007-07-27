@@ -33,19 +33,35 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 public interface EjbResourceConfiguration {
     
     /**
-     * Binds EJB reference name with EJB name.
+     * Returns a JNDI name for the given EJB or <code>null</code> if the EJB has 
+     * no JNDI name assigned.
+     *
+     * @param  ejbName EJB name
+     * 
+     * @return JNDI name bound to the EJB or <code>null</code> if the EJB has no 
+     *         JNDI name assigned.
+     * 
+     * @throws ConfigurationException if there is some problem with EJB configuration.
+     * 
+     * @since 1.31
+     */
+     public String findJndiNameForEjb(String ejbName) throws ConfigurationException;
+    
+    
+    /**
+     * Binds an EJB reference name with an EJB JNDI name.
      * 
      * @param referenceName name used to identify the EJB
-     * @param referencedEjbName name of the referenced EJB
+     * @param jndiName JNDI name of the referenced EJB
      * 
      * @throws ConfigurationException if there is some problem with EJB configuration
      * 
      * @since 1.26
      */
-    public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException;
+    public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException;
 
     /**
-     * Binds EJB reference name with EJB name within the EJB scope.
+     * Binds an EJB reference name with an EJB name within the EJB scope.
      * 
      * @param ejbName EJB name
      * @param ejbType EJB type - the possible values are 
@@ -53,7 +69,7 @@ public interface EjbResourceConfiguration {
      *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.ENTITY and
      *        org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans.MESSAGE_DRIVEN
      * @param referenceName name used to identify the referenced EJB
-     * @param referencedEjbName name of the referenced EJB
+     * @param jndiName JNDI name of the referenced EJB
      * 
      * @throws NullPointerException if any of parameters is null
      * @throws ConfigurationException if there is some problem with EJB configuration
@@ -62,5 +78,5 @@ public interface EjbResourceConfiguration {
      * @since 1.26
      */
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
-            String referenceName, String referencedEjbName) throws ConfigurationException;
+            String referenceName, String jndiName) throws ConfigurationException;
 }

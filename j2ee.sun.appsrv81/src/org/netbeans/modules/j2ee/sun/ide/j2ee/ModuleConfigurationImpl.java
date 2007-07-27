@@ -243,14 +243,19 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
     }
     
     /****************************  EjbResourceConfiguration ************************************/
-    public void bindEjbReference(String referenceName, String referencedEjbName) throws ConfigurationException {
-        config.bindEjbReference(referenceName, referencedEjbName);
+    public String findJndiNameForEjb(String ejbName) throws ConfigurationException {
+        // TODO
+        return null;
+    }
+    
+    public void bindEjbReference(String referenceName, String jndiName) throws ConfigurationException {
+        config.bindEjbReference(referenceName, jndiName);
     }
     
     public void bindEjbReferenceForEjb(String ejbName, String ejbType,
             String referenceName,
-            String referencedEjbName) throws ConfigurationException {
-        config.bindEjbReferenceForEjb(ejbName, ejbType, referenceName, referencedEjbName);
+            String jndiName) throws ConfigurationException {
+        config.bindEjbReferenceForEjb(ejbName, ejbType, referenceName, jndiName);
     }
     
     /****************************  MessageDestinationConfiguration ************************************/

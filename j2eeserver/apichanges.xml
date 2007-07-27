@@ -86,6 +86,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="findJndiNameForEjb">
+	    <api name="j2eeserver"/>
+	    <summary>
+                Adding EjbResourceConfiguration.findJndiNameForEjb method.
+	    </summary>
+	    <version major="1" minor="31"/>
+	    <date day="26" month="7" year="2007"/>
+	    <author login="sherold"/>
+	    <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="yes"/>
+	    <description>
+                <p>
+                    The EjbResourceConfiguration.bindEjbReference and EjbResourceConfiguration.bindEjbReferenceForEjb methods 
+                    need to pass an EJB JNDI name instead of EJB name to the plugin. The new EjbResourceConfiguration.findJndiNameForEjb 
+                    method will allow to obtain the EJB JNDI name.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi.config" name="EjbResourceConfiguration"/>
+	    <issue number="108198"/>
+	</change>
         <change id="setCMPResource">
 	    <api name="j2eeserver"/>
 	    <summary>
