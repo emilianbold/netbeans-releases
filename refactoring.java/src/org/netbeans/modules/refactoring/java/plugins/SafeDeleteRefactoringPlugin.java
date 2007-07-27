@@ -220,7 +220,6 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         //This class expects too many details from SafeDeleteRefactoring
         //But there's no other go I guess.
         grips.clear();
-        final ArrayList<ClasspathInfo> controllers = new ArrayList<ClasspathInfo>();
         for (final FileObject f:refactoring.getRefactoringSource().lookupAll(FileObject.class)) {
             JavaSource source = JavaSource.forFileObject(f);
             try {
@@ -236,7 +235,6 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                             if (!containsHandle(handle, co))
                                 grips.add(handle);
                         }
-                        controllers.add(co.getClasspathInfo());
                     }
                 }, true);
             } catch (IllegalArgumentException ex) {
@@ -250,9 +248,6 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
 
         whereUsedQueries = new WhereUsedQuery[grips.size()];
         for(int i = 0;i <  whereUsedQueries.length; ++i) {
-            if (!controllers.isEmpty()) {
-                refactoring.getContext().add(controllers.get(i));
-            }
             whereUsedQueries[i] = createQuery(grips.get(i));
             
             whereUsedQueries[i].putValue(WhereUsedQuery.SEARCH_IN_COMMENTS, refactoring.isCheckInComments());
