@@ -250,7 +250,7 @@ public class IndentFactory implements IndentTask.Factory {
                 }
                 indentProperties.put (
                     l,
-                    patterns.isEmpty() ? null : new Object[] {patterns, start, end, endToStart}
+                    indents.isEmpty() ? null : new Object[] {patterns, start, end, endToStart}
                 );
             }
             return indentProperties.get (l);
