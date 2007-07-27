@@ -26,6 +26,9 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.TreeSet;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
@@ -111,7 +114,7 @@ public class HttpMethodsChildren extends Children.Keys {
             
         }
         
-        setKeys(keys);
+        setKeys(sortKeys(keys));
     }
     
     protected Node[] createNodes(final Object key) {
@@ -139,6 +142,18 @@ public class HttpMethodsChildren extends Children.Keys {
         }
         
         return new Node[0];
+    }
+    
+    private Collection<String> sortKeys(Collection<String> keys) {
+        Collection<String> sortedKeys = new TreeSet<String>(
+                new Comparator<String> () {
+            public int compare(String str1, String str2) {
+                return str1.compareTo(str2);
+            }
+        });
+        
+        sortedKeys.addAll(keys);
+        return sortedKeys;
     }
     
     class RestServicesListener implements PropertyChangeListener {
