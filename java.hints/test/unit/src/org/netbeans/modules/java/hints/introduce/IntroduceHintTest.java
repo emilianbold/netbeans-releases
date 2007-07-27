@@ -606,6 +606,12 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
     }
     
+    public void test107689() throws Exception {
+        performSimpleSelectionVerificationTest("package test; import java.util.List; public class Test {}",
+                       53 - 32, 67 - 32, false);
+    }
+    
+    
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
         

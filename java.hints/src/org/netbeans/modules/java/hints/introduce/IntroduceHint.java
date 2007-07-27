@@ -163,7 +163,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (tp.getParentPath().getLeaf().getKind() == Kind.EXPRESSION_STATEMENT)
                 continue;
             
-            return tp;
+            return isInsideClass(tp) ? tp : null;
         }
         
         return null;
@@ -262,6 +262,17 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
         
         return result;
+    }
+    
+    private static boolean isInsideClass(TreePath tp) {
+        while (tp != null) {
+            if (tp.getLeaf().getKind() == Kind.CLASS)
+                return true;
+            
+            tp = tp.getParentPath();
+        }
+        
+        return false;
     }
     
     static List<ErrorDescription> computeError(CompilationInfo info, int start, int end, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
