@@ -178,6 +178,11 @@ public class OptionTabVisualPanel extends javax.swing.JPanel {
                 .add(dynamicHelpLabel)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        startupTimeoutValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "ACSD_STARTUP_TIMEOUT")); // NOI18N
+        deploymentTimeoutValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "ACSD_DEPLOYMENT_TIMEOUT")); // NOI18N
+        enableDirectoryDeployment.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "ACSD_DirectoryDeploy")); // NOI18N
+        enableDriverDeployment.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OptionTabVisualPanel.class, "ACSD_DRIVER_DEPLOY")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void clearDynamicHelp(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_clearDynamicHelp
