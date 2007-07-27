@@ -42,39 +42,32 @@
     <mapID target="AS_CFG_AppClient"	url="appclientconfigeditors/sun-application-client.html"  />
 
     <!-- sun-web.xml DD editor CSH: -->
+    <!-- DD dialogs -->
     <mapID target="AS_CFG_SecurityRoleNewPrincipal"		url="configeditors/SecurityWebAddPrincipal.html"  />
     <mapID target="AS_CFG_SecurityRoleEditPrincipal"		url="configeditors/SecurityWebEditPrincipal.html"  />
     <mapID target="AS_CFG_SecurityRoleNewGroup"                 url="configeditors/SecurityWebAddGroup.html"  />
     <mapID target="AS_CFG_SecurityRoleEditGroup"                url="configeditors/SecurityWebEditGroup.html"  />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingView"		url="configeditors/SecurityWebRoleMapping.html"  />
-    <mapID target="AS_CFG_SecurityRoleMapping"  		url="configeditors/SecurityWebRoleMapping.html"  />
+    
+    <!-- DD CSH from within editor -->
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingView"	url="configeditors/SecurityWebRoleMapping.html"  />
     <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebDetailsNode"		url="configeditors/WebAppGeneral.html"  />
-    <mapID target="AS_CFG_WebAppJspConfigProperty" 		url="configeditors/WebAppGeneral.html"  />
-    <mapID target="AS_CFG_WebAppProperty" 			url="configeditors/WebAppGeneral.html"  />
-    <mapID target="AS_CFG_WebAppMessageDestination" 		url="configeditors/WebAppMessages.html"  />
-    <mapID target="AS_CFG_WebAppLocale" 			url="configeditors/WebAppLocale.html"  />
-    <mapID target="AS_CFG_WebAppLocaleCharsetMapping" 		url="configeditors/WebAppLocaleCharsetMapping.html"  />
-    <mapID target="AS_CFG_WebAppCacheGeneral" 			url="configeditors/WebAppCacheGeneral.html"  />
-    <mapID target="AS_CFG_WebAppCacheProperty" 			url="configeditors/WebAppCacheGeneral.html"  />
-    <mapID target="AS_CFG_WebAppCacheHelpers" 			url="configeditors/WebAppCacheHelpers.html"  />
-    <mapID target="AS_CFG_WebAppCacheHelperDefinition" 		url="configeditors/WebAppCacheHelpers.html"  />
-    <mapID target="AS_CFG_WebAppCacheHelperProperty" 		url="configeditors/WebAppCacheHelpers.html"  />
-    <mapID target="AS_CFG_WebAppCacheMapping" 			url="configeditors/WebAppCacheMapping.html"  />
-    <mapID target="AS_CFG_WebAppCacheMappingPolicy" 		url="configeditors/WebAppCacheMappingPolicy.html"  />
-    <mapID target="AS_CFG_WebAppCacheMappingKeyField" 		url="configeditors/WebAppCacheMappingPolicy.html"  />
-    <mapID target="AS_CFG_WebAppCacheMappingConstraintField" 		url="configeditors/WebAppCacheMappingConstraintField.html"  />
-    <mapID target="AS_CFG_WebAppCacheMappingConstraintFieldValue" 	url="configeditors/WebAppCacheMappingConstraintField.html"  />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"           		url="configeditors/WebAppClassloader.html"  />
-    <mapID target="AS_CFG_WebAppMessages"           		url="configeditors/WebAppMessages.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" 		url="configeditors/WebAppMessages.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.SunWebClassLoaderNode"         url="configeditors/WebAppClassloader.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView"                   url="configeditors/Servlet.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceView" 	url="configeditors/WebserviceDescriptor.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceNode" 	url="configeditors/WebserviceDescriptor.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode"             url="configeditors/WebserviceClients.html"  />
+    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefView"             url="configeditors/WebserviceClients.html"  />
+
+    <!-- older targets we can probably remove -->
+    <mapID target="AS_CFG_ServiceRefPortInfoStubProperty"               url="configeditors/ServiceRefPortInfoStubProperty.html"  />
     <mapID target="AS_CFG_SessionConfigurationManager" 			url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationManagerProperty" 		url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationStoreProperty" 		url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationCookie" 			url="configeditors/SessionConfigurationManager.html"  />
     <mapID target="AS_CFG_SessionConfigurationCookieProperty" 		url="configeditors/SessionConfigurationManager.html"  />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletView"                   url="configeditors/Servlet.html"  />
-    <mapID target="AS_CFG_ServiceRefPortInfoStubProperty"                                               url="configeditors/ServiceRefPortInfoStubProperty.html"  />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.WebServiceNode" 	url="configeditors/WebserviceDescriptor.html"  />
-    <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode"             url="configeditors/WebserviceClients.html"  />
+    <mapID target="AS_CFG_WebAppLocale"                                 url="configeditors/WebAppLocale.html"  />
+    <mapID target="AS_CFG_WebAppLocaleCharsetMapping"                   url="configeditors/WebAppLocaleCharsetMapping.html"  />
 
    <!-- Sun Resource New File wizard and property sheet CSH pages: -->
    <mapID target="AS_Wiz_ConnPool_chooseDB" 		url="resourcewizards/ConnPool_chooseDB.html"  />

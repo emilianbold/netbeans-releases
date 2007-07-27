@@ -6,7 +6,7 @@
 
         <!--
 
-        * Copyright 2006 Sun Microsystems, Inc.
+        * Copyright 2007 Sun Microsystems, Inc.
 
         * All rights reserved. Use is subject to license terms.
 
@@ -27,13 +27,13 @@
     
     <p>The visual editor groups descriptor settings under the following tabs.</p>
     <ul>
-        <li><b>General.</b> </li>
+        <li><b>General.</b> This tab enables you to edit the EJB module name.</li>
         <li><b>EJB.</b> This tab enables you to set resource references in the EJBs in the module.</li>
         <li><b>Security.</b> This tab enables you to create and set properties for security roles in the EJB module.</li>
         <li><b>Web Services.</b> This tab enables you to add web services used by the EJB and specify a WSDL publish location.</li>
         <li><b>Messaging.</b> This tab enables you to add JMS message destinations used by the EJB and specify the JNDI name of the destination.</li>
-    </il>
-    <p>Additionally, clicking the XML tab enables you to view and edit the xml file directly in the xml editor.</p>
+        <li><b>XML.</b> This tab enables you to view and edit the xml file directly in the xml editor.
+    </ul>
     
     <!--The following bean types may be visible in the tree:</p>
     <ul>
@@ -45,13 +45,13 @@
         <li><a href="messagebean.html">Message Bean</a>. A message bean (&nbsp;<img src="../images/MessageNodeIcon.gif">&nbsp;)
         enables enterprise applications to process messages asynchronously.</li>
     </ul>
--->
+
     <p>Clicking on a bean node opens the 
     configuration panel for the selected bean in the visual editor.
     The configuration panes vary according to the type of bean, and 
     there may be multiple tabs in the pane for configuring complex
     elements. </p>
-    <!--<p>If any configuration information for an enterprise bean is not specified 
+    <p>If any configuration information for an enterprise bean is not specified 
     in the sun-ejb-jar.xml file, it defaults to a corresponding setting in the EJB 
     container if an equivalency exists.</p>-->
 
@@ -66,7 +66,7 @@
         <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
     </object>
-    
+    <!--
     <h3>Sun Configuration Properties</h3>
     <p>The Sun Configuration pane is where you can modify the container properties for EJB beans. The following properties
     are visible in the Sun Configuration pane:</p>
@@ -96,14 +96,15 @@
     of the CMP Resource refers to a JDBC resource. Click New to open the Property dialog box to add a property.</li>
     <li><b>Schema Generator Properties.</b> Specify field-specific type mappings and set the <tt>use-unique-table-names</tt> property.
     Click New to open the Property dialog box to add a property.</li>
-    </ul>
+    </ul>-->
     <dl>
             <dt><a name="seealso">See Also</a></dt>
                         <dd><tt>sun-ejb-jar.xml</tt> Visual Editor</dd>
-            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sunconfig_tabs.html">Sun Configuration Tabs</a></dd>
-            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sessionbean.html">Session Bean</a></dd>
-            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="entitybean.html">Entity Bean</a></dd>
-            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="messagebean.html">Message Bean</a></dd>
+            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="sunconfig_tabs.html">General Tab</a></dd>
+            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="entitybean.html">EJB Tab</a></dd>
+            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../configeditors/SecurityWebRoleMapping.html">Security Tab</a></dd>
+            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../configeditors/WebserviceDescriptor.html">Web Services Tab</a></dd>
+            <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../configeditors/WebAppMessages.html">Messaging Tab</a></dd>
             <dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../configeditors/WebserviceDescriptor.html">Web Service Descriptor</a></dd>
             <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>               
             <dd><a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/ejb/configuring/config_ejb_dd.html">Configuring EJB Deployment Descriptors</a></dd>             
