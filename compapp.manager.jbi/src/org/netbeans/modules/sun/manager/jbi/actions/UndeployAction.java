@@ -25,8 +25,7 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
-
-import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
+import org.netbeans.modules.sun.manager.jbi.nodes.Refreshable;
 import org.netbeans.modules.sun.manager.jbi.nodes.Undeployable;
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
@@ -65,10 +64,10 @@ public abstract class UndeployAction extends NodeAction {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             for (Node parentNode : parentNodes) {
-                                final RefreshCookie refreshCookie =
-                                        parentNode.getLookup().lookup(RefreshCookie.class);
-                                if (refreshCookie != null){                                    
-                                    refreshCookie.refresh();
+                                final Refreshable refreshable =
+                                        parentNode.getLookup().lookup(Refreshable.class);
+                                if (refreshable != null){                                    
+                                    refreshable.refresh();
                                 }                                
                             }
                         }

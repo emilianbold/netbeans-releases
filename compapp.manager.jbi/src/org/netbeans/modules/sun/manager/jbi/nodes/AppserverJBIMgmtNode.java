@@ -22,14 +22,13 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
-
+import java.util.logging.Logger;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
-
-import org.netbeans.modules.j2ee.sun.bridge.apis.AppserverMgmtNode;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.JBIPropertySupportFactory;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -40,8 +39,11 @@ import org.openide.util.NbBundle;
  *
  * @author jqian
  */
-public abstract class AppserverJBIMgmtNode extends AppserverMgmtNode {
+public abstract class AppserverJBIMgmtNode extends AbstractNode {
     
+    private static Logger logger;
+    
+    private String nodeType;
     private AppserverJBIMgmtController appsrvrJBIMgmtController;
     
     private JBIPropertySupportFactory propSupportFactory = 
@@ -54,11 +56,16 @@ public abstract class AppserverJBIMgmtNode extends AppserverMgmtNode {
      */
     public AppserverJBIMgmtNode(final AppserverJBIMgmtController controller, 
             final Children children, final String nodeType) {
-        super(children, nodeType);
+        super(children);
+        setNodeProperties(nodeType);
+
         appsrvrJBIMgmtController = controller;
     }
     
-    
+    public String getNodeType(){
+        return nodeType;
+    }
+
     /**
      *
      *
@@ -185,4 +192,23 @@ public abstract class AppserverJBIMgmtNode extends AppserverMgmtNode {
      * @returns the updated Attribute accessed from the Sheet.
      */
     public abstract Attribute setSheetProperty(String attrName, Object value);
+           
+    /**
+     * Returns the logger for all nodes.
+     *
+     * @returns The java.util.logging.Logger impl. for this node.
+     */
+    protected final static Logger getLogger() {
+        if (logger == null) {
+            logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.nodes");
+        }
+        return logger;
+    }
+        
+    private void setNodeProperties(String nodeType) {
+        this.nodeType = nodeType;
+        setDisplayName(getNodeDisplayName());
+//        setIconBaseWithExtension(getNodeIconPath());
+        setShortDescription(getNodeShortDescription());
+    }
 }

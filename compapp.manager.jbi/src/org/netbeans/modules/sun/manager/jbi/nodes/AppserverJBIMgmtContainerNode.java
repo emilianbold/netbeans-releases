@@ -21,10 +21,7 @@ package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import java.util.Collections;
 import java.util.logging.Level;
-
 import javax.swing.Action;
-
-import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIContainerChildFactory;
@@ -39,7 +36,7 @@ import org.openide.util.actions.SystemAction;
  * @author jqian
  */
 public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode 
-        implements RefreshCookie {
+        implements Refreshable {
     
     /**
      *

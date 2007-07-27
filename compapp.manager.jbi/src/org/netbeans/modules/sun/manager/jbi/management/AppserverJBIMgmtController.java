@@ -19,13 +19,11 @@
 
 package org.netbeans.modules.sun.manager.jbi.management;
 
-import org.netbeans.modules.sun.manager.jbi.util.*;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.io.File;
+import java.net.InetAddress;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanServerConnection;
@@ -35,6 +33,9 @@ import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
 import org.netbeans.modules.sun.manager.jbi.management.JBIFrameworkService;
 import org.netbeans.modules.sun.manager.jbi.management.connectors.HTTPServerConnector;
 import org.netbeans.modules.sun.manager.jbi.management.JBIClassLoader;
+import org.netbeans.modules.sun.manager.jbi.util.ComparableAttribute;
+import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
+import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -45,7 +46,7 @@ import org.openide.util.NbBundle;
  */
 public class AppserverJBIMgmtController {
     
-    private MBeanServerConnection mbeanServerConn;
+    private MBeanServerConnection mBeanServerConnection;
     
     private AdministrationService adminService;
     
@@ -60,36 +61,10 @@ public class AppserverJBIMgmtController {
     /**
      * Creates a new instance of JBIAppserverMgmtController
      */
-    public AppserverJBIMgmtController(MBeanServerConnection mbeanServerConn/*, AppserverMgmtController controller*/) {
-        this.mbeanServerConn = mbeanServerConn;
+    public AppserverJBIMgmtController(MBeanServerConnection mbeanServerConn) {
+        this.mBeanServerConnection = mbeanServerConn;
+    }
         
-//        try {
-//            ObjectName objectName = new ObjectName(AdministrationService.ADMIN_SERVICE_OBJECTNAME);
-//            NotificationListener notificationListener = new NotificationListener() {
-//                public void handleNotification(Notification notification, Object handback) {
-//                    System.out.println("Get notified");
-//                }
-//            };
-//            NotificationFilter notificationFilter = null;
-//            Object handbackObject = null;
-//
-//            mbeanServerConn.addNotificationListener(objectName,
-//                    notificationListener,
-//                    notificationFilter,
-//                    handbackObject);
-//        } catch (InstanceNotFoundException ex) {
-//            ex.printStackTrace();
-//        } catch (IOException ex) {
-//            ex.printStackTrace();
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//        }
-    }
-    
-    private MBeanServerConnection getMBeanServerConnection() {
-        return mbeanServerConn;
-    }
-    
     /**
      *
      */
@@ -99,8 +74,7 @@ public class AppserverJBIMgmtController {
     }
     
     public JBIFrameworkService getJBIFrameworkService() {
-        MBeanServerConnection connection = getMBeanServerConnection();
-        return new JBIFrameworkService(connection);
+        return new JBIFrameworkService(mBeanServerConnection);
     }
     
     /**
@@ -136,40 +110,36 @@ public class AppserverJBIMgmtController {
             
             try {
                 if (netBeansUserDir != null) {
-                    ServerInstance instance = null;
+                    ServerInstance serverInstance = null;
                     
-                    String settingsFileName = netBeansUserDir + ServerInstanceReader.RELATIVE_FILE_PATH;
+                    String settingsFileName = 
+                            netBeansUserDir + ServerInstanceReader.RELATIVE_FILE_PATH;
                     File settingsFile = new File(settingsFileName);
                     if (settingsFile.exists()) {
                         //System.out.println("Retrieving settings from " + settingsFileName);
-                        ServerInstanceReader settings = new ServerInstanceReader(settingsFileName);
-                        
-                        List list = settings.getServerInstances();
-                        Iterator iterator = list.iterator();
-                        
-                        while (iterator.hasNext()) {
-                            instance = (ServerInstance) iterator.next();
+                        ServerInstanceReader settings = 
+                                new ServerInstanceReader(settingsFileName);                        
+                        for (ServerInstance instance : settings.getServerInstances()) {
                             if (isCurrentInstance(instance)) {
+                                serverInstance = instance;
                                 break;
-                            } else {
-                                instance = null;
                             }
                         }
                     }
                     
-                    if (instance == null) {
+                    if (serverInstance == null) {
                         throw new RuntimeException(
                                 "The application server definition file " +  // NOI18N
                                 settingsFileName +
                                 " is missing or does not contain the expected server instance." // NOI18N
                                 );
                     }
-                    JBIClassLoader jbiClassLoader = new JBIClassLoader(instance);
+                    JBIClassLoader jbiClassLoader = new JBIClassLoader(serverInstance);
                     
-                    String hostName = instance.getHostName();
-                    String port     = instance.getAdminPort();
-                    String userName = instance.getUserName();
-                    String password = instance.getPassword();                    
+                    String hostName = serverInstance.getHostName();
+                    String port     = serverInstance.getAdminPort();
+                    String userName = serverInstance.getUserName();
+                    String password = serverInstance.getPassword();                    
                     
                     HTTPServerConnector httpConnector = new HTTPServerConnector(
                             hostName, port, userName, password, jbiClassLoader);
@@ -195,9 +165,8 @@ public class AppserverJBIMgmtController {
     public Map<Attribute, MBeanAttributeInfo> getJBIComponentConfigProperties(
             String containerType, String componentName, boolean sort)
             throws Exception {
-        MBeanServerConnection connection = getMBeanServerConnection();
         JBIComponentConfigurator configurator =
-                new JBIComponentConfigurator(containerType, componentName, connection);
+                getComponentConfigurator(containerType, componentName);
         Map<Attribute, MBeanAttributeInfo> propertyMap = configurator.getPropertyMap();
         return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
     }
@@ -229,9 +198,8 @@ public class AppserverJBIMgmtController {
         Map<Attribute, MBeanAttributeInfo> sortedMap =
                 new TreeMap<Attribute, MBeanAttributeInfo>();
         
-        Set attrSet = propertyMap.keySet();
-        for(Iterator itr = attrSet.iterator(); itr.hasNext(); ) {
-            Attribute attr = (Attribute) itr.next();
+        Set<Attribute> attrSet = propertyMap.keySet();
+        for (Attribute attr : attrSet) {
             MBeanAttributeInfo info = (MBeanAttributeInfo) propertyMap.get(attr);
             sortedMap.put(new ComparableAttribute(attr), info);
         }
@@ -249,10 +217,8 @@ public class AppserverJBIMgmtController {
     public Object getJBIComponentConfigPropertyValue(String containerType,
             String componentName, String attrName) throws Exception {
         
-        MBeanServerConnection connection = getMBeanServerConnection();
-        
         JBIComponentConfigurator configurator =
-                new JBIComponentConfigurator(containerType, componentName, connection);
+                getComponentConfigurator(containerType, componentName);
         
         return configurator.getPropertyValue(attrName);
     }
@@ -265,26 +231,28 @@ public class AppserverJBIMgmtController {
      * @param value
      */
     public void setJBIComponentConfigProperty(String containerType,
-            String componentName, String attrName, Object value) throws Exception {
-        
-        MBeanServerConnection connection = getMBeanServerConnection();
+            String componentName, String attrName, Object value) 
+            throws Exception {
         
         JBIComponentConfigurator configurator =
-                new JBIComponentConfigurator(containerType, componentName, connection);
+                getComponentConfigurator(containerType, componentName);
         
         configurator.setPropertyValue(attrName, value);
     }
     
     public void setJBIComponentLoggerProperty(
-            String componentName, String attrName, Object value) throws Exception {
+            String componentName, String attrName, Object value) 
+            throws Exception {
         AdministrationService adminService = getJBIAdministrationService();
         adminService.setComponentLoggerProperty(componentName, attrName, value);
     }
     
-//    public void setJBIFrameworkServiceDefaultLogProperty(String logLevel) {
-//        JBIFrameworkService service = getJBIFrameworkService();
-//        service.setDefaultLogPropertyValue(logLevel);
-//    }
+    private JBIComponentConfigurator getComponentConfigurator(
+            String containerType, String componentName) 
+            throws Exception {
+        return new JBIComponentConfigurator(containerType, componentName, 
+                mBeanServerConnection);
+    }
     
     private boolean isCurrentInstance(ServerInstance instance) {
         
@@ -295,16 +263,14 @@ public class AppserverJBIMgmtController {
             isLocalHost = true;
         }
         
-        try {
-            MBeanServerConnection mbeanServerConnection = getMBeanServerConnection();
-            
+        try {            
             ObjectName objectName = new ObjectName(HOST_MBEAN_NAME);
             
-            String host = (String) mbeanServerConnection.getAttribute(objectName, "hosts-current");  // NOI18N
+            String host = (String) mBeanServerConnection.getAttribute(objectName, "hosts-current");  // NOI18N
             if (host.toLowerCase().startsWith(instanceHost.toLowerCase()) ||
                     instanceHost.toLowerCase().startsWith(host.toLowerCase())) {    // FIXME: domain name
                 objectName = new ObjectName(HOST_ASADMIN_MBEAN_NAME);
-                String appBase = (String) mbeanServerConnection.getAttribute(objectName, "appBase");    // NOI18N
+                String appBase = (String) mBeanServerConnection.getAttribute(objectName, "appBase");    // NOI18N
                                 
                 // For local domains, use instance LOCATION instead of url location  (#90749)
                 String localInstanceLocation = instance.getLocation();
@@ -318,7 +284,7 @@ public class AppserverJBIMgmtController {
                 
                 if (!isLocalHost || appBase.toLowerCase().startsWith(localInstanceLocation.toLowerCase())) {
                     objectName = new ObjectName(HTTP_PORT_MBEAN_NAME);
-                    String port = (String) mbeanServerConnection.getAttribute(objectName, "port");  // NOI18N
+                    String port = (String) mBeanServerConnection.getAttribute(objectName, "port");  // NOI18N
                     String instanceHttpPort = instance.getHttpPortNumber();
                     if (port.equals(instanceHttpPort)) {
                         return true;
@@ -335,8 +301,7 @@ public class AppserverJBIMgmtController {
     private static String getHostName() {
         String hostName = null;
         try {
-            java.net.InetAddress localMachine =
-                    java.net.InetAddress.getLocalHost();
+            InetAddress localMachine = InetAddress.getLocalHost();
             hostName = localMachine.getHostName();
         } catch (java.net.UnknownHostException e) {
             e.printStackTrace();

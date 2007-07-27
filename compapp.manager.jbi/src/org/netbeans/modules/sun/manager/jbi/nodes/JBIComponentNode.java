@@ -26,9 +26,7 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
-
 import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.actions.AdvancedAction;
@@ -55,7 +53,7 @@ import org.openide.util.actions.SystemAction;
  * @author jqian
  */
 public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
-        implements RefreshCookie, Startable, Stoppable, Shutdownable, Uninstallable {
+        implements Refreshable, Startable, Stoppable, Shutdownable, Uninstallable {
     
     private boolean busy;
     

@@ -18,16 +18,19 @@
  */
 package org.netbeans.modules.sun.manager.jbi.actions;
 
-import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
+import org.netbeans.modules.sun.manager.jbi.nodes.Refreshable;
 import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  * Enhanced refresh action that can be applied to multiple nodes.
  * 
  * @author jqian
  */
-public class RefreshAction extends org.netbeans.modules.j2ee.sun.bridge.apis.RefreshAction {
+public class RefreshAction extends NodeAction {
     
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes == null) {
@@ -37,13 +40,29 @@ public class RefreshAction extends org.netbeans.modules.j2ee.sun.bridge.apis.Ref
         try {
             for (Node node : activatedNodes) {
                 Lookup lookup = node.getLookup();
-                RefreshCookie refreshCookie = lookup.lookup(RefreshCookie.class);
-                if (refreshCookie != null) {
-                    refreshCookie.refresh();
+                Refreshable refreshable = lookup.lookup(Refreshable.class);
+                if (refreshable != null) {
+                    refreshable.refresh();
                 }
             }
         } catch(RuntimeException rex) {
             //gobble up exception
         }
     }
+        
+    protected boolean enable(Node[] nodes) {
+        return true;
+    }
+         
+    protected boolean asynchronous() {
+        return false;
+    }
+    
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+    
+    public String getName() {
+        return NbBundle.getMessage(RefreshAction.class, "LBL_RefreshAction"); // NOI18N
+    }    
 }

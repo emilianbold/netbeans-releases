@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
@@ -38,7 +37,6 @@ import javax.swing.SwingUtilities;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
@@ -58,7 +56,6 @@ import org.openide.util.HelpCtx;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * Container node for all JBI Components of the same type.
@@ -264,7 +261,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         chooser.setMultiSelectionEnabled(true);
         
         chooser.addChoosableFileFilter(chooser.getAcceptAllFileFilter());
-        chooser.addChoosableFileFilter(FileFilters.ArchiveFileFilter.getInstance());        
+        chooser.addChoosableFileFilter(FileFilters.JarFileFilter.getInstance());        
         
         chooser.setApproveButtonToolTipText(
                 bundle.getString("LBL_Install_JBI_Component_Button")); //NOI18N

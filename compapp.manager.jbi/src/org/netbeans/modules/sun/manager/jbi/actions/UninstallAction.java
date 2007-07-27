@@ -22,8 +22,7 @@ package org.netbeans.modules.sun.manager.jbi.actions;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.SwingUtilities;
-
-import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
+import org.netbeans.modules.sun.manager.jbi.nodes.Refreshable;
 import org.netbeans.modules.sun.manager.jbi.nodes.Uninstallable;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -59,10 +58,10 @@ public abstract class UninstallAction extends NodeAction {
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             for (Node parentNode : parentNodes) {
-                                final RefreshCookie refreshCookie =
-                                        parentNode.getLookup().lookup(RefreshCookie.class);
-                                if (refreshCookie != null){
-                                    refreshCookie.refresh();
+                                final Refreshable refreshable =
+                                        parentNode.getLookup().lookup(Refreshable.class);
+                                if (refreshable != null){
+                                    refreshable.refresh();
                                 }
                             }
                         }

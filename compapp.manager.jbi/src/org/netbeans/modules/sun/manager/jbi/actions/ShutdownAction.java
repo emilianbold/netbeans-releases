@@ -20,8 +20,7 @@
 package org.netbeans.modules.sun.manager.jbi.actions;
 
 import javax.swing.SwingUtilities;
-
-import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
+import org.netbeans.modules.sun.manager.jbi.nodes.Refreshable;
 import org.netbeans.modules.sun.manager.jbi.nodes.Shutdownable;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -49,12 +48,12 @@ public abstract class ShutdownAction extends NodeAction {
                         if (shutdownable != null) {
                             shutdownable.shutdown(isForceAction());
                             
-                            final RefreshCookie refreshCookie =
-                                    lookup.lookup(RefreshCookie.class);
-                            if (refreshCookie != null){
+                            final Refreshable refreshable =
+                                    lookup.lookup(Refreshable.class);
+                            if (refreshable != null){
                                 SwingUtilities.invokeLater(new Runnable() {
                                     public void run() {
-                                        refreshCookie.refresh();
+                                        refreshable.refresh();
                                     }
                                 });
                             }

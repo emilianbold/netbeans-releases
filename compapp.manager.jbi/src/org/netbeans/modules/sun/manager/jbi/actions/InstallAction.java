@@ -20,9 +20,8 @@
 package org.netbeans.modules.sun.manager.jbi.actions;
 
 import javax.swing.SwingUtilities;
-
-import org.netbeans.modules.j2ee.sun.bridge.apis.RefreshCookie;
 import org.netbeans.modules.sun.manager.jbi.nodes.Installable;
+import org.netbeans.modules.sun.manager.jbi.nodes.Refreshable;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -49,10 +48,10 @@ public abstract class InstallAction extends NodeAction {
                         
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                RefreshCookie refreshCookie =
-                                        lookup.lookup(RefreshCookie.class);
-                                if (refreshCookie != null){
-                                    refreshCookie.refresh();
+                                Refreshable refreshable =
+                                        lookup.lookup(Refreshable.class);
+                                if (refreshable != null){
+                                    refreshable.refresh();
                                 }
                             }
                         });
