@@ -91,10 +91,10 @@
             <pathelement location="${netbeans.home}/../ide8/modules/org-netbeans-modules-projectapi.jar"/>
             <pathelement location="${netbeans.home}/../ide8/modules/org-netbeans-modules-classfile.jar"/>
             <pathelement location="${netbeans.home}/../ide8/modules/org-apache-xml-resolver.jar"/>
-            <pathelement location="${netbeans.home}/../xml1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
-            <pathelement location="${netbeans.home}/../ide8/modules/ext/jaxws21/api/jaxb-api.jar"/>
-            <pathelement location="${netbeans.home}/../ide8/modules/ext/jaxws21/jaxb-impl.jar"/>
-            <pathelement location="${netbeans.home}/../ide8/modules/ext/jaxws21/activation.jar"/>
+            <pathelement location="${netbeans.home}/../soa1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+            <pathelement location="${netbeans.home}/../java1/modules/ext/jaxws21/api/jaxb-api.jar"/>
+            <pathelement location="${netbeans.home}/../java1/modules/ext/jaxws21/jaxb-impl.jar"/>
+            <pathelement location="${netbeans.home}/../java1/modules/ext/jaxws21/activation.jar"/>
         </path>
         <taskdef name="jbi-build-service-assembly" classname="org.netbeans.modules.compapp.projects.jbi.anttasks.BuildServiceAssembly">
             <classpath refid="ant.task.classpath"/>
@@ -160,7 +160,7 @@
         <mkdir dir="${build.dir}/META-INF"/>
         <jar compress="true" jarfile="${build.dir}/BCDeployment.jar">
             <fileset dir="${src.dir}/../jbiServiceUnits">
-                <exclude name="META-INF/catalogData/**"/>
+                <exclude name="META-INF/*/catalog.xml"/>
                 <exclude name="**/jbi.xml"/>
             </fileset>
         </jar>
@@ -212,12 +212,12 @@
     <target name="run-jbi-deploy" depends="jbi-build">
         <property name="j2ee.server.instance" value=""/>
         <loadproperties srcFile="${basedir}/nbproject/private/private.properties"/>
-        <jbi-deploy-service-assembly serviceAssemblyID="${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}" serviceAssemblyLocation="${basedir}/${dist.jar}" netBeansUserDir="${netbeans.user}" j2eeServerInstance="${j2ee.server.instance}"/>
+        <jbi-deploy-service-assembly serviceAssemblyID="${jbi.service-assembly.id}" serviceAssemblyLocation="${basedir}/${dist.jar}" netBeansUserDir="${netbeans.user}" j2eeServerInstance="${j2ee.server.instance}"/>
     </target>
     <target name="undeploy" depends="init">
         <property name="j2ee.server.instance" value=""/>
         <loadproperties srcFile="${basedir}/nbproject/private/private.properties"/>
-        <jbi-deploy-service-assembly undeployServiceAssembly="true" serviceAssemblyID="${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}" serviceAssemblyLocation="${basedir}/${dist.jar}" netBeansUserDir="${netbeans.user}" j2eeServerInstance="${j2ee.server.instance}"/>
+        <jbi-deploy-service-assembly undeployServiceAssembly="true" serviceAssemblyID="${jbi.service-assembly.id}" serviceAssemblyLocation="${basedir}/${dist.jar}" netBeansUserDir="${netbeans.user}" j2eeServerInstance="${j2ee.server.instance}"/>
     </target>
     <target name="-pre-debug">
         <setup-debug-environment netBeansUserDir="${netbeans.user}" j2eeServerInstance="${j2ee.server.instance}"/>
@@ -253,8 +253,8 @@
     <target name="clean" depends="init,deps-clean,do-clean,post-clean" description="Clean build products."/>
     <target name="jbi-clean-config" depends="init,clear-casa,jbi-clean-build" description="Clean application configuration."/>
     <target name="clear-casa">
-        <delete file="${source.root}/conf/${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}.casa"/>
-        <delete file="${src.dir}/${org.netbeans.modules.compapp.projects.jbi.descriptor.uuid.assembly-unit}.wsdl"/>
+        <delete file="${source.root}/conf/${jbi.service-assembly.id}.casa"/>
+        <delete file="${src.dir}/${jbi.service-assembly.id}.wsdl"/>
     </target>
     <!--
                 JUNIT EXECUTION SECTION
@@ -286,8 +286,10 @@
                 <pathelement path="${netbeans.home}/../platform7/modules/org-openide-text.jar"/>
                 <pathelement path="${netbeans.home}/../platform7/modules/org-openide-loaders.jar"/>
                 <pathelement path="${netbeans.home}/../platform7/modules/org-openide-nodes.jar"/>
+                <pathelement path="${netbeans.home}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
                 <pathelement path="${netbeans.home}/../platform7/core/org-openide-filesystems.jar"/>
             </classpath>
+            <sysproperty key="NetBeansUserDir" value="${netbeans.user}"/>
             <test name="org.netbeans.modules.compapp.catd.ConfiguredTest" haltonfailure="no" todir="${test.results.dir}"/>
             <syspropertyset>
                 <propertyref prefix="test-sys-prop."/>
@@ -302,6 +304,7 @@
             <classpath>
                 <pathelement path="${netbeans.home}/../soa1/modules/ext/jbi/catd.jar"/>
                 <pathelement path="${netbeans.home}/../soa1/modules/ext/jbi/xmlunit1.0.jar"/>
+                <pathelement path="${netbeans.home}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/>
                 <pathelement path="${netbeans.home}/../java1/modules/ext/junit-3.8.2.jar"/>
                 <pathelement path="${netbeans.home}/../java1/modules/ext/jaxrpc16/FastInfoset.jar"/>
                 <pathelement path="${netbeans.home}/../java1/modules/ext/jaxrpc16/saaj-api.jar"/>
@@ -320,8 +323,10 @@
                 <pathelement path="${netbeans.home}/../platform7/modules/org-openide-text.jar"/>
                 <pathelement path="${netbeans.home}/../platform7/modules/org-openide-loaders.jar"/>
                 <pathelement path="${netbeans.home}/../platform7/modules/org-openide-nodes.jar"/>
+                <pathelement path="${netbeans.home}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
                 <pathelement path="${netbeans.home}/../platform7/core/org-openide-filesystems.jar"/>
             </classpath>
+            <sysproperty key="NetBeansUserDir" value="${netbeans.user}"/>
             <test name="org.netbeans.modules.compapp.catd.ConfiguredTest" haltonfailure="no" todir="${test.results.dir}"/>
             <syspropertyset>
                 <propertyref prefix="test-sys-prop."/>

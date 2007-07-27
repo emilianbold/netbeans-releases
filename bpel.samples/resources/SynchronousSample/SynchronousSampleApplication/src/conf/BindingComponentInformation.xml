@@ -1,25 +1,25 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <component-info-list>
-    <component-info>
-        <description>File Binding</description>
-        <name>sun-file-binding</name>
-        <state>Installed</state>
-        <type>Binding</type>
-        <namespace>http://schemas.sun.com/jbi/wsdl-extensions/file/</namespace>
-    </component-info>
-    <component-info>
-        <description>HTTP Soap Binding to send SOAP messages e.g. to and from BPEL service engine.</description>
-        <name>sun-http-binding</name>
-        <state>Installed</state>
-        <type>Binding</type>
-        <namespace>http://schemas.xmlsoap.org/wsdl/http/</namespace>
-        <namespace>http://schemas.xmlsoap.org/wsdl/soap/</namespace>
-    </component-info>
-    <component-info>
-        <description>JMS Binding</description>
-        <name>sun-jms-binding</name>
-        <state>Installed</state>
-        <type>Binding</type>
-        <namespace>http://schemas.sun.com/jbi/wsdl-extensions/jms/</namespace>
-    </component-info>
+<component-info>
+<description>File Binding</description>
+<name>sun-file-binding</name>
+<state>Installed</state>
+<type>Binding</type>
+<namespace>http://schemas.sun.com/jbi/wsdl-extensions/file/</namespace>
+</component-info>
+<component-info>
+<description>HTTP Soap Binding to send SOAP messages e.g. to and from BPEL service engine.</description>
+<name>sun-http-binding</name>
+<state>Installed</state>
+<type>Binding</type>
+<namespace>http://schemas.xmlsoap.org/wsdl/http/</namespace>
+<namespace>http://schemas.xmlsoap.org/wsdl/soap/</namespace>
+</component-info>
+<component-info>
+<description>JMS Binding</description>
+<name>sun-jms-binding</name>
+<state>Installed</state>
+<type>Binding</type>
+<namespace>http://schemas.sun.com/jbi/wsdl-extensions/jms/</namespace>
+</component-info>
 </component-info-list>
