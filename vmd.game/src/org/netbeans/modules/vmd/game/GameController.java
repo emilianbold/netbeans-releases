@@ -79,6 +79,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -138,7 +139,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 		
 	public void setDesignDocument(final DesignDocument designDocument) {
-		System.out.println(">>>> set design document to: " + designDocument);
+		System.out.println(">>>> set design document to: " + designDocument); // NOI18N
 
 		if (designDocument == this.document) {
 			return;
@@ -448,17 +449,18 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		if (imagesMap.size() > 1) {
 			//multiple locations (e.g. jars) contain the same image - show a dialog to let the
 			//user choose which single image should be used
-			System.out.println("found multiple images matching the relative path:");
+			System.out.println("found multiple images matching the relative path:"); // NOI18N
 			for (Map.Entry<FileObject, FileObject> entry : imagesMap.entrySet()) {
 				System.out.println("root: " + entry.getValue() + ", path: " + entry.getKey());
 			}
 			
 			final SelectImageForLayerDialog dialog = new SelectImageForLayerDialog(
-					"Multiple images found matching the relative path: " + imgResPath,
+					NbBundle.getMessage(GameController.class, "GameController.SelectImageDialog.description1_txt", imgResPath),
+					//"Multiple images found matching the relative path: " + imgResPath,
 					imagesMap.keySet()
 			);
 			
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Select image");
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(GameController.class, "GameController.SelectImageDialog.title"));
 			dd.setValid(false);
 			dd.setButtonListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -473,7 +475,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			
 			fo = dialog.getValue();
 			final String newPath = "/" + FileUtil.getRelativePath(imagesMap.get(fo), fo);
-			System.out.println("Setting new path: " + newPath);
+			System.out.println("Setting new path: " + newPath); // NOI18N
 			document.getTransactionManager().writeAccess(new Runnable() {
 				public void run() {
 					imageResourceDC.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, 
@@ -484,16 +486,17 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		else if (imagesMap.isEmpty()) {
 			//image is no longer on the classpath - prompt the user to select a replacement image
 			fo = null;
-			System.out.println("Image " + imgResPath + " doesn't exist, select a replacement.");
+			System.out.println("Image " + imgResPath + " doesn't exist, select a replacement."); // NOI18N
 			
 			Map<FileObject, String> images = MidpProjectSupport.getImagesForProject(document, false);
 			
 			final SelectImageForLayerDialog dialog = new SelectImageForLayerDialog(
-					"Image " + imgResPath + " doesn't exist, select a replacement.",
+					NbBundle.getMessage(GameController.class, "GameController.SelectImageDialog.description2_txt", imgResPath),
+					//"Image " + imgResPath + " doesn't exist, select a replacement.",
 					images.keySet()
 			);
 			
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Select image");
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(GameController.class, "GameController.SelectImageDialog.title"));
 			dd.setValid(false);
 			dd.setButtonListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
@@ -508,7 +511,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 			
 			fo = dialog.getValue();
 			final String newPath = images.get(fo);
-			System.out.println("Setting new path: " + newPath);
+			System.out.println("Setting new path: " + newPath); // NOI18N
 			document.getTransactionManager().writeAccess(new Runnable() {
 				public void run() {
 					imageResourceDC.writeProperty(ImageResourceCD.PROPERTY_IMAGE_PATH, 
@@ -519,7 +522,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 		else {
 			//there is a single matching image on the classpath - excellent :)
 			fo = imagesMap.keySet().iterator().next();
-			System.out.println("Found single matching image ULR: " + fo.getPath());
+			System.out.println("Found single matching image ULR: " + fo.getPath()); // NOI18N
 		}
 		
 		try {
@@ -1048,7 +1051,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     public void animatedTileAdded(final ImageResource imgRes, final AnimatedTile tile) {
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-				System.out.println("animatedTileAdded: " + tile);
+				System.out.println("animatedTileAdded: " + tile); // NOI18N
 				DesignComponent dcImgRes = designIdMap.get(imgRes);
 				assert (dcImgRes != null);
 				
@@ -1064,7 +1067,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     public void animatedTileRemoved(final ImageResource imgRes, final AnimatedTile tile) {
 		document.getTransactionManager().writeAccess(new Runnable() {
             public void run() {
-				System.out.println("animatedTileRemoved: " + tile);
+				System.out.println("animatedTileRemoved: " + tile); // NOI18N
 				DesignComponent dcAnimTile = designIdMap.get(tile);
 				assert (dcAnimTile != null);
 				
@@ -1095,7 +1098,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     }
 
     public void sequenceRemoved(ImageResource source, Sequence sequence) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
 	

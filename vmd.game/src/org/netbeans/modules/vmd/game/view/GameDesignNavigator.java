@@ -38,7 +38,7 @@ public class GameDesignNavigator extends JTable {
 	private GlobalRepository gameDesign;
 	
     public GameDesignNavigator(GlobalRepository gameDesign) {
-		System.out.println(">>>>>>>>>> GAME DESIGN: " + gameDesign);
+		System.out.println(">>>>>>>>>> GAME DESIGN: " + gameDesign); // NOI18N
 		this.gameDesign = gameDesign;
 		this.getColumnModel().setColumnMargin(0);
 		this.setRowHeight(IMG_PREVIEW_HEIGHT);

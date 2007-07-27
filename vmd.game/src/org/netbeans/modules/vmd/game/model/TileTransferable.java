@@ -24,7 +24,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -50,8 +49,9 @@ public class TileTransferable implements Transferable {
 	}
 
 	public boolean isDataFlavorSupported(DataFlavor flavor) {
-		if (flavor instanceof TileDataFlavor)
-			return true;
+		if (flavor instanceof TileDataFlavor) {
+            return true;
+        }
 		return false;
 	}
 

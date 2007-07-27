@@ -49,7 +49,7 @@ public class SequenceDelayTableEditor extends JSpinner implements TableCellEdito
 			this.setEditor(new SequenceTimeSpinner.SpinnerMSEditor(this));
 			return this;
 		}
-		throw new IllegalArgumentException("Only Integer can be edited.");
+		throw new IllegalArgumentException("Only Integer can be edited."); // NOI18N
 	}
 
 	public Object getCellEditorValue() {

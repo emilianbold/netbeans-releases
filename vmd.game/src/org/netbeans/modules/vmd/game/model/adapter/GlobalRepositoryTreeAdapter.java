@@ -30,6 +30,7 @@ import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
+import org.openide.util.NbBundle;
 
 public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryListener {
 
@@ -115,12 +116,12 @@ public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryL
 	
 	private class SimpleSpritesNode {
 		public String toString() {
-			return "Sprites";
+			return NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryTreeAdapter.labelSprites");
 		}
 	}
 	private class SimpleTiledLayersNode {
 		public String toString() {
-			return "TiledLayers";
+			return NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryTreeAdapter.labelTiledLayers");
 		}
 	}
 	public void sceneAdded(Scene scene, int index) {

@@ -28,6 +28,7 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.vmd.game.model.StaticTile;
+import org.openide.util.NbBundle;
 
 public class TileCellRenderer extends JComponent implements ListCellRenderer {
 
@@ -51,7 +52,7 @@ public class TileCellRenderer extends JComponent implements ListCellRenderer {
 	}
 	
 	public String getToolTipText(MouseEvent e) {
-		return "Index: " + this.tile.getIndex();
+		return NbBundle.getMessage(TileCellRenderer.class, "TileCellRenderer.tooltip", this.tile.getIndex());
 	}
 	
 	public void paintComponent(Graphics g) {
@@ -101,6 +102,6 @@ public class TileCellRenderer extends JComponent implements ListCellRenderer {
 			this.setPreferredSize(dimension);
 			return this;
 		}
-		throw new IllegalArgumentException("Only org.netbeans.mobility.game.model.Tile or java.lang.Integer can be rendered.");
+		throw new IllegalArgumentException("Only org.netbeans.mobility.game.model.Tile or java.lang.Integer can be rendered."); // NOI18N
 	}
 }

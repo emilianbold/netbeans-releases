@@ -55,7 +55,7 @@ public class Position {
 	}
 	
 	public String toString() {
-        return ("Cell row: " + this.row + ", col: " + this.col);
+        return ("Cell row: " + this.row + ", col: " + this.col); // NOI18N
     }
 
 }

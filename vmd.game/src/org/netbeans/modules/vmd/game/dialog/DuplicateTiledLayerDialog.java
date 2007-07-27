@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.TiledLayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -36,15 +37,15 @@ public class DuplicateTiledLayerDialog extends AbstractNameValidationDialog {
 	}
 
 	protected String getInitialStateDescriptionText() {
-		return "Enter a Tiled Layer name.";
+		return NbBundle.getMessage(DuplicateTiledLayerDialog.class, "DuplicateTiledLayerDialog.InitialStateDescription.text");
 	}
 
 	protected String getNameLabelText() {
-		return "Tiled Layer name:";
+		return NbBundle.getMessage(DuplicateTiledLayerDialog.class, "DuplicateTiledLayerDialog.NameLabel.text");
 	}
 
 	protected String getDialogNameText() {
-		return "Create new Tiled Layer";
+		return NbBundle.getMessage(DuplicateTiledLayerDialog.class, "DuplicateTiledLayerDialog.title.text");
 	}
 
 	protected String getCurrentStateErrorText() {
@@ -55,7 +56,7 @@ public class DuplicateTiledLayerDialog extends AbstractNameValidationDialog {
 			return this.getInitialStateDescriptionText();
 		}
 		if (!this.tiledLayer.getGameDesign().isComponentNameAvailable(name)) {
-			errMsg = "Component name already exists. Choose a different name.";
+			errMsg = NbBundle.getMessage(DuplicateTiledLayerDialog.class, "DuplicateTiledLayerDialog.tiledLayerExistsDescription.text");
 		}		
 		return errMsg;
 	}

@@ -29,11 +29,11 @@ public class SceneItemCD extends ComponentDescriptor {
 
 	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "SceneItem"); // NOI18N
 
-	public static final String PROPERTY_LAYER = "sceneitemcd.prop.layer";
-	public static final String PROPERTY_LOCK = "sceneitemcd.prop.lock";
-	public static final String PROPERTY_VISIBLE = "sceneitemcd.prop.visible";
-	public static final String PROPERTY_POSITION = "sceneitemcd.prop.position";
-	public static final String PROPERTY_Z_ORDER = "sceneitemcd.prop.z.order";
+	public static final String PROPERTY_LAYER = "sceneitemcd.prop.layer"; // NOI18N
+	public static final String PROPERTY_LOCK = "sceneitemcd.prop.lock"; // NOI18N
+	public static final String PROPERTY_VISIBLE = "sceneitemcd.prop.visible"; // NOI18N
+	public static final String PROPERTY_POSITION = "sceneitemcd.prop.position"; // NOI18N
+	public static final String PROPERTY_Z_ORDER = "sceneitemcd.prop.z.order"; // NOI18N
 	
 	public TypeDescriptor getTypeDescriptor() {
 		return new TypeDescriptor(null, TYPEID, true, false);

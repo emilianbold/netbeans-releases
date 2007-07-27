@@ -43,6 +43,7 @@ public class StaticTilePreview extends javax.swing.JPanel {
 	 */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         labelSprite = new javax.swing.JLabel();
         textFieldSprite = new javax.swing.JTextField();
         panelImagePreview = new javax.swing.JPanel();
@@ -53,39 +54,35 @@ public class StaticTilePreview extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
 
-        setBackground(new java.awt.Color(255, 255, 255));
         setMinimumSize(new java.awt.Dimension(10, 180));
-        labelSprite.setText("Tile index:");
 
-        textFieldSprite.setBackground(new java.awt.Color(255, 255, 255));
+        labelSprite.setText(org.openide.util.NbBundle.getMessage(StaticTilePreview.class, "StaticTilePreview.labelTileIndex.txt")); // NOI18N
+
         textFieldSprite.setEditable(false);
         textFieldSprite.setText(Integer.toString(this.staticTile.getIndex()));
         textFieldSprite.setBorder(null);
 
+        panelImagePreview.setBackground(new java.awt.Color(255, 255, 255));
+        panelImagePreview.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153)));
+        this.panelImagePreview.add(this.imagePreviewComponent);
         panelImagePreview.setLayout(new java.awt.BorderLayout());
 
-        panelImagePreview.setBackground(new java.awt.Color(255, 255, 255));
-        this.panelImagePreview.add(this.imagePreviewComponent);
+        labelFrames.setText(org.openide.util.NbBundle.getMessage(StaticTilePreview.class, "StaticTilePreview.labelWidth.txt")); // NOI18N
 
-        labelFrames.setText("Width:");
-
-        textFieldFrames.setBackground(new java.awt.Color(255, 255, 255));
         textFieldFrames.setEditable(false);
         textFieldFrames.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         textFieldFrames.setText(Integer.toString(this.staticTile.getWidth()));
         textFieldFrames.setBorder(null);
 
-        labelDelay.setText("Height:");
+        labelDelay.setText(org.openide.util.NbBundle.getMessage(StaticTilePreview.class, "StaticTilePreview.labelHeight.txt")); // NOI18N
 
-        textFieldDelay.setBackground(new java.awt.Color(255, 255, 255));
         textFieldDelay.setEditable(false);
         textFieldDelay.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         textFieldDelay.setText(Integer.toString(this.staticTile.getHeight()));
         textFieldDelay.setBorder(null);
 
-        jLabel1.setText("Image:");
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(StaticTilePreview.class, "StaticTilePreview.labelImage.txt")); // NOI18N
 
-        jTextField1.setBackground(new java.awt.Color(255, 255, 255));
         jTextField1.setEditable(false);
         jTextField1.setText(this.staticTile.getImageResource().getURL().toString());
         jTextField1.setBorder(null);
@@ -94,16 +91,16 @@ public class StaticTilePreview extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(labelFrames))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                            .add(layout.createSequentialGroup()
                                 .add(textFieldFrames, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(labelDelay, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 44, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -114,7 +111,7 @@ public class StaticTilePreview extends javax.swing.JPanel {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, panelImagePreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 169, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                            .add(layout.createSequentialGroup()
                                 .add(labelSprite)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(textFieldSprite, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)))

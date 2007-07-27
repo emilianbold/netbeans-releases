@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.Sprite;
+import org.openide.util.NbBundle;
 
 public class RenameSpriteDialog extends AbstractNameValidationDialog {
 
@@ -30,14 +31,14 @@ public class RenameSpriteDialog extends AbstractNameValidationDialog {
 	}
 	
 	protected String getInitialStateDescriptionText() {
-		return "Enter sprite name.";
+		return NbBundle.getMessage(RenameSpriteDialog.class, "RenameSpriteDialog.InitialStateDescription.text");
 	}
 	
 	protected String getNameLabelText() {
-		return "Sprite name:";
+		return NbBundle.getMessage(RenameSpriteDialog.class, "RenameSpriteDialog.NameLabel.text");
 	}
 	protected String getDialogNameText() {
-		return "Rename sprite";
+		return NbBundle.getMessage(RenameSpriteDialog.class, "RenameSpriteDialog.title.text");
 	}
 	protected String getCurrentStateErrorText() {
 		String errMsg = null; 
@@ -48,7 +49,7 @@ public class RenameSpriteDialog extends AbstractNameValidationDialog {
 		}
 		
 		if (!sprite.getGameDesign().isComponentNameAvailable(name)) {
-			errMsg = "Component name already exists. Choose a different name.";
+			errMsg = NbBundle.getMessage(RenameSpriteDialog.class, "RenameSpriteDialog.sequenceExistsDescription.text");
 		}
 		return errMsg;
 	}

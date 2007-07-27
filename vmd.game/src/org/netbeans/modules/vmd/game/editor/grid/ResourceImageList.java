@@ -82,7 +82,7 @@ class ResourceImageList extends JList {
 			TileTransferable payload = new TileTransferable();
 			//Dragging a single tile
 			if (ResourceImageList.this.getSelectedValues().length == 0) {
-				if (DEBUG) System.out.println("selection Empty");
+				if (DEBUG) System.out.println("selection Empty"); // NOI18N
 				int index = ResourceImageList.this.locationToIndex(dragOrigin);
 				Tile tile = (Tile) ResourceImageList.this.getModel().getElementAt(index);
 				payload.getTiles().add(tile);
@@ -90,7 +90,7 @@ class ResourceImageList extends JList {
 			}
 			//Dragging multiple tiles
 			else {
-				if (DEBUG) System.out.println("selection Not empty");
+				if (DEBUG) System.out.println("selection Not empty"); // NOI18N
 				Object[] values = ResourceImageList.this.getSelectedValues();
 				for (int i = 0; i < values.length; i++) {
 					payload.getTiles().add((Tile) values[i]);
@@ -102,10 +102,10 @@ class ResourceImageList extends JList {
 		public void dragDropEnd(DragSourceDropEvent dsde) {
 			super.dragDropEnd(dsde);
 			if (dsde.getDropSuccess()) {
-				if (DEBUG) System.out.println("Drop successful");
+				if (DEBUG) System.out.println("Drop successful"); // NOI18N
 			}
 			else {
-				if (DEBUG) System.out.println("Drop unsuccessful");
+				if (DEBUG) System.out.println("Drop unsuccessful"); // NOI18N
 			}
 		}
 	
@@ -113,13 +113,13 @@ class ResourceImageList extends JList {
 	
 	private class ResourceImageListSelectionListener implements ListSelectionListener {
 		public void valueChanged(ListSelectionEvent e) {
-			if (DEBUG) System.out.println("GridTableSelectionListener.valueChanged()");
+			if (DEBUG) System.out.println("GridTableSelectionListener.valueChanged()"); // NOI18N
 			int index = ResourceImageList.this.getSelectedIndex();
 	        this.handleTileSelection(index);
 		}
 
 		private void handleTileSelection(int index) {
-			if (DEBUG) System.out.println("Tile selected: " + index);
+			if (DEBUG) System.out.println("Tile selected: " + index); // NOI18N
 			StaticTile tile = (StaticTile) ResourceImageList.this.getModel().getElementAt(index);
 			tile.getImageResource().getGameDesign().getMainView().requestPreview(tile);
 			tile.getImageResource().getGameDesign().getMainView().paintTileChanged(tile);
@@ -127,7 +127,7 @@ class ResourceImageList extends JList {
 	}
 
 	private void hiliteTileAtPoint(Point point) {
-		if (DEBUG) System.out.println("HILITE tile");
+		if (DEBUG) System.out.println("HILITE tile"); // NOI18N
 		int hilite = this.locationToIndex(point);
 		this.setSelectedIndex(hilite);
 	}

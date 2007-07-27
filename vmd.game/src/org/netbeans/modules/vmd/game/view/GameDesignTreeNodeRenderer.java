@@ -57,7 +57,7 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			GlobalRepository gr = (GlobalRepository) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			r.setText("[Global repository]");
+			r.setText("[Global repository]"); // NOI18N
 			return r;
 		}	
 	}
@@ -66,7 +66,7 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			Scene scene = (Scene) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			r.setText("[Scene] " + scene.getName());
+			r.setText("[Scene] " + scene.getName()); // NOI18N
 			return r;
 		}	
 	}
@@ -75,7 +75,7 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			TiledLayer tiledLayer = (TiledLayer) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			r.setText("[TiledLayer] " + tiledLayer.getName());
+			r.setText("[TiledLayer] " + tiledLayer.getName()); // NOI18N
 			return r;
 		}	
 	}
@@ -84,7 +84,7 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			Sprite sprite = (Sprite) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			r.setText("[Sprite] " + sprite.getName());
+			r.setText("[Sprite] " + sprite.getName()); // NOI18N
 			return r;
 		}	
 	}

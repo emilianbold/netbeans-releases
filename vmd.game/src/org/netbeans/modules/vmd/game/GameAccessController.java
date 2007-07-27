@@ -38,7 +38,7 @@ public class GameAccessController implements AccessController {
 	
 	/** Creates a new instance of GameAccessController */
 	public GameAccessController(DesignDocument document) {
-		if (DEBUG) System.out.println("new GameAccessController() with document: " + document);
+		if (DEBUG) System.out.println("new GameAccessController() with document: " + document);  //NOI18N
 		this.document = document;
 		this.gameDesign = new GlobalRepository(document);
 	}

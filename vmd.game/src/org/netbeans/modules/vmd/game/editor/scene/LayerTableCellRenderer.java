@@ -27,12 +27,13 @@ import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.Sprite;
+import org.openide.util.NbBundle;
 
 
 public class LayerTableCellRenderer extends DefaultTableCellRenderer {
 	
-	private ImageIcon iconSprite = new ImageIcon(this.getClass().getResource("res/sprite.png"));
-	private ImageIcon iconTiledLayer = new ImageIcon(this.getClass().getResource("res/tiled.png"));
+	private ImageIcon iconSprite = new ImageIcon(this.getClass().getResource("res/sprite.png")); // NOI18N
+	private ImageIcon iconTiledLayer = new ImageIcon(this.getClass().getResource("res/tiled.png")); // NOI18N
 
 	
 	public Component getTableCellRendererComponent(JTable table, final Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -42,16 +43,16 @@ public class LayerTableCellRenderer extends DefaultTableCellRenderer {
 			this.setHorizontalAlignment(SwingConstants.CENTER);
 			if (value instanceof Sprite) {
 				this.setIcon(iconSprite);
-				this.setToolTipText("Sprite");
+				this.setToolTipText(NbBundle.getMessage(LayerTableCellRenderer.class, "LayerTableCellRenderer.sprite.tooltip"));
 			}
 			else if (value instanceof TiledLayer) {
 				this.setIcon(iconTiledLayer);
-				this.setToolTipText("TiledLayer");
+				this.setToolTipText(NbBundle.getMessage(LayerTableCellRenderer.class, "LayerTableCellRenderer.tiledLayer.tooltip"));
 			}
 			return this;
 		}
 		else {
-			throw new IllegalArgumentException("Only Layer can be rendered.");
+			throw new IllegalArgumentException("Only Layer can be rendered."); // NOI18N
 		}
 	}
 		

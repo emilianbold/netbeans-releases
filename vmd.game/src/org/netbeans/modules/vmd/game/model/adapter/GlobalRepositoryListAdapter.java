@@ -26,6 +26,7 @@ import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -34,9 +35,12 @@ import org.netbeans.modules.vmd.game.model.TiledLayer;
 public class GlobalRepositoryListAdapter extends AbstractListModel implements GlobalRepositoryListener {
 	
 	private static final int ADDITIONAL_LIST_ITEM_COUNT = 4;
-	private static final String ADDITIONAL_LIST_ITEM_SCENES_LABEL = "Scenes";
-	private static final String ADDITIONAL_LIST_ITEM_TILEDLAYERS_LABEL = "Tiled Layers";
-	private static final String ADDITIONAL_LIST_ITEM_SPRITES_LABEL = "Sprites";
+	private static final String ADDITIONAL_LIST_ITEM_SCENES_LABEL = 
+			NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryListAdapter.labelScenes");
+	private static final String ADDITIONAL_LIST_ITEM_TILEDLAYERS_LABEL =
+			NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryListAdapter.labelSprites");
+	private static final String ADDITIONAL_LIST_ITEM_SPRITES_LABEL =
+			NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryListAdapter.labelTiledLayers");
 	
 	private GlobalRepository gameDesign;	
 	

@@ -34,6 +34,7 @@ import org.netbeans.modules.vmd.game.model.EditorManagerListener;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -50,11 +51,11 @@ public class GameBuilderNavigator extends JPanel implements NavigatorPanel, Edit
 	}
 	    
     public String getDisplayName() {
-        return "Game Builder Navigator";
+        return NbBundle.getMessage(GameBuilderNavigator.class, "GameBuilderNavigator.DisplayName");
     }
 
     public String getDisplayHint() {
-        return "Show logical structure of game design components.";
+        return NbBundle.getMessage(GameBuilderNavigator.class, "GameBuilderNavigator.DisplayHint");
     }
 
     public JComponent getComponent() {
@@ -62,12 +63,12 @@ public class GameBuilderNavigator extends JPanel implements NavigatorPanel, Edit
     }
 
     public void panelActivated(Lookup context) {
-		System.out.println("panelActivated()");
+		System.out.println("panelActivated()"); // NOI18N
 		ActiveDocumentSupport.getDefault().addActiveDocumentListener(this.listener);
 
 		final JComponent[] navigator = {null};
 		final DesignDocument doc = ActiveDocumentSupport.getDefault().getActiveDocument();
-		System.out.println("\tActive document: " + doc );
+		System.out.println("\tActive document: " + doc ); // NOI18N
 		if (doc == null)
 			return;
 		doc.getTransactionManager().readAccess(new Runnable() {
@@ -76,7 +77,7 @@ public class GameBuilderNavigator extends JPanel implements NavigatorPanel, Edit
 					if (controller == null)
 						return;
 					GameBuilderNavigator.this.gameDesign = controller.getGameDesign();
-					System.out.println("\t\t gameDesign = " + controller.getGameDesign());
+					System.out.println("\t\t gameDesign = " + controller.getGameDesign()); // NOI18N
 					GameBuilderNavigator.this.gameDesign.getMainView().addEditorManagerListener(GameBuilderNavigator.this);
 					Editable editable = GameBuilderNavigator.this.gameDesign.getMainView().getCurrentEditable();
 					if (editable == null)
@@ -96,7 +97,7 @@ public class GameBuilderNavigator extends JPanel implements NavigatorPanel, Edit
     }
     
 	private void setNavigator(JComponent navigator) {
-		System.out.println("setNavigator: " + navigator);
+		System.out.println("setNavigator: " + navigator); // NOI18N
 		this.removeAll();
 		if (navigator != null) {
 			this.setLayout(new BorderLayout());
@@ -104,20 +105,20 @@ public class GameBuilderNavigator extends JPanel implements NavigatorPanel, Edit
 		}
 		else {
 			this.setLayout(new GridBagLayout());
-			this.add(new JLabel("<No structure available>"));
+			this.add(new JLabel(NbBundle.getMessage(GameBuilderNavigator.class, "GameBuilderNavigator.no_structure_lbl")));
 		}
 		this.validate();
 		this.repaint();
 	}
     
     public void editing(Editable editable) {
-		System.out.println("\tediting: " + editable);
+		System.out.println("\tediting: " + editable); // NOI18N
 		this.setNavigator(editable.getNavigator());
     }
 
 	private class ADSL implements ActiveDocumentSupport.Listener {
 		public void activeDocumentChanged(DesignDocument deactivatedDocument, final DesignDocument activatedDocument) {
-			System.out.println("activeDocumentChanged: " + activatedDocument);
+			System.out.println("activeDocumentChanged: " + activatedDocument); // NOI18N
 			if (deactivatedDocument == activatedDocument)
 				return;
 			if (activatedDocument == null) {

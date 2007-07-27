@@ -70,6 +70,7 @@ import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 public class ScenePanel extends JPanel implements SceneListener,
 		TiledLayerListener, PropertyChangeListener, MouseMotionListener,
@@ -845,20 +846,16 @@ public class ScenePanel extends JPanel implements SceneListener,
 	}
 
 	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
 	}
 
 	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
 	}
 
     private void handlePopUp(MouseEvent e) {
 		
     	//scene stuff
     	
-    	CreateSceneAction cs = new CreateSceneAction();
+//    	CreateSceneAction cs = new CreateSceneAction();
 		DuplicateSceneAction ds = new DuplicateSceneAction();
 		RenameSceneAction rs = this.scene.new RenameSceneAction();
 		RemoveSceneAction rsa = this.scene.new RemoveSceneAction();
@@ -869,7 +866,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		CreateTiledLayerAction ctl = this.scene.new CreateTiledLayerAction();
 		CreateSpriteAction csp = this.scene.new CreateSpriteAction();
 		
-		JMenu sub2MenuTiledLayers = new JMenu("Add tiled layer");
+		JMenu sub2MenuTiledLayers = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuAddTiledLayer.txt"));
 		List<TiledLayer> tiledLayers = this.scene.getGameDesign().getTiledLayers();
 		for (TiledLayer layer : tiledLayers) {
 			if (this.scene.contains(layer)) {
@@ -885,7 +882,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 			sub2MenuTiledLayers.setEnabled(false);
 		}
 		
-		JMenu sub2MenuSprites = new JMenu("Add sprite");
+		JMenu sub2MenuSprites = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuAddSprite.txt"));
 		List<Sprite> sprites = this.scene.getGameDesign().getSprites();
 		for (Sprite layer : sprites) {
 			if (this.scene.contains(layer)) {
@@ -903,10 +900,10 @@ public class ScenePanel extends JPanel implements SceneListener,
 		
 		//order stuff
 		
-		JMenu sub2MenuPushUp = new JMenu("Push up layer");
-		JMenu sub2MenuPushDown = new JMenu("Push down layer");
-		JMenu sub2MenuToTop = new JMenu("Layer to top");
-		JMenu sub2MenuToBottom = new JMenu("Layer to bottom");
+		JMenu sub2MenuPushUp = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuPushUp.txt"));
+		JMenu sub2MenuPushDown = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuPushDown.txt"));
+		JMenu sub2MenuToTop = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuTop.txt"));
+		JMenu sub2MenuToBottom = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuBottom.txt"));
 
 		Point poitAdjusted = this.adjustToOriginShift(e.getPoint());
 		List<Layer> layersUnderCursor = this.scene.getLayersAtPoint(poitAdjusted);
@@ -973,7 +970,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 		
 		//edit stuff
-		JMenu sub1MenuEditLayers = new JMenu("Edit");
+		JMenu sub1MenuEditLayers = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuEdit.txt"));
 		if (layersUnderCursor.isEmpty()) {
 			sub1MenuEditLayers.setEnabled(false);
 		}
@@ -987,7 +984,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 		//
 		//view stuff
-		JMenu sub1MenuViewLayers = new JMenu("View");
+		JMenu sub1MenuViewLayers = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuView.txt"));
 		if (layersUnderCursor.isEmpty()) {
 			sub1MenuViewLayers.setEnabled(false);
 		}
@@ -1001,7 +998,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 		
 		//lock stuff
-		JMenu sub1MenuViewLocks = new JMenu("Lock");
+		JMenu sub1MenuViewLocks = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuLock.txt"));
 		if (layersUnderCursor.isEmpty()) {
 			sub1MenuViewLocks.setEnabled(false);
 		}
@@ -1015,7 +1012,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 		
 		//align stuff
-		JMenu sub1MenuAlign = new JMenu("Align");
+		JMenu sub1MenuAlign = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuAlign.txt"));
 		if (this.selectedLayers.size() < 2) {
 			sub1MenuAlign.setEnabled(false);
 		}
@@ -1037,7 +1034,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		
 		
 		//select stuff
-		JMenu sub1MenuSelectLayers = new JMenu("Select");
+		JMenu sub1MenuSelectLayers = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuSelect.txt"));
 		if (!layersUnderCursor.isEmpty()) {
 			for (int i = 0; i < layersUnderCursor.size(); i++) {
 				Layer layer = layersUnderCursor.get(i);
@@ -1056,7 +1053,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		
 		
 		//remove stuff
-		JMenu sub1MenuRemoveLayers = new JMenu("Remove");
+		JMenu sub1MenuRemoveLayers = new JMenu(NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuRemove.txt"));
 		if (layersUnderCursor.isEmpty()) {
 			sub1MenuRemoveLayers.setEnabled(false);
 		}
@@ -1078,7 +1075,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		
 		
 		JPopupMenu menu = new JPopupMenu();
-		menu.add(cs);
+//		menu.add(cs);
 		menu.add(ds);
 		menu.add(rs);
 		menu.add(rsa);
@@ -1121,7 +1118,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		public void itemStateChanged(ItemEvent e) {
 			boolean visible = e.getStateChange() == ItemEvent.SELECTED ? true : false;
 			ScenePanel.this.scene.setLayerVisible(this.layer, visible);
-			System.out.println("set " + layer.getName() + " visible " + visible);
+			System.out.println("set " + layer.getName() + " visible " + visible); // NOI18N
 		}
     }
     
@@ -1133,7 +1130,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		public void itemStateChanged(ItemEvent e) {
 			boolean locked = e.getStateChange() == ItemEvent.SELECTED ? true : false;
 			ScenePanel.this.scene.setLayerLocked(this.layer, locked);
-			System.out.println("set " + layer.getName() + " locked " + locked);
+			System.out.println("set " + layer.getName() + " locked " + locked); // NOI18N
 		}
     }
     private class SelectListener implements ItemListener {
@@ -1144,7 +1141,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		public void itemStateChanged(ItemEvent e) {
 			//boolean selected = e.getStateChange() == ItemEvent.SELECTED ? true : false;
 			ScenePanel.this.addSelectedLayer(layer, true);
-			System.out.println("set " + layer.getName() + " selection toogled");
+			System.out.println("set " + layer.getName() + " selection toogled"); // NOI18N
 		}
     }
       
@@ -1153,7 +1150,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 	}
 
 	private class EditLayerAction extends AbstractAction {
-		public static final String PROP_LAYER = "PROP_LAYER";
+		public static final String PROP_LAYER = "PROP_LAYER"; // NOI18N
 
 		public void actionPerformed(ActionEvent e) {
 			Layer layer = (Layer) this.getValue(PROP_LAYER);
@@ -1162,9 +1159,9 @@ public class ScenePanel extends JPanel implements SceneListener,
 	}
 	
 	private class AlignLayersTopAction extends AbstractAction {
-		public static final String PROP_LAYERS = "PROP_LAYERS";
+		public static final String PROP_LAYERS = "PROP_LAYERS"; // NOI18N
 		{
-			this.putValue(NAME, "Top");
+			this.putValue(NAME, NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuTop.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -1179,9 +1176,9 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 	}
 	private class AlignLayersLeftAction extends AbstractAction {
-		public static final String PROP_LAYERS = "PROP_LAYERS";
+		public static final String PROP_LAYERS = "PROP_LAYERS"; // NOI18N
 		{
-			this.putValue(NAME, "Left");
+			this.putValue(NAME, NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuLeft.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -1196,9 +1193,9 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 	}
 	private class AlignLayersBottomAction extends AbstractAction {
-		public static final String PROP_LAYERS = "PROP_LAYERS";
+		public static final String PROP_LAYERS = "PROP_LAYERS"; // NOI18N
 		{
-			this.putValue(NAME, "Bottom");
+			this.putValue(NAME, NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuBottom.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -1213,9 +1210,9 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 	}
 	private class AlignLayersRightAction extends AbstractAction {
-		public static final String PROP_LAYERS = "PROP_LAYERS";
+		public static final String PROP_LAYERS = "PROP_LAYERS"; // NOI18N
 		{
-			this.putValue(NAME, "Right");
+			this.putValue(NAME, NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuRight.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -1232,7 +1229,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 	
 	
 	private class RemoveLayerAction extends AbstractAction {
-		public static final String PROP_LAYER = "PROP_LAYER";
+		public static final String PROP_LAYER = "PROP_LAYER"; // NOI18N
 
 		public void actionPerformed(ActionEvent e) {
 			Layer layer = (Layer) this.getValue(PROP_LAYER);
@@ -1240,9 +1237,9 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 	}
 	private class RemoveSelectedLayersAction extends AbstractAction {
-		public static final String PROP_LAYERS = "PROP_LAYERS";
+		public static final String PROP_LAYERS = "PROP_LAYERS"; // NOI18N
 		{
-			this.putValue(NAME, "Remove selected");
+			this.putValue(NAME, NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuRemoveSelected.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -1255,10 +1252,10 @@ public class ScenePanel extends JPanel implements SceneListener,
 	
 	
 	private class SelectLayersUnderCursorAction extends AbstractAction {
-		public static final String PROP_POINT = "PROP_POINT";
+		public static final String PROP_POINT = "PROP_POINT"; // NOI18N
 
 		{
-			this.putValue(NAME, "Select all under cursor");
+			this.putValue(NAME, NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuSelectUnder.txt"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -1271,7 +1268,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 	}
 	private class SelectAllLayersAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Select all in scene");
+			this.putValue(NAME, NbBundle.getMessage(ScenePanel.class, "ScenePanel.menuSelectAll.txt"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
@@ -1283,8 +1280,8 @@ public class ScenePanel extends JPanel implements SceneListener,
 	}
 
 	private class PushUpLayerAction extends AbstractAction {
-		public static final String PROP_LAYER = "PROP_LAYER";
-		public static final String PROP_LAYER_TO_TOP = "PROP_LAYER_TO_TOP";
+		public static final String PROP_LAYER = "PROP_LAYER"; // NOI18N
+		public static final String PROP_LAYER_TO_TOP = "PROP_LAYER_TO_TOP"; // NOI18N
 
 		public void actionPerformed(ActionEvent e) {
 			Layer layer = (Layer) this.getValue(PROP_LAYER);
@@ -1293,8 +1290,8 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}		
 	}
 	private class PushDownLayerAction extends AbstractAction {
-		public static final String PROP_LAYER = "PROP_LAYER";
-		public static final String PROP_LAYER_TO_BELOW = "PROP_LAYER_TO_BELOW";
+		public static final String PROP_LAYER = "PROP_LAYER"; // NOI18N
+		public static final String PROP_LAYER_TO_BELOW = "PROP_LAYER_TO_BELOW"; // NOI18N
 		
 		public void actionPerformed(ActionEvent e) {
 			Layer layer = (Layer) this.getValue(PROP_LAYER);
@@ -1303,7 +1300,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}		
 	}
 	private class LayerToTopAction extends AbstractAction {
-		public static final String PROP_LAYER = "PROP_LAYER";
+		public static final String PROP_LAYER = "PROP_LAYER"; // NOI18N
 
 		public void actionPerformed(ActionEvent e) {
 			Layer layer = (Layer) this.getValue(PROP_LAYER);
@@ -1311,37 +1308,37 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}		
 	}
 	private class LayerToBottomAction extends AbstractAction {
-		public static final String PROP_LAYER = "PROP_LAYER";
+		public static final String PROP_LAYER = "PROP_LAYER"; // NOI18N
 
 		public void actionPerformed(ActionEvent e) {
 			Layer layer = (Layer) this.getValue(PROP_LAYER);
 			ScenePanel.this.scene.insert(layer, ScenePanel.this.scene.getLayerCount()-1);
 		}		
 	}
-	private class CreateSceneAction extends AbstractAction {
-		{
-			this.putValue(NAME, "Create new scene");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-			NewSceneDialog dialog = new NewSceneDialog(ScenePanel.this.scene.getGameDesign());
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Create a new Scene");
-			dd.setButtonListener(dialog);
-			dd.setValid(false);
-			dialog.setDialogDescriptor(dd);
-			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-			d.setVisible(true);
-		}		
-	}
+//	private class CreateSceneAction extends AbstractAction {
+//		{
+//			this.putValue(NAME, "Create new scene");
+//		}
+//
+//		public void actionPerformed(ActionEvent e) {
+//			NewSceneDialog dialog = new NewSceneDialog(ScenePanel.this.scene.getGameDesign());
+//			DialogDescriptor dd = new DialogDescriptor(dialog, "Create a new Scene");
+//			dd.setButtonListener(dialog);
+//			dd.setValid(false);
+//			dialog.setDialogDescriptor(dd);
+//			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+//			d.setVisible(true);
+//		}		
+//	}
 	
 	public class DuplicateSceneAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Duplicate scene");
+			this.putValue(NAME, NbBundle.getMessage(ScenePanel.class, "ScenePanel.actionDuplicateScene.txt"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			NewSceneDialog dialog = new NewSceneDialog(ScenePanel.this.scene);
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Duplicate scene");
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(ScenePanel.class, "ScenePanel.actionDuplicateScene.txt"));
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);
@@ -1352,12 +1349,12 @@ public class ScenePanel extends JPanel implements SceneListener,
 	
 	public class AddNewTiledLayerAction extends AbstractAction {
 		{
-			this.putValue(NAME, "New tiled layer");
+			this.putValue(NAME, NbBundle.getMessage(ScenePanel.class, "ScenePanel.actionNewTiledLayer.txt"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			TiledLayerDialog nld = new TiledLayerDialog(ScenePanel.this.scene);
-			DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
+			DialogDescriptor dd = new DialogDescriptor(nld, NbBundle.getMessage(ScenePanel.class, "ScenePanel.actionNewTiledLayer.txt"));
 			dd.setButtonListener(nld);
 			dd.setValid(false);
 			nld.setDialogDescriptor(dd);
@@ -1367,12 +1364,12 @@ public class ScenePanel extends JPanel implements SceneListener,
 	}
 	public class AddNewSpriteAction extends AbstractAction {
 		{
-			this.putValue(NAME, "New sprite");
+			this.putValue(NAME, NbBundle.getMessage(ScenePanel.class, "ScenePanel.actionNewSprite.txt"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			SpriteDialog nld = new SpriteDialog(ScenePanel.this.scene);
-			DialogDescriptor dd = new DialogDescriptor(nld, "Create new Sprite");
+			DialogDescriptor dd = new DialogDescriptor(nld, NbBundle.getMessage(ScenePanel.class, "ScenePanel.actionNewSprite.txt"));
 			dd.setButtonListener(nld);
 			dd.setValid(false);
 			nld.setDialogDescriptor(dd);
@@ -1381,8 +1378,8 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 	}
 	public class AddLayerAction extends AbstractAction {
-		public static final String PROP_LAYER = "PROP_LAYER";
-		public static final String PROP_POSITION = "PROP_POSITION";
+		public static final String PROP_LAYER = "PROP_LAYER"; // NOI18N
+		public static final String PROP_POSITION = "PROP_POSITION"; // NOI18N
 		
 		public void actionPerformed(ActionEvent e) {
 			Layer layer = (Layer) this.getValue(PROP_LAYER);
@@ -1406,12 +1403,12 @@ public class ScenePanel extends JPanel implements SceneListener,
 		
 		@Override
 		public String getToolTipText() {
-			return "Toogle grid";
+			return NbBundle.getMessage(ScenePanel.class, "ScenePanel.gridButton.tooltip");
 		}
 		
 		@Override
 		protected void paintComponent(Graphics g) {
-			g.setColor(UIManager.getColor("Panel.background"));
+			g.setColor(UIManager.getColor("Panel.background")); // NOI18N
 			g.fillRect(0, 0, this.getWidth(), this.getHeight());
 			g.setColor(Color.BLACK);
 			int startx = BORDER;
@@ -1507,7 +1504,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 	    
 	    private final Color COLOR_MAJOR = Color.BLACK;
 	    private final Color COLOR_MINOR = Color.GRAY;
-	    private final Font FONT = new Font("SansSerif", Font.PLAIN, 9);
+	    private final Font FONT = new Font("SansSerif", Font.PLAIN, 9); // NOI18N 
 	    
 	    public final Color RulerColor = UIManager.getColor ("Panel.background"); // NOI18N 
 		//new Color(230, 230, 255);

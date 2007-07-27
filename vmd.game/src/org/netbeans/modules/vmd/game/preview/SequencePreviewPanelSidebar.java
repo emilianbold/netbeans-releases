@@ -322,7 +322,7 @@ public class SequencePreviewPanelSidebar extends javax.swing.JPanel implements
 	public void componentHidden(ComponentEvent e) {
 	}
 	public void componentResized(ComponentEvent e) {
-		if (DEBUG) System.out.println("SequenceAnimatedPreview Resized...");
+		if (DEBUG) System.out.println("SequenceAnimatedPreview Resized..."); // NOI18N
 		//TODO : here i will recalculate cached images
 	}
 	public void componentMoved(ComponentEvent e) {

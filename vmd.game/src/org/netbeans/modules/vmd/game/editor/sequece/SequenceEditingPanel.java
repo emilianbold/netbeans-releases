@@ -65,7 +65,16 @@ import org.netbeans.modules.vmd.game.model.SequenceListener;
 import org.netbeans.modules.vmd.game.model.StaticTile;
 import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TileDataFlavor;
+import org.openide.util.NbBundle;
 
+/*
+Implement DnD of multiple frames between sequences (give option to either insert of overwrite)
+Implement DnD of multiple frames from image resource
+
+Repaint only individual frames as needed instead of always the whole sequence - performance sucks!!!!
+When dropping a frame at the end of sequence scroll to make it visible
+When having more than one frame selected only play the selected frames in the preview
+*/
 
 /**
  * @author kherink
@@ -175,10 +184,10 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 		public void dragDropEnd(DragSourceDropEvent dsde) {
 			super.dragDropEnd(dsde);
 			if (dsde.getDropSuccess()) {
-				if (DEBUG) System.out.println("Drop successful");
+				if (DEBUG) System.out.println("Drop successful"); // NOI18N
 			}
 			else {
-				if (DEBUG) System.out.println("Drop unsuccessful");				
+				if (DEBUG) System.out.println("Drop unsuccessful"); // NOI18N			
 			}
 		}
 	
@@ -197,28 +206,32 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 		int frame = this.getFrameForColumn(col);
 		if (frame == -1)
 			return null;
-		return "Index: " + frame + ", tile: " + this.sequence.getFrame(frame).getIndex();
+		return NbBundle.getMessage(
+				SequenceEditingPanel.class, 
+				"SequenceEditingPanel.frame.tooltip", 
+				new Object[] {frame, this.sequence.getFrame(frame).getIndex()});
+//		return "Index: " + frame + ", tile: " + this.sequence.getFrame(frame).getIndex();
     }
 
 	//DnD implementation
 	private class SequenceDropTargetListener implements DropTargetListener {
 		public void dragEnter(DropTargetDragEvent dtde) {
-			if (DEBUG) System.out.println("dragEnter");
+			if (DEBUG) System.out.println("dragEnter"); // NOI18N
 		}
         public void dragOver(DropTargetDragEvent dtde) {
 			SequenceEditingPanel.this.updateHiLite(dtde.getLocation());
         }
         public void dropActionChanged(DropTargetDragEvent dtde) {
-			if (DEBUG) System.out.println("dropActionChanged");
+			if (DEBUG) System.out.println("dropActionChanged"); // NOI18N
         }
         public void dragExit(DropTargetEvent dte) {
-			if (DEBUG) System.out.println("dragExit");
+			if (DEBUG) System.out.println("dragExit"); // NOI18N
 			SequenceEditingPanel.this.hilitedColumn = SequenceEditingPanel.NONE;
 			SequenceEditingPanel.this.repaint();
         }
         public void drop(DropTargetDropEvent dtde) {
 			Point dropPoint = dtde.getLocation();
-			if (DEBUG) System.out.println("Start drop @: " + dropPoint);
+			if (DEBUG) System.out.println("Start drop @: " + dropPoint); // NOI18N
 			Transferable transferable = dtde.getTransferable();
 			try {
 				TileDataFlavor tileFlavor = new TileDataFlavor();
@@ -241,7 +254,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 					dtde.dropComplete(true);
 				}
 				else {
-					if (DEBUG) System.out.println("NOT a Tile :(");
+					if (DEBUG) System.out.println("NOT a Tile :("); // NOI18N
 					dtde.dropComplete(false);
 				}
 			} catch (ClassNotFoundException e) {
@@ -259,14 +272,15 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 	
 
 	private void updateHiLite(Point p) {
-		if (DEBUG) System.out.println("SET Hi-Lite on col " + this.getColumnForPoint(p));
+		if (DEBUG) System.out.println("SET Hi-Lite on col " + this.getColumnForPoint(p)); // NOI18N
 		//TODO : set a clip when optimizing preformance
 		this.handleMouseMoveOver(p);
 	}
 		
 	private class ResizeListener extends ComponentAdapter {
         public void componentResized(ComponentEvent e) {
-			if (DEBUG && SequenceEditingPanel.this.viewPort != null) System.out.println(">> componentResized: " + SequenceEditingPanel.this.viewPort.getWidth() + ", " + SequenceEditingPanel.this.viewPort.getHeight());
+			if (DEBUG && SequenceEditingPanel.this.viewPort != null) System.out.println(">> componentResized: "  // NOI18N
+					+ SequenceEditingPanel.this.viewPort.getWidth() + ", " + SequenceEditingPanel.this.viewPort.getHeight()); // NOI18N
 			SequenceEditingPanel.this.validate();
         }
 	}
@@ -276,7 +290,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 	}
 	
     public Dimension getPreferredSize() {
-		if (DEBUG) System.out.println("getPreferredSize");
+		if (DEBUG) System.out.println("getPreferredSize"); // NOI18N
 		
 		int filmRollWidth = (this.filmUnitWidth * this.sequence.getFrameCount()) + this.transOutlineToSeparator.x + this.transSeparatorToOutline.x;
 		int filmRollHeight = BOUNDARY_MIN + this.separatorHeight;
@@ -342,7 +356,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 		int halfH = this.unitHeight / 2;
 		if (this.selection.isFrameSelected(frameIndex)) {
 			g.setColor(new Color(175, 195, 255));
-			if (DEBUG) System.out.println("COL: " + frameIndex);
+			if (DEBUG) System.out.println("COL: " + frameIndex); // NOI18N
 			g.fillRect(p.x - this.unitWidth, p.y - this.unitHeight, this.outlineWidth + 2*this.unitWidth, this.outlineHeight + 2*this.unitHeight);
 		}
 		if (this.hilitedColumn == col) {
@@ -461,7 +475,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 		int old = this.hilitedColumn;
 		this.hilitedColumn = this.getColumnForPoint(p);
 		if (old != this.hilitedColumn) {
-			if (DEBUG) System.out.println("HilitedCol = " + this.hilitedColumn);
+			if (DEBUG) System.out.println("HilitedCol = " + this.hilitedColumn); // NOI18N
 			int frame = this.getFrameForColumn(this.hilitedColumn);
 			if (frame != -1) {
 				this.fireFrameHilited(frame);
@@ -472,7 +486,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 
 	//------------ SequenceListener ---------------
     public void frameAdded(Sequence sequence, int index) {
-		if (DEBUG) System.out.println("SequenceEditingPanel.frameAdded");
+		if (DEBUG) System.out.println("SequenceEditingPanel.frameAdded"); // NOI18N
 		this.scrollRectToVisible(this.getAreaForColumn(this.getColumnForFrame(index)));
 		this.revalidate();
 		this.repaint();
@@ -484,7 +498,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
     }
 
     public void frameModified(Sequence sequence, int index) {
-		if (DEBUG) System.out.println("SequenceEditingPanel.frameModified");
+		if (DEBUG) System.out.println("SequenceEditingPanel.frameModified"); // NOI18N
 		this.repaint(this.getAreaForColumn(getColumnForFrame(index)));
     }
 
@@ -606,7 +620,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 	}
 	private class SelectAllAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Select All Frames");
+			this.putValue(NAME, NbBundle.getMessage(SequenceEditingPanel.class, "SequenceEditingPanel.menuSelectAll.txt"));
 		}
 		
         public void actionPerformed(ActionEvent e) {
@@ -617,10 +631,10 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 	}
 
 	private class RemoveAction extends AbstractAction {
-		public static final String PROP_COL = "PROP_COL";
+		public static final String PROP_COL = "PROP_COL"; // NOI18N
 		
 		{
-			this.putValue(NAME, "Remove Frame");
+			this.putValue(NAME, NbBundle.getMessage(SequenceEditingPanel.class, "SequenceEditingPanel.menuRemoveFrame.txt"));
 		}
 		
         public void actionPerformed(ActionEvent e) {
@@ -633,7 +647,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 	private class RemoveSelectedAction extends AbstractAction {
 		
 		{
-			this.putValue(NAME, "Remove Selected Frames");
+			this.putValue(NAME, NbBundle.getMessage(SequenceEditingPanel.class, "SequenceEditingPanel.menuRemoveSelectedFrames.txt"));
 		}
 		
         public void actionPerformed(ActionEvent e) {
@@ -660,10 +674,10 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 	}
 	
 	private class TweenAction extends AbstractAction {
-		public static final String PROP_COL = "PROP_COL";
+		public static final String PROP_COL = "PROP_COL"; // NOI18N
 		
 		{
-			this.putValue(NAME, "Tween Frames");
+			this.putValue(NAME, NbBundle.getMessage(SequenceEditingPanel.class, "SequenceEditingPanel.menuTweenFrames.txt"));
 		}
 		
         public void actionPerformed(ActionEvent e) {
@@ -687,7 +701,7 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 				ImageResource imgRes = seq.getImageResource();
 				StaticTile tile = (StaticTile) imgRes.getTile(indexBefore, frameWidth, frameHeight, seq.isZeroBasedIndex());
 				seq.insertFrame(tile, insertIndex);
-				if (DEBUG) System.out.println("insert tile: " + tile.getIndex() + " at index " + insertIndex + " at Column " + SequenceEditingPanel.this.getColumnForFrame(insertIndex));
+				if (DEBUG) System.out.println("insert tile: " + tile.getIndex() + " at index " + insertIndex + " at Column " + SequenceEditingPanel.this.getColumnForFrame(insertIndex)); // NOI18N
 				SequenceEditingPanel.this.selection.setSelected(insertIndex, true);
 				insertIndex++;
 			}
@@ -695,10 +709,10 @@ import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 	}
 	
 	private class InsertEmptyFrameAction extends AbstractAction {
-		public static final String PROP_COL = "PROP_COL";
+		public static final String PROP_COL = "PROP_COL"; // NOI18N
 		
 		{
-			this.putValue(NAME, "Insert Frame");
+			this.putValue(NAME, NbBundle.getMessage(SequenceEditingPanel.class, "SequenceEditingPanel.menuInsertFrame.txt"));
 		}
 		
         public void actionPerformed(ActionEvent e) {

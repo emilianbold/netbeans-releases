@@ -33,6 +33,7 @@ import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerNavigator;
 import org.netbeans.modules.vmd.game.preview.SequenceContainerPreview;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 public class Sprite extends Layer implements SequenceContainer {
@@ -46,7 +47,7 @@ public class Sprite extends Layer implements SequenceContainer {
 	Sprite(GlobalRepository gameDesign, String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
 		super(gameDesign, name, imageResource, frameWidth, frameHeight);
 		this.sequenceContainer = new SequenceContainerImpl(this, null, super.propertyChangeSupport, imageResource, frameWidth, frameHeight, true);
-		String seqName = this.getNextSequenceName(name + "seq");
+		String seqName = this.getNextSequenceName(name + "seq"); // NOI18N
 		Sequence defaultSequence = this.createSequence(seqName, numberFrames, frameWidth, frameHeight);
 		this.setDefaultSequence(defaultSequence);
 	}
@@ -149,37 +150,37 @@ public class Sprite extends Layer implements SequenceContainer {
 		return super.getTileWidth();
 	}
 
-	public List getActions() {
-		List superActions = super.getActions();
-		ArrayList actions = new ArrayList();
-		actions.add(new RenameAction());
-		actions.add(new AddSequenceAction());
+	public List<Action> getActions() {
+		List<Action> superActions = super.getActions();
+		List<Action> actions = new ArrayList<Action>();
 		actions.addAll(superActions);
+		actions.add(new RenameAction());
+//		actions.add(new AddSequenceAction());
 		return actions;
 	}
 	
-	private class AddSequenceAction extends AbstractAction {
-		{
-			this.putValue(NAME, "Add sequence");
-		}
-		public void actionPerformed(ActionEvent e) {
-			NewSequenceDialog dialog = new NewSequenceDialog(Sprite.this, Sprite.this.getTileWidth(), Sprite.this.getTileHeight());
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Add Sequence");
-			dd.setButtonListener(dialog);
-			dd.setValid(false);
-			dialog.setDialogDescriptor(dd);
-			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-			d.setVisible(true);
-		}
-	}
+//	private class AddSequenceAction extends AbstractAction {
+//		{
+//			this.putValue(NAME, "Add sequence");
+//		}
+//		public void actionPerformed(ActionEvent e) {
+//			NewSequenceDialog dialog = new NewSequenceDialog(Sprite.this, Sprite.this.getTileWidth(), Sprite.this.getTileHeight());
+//			DialogDescriptor dd = new DialogDescriptor(dialog, "Add Sequence");
+//			dd.setButtonListener(dialog);
+//			dd.setValid(false);
+//			dialog.setDialogDescriptor(dd);
+//			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+//			d.setVisible(true);
+//		}
+//	}
 
 	private class RenameAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Rename " + getDisplayableTypeName());
+			this.putValue(NAME, NbBundle.getMessage(Sprite.class, "Sprite.RenameAction.text"));
 		}
 		public void actionPerformed(ActionEvent e) {
 			RenameSpriteDialog dialog = new RenameSpriteDialog(Sprite.this);
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Rename Sprite");
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(Sprite.class, "Sprite.RenameAction.text"));
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);
@@ -189,11 +190,11 @@ public class Sprite extends Layer implements SequenceContainer {
 	}
 	
 	public String getDisplayableTypeName() {
-		return "sprite";
+		return NbBundle.getMessage(Sprite.class, "Sprite.text");
 	}
 
 	public JComponent getPreview() {
-		return new SequenceContainerPreview("Sprite:", this);
+		return new SequenceContainerPreview( NbBundle.getMessage(Sprite.class, "Sprite.preview.title"), this);
 	}
 
     public void paint(Graphics2D g, int x, int y) {

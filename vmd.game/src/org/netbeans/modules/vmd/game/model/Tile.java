@@ -55,7 +55,7 @@ public abstract class Tile implements Previewable, Comparable {
 	}
 
 	public String toString() {
-		return "Tile index = " + this.index + ", height = " + this.getHeight() + ", width = " + this.getWidth();
+		return "Tile index = " + this.index + ", height = " + this.getHeight() + ", width = " + this.getWidth(); // NOI18N
 	}
 
     public ImageResource getImageResource() {
@@ -67,7 +67,7 @@ public abstract class Tile implements Previewable, Comparable {
 			Tile t = (Tile) o;
 			return new Integer(this.index).compareTo(new Integer(t.index));
 		}
-		throw new ClassCastException(o.getClass() + " cannot be compared to " + this.getClass());
+		throw new ClassCastException(o.getClass() + " cannot be compared to " + this.getClass()); // NOI18N
     }
 	
 }

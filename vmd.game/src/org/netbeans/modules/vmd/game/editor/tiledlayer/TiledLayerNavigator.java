@@ -96,64 +96,53 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
         toggleButtonAutoRefresh = new javax.swing.JToggleButton();
         buttonRefreshNow = new javax.swing.JButton();
 
-        setBackground(new java.awt.Color(255, 255, 255));
         setMinimumSize(new java.awt.Dimension(10, 180));
 
         labelSprite.setBackground(new java.awt.Color(255, 255, 255));
-        labelSprite.setText("TiledLayer:");
+        labelSprite.setText(org.openide.util.NbBundle.getMessage(TiledLayerNavigator.class, "TiledLayerNavigator.tiledLayerLabel.txt")); // NOI18N
 
-        textFieldLayerName.setBackground(new java.awt.Color(255, 255, 255));
         textFieldLayerName.setEditable(false);
         textFieldLayerName.setText(this.tiledLayer.getName());
         textFieldLayerName.setBorder(null);
 
         panelTiledLayer.setBackground(new java.awt.Color(255, 255, 255));
         panelTiledLayer.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(99, 114, 136)));
-        panelTiledLayer.setToolTipText("Click here to refresh preview.");
+        panelTiledLayer.setToolTipText(org.openide.util.NbBundle.getMessage(TiledLayerNavigator.class, "TiledLayerNavigator.preview.tooltip")); // NOI18N
         panelTiledLayer.setLayout(new java.awt.BorderLayout());
 
         labelFrames.setBackground(new java.awt.Color(255, 255, 255));
-        labelFrames.setText("Rows:");
+        labelFrames.setText(org.openide.util.NbBundle.getMessage(TiledLayerNavigator.class, "TiledLayerNavigator.rowsLabel.txt")); // NOI18N
 
-        textFieldRows.setBackground(new java.awt.Color(255, 255, 255));
         textFieldRows.setEditable(false);
         textFieldRows.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
         textFieldRows.setBorder(null);
 
         labelDelay.setBackground(new java.awt.Color(255, 255, 255));
-        labelDelay.setText("Cols:");
+        labelDelay.setText(org.openide.util.NbBundle.getMessage(TiledLayerNavigator.class, "TiledLayerNavigator.colsLabel.txt")); // NOI18N
 
-        textFieldCols.setBackground(new java.awt.Color(255, 255, 255));
         textFieldCols.setEditable(false);
         textFieldCols.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
         textFieldCols.setBorder(null);
 
         jLabel1.setBackground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("Image:");
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(TiledLayerNavigator.class, "TiledLayerNavigator.imageLabel.txt")); // NOI18N
 
-        textFieldImage.setBackground(new java.awt.Color(255, 255, 255));
         textFieldImage.setEditable(false);
         textFieldImage.setText(this.tiledLayer.getImageResource().getURL().toString());
         textFieldImage.setBorder(null);
 
-        toggleButtonAutoRefresh.setBackground(new java.awt.Color(255, 255, 255));
         toggleButtonAutoRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/connection_mode.png"))); // NOI18N
-        toggleButtonAutoRefresh.setToolTipText("Continuously refresh preview (may degrade editor performance with large layers)");
+        toggleButtonAutoRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(TiledLayerNavigator.class, "TiledLayerNavigator.buttonSync.tooltip")); // NOI18N
         toggleButtonAutoRefresh.setBorder(null);
         toggleButtonAutoRefresh.setBorderPainted(false);
-        toggleButtonAutoRefresh.setPreferredSize(new java.awt.Dimension(16, 16));
         toggleButtonAutoRefresh.setRolloverEnabled(true);
 
-        buttonRefreshNow.setBackground(new java.awt.Color(255, 255, 255));
         buttonRefreshNow.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/refresh.png"))); // NOI18N
-        buttonRefreshNow.setToolTipText("Refresh preview");
+        buttonRefreshNow.setToolTipText(org.openide.util.NbBundle.getMessage(TiledLayerNavigator.class, "TiledLayerNavigator.buttonRefresh.tooltip")); // NOI18N
         buttonRefreshNow.setBorder(null);
         buttonRefreshNow.setBorderPainted(false);
-        buttonRefreshNow.setMaximumSize(new java.awt.Dimension(16, 16));
-        buttonRefreshNow.setMinimumSize(new java.awt.Dimension(16, 16));
-        buttonRefreshNow.setPreferredSize(new java.awt.Dimension(16, 16));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -178,9 +167,9 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
                         .addContainerGap()
                         .add(labelSprite)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(textFieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE)
+                        .add(textFieldLayerName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 98, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(buttonRefreshNow, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(buttonRefreshNow)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(toggleButtonAutoRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
@@ -198,7 +187,7 @@ public class TiledLayerNavigator extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(labelSprite)
                     .add(toggleButtonAutoRefresh, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(buttonRefreshNow, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(buttonRefreshNow)
                     .add(textFieldLayerName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(panelTiledLayer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 68, Short.MAX_VALUE)

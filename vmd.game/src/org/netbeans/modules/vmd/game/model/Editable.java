@@ -18,12 +18,12 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
+import java.util.List;
+import javax.swing.Action;
 import javax.swing.JComponent;
 
 
 public interface Editable {
-
-	public static final String ACTION_PROP_EDITOR_MANAGER = "ACTION_PROP_EDITOR_MANAGER";
 
 	public JComponent getEditor();
 
@@ -33,6 +33,8 @@ public interface Editable {
 	
 	public String getName();
 
+	public List<Action> getActions();
+	
 	public class ImageResourceInfo {
 		private ImageResource imgRes;
 		private int tileWidth;
@@ -57,7 +59,6 @@ public interface Editable {
 		}
 		public boolean isZeroBasedIndex() {
 			return this.zeroBasedIndex;
-		}
-		
+		}	
 	}
 }

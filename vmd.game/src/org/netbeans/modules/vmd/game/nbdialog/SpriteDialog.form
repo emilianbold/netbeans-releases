@@ -89,7 +89,9 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="labelImageFile">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Select image:"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.labelSelectImage.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
         <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -108,7 +110,9 @@
         </Container>
         <Component class="javax.swing.JButton" name="buttonImportImages">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Import sample images "/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.buttonImportImages.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
       </SubComponents>
@@ -125,7 +129,7 @@
                           <Component id="labelTileWidth" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
                           <Component id="labelTileHeight" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="165" max="32767" attributes="0"/>
+                          <EmptySpace pref="149" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="1" attributes="0">
                           <Group type="103" groupAlignment="1" attributes="0">
@@ -170,7 +174,9 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="labelImagePreview">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Adjust tile size in pixels:"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.labelAdjustTileSize.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
         <Container class="javax.swing.JPanel" name="panelImage">
@@ -195,17 +201,27 @@
         </Component>
         <Component class="javax.swing.JLabel" name="labelTileWidth">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Tile width: 0 px"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.labelTilewidth.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+                <Argument index="0" javacode="0"/>
+              </ResourceString>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JLabel" name="labelTileHeight">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Tile height: 0 px"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.labelTileheight.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+                <Argument index="0" javacode="0&#xa;&#x9;&#x9;"/>
+              </ResourceString>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JCheckBox" name="checkBoxZoom">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Zoom"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.labelZoom.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -278,7 +294,9 @@
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="fieldLayerName"/>
             </Property>
-            <Property name="text" type="java.lang.String" value="Sprite name:"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/vmd/game/nbdialog/Bundle.properties" key="SpriteDialog.labelSpriteName.txt" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="fieldLayerName">

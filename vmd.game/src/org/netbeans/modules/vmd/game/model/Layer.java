@@ -35,12 +35,13 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 public abstract class Layer implements Previewable, Editable, Transferable {
 	
-	public static final String ACTION_PROP_SCENE = "layer.action.prop.scene";
+	public static final String ACTION_PROP_SCENE = "layer.action.prop.scene"; // NOI18N
 	
-	public static final String PROPERTY_LAYER_NAME = "layer.prop.name";
+	public static final String PROPERTY_LAYER_NAME = "layer.prop.name"; // NOI18N
 	
 	protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
@@ -70,7 +71,7 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 	
 	public void setName(String name) {
 		if (!this.gameDesign.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("Layer cannot be renamed because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("Layer cannot be renamed because component name '" + name + "' already exists."); // NOI18N
 		}
 		String oldName = this.name;
 		this.name = name;
@@ -136,7 +137,7 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 
 		public int compare(Object arg0, Object arg1) {
 			if ( !(arg0 instanceof Layer) || !(arg1 instanceof Layer))
-				throw new ClassCastException("Compared object not instance of Layer");
+				throw new ClassCastException("Compared object not instance of Layer"); // NOI18N
 			Layer l0 = (Layer) arg0;
 			Layer l1 = (Layer) arg1;
 			return (l0.getName().compareTo(l1.getName()));
@@ -144,7 +145,7 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 	}
 	
 	public List<Action> getActions() {
-		ArrayList actions = new ArrayList<Action>();
+		List<Action> actions = new ArrayList<Action>();
 		actions.add(new EditLayerAction());
 		actions.add(new RemoveAction());
 		return Collections.unmodifiableList(actions);
@@ -157,19 +158,16 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 	
 	public class EditLayerAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Edit " + getDisplayableTypeName());
+			this.putValue(NAME, NbBundle.getMessage(Layer.class, "Layer.editAction", getDisplayableTypeName()));
 		}
 		public void actionPerformed(ActionEvent e) {
-			EditorManager manager = (EditorManager) this.getValue(Editable.ACTION_PROP_EDITOR_MANAGER);
-			if (manager != null) {
-				manager.requestEditing(Layer.this);
-			}
+			Layer.this.gameDesign.getMainView().requestEditing(Layer.this);
 		}
 	}
 
 	public class RemoveAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Remove " + getDisplayableTypeName());
+			this.putValue(NAME, NbBundle.getMessage(Layer.class, "Layer.editAction", getDisplayableTypeName()));
 		}
 		public void actionPerformed(ActionEvent e) {
 			Scene scene = (Scene) this.getValue(Layer.ACTION_PROP_SCENE);
@@ -179,14 +177,15 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 			}
 			//else delete completely
 			else {
-				Object response = DialogDisplayer.getDefault().notify(new NotifyDescriptor("Are you sure you wish to completely delete all references to " + getDisplayableTypeName() + " " + getName() + "?",
-						"Delete layer?",
+				Object response = DialogDisplayer.getDefault().notify(
+						new NotifyDescriptor(NbBundle.getMessage(Layer.class, "Layer.removeDialog.text", new Object[] {getDisplayableTypeName(), getName()}),
+						NbBundle.getMessage(Layer.class, "Layer.removeDialog.title"),
 						NotifyDescriptor.YES_NO_OPTION,
 						NotifyDescriptor.QUESTION_MESSAGE,
 						new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
 						NotifyDescriptor.YES_OPTION));
 				if (response == NotifyDescriptor.YES_OPTION) {
-					System.out.println("said YES to delete layer");
+					System.out.println("said YES to delete layer"); // NOI18N
 					Layer.this.gameDesign.removeLayer(Layer.this);
 				}
 			}

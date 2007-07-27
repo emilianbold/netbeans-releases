@@ -64,6 +64,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -74,7 +75,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	
 	private GlobalRepository gameDesign;
 	
-    private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif"));
+    private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
 	
 	private static final int DEFAULT_FRAMES = 5;
 	private static final int DEFAULT_TILE_WIDTH = 18;
@@ -122,13 +123,13 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         fieldLayerName = new javax.swing.JTextField();
         jSeparator2 = new javax.swing.JSeparator();
 
-        labelImageFile.setText("Select image:");
+        labelImageFile.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImage.txt")); // NOI18N
 
         listImageFileName.setModel(this.getImageListModel());
         listImageFileName.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(listImageFileName);
 
-        buttonImportImages.setText("Import sample images ");
+        buttonImportImages.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.buttonImportImages.txt")); // NOI18N
 
         org.jdesktop.layout.GroupLayout panelCustomizerLayout = new org.jdesktop.layout.GroupLayout(panelCustomizer);
         panelCustomizer.setLayout(panelCustomizerLayout);
@@ -151,18 +152,19 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                 .add(buttonImportImages))
         );
 
-        labelImagePreview.setText("Adjust tile size in pixels:");
+        labelImagePreview.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelAdjustTileSize.txt")); // NOI18N
 
         panelImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
         panelImage.setLayout(new java.awt.BorderLayout());
 
         sliderHeight.setOrientation(javax.swing.JSlider.VERTICAL);
 
-        labelTileWidth.setText("Tile width: 0 px");
+        labelTileWidth.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTilewidth.txt", new Object[] {0})); // NOI18N
 
-        labelTileHeight.setText("Tile height: 0 px");
+        labelTileHeight.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTileheight.txt", new Object[] {0 // NOI18N
+        }));
 
-        checkBoxZoom.setText("Zoom");
+        checkBoxZoom.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelZoom.txt")); // NOI18N
         checkBoxZoom.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         checkBoxZoom.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -177,7 +179,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                         .add(labelTileWidth)
                         .add(40, 40, 40)
                         .add(labelTileHeight)
-                        .addContainerGap(165, Short.MAX_VALUE))
+                        .addContainerGap(149, Short.MAX_VALUE))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, panelPreviewLayout.createSequentialGroup()
                         .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, panelPreviewLayout.createSequentialGroup()
@@ -223,7 +225,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
         );
 
         labelLayerName.setLabelFor(fieldLayerName);
-        labelLayerName.setText("Sprite name:");
+        labelLayerName.setText(org.openide.util.NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSpriteName.txt")); // NOI18N
 
         org.jdesktop.layout.GroupLayout panelLayerInfoLayout = new org.jdesktop.layout.GroupLayout(panelLayerInfo);
         panelLayerInfo.setLayout(panelLayerInfoLayout);
@@ -387,14 +389,14 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	private void setPreviewPartial() {
 		if (this.imagePreview != null) {
 			try {
-				System.out.println("setPreviewPartial");
+				System.out.println("setPreviewPartial"); // NOI18N
 				this.partialImagePreview.setImageURL(this.imagePreview.getImageURL());
 			} catch (MalformedURLException e) {
-				this.labelError.setText("Invalid image location.");
+				this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt"));
 				e.printStackTrace();
 				return;
 			} catch (IllegalArgumentException iae) {
-				this.labelError.setText("Image file contents could not be loaded, image may be corrupt.");
+				this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt"));
 				iae.printStackTrace();
 				return;
 			}
@@ -411,14 +413,14 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	private void setPreviewFull() {
 		if (this.imagePreview != null) {
 			try {
-				System.out.println("setPreviewFull");
+				System.out.println("setPreviewFull"); // NOI18N
 				this.fullImagePreview.setImageURL(this.imagePreview.getImageURL());
 			} catch (MalformedURLException e) {
-				this.labelError.setText("Invalid image location.");
+				this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt"));
 				e.printStackTrace();
 				return;
 			} catch (IllegalArgumentException iae) {
-				this.labelError.setText("Image file contents could not be loaded, image may be corrupt.");
+				this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt"));
 				iae.printStackTrace();
 				return;
 			}
@@ -467,14 +469,14 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 			
 			if (e.getSource() == SpriteDialog.this.sliderHeight) {
 				SpriteDialog.this.imagePreview.setTileHeight(tileHeight);
-				SpriteDialog.this.labelTileHeight.setText("Tile height: " + tileHeight + " px");
+				SpriteDialog.this.labelTileHeight.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTileheight.txt", tileHeight));
 			}
 			else if (e.getSource() == SpriteDialog.this.sliderWidth) {
 				SpriteDialog.this.imagePreview.setTileWidth(tileWidth);
-				SpriteDialog.this.labelTileWidth.setText("Tile width: " + tileWidth + " px");
+				SpriteDialog.this.labelTileWidth.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTilewidth.txt", tileWidth));
 			} 
 			else {
-				if (DEBUG) System.out.println("ERR: ChangeEvent came from " + e.getSource());
+				if (DEBUG) System.out.println("ERR: ChangeEvent came from " + e.getSource()); // NOI18N
 			}
 		}
 		
@@ -520,14 +522,14 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	}
 	
 	private String getFieldLayerNameError() {
-		String illegalIdentifierName = "Layer name must be a valid Java identifier.";
+		String illegalIdentifierName = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidName.txt");
 		String errMsg = null;
 		String layerName = this.fieldLayerName.getText();
 		if (layerName.equals("")) {
-			errMsg = "Enter layer name.";
+			errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelEnterName.txt");
 		} 
 		else if (!this.gameDesign.isComponentNameAvailable(layerName)) {
-			errMsg = "Component name already exists. Choose a different name.";
+			errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelNameExists.txt");
 		}		
 		else if (!isValidJavaIdentifier(layerName)) {
 			errMsg = illegalIdentifierName;
@@ -561,10 +563,10 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	private String getFieldImageFileNameError() {
 		String errMsg = null;
 		if (this.listImageFileName.getModel().getSize() == 0) {
-			errMsg = "There are no images available in the project. First add an image resource to the project.";
+			errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelNoImages.txt");
 		} 
 		else if (this.listImageFileName.getSelectedValue() == null) {
-			errMsg = "Select image file.";
+			errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImgFile.txt");
 		}
 		return errMsg;
 	}
@@ -588,10 +590,10 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 				try {
 					SpriteDialog.this.loadImagePreview();
 				} catch (MalformedURLException e) {
-					errMsg = "Invalid image location.";
+					errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
 					e.printStackTrace();
 				} catch (IllegalArgumentException iae) {
-					errMsg = "Image file contents could not be loaded, image may be corrupt.";
+					errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
 					iae.printStackTrace();
 				}					
 					
@@ -609,7 +611,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	}
 	
 	private void loadImagePreview() throws MalformedURLException, IllegalArgumentException {
-		if (DEBUG) System.out.println("load image preview");
+		if (DEBUG) System.out.println("load image preview"); // NOI18N
 		
 		Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
 		URL imageURL = null;
@@ -643,8 +645,8 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		int tileWidth = this.tileWidths.get(((Integer) this.sliderWidth.getValue()).intValue());
 		int tileHeight = this.tileHeigths.get(((Integer) this.sliderHeight.getValue()).intValue());
 
-		this.labelTileHeight.setText("Tile height: " + tileHeight + " px");
-		this.labelTileWidth.setText("Tile width: " + tileWidth + " px");
+		this.labelTileHeight.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTileheight.txt", tileHeight));
+		this.labelTileWidth.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTilewidth.txt", tileWidth));
 
 		this.imagePreview.setTileWidth(tileWidth);
 		this.imagePreview.setTileHeight(tileHeight);
@@ -690,9 +692,9 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	}
 	
 	private void handleImportImagesButton() throws IOException {
-		InputStream inImgPlatformTiles = SpriteDialog.class.getResourceAsStream("res/platform_tiles.png");
+		InputStream inImgPlatformTiles = SpriteDialog.class.getResourceAsStream("res/platform_tiles.png"); // NOI18N
 		assert inImgPlatformTiles != null;
-		InputStream inImgTopViewTiles = SpriteDialog.class.getResourceAsStream("res/topview_tiles.png");
+		InputStream inImgTopViewTiles = SpriteDialog.class.getResourceAsStream("res/topview_tiles.png"); // NOI18N
 		assert inImgTopViewTiles != null;
 		
 		Project p = MidpProjectSupport.getProjectForDocument(this.gameDesign.getDesignDocument());
@@ -702,8 +704,8 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		OutputStream topViewOut = null;
 		OutputStream platformOut = null;
 		try {
-			FileObject foPlatform = FileUtil.createData(foSrc, "platform_tiles.png");
-			FileObject foTop = FileUtil.createData(foSrc, "topview_tiles.png");
+			FileObject foPlatform = FileUtil.createData(foSrc, "platform_tiles.png"); // NOI18N
+			FileObject foTop = FileUtil.createData(foSrc, "topview_tiles.png"); // NOI18N
 
 			platformOut = foPlatform.getOutputStream();
 			FileUtil.copy(inImgPlatformTiles, platformOut);
@@ -722,7 +724,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 			}
 		}
 		this.listImageFileName.setModel(this.getImageListModel());
-		DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Sample images were imported to project source root.", NotifyDescriptor.INFORMATION_MESSAGE));		
+		DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.imgImportedMsg.txt"), NotifyDescriptor.INFORMATION_MESSAGE));		
 	}
 	
 	private void handleOKButton() {

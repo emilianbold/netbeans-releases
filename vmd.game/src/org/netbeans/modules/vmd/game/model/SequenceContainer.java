@@ -20,7 +20,6 @@
 package org.netbeans.modules.vmd.game.model;
 
 import java.awt.Dialog;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -37,6 +36,7 @@ import org.netbeans.modules.vmd.game.dialog.NewSequenceDialog;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerEditor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -44,7 +44,7 @@ import org.openide.DialogDisplayer;
  */
 public interface SequenceContainer extends Editable {
 	
-	public static final String PROPERTY_DEFAULT_SEQUENCE = "sequencecontainer.prop.defaultsequence";
+	public static final String PROPERTY_DEFAULT_SEQUENCE = "sequencecontainer.prop.defaultsequence"; // NOI18N
 	
 	public void addPropertyChangeListener(PropertyChangeListener l);
 	
@@ -206,7 +206,7 @@ public interface SequenceContainer extends Editable {
 					}
 				}
 			}
-			DecimalFormat df = new DecimalFormat("000");
+			DecimalFormat df = new DecimalFormat("000"); // NOI18N
 			String nextName;
 			do {
 				nextName = prefix + df.format(++biggestNum);
@@ -215,7 +215,7 @@ public interface SequenceContainer extends Editable {
 		}
 
 		public boolean append(Sequence sequence) {
-			if (DEBUG) System.out.println(this + " append " + sequence);
+			if (DEBUG) System.out.println(this + " append " + sequence); // NOI18N
 			if (this.sequences.contains(sequence)) {
 				if (!this.remove(sequence))
 					return false;
@@ -227,7 +227,7 @@ public interface SequenceContainer extends Editable {
 		}
 		
 		public boolean insert(Sequence sequence, int index) {
-			if (DEBUG) System.out.println(this + " insert " + sequence + " at " + index);
+			if (DEBUG) System.out.println(this + " insert " + sequence + " at " + index); // NOI18N
 			if (this.sequences.contains(sequence)) {
 				if (!this.remove(sequence))
 					return false;
@@ -238,7 +238,7 @@ public interface SequenceContainer extends Editable {
 		}
 		
 		public boolean remove(Sequence sequence) {
-			if (DEBUG) System.out.println(this + " remove " + sequence);
+			if (DEBUG) System.out.println(this + " remove " + sequence); // NOI18N
 			//cannot remove Default sequence
 			if (this.getDefaultSequence() == sequence)
 				return false;
@@ -253,10 +253,10 @@ public interface SequenceContainer extends Editable {
 		public void move(Sequence sequence, int newIndex) {
 			int oldIndex = this.sequences.indexOf(sequence);
 			if (oldIndex == -1) {
-				if (DEBUG) System.out.println(this + " cannot move " + sequence + " - it is not present");
+				if (DEBUG) System.out.println(this + " cannot move " + sequence + " - it is not present"); // NOI18N
 				return;
 			}
-			if (DEBUG) System.out.println(this + " move " + sequence + " from " + oldIndex + " to " + newIndex);
+			if (DEBUG) System.out.println(this + " move " + sequence + " from " + oldIndex + " to " + newIndex); // NOI18N
 			this.sequences.remove(sequence);
 			this.sequences.add(newIndex, sequence);
 			this.fireSequenceMoved(sequence, oldIndex, newIndex);
@@ -275,7 +275,7 @@ public interface SequenceContainer extends Editable {
 		}
 		
 		public void setDefaultSequence(Sequence defaultSequence) {
-			if (DEBUG) System.out.println("DefaultSequence set to: " + defaultSequence);
+			if (DEBUG) System.out.println("DefaultSequence set to: " + defaultSequence); // NOI18N
 			Sequence oldDef = this.defaultSequence;
 			if (!this.sequences.contains(defaultSequence)) {
 				this.append(defaultSequence);
@@ -297,7 +297,7 @@ public interface SequenceContainer extends Editable {
 		}
 		
 		public String getName() {
-			throw new UnsupportedOperationException("Must be overriden by aggregating class.");
+			throw new UnsupportedOperationException("Must be overriden by aggregating class."); // NOI18N
 		}
 		
 		public List<Sequence> getSequences() {
@@ -318,6 +318,10 @@ public interface SequenceContainer extends Editable {
 		
 		public JComponent getNavigator() {
 			return null;
+		}
+		
+		public List<Action> getActions() {
+			return Collections.EMPTY_LIST;
 		}
 		
 		public List<Action> getActionsForSequence(Sequence sequence) {
@@ -350,12 +354,12 @@ public interface SequenceContainer extends Editable {
 		
 		public class CreateSequenceAction extends AbstractAction {
 			{
-				this.putValue(NAME, "Create New Sequence");
+				this.putValue(NAME, NbBundle.getMessage(SequenceContainer.class, "SequenceContainer.CreateSequenceAction.text"));
 			}
 			
 			public void actionPerformed(ActionEvent e) {
 				NewSequenceDialog dialog = new NewSequenceDialog(SequenceContainerImpl.this, SequenceContainerImpl.this.frameWidth, SequenceContainerImpl.this.frameHeight);
-				DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Sequence");
+				DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(SequenceContainer.class, "SequenceContainer.CreateSequenceAction.text"));
 				dd.setButtonListener(dialog);
 				dd.setValid(false);
 				dialog.setDialogDescriptor(dd);
@@ -369,12 +373,12 @@ public interface SequenceContainer extends Editable {
 			private Sequence sequence;
 			public DuplicateSequenceAction(Sequence sequence) {
 				this.sequence = sequence;
-				this.putValue(NAME, "Duplicate Sequence");
+				this.putValue(NAME, NbBundle.getMessage(SequenceContainer.class, "SequenceContainer.DuplicateSequenceAction.text"));
 			}
 			
 			public void actionPerformed(ActionEvent e) {
 				NewSequenceDialog dialog = new NewSequenceDialog(SequenceContainerImpl.this, this.sequence);
-				DialogDescriptor dd = new DialogDescriptor(dialog, "Duplicate Sequence");
+				DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(SequenceContainer.class, "SequenceContainer.DuplicateSequenceAction.text"));
 				dd.setButtonListener(dialog);
 				dd.setValid(false);
 				dialog.setDialogDescriptor(dd);
@@ -387,7 +391,7 @@ public interface SequenceContainer extends Editable {
 			private Sequence sequence;
 			public DefaultSequenceAction(Sequence sequence) {
 				this.sequence = sequence;
-				this.putValue(NAME, "Default Sequence");
+				this.putValue(NAME, NbBundle.getMessage(SequenceContainer.class, "SequenceContainer.DefaultSequenceAction.text"));
 			}
 			
 			public void actionPerformed(ActionEvent e) {
@@ -399,7 +403,7 @@ public interface SequenceContainer extends Editable {
 			private Sequence sequence;
 			public RemoveSequenceAction(Sequence sequence) {
 				this.sequence = sequence;
-				this.putValue(NAME, "Remove Sequence");
+				this.putValue(NAME, NbBundle.getMessage(SequenceContainer.class, "SequenceContainer.RemoveSequenceAction.text"));
 			}
 			
 			public void actionPerformed(ActionEvent e) {

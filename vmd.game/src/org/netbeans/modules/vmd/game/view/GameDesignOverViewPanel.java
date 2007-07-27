@@ -41,6 +41,7 @@ import org.netbeans.modules.vmd.game.nbdialog.SpriteDialog;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -50,7 +51,6 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 
 	private GlobalRepository gameDesign;
 	
-//	private JLabel labelGameDesign;
 	private JLabel labelTiledLayers;
 	private JLabel labelSprites;
 	private JLabel labelScenes;
@@ -65,24 +65,18 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 		this.setBackground(Color.WHITE);
 		((FlowLayout) getLayout()).setAlignment(FlowLayout.LEFT);
 		
-//		labelGameDesign = new JLabel("Game Design");
-//      labelGameDesign.setFont(new java.awt.Font("Dialog", 1, 36));
-//      labelGameDesign.setForeground(new java.awt.Color(255, 164, 0));
-//		labelGameDesign.setHorizontalAlignment(SwingConstants.CENTER);
-//		this.add(labelGameDesign);
-		
 		this.populateScenePreviewList();
 		this.populateTiledLayerPreviewList();
 		this.populateSpritePreviewList();
 	}
 	
 	private void populateTiledLayerPreviewList() {
-		labelTiledLayers = new JLabel("Tiled Layers:");
-        labelTiledLayers.setFont(new java.awt.Font("Dialog", 1, 18));
+		labelTiledLayers = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelTiledLayers.txt"));
+        labelTiledLayers.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
         labelTiledLayers.setForeground(new java.awt.Color(163, 184, 215));
 		labelTiledLayers.setHorizontalAlignment(SwingConstants.LEFT);
 		this.add(labelTiledLayers);
-				
+		
 		List<TiledLayer> layers = this.gameDesign.getTiledLayers();
 		for (TiledLayer tiledLayer : layers) {
 			//System.out.println("preview tiledLayer: " + tiledLayer);
@@ -90,7 +84,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 		}
 
 		
-		final JLabel lblCreate = new JLabel("Create tiled layer ...");
+		final JLabel lblCreate = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelNewTiledLayer.txt"));
 		lblCreate.setPreferredSize(new Dimension(lblCreate.getPreferredSize().width + 15, 40));
         lblCreate.setForeground(new java.awt.Color(100, 123, 156));
 		lblCreate.addMouseListener(new MouseAdapter() {
@@ -102,7 +96,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
             }
             public void mouseClicked(MouseEvent e) {
 				TiledLayerDialog nld = new TiledLayerDialog(gameDesign);
-				DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
+				DialogDescriptor dd = new DialogDescriptor(nld, NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.dialogNewTiledLayer.txt"));
 				dd.setButtonListener(nld);
 				dd.setValid(false);
 				nld.setDialogDescriptor(dd);
@@ -114,8 +108,8 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 	}
 
 	private void populateSpritePreviewList() {
-		labelSprites = new JLabel("Sprites:");
-        labelSprites.setFont(new java.awt.Font("Dialog", 1, 18));
+		labelSprites = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelSprites.txt"));
+        labelSprites.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
         labelSprites.setForeground(new java.awt.Color(163, 184, 215));
 		labelSprites.setHorizontalAlignment(SwingConstants.LEFT);
 		this.add(labelSprites);
@@ -128,7 +122,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 			add(new GameDesignPreviewComponent(gameDesign, imagePreviewComponent, sprite.getName(), sprite));
 		}
 		
-		final JLabel lblCreate = new JLabel("Create sprite ...");
+		final JLabel lblCreate = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelNewSprite.txt"));
 		lblCreate.setPreferredSize(new Dimension(lblCreate.getPreferredSize().width + 15, 40));
         lblCreate.setForeground(new java.awt.Color(100, 123, 156));
 		lblCreate.addMouseListener(new MouseAdapter() {
@@ -140,7 +134,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
             }
             public void mouseClicked(MouseEvent e) {
 				SpriteDialog nld = new SpriteDialog(gameDesign);
-				DialogDescriptor dd = new DialogDescriptor(nld, "Create new Sprite");
+				DialogDescriptor dd = new DialogDescriptor(nld, NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.dialogNewSprite.txt"));
 				dd.setButtonListener(nld);
 				dd.setValid(false);
 				nld.setDialogDescriptor(dd);
@@ -152,8 +146,8 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 	}
 	
 	private void populateScenePreviewList() {
-		labelScenes = new JLabel("Scenes:");
-        labelScenes.setFont(new java.awt.Font("Dialog", 1, 18));
+		labelScenes = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelScenes.txt"));
+        labelScenes.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
         labelScenes.setForeground(new java.awt.Color(163, 184, 215));
 		labelScenes.setHorizontalAlignment(SwingConstants.LEFT);
 		this.add(labelScenes);
@@ -164,7 +158,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 			add(new GameDesignPreviewComponent(gameDesign, scene.getPreview(), scene.getName(), scene));
 		}
 		
-		final JLabel lblCreate = new JLabel("Create scene ...");
+		final JLabel lblCreate = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelNewScene.txt"));
 		lblCreate.setPreferredSize(new Dimension(lblCreate.getPreferredSize().width + 15, 40));
         lblCreate.setForeground(new java.awt.Color(100, 123, 156));
 		lblCreate.addMouseListener(new MouseAdapter() {
@@ -176,7 +170,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
             }
             public void mouseClicked(MouseEvent e) {
 				NewSceneDialog dialog = new NewSceneDialog(gameDesign);
-				DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Scene");
+				DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.dialogNewScene.txt"));
 				dd.setButtonListener(dialog);
 				dd.setValid(false);
 				dialog.setDialogDescriptor(dd);

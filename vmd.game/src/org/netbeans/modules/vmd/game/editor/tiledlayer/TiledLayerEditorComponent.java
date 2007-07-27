@@ -79,6 +79,7 @@ import org.netbeans.modules.vmd.game.model.TiledLayerListener;
 import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -122,7 +123,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	public static final int EDIT_MODE_PAINT = 0;
 	public static final int EDIT_MODE_SELECT = 1;
-	public static final String PAINT_CURSOR_NAME = "CUSTOM_PAINT_CURSOR";
+	public static final String PAINT_CURSOR_NAME = "CUSTOM_PAINT_CURSOR"; // NOI18N
 	
 	private int editMode;
 	
@@ -131,11 +132,11 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	static {
 		//create custom cursors
-		URL cursorUrl = TiledLayerEditorComponent.class.getResource("res/drawing_mode_mouse_16.png");
+		URL cursorUrl = TiledLayerEditorComponent.class.getResource("res/drawing_mode_mouse_16.png"); // NOI18N
 		ImageIcon cursorIcon = new ImageIcon(cursorUrl);
 		paintCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon.getImage(), new Point(7, 7), PAINT_CURSOR_NAME);
 		
-		cursorUrl = TiledLayerEditorComponent.class.getResource("res/select_mode_mouse_16.png");
+		cursorUrl = TiledLayerEditorComponent.class.getResource("res/select_mode_mouse_16.png"); // NOI18N
 		cursorIcon = new ImageIcon(cursorUrl);
 		selectionCursor = Cursor.getDefaultCursor();
 	}
@@ -181,9 +182,15 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		int index = this.tiledLayer.getTileIndexAt(cell);
 		if (index < Tile.EMPTY_TILE_INDEX) {
 			AnimatedTile tile = (AnimatedTile) this.tiledLayer.getTileAt(cell);
-			return tile.getName() + " [" + cell.getRow() + "," + cell.getCol() + "]";
+			return NbBundle.getMessage(TiledLayerEditorComponent.class, 
+					"TiledLayerEditorComponent.animTile.tooltip",
+					new Object[] {tile.getName(), cell.getRow(), cell.getCol()});
+			//return tile.getName() + " [" + cell.getRow() + "," + cell.getCol() + "]";
 		}
-		return "Index: " + index + " [" + cell.getRow() + "," + cell.getCol() + "]";
+		return NbBundle.getMessage(TiledLayerEditorComponent.class, 
+				"TiledLayerEditorComponent.tile.tooltip", 
+				new Object[] {index, cell.getRow(), cell.getCol()});
+		//return "Index: " + index + " [" + cell.getRow() + "," + cell.getCol() + "]";
 	}
 	
 	public Dimension getPreferredSize() {
@@ -199,7 +206,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	
 	public void paintComponent(Graphics g) {
-		if (DEBUG) System.out.println("EditorComponent clip : " + g.getClipBounds());
+		if (DEBUG) System.out.println("EditorComponent clip : " + g.getClipBounds()); // NOI18N
 		if (g instanceof DebugGraphics)
 			return;
 		Graphics2D g2d = (Graphics2D) g;
@@ -259,7 +266,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	void paintCells(Graphics2D g) {
 		Rectangle rect = g.getClipBounds();
-		if (DEBUG) System.out.println("Paint cell: " + rect);
+		if (DEBUG) System.out.println("Paint cell: " + rect); // NOI18N
 		Position topLeft = this.getCellAtPoint(rect.getLocation());
 		Position bottomRight = this.getCellAtCoordinates(rect.getLocation().x + rect.width, rect.getLocation().y + rect.height);
 		//if (DEBUG) System.out.println("topLeft: " + topLeft + ", bottomRight: " + bottomRight);
@@ -493,7 +500,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 				if (cell.equals(lastDraggedCell)) {
 					return;
 				}
-				System.out.println("Drag from " + lastDraggedCell + " to " + cell);
+				System.out.println("Drag from " + lastDraggedCell + " to " + cell); // NOI18N
 				
 				synchronized (TiledLayerEditorComponent.this.cellsSelected) {
 					if (e.isControlDown() || e.isMetaDown() || e.isAltDown()) {
@@ -502,16 +509,16 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					if (false) {
 						
 						int rowStep = firstDraggedCell.getRow() <= cell.getRow() ? 1 : -1;
-						System.out.println("row step : " + rowStep);
+						System.out.println("row step : " + rowStep); // NOI18N
 						int colStep = firstDraggedCell.getCol() <= cell.getCol() ? 1 : -1;
-						System.out.println("col step : " + colStep);
+						System.out.println("col step : " + colStep); // NOI18N
 						
 						//if drag change in colls
 						if (cell.getCol() != lastDraggedCell.getCol()) {
 							
 							int dcOld = Math.abs(lastDraggedCell.getCol() - firstDraggedCell.getCol());
 							int dcNew = Math.abs(cell.getCol() - firstDraggedCell.getCol());
-							System.out.println("COL dcOld: " + dcOld + ", dcNew: " + dcNew);
+							System.out.println("COL dcOld: " + dcOld + ", dcNew: " + dcNew); // NOI18N
 							
 							Set<Position> deltaNewSet = new HashSet<Position>();
 							for (int c = lastDraggedCell.getCol(); c != cell.getCol(); c+=colStep) {
@@ -519,19 +526,19 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 								for (int r = firstDraggedCell.getRow(); r != cell.getRow(); r+=rowStep) {								
 									System.out.println(" r = " + r);
 									Position pos = new Position(r, c);
-									System.out.println("\tadd to delta " + pos);
+									System.out.println("\tadd to delta " + pos); // NOI18N
 									deltaNewSet.add(pos);
 								}
 							}
 							
 							//if shrinking selection - remove the deltaSet
 							if (dcOld > dcNew) {
-								System.out.println("remove delta");
+								System.out.println("remove delta"); // NOI18N
 								cellsSelected.removeAll(deltaNewSet);
 							}
 							//else growing selection - add the deltaSet
 							else {
-								System.out.println("add delta");
+								System.out.println("add delta"); // NOI18N
 								cellsSelected.addAll(deltaNewSet);
 							}
 						}
@@ -540,25 +547,25 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 						if (cell.getRow() != lastDraggedCell.getRow()) {
 							int dcOld = Math.abs(lastDraggedCell.getRow() - firstDraggedCell.getRow());
 							int dcNew = Math.abs(cell.getRow() - firstDraggedCell.getRow());
-							System.out.println("ROW dcOld: " + dcOld + ", dcNew: " + dcNew);
+							System.out.println("ROW dcOld: " + dcOld + ", dcNew: " + dcNew); // NOI18N
 							
 							Set<Position> deltaSet = new HashSet<Position>();
 							for (int r = lastDraggedCell.getRow(); r != cell.getRow(); r-=rowStep) {
 								for (int c = lastDraggedCell.getCol(); c != cell.getCol(); c-=colStep) {
 									Position pos = new Position(r, c);
-									System.out.println("\tadd to delta " + pos);
+									System.out.println("\tadd to delta " + pos); // NOI18N
 									deltaSet.add(pos);
 								}
 							}
 							
 							//if shrinking selection - remove the deltaSet
 							if (dcOld > dcNew) {
-								System.out.println("remove delta");
+								System.out.println("remove delta"); // NOI18N
 								cellsSelected.removeAll(deltaSet);
 							}
 							//else growing selection - add the deltaSet
 							else {
-								System.out.println("add delta");
+								System.out.println("add delta"); // NOI18N
 								cellsSelected.addAll(deltaSet);
 							}
 						}
@@ -598,7 +605,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	private void doPopUp(MouseEvent e) {
 		Position position = this.getCellAtPoint(e.getPoint());
 		
-		CreateTiledLayerAction ctl = new CreateTiledLayerAction();
+// 		CreateTiledLayerAction ctl = new CreateTiledLayerAction();
 		DuplicateTiledLayerAction dtl = new DuplicateTiledLayerAction();
 		CreateFromSelectionAction cfs = new CreateFromSelectionAction();
 		EraseSelectionAction es = new EraseSelectionAction();
@@ -639,18 +646,22 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		
 		TrimToSizeAction tts = new TrimToSizeAction();
 		
-		JCheckBoxMenuItem itemPaint = new JCheckBoxMenuItem("Paint", this.editMode == EDIT_MODE_PAINT);
+		JCheckBoxMenuItem itemPaint = new JCheckBoxMenuItem(
+				NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.menuModePaint.txt"), 
+				this.editMode == EDIT_MODE_PAINT);
 		itemPaint.addItemListener(new EditModeListener(EDIT_MODE_PAINT));
 
-		JCheckBoxMenuItem itemSelect = new JCheckBoxMenuItem("Select", this.editMode == EDIT_MODE_SELECT);
+		JCheckBoxMenuItem itemSelect = new JCheckBoxMenuItem(
+				NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.menuModeSelect.txt"), 
+				this.editMode == EDIT_MODE_SELECT);
 		itemSelect.addItemListener(new EditModeListener(EDIT_MODE_SELECT));
 		
 		JPopupMenu menu = new JPopupMenu();
 		
-//		menu.add(itemPaint);
-//		menu.add(itemSelect);
-//      menu.addSeparator();
-		menu.add(ctl);
+		menu.add(itemPaint);
+		menu.add(itemSelect);
+		menu.addSeparator();
+//		menu.add(ctl);
 		menu.add(dtl);
 		List<Action> actions = this.tiledLayer.getActions();
 		for (Action action : actions) {
@@ -662,7 +673,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		menu.addSeparator();
 		menu.add(cfs);
 		menu.add(es);
-		JMenu selecttionSubMenu = new JMenu("Select");
+		JMenu selecttionSubMenu = new JMenu(NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.menuSelect.txt"));
 		selecttionSubMenu.add(selecttionSubMenu);
 		selecttionSubMenu.add(sr);
 		selecttionSubMenu.add(sc);
@@ -690,36 +701,37 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			this.mode = mode;
 		}
         public void itemStateChanged(ItemEvent e) {
-			System.out.println("setting edit mode");
+			System.out.println("setting edit mode"); // NOI18N
 			TiledLayerEditorComponent.this.setEditMode(this.mode);
         }
 	}
 
     
-	public class CreateTiledLayerAction extends AbstractAction {
-		{
-			this.putValue(NAME, "Create new TiledLayer");
-		}
-		
-		public void actionPerformed(ActionEvent e) {
-			TiledLayerDialog nld = new TiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer.getGameDesign());
-			DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
-			dd.setButtonListener(nld);
-			dd.setValid(false);
-			nld.setDialogDescriptor(dd);
-			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-			d.setVisible(true);
-		}
-	}
+//	public class CreateTiledLayerAction extends AbstractAction {
+//		{
+//			this.putValue(NAME, "New Tiled Layer");
+//		}
+//		
+//		public void actionPerformed(ActionEvent e) {
+//			TiledLayerDialog nld = new TiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer.getGameDesign());
+//			DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
+//			dd.setButtonListener(nld);
+//			dd.setValid(false);
+//			nld.setDialogDescriptor(dd);
+//			Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+//			d.setVisible(true);
+//		}
+//	}
 	
 	public class DuplicateTiledLayerAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Duplicate");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionDuplicateTiledLayer.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
 			DuplicateTiledLayerDialog dialog = new DuplicateTiledLayerDialog(TiledLayerEditorComponent.this.tiledLayer);
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Duplicate Tiled Layer");
+			DialogDescriptor dd = new DialogDescriptor(dialog, 
+					NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionDuplicateTiledLayer.txt"));
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);
@@ -730,7 +742,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	public class TrimToSizeAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Trim to size");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionTrim.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -740,7 +752,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	public class CreateFromSelectionAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Create new from selection");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionNewFromSelection.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -776,7 +788,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					TiledLayerEditorComponent.this.tiledLayer.getTileWidth(),
 					TiledLayerEditorComponent.this.tiledLayer.getTileHeight()
 					);
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Tiled Layer from selection");
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionNewFromSelection.txt"));
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);
@@ -787,7 +799,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	public class EraseSelectionAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Erase selected tiles");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionEraseSelection.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -796,9 +808,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	
 	public class DeleteColumnAction extends AbstractAction {
-		public static final String PROP_POSITION = "PROP_POSITION";
+		public static final String PROP_POSITION = "PROP_POSITION"; // NOI18N
 		{
-			this.putValue(NAME, "Delete column");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionDeleteCol.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -807,9 +819,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 	}
 	public class DeleteRowAction extends AbstractAction {
-		public static final String PROP_POSITION = "PROP_POSITION";
+		public static final String PROP_POSITION = "PROP_POSITION"; // NOI18N
 		{
-			this.putValue(NAME, "Delete row");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionDeleteRow.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -818,9 +830,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 	}
 	public class SelectColumnAction extends AbstractAction {
-		public static final String PROP_POSITION = "PROP_POSITION";
+		public static final String PROP_POSITION = "PROP_POSITION"; // NOI18N
 		{
-			this.putValue(NAME, "Select column");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionSelectCol.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -829,9 +841,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 	}
 	public class SelectRowAction extends AbstractAction {
-		public static final String PROP_POSITION = "PROP_POSITION";
+		public static final String PROP_POSITION = "PROP_POSITION"; // NOI18N
 		{
-			this.putValue(NAME, "Select row");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionSelectRow.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -840,9 +852,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 	}
 	public class SelectByIndexAction extends AbstractAction {
-		public static final String PROP_POSITION = "PROP_POSITION";
+		public static final String PROP_POSITION = "PROP_POSITION"; // NOI18N
 		{
-			this.putValue(NAME, "Select by index");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionSelectIndex.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -852,7 +864,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	public class InvertSelectionAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Invert selection");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionInvertSelection.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -861,7 +873,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	public class SelectAllAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Select all");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionSelectAll.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -870,9 +882,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 	
 	public class PrependRowAction extends AbstractAction {
-		public static final String PROP_POSITION = "PROP_POSITION";
+		public static final String PROP_POSITION = "PROP_POSITION"; // NOI18N
 		{
-			this.putValue(NAME, "Prepend row");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionPrependRow.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -881,9 +893,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 	}
 	public class AppendRowAction extends AbstractAction {
-		public static final String PROP_POSITION = "PROP_POSITION";
+		public static final String PROP_POSITION = "PROP_POSITION"; // NOI18N
 		{
-			this.putValue(NAME, "Append row");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionAppendRow.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -892,9 +904,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 	}
 	public class PrependColumnAction extends AbstractAction {
-		public static final String PROP_POSITION = "PROP_POSITION";
+		public static final String PROP_POSITION = "PROP_POSITION"; // NOI18N
 		{
-			this.putValue(NAME, "Prepend column");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionPrependCol.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -903,9 +915,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 	}
 	public class AppendColumnAction extends AbstractAction {
-		public static final String PROP_POSITION = "PROP_POSITION";
+		public static final String PROP_POSITION = "PROP_POSITION"; // NOI18N
 		{
-			this.putValue(NAME, "Append column");
+			this.putValue(NAME, NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.actionAppendCol.txt"));
 		}
 		
 		public void actionPerformed(ActionEvent e) {
@@ -1011,9 +1023,9 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 				for (int r = bounds[0]; r <= bounds[2]; r++) {
 					for (int c = bounds[1]; c <= bounds[3]; c++) {
 						Position cell = new Position(r, c);
-						if (false) System.out.println("looking at: " + cell);
+						if (false) System.out.println("looking at: " + cell); // NOI18N
 						if (TiledLayerEditorComponent.this.cellsSelected.contains(cell)) {
-							if (false) System.out.println("selected cell repaint: " + cell);
+							if (false) System.out.println("selected cell repaint: " + cell); // NOI18N
 							Rectangle rect = TiledLayerEditorComponent.this.getCellArea(cell);
                             
 							TiledLayerEditorComponent.this.repaint(rect.x, rect.y, rect.width, SELECTION_BORDER_WIDTH);
@@ -1050,20 +1062,20 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	//DnD implementation
 	private class TiledLayerDropTargetListener implements DropTargetListener {
 		public void dragEnter(DropTargetDragEvent dtde) {
-			if (DEBUG) System.out.println("dragEnter");
+			if (DEBUG) System.out.println("dragEnter"); // NOI18N
 		}
 		public void dragOver(DropTargetDragEvent dtde) {
 			TiledLayerEditorComponent.this.updateHiLite(dtde.getLocation());
 		}
 		public void dropActionChanged(DropTargetDragEvent dtde) {
-			if (DEBUG) System.out.println("dropActionChanged");
+			if (DEBUG) System.out.println("dropActionChanged"); // NOI18N
 		}
 		public void dragExit(DropTargetEvent dte) {
-			if (DEBUG) System.out.println("dragExit");
+			if (DEBUG) System.out.println("dragExit"); // NOI18N
 		}
 		public void drop(DropTargetDropEvent dtde) {
 			Point dropPoint = dtde.getLocation();
-			if (DEBUG) System.out.println("Start drop @: " + dropPoint);
+			if (DEBUG) System.out.println("Start drop @: " + dropPoint); // NOI18N
 			Transferable transferable = dtde.getTransferable();
 			try {
 				TileDataFlavor tileFlavor = new TileDataFlavor();
@@ -1085,7 +1097,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 					}
 					dtde.dropComplete(true);
 				} else {
-					if (DEBUG) System.out.println("NOT a Tile :(");
+					if (DEBUG) System.out.println("NOT a Tile :("); // NOI18N
 					dtde.dropComplete(false);
 				}
 			} catch (ClassNotFoundException e) {
@@ -1194,7 +1206,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		
 		@Override
 		public String getToolTipText() {
-			return "Toogle grid";
+			return NbBundle.getMessage(TiledLayerEditorComponent.class, "TiledLayerEditorComponent.GridButton.tooltip");
 		}
 		
 		@Override
@@ -1274,7 +1286,10 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 		
 		public String getToolTipText(MouseEvent event) {
-			return "Row: " + this.getRowAtPoint(event.getPoint());
+			return NbBundle.getMessage(TiledLayerEditorComponent.class, 
+					"TiledLayerEditorComponent.verticalRuler.tooltip", 
+					this.getRowAtPoint(event.getPoint()));
+			//return "Row: " + this.getRowAtPoint(event.getPoint());
 		}
 		
 		public Dimension getPreferredSize() {
@@ -1289,7 +1304,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			Rectangle rect = g.getClipBounds();
 			g.setColor(Color.WHITE);
 			g.fill(rect);
-			if (DEBUG) System.out.println("RulerVertical.repaint " + rect);
+			if (DEBUG) System.out.println("RulerVertical.repaint " + rect); // NOI18N
 			
 			int unit = TiledLayerEditorComponent.this.gridWidth + TiledLayerEditorComponent.this.cellHeight;
 			
@@ -1388,7 +1403,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 
 		private void handlePopUp(MouseEvent e) {
 			int row = this.getRowAtPoint(e.getPoint());
-			if (DEBUG) System.out.println("Popup row: " + row);
+			if (DEBUG) System.out.println("Popup row: " + row); // NOI18N
 			JPopupMenu menu = this.createRulerPopupMenu(row);
 			menu.show(this, e.getX(), e.getY());
 		}
@@ -1396,13 +1411,13 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			JPopupMenu menu = new JPopupMenu();
 			for (Iterator iter = this.getActions().iterator(); iter.hasNext();) {
 				Action action = (Action) iter.next();
-				action.putValue("ROW", new Integer(row));
+				action.putValue("ROW", new Integer(row)); // NOI18N
 				menu.add(action);
 			}
 			return menu;
 		}
-		public List getActions() {
-			ArrayList actions = new ArrayList();
+		public List<Action> getActions() {
+			List<Action> actions = new ArrayList<Action>();
 			actions.add(new DeleteRowAction());
 			actions.add(new PrependRowAction());
 			actions.add(new AppendRowAction());
@@ -1411,31 +1426,37 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		
 		private class DeleteRowAction extends AbstractAction {
 			{
-				this.putValue(NAME, "Delete row");
+				this.putValue(NAME, NbBundle.getMessage(
+						TiledLayerEditorComponent.class, 
+						"TiledLayerEditorComponent.verticalRuler.actionDeleteRow.txt"));
 			}
 			
 			public void actionPerformed(ActionEvent e) {
-				int row = ((Integer) this.getValue("ROW")).intValue();
+				int row = ((Integer) this.getValue("ROW")).intValue(); // NOI18N
 				TiledLayerEditorComponent.this.tiledLayer.deleteRows(row, 1);
 			}
 		}
 		private class PrependRowAction extends AbstractAction {
 			{
-				this.putValue(NAME, "Prepend row");
+				this.putValue(NAME, NbBundle.getMessage(
+						TiledLayerEditorComponent.class, 
+						"TiledLayerEditorComponent.verticalRuler.actionPrependRow.txt"));
 			}
 			
 			public void actionPerformed(ActionEvent e) {
-				int row = ((Integer) this.getValue("ROW")).intValue();
+				int row = ((Integer) this.getValue("ROW")).intValue(); // NOI18N
 				TiledLayerEditorComponent.this.tiledLayer.insertRows(row, 1);
 			}
 		}
 		private class AppendRowAction extends AbstractAction {
 			{
-				this.putValue(NAME, "Append row");
+				this.putValue(NAME, NbBundle.getMessage(
+						TiledLayerEditorComponent.class, 
+						"TiledLayerEditorComponent.verticalRuler.actionAppendRow.txt"));
 			}
 			
 			public void actionPerformed(ActionEvent e) {
-				int row = ((Integer) this.getValue("ROW")).intValue();
+				int row = ((Integer) this.getValue("ROW")).intValue(); // NOI18N
 				TiledLayerEditorComponent.this.tiledLayer.insertRows(row +1, 1);
 			}
 		}
@@ -1456,7 +1477,10 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 		
 		public String getToolTipText(MouseEvent event) {
-			return "Column: " + this.getColumnAtPoint(event.getPoint());
+			return NbBundle.getMessage(TiledLayerEditorComponent.class, 
+					"TiledLayerEditorComponent.horizontalRuler.tooltip", 
+					this.getColumnAtPoint(event.getPoint()));
+			//return "Column: " + this.getColumnAtPoint(event.getPoint());
 		}
 		
 		public Dimension getPreferredSize() {
@@ -1471,7 +1495,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			g.setColor(Color.WHITE);
 			g.fill(rect);
 			
-			if (DEBUG) System.out.println("RulerHorizontal.repaint " + rect);
+			if (DEBUG) System.out.println("RulerHorizontal.repaint " + rect); // NOI18N
 			
 			int unit = TiledLayerEditorComponent.this.gridWidth + TiledLayerEditorComponent.this.cellWidth;
 			
@@ -1569,7 +1593,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 
 		private void handlePopUp(MouseEvent e) {
 			int col = this.getColumnAtPoint(e.getPoint());
-			if (DEBUG) System.out.println("Popup col: " + col);
+			if (DEBUG) System.out.println("Popup col: " + col); // NOI18N
 			JPopupMenu menu = this.createRulerPopupMenu(col);
 			menu.show(this, e.getX(), e.getY());
 			this.hiliteColumnHeader(col);
@@ -1578,7 +1602,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			JPopupMenu menu = new JPopupMenu();
 			for (Iterator iter = this.getActions().iterator(); iter.hasNext();) {
 				Action action = (Action) iter.next();
-				action.putValue("COLUMN", new Integer(col));
+				action.putValue("COLUMN", new Integer(col)); // NOI18N
 				menu.add(action);
 			}
 			return menu;
@@ -1594,31 +1618,37 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		
 		private class DeleteColAction extends AbstractAction {
 			{
-				this.putValue(NAME, "Delete column");
+				this.putValue(NAME, NbBundle.getMessage(
+						TiledLayerEditorComponent.class, 
+						"TiledLayerEditorComponent.horizontalRuler.actionDeleteCol.txt"));
 			}
 			
 			public void actionPerformed(ActionEvent e) {
-				int col = ((Integer) this.getValue("COLUMN")).intValue();
+				int col = ((Integer) this.getValue("COLUMN")).intValue(); // NOI18N
 				TiledLayerEditorComponent.this.tiledLayer.deleteColumns(col, 1);
 			}
 		}
 		private class PrependColAction extends AbstractAction {
 			{
-				this.putValue(NAME, "Prepend column");
+				this.putValue(NAME, NbBundle.getMessage(
+						TiledLayerEditorComponent.class, 
+						"TiledLayerEditorComponent.horizontalRuler.actionPrependCol.txt"));
 			}
 			
 			public void actionPerformed(ActionEvent e) {
-				int col = ((Integer) this.getValue("COLUMN")).intValue();
+				int col = ((Integer) this.getValue("COLUMN")).intValue(); // NOI18N
 				TiledLayerEditorComponent.this.tiledLayer.insertColumns(col, 1);
 			}
 		}
 		private class AppendColAction extends AbstractAction {
 			{
-				this.putValue(NAME, "Append column");
+				this.putValue(NAME, NbBundle.getMessage(
+						TiledLayerEditorComponent.class, 
+						"TiledLayerEditorComponent.horizontalRuler.actionAppendCol.txt"));
 			}
 			
 			public void actionPerformed(ActionEvent e) {
-				int col = ((Integer) this.getValue("COLUMN")).intValue();
+				int col = ((Integer) this.getValue("COLUMN")).intValue(); // NOI18N
 				TiledLayerEditorComponent.this.tiledLayer.insertColumns(col +1, 1);
 			}
 		}

@@ -37,6 +37,7 @@ import org.netbeans.modules.vmd.game.editor.sequece.SequenceEditingPanel;
 import org.netbeans.modules.vmd.game.preview.SequencePreviewPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 public class Sequence implements Previewable, Editable {
 
@@ -45,8 +46,8 @@ public class Sequence implements Previewable, Editable {
 	public static final int DEFAULT_FRAMES = 1;
 	public static final int DEFAULT_SHOWTIME_MS = 200;
 	
-	public static final String PROPERTY_NAME = "sequence.prop.name";
-	public static final String PROPERTY_FRAME_MS = "sequence.prop.frames.ms";
+	public static final String PROPERTY_NAME = "sequence.prop.name"; // NOI18N
+	public static final String PROPERTY_FRAME_MS = "sequence.prop.frames.ms"; // NOI18N
 	
 	EventListenerList listenerList = new EventListenerList();
 
@@ -104,7 +105,7 @@ public class Sequence implements Previewable, Editable {
 	
 	public void setName(String name) {
 		if (!this.getGameDesign().isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("Sequence cannot be renamed because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("Sequence cannot be renamed because component name '" + name + "' already exists."); // NOI18N
 		}
 		String oldName = this.name;
 		this.name = name;
@@ -162,7 +163,7 @@ public class Sequence implements Previewable, Editable {
 	}
 
 	public void setFrameMs(int frameMs) {
-		if (DEBUG) System.out.println("FrameMS = " + frameMs);
+		if (DEBUG) System.out.println("FrameMS = " + frameMs); // NOI18N
 		int oldMs = this.frameMs;
 		this.frameMs = frameMs;
 		this.propertyChangeSupport.firePropertyChange(Sequence.PROPERTY_FRAME_MS, oldMs, frameMs);
@@ -293,25 +294,22 @@ public class Sequence implements Previewable, Editable {
 
 	public class EditSequenceAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Edit Sequence");
+			this.putValue(NAME, NbBundle.getMessage(Sequence.class, "Sequence.EditSequenceAction.text"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			EditorManager manager = (EditorManager) this.getValue(Editable.ACTION_PROP_EDITOR_MANAGER);
-			if (manager != null) {
-				manager.requestEditing(Sequence.this);
-			}
+			Sequence.this.getGameDesign().getMainView().requestEditing(Sequence.this);
 		}
 	}
 
 	public class RenameSequenceAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Rename Sequence");
+			this.putValue(NAME, NbBundle.getMessage(Sequence.class, "Sequence.RenameSequenceAction.text"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			RenameSequenceDialog dialog = new RenameSequenceDialog(Sequence.this);
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Rename Sequence");
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(Sequence.class, "Sequence.RenameSequenceAction.text"));
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);

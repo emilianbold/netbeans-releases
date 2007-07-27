@@ -29,13 +29,14 @@ import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.Sprite;
+import org.openide.util.NbBundle;
 
 
 public class GameDesignTableCellRenderer extends DefaultTableCellRenderer {
 	
-	private ImageIcon iconSprite = new ImageIcon(this.getClass().getResource("res/sprite.png"));
-	private ImageIcon iconTiledLayer = new ImageIcon(this.getClass().getResource("res/tiled.png"));
-	private ImageIcon iconScene = new ImageIcon(this.getClass().getResource("res/scene.png"));
+	private ImageIcon iconSprite = new ImageIcon(this.getClass().getResource("res/sprite.png")); // NOI18N
+	private ImageIcon iconTiledLayer = new ImageIcon(this.getClass().getResource("res/tiled.png")); // NOI18N
+	private ImageIcon iconScene = new ImageIcon(this.getClass().getResource("res/scene.png")); // NOI18N
 
 	
 	public Component getTableCellRendererComponent(JTable table, final Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -45,19 +46,19 @@ public class GameDesignTableCellRenderer extends DefaultTableCellRenderer {
 			this.setHorizontalAlignment(SwingConstants.CENTER);
 			if (value instanceof Sprite) {
 				this.setIcon(iconSprite);
-				this.setToolTipText("Sprite");
+				this.setToolTipText(NbBundle.getMessage(GameDesignTableCellRenderer.class, "GameDesignTableCellRenderer.iconSprite.tooltip"));
 			}
 			else if (value instanceof TiledLayer) {
 				this.setIcon(iconTiledLayer);
-				this.setToolTipText("TiledLayer");
+				this.setToolTipText(NbBundle.getMessage(GameDesignTableCellRenderer.class, "GameDesignTableCellRenderer.iconTiledLayer.tooltip"));
 			}
 		}
 		else if (value instanceof Scene) {
 			this.setIcon(iconScene);
-			this.setToolTipText("Scene");
+			this.setToolTipText(NbBundle.getMessage(GameDesignTableCellRenderer.class, "GameDesignTableCellRenderer.iconScene.tooltip"));
 		}
 		else {
-			throw new IllegalArgumentException("Only Layer or Scene can be rendered.");
+			throw new IllegalArgumentException("Only Layer or Scene can be rendered."); // NOI18N
 		}
 		return this;
 	}

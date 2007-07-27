@@ -101,7 +101,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	}
 	
 	public void paintTileChanged(Tile tile) {
-		if (DEBUG) System.out.println("MainView - paint tile changed " + tile);
+		if (DEBUG) System.out.println("MainView - paint tile changed " + tile); // NOI18N
 		if (tile == null) {
 			return;
 		}
@@ -179,14 +179,14 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 
 
 	
-	public void requestPreview(Previewable previewable) {
+	public void requestPreview(Previewable previewable) { // NOI18N
 		if (DEBUG) System.out.println("Setting preview for: " + previewable);
 		JComponent previewComponent = previewable.getPreview();
 		if (previewComponent != null) {
-			if (DEBUG) System.out.println("PREVIEW REQUESTED COMPONENT FOR: " + previewable.getClass().getName());
+			if (DEBUG) System.out.println("PREVIEW REQUESTED COMPONENT FOR: " + previewable.getClass().getName()); // NOI18N
 			return;
 		}
-		if (DEBUG) System.out.println("!!! CREATE PREVIEW COMPONENT FOR: " + previewable.getClass().getName() + " by implementing Previewable.getPreview() RIGHT NOW !!!");					
+		if (DEBUG) System.out.println("!!! CREATE PREVIEW COMPONENT FOR: " + previewable.getClass().getName() + " by implementing Previewable.getPreview() RIGHT NOW !!!"); // NOI18N
 	}
 	
 	public void closeEditor(Editable editable) {
@@ -211,7 +211,7 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 	
 	public static void main(String[] args) {
 		MainView view  = new MainView();
-		JFrame frame = new JFrame("Zero Effort Game Builder");
+		JFrame frame = new JFrame("Zero Effort Game Builder"); // NOI18N
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(new Dimension(900, 600));
 		frame.getContentPane().setLayout(new BorderLayout());

@@ -35,12 +35,13 @@ import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerNavigator;
 import org.netbeans.modules.vmd.game.preview.SequenceContainerPreview;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 
 	public static final boolean DEBUG = false;
 	
-	public static final String PROPERTY_NAME = "animatedtile.prop.name";
+	public static final String PROPERTY_NAME = "animatedtile.prop.name"; // NOI18N
 	
 	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	private SequenceContainerImpl sequenceContainer;
@@ -60,7 +61,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		super(imageResource, index, width, height);
 		this.sequenceContainer = new SequenceContainerImpl(this, null, this.propertyChangeSupport, imageResource, width, height, false);
 		this.name = name;
-		String seqName = this.getNextSequenceName(this.name + "seq");
+		String seqName = this.getNextSequenceName(this.name + "seq"); // NOI18N
 		Sequence sequence = this.createSequence(seqName, 1, width, height);
 		this.setDefaultSequence(sequence);
 	}
@@ -84,7 +85,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 
 	public void setName(String name) {
 		if (!this.getGameDesign().isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("AnimatedTile cannot be renamed because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("AnimatedTile cannot be renamed because component name '" + name + "' already exists."); // NOI18N
 		}
 		String oldName = this.name;
 		this.name = name;
@@ -161,8 +162,8 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
     	return new ImageResourceInfo(this.getImageResource(), this.getWidth(), this.getHeight(), false);
     }
 	
-	public List getActions() {
-		ArrayList actions = new ArrayList();
+	public List<Action> getActions() {
+		List<Action> actions = new ArrayList<Action>();
 		actions.add(new RenameAction());
 		actions.add(new AddSequenceAction());
 		return actions;
@@ -170,11 +171,11 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	
 	private class AddSequenceAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Add sequence");
+			this.putValue(NAME, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.AddSequenceAction.name"));
 		}
 		public void actionPerformed(ActionEvent e) {
 			NewSequenceDialog dialog = new NewSequenceDialog(AnimatedTile.this, getWidth(), getHeight());
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Add Sequence");
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.AddSequenceAction.name"));
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);
@@ -185,11 +186,11 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 
 	private class RenameAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Rename " + getDisplayableTypeName());
+			this.putValue(NAME, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.RenameAction.name"));
 		}
 		public void actionPerformed(ActionEvent e) {
 			RenameAnimatedTileDialog dialog = new RenameAnimatedTileDialog(AnimatedTile.this);
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Rename " + getDisplayableTypeName());
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.RenameAction.name"));
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);
@@ -198,12 +199,8 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 		}
 	}
 
-	public String getDisplayableTypeName() {
-		return "animated tile";
-	}
-
 	public JComponent getPreview() {
-		return new SequenceContainerPreview("Animated tile:", this);
+		return new SequenceContainerPreview(NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.previewLabel.text"), this);
 	}
 	
 	public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -217,7 +214,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	//--------PropertyChangeListener
 	
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (DEBUG) System.out.println(this.getClass() + "unimplemented propertyChange() from " + evt.getSource());
+		if (DEBUG) System.out.println(this.getClass() + "unimplemented propertyChange() from " + evt.getSource()); // NOI18N
 	}
 
     public void paint(Graphics2D g, int x, int y) {

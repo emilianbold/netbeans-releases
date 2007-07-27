@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.game.model.SequenceContainerListener;
 import org.netbeans.modules.vmd.game.model.SequenceListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -71,15 +72,15 @@ public class SequenceContainerTableAdapter implements TableModel, SequenceContai
 	public String getColumnName(int columnIndex) {
 		switch (columnIndex) {
 			case COL_DEFAULT:
-				return "Default";
+				return NbBundle.getMessage(SequenceContainerTableAdapter.class, "SequenceContainerTableAdapter.columnDefault.txt");
 			case COL_NAME:
-				return "Name";
+				return NbBundle.getMessage(SequenceContainerTableAdapter.class, "SequenceContainerTableAdapter.columnName.txt");
 			case COL_FRAMES:
-				return "Frames";
+				return NbBundle.getMessage(SequenceContainerTableAdapter.class, "SequenceContainerTableAdapter.columnFrames.txt");
 			case COL_DELAY:
-				return "Delay";
+				return NbBundle.getMessage(SequenceContainerTableAdapter.class, "SequenceContainerTableAdapter.columnDelay.txt");
 			default:
-				return "???";
+				return "???"; // NOI18N
 		}
 	}
 
@@ -139,8 +140,10 @@ public class SequenceContainerTableAdapter implements TableModel, SequenceContai
 				String name = (String) aValue;
 				if (!this.sequenceContainer.getGameDesign().isComponentNameAvailable(name)) {
 					DialogDisplayer.getDefault().notify(
-							new DialogDescriptor.Message("Sequence cannot be renamed because component name '" 
-							+ name + "' already exists.", DialogDescriptor.ERROR_MESSAGE)
+							new DialogDescriptor.Message(
+							NbBundle.getMessage(SceneLayerTableAdapter.class, "SequenceContainerTableAdapter.noRenameDialog.txt", name),
+							//"Sequence cannot be renamed because component name '" + name + "' already exists.", 
+							DialogDescriptor.ERROR_MESSAGE)
 					);
 				}
 				else {

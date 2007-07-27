@@ -32,9 +32,9 @@ import java.util.StringTokenizer;
 // HINT - after making change, update GameCodeSupport too
 public final class GamePrimitiveDescriptor implements PrimitiveDescriptorFactory {
 	
-	static final String TYPEID_STRING_TILES = "#TiledLayerTiles";
-	static final String TYPEID_STRING_FRAMES = "#SequenceFrames";
-	static final String TYPEID_STRING_POINT = "#Point";
+	static final String TYPEID_STRING_TILES = "#TiledLayerTiles"; // NOI18N
+	static final String TYPEID_STRING_FRAMES = "#SequenceFrames"; // NOI18N
+	static final String TYPEID_STRING_POINT = "#Point"; // NOI18N
 	
 	static final TilesPrimitiveDescriptor PRIMITIVE_DESCRIPTOR_TILES = new TilesPrimitiveDescriptor();
 	static final FramesPrimitiveDescriptor PRIMITIVE_DESCRIPTOR_FRAMES = new FramesPrimitiveDescriptor();
@@ -84,9 +84,9 @@ public final class GamePrimitiveDescriptor implements PrimitiveDescriptorFactory
 		public String serialize(Object value) {
 			int[] array = (int[]) value;
 			StringBuilder serialized = new StringBuilder();
-			serialized.append(array.length).append(",");
+			serialized.append(array.length).append(","); // NOI18N
 			for (int cell : array) {
-				serialized.append(cell).append(',');
+				serialized.append(cell).append(','); // NOI18N
 			}
 			return serialized.toString();
 		}

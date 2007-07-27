@@ -35,6 +35,7 @@ import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 /**
  *
  * @author  kherink
@@ -75,7 +76,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 		this.buttonAddAnimatedTile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				NewAnimatedTileDialog dialog = new NewAnimatedTileDialog(tiledLayer.getImageResource(), tiledLayer.getTileWidth(), tiledLayer.getTileHeight());
-				DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Animated Tile");
+				DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.newAnimatedTileButton.txt"));
 				dd.setButtonListener(dialog);
 				dd.setValid(false);
 				dialog.setDialogDescriptor(dd);
@@ -125,7 +126,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 
         setLayout(new java.awt.BorderLayout());
 
-        jLabel1.setText("Tiled Layer:");
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.tiledLayerLabel.txt")); // NOI18N
 
         textFieldName.setEditable(false);
         textFieldName.setHorizontalAlignment(javax.swing.JTextField.LEFT);
@@ -134,26 +135,26 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 
         buttonGroupMouseMode.add(toggleButtonPaint);
         toggleButtonPaint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/drawing_mode_16.png"))); // NOI18N
-        toggleButtonPaint.setToolTipText("Paint mode");
+        toggleButtonPaint.setToolTipText(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.paintModeButton.tooltip")); // NOI18N
         toggleButtonPaint.setBorder(null);
         toggleButtonPaint.setBorderPainted(false);
         toggleButtonPaint.setRolloverEnabled(true);
 
         buttonGroupMouseMode.add(toggleButtonSelect);
         toggleButtonSelect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/selection_mode_16.png"))); // NOI18N
-        toggleButtonSelect.setToolTipText("Selection mode");
+        toggleButtonSelect.setToolTipText(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.selectModeButton.tooltip")); // NOI18N
         toggleButtonSelect.setBorder(null);
         toggleButtonSelect.setBorderPainted(false);
         toggleButtonSelect.setRolloverEnabled(true);
 
-        jLabel2.setText("Rows:");
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.tiledLayerRowsLabel.txt")); // NOI18N
 
         textFieldRows.setEditable(false);
         textFieldRows.setHorizontalAlignment(javax.swing.JTextField.LEFT);
         textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
         textFieldRows.setBorder(null);
 
-        jLabel3.setText("Cols:");
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.tiledLayerColsLabel.txt")); // NOI18N
 
         textFieldCols.setEditable(false);
         textFieldCols.setHorizontalAlignment(javax.swing.JTextField.LEFT);
@@ -218,7 +219,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         jSplitPane1.setContinuousLayout(true);
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel2.setToolTipText("Paint mode");
+        jPanel2.setToolTipText("");
         jPanel2.setPreferredSize(new java.awt.Dimension(10000, 10000));
         jPanel2.setLayout(new java.awt.BorderLayout());
         jSplitPane1.setLeftComponent(jPanel2);
@@ -227,8 +228,8 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         panelAnimatedTiles.setLayout(new java.awt.BorderLayout());
 
         buttonAddAnimatedTile.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/new_animated_tile_16.png"))); // NOI18N
-        buttonAddAnimatedTile.setText("New Animated Tile");
-        buttonAddAnimatedTile.setToolTipText("Create new Animated Tile");
+        buttonAddAnimatedTile.setText(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.newAnimatedTileButton.txt")); // NOI18N
+        buttonAddAnimatedTile.setToolTipText(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.newAnimTileButton.tooltip")); // NOI18N
         panelAnimatedTiles.add(buttonAddAnimatedTile, java.awt.BorderLayout.NORTH);
 
         jSplitPane1.setRightComponent(panelAnimatedTiles);

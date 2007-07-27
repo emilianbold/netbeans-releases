@@ -25,6 +25,7 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
 import org.netbeans.modules.vmd.game.model.adapter.SequenceContainerTableAdapter;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -54,7 +55,10 @@ public class SequenceContainerNavigator extends JTable {
 			public Component getTableCellRendererComponent(JTable table, Object value,
 					boolean isSelected, boolean hasFocus, int row, int column) {
 				this.setHorizontalAlignment(SwingConstants.CENTER);
-				return super.getTableCellRendererComponent(table, value + " ms", isSelected, hasFocus, row, column);
+				return super.getTableCellRendererComponent(
+						table, 
+						NbBundle.getMessage(SequenceContainerNavigator.class, "SequenceContainerNavigator.animationDelay.txt", value), 
+						isSelected, hasFocus, row, column);
 			}
 		});
 		

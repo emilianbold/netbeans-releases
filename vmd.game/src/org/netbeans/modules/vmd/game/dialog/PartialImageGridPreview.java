@@ -56,7 +56,7 @@ public class PartialImageGridPreview extends AbstractImagePreviewComponent {
 		this.setMinimumSize(d);
 		this.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
-				if (DEBUG) System.out.println("resized - updating preview");
+				if (DEBUG) System.out.println("resized - updating preview"); // NOI18N
 				PartialImageGridPreview.this.createPartialPreview();
 				PartialImageGridPreview.this.repaint();
 			}
@@ -171,14 +171,14 @@ public class PartialImageGridPreview extends AbstractImagePreviewComponent {
 	}
 	
 	public void setTileWidth(int width) {
-		if (DEBUG) System.out.println("setting tile width to: " + width);
+		if (DEBUG) System.out.println("setting tile width to: " + width); // NOI18N
 		this.tileWidth = width;
 		this.createPartialPreview();
 		this.repaint();
 	}
 	
 	public void setTileHeight(int height) {
-		if (DEBUG) System.out.println("setting tile height to: " + height);
+		if (DEBUG) System.out.println("setting tile height to: " + height); // NOI18N
 		this.tileHeight = height;
 		this.createPartialPreview();
 		this.repaint();
@@ -190,7 +190,7 @@ public class PartialImageGridPreview extends AbstractImagePreviewComponent {
 		//g.setColor(Color.BLACK);
 		//g.drawRoundRect(0, 0, getWidth(), getHeight(), rounding, rounding);
 		if (this.originalImage != null) {
-			if (DEBUG) System.out.println("about to draw image preview: " + this.preview);
+			if (DEBUG) System.out.println("about to draw image preview: " + this.preview); // NOI18N
 			//this.createPreview();
 			int offX = (this.getWidth() - this.preview.getWidth(this)) / 2;
 			int offY = (this.getHeight() - this.preview.getHeight(this)) / 2;

@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.game.nbdialog;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Image;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -38,6 +37,7 @@ import org.netbeans.modules.vmd.game.dialog.PartialImageGridPreview;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -48,7 +48,7 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 	
 	public static final boolean DEBUG = false;
 
-	private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif"));
+	private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
 	
 	private String path;
 	private Collection<FileObject> images;
@@ -87,7 +87,7 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
         jScrollPane2 = new javax.swing.JScrollPane();
         textAreaReason = new javax.swing.JTextArea();
 
-        labelImageFile.setText("Select image:");
+        labelImageFile.setText(org.openide.util.NbBundle.getMessage(SelectImageForLayerDialog.class, "SelectImageForLayerDialog.labelSelectImg.txt")); // NOI18N
 
         listImageFileName.setModel(this.getImageListModel());
         listImageFileName.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -99,8 +99,8 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
             panelCustomizerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(panelCustomizerLayout.createSequentialGroup()
                 .add(labelImageFile)
-                .addContainerGap(221, Short.MAX_VALUE))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 304, Short.MAX_VALUE)
+                .addContainerGap(224, Short.MAX_VALUE))
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE)
         );
         panelCustomizerLayout.setVerticalGroup(
             panelCustomizerLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -110,7 +110,7 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE))
         );
 
-        labelImagePreview.setText("Image preview:");
+        labelImagePreview.setText(org.openide.util.NbBundle.getMessage(SelectImageForLayerDialog.class, "SelectImageForLayerDialog.labelImgPreview.txt")); // NOI18N
 
         panelImage.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(102, 102, 102)));
         this.panelImage.add(this.imagePreview, BorderLayout.CENTER);
@@ -123,10 +123,10 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
             .add(panelPreviewLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+                    .add(panelImage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
                     .add(panelPreviewLayout.createSequentialGroup()
                         .add(labelImagePreview)
-                        .addContainerGap(206, Short.MAX_VALUE))))
+                        .addContainerGap(207, Short.MAX_VALUE))))
         );
         panelPreviewLayout.setVerticalGroup(
             panelPreviewLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -214,7 +214,7 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 	}
 	
 	private void init() {
-		this.labelError.setText("Select image file.");
+		this.labelError.setText(NbBundle.getMessage(SelectImageForLayerDialog.class, "SelectImageForLayerDialog.labelSelectImgDesc.txt"));
 		
 		this.textAreaReason.setBackground(this.getBackground());
 		this.textAreaReason.setText(path);
@@ -274,18 +274,18 @@ public class SelectImageForLayerDialog extends javax.swing.JPanel {
 				imgFile = entry;
 			} catch (MalformedURLException e) {
 				setOKButtonEnabled(false);
-				labelError.setText("Invalid image location.");
+				labelError.setText(NbBundle.getMessage(SelectImageForLayerDialog.class, "SelectImageForLayerDialog.labelInvalidImgLoc.txt"));
 				e.printStackTrace();
 			} catch (IllegalArgumentException iae) {
 				setOKButtonEnabled(false);
-				labelError.setText("Image file contents could not be loaded, image may be corrupt.");
+				labelError.setText(NbBundle.getMessage(SelectImageForLayerDialog.class, "SelectImageForLayerDialog.labelInvalidImgFomat.txt"));
 				iae.printStackTrace();
 			}
 		}
 	}
 	
 	private void loadImagePreview() throws MalformedURLException, IllegalArgumentException {
-		if (DEBUG) System.out.println("load image preview");
+		if (DEBUG) System.out.println("load image preview"); // NOI18N
 		
 		FileObject entry = (FileObject) this.listImageFileName.getSelectedValue();
 		URL imageURL = null;

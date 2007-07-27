@@ -73,7 +73,6 @@ public class SequencePreviewPanel extends javax.swing.JPanel  implements
 		this.buttonPlayForward.addActionListener(this);
 		this.buttonPlayBackward.addActionListener(this);
 		this.buttonPause.addActionListener(this);
-		this.labelName.setToolTipText(this.sequence.getName());
 		
         buttonPlayBackward.setBackground(buttonPlayBackward.getParent().getBackground());
         buttonPause.setBackground(buttonPause.getParent().getBackground());
@@ -152,6 +151,7 @@ public class SequencePreviewPanel extends javax.swing.JPanel  implements
 		}
         this.sequence = sequence;
 		this.labelName.setText(this.sequence.getName());
+		this.labelName.setToolTipText(this.sequence.getName());
 		
 		this.panelSpinner.add(new SequenceTimeSpinner(this.sequence), BorderLayout.CENTER);
 		this.panelSpinner.revalidate();
@@ -247,7 +247,7 @@ public class SequencePreviewPanel extends javax.swing.JPanel  implements
 	public void componentHidden(ComponentEvent e) {
 	}
 	public void componentResized(ComponentEvent e) {
-		if (DEBUG) System.out.println("SequenceAnimatedPreview Resized...");
+		if (DEBUG) System.out.println("SequenceAnimatedPreview Resized..."); // NOI18N
 		//TODO : here i will recalculate cached images
 	}
 	public void componentMoved(ComponentEvent e) {

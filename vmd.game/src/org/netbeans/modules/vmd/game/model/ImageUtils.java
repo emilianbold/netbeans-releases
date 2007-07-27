@@ -52,7 +52,7 @@ public class ImageUtils {
 			g2d.dispose();
 			return copy;
 		} catch (IOException e) {
-			System.out.println("Load Image error for " + imageURL + ":\n" + e);
+			System.out.println("Load Image error for " + imageURL + ":\n" + e); // NOI18N
 			e.printStackTrace();
 			return null;
 		}

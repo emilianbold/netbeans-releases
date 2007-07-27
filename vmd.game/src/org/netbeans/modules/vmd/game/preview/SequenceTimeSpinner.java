@@ -30,6 +30,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.vmd.game.model.Sequence;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,19 +69,19 @@ public class SequenceTimeSpinner extends JSpinner {
 		public SpinnerMSEditor(JSpinner spinner) {
 			this.spinner = spinner;
 			this.spinner.addChangeListener(this);
-			this.setToolTipText("Delay between animation frames in ms");
-			this.setText( ((SpinnerNumberModel) this.spinner.getModel()).getValue()  + " ms");
+			this.setToolTipText(NbBundle.getMessage(SequenceTimeSpinner.class, "SequenceTimeSpinner.tooltip"));
+			this.setText( ((SpinnerNumberModel) this.spinner.getModel()).getValue()  + " ms"); // NOI18N
 			this.setHorizontalAlignment(JTextField.TRAILING);
 			this.addActionListener(this);
 		}
 		public void stateChanged(ChangeEvent e) {
-			this.setText( ((SpinnerNumberModel) this.spinner.getModel()).getValue()  + " ms");
+			this.setText( ((SpinnerNumberModel) this.spinner.getModel()).getValue()  + " ms"); // NOI18N
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			String str = this.getText();
-			if (str.endsWith(" ms")) {
-				str = str.substring(0, str.lastIndexOf(" ms"));
+			if (str.endsWith(" ms")) { // NOI18N
+				str = str.substring(0, str.lastIndexOf(" ms")); // NOI18N
 			}
 			try {
 				int ms = Integer.parseInt(str);

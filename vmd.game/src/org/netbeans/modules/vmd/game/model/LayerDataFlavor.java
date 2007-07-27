@@ -23,7 +23,7 @@ import java.awt.datatransfer.DataFlavor;
 public class LayerDataFlavor extends DataFlavor {
 
 	public LayerDataFlavor() throws ClassNotFoundException {
-		super(DataFlavor.javaJVMLocalObjectMimeType + ";class=" + Layer.class.getName());
+		super(DataFlavor.javaJVMLocalObjectMimeType + ";class=" + Layer.class.getName()); // NOI18N
 	}
 
 }

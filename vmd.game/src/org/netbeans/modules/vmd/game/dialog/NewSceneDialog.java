@@ -20,6 +20,7 @@ package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.Scene;
+import org.openide.util.NbBundle;
 
 public class NewSceneDialog extends AbstractNameValidationDialog {
 
@@ -38,14 +39,14 @@ public class NewSceneDialog extends AbstractNameValidationDialog {
 	}
 		
 	protected String getInitialStateDescriptionText() {
-		return "Enter scene name.";
+		return NbBundle.getMessage(NewSceneDialog.class, "NewSceneDialog.InitialStateDescription.text");
 	}
 	
 	protected String getNameLabelText() {
-		return "Scene name:";
+		return NbBundle.getMessage(NewSceneDialog.class, "NewSceneDialog.NameLabel.text");
 	}
 	protected String getDialogNameText() {
-		return "Create a new Scene";
+		return NbBundle.getMessage(NewSceneDialog.class, "NewSceneDialog.title.text");
 	}
 	protected String getCurrentStateErrorText() {
 		String sceneName = this.fieldName.getText();
@@ -54,7 +55,7 @@ public class NewSceneDialog extends AbstractNameValidationDialog {
 			return this.getInitialStateDescriptionText();
 		}
 		if (!this.gameDesign.isComponentNameAvailable(sceneName)) {
-			return "Component name already exists. Choose a different name.";
+			return NbBundle.getMessage(NewSceneDialog.class, "NewSceneDialog.sceneExistsDescription.text");
 		}		
 		return null;
 	}

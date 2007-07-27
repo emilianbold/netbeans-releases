@@ -60,7 +60,7 @@ public class ImageResource {
 		if (softie != null)
 			img = (BufferedImage) (softie).get();
 		if (img == null) {
-			if (DEBUG) System.out.println(">>>>> " + imageURL + " NOT available - reloading");
+			if (DEBUG) System.out.println(">>>>> " + imageURL + " NOT available - reloading"); // NOI18N
 			img = ImageUtils.loadImage(imageURL);
 			imgSoftReferences.put(imageURL, new SoftReference(img));
 		}
@@ -86,7 +86,7 @@ public class ImageResource {
 	
 	public Sequence createSequence(String name, int numberFrames, int frameWidth, int frameHeight, boolean zeroBasedIndex) {
 		if (!this.gameDesign.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("Sequence cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("Sequence cannot be created because component name '" + name + "' already exists."); // NOI18N
 		}
 		Sequence sequence = new Sequence(name, this, numberFrames, frameWidth, frameHeight, zeroBasedIndex);
 		this.sequences.add(sequence);
@@ -96,7 +96,7 @@ public class ImageResource {
 	
 	public Sequence createSequence(String name, Sequence sequence) {
 		if (!this.gameDesign.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("Sequence cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("Sequence cannot be created because component name '" + name + "' already exists."); // NOI18N
 		}
 		Sequence newSequence = new Sequence(name, sequence);
 		this.sequences.add(newSequence);
@@ -145,7 +145,7 @@ public class ImageResource {
 		assert (this.animatedTiles.get(index) == null);
 		
 		if (!this.gameDesign.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists."); // NOI18N
 		}
 		
 		if (this.animatedTileIndexKey >= index) {
@@ -161,7 +161,7 @@ public class ImageResource {
 	
 	public AnimatedTile createAnimatedTile(String name, int firstStaticTileIndex, int tileWidth, int tileHeight) {
 		if (!this.gameDesign.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists."); // NOI18N
 		}
 		
 		int index = this.animatedTileIndexKey--;
@@ -173,7 +173,7 @@ public class ImageResource {
 		assert (this.animatedTiles.get(index) == null);
 		
 		if (!this.gameDesign.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists."); // NOI18N
 		}
 		
 		if (this.animatedTileIndexKey >= index) {
@@ -187,7 +187,7 @@ public class ImageResource {
 	
 	public AnimatedTile createAnimatedTile(String name, Sequence sequence) {
 		if (!this.gameDesign.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("AnimatedTile cannot be created because component name '" + name + "' already exists."); // NOI18N
 		}
 		int index = this.animatedTileIndexKey--;
 		return this.createAnimatedTile(index, name, sequence);
@@ -385,7 +385,7 @@ public class ImageResource {
 	}
 	
 	public String toString() {
-		return "ImageResource: " + this.imageURL;
+		return "ImageResource: " + this.imageURL; // NOI18N
 	}
 	
 	public GlobalRepository getGameDesign() {

@@ -24,6 +24,6 @@ import java.awt.datatransfer.DataFlavor;
 public class TileDataFlavor extends DataFlavor {
 
 	public TileDataFlavor() throws ClassNotFoundException {
-		super(DataFlavor.javaJVMLocalObjectMimeType + ";class=" + Tile.class.getName());
+		super(DataFlavor.javaJVMLocalObjectMimeType + ";class=" + Tile.class.getName()); // NOI18N
 	}
 }

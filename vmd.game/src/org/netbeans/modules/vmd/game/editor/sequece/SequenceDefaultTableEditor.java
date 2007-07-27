@@ -34,7 +34,6 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.CellEditorListener;
-import javax.swing.event.EventListenerList;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 
@@ -92,20 +91,20 @@ public class SequenceDefaultTableEditor extends JRadioButton implements TableCel
 			if (hasFocus) {
 				Border border = null;
 				if (isSelected) {
-					border = UIManager.getBorder("Table.focusSelectedCellHighlightBorder");
+					border = UIManager.getBorder("Table.focusSelectedCellHighlightBorder"); // NOI18N
 				}
 				if (border == null) {
-					border = UIManager.getBorder("Table.focusCellHighlightBorder");
+					border = UIManager.getBorder("Table.focusCellHighlightBorder"); // NOI18N
 				}
 				this.panel.setBorder(border);
 				
 				if (!isSelected && table.isCellEditable(row, column)) {
 					Color col;
-					col = UIManager.getColor("Table.focusCellForeground");
+					col = UIManager.getColor("Table.focusCellForeground"); // NOI18N
 					if (col != null) {
 						super.setForeground(col);
 					}
-					col = UIManager.getColor("Table.focusCellBackground");
+					col = UIManager.getColor("Table.focusCellBackground"); // NOI18N
 					if (col != null) {
 						super.setBackground(col);
 					}
@@ -115,7 +114,7 @@ public class SequenceDefaultTableEditor extends JRadioButton implements TableCel
 			}
 			return this.panel;
 		}
-		throw new IllegalArgumentException("Only Boolean can be rendered!");
+		throw new IllegalArgumentException("Only Boolean can be rendered!"); // NOI18N
 	}
 	
 	//------------ TableCellEditor -------------------
@@ -125,7 +124,7 @@ public class SequenceDefaultTableEditor extends JRadioButton implements TableCel
 			this.setSelected((Boolean) value);
 			return this;
 		}
-		throw new IllegalArgumentException("Only Boolean can be edited.");
+		throw new IllegalArgumentException("Only Boolean can be edited."); // NOI18N
 	}
 	
 	public void addCellEditorListener(CellEditorListener listener) {

@@ -37,6 +37,7 @@ import org.netbeans.modules.vmd.game.editor.tiledlayer.TiledLayerNavigator;
 import org.netbeans.modules.vmd.game.editor.tiledlayer.TiledLayerPreviewPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 public class TiledLayer extends Layer {
 
@@ -382,20 +383,20 @@ public class TiledLayer extends Layer {
 	}
 
 	public List<Action> getActions() {
-		List superActions = super.getActions();
-		ArrayList actions = new ArrayList<Action>();
-		actions.add(new RenameAction());
+		List<Action> superActions = super.getActions();
+		List<Action> actions = new ArrayList<Action>();
 		actions.addAll(superActions);
+		actions.add(new RenameAction());
 		return actions;
 	}
 	
 	public class RenameAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Rename " + getDisplayableTypeName());
+			this.putValue(NAME,  NbBundle.getMessage(TiledLayer.class, "TiledLayer.RenameAction.text"));
 		}
 		public void actionPerformed(ActionEvent e) {
 			RenameTiledLayerDialog dialog = new RenameTiledLayerDialog(TiledLayer.this);
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Rename Tiled Layer");
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(TiledLayer.class, "TiledLayer.RenameAction.text"));
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);
@@ -405,7 +406,7 @@ public class TiledLayer extends Layer {
 	}
 
 	public String getDisplayableTypeName() {
-		return "tiled layer";
+		return NbBundle.getMessage(TiledLayer.class, "TiledLayer.text");
 	}
 	
 	public int[][] getTiles() {

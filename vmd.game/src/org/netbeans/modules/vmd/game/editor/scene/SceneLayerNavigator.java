@@ -143,7 +143,7 @@ public class SceneLayerNavigator extends JTable {
 				return;
 			int selectedLayerIndex = SceneLayerNavigator.this.getSelectionModel().getAnchorSelectionIndex();
 			Layer selectedLayer = SceneLayerNavigator.this.scene.getLayerAt(selectedLayerIndex);
-			if (DEBUG) System.out.println(selectedLayer + " has been selected.");
+			if (DEBUG) System.out.println(selectedLayer + " has been selected."); // NOI18N
 			selectedLayer.getGameDesign().getMainView().requestPreview(selectedLayer);
 		}
 	}
@@ -154,10 +154,10 @@ public class SceneLayerNavigator extends JTable {
 		public void dragGestureRecognized(DragGestureEvent dge) {
 			Point dragOrigin = dge.getDragOrigin();
 			int srcRow = SceneLayerNavigator.this.rowAtPoint(dragOrigin);
-			if (DEBUG) System.out.println("dragGestureRecognized @ " + dragOrigin + " row: " + srcRow);
+			if (DEBUG) System.out.println("dragGestureRecognized @ " + dragOrigin + " row: " + srcRow); // NOI18N
 			Layer payload = (Layer) SceneLayerNavigator.this.scene.getLayerAt(srcRow);
 			//Cursor.getPredefinedCursor(Cursor.getSystemCustomCursor(null));
-			if (DEBUG) System.out.println("payload = " + payload);
+			if (DEBUG) System.out.println("payload = " + payload); // NOI18N
 			SceneLayerNavigator.this.setRowSelectionInterval(srcRow, srcRow);
 			dge.startDrag(null, payload, this);
 		}
@@ -165,10 +165,10 @@ public class SceneLayerNavigator extends JTable {
 		public void dragDropEnd(DragSourceDropEvent dsde) {
 			super.dragDropEnd(dsde);
 			if (dsde.getDropSuccess()) {
-				if (DEBUG) System.out.println("Drop End - success");
+				if (DEBUG) System.out.println("Drop End - success"); // NOI18N
 			} 
 			else {
-				if (DEBUG) System.out.println("Drop End - failure!!!");
+				if (DEBUG) System.out.println("Drop End - failure!!!"); // NOI18N
 			}
 		}
 	}
@@ -176,7 +176,7 @@ public class SceneLayerNavigator extends JTable {
 	private class TableDropTarget extends DropTargetAdapter {
 		public void drop(DropTargetDropEvent dtde) {
 			Point dropPoint = dtde.getLocation();
-			if (DEBUG) System.out.println("Start drop @: " + dropPoint);
+			if (DEBUG) System.out.println("Start drop @: " + dropPoint); // NOI18N
 			int dropRow = SceneLayerNavigator.this.rowAtPoint(dropPoint);
 			Transferable transferable = dtde.getTransferable();
 			try {
@@ -188,7 +188,7 @@ public class SceneLayerNavigator extends JTable {
 					dtde.dropComplete(true);
 				} 
 				else {
-					if (DEBUG) System.out.println("NOT a Layer ... weird.");
+					if (DEBUG) System.out.println("NOT a Layer ... weird."); // NOI18N
 				}
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
@@ -202,7 +202,7 @@ public class SceneLayerNavigator extends JTable {
 			}
 		}
 		public void dragExit(DropTargetEvent dte) {
-			if (DEBUG) System.out.println("dragExit");
+			if (DEBUG) System.out.println("dragExit"); // NOI18N
 		}
 	}
 }

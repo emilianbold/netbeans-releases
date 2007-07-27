@@ -72,10 +72,10 @@ public class BooleanTableCellRenderer extends JCheckBox implements TableCellRend
 	}
 	
 	private void initIcons() throws MalformedURLException {
-		this.iconVisible = new ImageIcon(this.getClass().getResource("res/visible.png"));
-		this.iconInvisible = new ImageIcon(this.getClass().getResource("res/invisible.png"));
-		this.iconLocked = new ImageIcon(this.getClass().getResource("res/lock.png"));
-		this.iconUnlocked = new ImageIcon(this.getClass().getResource("res/unlock.png"));
+		this.iconVisible = new ImageIcon(this.getClass().getResource("res/visible.png")); // NOI18N
+		this.iconInvisible = new ImageIcon(this.getClass().getResource("res/invisible.png")); // NOI18N
+		this.iconLocked = new ImageIcon(this.getClass().getResource("res/lock.png")); // NOI18N
+		this.iconUnlocked = new ImageIcon(this.getClass().getResource("res/unlock.png")); // NOI18N
 	}
 	
 	public Component getTableCellRendererComponent(JTable table, final Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -94,14 +94,14 @@ public class BooleanTableCellRenderer extends JCheckBox implements TableCellRend
 			setFont(table.getFont());
 			
 			if (hasFocus) {
-				setBorder(UIManager.getBorder("Table.focusCellHighlightBorder"));
+				setBorder(UIManager.getBorder("Table.focusCellHighlightBorder")); // NOI18N
 				if (!isSelected && table.isCellEditable(row, column)) {
 					Color col;
-					col = UIManager.getColor("Table.focusCellForeground");
+					col = UIManager.getColor("Table.focusCellForeground"); // NOI18N
 					if (col != null) {
 						super.setForeground(col);
 					}
-					col = UIManager.getColor("Table.focusCellBackground");
+					col = UIManager.getColor("Table.focusCellBackground"); // NOI18N
 					if (col != null) {
 						super.setBackground(col);
 					}
@@ -113,7 +113,7 @@ public class BooleanTableCellRenderer extends JCheckBox implements TableCellRend
 			return this;
 		} 
 		else {
-			throw new IllegalArgumentException("Only Boolean can be rendered.");
+			throw new IllegalArgumentException("Only Boolean can be rendered."); // NOI18N
 		}
 	}
 	
@@ -123,7 +123,7 @@ public class BooleanTableCellRenderer extends JCheckBox implements TableCellRend
 			this.setSelected(((Boolean) value).booleanValue());
 			return this;
 		} 
-		throw new IllegalArgumentException("Only Boolean can be edited.");
+		throw new IllegalArgumentException("Only Boolean can be edited."); // NOI18N
 	}
 	
 	private void setImages(int col) {

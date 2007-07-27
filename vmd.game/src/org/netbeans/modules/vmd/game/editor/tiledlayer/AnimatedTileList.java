@@ -129,10 +129,10 @@ public class AnimatedTileList extends JList {
 		public void dragDropEnd(DragSourceDropEvent dsde) {
 			super.dragDropEnd(dsde);
 			if (dsde.getDropSuccess()) {
-				if (DEBUG) System.out.println("Drop successful");
+				if (DEBUG) System.out.println("Drop successful"); // NOI18N
 			}
 			else {
-				if (DEBUG) System.out.println("Drop unsuccessful");				
+				if (DEBUG) System.out.println("Drop unsuccessful"); // NOI18N			
 			}
 		}	
 	}

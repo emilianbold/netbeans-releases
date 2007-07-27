@@ -51,13 +51,13 @@ public class FullImageGridPreview extends AbstractImagePreviewComponent {
     }
 	
 	public void setTileWidth(int width) {
-		if (DEBUG) System.out.println("setting tile width to: " + width);
+		if (DEBUG) System.out.println("setting tile width to: " + width); // NOI18N
 		this.cellWidth = width;
 		this.repaint();
 	}
 	
 	public void setTileHeight(int height) {
-		if (DEBUG) System.out.println("setting tile height to: " + height);
+		if (DEBUG) System.out.println("setting tile height to: " + height); // NOI18N
 		this.cellHeight = height;
 		this.repaint();
 	}
@@ -111,10 +111,10 @@ public class FullImageGridPreview extends AbstractImagePreviewComponent {
 	
 	void paintCells(Graphics2D g) {
 		Rectangle rect = g.getClipBounds();
-		if (DEBUG) System.out.println("Paint cell: " + rect);
+		if (DEBUG) System.out.println("Paint cell: " + rect); // NOI18N
 		Position topLeft = this.getCellAtPoint(rect.getLocation());
 		Position bottomRight = this.getCellAtCoordinates(rect.getLocation().x + rect.width, rect.getLocation().y + rect.height);
-		if (DEBUG) System.out.println("topLeft: " + topLeft + ", bottomRight: " + bottomRight);
+		if (DEBUG) System.out.println("topLeft: " + topLeft + ", bottomRight: " + bottomRight); // NOI18N
 		//rows
 		for (int row = topLeft.getRow(); row <= bottomRight.getRow(); row++) {
 			//cols

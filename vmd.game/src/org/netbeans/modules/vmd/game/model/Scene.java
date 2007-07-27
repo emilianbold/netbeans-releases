@@ -45,13 +45,14 @@ import org.netbeans.modules.vmd.game.nbdialog.TiledLayerDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 public class Scene implements GlobalRepositoryListener, PropertyChangeListener, Previewable, Editable {
 
 	public static final boolean DEBUG = false;
 	
-	public static final String PROPERTY_NAME = "prop.name";
-	public static final String PROPERTY_LAYERS_BOUNDS = "prop.layers.bounds";
+	public static final String PROPERTY_NAME = "prop.name"; // NOI18N
+	public static final String PROPERTY_LAYERS_BOUNDS = "prop.layers.bounds"; // NOI18N
 
 	EventListenerList listenerList = new EventListenerList();
 
@@ -95,7 +96,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 
 	public void setName(String name) {
 		if (!this.gameDesign.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("Scene cannot be renamed because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("Scene cannot be renamed because component name '" + name + "' already exists."); // NOI18N
 		}
 		String oldName = this.name;
 		this.name = name;
@@ -174,7 +175,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	 * if the layer is already in the scene it is first removed.
 	 */
 	public void append(Layer layer) {
-		if (DEBUG) System.out.println(this + " append " + layer);
+		if (DEBUG) System.out.println(this + " append " + layer); // NOI18N
 		if (this.layers.contains(layer)) {
 			this.remove(layer);
 		}
@@ -192,7 +193,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	 * if the layer is already in the scene it is first removed.
 	 */
 	public void insert(Layer layer, int index) {
-		if (DEBUG) System.out.println(this + " insert " + layer);
+		if (DEBUG) System.out.println(this + " insert " + layer); // NOI18N
 		if (this.layers.contains(layer)) {
 			this.move(layer, index);
 			return;
@@ -209,7 +210,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	 * Removed the layer from this scene.
 	 */
 	public void remove(Layer layer) {
-		if (DEBUG) System.out.println(this + " remove " + layer);
+		if (DEBUG) System.out.println(this + " remove " + layer); // NOI18N
 		int index = layers.indexOf(layer);
 		if (this.layers.remove(layer)) {
 			layer.removePropertyChangeListener(this);
@@ -224,10 +225,10 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	public void move(Layer layer, int newIndex) {
 		int oldIndex = layers.indexOf(layer);
 		if (oldIndex == -1) {
-			if (DEBUG) System.out.println(this + " cannot move " + layer + " - it is not present");
+			if (DEBUG) System.out.println(this + " cannot move " + layer + " - it is not present"); // NOI18N
 			return;
 		}
-		if (DEBUG) System.out.println(this + " move " + layer + " from " + oldIndex + " to " + newIndex);
+		if (DEBUG) System.out.println(this + " move " + layer + " from " + oldIndex + " to " + newIndex); // NOI18N
 		this.layers.remove(layer);
 		this.layers.ensureCapacity(newIndex + 1);
 		this.layers.add(newIndex, layer);
@@ -367,8 +368,8 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	
 	public void setLayerPosition(Layer layer, Point position, boolean inTransition) {
 		if (this.isLayerLocked(layer))
-			throw new IllegalArgumentException("Layer: " + layer + " is locked");
-		if (DEBUG) System.out.println(layer + " set position " + position);
+			throw new IllegalArgumentException("Layer: " + layer + " is locked"); // NOI18N
+		if (DEBUG) System.out.println(layer + " set position " + position); // NOI18N
 		LayerInfo info = (LayerInfo) this.getLayerInfo(layer);
 		Point old = info.getPosition();
 		info.setPosition(position);
@@ -381,7 +382,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	}
 
 	public void setLayerVisible(Layer layer, boolean visible) {
-		if (DEBUG) System.out.println(layer + " set visible " + visible);
+		if (DEBUG) System.out.println(layer + " set visible " + visible); // NOI18N
 		((LayerInfo) this.getLayerInfo(layer)).setVisible(visible);
 		this.fireLayerVisibilityModified(layer, this.layers.indexOf(layer), visible);
 	}
@@ -391,7 +392,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	}
 
 	public void setLayerLocked(Layer layer, boolean locked) {
-		if (DEBUG) System.out.println(layer + " set locked " + locked);
+		if (DEBUG) System.out.println(layer + " set locked " + locked); // NOI18N
 		((LayerInfo) this.getLayerInfo(layer)).setLocked(locked);
 		this.fireLayerLockModified(layer, this.layers.indexOf(layer), locked);
 	}
@@ -408,7 +409,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		
 		@Override
 		public String toString() {
-			return "Position: " + this.position + ", visible: " + this.visible + ", locked: " + this.locked;
+			return "Position: " + this.position + ", visible: " + this.visible + ", locked: " + this.locked; // NOI18N
 		}
 		
 		/**
@@ -437,7 +438,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 		}
 
 		public void setLocked(boolean locked) {
-			if (DEBUG) System.out.println("setting layer locked = " + locked);
+			if (DEBUG) System.out.println("setting layer locked = " + locked); // NOI18N
 			this.locked = locked;
 		}
 
@@ -445,7 +446,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 
 	// PropertyChangeListener
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (DEBUG) System.out.println("property change from " + evt.getSource() + " new value: " + evt.getNewValue());
+		if (DEBUG) System.out.println("property change from " + evt.getSource() + " new value: " + evt.getNewValue()); // NOI18N
 	}
 
 	public JComponent getEditor() {
@@ -470,32 +471,32 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 
 		public int compare(Object arg0, Object arg1) {
 			if (!(arg0 instanceof Scene) || !(arg1 instanceof Scene))
-				throw new ClassCastException("Compared object not instance of Scene");
+				throw new ClassCastException("Compared object not instance of Scene"); // NOI18N
 			Scene s0 = (Scene) arg0;
 			Scene s1 = (Scene) arg1;
 			return (s0.getName().compareTo(s1.getName()));
 		}
 	}
 
-	public List getActions() {
+	public List<Action> getActions() {
 		ArrayList<Action> actions = new ArrayList<Action>();
 		actions.add(new EditSceneAction());
-		actions.add(new RenameSceneAction());
-		actions.add(new CreateSpriteAction());
-		actions.add(new CreateTiledLayerAction());
+//		actions.add(new CreateSpriteAction());
+//		actions.add(new CreateTiledLayerAction());
 		actions.add(new RemoveSceneAction());
+		actions.add(new RenameSceneAction());
 		return Collections.unmodifiableList(actions);
 	}
 
 	
 	public class RenameSceneAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Rename scene");
+			this.putValue(NAME, NbBundle.getMessage(Scene.class, "Scene.RenameSceneAction.text"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			RenameSceneDialog dialog = new RenameSceneDialog(Scene.this);
-			DialogDescriptor dd = new DialogDescriptor(dialog, "Rename Scene");
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(Scene.class, "Scene.RenameSceneAction.text"));
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);
@@ -506,25 +507,22 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	
 	public class EditSceneAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Edit scene");
+			this.putValue(NAME, NbBundle.getMessage(Scene.class, "Scene.EditSceneAction.text"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			EditorManager manager = (EditorManager) this.getValue(Editable.ACTION_PROP_EDITOR_MANAGER);
-			if (manager != null) {
-				manager.requestEditing(Scene.this);
-			}
+			Scene.this.gameDesign.getMainView().requestEditing(Scene.this);
 		}
 	}
 
 	public class CreateSpriteAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Create sprite");
+			this.putValue(NAME, NbBundle.getMessage(Scene.class, "Scene.CreateSpriteAction.text"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			SpriteDialog nld = new SpriteDialog(Scene.this);
-			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new Sprite");
+			DialogDescriptor dd = new DialogDescriptor(nld, NbBundle.getMessage(Scene.class, "Scene.CreateSpriteAction.text"));
 			dd.setButtonListener(nld);
 			dd.setValid(false);
 			nld.setDialogDescriptor(dd);
@@ -535,12 +533,12 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 
 	public class CreateTiledLayerAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Create tiled layer");
+			this.putValue(NAME, NbBundle.getMessage(Scene.class, "Scene.CreateTiledLayerAction.text"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
 			TiledLayerDialog nld = new TiledLayerDialog(Scene.this);
-			DialogDescriptor dd = new DialogDescriptor(nld, "Create a new Tiled Layer");
+			DialogDescriptor dd = new DialogDescriptor(nld, NbBundle.getMessage(Scene.class, "Scene.CreateTiledLayerAction.text"));
 			dd.setButtonListener(nld);
 			dd.setValid(false);
 			nld.setDialogDescriptor(dd);
@@ -551,18 +549,19 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 
 	public class RemoveSceneAction extends AbstractAction {
 		{
-			this.putValue(NAME, "Remove scene");
+			this.putValue(NAME, NbBundle.getMessage(Scene.class, "Scene.RemoveSceneAction.text"));
 		}
 
 		public void actionPerformed(ActionEvent e) {
-				Object response = DialogDisplayer.getDefault().notify(new NotifyDescriptor("Are you sure you wish to delete scene " + getName() + "?",
-						"Delete scene?",
+				Object response = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+						NbBundle.getMessage(Scene.class, "Scene.removeDialog.text", getName()),
+						NbBundle.getMessage(Scene.class, "Scene.RemoveSceneAction.text"),
 						NotifyDescriptor.YES_NO_OPTION,
 						NotifyDescriptor.QUESTION_MESSAGE,
 						new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
 						NotifyDescriptor.YES_OPTION));
 				if (response == NotifyDescriptor.YES_OPTION) {
-					System.out.println("said YES to delete scene");
+					System.out.println("said YES to delete scene"); // NOI18N
 					gameDesign.removeScene(Scene.this);
 				}
 		}

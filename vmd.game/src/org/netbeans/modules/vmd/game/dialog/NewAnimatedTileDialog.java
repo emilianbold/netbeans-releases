@@ -22,6 +22,7 @@ package org.netbeans.modules.vmd.game.dialog;
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
 import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Tile;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -42,15 +43,15 @@ public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 	}
 
 	protected String getInitialStateDescriptionText() {
-		return "Enter Animated Tile name.";
+		return NbBundle.getMessage(NewAnimatedTileDialog.class, "NewAnimatedTileDialog.InitialStateDescription.text");
 	}
 	
 	protected String getNameLabelText() {
-		return "Animated Tile name:";
+		return NbBundle.getMessage(NewAnimatedTileDialog.class, "NewAnimatedTileDialog.NameLabel.text");
 	}
 	
 	protected String getDialogNameText() {
-		return "Create new Animated Tile";
+		return NbBundle.getMessage(NewAnimatedTileDialog.class, "NewAnimatedTileDialog.title.text");
 	}
 	
 	protected String getCurrentStateErrorText() {
@@ -62,7 +63,7 @@ public class NewAnimatedTileDialog extends AbstractNameValidationDialog {
 			return this.getInitialStateDescriptionText();
 		}
 		if (!this.imageResource.getGameDesign().isComponentNameAvailable(name)) {
-			errMsg = "Component name already exists. Choose a different name.";
+			errMsg = NbBundle.getMessage(NewAnimatedTileDialog.class, "NewAnimatedTileDialog.animatedTileExistsDescription.text");
 		}
 		return errMsg;
 	}

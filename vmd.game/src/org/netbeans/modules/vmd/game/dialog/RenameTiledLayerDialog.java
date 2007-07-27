@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.TiledLayer;
+import org.openide.util.NbBundle;
 
 public class RenameTiledLayerDialog extends AbstractNameValidationDialog {
 
@@ -30,14 +31,14 @@ public class RenameTiledLayerDialog extends AbstractNameValidationDialog {
 	}
 	
 	protected String getInitialStateDescriptionText() {
-		return "Enter tiled layer name.";
+		return NbBundle.getMessage(RenameTiledLayerDialog.class, "RenameTiledLayerDialog.InitialStateDescription.text");
 	}
 	
 	protected String getNameLabelText() {
-		return "Tiled layer name:";
+		return NbBundle.getMessage(RenameTiledLayerDialog.class, "RenameTiledLayerDialog.NameLabel.text");
 	}
 	protected String getDialogNameText() {
-		return "Rename tiled layer";
+		return NbBundle.getMessage(RenameTiledLayerDialog.class, "RenameTiledLayerDialog.title.text");
 	}
 	protected String getCurrentStateErrorText() {
 		String errMsg = null; 
@@ -48,7 +49,7 @@ public class RenameTiledLayerDialog extends AbstractNameValidationDialog {
 		}
 		
 		if (!RenameTiledLayerDialog.this.tiledLayer.getGameDesign().isComponentNameAvailable(name)) {
-			errMsg = "Component name already exists. Choose a different name.";
+			errMsg = NbBundle.getMessage(RenameTiledLayerDialog.class, "RenameTiledLayerDialog.tiledLayerExistsDescription.text");
 		}		
 		return errMsg;
 	}

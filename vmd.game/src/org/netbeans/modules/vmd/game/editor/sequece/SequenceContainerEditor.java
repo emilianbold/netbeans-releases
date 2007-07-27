@@ -52,6 +52,7 @@ import org.netbeans.modules.vmd.game.model.SequenceContainerListener;
 import org.netbeans.modules.vmd.game.model.StaticTile;
 import org.netbeans.modules.vmd.game.preview.SequencePreviewPanel;
 import org.netbeans.modules.vmd.game.view.main.MainView;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -278,7 +279,7 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		}
 		
 		public String getToolTipText(MouseEvent event) {
-			return "Sequence index: " + this.getColumnAtPoint(event.getPoint());
+			return NbBundle.getMessage(SequenceContainerEditor.class, "SequenceContainerEditor.ruler.tooltip", this.getColumnAtPoint(event.getPoint()));
 		}
 		
 		public Dimension getPreferredSize() {
@@ -293,7 +294,7 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 			g.setColor(Color.WHITE);
 			g.fill(rect);
 			
-			if (DEBUG) System.out.println("RulerHorizontal.repaint " + rect);
+			if (DEBUG) System.out.println("RulerHorizontal.repaint " + rect); // NOI18N 
 			
 			int unit = 1 + SequenceContainerEditor.this.filmUnitWidth;
 			
@@ -326,8 +327,8 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 	
 	public static void main(String[] args) {
 		GlobalRepository gameDesign = new GlobalRepository(null);
-		URL imageURL = SequenceEditingPanel.class.getResource("../../view/main/res/color_tiles.png");
-		ImageResource imgRes = gameDesign.getImageResource(imageURL, "Path");
+		URL imageURL = SequenceEditingPanel.class.getResource("../../view/main/res/color_tiles.png"); // NOI18N 
+		ImageResource imgRes = gameDesign.getImageResource(imageURL, "Path"); // NOI18N 
 		
 		Sequence s1 = imgRes.createSequence("seq1", 5, 20, 20, true);
 		s1.setFrame((StaticTile) imgRes.getTile(1, 20, 20, true), 0);
@@ -356,7 +357,7 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		
 		SequenceContainerEditor sep = new SequenceContainerEditor(at);
 		
-		JFrame frame = new JFrame("Test SequenceEditing Panel");
+		JFrame frame = new JFrame("Test SequenceEditing Panel"); // NOI18N 
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(new Dimension(900, 600));
 		frame.getContentPane().setLayout(new BorderLayout());

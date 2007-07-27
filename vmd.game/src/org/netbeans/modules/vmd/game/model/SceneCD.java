@@ -32,8 +32,8 @@ public class SceneCD extends ComponentDescriptor {
 
 	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.Scene"); // NOI18N
 
-	public static final String PROPERTY_NAME = "scenecd.prop.name";
-	public static final String PROPERTY_SCENE_ITEMS = "scenecd.prop.sceneitems";
+	public static final String PROPERTY_NAME = "scenecd.prop.name"; // NOI18N
+	public static final String PROPERTY_SCENE_ITEMS = "scenecd.prop.sceneitems"; // NOI18N
 
     public TypeDescriptor getTypeDescriptor() {
         return new TypeDescriptor(null, TYPEID, true, false);

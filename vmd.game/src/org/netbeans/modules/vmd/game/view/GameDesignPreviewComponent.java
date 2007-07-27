@@ -10,7 +10,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.List;
+import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
 import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 
@@ -90,11 +93,26 @@ public class GameDesignPreviewComponent extends javax.swing.JPanel implements Mo
     }
 
     public void mousePressed(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			this.handlePopup(e);
+		}
     }
 
     public void mouseReleased(MouseEvent e) {
+		if (e.isPopupTrigger()) {
+			this.handlePopup(e);
+		}
     }
-
+	
+	private void handlePopup(MouseEvent e) {
+		JPopupMenu menu = new JPopupMenu();
+		List<Action> actions = this.editable.getActions();
+		for (Action action : actions) {
+			menu.add(action);
+		}
+		menu.show(this, e.getX(), e.getY());
+	}
+	
     public void mouseEntered(MouseEvent e) {
         jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 164, 0), 1, true));
         jLabel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 164, 0), 1, true));

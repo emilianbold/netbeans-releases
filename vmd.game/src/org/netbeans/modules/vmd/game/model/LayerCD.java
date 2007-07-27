@@ -31,8 +31,8 @@ public class LayerCD extends ComponentDescriptor {
 	
 	public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.modules.vmd.game.model.Layer"); // NOI18N
 	
-	public static final String PROPERTY_NAME = "layercd.prop.name";
-	public static final String PROPERTY_IMAGE_RESOURCE = "layercd.prop.imageresource";
+	public static final String PROPERTY_NAME = "layercd.prop.name"; // NOI18N
+	public static final String PROPERTY_IMAGE_RESOURCE = "layercd.prop.imageresource"; // NOI18N
 	public static final String PROPERTY_TILE_WIDTH = "layercd.prop.tile.width"; // NOI18N
 	public static final String PROPERTY_TILE_HEIGHT = "layercd.prop.tile.height"; // NOI18N
 	

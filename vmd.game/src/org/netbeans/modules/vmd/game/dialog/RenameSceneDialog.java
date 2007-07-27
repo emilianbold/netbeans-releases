@@ -19,6 +19,7 @@
 package org.netbeans.modules.vmd.game.dialog;
 
 import org.netbeans.modules.vmd.game.model.Scene;
+import org.openide.util.NbBundle;
 
 public class RenameSceneDialog extends AbstractNameValidationDialog {
 
@@ -30,15 +31,15 @@ public class RenameSceneDialog extends AbstractNameValidationDialog {
 	}
 	
 	protected String getInitialStateDescriptionText() {
-		return "Enter scene name.";
+		return NbBundle.getMessage(RenameSceneDialog.class, "RenameSceneDialog.InitialStateDescription.text");
 	}
 	
 	protected String getNameLabelText() {
-		return "Scene name:";
+		return NbBundle.getMessage(RenameSceneDialog.class, "RenameSceneDialog.NameLabel.text");
 	}
 	
 	protected String getDialogNameText() {
-		return "Rename scene";
+		return NbBundle.getMessage(RenameSceneDialog.class, "RenameSceneDialog.title.text");
 	}
 	
 	protected String getCurrentStateErrorText() {
@@ -50,7 +51,7 @@ public class RenameSceneDialog extends AbstractNameValidationDialog {
 		}
 		
 		if (!scene.getGameDesign().isComponentNameAvailable(name)) {
-			errMsg = "Component name already exists. Choose a different name.";
+			errMsg = NbBundle.getMessage(RenameSceneDialog.class, "RenameSceneDialog.sceneExistsDescription.text");
 		}		
 		return errMsg;
 	}

@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,6 +38,7 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.game.view.GameDesignOverViewPanel;
 import org.netbeans.modules.vmd.game.view.main.MainView;
+import org.openide.util.NbBundle;
 
 public class GlobalRepository implements PropertyChangeListener, Editable {
 
@@ -121,10 +123,10 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 			this.fireImageResourceAdded(imgResource);
 			
 			if (DEBUG) {
-				System.out.println("Added " + imageURL + ". ImgResourceMap now contains:");
+				System.out.println("Added " + imageURL + ". ImgResourceMap now contains:"); // NOI18N 
 				for (Iterator iter = imgResourceMap.keySet().iterator(); iter.hasNext();) {
 					URL url = (URL) iter.next();
-					System.out.println("\t" + url);
+					System.out.println("\t" + url); // NOI18N 
 				}
 			}//end DEBUG
 		}
@@ -305,7 +307,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
-		if (DEBUG) System.out.println("GlobalRepository propertyChange() event: " + evt);
+		if (DEBUG) System.out.println("GlobalRepository propertyChange() event: " + evt); // NOI18N 
 		if (evt.getSource() instanceof Layer) {
 			Layer layer = (Layer) evt.getSource();
 			if (evt.getPropertyName().equals(Layer.PROPERTY_LAYER_NAME)) {
@@ -318,7 +320,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 
 	public Scene createScene(String name) {
 		if (!this.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists."); // NOI18N 
 		}
 		Scene scene = new Scene(this, name);
 		this.addScene(scene);
@@ -327,7 +329,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	
 	public Scene createScene(String name, Scene original) {
 		if (!this.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists."); // NOI18N 
 		}
 		Scene scene = new Scene(this, name, original);
 		this.addScene(scene);
@@ -336,7 +338,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	
 	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int rows, int columns, int tileWidth, int tileHeight) {
 		if (!this.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("Scene cannot be created because component name '" + name + "' already exists."); // NOI18N 
 		}
 		TiledLayer layer = new TiledLayer(this, name, imageResource, rows, columns, tileWidth, tileHeight);
 		this.addTiledLayer(layer);
@@ -345,7 +347,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 
 	public TiledLayer createTiledLayer(String name, ImageResource imageResource, int[][] grid, int tileWidth, int tileHeight) {
 		if (!this.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("TiledLayer cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("TiledLayer cannot be created because component name '" + name + "' already exists."); // NOI18N 
 		}		
 		TiledLayer layer = new TiledLayer(this, name, imageResource, grid, tileWidth, tileHeight);
 		this.addTiledLayer(layer);
@@ -354,7 +356,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 
 	public TiledLayer duplicateTiledLayer(String name, TiledLayer original) {
 		if (!this.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("TiledLayer cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("TiledLayer cannot be created because component name '" + name + "' already exists."); // NOI18N 
 		}
 		TiledLayer layer = new TiledLayer(this, name, original);
 		this.addTiledLayer(layer);
@@ -364,7 +366,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	public Sprite createSprite(String name, ImageResource imageResource, int numberFrames, int frameWidth, int frameHeight) {
 		assert (numberFrames >= 1);
 		if (!this.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("Sprite cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("Sprite cannot be created because component name '" + name + "' already exists."); // NOI18N 
 		}
 		Sprite sprite = new Sprite(this, name, imageResource, numberFrames, frameWidth, frameHeight);
 		this.addSprite(sprite);
@@ -373,7 +375,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	public Sprite createSprite(String name, ImageResource imageResource, Sequence defaultSequence) {
 		assert (defaultSequence != null);
 		if (!this.isComponentNameAvailable(name)) {
-			throw new IllegalArgumentException("Sprite cannot be created because component name '" + name + "' already exists.");
+			throw new IllegalArgumentException("Sprite cannot be created because component name '" + name + "' already exists."); // NOI18N 
 		}
 		Sprite sprite = new Sprite(this, name, imageResource, defaultSequence);
 		this.addSprite(sprite);
@@ -403,7 +405,11 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
     }
 
     public String getName() {
-        return "Game Design";
+        return NbBundle.getMessage(GlobalRepository.class, "GlobalRepository.name");
+    }
+
+    public List<Action> getActions() {
+        return Collections.EMPTY_LIST;
     }
 	
 }

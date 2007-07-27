@@ -47,7 +47,7 @@ public class ImagePreviewComponent extends JComponent {
 		this.setDoubleBuffered(true);
 		this.addComponentListener(new ComponentAdapter() {
 			public void componentResized(ComponentEvent e) {
-				if (DEBUG) System.out.println("resized - updating preview");
+				if (DEBUG) System.out.println("resized - updating preview"); // NOI18N
 				ImagePreviewComponent.this.repaint();
 			}
 		});

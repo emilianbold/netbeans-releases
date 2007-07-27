@@ -38,6 +38,8 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -113,7 +115,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     }
 
     public String getDisplayName() {
-        return "Game Builder";
+        return NbBundle.getMessage(GameEditorView.class, "GameBuilderNavigator.DisplayName");
     }
 
     public org.openide.util.HelpCtx getHelpCtx() {
@@ -157,7 +159,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                 public void actionPerformed(ActionEvent e) {
                     Object item = comboGlobal.getSelectedItem();
                     if (item instanceof Editable) {
-                        if (DEBUG) System.out.println("Request editing for: " + item);
+                        if (DEBUG) System.out.println("Request editing for: " + item); // NOI18N
                         gameDesign.getMainView().requestEditing((Editable) item);
                     }
 					else if (item instanceof String) {
@@ -172,15 +174,15 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
             tool.add(comboGlobal);
             tool.addSeparator();
 
-            JButton buttonCreateScene = new JButton(new ImageIcon(this.getClass().getResource("res/new_scene_16.png")));
-            buttonCreateScene.setToolTipText("Create new Scene");
+            JButton buttonCreateScene = new JButton(new ImageIcon(this.getClass().getResource("res/new_scene_16.png"))); // NOI18N
+            buttonCreateScene.setToolTipText(NbBundle.getMessage(GameEditorView.class, "GameEditorView.buttonCreateScene.tooltip"));
             buttonCreateScene.setBorderPainted (false);
             buttonCreateScene.setRolloverEnabled (true);
             buttonCreateScene.setSize (14, 14);
             buttonCreateScene.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     NewSceneDialog dialog = new NewSceneDialog(gameDesign);
-                    DialogDescriptor dd = new DialogDescriptor(dialog, "Create new Scene");
+                    DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(NewSceneDialog.class, "NewSceneDialog.title.text"));
                     dd.setButtonListener(dialog);
                     dd.setValid(false);
                     dialog.setDialogDescriptor(dd);
@@ -189,15 +191,15 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                 }
             });
 
-            JButton buttonCreateTiledLayer = new JButton(new ImageIcon(this.getClass().getResource("res/new_tiled_layer_16.png")));
-			buttonCreateTiledLayer.setToolTipText("Create new TiledLayer");
+            JButton buttonCreateTiledLayer = new JButton(new ImageIcon(this.getClass().getResource("res/new_tiled_layer_16.png"))); // NOI18N
+			buttonCreateTiledLayer.setToolTipText(NbBundle.getMessage(GameEditorView.class, "GameEditorView.buttonCreateTiledLayer.tooltip"));
             buttonCreateTiledLayer.setBorderPainted (false);
             buttonCreateTiledLayer.setRolloverEnabled (true);
             buttonCreateTiledLayer.setSize (14, 14);
             buttonCreateTiledLayer.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     TiledLayerDialog nld = new TiledLayerDialog(gameDesign);
-                    DialogDescriptor dd = new DialogDescriptor(nld, "Create new TiledLayer");
+                    DialogDescriptor dd = new DialogDescriptor(nld, NbBundle.getMessage(NewSimpleTiledLayerDialog.class, "NewSimpleTiledLayerDialog.title.text"));
                     dd.setButtonListener(nld);
                     dd.setValid(false);
                     nld.setDialogDescriptor(dd);
@@ -206,15 +208,15 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
                 }
             });
 
-            JButton buttonCreateSprite = new JButton(new ImageIcon(this.getClass().getResource("res/new_sprite_16.png")));
-			buttonCreateSprite.setToolTipText("Create new Sprite");
+            JButton buttonCreateSprite = new JButton(new ImageIcon(this.getClass().getResource("res/new_sprite_16.png"))); // NOI18N
+			buttonCreateSprite.setToolTipText(NbBundle.getMessage(GameEditorView.class, "GameEditorView.buttonCreateSprite.tooltip"));
             buttonCreateSprite.setBorderPainted (false);
             buttonCreateSprite.setRolloverEnabled (true);
             buttonCreateSprite.setSize (14, 14);
             buttonCreateSprite.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     SpriteDialog nld = new SpriteDialog(gameDesign);
-                    DialogDescriptor dd = new DialogDescriptor(nld, "Create new Sprite");
+                    DialogDescriptor dd = new DialogDescriptor(nld, NbBundle.getMessage(GameEditorView.class, "GameEditorView.buttonCreateSprite.txt"));
                     dd.setButtonListener(nld);
                     dd.setValid(false);
                     nld.setDialogDescriptor(dd);
@@ -268,7 +270,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
 
     //EditorManagerListener
     public void editing(Editable e) {
-        if (DEBUG) System.out.println("EDITING: " + e);
+        if (DEBUG) System.out.println("EDITING: " + e); // NOI18N
         if (comboGlobal != null) {
             comboGlobal.setSelectedItem(e);
             comboGlobal.repaint();
@@ -282,7 +284,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     private void readObject (java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         Object object = in.readObject ();
         if (! (object instanceof DataObjectContext))
-            throw new ClassNotFoundException ("DataObjectContext expected but not found");
+            throw new ClassNotFoundException ("DataObjectContext expected but not found"); // NOI18N
         context = (DataObjectContext) object;
         init ();
     }

@@ -20,6 +20,7 @@ package org.netbeans.modules.vmd.game.dialog;
 
 
 import org.netbeans.modules.vmd.game.model.Sequence;
+import org.openide.util.NbBundle;
 
 public class RenameSequenceDialog extends AbstractNameValidationDialog {
 
@@ -31,15 +32,15 @@ public class RenameSequenceDialog extends AbstractNameValidationDialog {
 	}
 	
 	protected String getInitialStateDescriptionText() {
-		return "Enter sequence name.";
+		return NbBundle.getMessage(RenameSequenceDialog.class, "RenameSequenceDialog.InitialStateDescription.text");
 	}
 	
 	protected String getNameLabelText() {
-		return "Sequence name:";
+		return NbBundle.getMessage(RenameSequenceDialog.class, "RenameSequenceDialog.NameLabel.text");
 	}
 	
 	protected String getDialogNameText() {
-		return "Rename sequence";
+		return NbBundle.getMessage(RenameSequenceDialog.class, "RenameSequenceDialog.title.text");
 	}
 	
 	protected String getCurrentStateErrorText() {
@@ -51,7 +52,7 @@ public class RenameSequenceDialog extends AbstractNameValidationDialog {
 		}
 		
 		if (!sequence.getImageResource().getGameDesign().isComponentNameAvailable(name)) {
-			errMsg = "Component name already exists. Choose a different name.";
+			errMsg = NbBundle.getMessage(RenameSequenceDialog.class, "RenameSequenceDialog.sequenceExistsDescription.text");
 		}
 		return errMsg;
 	}

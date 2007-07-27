@@ -32,6 +32,7 @@ import org.netbeans.modules.vmd.game.model.SceneListener;
 import org.netbeans.modules.vmd.game.model.Scene.LayerInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 
 
@@ -125,8 +126,9 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 
 	public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		if (rowIndex < 0 || rowIndex >= this.scene.getLayerCount() || columnIndex < 0 || columnIndex >= COLS) {
-			throw new IllegalArgumentException("Arguments rowIndex = " + rowIndex + ", columnIndex = " + columnIndex + " are illegal for table of " + 
-					this.scene.getLayerCount() + " rows and " + COLS + " columns.");
+			throw new IllegalArgumentException("Arguments rowIndex = " + rowIndex  // NOI18N
+					+ ", columnIndex = " + columnIndex + " are illegal for table of " +  // NOI18N
+					this.scene.getLayerCount() + " rows and " + COLS + " columns."); // NOI18N
 		}
 		Layer layer = this.scene.getLayerAt(rowIndex);
 		switch (columnIndex) {
@@ -151,8 +153,10 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 				}
 				if (!this.scene.getGameDesign().isComponentNameAvailable(name)) {
 					DialogDisplayer.getDefault().notify(
-							new DialogDescriptor.Message("Layer cannot be renamed because component name '" 
-							+ name + "' already exists.", DialogDescriptor.ERROR_MESSAGE)
+							new DialogDescriptor.Message(
+							NbBundle.getMessage(SceneLayerTableAdapter.class, "SceneLayerTableAdapter.noRenameDialog.txt", name),
+							//"Layer cannot be renamed because component name '" + name + "' already exists.", 
+							DialogDescriptor.ERROR_MESSAGE)
 					);
 				}
 				else {
@@ -211,7 +215,7 @@ public class SceneLayerTableAdapter implements TableModel, SceneListener, Proper
 	public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() instanceof Layer) {
 			Layer layer = (Layer) evt.getSource();
-			if (DEBUG) System.out.println("layer changed: " + layer);
+			if (DEBUG) System.out.println("layer changed: " + layer); // NOI18N
 			int index = this.scene.indexOf(layer);
 			TableModelEvent e = new TableModelEvent(this, index, index, TableModelEvent.ALL_COLUMNS, TableModelEvent.UPDATE);
 			this.fireTableChanged(e);
