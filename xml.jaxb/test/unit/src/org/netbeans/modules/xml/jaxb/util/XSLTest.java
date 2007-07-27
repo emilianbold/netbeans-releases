@@ -46,12 +46,15 @@ import org.netbeans.junit.NbTestCase;
  */
 public class XSLTest extends NbTestCase {
     private static final String CONFIG_FILE1 = "/data/ConfigFile1.xml"; //NOI18N
+    private static final String CONFIG_FILE2 = "/data/ConfigFile2.xml"; //NOI18N    
+    private static final String CONFIG_FILE3 = "/data/ConfigFile3.xml"; //NOI18N        
     private static final String BUILD_FILE1 = "/data/BuildFile1.xml";   //NOI18N
-    private static final String CONFIG_FILE2 = "/data/ConfigFile2.xml"; //NOI18N
-    private static final String BUILD_FILE2 = "/data/BuildFile2.xml";   //NOI18N 
+    private static final String BUILD_FILE2 = "/data/BuildFile2.xml"; //NOI18N 
+    private static final String BUILD_FILE3 = "/data/BuildFile3.xml"; //NOI18N     
+    
     private static final String XSL_FILE = 
-            "/org/netbeans/modules/xml/jaxb/resources/JAXBBuild.xsl" ;      //NOI18N
-    private static final String BUILD_FILE = "jaxb_build" ;             //NOI18N
+            "/org/netbeans/modules/xml/jaxb/resources/JAXBBuild.xsl"; //NOI18N
+    private static final String TEMP_BUILD_FILE = "jaxb_build" ; //NOI18N
     
     public XSLTest(String testName) {
         super(testName);
@@ -95,7 +98,7 @@ public class XSLTest extends NbTestCase {
         try {
             Source xmlSource = new StreamSource(getInputStream(configFile));
             Source xslSource = new StreamSource(getInputStream(XSL_FILE));
-            File tmpFile = java.io.File.createTempFile(BUILD_FILE, ".xml");
+            File tmpFile = java.io.File.createTempFile(TEMP_BUILD_FILE, ".xml");
             //System.out.println("tmpFile:" + tmpFile.getAbsolutePath());
             tmpFile.deleteOnExit();
             FileOutputStream fos = new FileOutputStream(tmpFile);
@@ -126,6 +129,7 @@ public class XSLTest extends NbTestCase {
      **/
     public void testXformConfig2BuildWithPkg(){
         transformConfig2Build(CONFIG_FILE1, BUILD_FILE1);
+        System.out.println("testXformConfig2BuildWithPkg done.");
     }
 
     /**
@@ -133,6 +137,15 @@ public class XSLTest extends NbTestCase {
      **/
     public void testXformConfig2BuildWithoutPkg(){
         transformConfig2Build(CONFIG_FILE2, BUILD_FILE2);
+        System.out.println("testXformConfig2BuildWithoutPkg done.");
+    }
+
+    /**
+     * Test the XSL style sheet.
+     **/
+    public void testXformConfig2BuildEmptySchema(){
+        transformConfig2Build(CONFIG_FILE3, BUILD_FILE3);
+        System.out.println("testXformConfig2BuildEmptySchema done.");
     }
     
 }
