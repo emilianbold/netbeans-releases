@@ -64,7 +64,6 @@ public class DefaultLanguage implements Language {
     //private PaletteController palette;
     private FileObject parserFile;
     private FileObject languageFile;
-    private FileObject navigationFilterFile;
     private FileObject completionProviderFile;
     private FileObject renamerFile;
     private FileObject declarationFinderFile;
@@ -83,7 +82,7 @@ public class DefaultLanguage implements Language {
     /** For testing purposes only!*/
     public DefaultLanguage(String displayName, String iconBase, String mime, List<String> extensions, List<Action> actions,
             GsfLanguage gsfLanguage, Parser parser, Completable completionProvider, InstantRenamer renamer,
-            DeclarationFinder declarationFinder, Formatter formatter, BracketCompletion bracketcompletion, Indexer indexer,
+            DeclarationFinder declarationFinder, Formatter formatter, BracketCompletion bracketCompletion, Indexer indexer,
             StructureScanner structure, /*PaletteController*/Object palette) {
         this.displayName = displayName;
         this.iconBase = iconBase;
