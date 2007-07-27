@@ -98,17 +98,19 @@ public class BpelproProjectGenerator {
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         ProjectManager.getDefault().saveProject(p);
 
-        createCatalogXml();
+        createCatalogXml(h.getProjectDirectory());
 
         return h;
     }
 
     // vlv # 111020
-    private static void createCatalogXml() {
-//System.out.println();
-//System.out.println("createProject");
-//System.out.println();
-    // todo start here
+    private static void createCatalogXml(FileObject project) {
+      try {
+        FileObject resource = Repository.getDefault().getDefaultFileSystem().findResource("bpel-project-resources/catalog.xml");
+        FileUtil.copyFile(resource, project, "catalog", "xml"); // NOI18N
+      }
+      catch (IOException e) {
+      }
     }
 
     public static AntProjectHelper importProject(File dir, String name, FileObject wmFO, FileObject javaRoot, FileObject configFilesBase, String j2eeLevel, String buildfile) throws IOException {

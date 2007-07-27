@@ -45,4 +45,8 @@
             <attr name="type" stringvalue="Engine"/>
         </file>
     </folder>
+
+    <folder name="bpel-project-resources">
+        <file name="catalog.xml" url="catalog.xml"/>
+    </folder>
 </filesystem>
