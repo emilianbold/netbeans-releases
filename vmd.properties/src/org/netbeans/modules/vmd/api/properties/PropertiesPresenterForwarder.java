@@ -62,7 +62,7 @@ public class PropertiesPresenterForwarder extends PropertiesPresenter {
         List<DesignPropertyDescriptor> descriptors = new ArrayList<DesignPropertyDescriptor>();
         Collection<? extends PropertiesPresenter> propertiesPresenters  = component.getPresenters(PropertiesPresenter.class);
         if (propertiesPresenters == null)
-            return Collections.EMPTY_LIST; 
+            return Collections.<DesignPropertyDescriptor>emptyList(); 
                 
         for (PropertiesPresenter presenter : propertiesPresenters) {
             descriptors.addAll(filterDescriptors(presenter.getDesignPropertyDescriptors()));

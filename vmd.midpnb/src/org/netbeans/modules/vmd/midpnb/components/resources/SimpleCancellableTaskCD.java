@@ -32,6 +32,11 @@ import org.netbeans.modules.vmd.midp.components.MidpVersionable;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
+import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
+import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
+import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorGoToSource;
+import org.netbeans.modules.vmd.midpnb.propertyeditors.MidpNbPropertiesCategories;
 
 /**
  *
@@ -65,23 +70,23 @@ public class SimpleCancellableTaskCD extends ComponentDescriptor {
                 );
     }
     
-//     private static DefaultPropertiesPresenter createPropertiesPresenter() {
-//        return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
-//                .addPropertiesCategory(MidpNbPropertiesCategories.CATEGORY_PROPERTIES)
-//                     .addProperty("Executable Code", PropertyEditorJavaString.createInstance(TYPEID), PROP_CODE);
-//    }
-    
+    private static DefaultPropertiesPresenter createPropertiesPresenter() {
+        return new DefaultPropertiesPresenter (DesignEventFilterResolver.THIS_COMPONENT)
+            .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
+                 .addProperty("Executable Code", PropertyEditorGoToSource.createInstance(), PROP_CODE); // NOI18N
+    }
+
     private static Presenter createSetterPresenter() {
         return new CodeSetterPresenter()
                 .addParameters(new ExecutableParameter())
                 .addSetters(MidpSetter.createConstructor(TYPEID, MidpVersionable.MIDP_2))
-                .addSetters(MidpSetter.createSetter("setExecutable", MidpVersionable.MIDP_2).addParameters(ExecutableParameter.PARAM_EXECUTABLE));
+                .addSetters(MidpSetter.createSetter("setExecutable", MidpVersionable.MIDP_2).addParameters(ExecutableParameter.PARAM_EXECUTABLE)); // NOI18N
     }
     
     protected List<? extends Presenter> createPresenters() {
         return Arrays.asList(
             // properties
-//            createPropertiesPresenter(),
+            createPropertiesPresenter(),
             // setter
             createSetterPresenter(),
             MidpCodePresenterSupport.createAddImportPresenter()

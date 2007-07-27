@@ -105,6 +105,7 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
         return isDefaultValue[0];
     }
     
+    @Override
     public boolean supportsCustomEditor() {
         Collection components = ActiveDocumentSupport.getDefault().getActiveComponents();
         if (components != null && components.size() == 1 && getCustomEditor() != null)
@@ -257,8 +258,8 @@ public abstract class DesignPropertyEditor extends PropertyEditorSupport impleme
     public void customEditorOKButtonPressed() {
     }
     
-    @SuppressWarnings("unchecked")
-public final void invokeSaveToModel() {
+    @SuppressWarnings("unchecked") // NOI18N
+    public final void invokeSaveToModel() {
         try {
             propertySupport.setValue(getValue());
         } catch (IllegalArgumentException ex) {

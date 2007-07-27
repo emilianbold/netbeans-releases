@@ -50,6 +50,11 @@ public class TaskEditorElement extends PropertyEditorResourceElement implements 
         return SimpleCancellableTaskCD.TYPEID;
     }
 
+    @Override
+    public String getResourceNameSuggestion() {
+        return "task"; // NOI18N
+    }
+    
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         if (wrapper != null) {
             DesignComponent _component = wrapper.getComponent();
