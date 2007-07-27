@@ -59,6 +59,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAssociation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
@@ -85,7 +86,6 @@ import org.netbeans.modules.uml.drawingarea.dataobject.DiagramDataObject;
 import org.netbeans.modules.uml.project.ui.nodes.AbstractModelElementNode;
 import org.netbeans.modules.uml.project.ui.nodes.UMLModelElementNode;
 import org.netbeans.modules.uml.palette.PaletteSupport;
-import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawEngine;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node.Cookie;
@@ -887,15 +887,31 @@ public class DiagramTopComponent extends CloneableTopComponent
         {   
             node = new LocalUMLModelElementNode();
             node.setElement(pEle);
-            
+            // if the element has not been named by users, the default element 
+            // name is the element type; Otherwise, the customed name is used.
             node.setName(pEle.getElementType());
             
             if (pEle instanceof INamedElement)
             {
                 String name = ((INamedElement)pEle).getName();
                 
-                if (!name.trim().equals(""))
+                if (name != null && !name.trim().equals(""))
+                {
                     node.setName(name);
+                }
+                else
+                {   // Fixed issue 78484. Display the expanded name as the default
+                    // name for elements that extend IAssociation, namely, 
+                    // aggregation and composition.
+                    if (pEle instanceof IAssociation)
+                    {
+                        String expandedName = pEle.getExpandedElementType();
+                        if (expandedName != null && expandedName.trim().length() > 0)
+                        {
+                            node.setName(expandedName.replace('_', ' '));
+                        }
+                    }
+                }
             }
             else if (pEle instanceof IDiagram)
                 node.setName(((IDiagram)pEle).getName());
