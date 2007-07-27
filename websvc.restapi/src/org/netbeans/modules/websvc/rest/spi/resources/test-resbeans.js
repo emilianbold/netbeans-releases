@@ -159,10 +159,17 @@ function trimSeperator(cName) {
     }
     return cName;
 }
-function getMediaType(response) {
-    var mediaType = null;                
-    if(response != null && response.length > 0) {
-        var rep = response[0].getElementsByTagName('representation');
+//get mediatype from method
+function getMediaType(m) {
+    var mName = m.attributes.getNamedItem("name").nodeValue;
+    var request = m.getElementsByTagName('request');
+    var response = m.getElementsByTagName('response');
+    var mediaType = null;
+    var io = request;
+    if(mName == 'GET')
+        io = response;
+    if(io != null && io.length > 0) {
+        var rep = io[0].getElementsByTagName('representation');
         if(rep != null && rep.length > 0) {                        
             if(rep[0].attributes.length > 0) {
                 var att = rep[0].attributes.getNamedItem('mediaType');
@@ -224,8 +231,7 @@ function getMethodMimeTypeCombo(resource) {
     for(j=0;j<methods.length;j++) {
         var m = methods[j];                            
         var mName = m.attributes.getNamedItem("name").nodeValue;
-        var response = m.getElementsByTagName('response');
-        var mediaType = getMediaType(response);
+        var mediaType = getMediaType(m);
         var dispName = getMethodNameForDisplay(mName, mediaType);
         if(mName == 'GET')
             str += "  <option selected value='"+dispName+"' selected>"+dispName+"</option>";
@@ -314,6 +320,7 @@ function doShowDynamicResource(uri, mName, mediaType) {
     str += "&nbsp;&nbsp;<span class=bld>MIME: </span>";
     str += "<select id='mimeSel' name='mimeSel' onchange='javascript:changeMimeType();'>";
     str += "  <option value='application/xml'>application/xml</option>";
+    str += "  <option value='application/json'>application/json</option>";
     str += "  <option value='text/xml'>text/xml</option>";
     str += "  <option value='text/plain'>text/plain</option>";
     str += "  <option value='text/html'>text/html</option>";    
@@ -631,7 +638,8 @@ function updateContent(xmlHttpReq) {
                     //alert(content);
                     var cErr = '<table border=1><tr><td class=tableW>Content may not have Container-Containee Relationship. See Raw View for content.</td></tr></table>';
                     var tableContent = cErr;
-                    if(content.indexOf("<?xml ") != -1) {
+                    if(content.indexOf("<?xml ") != -1 || 
+                            content.indexOf('{"') != -1) {
                         var tc = getContainerTable(content);
                         if(tc != null)
                             tableContent = tc;
@@ -758,52 +766,57 @@ function loadXml(xmlStr) {
     }
     return doc2;
 }
-function getContainerTable(xmlStr) {
-    //alert(xmlStr);
-    if(xmlStr == null)
+function getContainerTable(content) {
+    //alert('getContainerTable: '+content);
+    if(content == null)
         return null;
     var ret = null;    
-    var doc2 = null;
+    var container = null;
     try {
-        doc2 = loadXml(xmlStr);
-    } catch(e) {}
-    if(doc2 != null && doc2.documentElement.nodeName != 'parsererror') {
-        try {
-            var container=doc2.documentElement;
+        if(content.indexOf("<?xml ") != -1) {
+            var doc2 = loadXml(content);
+            if(doc2 != null && doc2.documentElement.nodeName != 'parsererror')
+                return null;
+            container=doc2.documentElement;
             if(container == null || container.nodeName == 'html')
                 return null;
-            var colNames = new Array()
-            colNames[0] = "ID"
-            colNames[1] = "URI"
-            var colSizes = new Array()
-            colSizes[0] = "class='tableW1 lfa'"
-            colSizes[1] = "class='tableW2 lfa'"
-            var str = "<table class='results' border='1'>";
-            str += "<thead class='resultHeader'>";
-            for (i=0;i<colNames.length;i++) {
-                str += "<th "+colSizes[i]+"><span class='bld wht'>"+colNames[i]+"</span></th>";
-            }
-            str += "</thead>";
-            str += "<tbody id='containerTable'>";
-            var str2 = findUri(container);
-            if(str2 == null || str2 == '')
-                return null;
-            str += str2;
-            str += "</tbody></table>";
-            ret = str;
-        } catch(e) {
-            alert('err: '+e.name+e.message);
         }
+        var colNames = new Array()
+        colNames[0] = "ID"
+        colNames[1] = "URI"
+        var colSizes = new Array()
+        colSizes[0] = "class='tableW1 lfa'"
+        colSizes[1] = "class='tableW2 lfa'"
+        var str = "<table class='results' border='1'>";
+        str += "<thead class='resultHeader'>";
+        for (i=0;i<colNames.length;i++) {
+            str += "<th "+colSizes[i]+"><span class='bld wht'>"+colNames[i]+"</span></th>";
+        }
+        str += "</thead>";
+        str += "<tbody id='containerTable'>";
+        var str2 = null;
+        if(container != null)
+            str2 = findUriFromXml(container);
+        else
+            str2 = findUriFromJSON(content);
+        if(str2 == null || str2 == '')
+            return null;
+        str += str2;
+        str += "</tbody></table>";
+        ret = str;
+    } catch(e) {
+        alert('err: '+e.name+e.message);
     }
+
     return ret;
 }
-function findUri(container) {
+function findUriFromXml(container) {
     tcStr = '';
-    getChildUri(container);
+    getChildUriFromXml(container);
     return tcStr;
 }
 var tcStr = '';
-function getChildUri(refChild) {
+function getChildUriFromXml(refChild) {
     if(refChild == null)
         return;
     var subChilds = refChild.childNodes;
@@ -815,13 +828,13 @@ function getChildUri(refChild) {
         if(subChild.nodeValue == null) {//DOM Elements only
             if(subChild.attributes != null && subChild.attributes.length > 0 && 
                 subChild.attributes.getNamedItem('uri') != null) {
-                tcStr += createRowForUri(subChild);
+                tcStr += createRowForUriFromXml(subChild);
             }
             getChildUri(subChild);
         }
     }
 }
-function createRowForUri(refChild) {
+function createRowForUriFromXml(refChild) {
     var str = '';    
     var id = '-';
     if(refChild.childNodes != null && refChild.childNodes.length > 0 && 
@@ -831,6 +844,7 @@ function createRowForUri(refChild) {
     }
     if(id == null)
         id = '-';
+    str += "<tr>";    
     str += "<td>"+id+"</td>";
     var uri = refChild.attributes.getNamedItem('uri').nodeValue;
     str += "<td>";
@@ -839,6 +853,58 @@ function createRowForUri(refChild) {
     str += "<br/>(<a href='"+uri+"' target='_blank'><span class=font10>"+getDisplayURL(uri, 70)+"</span></a>)";
     str += "</td>";
     str += "</tr>";
+    return str;
+}
+function findUriFromJSON(content) {
+    var str = ''; 
+    
+    //Check if Container    
+    var i = content.indexOf('Ref');
+    if(i == -1)
+        return str;
+    
+    var temp = new Array();
+    temp = content.split(':');
+    var j = 0;
+    var count = 0;
+    for(j=0;j<temp.length;j++) {
+        if(temp[j] == '{"$"')
+            count++;  
+    }
+        
+    //Find container name
+    var cName = '';
+    var j = content.indexOf('"');
+    if(j != -1)
+        cName = content.substring(j+1, content.indexOf('"', j+1));
+    
+    var c = content.replace(/\\\//g,"/");
+    /*var myObj = 
+        {"playlists":
+            {"@uri":"http://localhost:8080/F/restbean/playlists/",
+            "playlistRef":[
+                    {"@uri":"http://localhost:8080/F/restbean/playlists/1/", "playlistId":{"$":"1"}},
+                    {"@uri":"http://localhost:8080/F/restbean/playlists/2/", "playlistId":{"$":"2"}},
+                    {"@uri":"http://localhost:8080/F/restbean/playlists/3/", "playlistId":{"$":"3"}}
+                ]
+            }
+        };*/    
+    var myObj = eval('(' +c+')');
+        
+    var x = cName.substring(0, cName.length-1);
+    var y = x + 'Ref';
+    var z = x + 'Id';
+    for(j=0;j<count;j++) {
+        str += "<tr>"; 
+        str += "<td>"+eval('myObj.'+x+'s.'+y+'['+j+'].'+z+'.$')+"</td>";
+        var uri = eval('myObj.'+x+'s.'+y+'['+j+'].@uri');
+        var disp = getDisplayUri(uri);
+        str += "<td>";    
+        str += "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+getDisplayURL(disp, 70)+"</a>";
+        str += "<br/>(<a href='"+uri+"' target='_blank'><span class=font10>"+getDisplayURL(uri, 70)+"</span></a>)";
+        str += "</td>";
+        str += "</tr>";
+    }
     return str;
 }
 function getDisplayUri(uri) {
@@ -867,9 +933,12 @@ function getMimeType(mime) {
     //alert(mime);
     if(mime != null) {
         var i = mime.indexOf('(');
-        if(i == -1)
-            return getDefaultMime();
-        else
+        if(i == -1) {
+            if(mime == 'GET' || mime == 'POST' || mime == 'PUT' || mime == 'DELETE')
+                return getDefaultMime();
+            else
+                return mime;
+        } else
             return mime.substring(i+1, mime.length-1);
     } else
         return getDefaultMime();
