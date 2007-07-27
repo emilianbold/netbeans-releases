@@ -22,22 +22,17 @@ package org.netbeans.modules.websvc.rest.projects;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.ErrorManager;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -60,8 +55,12 @@ public class WebRestSupportLookupProvider implements LookupProvider {
             PropertyChangeListener pcl;
             
             protected void projectOpened() {
+                
                 final MetadataModel<RestServicesMetadata> wsModel = RestUtils.getRestServicesMetadataModel(prj);
                 try {
+                    // make sure REST API jar is included in project compile classpath
+                    RestUtils.addRestApiJar(prj);
+                    
                     wsModel.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
                         public Void run(final RestServicesMetadata metadata) {
                             RestServices restServices = metadata.getRoot();
@@ -71,7 +70,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                         }
                     });
                 } catch (java.io.IOException ex) {
-                    
+                    Logger.getLogger(this.getClass().getName()).log(Level.ALL, "projectOpened", ex);
                 }
             }
             
@@ -87,7 +86,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                         }
                     });
                 } catch (java.io.IOException ex) {
-                    
+                    Logger.getLogger(this.getClass().getName()).log(Level.ALL, "projectOpened", ex);
                 }
             }
         };
@@ -100,7 +99,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
         private MetadataModel<RestServicesMetadata> wsModel;
         private Project prj;
         private RestSupport support;
-       
+        
         private RequestProcessor.Task updateRestSvcTask = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 updateRestServices();
@@ -125,14 +124,14 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                         RestServices root = metadata.getRoot();
                    
                         if (root.sizeRestServiceDescription() > 0) {
-                            //TODO turn on rest support.
+                            RestUtils.ensureRestDevelopmentReady(prj);
                         }
                         
                         return null;
                     }
                 });
             } catch (IOException ex) {
-                
+                Logger.getLogger(this.getClass().getName()).log(Level.ALL, "updateRestServices", ex);
             }
             //System.out.println("done updating rest services");
         }

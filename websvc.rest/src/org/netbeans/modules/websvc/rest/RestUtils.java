@@ -120,4 +120,9 @@ public class RestUtils {
             
         }
     }
+
+    public static void addRestApiJar(Project project) throws IOException {
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        restSupport.addJSR311apiJar();
+    }
 }
