@@ -615,6 +615,10 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             Collection<TreePathHandle> sameNameHandles = new ArrayList<TreePathHandle>();
             for (Tree t: unit.getTypeDecls()) {
                 Element e = info.getTrees().getElement(TreePath.getPath(unit, t));
+                if (e == null || !(e.getKind().isClass() || e.getKind().isInterface())) {
+                    // syntax errors #111195
+                    continue;
+                }
                 if (e.getSimpleName().toString().equals(info.getFileObject().getName())) {
                     TreePathHandle representedObject = TreePathHandle.create(TreePath.getPath(unit,t),info);
                     sameNameHandles.add(representedObject);
