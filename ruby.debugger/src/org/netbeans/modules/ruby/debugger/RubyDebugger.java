@@ -128,6 +128,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         }
         RubyDebuggerProxy proxy;
         int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 10); // NOI18N
+        Util.finest("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = RubyInstallation.getInstance().getRuby();
         if (jrubySet || prefs.isUseClassicDebugger()) {
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
