@@ -27,15 +27,13 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadMXBean;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
+import org.openide.util.NbBundle;
 
 /** Task executed early after startup to log diagnostic data about 
  * JVM - memory settings, JIT type, some hardware information.
@@ -51,6 +49,34 @@ public final class DiagnosticTask implements Runnable {
     public void run() {
         String diagInfo = logParams();
         Logger.getLogger(DiagnosticTask.class.getName()).info(diagInfo);
+        logEnv();
+    }
+    
+    private void logEnv() {
+        try {
+            OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+            // w/o dependency on Sun's JDK
+            // long freeMem = ((com.sun.management.OperatingSystemMXBean)osBean).getTotalPhysicalMemorySize();
+            Method m = osBean.getClass().getMethod("getTotalPhysicalMemorySize");
+            m.setAccessible(true);
+            long freeMem = (Long)m.invoke(osBean);
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.INFO, "Total memory {0}", freeMem);
+
+            LogRecord lr = new LogRecord(Level.INFO, "MEMORY");
+            lr.setResourceBundle(NbBundle.getBundle(DiagnosticTask.class));
+            lr.setParameters(new Object[] {freeMem});
+            Logger.getLogger("org.netbeans.ui.performance").log(lr);
+        } catch (NoSuchMethodException ex) {
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+        } catch (SecurityException ex) {
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(DiagnosticTask.class.getName()).log(Level.WARNING, null, ex);
+        }
     }
 
     private void logMemoryUsage(StringBuilder sb, MemoryUsage usage, String label) {
@@ -105,7 +131,6 @@ public final class DiagnosticTask implements Runnable {
 //            ThreadMXBean          tmBean     = ManagementFactory.getThreadMXBean();
             MemoryMXBean          memoryBean = ManagementFactory.getMemoryMXBean();
             ClassLoadingMXBean    clMBean    = ManagementFactory.getClassLoadingMXBean();
-//            OperatingSystemMXBean osMBean    = ManagementFactory.getOperatingSystemMXBean();
 
 //            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 //            ObjectName hsDiag = new ObjectName("com.sun.management:name=HotSpotDiagnostic");
