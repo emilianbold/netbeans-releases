@@ -98,7 +98,6 @@ final class PanelProjectImportVisual extends SettingsPanel implements DocumentLi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(projectNameLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -117,7 +116,6 @@ final class PanelProjectImportVisual extends SettingsPanel implements DocumentLi
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 0);
         add(projectLocationLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -135,7 +133,6 @@ final class PanelProjectImportVisual extends SettingsPanel implements DocumentLi
                 browseLocationAction(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -153,7 +150,6 @@ final class PanelProjectImportVisual extends SettingsPanel implements DocumentLi
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(createdFolderLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -171,7 +167,6 @@ final class PanelProjectImportVisual extends SettingsPanel implements DocumentLi
                 browseFolderAction(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -215,7 +210,6 @@ final class PanelProjectImportVisual extends SettingsPanel implements DocumentLi
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         add(spaceFiller, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseFolderAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseFolderAction
