@@ -146,7 +146,7 @@ public class ResultItemPaintComponent extends JPanel {
         if (g != null) {
             g.setColor(getForeground());
         }
-        drawStringToGraphics(g, s, null, strike);
+        drawStringToGraphics(g, s, getDrawFont(), strike);
     }
 
 
