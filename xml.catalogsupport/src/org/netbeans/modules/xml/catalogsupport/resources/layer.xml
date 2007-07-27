@@ -22,7 +22,7 @@
     <folder name="Services">
         <folder name="JavaHelp">
             <file name="catalogsupport-helpset.xml" url="catalogsupport-helpset.xml">
-                <attr name="position" intvalue="1200"/>
+                <attr name="position" intvalue="2300"/>
             </file>
             </folder>
     </folder>
