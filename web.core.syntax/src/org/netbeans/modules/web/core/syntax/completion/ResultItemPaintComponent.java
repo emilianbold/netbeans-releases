@@ -257,18 +257,19 @@ public class ResultItemPaintComponent extends JPanel {
         return drawFont;
     }
 
-    public Dimension getPreferredSize() {
-        draw(null);
+    public int getPreferredWidth(Graphics g, Font f) {
+        setFont(f);
+        draw(g);
         Insets i = getInsets();
         if (i != null) {
             drawX += i.right;
         }
         if (drawX > getMaximumSize().width)
             drawX = getMaximumSize().width;
-        return new Dimension(drawX, drawHeight);
+        return drawX;
     }
-
-
+    
+    
     //.................. INNER CLASSES .......................
 
     public static class StringPaintComponent extends ResultItemPaintComponent {

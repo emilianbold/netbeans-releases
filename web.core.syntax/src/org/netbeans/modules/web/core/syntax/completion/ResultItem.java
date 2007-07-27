@@ -128,8 +128,8 @@ public abstract class ResultItem implements CompletionQuery.ResultItem, Completi
     }
     
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        Component renderComponent = getPaintComponent(false);
-        return renderComponent.getPreferredSize().width;
+        ResultItemPaintComponent renderComponent = (ResultItemPaintComponent)getPaintComponent(false);
+        return renderComponent.getPreferredWidth(g, defaultFont);
     }
     
     public void render(Graphics g, Font defaultFont, Color defaultColor,
