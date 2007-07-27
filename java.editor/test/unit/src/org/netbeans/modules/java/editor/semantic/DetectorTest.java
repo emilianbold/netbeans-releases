@@ -286,6 +286,10 @@ public class DetectorTest extends TestBase {
         performTest("package-info");
     }
     
+    public void test111113() throws Exception {
+        performTest("UnusedImport111113");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public Collection<Highlight> compute(CompilationController parameter, Document doc) {

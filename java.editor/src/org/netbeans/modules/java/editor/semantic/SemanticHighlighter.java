@@ -984,6 +984,14 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         }
 
         @Override
+        public Void visitArrayType(ArrayTypeTree node, EnumSet<UseTypes> p) {
+            if (node.getType() != null) {
+                resolveType(new TreePath(getCurrentPath(), node.getType()));
+            }
+            return super.visitArrayType(node, p);
+        }
+
+        @Override
         public Void visitNewArray(NewArrayTree tree, EnumSet<UseTypes> d) {
             if (tree.getType() != null)
                 resolveType(new TreePath(getCurrentPath(), tree.getType()));
