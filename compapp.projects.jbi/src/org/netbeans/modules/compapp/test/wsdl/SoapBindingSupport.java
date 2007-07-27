@@ -200,9 +200,9 @@ public class SoapBindingSupport implements BindingSupport {
             XmlCursor cursor, 
             SampleXmlUtil xmlGenerator) 
             throws Exception {
-        
-        QName elementName = part.getElement().getQName(); 
-        if(elementName != null) {
+                
+        if (part.getElement() != null) {
+            QName elementName = part.getElement().getQName(); 
             cursor.beginElement(elementName);
             SchemaGlobalElement elm = mSchemaTypeLoader.findElement(elementName);
             if(elm != null) {

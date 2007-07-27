@@ -262,7 +262,7 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
         } catch (Exception e) {
             String msg = NbBundle.getMessage(AddTestcaseAction.class, 
                     "MSG_Failed_to_Add_Testcase", e.getMessage()); // NOI18N
-            mLog.log(Level.SEVERE, msg, e);
+//            mLog.log(Level.SEVERE, msg, e);
             NotifyDescriptor d =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);

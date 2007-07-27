@@ -67,30 +67,39 @@ public class SoapBindingOperationSupport {
     
     public boolean isInputSoapEncoded() {
         Operation operation = mBindingOperation.getOperation().get();
+        String operationName = operation.getName();
+        String bindingName = ((Binding) mBindingOperation.getParent()).getName();
         Input input = operation.getInput();
         Output output = operation.getOutput();
         if (output != null) {
             if (input == null) {
                 String msg = NbBundle.getMessage(SoapBindingOperationSupport.class, 
-                        "MSG_No_Support_for_Notification_Style"); // NOI18N
+                        "MSG_No_Support_for_Notification_Style", // NOI18N
+                        operationName, bindingName); 
                 throw new RuntimeException(msg);   
             } else {
                 List<WSDLComponent> children = operation.getChildren();  
                 if (children.get(0) instanceof Output) {
                     String msg = NbBundle.getMessage(SoapBindingOperationSupport.class, 
-                        "MSG_No_Support_for_Solicit_Response_Style"); // NOI18N
+                        "MSG_No_Support_for_Solicit_Response_Style", // NOI18N
+                        operationName, bindingName); 
                     throw new RuntimeException(msg);    
                 }
+            }
+        } else {
+            if (input == null) {
+                String msg = NbBundle.getMessage(SoapBindingOperationSupport.class, 
+                        "MSG_No_Support_for_Unknown_Style", // NOI18N
+                        operationName, bindingName); 
+                throw new RuntimeException(msg);   
             }
         }
         
         BindingInput bindingInput = mBindingOperation.getBindingInput();
         if (bindingInput == null) {
-            // If the wsdl file has been validated, this should not happen 
-            // because the error should have already been caught above.
-            // Just to be safe...
             String msg = NbBundle.getMessage(SoapBindingOperationSupport.class, 
-                    "MSG_No_Support_for_Notification_Style"); // NOI18N
+                    "MSG_Missing_Binding_Operation_Input", // NOI18N
+                    operationName, bindingName);
             throw new RuntimeException(msg);    
         }
         
