@@ -19,20 +19,13 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.io.File;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
-import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer.FileLocation;
-import org.openide.awt.StatusDisplayer;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.windows.TopComponent;
 
 
 /**
@@ -75,72 +68,8 @@ public class AutoTestSupport {
         desc.additionalArgs("-v"); // NOI18N
         desc.fileLocator(fileLocator);
         desc.showProgress(false);
-        desc.addOutputRecognizer(new AutoTestNotifier());
+        desc.addOutputRecognizer(new TestNotifier());
         desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
         new RubyExecution(desc, charsetName).run();
-    }
-
-    private static class AutoTestNotifier extends OutputRecognizer implements Runnable {
-
-        private String message;
-
-        @Override
-        public FileLocation processLine(String line) {
-            if (line.matches("\\d+ tests, \\d+ assertions, \\d+ failures, \\d+ errors")) { // NOI18N
-                // NOI18N
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(AutoTestSupport.class, "AutoTestCompleted", line));
-
-                // Extra attention on failures
-                if ((line.indexOf(" 0 failures") == -1) || (line.indexOf(" 0 errors") == -1)) { // NOI18N
-                    // NOI18N
-                    message = NbBundle.getMessage(AutoTestSupport.class, "AutoTestFailure", line);
-                    run(); // might redispatch to event thread
-                }
-            }
-
-            return null;
-        }
-
-        public void run() {
-            if (message == null) {
-                return;
-            }
-
-            if (!SwingUtilities.isEventDispatchThread()) {
-                // getOpenedPanes on the EditorCookie requires it
-                SwingUtilities.invokeLater(this);
-
-                return;
-            }
-
-            org.openide.nodes.Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
-
-            if (nodes == null) {
-                return;
-            }
-
-            for (org.openide.nodes.Node node : nodes) {
-                EditorCookie ec = node.getCookie(EditorCookie.class);
-
-                if (ec == null) {
-                    continue;
-                }
-
-                JEditorPane[] panes = ec.getOpenedPanes();
-
-                if (panes == null) {
-                    continue;
-                }
-
-                for (JEditorPane pane : panes) {
-                    if (pane.isShowing()) {
-                        //org.netbeans.editor.Utilities.setStatusText(pane, message, coloring);
-                        org.netbeans.editor.Utilities.setStatusBoldText(pane, message);
-
-                        return;
-                    }
-                }
-            }
-        }
     }
 }

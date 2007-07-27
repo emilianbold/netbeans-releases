@@ -50,7 +50,7 @@ public class RSpecSupport {
         this.projectDir = projectDir;
         this.charsetName = charsetName;
     }
-
+    
     public boolean isRSpecInstalled() {
         RubyInstallation install = RubyInstallation.getInstance();
 
@@ -172,6 +172,7 @@ public class RSpecSupport {
         desc.allowInput();
         desc.fileLocator(fileLocator);
         desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
+        desc.addOutputRecognizer(new TestNotifier());
         new RubyExecution(desc, charsetName).run();
     }
 }

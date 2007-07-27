@@ -37,11 +37,19 @@ import org.openide.filesystems.FileUtil;
  */
 public class RakeSupport {
     private String charsetName;
+    private boolean test;
     
     public RakeSupport(String charsetName) {
         this.charsetName = charsetName;
     }
-
+    
+    /**
+     * Set whether the rake target should be run as a test (through the test runner etc.)
+     */
+    public void setTest(boolean test) {
+        this.test = test;
+    }
+    
     public static boolean isRakeFile(FileObject fo) {
         if (!fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
             return false;
@@ -115,6 +123,11 @@ public class RakeSupport {
         desc.fileLocator(fileLocator);
         desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
         desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
+
+        if (test) {
+            desc.addOutputRecognizer(new TestNotifier());
+        }
+
         new RubyExecution(desc, charsetName).run();
     }
 }

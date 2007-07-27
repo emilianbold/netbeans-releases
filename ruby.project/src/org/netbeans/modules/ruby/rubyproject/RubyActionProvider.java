@@ -41,6 +41,7 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
+import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassWarning;
@@ -129,7 +130,8 @@ public class RubyActionProvider implements ActionProvider {
     }
     
     private void runRubyScript(FileObject fileObject, String target, 
-            String displayName, final Lookup context, final boolean debug) {
+            String displayName, final Lookup context, final boolean debug,
+            OutputRecognizer[] extraRecognizers) {
         String options = project.evaluator().getProperty(RubyProjectProperties.RUN_JVM_ARGS);
 
         if (options != null && options.trim().length() == 0) {
@@ -208,6 +210,13 @@ public class RubyActionProvider implements ActionProvider {
         desc.fileLocator(new RubyFileLocator(context, project));
         desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
         desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
+        
+        if (extraRecognizers != null) {
+            for (OutputRecognizer recognizer : extraRecognizers) {
+                desc.addOutputRecognizer(recognizer);
+            }
+        }
+
         RubyExecution service = new RubyExecution(desc,
                 project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
         service.run();
@@ -359,7 +368,7 @@ public class RubyActionProvider implements ActionProvider {
             if (mainClass != null) {
                 // TODO - compute mainclass
                 FileObject fileObject = null;
-                runRubyScript(fileObject, mainClass, displayName, context, COMMAND_DEBUG.equals(command));
+                runRubyScript(fileObject, mainClass, displayName, context, COMMAND_DEBUG.equals(command), null);
                 return;
             }
 
@@ -414,7 +423,7 @@ public class RubyActionProvider implements ActionProvider {
             
             //String target = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
             runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                    file.getNameExt(), context, COMMAND_DEBUG_SINGLE.equals(command));
+                    file.getNameExt(), context, COMMAND_DEBUG_SINGLE.equals(command), null);
             return;
         } else if (COMMAND_REBUILD.equals(command)) {
             if (!RubyInstallation.getInstance().isValidRake(true)) {
@@ -572,7 +581,7 @@ public class RubyActionProvider implements ActionProvider {
             }
             
             runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                    file.getNameExt(), context, isDebug);
+                    file.getNameExt(), context, isDebug, new OutputRecognizer[] { new TestNotifier() });
         }
 
         if (COMMAND_TEST.equals(command)) {

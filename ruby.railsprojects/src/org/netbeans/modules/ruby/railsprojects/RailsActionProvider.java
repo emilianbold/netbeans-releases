@@ -43,8 +43,10 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
+import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.rubyproject.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.execution.OutputRecognizer;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
@@ -198,6 +200,7 @@ public class RailsActionProvider implements ActionProvider {
             // Save all files first
             LifecycleManager.getDefault().saveAll();
             RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+            rake.setTest(true);
             File pwd = FileUtil.toFile(project.getProjectDirectory());
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "Tests");
             rake.runRake(pwd, null, displayName, new RubyFileLocator(context), true, "test"); // NOI18N
@@ -231,7 +234,7 @@ public class RailsActionProvider implements ActionProvider {
             }
             
             runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, 
-                    isDebug);
+                    isDebug, new OutputRecognizer[] { new TestNotifier() });
             
             return;
 
@@ -352,13 +355,14 @@ public class RailsActionProvider implements ActionProvider {
             //    // XXX What do we do here?
             } else if (fileName.endsWith("_test")) { // NOI18N
                 // Run test normally - don't pop up browser
-                runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand);
+                runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand,
+                        new OutputRecognizer[] { new TestNotifier() });
                 return;
             }
             
             if (path.length() == 0) {
                 // No corresponding URL - some other file we should just try to execute
-                runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand);
+                runRubyScript(FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand, null);
                 return;
             }
 
@@ -506,7 +510,8 @@ public class RailsActionProvider implements ActionProvider {
                 run();
     }
 
-    private void runRubyScript(String target, String displayName, final Lookup context, final boolean debug) {
+    private void runRubyScript(String target, String displayName, final Lookup context, final boolean debug,
+            OutputRecognizer[] extraRecognizers) {
         String options = project.evaluator().getProperty(RailsProjectProperties.RUN_JVM_ARGS);
 
         if (options != null && options.trim().length() == 0) {
@@ -576,20 +581,28 @@ public class RailsActionProvider implements ActionProvider {
         File pwd = FileUtil.toFile(project.getProjectDirectory());
 
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        
+        ExecutionDescriptor desc = new ExecutionDescriptor(displayName, pwd, target);
+        desc.debug(debug);
+        desc.showSuspended(true);
+        desc.allowInput();
+        desc.initialArgs(options);
+        desc.classPath(classPath);
+        desc.additionalArgs(getApplicationArguments());
+        desc.fileLocator(new RailsFileLocator(context, project));
+        desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
+        desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
+        
+        if (extraRecognizers != null) {
+            for (OutputRecognizer recognizer : extraRecognizers) {
+                desc.addOutputRecognizer(recognizer);
+            }
+        }
 
-        new RubyExecution(new ExecutionDescriptor(displayName, pwd, target).
-                debug(debug).
-                showSuspended(true).
-                allowInput().
-                initialArgs(options).
-                classPath(classPath).
-                additionalArgs(getApplicationArguments()).
-                fileLocator(new RubyFileLocator(context)).
-                addOutputRecognizer(RubyExecution.RUBY_COMPILER).
-                addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
-                project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
-                ).
-                run();
+        RubyExecution service = new RubyExecution(desc,
+                project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+        service.run();
+        
     }
     
     

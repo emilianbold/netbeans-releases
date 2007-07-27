@@ -663,7 +663,13 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
             // XXX TODO - how do we obtain the target name now?
             String charsetName = null;
             RakeSupport rake = new RakeSupport(charsetName);
-            rake.runRake(pwd, rakeFile, displayName, fileLocator, true, target.getTarget());
+            String targetName = target.getTarget();
+
+            if (targetName != null && (targetName.equals("test") || targetName.startsWith("test:"))) { // NOI18N
+                rake.setTest(true);
+            }
+
+            rake.runRake(pwd, rakeFile, displayName, fileLocator, true, targetName);
 
             // Update recent targets list: add or move to end
             recentTargets.remove(target);
