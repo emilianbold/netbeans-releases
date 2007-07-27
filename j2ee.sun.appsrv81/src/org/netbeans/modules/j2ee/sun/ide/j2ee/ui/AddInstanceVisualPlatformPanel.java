@@ -289,6 +289,7 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 5, 6);
         add(platformFieldLabel, gridBagConstraints);
+        platformFieldLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "ACSD_InstallRoot")); // NOI18N
 
         platformField.setMaximumSize(null);
         platformField.setMinimumSize(null);
@@ -453,6 +454,7 @@ class AddInstanceVisualPlatformPanel extends javax.swing.JPanel  {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 23, 5, 6);
         add(profileSelectorLabel, gridBagConstraints);
+        profileSelectorLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddInstanceVisualPlatformPanel.class, "ACSD_LBL_Profile")); // NOI18N
 
         profileSelector.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         profileSelector.setMaximumSize(null);
