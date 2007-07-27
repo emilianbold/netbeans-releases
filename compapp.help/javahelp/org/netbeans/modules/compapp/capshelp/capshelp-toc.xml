@@ -3,7 +3,7 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-        <tocitem text="SOA Applications">
+        <tocitem text="SOA Development">
 	<tocitem text="Composite Applications">
 		<tocitem text="Working with Composite Application Projects">
 			<tocitem text="About Composite Application Projects" target="org.netbeans.modules.compapp.projects.jbi.ui.JbiLogicalViewProvider" />
