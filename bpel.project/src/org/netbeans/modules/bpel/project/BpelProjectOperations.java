@@ -42,7 +42,6 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
-
 public class BpelProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
     private BpelproProject project;
     

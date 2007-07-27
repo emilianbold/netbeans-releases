@@ -16,10 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
-
-
 package org.netbeans.modules.bpel.project;
 
 import java.awt.Dialog;
@@ -30,7 +26,6 @@ import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
-//import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -41,7 +36,7 @@ import org.netbeans.modules.bpel.project.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.bpel.project.ui.FoldersListSettings;
 import org.netbeans.modules.bpel.project.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider;
-import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -62,7 +57,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
-// import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
@@ -79,7 +73,6 @@ import org.w3c.dom.Text;
  */
 public final class IcanproProject implements Project, AntProjectListener {
 
-//    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("com/sun/jbi/ui/devtoolT/projects/icanpro/ui/resources/icanproProjectIcon.gif")); // NOI18N 
     private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/bpel/project/ui/resources/icanproProjectIcon.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
 
@@ -309,14 +302,14 @@ public final class IcanproProject implements Project, AntProjectListener {
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
                 helper.createSimpleAntArtifact(JbiArtifactProvider.ARTIFACT_TYPE_JBI_ASA+":"+
-                        helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX),
+                        helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SE_TYPE),
                         IcanproProjectProperties.SE_DEPLOYMENT_JAR,
                         helper.getStandardPropertyEvaluator(), "dist_se", "clean"), // NOI18N
             };
         }
 
         public String getJbiServiceAssemblyType() {
-            return helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SETYPE_PREFIX);
+            return helper.getStandardPropertyEvaluator().getProperty(IcanproProjectProperties.JBI_SE_TYPE);
         }
     }
 

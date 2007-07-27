@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.project.ui;
 
 import java.awt.event.ActionEvent;
@@ -51,10 +50,9 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
-// import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.modules.bpel.project.IcanproConstants;
 import org.netbeans.modules.bpel.project.ProjectConstants;
-import org.netbeans.modules.bpel.project.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;

@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.project;
 
 import java.io.BufferedReader;
@@ -73,8 +72,8 @@ public class BpelproProjectGenerator {
      */
     public static AntProjectHelper createProject(File dir, String name) throws IOException {
         dir.mkdirs();
-        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
+
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
         }
@@ -87,30 +86,38 @@ public class BpelproProjectGenerator {
         assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
         AntProjectHelper h = setupProject(fo, name);
         FileObject srcRoot = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
-// Bing bpelasa        FileObject bpelasaRoot = srcRoot.createFolder(DEFAULT_BPELASA_FOLDER); //NOI18N
         FileObject bpelasaRoot = srcRoot;
 
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.put(IcanproProjectProperties.SOURCE_ROOT, DEFAULT_SRC_FOLDER); //NOI18N
         ep.setProperty(IcanproProjectProperties.META_INF, "${"+IcanproProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_DOC_BASE_FOLDER); //NOI18N
-// Bing bpelasa       ep.setProperty(IcanproProjectProperties.SRC_DIR, "${"+IcanproProjectProperties.SOURCE_ROOT+"}/"+DEFAULT_BPELASA_FOLDER); //NOI18N
         ep.setProperty(IcanproProjectProperties.SRC_DIR, "${"+IcanproProjectProperties.SOURCE_ROOT+"}"); //NOI18N
         ep.setProperty(IcanproProjectProperties.RESOURCE_DIR, DEFAULT_RESOURCE_FOLDER);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
 
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         ProjectManager.getDefault().saveProject(p);
+
+        createCatalogXml();
+
         return h;
+    }
+
+    // vlv # 111020
+    private static void createCatalogXml() {
+//System.out.println();
+//System.out.println("createProject");
+//System.out.println();
+    // todo start here
     }
 
     public static AntProjectHelper importProject(File dir, String name, FileObject wmFO, FileObject javaRoot, FileObject configFilesBase, String j2eeLevel, String buildfile) throws IOException {
         dir.mkdirs();
-        // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
+
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
         }
-        // XXX add code to set meta inf directory  (meta-inf and java src)
         FileObject fo = FileUtil.toFileObject(rootF);
         assert fo != null : "At least disk roots must be mounted! " + rootF;
         fo.getFileSystem().refresh(false);
@@ -119,6 +126,7 @@ public class BpelproProjectGenerator {
         assert fo.isFolder() : "Not really a dir: " + dir;
         AntProjectHelper h = setupProject(fo, name);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
         if (FileUtil.isParentOf(fo, wmFO) || fo.equals(wmFO)) {
             ep.put(IcanproProjectProperties.SOURCE_ROOT, "."); //NOI18N
             ep.setProperty(IcanproProjectProperties.SRC_DIR, relativePath(fo, javaRoot)); //NOI18N
@@ -137,7 +145,6 @@ public class BpelproProjectGenerator {
             ep.setProperty(IcanproProjectProperties.BUILD_FILE, buildfile);
         }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-
         Project p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
         ProjectManager.getDefault().saveProject(p);
 
@@ -165,12 +172,10 @@ public class BpelproProjectGenerator {
         h.putPrimaryConfigurationData(data, true);
 
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        // ep.setProperty(IcanproProjectProperties.JAVAC_CLASSPATH, "${libs.j2ee14.classpath}");
         ep.setProperty(IcanproProjectProperties.DIST_DIR, "dist");
         ep.setProperty(IcanproProjectProperties.DIST_JAR, "${"+IcanproProjectProperties.DIST_DIR+"}/" + name + ".zip");
         ep.setProperty(IcanproProjectProperties.JAR_NAME, name + ".jar");
         ep.setProperty(IcanproProjectProperties.JAR_COMPRESS, "false");
-//        ep.setProperty(IcanproProjectProperties.JAR_CONTENT_ADDITIONAL, "");
 
         Deployment deployment = Deployment.getDefault();
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
@@ -188,9 +193,12 @@ public class BpelproProjectGenerator {
         ep.setProperty(IcanproProjectProperties.DEBUG_CLASSPATH, "${"+IcanproProjectProperties.JAVAC_CLASSPATH+"}:${"+IcanproProjectProperties.BUILD_CLASSES_DIR+"}");
 
         //============= Start of IcanPro========================================//
-        ep.setProperty(IcanproProjectProperties.JBI_SE_TYPE, "sun-bpel-engine"); // NOI18N     //FIXME? REPACKAGING
-        ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.JBI_SE_TYPE, "sun-bpel-engine"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.SERVICE_UNIT_DESCRIPTION, "Represents this Service Unit"); // NOI18N
+
+        // vlv # 109451 todo r
+        ep.setProperty("jbi.se.type", "sun-bpel-engine"); // NOI18N
+        ep.setProperty("jbi.service-unit.description", "Represents this Service Unit"); // NOI18N
 
         ep.setProperty(IcanproProjectProperties.BC_DEPLOYMENT_JAR, "${"+IcanproProjectProperties.BUILD_DIR+"}/" + "BCDeployment.jar");
         ep.setProperty(IcanproProjectProperties.SE_DEPLOYMENT_JAR, "${"+IcanproProjectProperties.BUILD_DIR+"}/" + "SEDeployment.jar");
@@ -208,116 +216,5 @@ public class BpelproProjectGenerator {
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
-    }
-
-    private static void createBPELFile(String bpelName, FileObject folderFO, String projectName) throws IOException {
-        if (bpelName == null) {
-            return;
-        }
-
-        bpelName = bpelName.trim();
-
-        if (bpelName.length() == 0) {
-            return;
-        }
-
-        if (bpelName.endsWith(".bpel")) { // NOI18N
-            bpelName = bpelName.substring(0, bpelName.length() - 5);
-        }
-
-        FileObject templateFO =
-                Repository.getDefault().getDefaultFileSystem().findResource("Templates/SOA/Process.bpel" ); // NOI18N
-
-        if (templateFO == null) {
-            return; // Don't know the template
-        }
-
-        DataObject templateDO = DataObject.find(templateFO);
-        DataFolder folderDO = DataFolder.findFolder(folderFO);
-        DataObject newBpelDO = templateDO.createFromTemplate(folderDO, bpelName);
-
-        FileObject newFO = newBpelDO.getPrimaryFile();
-        String namespace;
-        namespace = "http://enterprise.netbeans.org/bpel";
-        namespace += "/" + projectName;
-        namespace += "/" + bpelName;
-        initialiseNames(newFO, bpelName, namespace, projectName);  // NOI18N
-    }
-
-    /**
-     *   Basically acts like a xslt tranformer by
-     *   replacing _PROCNAME_ in fileObject contents with 'name'.
-     *   replaceing _NS_ in fileObject contents with 'namespace'
-     */
-    private static void initialiseNames(FileObject fileObject, String name, String namespace, String projectName) {
-        String line;
-        StringBuffer buffer = new StringBuffer();
-        String separator = System.getProperty("line.separator"); // NOI18N
-
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    fileObject.getInputStream(), "UTF-8")); //NOI18N
-
-            try {
-                while((line = reader.readLine()) != null) {
-                    line = line.replace("_PROCNAME_", name);
-                    line = line.replace("_NS_", namespace);
-                    line = line.replace("_PROJNAME_", projectName);
-                    buffer.append(line);
-                    buffer.append(separator);
-                }
-            } finally {
-                reader.close();
-            }
-
-            Writer writer = new BufferedWriter(new OutputStreamWriter(
-                    fileObject.getOutputStream(), "UTF-8")); //NOI18N
-            try {
-                writer.write(buffer.toString());
-            } finally {
-                writer.close();
-            }
-            
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-    }
-
-    private static void createWSDLFile(String wsdlName, FileObject folderFO, String projectName) throws IOException {
-        if (wsdlName == null) {
-            return;
-        }
-
-        wsdlName = wsdlName.trim();
-
-        if (wsdlName.length() == 0) {
-            return;
-        }
-
-//        if (wsdlName.endsWith(".wsdl")) { // NOI18N
-//            wsdlName = wsdlName.substring(0, wsdlName.length() - 5);
-//        }
-
-        FileObject templateFO =
-//                Repository.getDefault().getDefaultFileSystem().findResource("Templates/XML/untitled.wsdl" ); // NOI18N
-                Repository.getDefault().getDefaultFileSystem().findResource("BPEL/BPELEmptyWSDL" ); // NOI18N
-
-        if (templateFO == null) {
-            return; // Don't know the template
-        }
-
-        DataObject templateDO = DataObject.find(templateFO);
-        DataFolder folderDO = DataFolder.findFolder(folderFO);
-        DataObject newWsdlDO = templateDO.createFromTemplate(folderDO, wsdlName + ".wsdl");
-
-        FileObject newFO = newWsdlDO.getPrimaryFile();
-        if (wsdlName.endsWith(".wsdl")) { // NOI18N
-            wsdlName = wsdlName.substring(0, wsdlName.length() - 5);
-        }
-        String namespace;
-        namespace = "http://enterprise.netbeans.org/bpel"; // NOI18N
-        namespace += "/" + projectName; // NOI18N
-        namespace += "/" + wsdlName; // NOI18N
-        initialiseNames(newFO, wsdlName, namespace, projectName); // NOI18N
     }
 }

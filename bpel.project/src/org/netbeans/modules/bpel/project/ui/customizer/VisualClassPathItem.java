@@ -16,8 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.bpel.project.ui.customizer;
 
 import javax.swing.Icon;
@@ -27,6 +25,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.*;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.util.Utilities;
+import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
 import java.net.URI;
 
