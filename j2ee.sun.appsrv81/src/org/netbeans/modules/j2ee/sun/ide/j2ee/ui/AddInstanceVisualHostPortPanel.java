@@ -137,8 +137,6 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
         spacingHack = new javax.swing.JLabel();
 
         setFocusable(false);
-        setMaximumSize(null);
-        setMinimumSize(null);
         setPreferredSize(new java.awt.Dimension(0, 0));
         setLayout(new java.awt.GridBagLayout());
 
@@ -199,6 +197,7 @@ public final class AddInstanceVisualHostPortPanel extends JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         add(portValue, gridBagConstraints);
+        portValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AddInstanceVisualHostPortPanel.class, "ACSD_AdminPort_registered")); // NOI18N
 
         spacingHack.setEnabled(false);
         spacingHack.setFocusable(false);
