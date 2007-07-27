@@ -56,11 +56,18 @@ import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
  */
 public class SimplifiedJSPServlet {
 
-    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends HttpServlet {\n" + "\tHttpServletRequest request;\n" + "\tHttpServletResponse response;\n" + "\tHttpSession session;\n" + "\tServletContext application;\n" + "\tJspWriter out;\n" + "\tServletConfig config;\n" + "\tJspContext jspContext;\n" + "\tObject page;\n" + "\tPageContext pageContext;\n"; //NOI18N
-
-    private static final String METHOD_HEADER = "\n\tvoid mergedScriptlets() " +
-        "throws javax.servlet.ServletException, java.io.IOException {\n\n"; //NOI18N
-
+    private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends HttpServlet {\n"; //NOI18N
+    private static final String METHOD_HEADER = "\n\tvoid mergedScriptlets("
+            + "\t\tHttpServletRequest request;\n" 
+            + "\t\tHttpServletResponse response;\n" 
+            + "\t\tHttpSession session;\n" 
+            + "\t\tServletContext application;\n" 
+            + "\t\tJspWriter out;\n" 
+            + "\t\tServletConfig config;\n"
+            + "\t\tJspContext jspContext;\n" 
+            + "\t\tObject page;\n" 
+            + "\t\tPageContext pageContext;\n"
+            + ") throws javax.servlet.ServletException, java.io.IOException {\n\n"; //NOI18N
     private static final String CLASS_FOOTER = "\n\t}\n}"; //NOI18N
     @Deprecated
     private final JspSyntaxSupport sup;
@@ -149,8 +156,7 @@ public class SimplifiedJSPServlet {
 
         if (beanData != null) {
             for (PageInfo.BeanData bean : beanData) {
-                beanDeclarationsBuff.append(bean.getClassName()
-                        + " " + bean.getId() + ";\n"); //NOI18N
+                beanDeclarationsBuff.append(bean.getClassName() + " " + bean.getId() + ";\n"); //NOI18N
             }
         }
 
