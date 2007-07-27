@@ -1164,4 +1164,31 @@ public class LexUtilities {
             return this.methodExpected;
         }
     }
+
+    public static boolean isInsideQuotedString(BaseDocument doc, int offset) {
+        TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
+
+        if (ts == null) {
+            return false;
+        }
+
+        ts.move(offset);
+
+        if (ts.moveNext()) {
+            Token<?extends GsfTokenId> token = ts.token();
+            TokenId id = token.id();
+            if (id == RubyTokenId.QUOTED_STRING_LITERAL || id == RubyTokenId.QUOTED_STRING_END) {
+                return true;
+            }
+        }
+        if (ts.movePrevious()) {
+            Token<?extends GsfTokenId> token = ts.token();
+            TokenId id = token.id();
+            if (id == RubyTokenId.QUOTED_STRING_LITERAL || id == RubyTokenId.QUOTED_STRING_BEGIN) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 }

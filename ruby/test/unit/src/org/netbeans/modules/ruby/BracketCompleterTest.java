@@ -151,7 +151,7 @@ public class BracketCompleterTest extends RubyTestBase {
                     original.indexOf(selection, start+1) == -1);
             ta.setSelectionStart(start);
             ta.setSelectionEnd(start+selection.length());
-            insertOffset = caret.getDot();
+            assertEquals(selection, ta.getSelectedText());
         }
 
         doc.atomicLock();
@@ -161,7 +161,9 @@ public class BracketCompleterTest extends RubyTestBase {
             boolean handled = bc.beforeCharInserted(doc, insertOffset, ta, insertText);
             if (!handled) {
                 if (ta.getSelectedText() != null && ta.getSelectedText().length() > 0) {
+                    insertOffset = ta.getSelectionStart();
                     doc.remove(ta.getSelectionStart(), ta.getSelectionEnd()-ta.getSelectionStart());
+                    caret.setDot(insertOffset);
                 }
                 doc.insertString(caret.getDot(), ""+insertText, null);
                 caret.setDot(insertOffset+1);
@@ -645,6 +647,14 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("x = foo^", '"', "x = \"foo\"^", "foo");
     }
 
+    public void testReplaceSelection3() throws Exception {
+        insertChar("x = \"foo^bar\"", '#', "x = \"#{foo}^bar\"", "foo");
+    }
+    
+    public void testReplaceSelection4() throws Exception {
+        insertChar("x = 'foo^bar'", '#', "x = '#^bar'", "foo");
+    }
+    
     public void testReplaceCommentSelectionBold() throws Exception {
         insertChar("# foo^", '*', "# *foo*^", "foo");
     }

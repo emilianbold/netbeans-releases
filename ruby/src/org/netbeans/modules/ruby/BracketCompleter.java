@@ -48,7 +48,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 
 /** 
@@ -483,6 +482,17 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     doc.insertString(start, ch + selection + matching(ch), null);
                     target.getCaret().setDot(start+selection.length()+2);
                 
+                    return true;
+                }
+            } else if (ch == '#' && 
+                    LexUtilities.isInsideQuotedString(doc, target.getSelectionStart()) &&
+                    LexUtilities.isInsideQuotedString(doc, target.getSelectionEnd())) {
+                String selection = target.getSelectedText();
+                if (selection != null && selection.length() > 0 && selection.charAt(0) != ch) {
+                    int start = target.getSelectionStart();
+                    doc.remove(start, target.getSelectionEnd()-start);
+                    doc.insertString(start, "#{" + selection + "}", null);
+                    target.getCaret().setDot(start+selection.length()+3);
                     return true;
                 }
             }
