@@ -401,8 +401,11 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
             //the accessors after syncAll()
             for (Iterator i = models.values().iterator(); i.hasNext(); ) {
                 Model m = (Model)i.next();
-                if (m instanceof FacesModel) {
-                    ((FacesModel)m).addXRefAccessors();
+                if (m instanceof FacesModel) { 
+                    FacesModel facesModel = (FacesModel)m;
+                    if(!facesModel.isBusted()) {
+                         facesModel.addXRefAccessors();
+                    }
                 }
             }
             
