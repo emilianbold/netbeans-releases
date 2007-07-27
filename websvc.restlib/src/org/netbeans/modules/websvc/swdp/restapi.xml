@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 The contents of this file are subject to the terms of the Common Development
@@ -15,17 +15,17 @@ enclosed by brackets [] replaced by your own identifying information:
 "Portions Copyrighted [year] [name of copyright owner]"
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
-<filesystem>
-  <folder name="org-netbeans-api-project-libraries">
-    <folder name="Libraries">
-      <file name="swdp.xml" url="swdp.xml"/>
-      <file name="restapi.xml" url="restapi.xml"/>
-    </folder>
-  </folder>
-</filesystem>
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+<library version="1.0">
+    <name>restapi</name>
+    <type>j2se</type>
+    <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst:///modules/ext/rest/jsr311-api.jar!/</resource>
+    </volume>  
+</library>

@@ -27,6 +27,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -41,6 +43,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
@@ -48,6 +51,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * All development project type supporting REST framework should provide
@@ -57,6 +61,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class RestSupport {
     public static final String SWDP_LIBRARY = "restlib"; //NOI18N
+    public static final String RESTAPI_LIBRARY = "restapi"; //NOI18N
     public static final String PROP_SWDP_CLASSPATH = "libs.swdp.classpath"; //NOI18N
     public static final String PROP_RESTBEANS_TEST_DIR = "restbeans.test.dir";
     public static final String PROP_RESTBEANS_TEST_FILE = "restbeans.test.file";
@@ -78,6 +83,7 @@ public abstract class RestSupport {
     public static final String REST_API_JAR = "jsr311-api.jar";
     public static final String REST_RI_JAR = "jersey.jar";
     public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";
+    public static final String JSR311_API_LOCATION = "modules/ext/rest/jsr311-api.jar";
     
     AntProjectHelper helper;
 
@@ -241,7 +247,6 @@ public abstract class RestSupport {
             return;
         }
 
-        // leave it here in case we decide to have SWDP library through download
         Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
         if (swdpLibrary == null) {
             return;
@@ -257,6 +262,46 @@ public abstract class RestSupport {
                 
             }
         }
+    }
+    
+    public  void addJSR311apiJar() throws IOException {
+        Project project = getProject();
+        if (project == null) {
+            return;
+        }
+
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        Library library = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+        if (library == null) {
+            return;
+        }
+        
+        File f = InstalledFileLocator.getDefault().locate(JSR311_API_LOCATION, null, false); 
+        if (f == null) {
+            return;
+        }
+        
+        URL jsr311JarURL = null;
+        for (URL jarURL :library.getContent("classpath")) { //NOI18N
+            if (jarURL.getPath().indexOf(REST_API_JAR) > -1) {
+                jsr311JarURL = jarURL;
+                break;
+            }
+        }
+        if (jsr311JarURL == null) {
+            return;
+        }
+
+        FileObject jsr311FO = FileUtil.toFileObject(f);
+        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+        ClassPath cp = cpp.findClassPath(sourceRoot, ClassPath.COMPILE);
+        if (isRestSupportOn() || cp.contains(jsr311FO)) {
+            return;
+        }
+        
+        //ProjectClassPathModifier.addRoots(new URL[] {jsr311FO.getURL()}, sourceRoot, ClassPath.COMPILE);
+        ProjectClassPathModifier.addLibraries(new Library[] {library}, sourceRoot, ClassPath.COMPILE);
     }
 
     protected Project getProject() {
