@@ -82,33 +82,31 @@ public class WSDesignViewNavigatorContent extends JPanel
         repaint();
     }
     
-    public class WSChildren extends Children.Keys{
+    public class WSChildren extends Children.Keys<MethodModel>{
         DataObject implClass;
         public WSChildren(DataObject implClass){
             this.implClass = implClass;
         }
-        protected Node[] createNodes(Object key) {
-            if(key instanceof MethodModel){
-                MethodModel m = (MethodModel)key;
-                AbstractNode n = new AbstractNode(Children.LEAF);
-                n.setName(m.getOperationName());
-                return new Node[] {n};
-            }
-            return new Node[0];
+        protected Node[] createNodes(MethodModel key) {
+            AbstractNode n = new AbstractNode(Children.LEAF);
+            n.setName(key.getOperationName());
+            return new Node[] {n};
         }
         
+        @Override
         protected void addNotify() {
             updateKeys();
         }
         
         private void updateKeys(){
-            List keys = new ArrayList();
+            List<MethodModel> keys = new ArrayList<MethodModel>();
             if(implClass != null){
                 ServiceModel model = ServiceModel.getServiceModel(implClass.getPrimaryFile());
                 keys = model.getOperations();
             }
             this.setKeys(keys);
         }
+
     }
     
 }

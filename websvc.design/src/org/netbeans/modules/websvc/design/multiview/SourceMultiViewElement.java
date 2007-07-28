@@ -35,10 +35,9 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
-import org.openide.util.lookup.Lookups;
 
 /**
- * The source editor element for JaxWS node.
+ * The source editor element for JaxWs node.
  *
  * @author Ajit Bhate
  */
@@ -61,22 +60,12 @@ public class SourceMultiViewElement extends CloneableEditor
      * 
      * @param support 
      */
-    public SourceMultiViewElement(MultiViewSupport mvSupport, DataEditorSupport support) {
+    public SourceMultiViewElement(DataEditorSupport support) {
         super(support);
-        initialize(mvSupport);
+        initialize();
    }
     
-    private void initialize(MultiViewSupport mvSupport) {
-        if (mvSupport==null || mvSupport.getDataObject() != getEditorSupport().getDataObject()) {
-            throw new IllegalStateException(
-                    "The multiviewsupport object represents incorrect data object"); //NOI18N
-        }
-        associateLookup(Lookups.fixed(
-                mvSupport,
-                getActionMap(),
-                mvSupport.getDataObject(),
-                mvSupport.getDataObject().getNodeDelegate()
-                ));
+    private void initialize() {
     }
     
     public JComponent getToolbarRepresentation() {
@@ -184,19 +173,11 @@ public class SourceMultiViewElement extends CloneableEditor
     public void writeExternal(ObjectOutput out) throws IOException {
         // The superclass persists things such as the caret position.
         super.writeExternal(out);
-        Object obj = getLookup().lookup(MultiViewSupport.class);
-        if(obj!=null) {
-            out.writeObject(obj);
-        }
-    }
+     }
     
     public void readExternal(ObjectInput in)
             throws IOException, ClassNotFoundException {
         super.readExternal(in);
-	Object firstObject = in.readObject();
-	if (firstObject instanceof MultiViewSupport ) {
-	    initialize((MultiViewSupport)firstObject);
-	}
     }
     
     private DataEditorSupport getEditorSupport() {

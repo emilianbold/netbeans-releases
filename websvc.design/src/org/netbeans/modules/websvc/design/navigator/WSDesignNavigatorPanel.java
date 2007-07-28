@@ -31,10 +31,8 @@ package org.netbeans.modules.websvc.design.navigator;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import javax.swing.JComponent;
-import org.netbeans.modules.websvc.core.MultiViewCookie;
-import org.netbeans.modules.websvc.design.multiview.MultiViewSupport;
-import org.netbeans.spi.navigator.NavigatorLookupHint;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -48,7 +46,7 @@ import org.openide.windows.TopComponent;
 public class WSDesignNavigatorPanel implements NavigatorPanel, LookupListener{
     
     private WSDesignViewNavigatorContent navigator;
-    private Lookup.Result selection;
+    private Lookup.Result<DataObject> selection;
     
     /** Creates a new instance of WSDesignNavigatorPanel */
     public WSDesignNavigatorPanel() {
@@ -74,7 +72,7 @@ public class WSDesignNavigatorPanel implements NavigatorPanel, LookupListener{
     public void panelActivated(Lookup context) {
         getComponent();
         TopComponent.getRegistry().addPropertyChangeListener(navigator);
-        selection = context.lookup(new Lookup.Template(MultiViewCookie.class));
+        selection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
         selection.addLookupListener(this);
         resultChanged(null);
         // hack to init selection if any
@@ -96,10 +94,10 @@ public class WSDesignNavigatorPanel implements NavigatorPanel, LookupListener{
     }
     
     public void resultChanged(LookupEvent ev) {
-        Collection selected = selection.allInstances();
+        Collection<? extends DataObject> selected = selection.allInstances();
         if (selected.size() == 1) {
-            MultiViewSupport mvs = (MultiViewSupport) selected.iterator().next();
-            navigator.navigate(mvs.getDataObject());
+            DataObject dobj = selected.iterator().next();
+            navigator.navigate(dobj);
         }
     }
     

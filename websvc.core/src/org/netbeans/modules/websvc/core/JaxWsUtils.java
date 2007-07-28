@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -65,8 +64,6 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.core.MultiViewCookie;
-import org.netbeans.modules.websvc.core.MultiViewCookie;
 import org.netbeans.modules.websvc.core.dev.wizard.ProjectInfo;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModelFactory;
@@ -82,7 +79,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.util.Iterator;
@@ -499,7 +495,7 @@ public class JaxWsUtils {
     
     public static void openFileInEditor(DataObject dobj, Service service){
         
-        final OpenCookie openCookie = getMultiViewCookie(service,dobj);
+        final OpenCookie openCookie = dobj.getCookie(OpenCookie.class);
         if (openCookie!=null) {
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run(){
@@ -507,7 +503,7 @@ public class JaxWsUtils {
                 }
             }, 1000);
         } else {
-            final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+            final EditorCookie ec = dobj.getCookie(EditorCookie.class);
             RequestProcessor.getDefault().post(new Runnable(){
                 public void run(){
                     ec.open();
@@ -763,22 +759,6 @@ public class JaxWsUtils {
         return projectType == ProjectInfo.CAR_PROJECT_TYPE;
     }
     
-    private static final Lookup.Result<MultiViewCookieProvider> multiviewCookieProviders =
-            Lookup.getDefault().lookup(new Lookup.Template<MultiViewCookieProvider>(MultiViewCookieProvider.class));
-    
-    /**
-     * Find MultiViewCookie for given this node
-     */
-    public static MultiViewCookie getMultiViewCookie(Service service, DataObject dataObject) {
-        Collection<? extends MultiViewCookieProvider> instances = multiviewCookieProviders.allInstances();
-        for (MultiViewCookieProvider impl: instances) {
-            MultiViewCookie cookie = impl.getMultiViewCookie(service, dataObject);
-            if (cookie != null) {
-                return cookie;
-            }
-        }
-        return null;
-    }
     /** Setter for WebService annotation attribute, e.g. serviceName = "HelloService"
      *
      */

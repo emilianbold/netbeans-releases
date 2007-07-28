@@ -113,20 +113,20 @@ public class SelectSchemaPanel extends JPanel implements ExplorerManager.Provide
     }
     
     
-    class SourceListViewChildren extends Children.Keys {
+    class SourceListViewChildren extends Children.Keys<String> {
         public static final String KEY_SOURCES = "sourcesKey"; //NOI18N
         
-        protected Node[] createNodes(Object key) {
+        protected Node[] createNodes(String key) {
             Node n = null;
             List<Node> sourceNodes = new LinkedList<Node>();
-            if (key == KEY_SOURCES) {
+            if (KEY_SOURCES.equals(key)) {
                 Sources sources = ProjectUtils.getSources(project);
                 SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
                 for(int i = 0; i < groups.length; i++){
                     sourceNodes.add(PackageView.createPackageView(groups[i]));
                 }
             }
-            return (Node[])sourceNodes.toArray(new Node[sourceNodes.size()]);
+            return sourceNodes.toArray(new Node[sourceNodes.size()]);
         }
         
         @Override
@@ -136,7 +136,7 @@ public class SelectSchemaPanel extends JPanel implements ExplorerManager.Provide
         }
         
         private void createNodes() {
-            List l = new ArrayList();
+            List<String> l = new ArrayList<String>();
             l.add(KEY_SOURCES);
             setKeys(l);
         }

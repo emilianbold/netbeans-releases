@@ -20,25 +20,18 @@
 package org.netbeans.modules.websvc.design.multiview;
 
 import java.awt.BorderLayout;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Collection;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JToolBar;
 import org.openide.windows.TopComponent;
 import org.openide.awt.UndoRedo;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
-import org.netbeans.modules.websvc.design.configuration.WSConfigurationProviderRegistry;
 import org.netbeans.modules.websvc.design.navigator.WSDesignNavigatorHint;
 import org.netbeans.modules.websvc.design.view.DesignView;
-import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -52,28 +45,19 @@ public class DesignMultiViewElement extends TopComponent
     private transient MultiViewElementCallback multiViewCallback;
     private transient JToolBar toolbar;
     private transient DesignView designView;
-    private transient Service service;
-    private transient FileObject implementationClass;
+    private transient DataObject dataObject;
 
-    /**
-     * Nullary constructor for deserialization.
-     */
-    public DesignMultiViewElement() {
-    }
-    
     /**
      * 
      * @param mvSupport 
      */
-    public DesignMultiViewElement(MultiViewSupport mvSupport) {
-        this();
-        initialize(mvSupport);
+    public DesignMultiViewElement(DataObject dataObject) {
+        this.dataObject = dataObject;
+        initialize();
     }
     
-    private void initialize(MultiViewSupport mvSupport) {
-        associateLookup(Lookups.fixed(mvSupport , new WSDesignNavigatorHint()));
-        service = mvSupport.getService();
-        implementationClass = mvSupport.getDataObject().getPrimaryFile();
+    private void initialize() {
+        associateLookup(Lookups.fixed(dataObject, new WSDesignNavigatorHint()));
     }
     
     public int getPersistenceType() {
@@ -95,18 +79,28 @@ public class DesignMultiViewElement extends TopComponent
      * error message.
      */
     private void initUI() {
+        removeAll();
         setLayout(new BorderLayout());
-        designView = new DesignView(service,implementationClass);
-        add(designView);
+        MultiViewSupport mvSupport = dataObject.getCookie(MultiViewSupport.class);
+        if (mvSupport!=null) {
+            designView = new DesignView(mvSupport.getService(),mvSupport.getImplementationBean());
+            add(designView);
+        } else {
+            JLabel emptyLabel = new JLabel("switch to source view.");
+            add(emptyLabel,BorderLayout.CENTER);
+        }
     }
     
     
     public void componentActivated() {
         super.componentActivated();
+        setActivatedNodes(new Node[] {});
+        setActivatedNodes(new Node[] {dataObject.getNodeDelegate()});
     }
     
     public void componentDeactivated() {
         super.componentDeactivated();
+        setActivatedNodes(new Node[] {});
     }
     
     public void componentOpened() {
@@ -145,21 +139,4 @@ public class DesignMultiViewElement extends TopComponent
         return this;
     }
     
-    public void writeExternal(ObjectOutput out) throws IOException {
-        // The superclass persists things such as the caret position.
-        super.writeExternal(out);
-        Object obj = getLookup().lookup(MultiViewSupport.class);
-        if(obj!=null) {
-            out.writeObject(obj);
-        }
-    }
-    
-    public void readExternal(ObjectInput in)
-            throws IOException, ClassNotFoundException {
-        super.readExternal(in);
-	Object firstObject = in.readObject();
-	if (firstObject instanceof MultiViewSupport ) {
-            initialize((MultiViewSupport)firstObject);
-	}
-    }
 }

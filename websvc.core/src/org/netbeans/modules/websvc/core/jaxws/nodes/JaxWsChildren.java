@@ -513,7 +513,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                                     }
                                     // close the editor representing old impl bean
                                     JaxWsNode parent = (JaxWsNode)getNode();
-                                    parent.closeMultiView();
+//                                    parent.closeMultiView();
                                     JaxWsUtils.generateJaxWsImplementationClass(FileOwnerQuery.getOwner(srcRoot),
                                         folder, name, model, service);
                                     FileObject newImplClass = srcRoot.getFileObject(implClass.replace('.','/')+".java"); //NOI18N
@@ -521,7 +521,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
                                         JaxWsChildren.this.implClass=newImplClass;
                                     }
                                     parent.refreshImplClass();
-                                    parent.refreshMultiViewCookie(wsdlPort.isProvider());
+//                                    parent.refreshMultiViewCookie(wsdlPort.isProvider());
                                 }
                             }
                         } catch (Exception ex) {

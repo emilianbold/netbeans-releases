@@ -19,12 +19,15 @@
 
 package org.netbeans.modules.websvc.design.multiview;
 
+import java.beans.BeanInfo;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
@@ -41,24 +44,23 @@ public class DesignMultiViewDesc extends Object
      * 
      */
     public static final String PREFERRED_ID = "webservice-designview";
-    private MultiViewSupport mvSupport;
+    private DataObject dataObject;
     
     /**
      *
      *
      */
-    public DesignMultiViewDesc() {
+    private DesignMultiViewDesc() {
         super();
     }
-    
     
     /**
      *
      *
      * @param mvSupport 
      */
-    public DesignMultiViewDesc(MultiViewSupport mvSupport) {
-        this.mvSupport = mvSupport;
+    public DesignMultiViewDesc(DataObject dataObject) {
+        this.dataObject = dataObject;
     }
     
     
@@ -85,7 +87,7 @@ public class DesignMultiViewDesc extends Object
      *
      */
     public java.awt.Image getIcon() {
-        return MultiViewSupport.SERVICE_BADGE;
+        return dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16);
     }
     
     
@@ -113,7 +115,8 @@ public class DesignMultiViewDesc extends Object
      *
      */
     public MultiViewElement createElement() {
-        return new DesignMultiViewElement(mvSupport);
+        if(dataObject==null) return MultiViewFactory.BLANK_ELEMENT;
+        return new DesignMultiViewElement(dataObject);
     }
     
     
@@ -124,7 +127,7 @@ public class DesignMultiViewDesc extends Object
      * @throws java.io.IOException
      */
     public void writeExternal(ObjectOutput out) throws IOException {
-	out.writeObject(mvSupport);
+	out.writeObject(dataObject);
     }
     
     
@@ -138,7 +141,7 @@ public class DesignMultiViewDesc extends Object
     public void readExternal(ObjectInput in)
             throws IOException, ClassNotFoundException {
         Object firstObject = in.readObject();
-	if (firstObject instanceof MultiViewSupport)
-	    mvSupport = (MultiViewSupport) firstObject;
+	if (firstObject instanceof DataObject)
+            dataObject = (DataObject)firstObject;
     }
 }

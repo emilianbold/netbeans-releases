@@ -21,13 +21,9 @@ package org.netbeans.modules.websvc.design.multiview;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.Action;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.openide.text.DataEditorSupport;
 import org.openide.loaders.DataObject;
 import org.openide.windows.Mode;
@@ -41,24 +37,24 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.websvc.core.MultiViewCookie;
+import org.netbeans.modules.websvc.design.loader.JaxWsDataObject;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
 
 /**
  * Class for creating the Multiview
  * @author Ajit Bhate
  */
-public class MultiViewSupport implements MultiViewCookie, Serializable {
+public class MultiViewSupport implements OpenCookie, EditCookie {
     
-    static final java.awt.Image SERVICE_BADGE = org.openide.util.Utilities.loadImage(
-            "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif" ); //NOI18N
     static final long serialVersionUID = 1L;
-    private DataObject dataObject;
-    private transient Service service;
+    private JaxWsDataObject dataObject;
+    private Service service;
     
     public static String SOURCE_UNSAFE_CLOSE = "SOURCE_UNSAFE_CLOSE";
     private static String DESIGN_UNSAFE_CLOSE = "DESIGN_UNSAFE_CLOSE";
@@ -88,7 +84,7 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
      * @param displayName 
      * @param dataObject 
      */
-    MultiViewSupport(Service service, DataObject dataObject) {
+    public MultiViewSupport(Service service, JaxWsDataObject dataObject) {
         this.dataObject = dataObject;
         this.service = service;
     }
@@ -101,22 +97,23 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
         view(View.SOURCE);
     }
 
-    public boolean close() {
-        boolean retValue = false;
-        for(TopComponent tc:getOpenedMultiViews()) {
-            retValue&=tc.close();
-        }
-        return retValue;
-    }
-    
-    public DataObject getDataObject() {
+    JaxWsDataObject getDataObject() {
         return dataObject;
+}
+
+    DataEditorSupport getEditorSupport() {
+        return dataObject.getCookie(JaxWsDataObject.JaxWsJavaEditorSupport.class);
     }
 
     Service getService() {
         return service;
     }
 
+    FileObject getImplementationBean() {
+        return getDataObject().getPrimaryFile();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if(obj==this) {
             return true;
@@ -136,52 +133,32 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
                 DataEditorSupport.EDITOR_MODE);
         if (editorMode != null && editorMode.getSelectedTopComponent() != null) {
             TopComponent activeTC = editorMode.getSelectedTopComponent();
-            if(equals(activeTC.getLookup().lookup(MultiViewSupport.class))) {
+            DataObject dobj = activeTC.getLookup().lookup(DataObject.class);
+            if(dobj!=null && equals(dobj.getCookie(MultiViewSupport.class))) {
                 return activeTC;
             }
             for(TopComponent openedTC:editorMode.getTopComponents()) {
-                if(equals(openedTC.getLookup().lookup(MultiViewSupport.class))) {
+                dobj = openedTC.getLookup().lookup(DataObject.class);
+                if(dobj!=null && equals(dobj.getCookie(MultiViewSupport.class))) {
                     return openedTC;
                 }
             }
         }
-        CloneableTopComponent tc = createMultiView();
-        tc.requestActive();
-        return tc;
-    }
-
-    /**
-     * Finds all the opened multiviews.
-     */
-    private ArrayList<TopComponent> getOpenedMultiViews() {
-        ArrayList<TopComponent> tcs = new ArrayList<TopComponent>();
-        Mode editorMode = WindowManager.getDefault().findMode(
-                DataEditorSupport.EDITOR_MODE);
-        if (editorMode != null && editorMode.getSelectedTopComponent() != null) {
-            TopComponent activeTC = editorMode.getSelectedTopComponent();
-            if(equals(activeTC.getLookup().lookup(MultiViewSupport.class))) {
-                tcs.add(activeTC);
-            }
-            for(TopComponent openedTC:editorMode.getTopComponents()) {
-                if(equals(openedTC.getLookup().lookup(MultiViewSupport.class))) {
-                    tcs.add(openedTC);
-                }
-            }
-        }
-        return tcs;
+        getEditorSupport().open();
+        return editorMode.getSelectedTopComponent();
     }
 
     /**
      * Create the Multiview, doc into the editor window and open it.
      * @return CloneableTopComponent new multiview.
      */
-    private CloneableTopComponent createMultiView() {
+    public CloneableTopComponent createMultiView() {
         MultiViewDescription views[] = new MultiViewDescription[2];
         
         // Put the source element first so that client code can find its
         // CloneableEditorSupport.Pane implementation.
-        views[0] = new SourceMultiViewDesc(this);
-        views[1] = new DesignMultiViewDesc(this);
+        views[0] = new SourceMultiViewDesc(getDataObject());
+        views[1] = new DesignMultiViewDesc(getDataObject());
         
         
         // Make the column view the default element.
@@ -189,10 +166,10 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
                 MultiViewFactory.createCloneableMultiView(
                 views,
                 views[0]
-                , new CloseHandler(dataObject)
+                , new CloseHandler(getDataObject())
                 );
         
-        String displayName = getServiceDisplayName();
+        String displayName = getDataObject().getNodeDelegate().getDisplayName();
         multiview.setDisplayName(displayName);
         multiview.setName(displayName);
         
@@ -201,7 +178,6 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
         if (editorMode != null) {
             editorMode.dockInto(multiview);
         }
-        multiview.open();
         return multiview;
     }
     
@@ -215,11 +191,11 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
-                    viewInSwingThread(view,dataObject,param);
+                    viewInSwingThread(view,param);
                 }
             });
         } else {
-            viewInSwingThread(view,dataObject,param);
+            viewInSwingThread(view,param);
         }
     }
     
@@ -271,36 +247,6 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
     }
     
     /**
-     * creates display name for service
-     **/
-    private String getServiceDisplayName() {
-        if (service.getWsdlUrl()!=null)
-            return service.getServiceName()+"["+service.getPortName()+"]";
-        return service.getName();
-    } 
-    
-    private void writeObject(java.io.ObjectOutputStream out)
-            throws IOException {
-        out.writeObject(dataObject);
-        out.writeObject(service.getImplementationClass());
-    }
-
-    private void readObject(java.io.ObjectInputStream in)
-            throws IOException, ClassNotFoundException {
-        Object firstObject = in.readObject();
-        if(firstObject instanceof DataObject) {
-            dataObject = (DataObject) firstObject;
-        }
-        Object secondObject = in.readObject();
-        if(secondObject instanceof String) {
-            String implClass = (String)secondObject;
-            Project project = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
-            JaxWsModel model = (JaxWsModel) project.getLookup().lookup(JaxWsModel.class);
-            service = model.findServiceByImplementationClass(implClass);
-        }
-    }
-
-    /**
      * Implementation of CloseOperationHandler for multiview. Ensures the
      * editors correctly closed, data object is saved, etc. Holds a
      * reference to DataObject only - to be serializable with the multiview
@@ -316,12 +262,6 @@ public class MultiViewSupport implements MultiViewCookie, Serializable {
         
         public CloseHandler(DataObject sourceDataObject) {
             this.sourceDataObject = sourceDataObject;
-        }
-        
-        private DataEditorSupport getEditorSupport() {
-            return sourceDataObject == null ? null :
-                (DataEditorSupport) sourceDataObject.getLookup().lookup(
-                DataEditorSupport.class);
         }
         
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
