@@ -59,7 +59,8 @@ import org.netbeans.modules.uml.core.support.Debug;
  *
  * @author  Administrator
  */
-public class PropertyElementCustomizer extends JPanel implements EnhancedCustomPropertyEditor
+public class PropertyElementCustomizer extends JPanel 
+        implements Customizer, EnhancedCustomPropertyEditor
 {
    //private ResourceBundle mBundle = ResourceBundle.getBundle("org/netbeans/modules/uml/propertysupport/customizers/Bundle");
    private ResourceBundle mBundle = NbBundle.getBundle(PropertyElementCustomizer.class);

@@ -54,7 +54,8 @@ import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
  *
  * @author thuy
  */
-public class ParameterCustomizer extends JPanel implements EnhancedCustomPropertyEditor {
+public class ParameterCustomizer extends JPanel 
+        implements Customizer, EnhancedCustomPropertyEditor {
     
     private IPropertyElement mElement = null;
     private ArrayList<ElementData> paramPropElements;

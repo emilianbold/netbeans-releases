@@ -598,6 +598,10 @@ public final class DefinitionPropertyBuilder
          {
              retVal = CONTROL_SHEET;
          }
+         else if (ctrlType.equals("custom"))
+         {
+             retVal = CONTROL_CUSTOM;
+         }
       }
       return retVal;
    }

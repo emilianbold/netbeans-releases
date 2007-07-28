@@ -68,7 +68,8 @@ import org.openide.util.Utilities;
  *
  * @author  khu
  */
-public class ReturnTypeCustomizer extends javax.swing.JPanel implements EnhancedCustomPropertyEditor
+public class ReturnTypeCustomizer extends javax.swing.JPanel 
+        implements Customizer, EnhancedCustomPropertyEditor
 {
     private ResourceBundle bundle = NbBundle.getBundle(ReturnTypeCustomizer.class);
     private IPropertyElement mElement = null;
