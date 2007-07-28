@@ -116,8 +116,8 @@ public abstract class DefinitionPropertySupport extends PropertySupport
             if(value != null)
             {
                 Object modelElement = element.getElement();
-                if (modelElement instanceof IDiagram ||
-                    modelElement instanceof IProxyDiagram)
+                if ((modelElement instanceof IDiagram || modelElement instanceof IProxyDiagram) &&
+                     ("Name".equals(element.getName()) || "Alias".equals(element.getName())))
                 {
                     if (!Util.isDiagramNameValid((String)value))
                     {
