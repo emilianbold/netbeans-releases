@@ -22,6 +22,7 @@ package org.netbeans.modules.uml.project;
 import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.uml.documentation.ui.DocumentationTopComponnet;
 import org.netbeans.modules.uml.project.ui.nodes.UMLModelRootNode;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.cookies.CloseCookie;
@@ -42,6 +43,8 @@ import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.windows.CloneableOpenSupport;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -215,6 +218,9 @@ public class UMLProjectDataObject extends MultiDataObject
                     lookup(UMLProjectHelper.class);
             if (helper!=null)
             {
+                // save modified documentation in the edit pane
+                DocumentationTopComponnet.getInstance().saveDocumentation();
+                 
                 helper.saveProject();
                 SaveCookie save = (SaveCookie) UMLProjectDataObject.this.
                                         getCookie(SaveCookie.class);
