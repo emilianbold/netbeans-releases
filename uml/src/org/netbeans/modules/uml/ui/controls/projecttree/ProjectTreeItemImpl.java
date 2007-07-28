@@ -423,18 +423,32 @@ public class ProjectTreeItemImpl implements IProjectTreeItem, FileExtensions
     */
    public IProject getProject()
    {
-      IProject retVal = null;
-      
-      if(isProject() == true)
+        IElement element = getModelElement();
+      if (element != null)
+          return element.getProject();
+      else
       {
-         IElement element = getModelElement();
-         if(element instanceof IProject)
-         {
-            retVal = (IProject)element;
-         }
+          IProxyDiagram dia = getDiagram();
+          if (dia != null)
+              return dia.getProject();
       }
-      
-      return retVal;
+      return null;
+//      IProject retVal = null;
+//      
+//      
+//     
+//      
+//      if(isProject() == true)
+//      {
+//         IElement element = getModelElement();
+//         if(element instanceof IProject)
+//         {
+//            retVal = (IProject)element;
+//         }
+//      }
+//      
+//      
+//      return retVal;
    }
 
    /* (non-Javadoc)
