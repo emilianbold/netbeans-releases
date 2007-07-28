@@ -229,7 +229,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <!-- build javadoc for selected modules -->
-  <target name="build-javadoc" depends="build-nozip,init" description="Builds Javadoc documentation for modules; on branches pass e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
+  <target name="build-javadoc" depends="init" description="Builds Javadoc documentation for modules; on branches pass e.g. -Djavadoc.web.root=http://www.netbeans.org/download/release35/javadoc">
       <pathconvert property="modules.fullpath" >
           <path>
               <dirset dir="${nb_all}" includes="${config.javadoc.netbeans}" />
@@ -246,8 +246,8 @@ Microsystems, Inc. All Rights Reserved.
           </mapper>
       </pathconvert>
       
-      <property name="export.interfaces" location="build/ModulesExportedInterfaces" />
-      <property name="export.apichanges" location="build/APIChanges" />
+      <property name="export.interfaces" location="${netbeans.javadoc.dir}/../ModulesExportedInterfaces" />
+      <property name="export.apichanges" location="${netbeans.javadoc.dir}/../APIChanges" />
       <mkdir dir="${export.interfaces}" />
       <mkdir dir="${export.apichanges}" />
       
@@ -1294,7 +1294,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       </loadfile>
       <property name="cvsdate" value=""/>
       <property name="cvs.retry" value="2"/>
-      <nbcvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} jemmy jellytools testtools xtest" tag="${cvstag}" date="${cvsdate}" quiet="true" failonerror="true" retry="${cvs.retry}"/>
+      <nbcvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} jemmy jellytools testtools xtest junit/external" tag="${cvstag}" date="${cvsdate}" quiet="true" failonerror="true" retry="${cvs.retry}"/>
   </target>
 
   <target name="check-commit-validation">
