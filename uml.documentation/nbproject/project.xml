@@ -59,6 +59,8 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.uml.kit</friend>
+                <friend>org.netbeans.modules.uml.project</friend>
+                <friend>org.netbeans.modules.uml.propertysupport</friend>
                 <package>org.netbeans.modules.uml.documentation.ui</package>
             </friend-packages>
         </data>

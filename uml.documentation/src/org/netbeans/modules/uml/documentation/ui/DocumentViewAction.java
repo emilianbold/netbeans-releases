@@ -76,7 +76,6 @@ public class DocumentViewAction extends AbstractAction
         DocumentationTopComponnet topC = DocumentationTopComponnet.getInstance();
         if (topC != null) 
         {
-            topC.initializeTopComponent();
             topC.open();
             topC.requestActive();
         }

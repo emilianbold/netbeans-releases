@@ -1258,6 +1258,7 @@ public class DiagramTopComponent extends CloneableTopComponent
         public void setName(String val)
         {
             setDisplayName(val);
+            getData().setItemText(val);
         }
         
         
