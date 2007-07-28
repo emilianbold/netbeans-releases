@@ -22,22 +22,22 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="previewLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="previewPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace type="separate" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Component id="previewPanel" pref="100" max="32767" attributes="0"/>
+                      <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="heightLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="widthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="widthTextField" pref="92" max="32767" attributes="0"/>
-                          <Component id="heightTextField" alignment="0" pref="92" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="widthTextField" min="-2" pref="92" max="-2" attributes="0"/>
+                          <Component id="heightTextField" alignment="0" min="-2" pref="92" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="pathTextComboBox" pref="295" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="chooserButton" min="-2" pref="30" max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -46,12 +46,12 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="pathLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="chooserButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="pathTextComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
@@ -65,7 +65,7 @@
                       </Group>
                   </Group>
                   <Component id="previewLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="previewPanel" min="-2" max="-2" attributes="0"/>
+                  <Component id="previewPanel" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>

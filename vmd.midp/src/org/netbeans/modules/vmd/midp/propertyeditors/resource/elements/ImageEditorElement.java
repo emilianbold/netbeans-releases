@@ -55,13 +55,15 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
+    private ImagePreview imagePreview;
     private Image image;
     private DefaultComboBoxModel comboBoxModel;
 
     public ImageEditorElement() {
         comboBoxModel = new DefaultComboBoxModel();
         initComponents();
-        previewPanel.add(new ImagePreview(), BorderLayout.CENTER);
+        imagePreview = new ImagePreview();
+        previewPanel.add(imagePreview, BorderLayout.CENTER);
     }
 
     public JComponent getJComponent() {
@@ -144,6 +146,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         widthTextField.setEnabled(isEnabled);
         heightLabel.setEnabled(isEnabled);
         heightTextField.setEnabled(isEnabled);
+        sizeLabel.setEnabled(isEnabled);
+        sizeTextField.setEnabled(isEnabled);
         chooserButton.setEnabled(isEnabled);
     }
 
@@ -171,24 +175,35 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         String relativePath = (String) pathTextComboBox.getSelectedItem();
         String path = getSourceFolder().getPath() + relativePath;
         BufferedImage bufferedImage = null;
+        FileObject fo = null;
         try {
-            bufferedImage = ImageIO.read(new File(path));
+            File file = new File(path);
+            bufferedImage = ImageIO.read(file);
+            fo = FileUtil.toFileObject(file);
         } catch (IOException ex) {
         }
 
         if (bufferedImage != null) {
             int width = bufferedImage.getWidth();
             int height = bufferedImage.getHeight();
+            int previewWidth = imagePreview.getWidth() - 10;
+            int previewHeight = imagePreview.getHeight() - 10;
             widthTextField.setText(String.valueOf(width));
             heightTextField.setText(String.valueOf(height));
 
-            if (width > ImagePreview.IMAGE_MAX_WIDTH || height > ImagePreview.IMAGE_MAX_WIDTH) {
+            StringBuffer str = new StringBuffer();
+            str.append(fo.getSize());
+            str.append(' '); // NOI18N
+            str.append(NbBundle.getMessage(ImageEditorElement.class, "LBL_Size_Bytes")); // NOI18N
+            sizeTextField.setText(str.toString());
+
+            if (width > previewWidth || height > previewHeight) {
                 if (width > height) {
-                    width = ImagePreview.IMAGE_MAX_WIDTH;
+                    width = previewWidth;
                     height = -1;
                 } else {
                     width = -1;
-                    height = ImagePreview.IMAGE_MAX_WIDTH;
+                    height = previewHeight;
                 }
                 image = bufferedImage.getScaledInstance(width, height, Image.SCALE_SMOOTH | Image.SCALE_AREA_AVERAGING);
             } else {
@@ -198,6 +213,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             image = null;
             widthTextField.setText(null);
             heightTextField.setText(null);
+            sizeTextField.setText(null);
         }
 
         previewPanel.invalidate();
@@ -267,7 +283,6 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
 
     private class ImagePreview extends JComponent {
 
-        static final int IMAGE_MAX_WIDTH = 90;
         private static final int BORDER_EDGE_LENGTH = 10;
 
         @Override
@@ -290,10 +305,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             g.drawLine(rightX, bottomY, rightX - BORDER_EDGE_LENGTH, bottomY);
 
             if (image != null) {
-                int xOffset = 0;
-                int yOffset = 0;
-                xOffset = (getWidth() - image.getWidth(this)) >> 1;
-                yOffset = (getWidth() - image.getHeight(this)) >> 1;
+                int xOffset = (getWidth() - image.getWidth(this)) >> 1;
+                int yOffset = (getWidth() - image.getHeight(this)) >> 1;
                 g.drawImage(image, xOffset, yOffset, this);
             }
         }
@@ -316,6 +329,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         heightTextField = new javax.swing.JTextField();
         chooserButton = new javax.swing.JButton();
         pathTextComboBox = new javax.swing.JComboBox();
+        sizeLabel = new javax.swing.JLabel();
+        sizeTextField = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(pathLabel, org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
         pathLabel.setEnabled(false);
@@ -325,6 +340,11 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
 
         previewPanel.setEnabled(false);
         previewPanel.setPreferredSize(new java.awt.Dimension(100, 100));
+        previewPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                previewPanelComponentResized(evt);
+            }
+        });
         previewPanel.setLayout(new java.awt.BorderLayout());
 
         widthLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
@@ -356,6 +376,12 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             }
         });
 
+        sizeLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.sizeLabel.text")); // NOI18N
+        sizeLabel.setEnabled(false);
+
+        sizeTextField.setEditable(false);
+        sizeTextField.setEnabled(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -368,15 +394,17 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
                     .add(layout.createSequentialGroup()
                         .add(previewLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(heightLabel)
-                            .add(widthLabel))
+                            .add(widthLabel)
+                            .add(sizeLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(widthTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                            .add(heightTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)))
+                            .add(heightTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
+                            .add(sizeTextField)))
                     .add(pathTextComboBox, 0, 310, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -398,9 +426,14 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(heightLabel)
-                            .add(heightTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                            .add(heightTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(sizeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(sizeLabel))
+                        .addContainerGap())
                     .add(previewLabel)
-                    .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -423,6 +456,10 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         updatePreview();
     }//GEN-LAST:event_pathTextComboBoxActionPerformed
 
+    private void previewPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_previewPanelComponentResized
+        updatePreview();
+    }//GEN-LAST:event_previewPanelComponentResized
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton chooserButton;
@@ -432,6 +469,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     private javax.swing.JComboBox pathTextComboBox;
     private javax.swing.JLabel previewLabel;
     private javax.swing.JPanel previewPanel;
+    private javax.swing.JLabel sizeLabel;
+    private javax.swing.JTextField sizeTextField;
     private javax.swing.JLabel widthLabel;
     private javax.swing.JTextField widthTextField;
     // End of variables declaration//GEN-END:variables
