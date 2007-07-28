@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
+import javax.swing.JTextArea;
+import javax.swing.text.Caret;
 import junit.framework.TestCase;
 import org.jruby.ast.Node;
 import org.netbeans.api.gsf.CompilationInfo;
@@ -156,5 +158,68 @@ public class CodeCompleterTest extends RubyTestBase {
 
     public void testPrefix8() throws Exception {
         checkPrefix("testfiles/cc-prefix8.rb");
+    }
+    
+    
+    private void assertAutoQuery(QueryType queryType, String source, String typedText) {
+        CodeCompleter completer = new CodeCompleter();
+        int caretPos = source.indexOf('^');
+        source = source.substring(0, caretPos) + source.substring(caretPos+1);
+        
+        BaseDocument doc = getDocument(source);
+        JTextArea ta = new JTextArea(doc);
+        Caret caret = ta.getCaret();
+        caret.setDot(caretPos);
+        
+        QueryType qt = completer.getAutoQuery(ta, typedText);
+        assertEquals(queryType, qt);
+    }
+
+    public void testAutoQuery1() throws Exception {
+        assertAutoQuery(QueryType.NONE, "foo^", "o");
+        assertAutoQuery(QueryType.NONE, "foo^", " ");
+        assertAutoQuery(QueryType.NONE, "foo^", "c");
+        assertAutoQuery(QueryType.NONE, "foo^", "d");
+        assertAutoQuery(QueryType.NONE, "foo^", ";");
+        assertAutoQuery(QueryType.NONE, "foo^", "f");
+        assertAutoQuery(QueryType.NONE, "Foo:^", ":");
+        assertAutoQuery(QueryType.NONE, "Foo^ ", ":");
+        assertAutoQuery(QueryType.NONE, "Foo^bar", ":");
+        assertAutoQuery(QueryType.NONE, "Foo:^bar", ":");
+    }
+
+    public void testAutoQuery2() throws Exception {
+        assertAutoQuery(QueryType.STOP, "foo^", "[");
+        assertAutoQuery(QueryType.STOP, "foo^", "(");
+        assertAutoQuery(QueryType.STOP, "foo^", "{");
+        assertAutoQuery(QueryType.STOP, "foo^", "\n");
+    }
+
+    public void testAutoQuery3() throws Exception {
+        assertAutoQuery(QueryType.COMPLETION, "foo.^", ".");
+        assertAutoQuery(QueryType.COMPLETION, "Foo::^", ":");
+        assertAutoQuery(QueryType.COMPLETION, "foo^ ", ".");
+        assertAutoQuery(QueryType.COMPLETION, "foo^bar", ".");
+        assertAutoQuery(QueryType.COMPLETION, "Foo::^bar", ":");
+    }
+
+    public void testAutoQueryComments() throws Exception {
+        assertAutoQuery(QueryType.COMPLETION, "foo^ # bar", ".");
+        assertAutoQuery(QueryType.NONE, "#^foo", ".");
+        assertAutoQuery(QueryType.NONE, "# foo^", ".");
+        assertAutoQuery(QueryType.NONE, "# foo^", ":");
+    }
+
+    public void testAutoQueryStrings() throws Exception {
+        assertAutoQuery(QueryType.COMPLETION, "foo^ 'foo'", ".");
+        assertAutoQuery(QueryType.NONE, "'^foo'", ".");
+        assertAutoQuery(QueryType.NONE, "/f^oo/", ".");
+        assertAutoQuery(QueryType.NONE, "\"^\"", ".");
+        assertAutoQuery(QueryType.NONE, "\" foo^ \"", ":");
+    }
+
+    public void testAutoQueryRanges() throws Exception {
+        assertAutoQuery(QueryType.NONE, "x..^", ".");
+        assertAutoQuery(QueryType.NONE, "x..^5", ".");
     }
 }

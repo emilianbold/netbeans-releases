@@ -2660,8 +2660,6 @@ public class CodeCompleter implements Completable {
     }
 
     private class MethodItem extends RubyCompletionItem {
-        protected boolean smart;
-
         MethodItem(Element element, int anchorOffset, CompletionRequest request) {
             super(element, anchorOffset, request);
         }
@@ -2710,14 +2708,6 @@ public class CodeCompleter implements Completable {
             }
 
             return formatter.getText();
-        }
-
-        void setSmart(boolean smart) {
-            this.smart = smart;
-        }
-
-        public boolean isSmart() {
-            return smart;
         }
 
         @Override
@@ -3000,7 +2990,6 @@ public class CodeCompleter implements Completable {
     }
     
     private static final boolean FORCE_COMPLETION_SPACES = Boolean.getBoolean("ruby.complete.spaces"); // NOI18N
-    private static final boolean AUTO_COMPLETE_DOT = !Boolean.getBoolean("ruby.no.dotcomplete");
     
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
         char c = typedText.charAt(0);
@@ -3016,16 +3005,19 @@ public class CodeCompleter implements Completable {
         int offset = component.getCaretPosition();
         BaseDocument doc = (BaseDocument)component.getDocument();
 
-        // TODO - figure out something such that typing through, e.g. "5.2", doesn't do completion.
-        // E.g. on no matches, we cancel IF it was auto-complete initiated.
-        if (AUTO_COMPLETE_DOT && (".".equals(typedText))) {
+        if (".".equals(typedText)) { // NOI18N
             // See if we're in Ruby context
             TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
             if (ts == null) {
                 return QueryType.NONE;
             }
             ts.move(offset);
-            if (!ts.movePrevious()) {
+            if (!ts.moveNext()) {
+                if (!ts.movePrevious()) {
+                    return QueryType.NONE;
+                }
+            }
+            if (ts.offset() == offset && !ts.movePrevious()) {
                 return QueryType.NONE;
             }
             Token<? extends GsfTokenId> token = ts.token();
@@ -3037,7 +3029,9 @@ public class CodeCompleter implements Completable {
             }
 
             // TODO - handle embedded ruby
-            if ("comment".equals(id.primaryCategory()) || "string".equals(id.primaryCategory())) {
+            if ("comment".equals(id.primaryCategory()) || // NOI18N
+                    "string".equals(id.primaryCategory()) ||  // NOI18N
+                    "regexp".equals(id.primaryCategory())) { // NOI18N
                 return QueryType.NONE;
             }
             
@@ -3048,7 +3042,7 @@ public class CodeCompleter implements Completable {
             // See if it was "::" and we're in ruby context
             int dot = component.getSelectionStart();
             try {
-                if ((dot > 1 && component.getText(dot-2, 1).charAt(0) == ':') &&
+                if ((dot > 1 && component.getText(dot-2, 1).charAt(0) == ':') && // NOI18N
                         isRubyContext(doc, dot-1)) {
                     return QueryType.COMPLETION;
                 }
@@ -3074,8 +3068,8 @@ public class CodeCompleter implements Completable {
         }
         
         TokenId id = ts.token().id();
-        if ("comment".equals(id.primaryCategory()) || "string".equals(id.primaryCategory()) ||
-                "regexp".equals(id.primaryCategory())) {
+        if ("comment".equals(id.primaryCategory()) || "string".equals(id.primaryCategory()) || // NOI18N
+                "regexp".equals(id.primaryCategory())) { // NOI18N
             return false;
         }
         
