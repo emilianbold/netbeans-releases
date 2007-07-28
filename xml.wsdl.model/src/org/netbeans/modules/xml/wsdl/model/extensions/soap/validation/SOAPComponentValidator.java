@@ -2,19 +2,21 @@ package org.netbeans.modules.xml.wsdl.model.extensions.soap.validation;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
-import org.netbeans.modules.xml.wsdl.model.Input;
-import org.netbeans.modules.xml.wsdl.model.Output;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.netbeans.modules.xml.wsdl.model.Service;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -28,17 +30,20 @@ import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeader;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeaderFault;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPMessageBase;
 import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPOperation;
-import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.wsdl.model.Message;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
+import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.wsdl.model.extensions.soap.SOAPHeaderBase;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Element;
 
 
 /**
@@ -136,75 +141,12 @@ public class SOAPComponentValidator
                     if(soapOpsList.size() > 0) {
                         BindingInput bindingInput = bindingOp.getBindingInput();
                         if (bindingInput != null) {
-                            Iterator<SOAPHeader> soapHeaders=
-                                    bindingInput.getExtensibilityElements(SOAPHeader.class).iterator();
-                            while (soapHeaders.hasNext()) {
-                                SOAPHeader soapHeader = soapHeaders.next();
-                                soapHeader.accept(this);
-                                Iterator<SOAPHeaderFault> soapHeaderFaults =
-                                        soapHeader.getSOAPHeaderFaults().iterator();
-                                while(soapHeaderFaults.hasNext()) {
-                                    soapHeaderFaults.next().accept(this);
-                                }
-                            }
-                            
-                            int numSoapBodies = bindingInput.getExtensibilityElements(SOAPBody.class).size();
-                            if(numSoapBodies == 0) {
-                                results.add(
-                                        new Validator.ResultItem(this,
-                                        Validator.ResultType.ERROR,
-                                        bindingInput,
-                                        NbBundle.getMessage(SOAPComponentValidator.class, "SOAPBodyValidator.Atleast_one_body_Required")));
-                                
-                            } else if (numSoapBodies > 0 && numSoapBodies != 1) {
-                                results.add(
-                                        new Validator.ResultItem(this,
-                                        Validator.ResultType.ERROR,
-                                        bindingInput,
-                                        NbBundle.getMessage(SOAPComponentValidator.class, "SOAPBodyValidator.Only_one_body_allowed")));
-                            }
-                            Iterator<SOAPBody> soapBodies =
-                                    bindingInput.getExtensibilityElements(SOAPBody.class).iterator();
-                            while(soapBodies.hasNext()) {
-                                soapBodies.next().accept(this);
-                            }
+                            visit(bindingInput);
                         }
                         
                         BindingOutput bindingOutput = bindingOp.getBindingOutput();
                         if (bindingOutput != null) {
-                            Iterator<SOAPHeader> soapHeaders=
-                                    bindingOutput.getExtensibilityElements(SOAPHeader.class).iterator();
-                            while (soapHeaders.hasNext()) {
-                                SOAPHeader soapHeader = soapHeaders.next();
-                                soapHeader.accept(this);
-                                Iterator<SOAPHeaderFault> soapHeaderFaults =
-                                        soapHeader.getSOAPHeaderFaults().iterator();
-                                while(soapHeaderFaults.hasNext()) {
-                                    soapHeaderFaults.next().accept(this);
-                                }
-                            }
-                            
-                            int numSoapBodies = bindingOutput.getExtensibilityElements(SOAPBody.class).size();
-                            if(numSoapBodies == 0) {
-                                results.add(
-                                        new Validator.ResultItem(this,
-                                        Validator.ResultType.ERROR,
-                                        bindingOutput,
-                                        NbBundle.getMessage(SOAPComponentValidator.class, "SOAPBodyValidator.Atleast_one_body_Required")));
-                                
-                            } else if (numSoapBodies > 0 && numSoapBodies != 1) {
-                                
-                                results.add(
-                                        new Validator.ResultItem(this,
-                                        Validator.ResultType.ERROR,
-                                        bindingOutput,
-                                        NbBundle.getMessage(SOAPComponentValidator.class, "SOAPBodyValidator.Only_one_body_allowed")));
-                            }
-                            Iterator<SOAPBody> soapBodies =
-                                    bindingOutput.getExtensibilityElements(SOAPBody.class).iterator();
-                            while(soapBodies.hasNext()) {
-                                soapBodies.next().accept(this);
-                            }
+                            visit(bindingOutput);
                         }
                         
                         Iterator<BindingFault> bindingFaults =
@@ -653,6 +595,170 @@ public class SOAPComponentValidator
     }
 
 
+    private void visit(BindingInput bindingInput) {
+        Collection<ResultItem> results =
+                mValidationResult.getValidationResult();
+
+        Map<MessagePart, SOAPMessageBase> partMap =
+                new HashMap<MessagePart, SOAPMessageBase>();
+        
+        List<SOAPHeader> soapHeaders=
+                bindingInput.getExtensibilityElements(SOAPHeader.class);
+        for (SOAPHeader header: soapHeaders) {
+            header.accept(this);
+            ensureUniqueParts(partMap, header);
+            Collection<SOAPHeaderFault> soapHeaderFaults = header.getSOAPHeaderFaults();
+            for (SOAPHeaderFault fault: soapHeaderFaults) {
+                fault.accept(this);
+                ensureUniqueParts(partMap, fault);
+            }
+        }
+                            
+        int numSoapBodies = bindingInput.getExtensibilityElements(SOAPBody.class).size();
+        if(numSoapBodies == 0) {
+            results.add(
+                    new Validator.ResultItem(this,
+                    Validator.ResultType.ERROR,
+                    bindingInput,
+                    NbBundle.getMessage(SOAPComponentValidator.class, "SOAPBodyValidator.Atleast_one_body_Required")));
+
+        } else if (numSoapBodies > 0 && numSoapBodies != 1) {
+            results.add(
+                    new Validator.ResultItem(this,
+                    Validator.ResultType.ERROR,
+                    bindingInput,
+                    NbBundle.getMessage(SOAPComponentValidator.class, "SOAPBodyValidator.Only_one_body_allowed")));
+        }
+        List<SOAPBody> soapBodies = bindingInput.getExtensibilityElements(SOAPBody.class);
+        for (SOAPBody body: soapBodies) {
+            body.accept(this);
+            ensureUniqueParts(partMap, body, bindingInput);
+        }
+    }
+    
+    private void visit(BindingOutput bindingOutput) {
+        Collection<ResultItem> results =
+                mValidationResult.getValidationResult();
+
+        Map<MessagePart, SOAPMessageBase> partMap =
+                new HashMap<MessagePart, SOAPMessageBase>();
+        
+        List<SOAPHeader> soapHeaders = bindingOutput.getExtensibilityElements(SOAPHeader.class);
+        for (SOAPHeader soapHeader: soapHeaders) {
+            soapHeader.accept(this);
+            ensureUniqueParts(partMap, soapHeader);
+            Collection<SOAPHeaderFault> soapHeaderFaults = soapHeader.getSOAPHeaderFaults();
+            for (SOAPHeaderFault fault: soapHeaderFaults) {
+                fault.accept(this);
+                ensureUniqueParts(partMap, fault);
+            }
+        }
+
+        int numSoapBodies = bindingOutput.getExtensibilityElements(SOAPBody.class).size();
+        if(numSoapBodies == 0) {
+            results.add(
+                    new Validator.ResultItem(this,
+                    Validator.ResultType.ERROR,
+                    bindingOutput,
+                    NbBundle.getMessage(SOAPComponentValidator.class, "SOAPBodyValidator.Atleast_one_body_Required")));
+
+        } else if (numSoapBodies > 0 && numSoapBodies != 1) {
+
+            results.add(
+                    new Validator.ResultItem(this,
+                    Validator.ResultType.ERROR,
+                    bindingOutput,
+                    NbBundle.getMessage(SOAPComponentValidator.class, "SOAPBodyValidator.Only_one_body_allowed")));
+        }
+        List<SOAPBody> soapBodies = bindingOutput.getExtensibilityElements(SOAPBody.class);
+        for (SOAPBody body: soapBodies) {
+            body.accept(this);
+            ensureUniqueParts(partMap, body, bindingOutput);
+        }
+    }
+    
+    private void ensureUniqueParts(Map<MessagePart, SOAPMessageBase> partsMap,
+                                   SOAPBody elem,
+                                   WSDLComponent parent) {
+        
+        Collection<ResultItem> results = mValidationResult.getValidationResult();
+        
+        // Obtain the Message definition whose part this SOAPBody element extends
+        OperationParameter param;
+        if (parent instanceof BindingInput) {
+            param = ((BindingInput) parent).getInput().get();
+        } else if (parent instanceof BindingOutput) {
+            param = ((BindingOutput) parent).getOutput().get();
+        } else {
+            throw new IllegalArgumentException("(Internal error) Unexpected WSDLComponent sub-type "
+                    + parent.getClass().getName());
+        }
+        Message msg = param.getMessage().get();
+        
+        List<String> partNames = elem.getParts();
+        // If the SOAPBOdy does not explicitly specify a part, assume
+        // it refers to the all the parts.
+        if (partNames == null || partNames.isEmpty()) {
+            Collection<Part> parts = msg.getParts();
+            partNames = new ArrayList<String>(parts.size());
+            for (Part part: parts) {
+                partNames.add(part.getName());
+            }
+        }
+        for (String name: partNames) {
+            if (name != null && !"".equals(name)) {
+                MessagePart msgpart = new MessagePart(msg, name);
+                if (!partsMap.containsKey(msgpart)) {
+                    partsMap.put(msgpart, elem);
+                } else {
+                    SOAPMessageBase conflictElem = partsMap.get(msgpart);
+                    results.add(new Validator.ResultItem(
+                        this,
+                        Validator.ResultType.ERROR,
+                        elem,
+                        NbBundle.getMessage(SOAPComponentValidator.class,
+                            "SOAPBodyValidator.Part_already_in_use_by_elem",
+                            name,
+                            msg.getName(),
+                            conflictElem.getQName().toString())));
+                }
+            }
+        }
+    }
+    
+    private void ensureUniqueParts(Map<MessagePart, SOAPMessageBase> partsMap, SOAPHeaderBase elem) {
+        Collection<ResultItem> results = mValidationResult.getValidationResult();
+        NamedComponentReference<Message> comp = elem.getMessage();
+        Message msg = comp.get();
+        String part = elem.getPart();
+        if (part != null && !"".equals(part)) {
+            MessagePart msgpart = new MessagePart(msg, part);
+            if (!partsMap.containsKey(msgpart)) {
+                partsMap.put(msgpart, elem);
+            } else {
+                SOAPMessageBase conflictElem = partsMap.get(msgpart);
+                results.add(new Validator.ResultItem(
+                    this,
+                    Validator.ResultType.ERROR,
+                    elem,
+                    NbBundle.getMessage(SOAPComponentValidator.class,
+                        "SOAPHeaderValidator.Part_already_in_use_by_elem",
+                        part,
+                        msg.getName(),
+                        conflictElem.getQName().toString())));
+            }
+        }
+    }
+    
+    private List<String> allMessageParts(Message msg) {
+        Collection<Part> parts = msg.getParts();
+        List<String> partNames = new LinkedList<String>();
+        for (Part part: parts) {
+            partNames.add(part.getName());
+        }
+        return partNames;
+    }
+    
     private boolean containsToken(String val) {
         if(val.contains("${")) {                        
             return true;
