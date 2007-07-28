@@ -202,15 +202,14 @@ public class ElementDataObject implements Report
     
     public String getDocumentation()
     {
-        String doc = StringUtilities.unescapeHTML(
-            getElement().getDocumentation().trim());
+        String doc = getElement().getDocumentation().trim();
         
         if (doc.length()>0)
         {
             StringBuilder buff = new StringBuilder();
-            buff.append("<P><PRE>\r\n"); // NOI18N
+            buff.append("<P>\r\n"); // NOI18N
             buff.append(doc);
-            buff.append("</PRE></P>"); // NOI18N
+            buff.append("</P>"); // NOI18N
             buff.append("<HR>\r\n"); // NOI18N
             return buff.toString();
         }
@@ -230,8 +229,7 @@ public class ElementDataObject implements Report
             return HTML_NBSP;
         // return (doc.indexOf(".")>0)?doc.substring(0, doc.indexOf(".")):doc;
 
-        StringBuffer docBuff = 
-            new StringBuffer(StringUtilities.unescapeHTML(doc));
+        StringBuffer docBuff = new StringBuffer(doc);
         
         Stack<String> tags = new Stack<String>();
         String tag = "";
@@ -509,8 +507,7 @@ public class ElementDataObject implements Report
                     getLinkToDiagram(diagrams[i].getData().getDiagram()) +
                     "\">" + diagram.getName() + "</A></B></TD>\r\n"); // NOI18N
                 
-                buff.append("<TD>" + getBriefDocumentation( // NOI18N
-                    StringUtilities.unescapeHTML(diagram.getDocumentation())) 
+                buff.append("<TD>" + getBriefDocumentation(diagram.getDocumentation()) 
                     + "</TD>\r\n"); // NOI18N
                 
                 buff.append("</TR>\r\n"); // NOI18N

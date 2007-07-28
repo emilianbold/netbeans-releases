@@ -230,9 +230,7 @@ public class PackageData extends ElementDataObject
                     {
                         INamedElement element = elements[j];
                         
-                        String doc = getBriefDocumentation(
-                            StringUtilities.unescapeHTML(
-                            element.getDocumentation()));
+                        String doc = getBriefDocumentation(element.getDocumentation());
                         
                         String name = element.getName();
                         if (name==null || name.equals("")) // NOI18N

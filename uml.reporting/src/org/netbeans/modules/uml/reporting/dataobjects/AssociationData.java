@@ -122,8 +122,7 @@ public class AssociationData extends ClassData
                 
                 endData.setElement((IElement)end);
                 
-                buff.append(StringUtilities.unescapeHTML(
-                    endData.getDocumentation()));
+                buff.append(endData.getDocumentation());
                 
                 buff.append(endData.getProperties(false));
                 buff.append(endData.getStereoTypesSummary());
@@ -190,9 +189,8 @@ public class AssociationData extends ClassData
                             name + "\">" + name +
                             "</A></B></TD>\r\n");
                     
-                    out.write("<TD><PRE>" + getBriefDocumentation(
-                        StringUtilities.unescapeHTML(end.getDocumentation())) 
-                        + "</PRE></TD>\r\n</TR>\r\n");
+                    out.write("<TD>" + getBriefDocumentation(end.getDocumentation()) 
+                        + "</TD>\r\n</TR>\r\n");
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n");
             }

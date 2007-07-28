@@ -106,8 +106,7 @@ public class ActivityData extends ClassData
             INamedElement node = (INamedElement)list.get(i);
             buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
             
-            String doc = getBriefDocumentation(
-                StringUtilities.unescapeHTML(node.getDocumentation()));
+            String doc = getBriefDocumentation(node.getDocumentation());
             if (doc == null || doc.trim().equals(""))
                 doc = "&nbsp;"; // NOI18N
             buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
@@ -180,8 +179,7 @@ public class ActivityData extends ClassData
                     IActivityNode node = (IActivityNode)nodes.get(i);
                     out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                     
-                    String doc = getBriefDocumentation(
-                        StringUtilities.unescapeHTML(node.getDocumentation()));
+                    String doc = getBriefDocumentation(node.getDocumentation());
                     
                     if (doc == null || doc.trim().equals(""))
                         doc = "&nbsp;"; // NOI18N
@@ -207,7 +205,7 @@ public class ActivityData extends ClassData
                             node.getElementType() + " in " + name + // NOI18N
                             "\">" + name + "</A></B></TD>\r\n"); // NOI18N
                     
-                    out.write("<TD><PRE>" + doc + "</PRE></TD>\r\n"); // NOI18N
+                    out.write("<TD>" + doc + "</TD>\r\n"); // NOI18N
                     out.write("</TR>\r\n"); // NOI18N
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n"); // NOI18N

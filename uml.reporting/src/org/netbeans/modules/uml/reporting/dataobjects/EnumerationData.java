@@ -119,12 +119,12 @@ public class EnumerationData extends DataTypeData
                 for (int i=0; i<literals.size(); i++)
                 {
                     IEnumerationLiteral literal = (IEnumerationLiteral)literals.get(i);
-                    doc = StringUtilities.unescapeHTML(literal.getDocumentation());
+                    doc = literal.getDocumentation();
                     doc = doc.equals("")?"&nbsp;":doc;
                     out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
                     out.write("<TD ALIGN=\"left\" VALIGN=\"top\" WIDTH=\"15%\">\r\n");
                     out.write(literal.getName() + "</TD>\r\n");
-                    out.write("<TD><PRE>" + doc + "</PRE>\r\n");
+                    out.write("<TD>" + doc + "\r\n");
                     out.write("</TD>\r\n</TR>\r\n");
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n");

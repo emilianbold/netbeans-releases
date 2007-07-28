@@ -72,8 +72,7 @@ public class InteractionData extends ElementDataObject
             INamedElement node = (INamedElement)list.get(i);
             buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
             
-            String doc = getBriefDocumentation(
-                StringUtilities.unescapeHTML(node.getDocumentation()));
+            String doc = getBriefDocumentation(node.getDocumentation());
             
             if (doc == null || doc.trim().equals(""))
                 doc = "&nbsp;";

@@ -88,10 +88,9 @@ public class CommentData extends ElementDataObject
             out.write("<P><B>" + 
                     NbBundle.getMessage(CommentData.class, "Documentation") +  ":</B><BR>\r\n");
             
-            out.write("<PRE>" + StringUtilities.unescapeHTML(
-                getElement().getDocumentation()));
+            out.write(getElement().getDocumentation());
             
-            out.write("</PRE></P>");
+            out.write("</P>");
             
             out.write("<P><B>" + 
                     NbBundle.getMessage(CommentData.class, "Body") + ":</B><BR>\r\n");
@@ -111,8 +110,7 @@ public class CommentData extends ElementDataObject
                 {
                     INamedElement element = (INamedElement)elements.get(i);
                     
-                    doc = getBriefDocumentation(StringUtilities.unescapeHTML(
-                        element.getDocumentation()));
+                    doc = getBriefDocumentation(element.getDocumentation());
                     
                     doc = doc.equals("")?"&nbsp;":doc;
                     out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");

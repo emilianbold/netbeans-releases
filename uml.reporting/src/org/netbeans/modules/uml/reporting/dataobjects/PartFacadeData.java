@@ -94,7 +94,7 @@ public class PartFacadeData extends ClassData
                     ((INamedElement)getElement()).getName() + "</H2>\r\n");
             
             out.write("<DL>\r\n");
-            out.write("<DT><PRE>" + getVisibility(getElement()) + " " +
+            out.write("<DT>" + getVisibility(getElement()) + " " +
                     getElementType().toLowerCase() + " <B>" + getElement().getName() + "</B></DT>");
             if (extendsList.size()>0)
             {
@@ -135,7 +135,7 @@ public class PartFacadeData extends ClassData
                         "\">" + classifier.getName() + "</A>");
             }
             
-            out.write("</DL>\r\n</PRE>\r\n\r\n");
+            out.write("</DL>\r\n\r\n");
             
             out.write(getDependencies());
             out.write(getAssociations());
@@ -171,8 +171,7 @@ public class PartFacadeData extends ClassData
                     out.write("<TD><CODE><B><A HREF=\"#" + attr.getName() + "\">" + attr.getName() + "</A></B></CODE>\r\n");
                     out.write("<BR>\r\n");
                     out.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
-                            getBriefDocumentation(StringUtilities.unescapeHTML(
-                            attr.getDocumentation())) + "</TD>\r\n</TR>\r\n");
+                            getBriefDocumentation(attr.getDocumentation()) + "</TD>\r\n</TR>\r\n");
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n");
             }
@@ -221,12 +220,12 @@ public class PartFacadeData extends ClassData
                 for (int i=0; i<points.size(); i++)
                 {
                     IExtensionPoint point = points.get(i);
-                    doc = StringUtilities.unescapeHTML(point.getDocumentation());
+                    doc = point.getDocumentation();
                     if (doc == null || doc.trim().equals(""))
                         doc = "&nbsp;";
                     out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
                     out.write("<TD WIDTH=\"15%\"><B>" + point.getName() + "</B></TD>\r\n");
-                    out.write("<TD><PRE>" + doc + "</PRE></TD>\r\n");
+                    out.write("<TD>" + doc + "</TD>\r\n");
                     out.write("</TR>\r\n");
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n<P>\r\n");
@@ -247,12 +246,11 @@ public class PartFacadeData extends ClassData
                     type = attr.getType();
                     
                     out.write("<A NAME=\"" + attr.getName() + "\"></A><H3>" + attr.getName() + "</H3>\r\n");
-                    out.write("<PRE>" + formatAttribute(attr) + "<B>" + attr.getName() + "</B></PRE>");
+                    out.write("" + formatAttribute(attr) + "<B>" + attr.getName() + "</B>");
                     out.write("<DL>\r\n");
                     
-                    out.write("<DD><PRE>" + StringUtilities.unescapeHTML(
-                        attr.getDocumentation()) + 
-                        "</PRE>\r\n<P>\r\n</DD>\r\n</DL>\r\n");
+                    out.write("<DD>" + attr.getDocumentation() + 
+                        "\r\n<P>\r\n</DD>\r\n</DL>\r\n");
                     
                     if (i<attrs.size()-1)
                         out.write("<HR>\r\n\r\n");

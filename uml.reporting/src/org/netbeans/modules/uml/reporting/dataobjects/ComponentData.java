@@ -153,8 +153,7 @@ public class ComponentData extends ClassData
                             "</A></B></TD>\r\n");
                     
                     out.write("<TD>" + getBriefDocumentation(
-                        StringUtilities.unescapeHTML(
-                        artifact.getDocumentation())) + "</TD>\r\n");
+                            artifact.getDocumentation()) + "</TD>\r\n");
                     
                     out.write("</TR>\r\n");
                 }
@@ -177,8 +176,7 @@ public class ComponentData extends ClassData
                             getLinkTo(spec) + "\" >" + spec.getName() +
                             "</A></B></TD>\r\n");
                     
-                    out.write("<TD>" + getBriefDocumentation(
-                        StringUtilities.unescapeHTML(spec.getDocumentation()))
+                    out.write("<TD>" + getBriefDocumentation(spec.getDocumentation())
                         + "</TD>\r\n");
                     
                     out.write("</TR>\r\n");
@@ -202,8 +200,7 @@ public class ComponentData extends ClassData
                             getLinkTo(node) + "\" >" + node.getName() +
                             "</A></B></TD>\r\n");
                     
-                    out.write("<TD>" + getBriefDocumentation(
-                        StringUtilities.unescapeHTML(node.getDocumentation()))
+                    out.write("<TD>" + getBriefDocumentation(node.getDocumentation())
                         + "</TD>\r\n");
                     
                     out.write("</TR>\r\n");

@@ -97,7 +97,7 @@ public class DiagramData extends ElementDataObject {
             jpg += "_" + full_size_index + ReportTask.IMAGE_EXT;
             // will place the name and documentation for the diagram at the top of the html
             String diagName = pDiagram.getName();
-            String doc = StringUtilities.unescapeHTML(pDiagram.getDocumentation());
+            String doc = pDiagram.getDocumentation();
             String filename = getDirectoryPath() + File.separator + name;
             String full_filename = filename + FULL_DIAGRAM_FILE_SUFFIX;
             
@@ -110,7 +110,7 @@ public class DiagramData extends ElementDataObject {
             if (diagName != null && diagName.length() > 0) 
             {
                 page.append("<HR><H2>" + pDiagram.getDiagramKind2() + " " + diagName + "</H2>"); // NOI18N
-                page.append("<P><PRE>" + doc + "</PRE></P>\r\n"); // NOI18N
+                page.append("<P>" + doc + "</P>\r\n"); // NOI18N
             
                 page.append("<P ALIGN=\"CENTER\"><A HREF=\"" + name + // NOI18N
                     ReportTask.HTML_EXT + "\"><IMG SRC=\"" + // NOI18N
@@ -440,8 +440,7 @@ public class DiagramData extends ElementDataObject {
         body = body.replaceAll("SCRIPT_PATH", scriptPath); // NOI18N
         body = body.replaceAll("%DIAGRAM_NAME%", getDiagram().getDiagramKind2() + " " + diagramName); // NOI18N
         
-        body = body.replaceAll("%DIAGRAM_DOC%", "<PRE>" +  // NOI18N
-            StringUtilities.unescapeHTML(getDiagram().getDocumentation()) + "</PRE>"); // NOI18N
+        body = body.replaceAll("%DIAGRAM_DOC%", getDiagram().getDocumentation()); // NOI18N
         
         body = body.replaceAll("FULL_DIAGRAM_HTML", fileName); // NOI18N
         body = body.replace("%BRAND%", NbBundle.getMessage(DiagramData.class, "brand")); // NOI18N

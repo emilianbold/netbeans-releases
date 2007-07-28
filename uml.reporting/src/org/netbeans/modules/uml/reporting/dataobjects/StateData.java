@@ -145,9 +145,7 @@ public class StateData extends ElementDataObject
                             " in " + transition.getSource().getName() + "\">" +
                             transition.getSource().getName() + "</A></B></TD>\r\n");
                     
-                    out.write("<TD>" + getBriefDocumentation(
-                        StringUtilities.unescapeHTML(
-                        transition.getSource().getDocumentation())) 
+                    out.write("<TD>" + getBriefDocumentation(transition.getSource().getDocumentation()) 
                         + "</TD>\r\n");
                     
                     out.write("</TD>\r\n</TR>\r\n");
@@ -172,9 +170,8 @@ public class StateData extends ElementDataObject
                             " in " + transition.getTarget().getName() + "\">" +
                             transition.getTarget().getName() + "</A></B></TD>\r\n");
                     
-                    out.write("<TD>" + getBriefDocumentation(
-                        StringUtilities.unescapeHTML(transition.getTarget()
-                        .getDocumentation())) + "</TD>\r\n");
+                    out.write("<TD>" + getBriefDocumentation(transition.getTarget()
+                        .getDocumentation()) + "</TD>\r\n");
                     
                     out.write("</TD>\r\n</TR>\r\n");
                 }

@@ -83,7 +83,7 @@ public class LifelineData extends ElementDataObject
             
             out.write("<HR>\r\n");
             out.write("<DL>\r\n");
-            out.write("<DT><PRE>" + getVisibility(getElement()) + " " +
+            out.write("<DT>" + getVisibility(getElement()) + " " +
                     getElementType().toLowerCase() + " <B>" + getElement().getName() +
                     "</B></DT>");
             if (rClassifier!=null)
@@ -93,7 +93,7 @@ public class LifelineData extends ElementDataObject
                         rClassifier.getOwningPackage().getFullyQualifiedName(false) +
                         "\">" + rClassifier.getName() + "</A>");
             }
-            out.write("</DL>\r\n</PRE>\r\n\r\n");
+            out.write("</DL>\r\n\r\n");
             
             out.write(getDependencies());
             out.write(getEnclosingDiagrams());
@@ -146,7 +146,7 @@ public class LifelineData extends ElementDataObject
 //					ETList<IGeneralOrdering> afterOrdering = event.getAfterOrderings();
 //
 //					out.write("<A NAME=\"" + event.getName() + "\"></A><H3>" + event.getName() + "</H3>\r\n");
-//					out.write("<PRE>" + "<B>" + event.getName() + "</B></PRE>");
+//					out.write("<B>" + event.getName() + "</B>");
 //					out.write("<DL>\r\n");
 //					out.write("<DD>" + StringUtilities.unescapeHTML(
 //                                            event.getDocumentation()) + "\r\n<P>\r\n");

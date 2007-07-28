@@ -223,9 +223,8 @@ public class ClassData extends ElementDataObject
             buff.append(")</CODE>"); // NOI18N
             buff.append("<BR>\r\n"); // NOI18N
     
-            buff.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<PRE>" + // NOI18N
-                getBriefDocumentation(StringUtilities.unescapeHTML(
-                ops[i].getDocumentation())) + "</PRE></TD>\r\n"); // NOI18N
+            buff.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
+                getBriefDocumentation(ops[i].getDocumentation()) + "</TD>\r\n");
             
             buff.append("</TR>\r\n"); // NOI18N
         }
@@ -303,9 +302,9 @@ public class ClassData extends ElementDataObject
         for (int i=0; i<ops.length; i++)
         {
             op = ops[i];
-            buff.append("<A NAME=\"" + op.getName() + "\"></A><H3>" + op.getName() + "</H3>\r\n"); // NOI18N
-            buff.append("<PRE>\r\n"); // NOI18N
-            buff.append(formatOperation(op) + " " + "<B>" + op.getName() + "</B>("); // NOI18N
+            buff.append("<A NAME=\"" + op.getName() + "\"></A><H3>" + op.getName() + "</H3>\r\n");
+            buff.append("\r\n");
+            buff.append(formatOperation(op) + " " + "<B>" + op.getName() + "</B>(");
             
             ETList<IParameter> params = op.getParameters();
             for (int j=0; j<params.size(); j++)
@@ -327,11 +326,10 @@ public class ClassData extends ElementDataObject
                         buff.append(",&nbsp;"); // NOI18N
                 }
             }
-            buff.append(")</PRE>\r\n"); // NOI18N
-            buff.append("<DL>\r\n"); // NOI18N
+            buff.append(")\r\n");
+            buff.append("<DL>\r\n");
             
-            buff.append("<DD><PRE>" + StringUtilities.unescapeHTML( // NOI18N
-                op.getDocumentation()) + "</PRE>\r\n"); // NOI18N
+            buff.append("<DD>" + op.getDocumentation() + "\r\n");
             
             buff.append("<P>\r\n</DD></DL>\r\n"); // NOI18N
             
@@ -544,12 +542,12 @@ public class ClassData extends ElementDataObject
             out.write(getHTMLHeader());
             out.write("<BODY BGCOLOR=\"white\">\r\n"); // NOI18N
             out.write(getNavBar());
-            out.write("<HR>\r\n"); // NOI18N
-            out.write("<H2>\r\n"); // NOI18N
-            out.write("<FONT SIZE=\"-1\">" + getOwningPackageName() + "</FONT>\r\n"); // NOI18N
-            out.write("<BR>\r\n"); // NOI18N
-            out.write(getElementType() + " " + getElementName() + "</H2>\r\n"); // NOI18N
-            out.write("<PRE>\r\n"); // NOI18N
+            out.write("<HR>\r\n");
+            out.write("<H2>\r\n");
+            out.write("<FONT SIZE=\"-1\">" + getOwningPackageName() + "</FONT>\r\n");
+            out.write("<BR>\r\n");
+            out.write(getElementType() + " " + getElementName() + "</H2>\r\n");
+            out.write("\r\n");
             
             IClassifier[] superClasses = getSuperClasses();
             if (getSuperClasses().length>0)
@@ -567,8 +565,8 @@ public class ClassData extends ElementDataObject
                 out.write("  <IMG SRC=\"" + ReportTask.getPathToReportRoot(getElement()) + // NOI18N
                         "images/inherit.gif\" ALT=\"extended by \">"); // NOI18N
             }
-            out.write("<B>" + getElement().getFullyQualifiedName(false) + "</B>\r\n"); // NOI18N
-            out.write("</PRE>\r\n"); // NOI18N
+            out.write("<B>" + getElement().getFullyQualifiedName(false) + "</B>\r\n");
+            out.write("\r\n");
             
             IInterface[] infs = getImplementedInterfaces();
             if (infs.length > 0)
@@ -619,11 +617,9 @@ public class ClassData extends ElementDataObject
             // enclosing diagrams
             out.write(getEnclosingDiagrams());
             
-            out.write("<HR>\r\n"); // NOI18N
-            out.write("<DL>\r\n"); // NOI18N
-            
-            out.write("<DT><PRE>" + getVisibility(getElement()) + " " + getElementType().toLowerCase() + " <B>" + getElementName() + "</B></DT>"); // NOI18N
-            
+            out.write("<HR>\r\n");
+            out.write("<DL>\r\n");
+            out.write("<DT>" + getVisibility(getElement()) + " " + getElementType().toLowerCase() + " <B>" + getElementName() + "</B></DT>");
             if (superClasses.length>0)
             {
                 out.write("<DT>extends ");
@@ -651,7 +647,7 @@ public class ClassData extends ElementDataObject
                         out.write(", ");
                 }
             }
-            out.write("</DL>\r\n</PRE>\r\n\r\n"); // NOI18N
+            out.write("</DL>\r\n\r\n\r\n");
             
             out.write(getDocumentation());
             
@@ -677,9 +673,8 @@ public class ClassData extends ElementDataObject
                     out.write("<TD><CODE><B><A HREF=\"" + getLinkTo(classifier) + "\">" + classifier.getName() + "</A></B></CODE>\r\n"); // NOI18N
                     out.write("<BR>\r\n"); // NOI18N
                     
-                    out.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<PRE>"  // NOI18N
-                        + getBriefDocumentation(StringUtilities.unescapeHTML(
-                        classifier.getDocumentation())) + "</PRE></TD>\r\n"); // NOI18N
+                    out.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
+                        + getBriefDocumentation(classifier.getDocumentation()) + "</TD>\r\n");
                     
                     out.write("</TR>\r\n\r\n"); // NOI18N
                 }
@@ -711,11 +706,10 @@ public class ClassData extends ElementDataObject
                     IMultiplicity mul = attr.getMultiplicity();
                     if (mul != null)
                         out.write(mul.getRangeAsString(true));
-                    out.write("</CODE>\r\n"); // NOI18N
-                    out.write("<BR>\r\n"); // NOI18N
-                    out.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<PRE>" + // NOI18N
-                        getBriefDocumentation(StringUtilities.unescapeHTML(
-                        attr.getDocumentation())) + "</PRE></TD>\r\n</TR>\r\n"); // NOI18N
+                    out.write("</CODE>\r\n");
+                    out.write("<BR>\r\n");
+                    out.write("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" +
+                        getBriefDocumentation(attr.getDocumentation()) + "</TD>\r\n</TR>\r\n");
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
             }
@@ -748,6 +742,7 @@ public class ClassData extends ElementDataObject
             out.write(getStereoTypesSummary());
             
             // tagged value summary
+
             out.write(getTaggedValueSummary());
             
             // constraint summary
@@ -772,17 +767,15 @@ public class ClassData extends ElementDataObject
                     attr = attrs.get(i);
                     type = attr.getType();
                     
-                    out.write("<A NAME=\"" + attr.getName() + "\"></A><H3>" + attr.getName() + "</H3>\r\n"); // NOI18N
-                    out.write("<PRE>" + formatAttribute(attr) + "<B>" + attr.getName() + "</B>"); // NOI18N
+                    out.write("<A NAME=\"" + attr.getName() + "\"></A><H3>" + attr.getName() + "</H3>\r\n");
+                    out.write("" + formatAttribute(attr) + "<B>" + attr.getName() + "</B>");
                     IMultiplicity mul = attr.getMultiplicity();
                     if (mul != null)
                         out.write(mul.getRangeAsString(true));
-                    out.write("</PRE>"); // NOI18N
-                    out.write("<DL>\r\n"); // NOI18N
+                    out.write("<DL>\r\n");
                     
-                    out.write("<DD><PRE>" + StringUtilities.unescapeHTML(
-                        attr.getDocumentation())
-                        + "</PRE>\r\n<P>\r\n</DD>\r\n</DL>\r\n"); // NOI18N
+                    out.write("<DD>" + attr.getDocumentation()
+                        + "\r\n<P>\r\n</DD>\r\n</DL>\r\n");
                     
                     if (i<attrs.size()-1)
                         out.write("<HR>\r\n\r\n"); // NOI18N

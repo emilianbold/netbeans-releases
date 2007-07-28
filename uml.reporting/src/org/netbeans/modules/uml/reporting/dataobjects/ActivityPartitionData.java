@@ -151,8 +151,7 @@ public class ActivityPartitionData extends ActivityGroupData
                     IActivityNode node = (IActivityNode)nodes.get(i);
                     out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                     
-                    doc = getBriefDocumentation(
-                        StringUtilities.unescapeHTML(node.getDocumentation()));
+                    doc = getBriefDocumentation(node.getDocumentation());
                     
                     if (doc == null || doc.trim().equals(""))
                         doc = "&nbsp;"; // NOI18N
@@ -177,7 +176,7 @@ public class ActivityPartitionData extends ActivityGroupData
                         "\" title=\"" + node.getElementType() + " in " +  // NOI18N
                         name + "\">" + name + "</A></B></TD>\r\n"); // NOI18N
 
-                    out.write("<TD><PRE>" + doc + "</PRE></TD>\r\n"); // NOI18N
+                    out.write("<TD>" + doc + "</TD>\r\n"); // NOI18N
                     out.write("</TR>\r\n"); // NOI18N
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
@@ -197,8 +196,7 @@ public class ActivityPartitionData extends ActivityGroupData
                     IActivityPartition sub = subs.get(i);
                     out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                     
-                    doc = getBriefDocumentation(
-                        StringUtilities.unescapeHTML(sub.getDocumentation()));
+                    doc = getBriefDocumentation(sub.getDocumentation());
                     
                     if (doc == null || doc.trim().equals(""))
                         doc = "&nbsp;"; // NOI18N
@@ -206,7 +204,7 @@ public class ActivityPartitionData extends ActivityGroupData
                     out.write("<TD WIDTH=\"15%\"><B><A HREF=\"" + getLinkTo(sub) + // NOI18N
                             "\" title=\"" + sub.getName() + " in " + getElement().getName() +
                             "\">" + sub.getName() + "</A></B></TD>\r\n"); // NOI18N
-                    out.write("<TD><PRE>" + doc + "</PRE></TD>\r\n"); // NOI18N
+                    out.write("<TD>" + doc + "</TD>\r\n"); // NOI18N
                     out.write("</TR>\r\n"); // NOI18N
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n"); // NOI18N

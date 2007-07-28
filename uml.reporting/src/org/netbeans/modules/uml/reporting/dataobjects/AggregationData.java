@@ -114,8 +114,7 @@ public class AggregationData extends AssociationData
                 endData.setElement((IElement)end);
                 
                 buff.append("<A NAME=\"" + name + "\"></A><H3>" + name + "</H3>\r\n");
-                buff.append(StringUtilities.unescapeHTML(
-                    endData.getDocumentation()));
+                buff.append(endData.getDocumentation());
                 
                 buff.append(endData.getProperties(false));
                 buff.append(endData.getStereoTypesSummary());

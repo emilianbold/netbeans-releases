@@ -136,8 +136,7 @@ public class CombinedFragmentData extends ElementDataObject
                             "\">" + name + "</A></B></TD>");
                     
                     out.write("<TD>" + getBriefDocumentation(
-                        StringUtilities.unescapeHTML(
-                        operand.getDocumentation())) +"</TD>\r\n");
+                        operand.getDocumentation()) +"</TD>\r\n");
                     
                     out.write("</TR>\r\n");
                 }
@@ -158,12 +157,10 @@ public class CombinedFragmentData extends ElementDataObject
                     name = name.equals("")?NbBundle.getMessage(CombinedFragmentData.class, "unnamed"):name;
                     
                     out.write("<A NAME=\"" + name + "\"></A><H3>" + name + "</H3>\r\n");
-//					out.write("<PRE><B>" + name + "</B></PRE>");
                     out.write("<DL>\r\n");
                     
-                    out.write("<DD><PRE>" + StringUtilities.unescapeHTML(
-                        operand.getDocumentation()) + 
-                        "</PRE>\r\n<P>\r\n</DD>\r\n</DL>\r\n");
+                    out.write("<DD>" + operand.getDocumentation() + 
+                        "\r\n<P>\r\n</DD>\r\n</DL>\r\n");
                     
                     if (operand.getGuard()!=null)
                     {

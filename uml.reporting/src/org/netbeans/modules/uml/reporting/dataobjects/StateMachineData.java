@@ -69,8 +69,7 @@ public class StateMachineData extends ClassData
             INamedElement node = (INamedElement)list.get(i);
             buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
             
-            String doc = getBriefDocumentation(
-                StringUtilities.unescapeHTML(node.getDocumentation()));
+            String doc = getBriefDocumentation(node.getDocumentation());
             
             if (doc == null || doc.trim().equals("")) // NOI18N
                 doc = "&nbsp;"; // NOI18N
@@ -167,8 +166,7 @@ public class StateMachineData extends ClassData
                     IState state = (IState)states.get(i);
                     out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                     
-                    doc = getBriefDocumentation(StringUtilities.unescapeHTML(
-                        state.getDocumentation()));
+                    doc = getBriefDocumentation(state.getDocumentation());
                     
                     if (doc == null || doc.trim().equals("")) // NOI18N
                         doc = "&nbsp;"; // NOI18N

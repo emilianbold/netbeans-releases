@@ -100,7 +100,7 @@ public class UseCaseData extends ClassData
             
             
             out.write("<DL>\r\n");
-            out.write("<DT><PRE>" + getVisibility(getElement()) + " " +
+            out.write("<DT>" + getVisibility(getElement()) + " " +
                     getElementType().toLowerCase() + " <B>" + getElementName() + "</B></DT>");
             if (extendsList.size()>0)
             {
@@ -166,7 +166,7 @@ public class UseCaseData extends ClassData
                 }
             }
             
-            out.write("</DL>\r\n</PRE>\r\n\r\n");
+            out.write("</DL>\r\n\r\n");
             
             out.write(getDependencies());
             out.write(getAssociations());
@@ -201,14 +201,13 @@ public class UseCaseData extends ClassData
                 {
                     IExtensionPoint point = points.get(i);
                     
-                    String doc = StringUtilities.unescapeHTML(
-                        point.getDocumentation());
+                    String doc = point.getDocumentation();
                     
                     if (doc == null || doc.trim().equals(""))
                         doc = "&nbsp;";
                     out.write("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n");
                     out.write("<TD WIDTH=\"15%\"><B>" + point.getName() + "</B></TD>\r\n");
-                    out.write("<TD><PRE>" + doc + "</PRE></TD>\r\n");
+                    out.write("<TD>" + doc + "</TD>\r\n");
                     out.write("</TR>\r\n");
                 }
                 out.write("</TABLE>\r\n&nbsp;\r\n<P>\r\n");
