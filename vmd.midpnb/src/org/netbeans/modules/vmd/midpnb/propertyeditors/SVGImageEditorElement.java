@@ -17,6 +17,7 @@
 
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
+import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -33,11 +34,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-
 import javax.microedition.m2g.SVGImage;
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.io.File;
@@ -48,18 +46,21 @@ import java.util.Map;
  *
  * @author Anton Chechel
  */
-public class SVGImageEditorElement extends PropertyEditorResourceElement implements DocumentListener {
+public class SVGImageEditorElement extends PropertyEditorResourceElement {
+
+    private static final String EXTENSION = "svg"; // NOI18N
 
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
     private SVGImageComponent imageView;
+    private DefaultComboBoxModel comboBoxModel;
 
     public SVGImageEditorElement() {
+        comboBoxModel = new DefaultComboBoxModel();
         initComponents();
         imageView = new SVGImageComponent();
         previewPanel.add(imageView, BorderLayout.CENTER);
-        pathTextField.getDocument().addDocumentListener(this);
     }
 
     public JComponent getJComponent() {
@@ -73,7 +74,11 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
+            Project oldProject = project;
             project = ProjectUtils.getProject(document);
+            if (!project.equals(oldProject)) {
+                updateModel();
+            }
         }
 
         if (wrapper == null) {
@@ -119,13 +124,19 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
 
     private synchronized void setText(String text) {
         doNotFireEvent = true;
-        pathTextField.setText(text);
+        if (text == null) {
+            text = ""; // NOI18N
+        }
+        if (comboBoxModel.getIndexOf(text) == -1) {
+            comboBoxModel.addElement(text);
+        }
+        pathTextComboBox.setSelectedItem(text);
         doNotFireEvent = false;
     }
 
     private void setAllEnabled(boolean isEnabled) {
         pathLabel.setEnabled(isEnabled);
-        pathTextField.setEnabled(isEnabled);
+        pathTextComboBox.setEnabled(isEnabled);
         previewLabel.setEnabled(isEnabled);
         previewPanel.setEnabled(isEnabled);
         widthLabel.setEnabled(isEnabled);
@@ -135,27 +146,26 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         chooserButton.setEnabled(isEnabled);
     }
 
-    public void insertUpdate(DocumentEvent e) {
-        textChanged();
+    private void updateModel() {
+        comboBoxModel.removeAllElements();
+        searchImagesInDirectory(getSourceFolder());
     }
 
-    public void removeUpdate(DocumentEvent e) {
-        textChanged();
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        textChanged();
-    }
-
-    private synchronized void textChanged() {
-        if (isShowing() && !doNotFireEvent) {
-            fireElementChanged(componentID, SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(pathTextField.getText()));
+    private void searchImagesInDirectory(FileObject dir) {
+        for (FileObject fo : dir.getChildren()) {
+            if (fo.isFolder()) {
+                searchImagesInDirectory(fo);
+            } else {
+                    if (EXTENSION.equals(fo.getExt().toLowerCase())) {
+                        comboBoxModel.addElement(convertFile(fo));
+                        break;
+                    }
+            }
         }
-        updatePreview();
     }
 
     private void updatePreview() {
-        String relativePath = pathTextField.getText();
+        String relativePath = (String) pathTextComboBox.getSelectedItem();
         String path = getSourceFolder().getPath() + relativePath;
         SVGImage svgImage = null;
         try {
@@ -204,6 +214,12 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     }
 
     private static class ImageFilter extends FileFilter {
+        
+        private String description;
+        
+        public ImageFilter() {
+            description = NbBundle.getMessage(SVGImageEditorElement.class, "DISP_SVG_Image_Files"); // NOI18N
+        }
 
         public boolean accept(File file) {
             if (file.isDirectory()) {
@@ -211,11 +227,11 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
             }
 
             String extension = getExtension(file);
-            return "svg".equals(extension); // NOI18N
+            return EXTENSION.equals(extension);
         }
 
         public String getDescription() {
-            return NbBundle.getMessage(SVGImageEditorElement.class, "DISP_SVG_Image_Files"); // NOI18N
+            return description;
         }
 
         private static String getExtension(File file) {
@@ -238,7 +254,6 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     private void initComponents() {
 
         pathLabel = new javax.swing.JLabel();
-        pathTextField = new javax.swing.JTextField();
         previewLabel = new javax.swing.JLabel();
         previewPanel = new javax.swing.JPanel();
         widthLabel = new javax.swing.JLabel();
@@ -246,12 +261,10 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         heightLabel = new javax.swing.JLabel();
         heightTextField = new javax.swing.JTextField();
         chooserButton = new javax.swing.JButton();
+        pathTextComboBox = new javax.swing.JComboBox();
 
-        pathLabel.setLabelFor(pathTextField);
         org.openide.awt.Mnemonics.setLocalizedText(pathLabel, org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
         pathLabel.setEnabled(false);
-
-        pathTextField.setEnabled(false);
 
         previewLabel.setText(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.previewLabel.text")); // NOI18N
         previewLabel.setEnabled(false);
@@ -280,16 +293,25 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
             }
         });
 
+        pathTextComboBox.setEditable(true);
+        pathTextComboBox.setModel(comboBoxModel);
+        pathTextComboBox.setEnabled(false);
+        pathTextComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pathTextComboBoxActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(pathLabel)
-                .addContainerGap(265, Short.MAX_VALUE))
+                .addContainerGap(272, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
                         .add(previewLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -301,7 +323,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(widthTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)
                             .add(heightTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE)))
-                    .add(pathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE))
+                    .add(pathTextComboBox, 0, 295, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -312,7 +334,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(chooserButton)
-                    .add(pathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(pathTextComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -335,9 +357,17 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             FileObject fo = FileUtil.toFileObject(chooser.getSelectedFile());
             String relativePath = convertFile(fo);
-            pathTextField.setText(relativePath);
+            setText(relativePath);
         }
     }//GEN-LAST:event_chooserButtonActionPerformed
+
+    private void pathTextComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pathTextComboBoxActionPerformed
+        if (isShowing() && !doNotFireEvent) {
+            String text = (String) pathTextComboBox.getSelectedItem();
+            fireElementChanged(componentID, SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
+        }
+        updatePreview();
+    }//GEN-LAST:event_pathTextComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -345,7 +375,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement impleme
     private javax.swing.JLabel heightLabel;
     private javax.swing.JTextField heightTextField;
     private javax.swing.JLabel pathLabel;
-    private javax.swing.JTextField pathTextField;
+    private javax.swing.JComboBox pathTextComboBox;
     private javax.swing.JLabel previewLabel;
     private javax.swing.JPanel previewPanel;
     private javax.swing.JLabel widthLabel;

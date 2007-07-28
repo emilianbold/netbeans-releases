@@ -26,10 +26,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import javax.imageio.ImageIO;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -43,22 +42,26 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Anton Chechel
  */
-public class ImageEditorElement extends PropertyEditorResourceElement implements DocumentListener {
+public class ImageEditorElement extends PropertyEditorResourceElement {
+
+    private static final String[] EXTENSIONS = {"png", "gif", "jpg", "jpeg"}; // NOI18N
 
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
     private Image image;
+    private DefaultComboBoxModel comboBoxModel;
 
     public ImageEditorElement() {
+        comboBoxModel = new DefaultComboBoxModel();
         initComponents();
         previewPanel.add(new ImagePreview(), BorderLayout.CENTER);
-        pathTextField.getDocument().addDocumentListener(this);
     }
 
     public JComponent getJComponent() {
@@ -72,7 +75,11 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
+            Project oldProject = project;
             project = ProjectUtils.getProject(document);
+            if (!project.equals(oldProject)) {
+                updateModel();
+            }
         }
 
         if (wrapper == null) {
@@ -118,13 +125,19 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
 
     private synchronized void setText(String text) {
         doNotFireEvent = true;
-        pathTextField.setText(text);
+        if (text == null) {
+            text = ""; // NOI18N
+        }
+        if (comboBoxModel.getIndexOf(text) == -1) {
+            comboBoxModel.addElement(text);
+        }
+        pathTextComboBox.setSelectedItem(text);
         doNotFireEvent = false;
     }
 
     private void setAllEnabled(boolean isEnabled) {
         pathLabel.setEnabled(isEnabled);
-        pathTextField.setEnabled(isEnabled);
+        pathTextComboBox.setEnabled(isEnabled);
         previewLabel.setEnabled(isEnabled);
         previewPanel.setEnabled(isEnabled);
         widthLabel.setEnabled(isEnabled);
@@ -134,27 +147,28 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         chooserButton.setEnabled(isEnabled);
     }
 
-    public void insertUpdate(DocumentEvent e) {
-        textChanged();
+    private void updateModel() {
+        comboBoxModel.removeAllElements();
+        searchImagesInDirectory(getSourceFolder());
     }
 
-    public void removeUpdate(DocumentEvent e) {
-        textChanged();
-    }
-
-    public void changedUpdate(DocumentEvent e) {
-        textChanged();
-    }
-
-    private synchronized void textChanged() {
-        if (isShowing() && !doNotFireEvent) {
-            fireElementChanged(componentID, ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(pathTextField.getText()));
+    private void searchImagesInDirectory(FileObject dir) {
+        for (FileObject fo : dir.getChildren()) {
+            if (fo.isFolder()) {
+                searchImagesInDirectory(fo);
+            } else {
+                for (String ext : EXTENSIONS) {
+                    if (ext.equals(fo.getExt().toLowerCase())) {
+                        comboBoxModel.addElement(convertFile(fo));
+                        break;
+                    }
+                }
+            }
         }
-        updatePreview();
     }
 
     private void updatePreview() {
-        String relativePath = pathTextField.getText();
+        String relativePath = (String) pathTextComboBox.getSelectedItem();
         String path = getSourceFolder().getPath() + relativePath;
         BufferedImage bufferedImage = null;
         try {
@@ -185,7 +199,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             widthTextField.setText(null);
             heightTextField.setText(null);
         }
-        
+
         previewPanel.invalidate();
         previewPanel.validate();
         previewPanel.repaint();
@@ -215,6 +229,12 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     }
 
     private static class ImageFilter extends FileFilter {
+        
+        private String description;
+
+        public ImageFilter() {
+            description = NbBundle.getMessage(ImageEditorElement.class, "DISP_Image_Files"); // NOI18N
+        }
 
         public boolean accept(File file) {
             if (file.isDirectory()) {
@@ -222,11 +242,16 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             }
 
             String extension = getExtension(file);
-            return "png".equals(extension) || "gif".equals(extension) || "jpg".equals(extension); // NOI18N
+            for (String ext : EXTENSIONS) {
+                if (ext.equals(extension)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public String getDescription() {
-            return "Image Files";
+            return description;
         }
 
         private static String getExtension(File file) {
@@ -263,7 +288,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             // bottom right
             g.drawLine(rightX, bottomY, rightX, bottomY - BORDER_EDGE_LENGTH);
             g.drawLine(rightX, bottomY, rightX - BORDER_EDGE_LENGTH, bottomY);
-            
+
             if (image != null) {
                 int xOffset = 0;
                 int yOffset = 0;
@@ -283,7 +308,6 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     private void initComponents() {
 
         pathLabel = new javax.swing.JLabel();
-        pathTextField = new javax.swing.JTextField();
         previewLabel = new javax.swing.JLabel();
         previewPanel = new javax.swing.JPanel();
         widthLabel = new javax.swing.JLabel();
@@ -291,12 +315,10 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         heightLabel = new javax.swing.JLabel();
         heightTextField = new javax.swing.JTextField();
         chooserButton = new javax.swing.JButton();
+        pathTextComboBox = new javax.swing.JComboBox();
 
-        pathLabel.setLabelFor(pathTextField);
         org.openide.awt.Mnemonics.setLocalizedText(pathLabel, org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.pathLabel.text")); // NOI18N
         pathLabel.setEnabled(false);
-
-        pathTextField.setEnabled(false);
 
         previewLabel.setText(org.openide.util.NbBundle.getMessage(ImageEditorElement.class, "ImageEditorElement.previewLabel.text")); // NOI18N
         previewLabel.setEnabled(false);
@@ -325,6 +347,15 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
             }
         });
 
+        pathTextComboBox.setEditable(true);
+        pathTextComboBox.setModel(comboBoxModel);
+        pathTextComboBox.setEnabled(false);
+        pathTextComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pathTextComboBoxActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -333,8 +364,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                 .add(pathLabel)
                 .addContainerGap(287, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
                         .add(previewLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(previewPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -346,7 +377,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(widthTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
                             .add(heightTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)))
-                    .add(pathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE))
+                    .add(pathTextComboBox, 0, 310, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(chooserButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 30, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -357,7 +388,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(chooserButton)
-                    .add(pathTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(pathTextComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
@@ -380,9 +411,17 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             FileObject fo = FileUtil.toFileObject(chooser.getSelectedFile());
             String relativePath = convertFile(fo);
-            pathTextField.setText(relativePath);
+            setText(relativePath);
         }
     }//GEN-LAST:event_chooserButtonActionPerformed
+
+    private void pathTextComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pathTextComboBoxActionPerformed
+        if (isShowing() && !doNotFireEvent) {
+            String text = (String) pathTextComboBox.getSelectedItem();
+            fireElementChanged(componentID, ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
+        }
+        updatePreview();
+    }//GEN-LAST:event_pathTextComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -390,7 +429,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement implements
     private javax.swing.JLabel heightLabel;
     private javax.swing.JTextField heightTextField;
     private javax.swing.JLabel pathLabel;
-    private javax.swing.JTextField pathTextField;
+    private javax.swing.JComboBox pathTextComboBox;
     private javax.swing.JLabel previewLabel;
     private javax.swing.JPanel previewPanel;
     private javax.swing.JLabel widthLabel;
