@@ -26,6 +26,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.extrahints.Bundle"/>
 
                     <file name="org-netbeans-modules-ruby-extrahints-NestedLocal.instance"/>
+                    <file name="org-netbeans-modules-ruby-extrahints-ConvertBlockType.instance"/>
                     <!-- Add your rules here! -->
                 </folder>    
             </folder>    
