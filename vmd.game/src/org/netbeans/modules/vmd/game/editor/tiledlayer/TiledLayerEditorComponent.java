@@ -468,7 +468,17 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		
 		if (this.isSelectMode()) {
 			synchronized (this.cellsSelected) {
-				if (!this.cellsSelected.remove(cell)) {
+				if (e.isControlDown()) {
+					//ctrl-left_press toogle a single cell without affecting other selection
+					if (!this.cellsSelected.remove(cell)) {
+						this.cellsSelected.add(cell);
+					}
+				}
+				else if (e.isMetaDown() || e.isShiftDown()) {
+					this.cellsSelected.add(cell);
+				}
+				else {
+					this.cellsSelected.clear();
 					this.cellsSelected.add(cell);
 				}
 			}
@@ -483,7 +493,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 			}
 		}
 		
-		this.repaint(getCellArea(cell));
+		this.repaint();
 		this.tiledLayer.getGameDesign().getMainView().requestPreview(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()));
 	}
 	
@@ -502,11 +512,10 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 				System.out.println("Drag from " + lastDraggedCell + " to " + cell); // NOI18N
 				
 				synchronized (TiledLayerEditorComponent.this.cellsSelected) {
-					if (e.isControlDown() || e.isMetaDown() || e.isAltDown()) {
+					if (false) {
 						TiledLayerEditorComponent.this.cellsSelected.remove(cell);
 					}
 					if (false) {
-						
 						int rowStep = firstDraggedCell.getRow() <= cell.getRow() ? 1 : -1;
 						System.out.println("row step : " + rowStep); // NOI18N
 						int colStep = firstDraggedCell.getCol() <= cell.getCol() ? 1 : -1;
@@ -604,7 +613,6 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	private void doPopUp(MouseEvent e) {
 		Position position = this.getCellAtPoint(e.getPoint());
 		
-// 		CreateTiledLayerAction ctl = new CreateTiledLayerAction();
 		DuplicateTiledLayerAction dtl = new DuplicateTiledLayerAction();
 		CreateFromSelectionAction cfs = new CreateFromSelectionAction();
 		EraseSelectionAction es = new EraseSelectionAction();
@@ -657,10 +665,6 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		
 		JPopupMenu menu = new JPopupMenu();
 		
-		menu.add(itemPaint);
-		menu.add(itemSelect);
-		menu.addSeparator();
-//		menu.add(ctl);
 		menu.add(dtl);
 		List<Action> actions = this.tiledLayer.getActions();
 		for (Action action : actions) {
@@ -925,6 +929,16 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 	}
 	
+	private boolean isRowSelected(int row) {
+		int cols = this.tiledLayer.getColumnCount();
+		for (int col = 0; col < cols; col++) {
+			if (!cellsSelected.contains(new Position(row, col))) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	private void setRowSelection(int row, boolean selected) {
 		synchronized (this.cellsSelected) {
 			if (selected) {
@@ -946,12 +960,22 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		this.repaint();
 	}
 	
+	private boolean isColumnsSelected(int col) {
+		int rows = this.tiledLayer.getRowCount();
+		for (int row = 0; row < rows; row++) {
+			if (!this.cellsSelected.contains(new Position(row, col))) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	private void setColumnSelection(int col, boolean selected) {
 		synchronized(this.cellsSelected) {
 			if (selected) {
 				int rows = this.tiledLayer.getRowCount();
-				for (int i = 0; i < rows; i++) {
-					this.cellsSelected.add(new Position(i, col));
+				for (int row = 0; row < rows; row++) {
+					this.cellsSelected.add(new Position(row, col));
 				}
 			}
 			else {
@@ -1364,7 +1388,12 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		 */
 		public void mouseClicked(MouseEvent e) {
 			int row = this.getRowAtPoint(e.getPoint());
-			TiledLayerEditorComponent.this.setRowSelection(row, !e.isControlDown());
+			if (TiledLayerEditorComponent.this.isRowSelected(row)) {
+				TiledLayerEditorComponent.this.setRowSelection(row, false);
+			}
+			else {
+				TiledLayerEditorComponent.this.setRowSelection(row, true);
+			}
 			this.repaint(this.getRowHeaderArea(row));
 		}
 		public void mousePressed(MouseEvent e) {
@@ -1554,7 +1583,12 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		 */
 		public void mouseClicked(MouseEvent e) {
 			int col = this.getColumnAtPoint(e.getPoint());
-			TiledLayerEditorComponent.this.setColumnSelection(col, !e.isControlDown());
+			if (TiledLayerEditorComponent.this.isColumnsSelected(col)) {
+				TiledLayerEditorComponent.this.setColumnSelection(col, false);
+			}
+			else {
+				TiledLayerEditorComponent.this.setColumnSelection(col, true);
+			}
 		}
 		public void mousePressed(MouseEvent e) {
 			int col = this.getColumnAtPoint(e.getPoint());
@@ -1608,7 +1642,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		}
 		
 		public List getActions() {
-			ArrayList actions = new ArrayList();
+			List<Action> actions = new ArrayList<Action>();
 			actions.add(new DeleteColAction());
 			actions.add(new PrependColAction());
 			actions.add(new AppendColAction());
