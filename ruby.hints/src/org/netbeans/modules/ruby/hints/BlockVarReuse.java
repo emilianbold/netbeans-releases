@@ -77,7 +77,7 @@ public class BlockVarReuse implements AstRule {
         return NbBundle.getMessage(BlockVarReuse.class, "UnintentionalSideEffectDesc");
     }
 
-    public void run(CompilationInfo info, Node node, AstPath path, List<Description> result) {
+    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset, List<Description> result) {
         if (node.nodeId == NodeTypes.ITERNODE) {
             // Check the children and see if we have a LocalAsgnNode; these are going
             // to be local variable reuses

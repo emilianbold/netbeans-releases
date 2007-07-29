@@ -80,7 +80,7 @@ public class ExpandSameLineDef implements AstRule {
         return integers;
     }
 
-    public void run(CompilationInfo info, Node node, AstPath path, List<Description> result) {
+    public void run(CompilationInfo info, Node node, AstPath path, int caretOffset, List<Description> result) {
         // Look for use of deprecated fields
         if (node.nodeId == NodeTypes.DEFNNODE || node.nodeId == NodeTypes.DEFSNODE || node.nodeId == NodeTypes.CLASSNODE) {
             ISourcePosition pos = node.getPosition();

@@ -82,9 +82,9 @@ public class RubyHintsProvider implements HintsProvider {
         AstPath path = new AstPath();
         path.descend(root);
         
-        applyRules(NodeTypes.ROOTNODE, root, path, info, hints, descriptions);
+        applyRules(NodeTypes.ROOTNODE, root, path, info, hints, -1, descriptions);
         
-        scan(root, path, info, hints, descriptions);
+        scan(root, path, info, hints, -1, descriptions);
         path.ascend();
         
         if (descriptions.size() > 0) {
@@ -169,10 +169,10 @@ public class RubyHintsProvider implements HintsProvider {
             }
 
             Node node = it.next();
-            applyRules(node.nodeId, node, path, info, suggestions, descriptions);
+            applyRules(node.nodeId, node, path, info, suggestions, caretOffset, descriptions);
         }
         
-        //applyRules(NodeTypes.ROOTNODE, path, info, suggestions, result);
+        //applyRules(NodeTypes.ROOTNODE, path, info, suggestions, caretOffset, result);
 
         if (descriptions.size() > 0) {
             for (Description desc : descriptions) {
@@ -183,20 +183,21 @@ public class RubyHintsProvider implements HintsProvider {
     }
 
     private void applyRules(int nodeType, Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints,
-            List<Description> result) {
+            int caretOffset, List<Description> result) {
         List<AstRule> rules = hints.get(nodeType);
 
         if (rules != null) {
             for (AstRule rule : rules) {
                 if (HintsSettings.isEnabled(rule)) {
-                    rule.run(info, node, path, result);
+                    rule.run(info, node, path, caretOffset, result);
                 }
             }
         }
     }
     
-    private void scan(Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints, List<Description> result) {
-        applyRules(node.nodeId, node, path, info, hints, result);
+    private void scan(Node node, AstPath path, CompilationInfo info, Map<Integer,List<AstRule>> hints, int caretOffset, 
+            List<Description> result) {
+        applyRules(node.nodeId, node, path, info, hints, caretOffset, result);
         
         @SuppressWarnings(value = "unchecked")
         List<Node> list = node.childNodes();
@@ -207,7 +208,7 @@ public class RubyHintsProvider implements HintsProvider {
             }
 
             path.descend(child);
-            scan(child, path, info, hints, result);
+            scan(child, path, info, hints, caretOffset, result);
             path.ascend();
         }        
     }

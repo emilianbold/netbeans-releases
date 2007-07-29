@@ -43,5 +43,5 @@ public interface AstRule extends Rule {
      * Run the test on given CompilationUnit and return list of Errors or
      * warrnings to be shown in the editor.
      */
-    public void run(CompilationInfo compilationInfo, Node node, AstPath path, List<Description> result);
+    public void run(CompilationInfo compilationInfo, Node node, AstPath path, int caretOffset, List<Description> result);
 }

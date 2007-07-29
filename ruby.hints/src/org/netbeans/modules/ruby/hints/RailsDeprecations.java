@@ -105,7 +105,7 @@ public class RailsDeprecations implements AstRule {
         return Collections.singleton(NodeTypes.ROOTNODE);
     }
 
-    public void run(CompilationInfo info, Node root, AstPath path, List<Description> result) {
+    public void run(CompilationInfo info, Node root, AstPath path, int caretOffset, List<Description> result) {
         if (root == null) {
             return;
         }
