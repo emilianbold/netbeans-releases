@@ -214,8 +214,18 @@ public class BracketCompleterTest extends RubyTestBase {
             doc.atomicUnlock();
         }
     }
-    
+
     private void deleteWord(String original, String expected) throws BadLocationException {
+        // Try deleting the word not just using the testcase but also surrounded by strings
+        // to make sure there's no problem with lexer token directions
+        deleteWordImpl(original, expected);
+        deleteWordImpl(original+"foo", expected+"foo");
+        deleteWordImpl("foo"+original, "foo"+expected);
+        deleteWordImpl(original+"::", expected+"::");
+        deleteWordImpl(original+"::", expected+"::");
+    }
+    
+    private void deleteWordImpl(String original, String expected) throws BadLocationException {
         int afterRemoveOffset = original.indexOf('^');
         int finalCaretPos = expected.indexOf('^');
         original = original.substring(0, afterRemoveOffset) + original.substring(afterRemoveOffset+1);
