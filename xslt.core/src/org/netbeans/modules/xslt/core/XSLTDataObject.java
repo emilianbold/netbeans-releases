@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.xslt.core.multiview.XsltDesignViewOpenAction;
 import org.netbeans.modules.xslt.core.multiview.XsltMultiViewSupport;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
@@ -41,6 +42,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -225,22 +227,24 @@ public class XSLTDataObject extends MultiDataObject {
         
         @Override
         public Action getPreferredAction() {
-            return new AbstractAction() {
-                    private static final long serialVersionUID = 1L;
-            public void actionPerformed(ActionEvent e) {
-                // Fix for #81066
-                if ( myEditorSupport.getOpenedPanes()==null ||
-                        myEditorSupport.getOpenedPanes().length==0 ) 
-                {
-                    myEditorSupport.open();
-                    XsltMultiViewSupport support = 
-                        XsltMultiViewSupport.getInstance();
-                    support.requestViewOpen(myEditorSupport);
-                } else {
-                    myEditorSupport.open();
-                }
-            }
-            };
+            System.out.println("xslt dataobject getPreffered action");
+            return SystemAction.get(XsltDesignViewOpenAction.class);
+//            return new AbstractAction() {
+//                    private static final long serialVersionUID = 1L;
+//            public void actionPerformed(ActionEvent e) {
+//                // Fix for #81066
+//                if ( myEditorSupport.getOpenedPanes()==null ||
+//                        myEditorSupport.getOpenedPanes().length==0 ) 
+//                {
+//                    myEditorSupport.open();
+//                    XsltMultiViewSupport support = 
+//                        XsltMultiViewSupport.getInstance();
+//                    support.requestViewOpen(myEditorSupport);
+//                } else {
+//                    myEditorSupport.open();
+//                }
+//            }
+//            };
         }
         
     }
