@@ -175,7 +175,7 @@ public class RailsDeprecations implements AstRule {
     private void addFix(CompilationInfo info, Node node, List<Description> result, String displayName) {
         OffsetRange range = AstUtilities.getNameRange(node);
 
-        Description desc = new Description(this, displayName, info.getFileObject(), range, Collections.<Fix>emptyList());
+        Description desc = new Description(this, displayName, info.getFileObject(), range, Collections.<Fix>emptyList(), 100);
         result.add(desc);
 
         // TODO - add a fix to turn off this hint? - Should be a utility or infrastructure option!

@@ -26,18 +26,20 @@ import org.openide.filesystems.FileObject;
  * @author Tor Norbye
  */
 public class Description {
-    private String description;
-    private List<Fix> fixes;
-    private FileObject file;
-    private OffsetRange range;
-    private Rule rule;
+    private final String description;
+    private final List<Fix> fixes;
+    private final FileObject file;
+    private final OffsetRange range;
+    private final Rule rule;
+    private int priority;
     
-    public Description(Rule rule, String description, FileObject file, OffsetRange range, List<Fix> fixes) {
+    public Description(Rule rule, String description, FileObject file, OffsetRange range, List<Fix> fixes, int priority) {
         this.rule = rule;
         this.description = description;
         this.file = file;
         this.range = range;
         this.fixes = fixes;
+        this.priority = priority;
     }
     
     public Rule getRule() {
@@ -58,5 +60,9 @@ public class Description {
 
     public OffsetRange getRange() {
         return range;
+    }
+    
+    public int getPriority() {
+        return priority;
     }
 }

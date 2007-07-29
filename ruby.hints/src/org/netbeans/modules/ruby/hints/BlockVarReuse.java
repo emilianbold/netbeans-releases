@@ -96,7 +96,7 @@ public class BlockVarReuse implements AstRule {
 
                     // TODO - add a hint to turn off this hint?
                     // Should be a utility or infrastructure option!
-                    Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList);
+                    Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList, 100);
                     result.add(desc);
                 }
             }

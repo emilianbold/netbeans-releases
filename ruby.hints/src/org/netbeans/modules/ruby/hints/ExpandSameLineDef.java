@@ -67,6 +67,7 @@ import org.openide.util.NbBundle;
  * NOTE - this hint is only activated for the line under the caret!
  *
  * @todo Filter out the case where you have a def inside a class on the same line!
+ * @todo Apply this tip to brace blocks as well - and offer both expand and collapse!
  * 
  * @author Tor Norbye
  */
@@ -103,7 +104,7 @@ public class ExpandSameLineDef implements AstRule {
                     List<Fix> fixList = Collections.<Fix>singletonList(new ExpandLineFix(info, path));
 
                     OffsetRange range = new OffsetRange(pos.getStartOffset(), pos.getEndOffset());
-                    Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList);
+                    Description desc = new Description(this, getDisplayName(), info.getFileObject(), range, fixList, 150);
                     result.add(desc);
                     
                     // Exit; don't process children such that a def inside a class all
