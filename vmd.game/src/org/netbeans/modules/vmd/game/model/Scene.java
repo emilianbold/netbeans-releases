@@ -49,9 +49,8 @@ import org.openide.util.NbBundle;
 
 public class Scene implements GlobalRepositoryListener, PropertyChangeListener, Previewable, Editable {
 
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 	
-	public static final String PROPERTY_NAME = "prop.name"; // NOI18N
 	public static final String PROPERTY_LAYERS_BOUNDS = "prop.layers.bounds"; // NOI18N
 
 	EventListenerList listenerList = new EventListenerList();
@@ -481,8 +480,6 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 	public List<Action> getActions() {
 		ArrayList<Action> actions = new ArrayList<Action>();
 		actions.add(new EditSceneAction());
-//		actions.add(new CreateSpriteAction());
-//		actions.add(new CreateTiledLayerAction());
 		actions.add(new RemoveSceneAction());
 		actions.add(new RenameSceneAction());
 		return Collections.unmodifiableList(actions);
@@ -554,7 +551,7 @@ public class Scene implements GlobalRepositoryListener, PropertyChangeListener, 
 
 		public void actionPerformed(ActionEvent e) {
 				Object response = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-						NbBundle.getMessage(Scene.class, "Scene.removeDialog.text", getName()),
+						NbBundle.getMessage(Scene.class, "Scene.RemoveDialog.text", getName()),
 						NbBundle.getMessage(Scene.class, "Scene.RemoveSceneAction.text"),
 						NotifyDescriptor.YES_NO_OPTION,
 						NotifyDescriptor.QUESTION_MESSAGE,

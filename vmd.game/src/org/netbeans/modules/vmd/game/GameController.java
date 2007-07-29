@@ -46,6 +46,7 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.game.integration.components.GameTypes;
 import org.netbeans.modules.vmd.game.model.AnimatedTile;
 import org.netbeans.modules.vmd.game.model.AnimatedTileCD;
+import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.GlobalRepositoryListener;
 import org.netbeans.modules.vmd.game.model.ImageResource;
@@ -1130,7 +1131,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
     }
 	
 	private void handleScenePropChange(final DesignComponent dcScene, final PropertyChangeEvent e) {
-		if (e.getPropertyName() == Scene.PROPERTY_NAME) {
+		if (e.getPropertyName() == Editable.PROPERTY_NAME) {
 			document.getTransactionManager().writeAccess(new Runnable() {
 				public void run() {
 					String newName = (String) e.getNewValue();
@@ -1141,11 +1142,11 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 	
 	private void handleAnimatedTilePropChange(final DesignComponent dcAnimatedTile, final PropertyChangeEvent e) {
-		if (e.getPropertyName() == AnimatedTile.PROPERTY_NAME) {
+		if (e.getPropertyName() == Editable.PROPERTY_NAME) {
 			document.getTransactionManager().writeAccess(new Runnable() {
 				public void run() {
 					String newName = (String) e.getNewValue();
-					dcAnimatedTile.writeProperty(AnimatedTile.PROPERTY_NAME, MidpTypes.createStringValue(newName));
+					dcAnimatedTile.writeProperty(Editable.PROPERTY_NAME, MidpTypes.createStringValue(newName));
 				}
 			});
 		}
@@ -1184,7 +1185,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 	
 	private void handleSpritePropChange(final DesignComponent dcSprite, final PropertyChangeEvent e) {
-		if (e.getPropertyName() == Layer.PROPERTY_LAYER_NAME) {
+		if (e.getPropertyName() == Editable.PROPERTY_NAME) {
 			document.getTransactionManager().writeAccess(new Runnable() {
 				public void run() {
 					String newName = (String) e.getNewValue();
@@ -1204,7 +1205,7 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 	}
 	
 	private void handleTiledLayerPropChange(final DesignComponent dcTiledLayer, final PropertyChangeEvent e) {
-		if (e.getPropertyName() == Layer.PROPERTY_LAYER_NAME) {
+		if (e.getPropertyName() == Editable.PROPERTY_NAME) {
 			document.getTransactionManager().writeAccess(new Runnable() {
 				public void run() {
 					String newName = (String) e.getNewValue();

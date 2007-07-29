@@ -41,8 +41,6 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 	
 	public static final String ACTION_PROP_SCENE = "layer.action.prop.scene"; // NOI18N
 	
-	public static final String PROPERTY_LAYER_NAME = "layer.prop.name"; // NOI18N
-	
 	protected PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
 	private GlobalRepository gameDesign;
@@ -75,7 +73,7 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 		}
 		String oldName = this.name;
 		this.name = name;
-		this.propertyChangeSupport.firePropertyChange(PROPERTY_LAYER_NAME, oldName, name);
+		this.propertyChangeSupport.firePropertyChange(PROPERTY_NAME, oldName, name);
 	}
 	
 	public ImageResource getImageResource() {
@@ -167,7 +165,7 @@ public abstract class Layer implements Previewable, Editable, Transferable {
 
 	public class RemoveAction extends AbstractAction {
 		{
-			this.putValue(NAME, NbBundle.getMessage(Layer.class, "Layer.editAction", getDisplayableTypeName()));
+			this.putValue(NAME, NbBundle.getMessage(Layer.class, "Layer.removeAction", getDisplayableTypeName()));
 		}
 		public void actionPerformed(ActionEvent e) {
 			Scene scene = (Scene) this.getValue(Layer.ACTION_PROP_SCENE);

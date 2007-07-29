@@ -215,8 +215,8 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	}
 	
 	void removeLayer(Layer layer) {
-		List<Scene> scenes = this.getScenes();
-		for (Scene scene : scenes) {
+		List<Scene> sceneList = this.getScenes();
+		for (Scene scene : sceneList) {
 			scene.remove(layer);
 		}
 		if (layer instanceof TiledLayer) {
@@ -310,7 +310,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 		if (DEBUG) System.out.println("GlobalRepository propertyChange() event: " + evt); // NOI18N 
 		if (evt.getSource() instanceof Layer) {
 			Layer layer = (Layer) evt.getSource();
-			if (evt.getPropertyName().equals(Layer.PROPERTY_LAYER_NAME)) {
+			if (evt.getPropertyName().equals(Editable.PROPERTY_NAME)) {
 				//layer name has changed re-key it in the layer table
 				this.layers.remove(evt.getOldValue());
 				this.layers.put((String) evt.getNewValue(), layer);
@@ -410,6 +410,12 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 
     public List<Action> getActions() {
         return Collections.EMPTY_LIST;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
     }
 	
 }

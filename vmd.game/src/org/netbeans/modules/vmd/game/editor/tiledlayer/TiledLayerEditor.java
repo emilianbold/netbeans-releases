@@ -29,6 +29,7 @@ import java.beans.PropertyChangeListener;
 import java.util.Set;
 import javax.swing.JScrollPane;
 import org.netbeans.modules.vmd.game.dialog.NewAnimatedTileDialog;
+import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
@@ -261,7 +262,7 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 	
     public void propertyChange(PropertyChangeEvent evt) {
 		if (evt.getSource() == this.tiledLayer) {
-			if (evt.getPropertyName().equals(Layer.PROPERTY_LAYER_NAME)) {
+			if (evt.getPropertyName().equals(Editable.PROPERTY_NAME)) {
 				textFieldName.setText(this.tiledLayer.getName());
 			}
 		}

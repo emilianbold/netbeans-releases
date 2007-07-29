@@ -38,6 +38,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.vmd.api.properties.common.PropertiesSupport;
 import org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog;
 import org.openide.util.NbBundle;
 
@@ -107,7 +108,7 @@ public class GameEditorView implements DataEditorView, EditorManagerListener {
     }
 
     public Collection<String> getTags () {
-        return Collections.emptySet ();
+        return Collections.singleton(PropertiesSupport.DO_NOT_OPEN_PROPERTIES_WINDOW_TAG);
     }
 
     public String preferredID() {

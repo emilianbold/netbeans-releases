@@ -7,13 +7,16 @@
 package org.netbeans.modules.vmd.game.view;
 
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.ToolTipManager;
 import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 
@@ -21,7 +24,7 @@ import org.netbeans.modules.vmd.game.model.GlobalRepository;
  *
  * @author  kaja
  */
-public class GameDesignPreviewComponent extends javax.swing.JPanel implements MouseListener {
+public class GameDesignPreviewComponent extends JPanel implements MouseListener, PropertyChangeListener {
 	
 	private GlobalRepository gameDesign;
 	
@@ -33,9 +36,17 @@ public class GameDesignPreviewComponent extends javax.swing.JPanel implements Mo
 		this.editable = editable;
 		this.addMouseListener(this);
 		initComponents();
-		this.jLabel1.setText(name);
-		this.jPanel1.add(preview);
+		this.labelName.setText(name);
+		this.panelPreview.add(preview);
+		editable.addPropertyChangeListener(this);
+		ToolTipManager.sharedInstance().registerComponent(this);
 	}
+
+    @Override
+    public String getToolTipText(MouseEvent event) {
+        return editable.getName();
+    }
+	
 	
 	/** This method is called from within the constructor to
 	 * initialize the form.
@@ -45,19 +56,20 @@ public class GameDesignPreviewComponent extends javax.swing.JPanel implements Mo
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        panelPreview = new javax.swing.JPanel();
+        labelName = new javax.swing.JLabel();
 
         setBackground(new java.awt.Color(255, 255, 255));
 
-        jPanel1.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
-        jPanel1.setLayout(new java.awt.BorderLayout());
+        panelPreview.setBackground(new java.awt.Color(255, 255, 255));
+        panelPreview.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
+        panelPreview.setLayout(new java.awt.BorderLayout());
 
-        jLabel1.setForeground(new java.awt.Color(100, 123, 156));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(GameDesignPreviewComponent.class, "GameDesignPreviewComponent.jLabel1.text")); // NOI18N
-        jLabel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
+        labelName.setForeground(new java.awt.Color(100, 123, 156));
+        labelName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        labelName.setText(org.openide.util.NbBundle.getMessage(GameDesignPreviewComponent.class, "GameDesignPreviewComponent.labelName.text")); // NOI18N
+        labelName.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
+        labelName.setInheritsPopupMenu(false);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -66,25 +78,25 @@ public class GameDesignPreviewComponent extends javax.swing.JPanel implements Mo
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, panelPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, labelName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 101, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
+                .add(panelPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(labelName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 	
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel labelName;
+    private javax.swing.JPanel panelPreview;
     // End of variables declaration//GEN-END:variables
 	
     public void mouseClicked(MouseEvent e) {
@@ -114,17 +126,17 @@ public class GameDesignPreviewComponent extends javax.swing.JPanel implements Mo
 	}
 	
     public void mouseEntered(MouseEvent e) {
-        jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 164, 0), 1, true));
-        jLabel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 164, 0), 1, true));
-		jLabel1.setFont(jLabel1.getFont().deriveFont(Font.BOLD));
-		jLabel1.setOpaque(true);
+        panelPreview.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 164, 0), 1, true));
+        labelName.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 164, 0), 1, true));
+		//labelName.setFont(labelName.getFont().deriveFont(Font.BOLD));
+		labelName.setOpaque(true);
     }
 
     public void mouseExited(MouseEvent e) {
-		jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
-		jLabel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
-		jLabel1.setFont(jLabel1.getFont().deriveFont(Font.PLAIN));
-		jLabel1.setOpaque(false);
+		panelPreview.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
+		labelName.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
+		//labelName.setFont(labelName.getFont().deriveFont(Font.PLAIN));
+		labelName.setOpaque(false);
     }
 
     @Override
@@ -140,6 +152,13 @@ public class GameDesignPreviewComponent extends javax.swing.JPanel implements Mo
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(125, 150);
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        this.panelPreview.repaint();
+		if (evt.getPropertyName().equals(Editable.PROPERTY_NAME)) {
+			this.labelName.setText((String) evt.getNewValue());
+		}
     }
 
 }

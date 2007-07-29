@@ -41,8 +41,6 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 
 	public static final boolean DEBUG = false;
 	
-	public static final String PROPERTY_NAME = "animatedtile.prop.name"; // NOI18N
-	
 	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	private SequenceContainerImpl sequenceContainer;
 	
@@ -171,11 +169,11 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	
 	private class AddSequenceAction extends AbstractAction {
 		{
-			this.putValue(NAME, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.AddSequenceAction.name"));
+			this.putValue(NAME, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.AddSequenceAction.name")); // NOI18N
 		}
 		public void actionPerformed(ActionEvent e) {
 			NewSequenceDialog dialog = new NewSequenceDialog(AnimatedTile.this, getWidth(), getHeight());
-			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.AddSequenceAction.name"));
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.AddSequenceAction.name")); // NOI18N
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);
@@ -186,11 +184,11 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 
 	private class RenameAction extends AbstractAction {
 		{
-			this.putValue(NAME, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.RenameAction.name"));
+			this.putValue(NAME, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.RenameAction.name")); // NOI18N
 		}
 		public void actionPerformed(ActionEvent e) {
 			RenameAnimatedTileDialog dialog = new RenameAnimatedTileDialog(AnimatedTile.this);
-			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.RenameAction.name"));
+			DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.RenameAction.name")); // NOI18N
 			dd.setButtonListener(dialog);
 			dd.setValid(false);
 			dialog.setDialogDescriptor(dd);
@@ -200,7 +198,7 @@ public class AnimatedTile extends Tile implements SequenceContainer, Editable {
 	}
 
 	public JComponent getPreview() {
-		return new SequenceContainerPreview(NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.previewLabel.text"), this);
+		return new SequenceContainerPreview(NbBundle.getMessage(AnimatedTile.class, "AnimatedTile.previewLabel.text"), this); // NOI18N
 	}
 	
 	public void addPropertyChangeListener(PropertyChangeListener l) {

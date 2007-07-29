@@ -27,13 +27,18 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
+import org.netbeans.modules.vmd.game.model.GlobalRepositoryListener;
+import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
@@ -55,35 +60,126 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 	private JLabel labelSprites;
 	private JLabel labelScenes;
 	
-    public GameDesignOverViewPanel(GlobalRepository gameDesign) {
+	private ScrollableFlowPanel panelTiledLayers = new ScrollableFlowPanel();
+	private ScrollableFlowPanel panelSprites = new ScrollableFlowPanel();
+	private ScrollableFlowPanel panelScenes = new ScrollableFlowPanel();
+	
+	private Map<TiledLayer, GameDesignPreviewComponent> tiledLayerPreviews = new HashMap<TiledLayer, GameDesignPreviewComponent>();
+	private Map<Sprite, GameDesignPreviewComponent> spritePreviews = new HashMap<Sprite, GameDesignPreviewComponent>();
+	private Map<Scene, GameDesignPreviewComponent> scenePreviews = new HashMap<Scene, GameDesignPreviewComponent>();
+	
+    public GameDesignOverViewPanel(final GlobalRepository gameDesign) {
 		this.gameDesign = gameDesign;
+		this.gameDesign.addGlobalRepositoryListener(new GlobalRepositoryListener() {
+			public void sceneAdded(Scene scene, int index) {
+	            GameDesignPreviewComponent preview = new GameDesignPreviewComponent(gameDesign, scene.getPreview(), scene.getName(), scene);
+				panelScenes.add(preview, index);
+				panelScenes.revalidate();
+				panelScenes.repaint();
+				scenePreviews.put(scene, preview);
+			}
+			public void sceneRemoved(Scene scene, int index) {
+				JComponent preview = scenePreviews.remove(scene);
+				if (preview != null) {
+					panelScenes.remove(preview);
+					panelScenes.revalidate();
+					panelScenes.repaint();
+				}
+			}
+			
+			public void tiledLayerAdded(TiledLayer tiledLayer, int index) {
+				GameDesignPreviewComponent preview = new GameDesignPreviewComponent(gameDesign, tiledLayer.getPreview(), tiledLayer.getName(), tiledLayer);
+				panelTiledLayers.add(preview, index);
+				panelTiledLayers.revalidate();
+				panelTiledLayers.repaint();
+				tiledLayerPreviews.put(tiledLayer, preview);
+			}
+			public void tiledLayerRemoved(TiledLayer tiledLayer, int index) {
+				JComponent preview = tiledLayerPreviews.remove(tiledLayer);
+				if (preview != null) {
+					panelTiledLayers.remove(preview);
+					panelTiledLayers.revalidate();
+					panelTiledLayers.repaint();
+				}
+			}
+			
+			public void spriteAdded(Sprite sprite, int index) {
+				ImagePreviewComponent imagePreviewComponent = new ImagePreviewComponent(true);
+				imagePreviewComponent.setPreviewable(sprite.getDefaultSequence().getFrame(0));
+				final GameDesignPreviewComponent preview = new GameDesignPreviewComponent(gameDesign, imagePreviewComponent, sprite.getName(), sprite);
+				panelSprites.add(preview, index);
+				panelSprites.revalidate();
+				panelSprites.repaint();
+				spritePreviews.put(sprite, preview);
+			}
+			public void spriteRemoved(Sprite sprite, int index) {
+				JComponent preview = spritePreviews.remove(sprite);
+				if (preview != null) {
+					panelSprites.remove(preview);
+					panelSprites.revalidate();
+					panelSprites.repaint();
+				}
+			}
+			public void imageResourceAdded(ImageResource imageResource) {
+			}
+		});
 		this.manualInit();
 		this.addComponentListener(this);
 	}
 	
 	private void manualInit() {
 		this.setBackground(Color.WHITE);
-		((FlowLayout) getLayout()).setAlignment(FlowLayout.LEFT);
+		this.panelTiledLayers.setBackground(Color.WHITE);
+		this.panelSprites.setBackground(Color.WHITE);
+		this.panelScenes.setBackground(Color.WHITE);
 		
-		this.populateScenePreviewList();
-		this.populateTiledLayerPreviewList();
-		this.populateSpritePreviewList();
-	}
-	
-	private void populateTiledLayerPreviewList() {
+		((FlowLayout) this.getLayout()).setAlignment(FlowLayout.LEFT);
+		((FlowLayout) this.panelTiledLayers.getLayout()).setAlignment(FlowLayout.LEFT);
+		((FlowLayout) this.panelSprites.getLayout()).setAlignment(FlowLayout.LEFT);
+		((FlowLayout) this.panelScenes.getLayout()).setAlignment(FlowLayout.LEFT);
+		
+		//add scenes label
+		labelScenes = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelScenes.txt"));
+        labelScenes.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        labelScenes.setForeground(new java.awt.Color(163, 184, 215));
+		labelScenes.setHorizontalAlignment(SwingConstants.LEFT);
+		this.add(labelScenes);		
+		//add scenes list
+		this.add(this.panelScenes);
+		
+		//add tiled layers label
 		labelTiledLayers = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelTiledLayers.txt"));
         labelTiledLayers.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
         labelTiledLayers.setForeground(new java.awt.Color(163, 184, 215));
 		labelTiledLayers.setHorizontalAlignment(SwingConstants.LEFT);
 		this.add(labelTiledLayers);
+		//add tiled layers list
+		this.add(this.panelTiledLayers);
+		
+		//add sprites label
+		labelSprites = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelSprites.txt"));
+        labelSprites.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        labelSprites.setForeground(new java.awt.Color(163, 184, 215));
+		labelSprites.setHorizontalAlignment(SwingConstants.LEFT);
+		this.add(labelSprites);
+		//add sprites list
+		this.add(this.panelSprites);
+		
+		
+		this.populateScenePreviewList(panelScenes);
+		this.populateTiledLayerPreviewList(panelTiledLayers);
+		this.populateSpritePreviewList(panelSprites);
+	}
+	
+	private void populateTiledLayerPreviewList(JComponent container) {
 		
 		List<TiledLayer> layers = this.gameDesign.getTiledLayers();
 		for (TiledLayer tiledLayer : layers) {
-			//System.out.println("preview tiledLayer: " + tiledLayer);
-			add(new GameDesignPreviewComponent(gameDesign, tiledLayer.getPreview(), tiledLayer.getName(), tiledLayer));
+			GameDesignPreviewComponent preview = new GameDesignPreviewComponent(gameDesign, tiledLayer.getPreview(), tiledLayer.getName(), tiledLayer);
+			container.add(preview);
+			tiledLayerPreviews.put(tiledLayer, preview);
 		}
 
-		
 		final JLabel lblCreate = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelNewTiledLayer.txt"));
 		lblCreate.setPreferredSize(new Dimension(lblCreate.getPreferredSize().width + 15, 40));
         lblCreate.setForeground(new java.awt.Color(100, 123, 156));
@@ -104,22 +200,17 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 				d.setVisible(true);
            }
 		});
-		this.add(lblCreate);
+		container.add(lblCreate);
 	}
 
-	private void populateSpritePreviewList() {
-		labelSprites = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelSprites.txt"));
-        labelSprites.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        labelSprites.setForeground(new java.awt.Color(163, 184, 215));
-		labelSprites.setHorizontalAlignment(SwingConstants.LEFT);
-		this.add(labelSprites);
-				
+	private void populateSpritePreviewList(JComponent container) {
 		List<Sprite> sprites = this.gameDesign.getSprites();
 		for (Sprite sprite : sprites) {
-			//System.out.println("preview sprite: " + sprite);
 			ImagePreviewComponent imagePreviewComponent = new ImagePreviewComponent(true);
 			imagePreviewComponent.setPreviewable(sprite.getDefaultSequence().getFrame(0));
-			add(new GameDesignPreviewComponent(gameDesign, imagePreviewComponent, sprite.getName(), sprite));
+            final GameDesignPreviewComponent preview = new GameDesignPreviewComponent(gameDesign, imagePreviewComponent, sprite.getName(), sprite);
+			container.add(preview);
+			spritePreviews.put(sprite, preview);
 		}
 		
 		final JLabel lblCreate = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelNewSprite.txt"));
@@ -142,20 +233,15 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 				d.setVisible(true);
             }			
 		});
-		this.add(lblCreate);
+		container.add(lblCreate);
 	}
 	
-	private void populateScenePreviewList() {
-		labelScenes = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelScenes.txt"));
-        labelScenes.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        labelScenes.setForeground(new java.awt.Color(163, 184, 215));
-		labelScenes.setHorizontalAlignment(SwingConstants.LEFT);
-		this.add(labelScenes);
-				
+	private void populateScenePreviewList(JComponent container) {
 		List<Scene> scenes = this.gameDesign.getScenes();
 		for (Scene scene : scenes) {
-			//System.out.println("preview scene: " + scene);
-			add(new GameDesignPreviewComponent(gameDesign, scene.getPreview(), scene.getName(), scene));
+            GameDesignPreviewComponent preview = new GameDesignPreviewComponent(gameDesign, scene.getPreview(), scene.getName(), scene);
+			container.add(preview);
+			scenePreviews.put(scene, preview);
 		}
 		
 		final JLabel lblCreate = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelNewScene.txt"));
@@ -178,7 +264,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 				d.setVisible(true);
             }			
 		});
-		this.add(lblCreate);
+		container.add(lblCreate);
 	}
 
 	private void resizeLabels() {
@@ -190,9 +276,6 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 		
 		d = labelScenes.getPreferredSize();
 		this.labelScenes.setPreferredSize(new Dimension(this.getWidth(), d.getSize().height));
-		
-//		d = labelGameDesign.getPreferredSize();
-//		this.labelGameDesign.setPreferredSize(new Dimension(this.getWidth(), d.getSize().height));
 	}
 	
     public void componentResized(ComponentEvent e) {
@@ -204,11 +287,11 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
     }
 
     public void componentShown(ComponentEvent e) {
+        this.resizeLabels();
     }
 
     public void componentHidden(ComponentEvent e) {
     }
-	
 }
 
 

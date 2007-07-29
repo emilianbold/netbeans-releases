@@ -53,6 +53,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
+import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Position;
 import org.netbeans.modules.vmd.game.model.Scene;
@@ -429,7 +430,7 @@ public class ScenePanel extends JPanel implements SceneListener,
 			if (e.getPropertyName().equals(
 					SequenceContainer.PROPERTY_DEFAULT_SEQUENCE)) {
 				this.repaintLayerWithDecorations(s);
-			} else if (e.getPropertyName().equals(Layer.PROPERTY_LAYER_NAME)) {
+			} else if (e.getPropertyName().equals(Editable.PROPERTY_NAME)) {
 				// TODO
 			}
 		}

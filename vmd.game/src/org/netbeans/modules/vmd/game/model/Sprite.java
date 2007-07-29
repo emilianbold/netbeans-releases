@@ -26,7 +26,6 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import org.netbeans.modules.vmd.game.dialog.NewSequenceDialog;
 import org.netbeans.modules.vmd.game.dialog.RenameSpriteDialog;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerEditor;
 import org.netbeans.modules.vmd.game.editor.sequece.SequenceContainerNavigator;

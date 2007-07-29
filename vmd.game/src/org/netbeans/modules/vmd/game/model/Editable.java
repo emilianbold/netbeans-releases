@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.vmd.game.model;
 
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -25,6 +26,8 @@ import javax.swing.JComponent;
 
 public interface Editable {
 
+	public static final String PROPERTY_NAME = "editable.prop.name"; // NOI18N
+	
 	public JComponent getEditor();
 
 	public ImageResourceInfo getImageResourceInfo();
@@ -34,6 +37,10 @@ public interface Editable {
 	public String getName();
 
 	public List<Action> getActions();
+	
+	public void addPropertyChangeListener(PropertyChangeListener l);
+	
+	public void removePropertyChangeListener(PropertyChangeListener l);
 	
 	public class ImageResourceInfo {
 		private ImageResource imgRes;
