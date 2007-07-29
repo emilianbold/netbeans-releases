@@ -17,13 +17,19 @@
 
 package org.netbeans.modules.vmd.midpnb.propertyeditors.table;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import javax.swing.JComponent;
+import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
@@ -40,11 +46,14 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     private boolean doNotFireEvent;
     private long componentID;
     private CustomEditorTableModel tableModel;
+    private TableCellRenderer renderer;
 
     public TableModelEditorElement() {
         tableModel = new CustomEditorTableModel();
         tableModel.addTableModelListener(this);
         initComponents();
+        renderer = new HeaderCellRenderer();
+        setTableCellRenderer();
     }
 
     public JComponent getJComponent() {
@@ -59,7 +68,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     public String getResourceNameSuggestion() {
         return "tableModel"; // NOI18N
     }
-    
+
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         if (wrapper == null) {
             // UI stuff
@@ -81,6 +90,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
 
             this.componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
                 public void run() {
                     columns[0] = component.readProperty(SimpleTableModelCD.PROP_COLUMN_NAMES);
                     values[0] = component.readProperty(SimpleTableModelCD.PROP_VALUES);
@@ -106,10 +116,12 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     }
 
     public synchronized void tableChanged(TableModelEvent e) {
+        setTableCellRenderer();
         if (isShowing() && !doNotFireEvent) {
             Vector dataVector = tableModel.getDataVector();
-            List<PropertyValue> propertyValueColumn = new ArrayList<PropertyValue>(dataVector.size());
-            for (int i = 0; i < dataVector.size(); i++) {
+            boolean useHeader = tableModel.hasHeader();
+            List<PropertyValue> propertyValueColumn = new ArrayList<PropertyValue>(dataVector.size() - (useHeader ? 1 : 0));
+            for (int i = useHeader ? 1 : 0; i < dataVector.size(); i++) {
                 Vector row = (Vector) dataVector.elementAt(i);
                 List<PropertyValue> propertyValueRow = new ArrayList<PropertyValue>(row.size());
                 for (int j = 0; j < row.size(); j++) {
@@ -121,7 +133,27 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
 
             PropertyValue values = PropertyValue.createArray(MidpTypes.TYPEID_JAVA_LANG_STRING.getArrayType(), propertyValueColumn);
             fireElementChanged(componentID, SimpleTableModelCD.PROP_VALUES, values);
-            // TODO save headers
+
+            PropertyValue headers;
+            if (useHeader) {
+                List<PropertyValue> propertyValueHeader = new ArrayList<PropertyValue>(tableModel.getColumnCount());
+                Vector headerRow = (Vector) dataVector.elementAt(0);
+                for (int j = 0; j < tableModel.getColumnCount(); j++) {
+                    String str = (String) headerRow.elementAt(j);
+                    propertyValueHeader.add(MidpTypes.createStringValue(str != null ? str : "")); // NOI18N
+                }
+                headers = PropertyValue.createArray(MidpTypes.TYPEID_JAVA_LANG_STRING, propertyValueHeader);
+            } else {
+                headers = PropertyValue.createNull();
+            }
+            fireElementChanged(componentID, SimpleTableModelCD.PROP_COLUMN_NAMES, headers);
+        }
+    }
+
+    private void setTableCellRenderer() {
+        TableColumnModel columnModel = table.getColumnModel();
+        for (int i = 0; i < columnModel.getColumnCount(); i++) {
+            columnModel.getColumn(i).setCellRenderer(renderer);
         }
     }
 
@@ -130,6 +162,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         if (values == null) {
             tableModel.clear();
         } else {
+            boolean useHeader = (columns != null) && (columns.getArray() != null);
             String[] header = null;
             if (columns != null) {
                 List<PropertyValue> list = columns.getArray();
@@ -141,19 +174,24 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
                 }
             }
 
-            List<PropertyValue> list = values.getArray();
+            List<PropertyValue> rows = values.getArray();
             String[][] arrays = null;
-            if (list != null && list.size() > 0) {
-                List<PropertyValue> list2 = list.get(0).getArray();
-                arrays = new String[list.size()][list2.size()];
-                for (int x = 0; x < list.size(); x++) {
-                    list2 = list.get(x).getArray();
-                    for (int y = 0; y < list2.size(); y++) {
-                        arrays[x][y] = MidpTypes.getString(list2.get(y));
+            if (rows != null && rows.size() > 0) {
+                List<PropertyValue> cols = rows.get(0).getArray();
+                int rowCount = rows.size();
+                int columnCount = cols.size();
+                arrays = new String[rowCount][columnCount];
+
+                for (int x = 0; x < rowCount; x++) {
+                    cols = rows.get(x).getArray();
+                    for (int y = 0; y < columnCount; y++) {
+                        arrays[x][y] = MidpTypes.getString(cols.get(y));
                     }
                 }
             }
 
+            tableModel.setUseHeader(useHeader);
+            headerCheckBox.setSelected(useHeader);
             tableModel.setDataVector(arrays, header);
         }
         doNotFireEvent = false;
@@ -166,6 +204,22 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         removeRowButton.setEnabled(isEnabled);
         tableLabel.setEnabled(isEnabled);
         table.setEnabled(isEnabled);
+        headerCheckBox.setEnabled(isEnabled);
+    }
+
+    private class HeaderCellRenderer extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Component renderer = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (tableModel.hasHeader() && row == 0) {
+                renderer.setBackground(Color.LIGHT_GRAY);
+            } else {
+                renderer.setBackground(Color.WHITE);
+            }
+            renderer.setForeground(Color.BLACK);
+            return renderer;
+        }
     }
 
     /** This method is called from within the constructor to
@@ -184,6 +238,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         removeColButton = new javax.swing.JButton();
         removeRowButton = new javax.swing.JButton();
         addRowButton = new javax.swing.JButton();
+        headerCheckBox = new javax.swing.JCheckBox();
 
         tableLabel.setLabelFor(table);
         org.openide.awt.Mnemonics.setLocalizedText(tableLabel, org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.tableLabel.text")); // NOI18N
@@ -191,13 +246,15 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
 
         table.setModel(tableModel);
         table.setEnabled(false);
+        table.getTableHeader().setResizingAllowed(false);
+        table.getTableHeader().setReorderingAllowed(false);
         jScrollPane1.setViewportView(table);
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 389, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 405, Short.MAX_VALUE)
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -236,6 +293,16 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(headerCheckBox, org.openide.util.NbBundle.getMessage(TableModelEditorElement.class, "TableModelEditorElement.headerCheckBox.text")); // NOI18N
+        headerCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        headerCheckBox.setEnabled(false);
+        headerCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        headerCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                headerCheckBoxActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -244,11 +311,14 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(headerCheckBox)
+                        .add(28, 28, 28))
+                    .add(removeRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
+                    .add(addRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                     .add(removeColButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(addColButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(removeRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(addRowButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(addColButton)))
         );
 
         layout.linkSize(new java.awt.Component[] {addColButton, addRowButton, removeColButton, removeRowButton}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -260,20 +330,22 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .add(headerCheckBox)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addColButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeColButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(removeRowButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addRowButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(removeRowButton)
                         .addContainerGap())
                     .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void addColButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addColButtonActionPerformed
-        tableModel.addColumn(null);
+        tableModel.addColumn("");
     }//GEN-LAST:event_addColButtonActionPerformed
 
     private void removeColButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeColButtonActionPerformed
@@ -288,13 +360,23 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     }//GEN-LAST:event_removeRowButtonActionPerformed
 
     private void addRowButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addRowButtonActionPerformed
-        tableModel.addRow(new String[table.getColumnCount()]);
+        int columnCount = table.getColumnCount();
+        String[] row = new String[columnCount];
+        for (int i = 0; i < row.length; i++) {
+            row[i] = ""; // NOI18N
+        }
+        tableModel.addRow(row);
     }//GEN-LAST:event_addRowButtonActionPerformed
+
+    private void headerCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_headerCheckBoxActionPerformed
+        tableModel.setUseHeader(headerCheckBox.isSelected());
+    }//GEN-LAST:event_headerCheckBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addColButton;
     private javax.swing.JButton addRowButton;
+    private javax.swing.JCheckBox headerCheckBox;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton removeColButton;

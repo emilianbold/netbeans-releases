@@ -24,8 +24,15 @@ import javax.swing.table.DefaultTableModel;
  * @author Anton Chechel
  */
 class CustomEditorTableModel extends DefaultTableModel {
-    
+
+    private Vector<String> header = new Vector<String>();
+    private boolean hasHeader;
+
     public void removeLastColumn() {
+        if (header.size() > 0) {
+            header.remove(header.size() - 1);
+        }
+
         int columnCount = getColumnCount();
         if (columnCount > 0) {
             columnIdentifiers.remove(columnCount - 1);
@@ -34,14 +41,92 @@ class CustomEditorTableModel extends DefaultTableModel {
                 Vector row = (Vector) dataVector.elementAt(i);
                 row.remove(columnCount - 1);
             }
-            
-            fireTableStructureChanged();
+        }
+        fireTableStructureChanged();
+    }
+
+    @Override
+    public void removeRow(int row) {
+        super.removeRow(row - (hasHeader ? 1 : 0));
+    }
+
+    @Override
+    public void addRow(Object[] rowData) {
+        dataVector.addElement(convertToVector(rowData));
+        fireTableStructureChanged();
+    }
+
+    public void addColumn(String columnName) {
+        header.addElement(columnName);
+        columnIdentifiers.addElement(columnName);
+        for (int i = 0; i < dataVector.size(); i++) {
+            Vector row = (Vector) dataVector.elementAt(i);
+            row.addElement(columnName);
+        }
+
+        fireTableStructureChanged();
+    }
+
+    @Override
+    public int getRowCount() {
+        return dataVector.size() + (hasHeader ? 1 : 0);
+    }
+
+    @Override
+    public Object getValueAt(int row, int column) {
+        Object value;
+        if (hasHeader) {
+            if (row == 0) {
+                value = header.elementAt(column);
+            } else {
+                value = super.getValueAt(row - 1, column);
+            }
+        } else {
+            value = super.getValueAt(row, column);
+        }
+        return value;
+    }
+
+    @Override
+    public void setValueAt(Object aValue, int row, int column) {
+        if (hasHeader) {
+            if (row == 0) {
+                header.setElementAt((String) aValue, column);
+            } else {
+                super.setValueAt(aValue, row - 1, column);
+            }
+        } else {
+            super.setValueAt(aValue, row, column);
         }
     }
-    
+
+    @Override
+    public void setDataVector(Object[][] dataArrays, Object[] columnArray) {
+        if (hasHeader) {
+            header.clear();
+            for (int i = 0; i < columnArray.length; i++) {
+                header.addElement((String) columnArray[i]);
+            }
+        }
+        super.dataVector = convertToVector(dataArrays);
+        super.columnIdentifiers = convertToVector(columnArray);
+        fireTableStructureChanged();
+    }
+
+
     public void clear() {
+        header.clear();
         columnIdentifiers.clear();
         dataVector.clear();
         fireTableStructureChanged();
+    }
+
+    public void setUseHeader(boolean useHeader) {
+        this.hasHeader = useHeader;
+        fireTableStructureChanged();
+    }
+
+    public boolean hasHeader() {
+        return hasHeader;
     }
 }
