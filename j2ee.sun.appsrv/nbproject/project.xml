@@ -199,6 +199,7 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.compapp.manager.jbi</friend>
                 <friend>org.netbeans.modules.identity.server.manager</friend>
                 <friend>org.netbeans.modules.j2ee.sun.appsrv81</friend>
                 <friend>org.netbeans.modules.j2ee.sun.avk</friend>
