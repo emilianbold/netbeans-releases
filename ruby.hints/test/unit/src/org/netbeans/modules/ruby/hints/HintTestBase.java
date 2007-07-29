@@ -24,7 +24,6 @@ import org.netbeans.modules.ruby.RubyTestBase;
 import java.util.Map;
 import org.netbeans.api.gsf.CompilationInfo;
 import java.io.File;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
