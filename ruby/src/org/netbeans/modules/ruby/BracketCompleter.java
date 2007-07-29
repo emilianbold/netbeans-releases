@@ -1527,6 +1527,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         return ranges;
     }
 
+    // UGH - this method has gotten really ugly after successive refinements based on unit tests - consider cleaning up
     public int getNextWordOffset(Document document, int offset, boolean reverse) {
         BaseDocument doc = (BaseDocument)document;
         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
@@ -1536,6 +1537,11 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         ts.move(offset);
         if (!ts.moveNext() && !ts.movePrevious()) {
             return -1;
+        }
+        if (reverse && ts.offset() == offset) {
+            if (!ts.movePrevious()) {
+                return -1;
+            }
         }
 
         Token<? extends GsfTokenId> token = ts.token();
@@ -1585,7 +1591,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 if (offsetInImage < length && Character.isUpperCase(s.charAt(offsetInImage))) {
                     for (int i = offsetInImage - 1; i >= 0; i--) {
                         char charAtI = s.charAt(i);
-                        if (charAtI == '_' || !Character.isUpperCase(charAtI)) {
+                        if (charAtI == '_') {
+                            // return offset of previous uppercase char in the identifier
+                            return ts.offset() + i + 1;
+                        } else if (!Character.isUpperCase(charAtI)) {
                             // return offset of previous uppercase char in the identifier
                             return ts.offset() + i + 1;
                         }
@@ -1595,14 +1604,14 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                     for (int i = offsetInImage - 1; i >= 0; i--) {
                         char charAtI = s.charAt(i);
                         if (charAtI == '_') {
-                            return ts.offset() + i;
+                            return ts.offset() + i + 1;
                         }
                         if (Character.isUpperCase(charAtI)) {
                             // now skip over previous uppercase chars in the identifier
                             for (int j = i; j >= 0; j--) {
                                 char charAtJ = s.charAt(j);
                                 if (charAtJ == '_') {
-                                    return ts.offset() + j;
+                                    return ts.offset() + j+1;
                                 }
                                 if (!Character.isUpperCase(charAtJ)) {
                                     // return offset of previous uppercase char in the identifier
