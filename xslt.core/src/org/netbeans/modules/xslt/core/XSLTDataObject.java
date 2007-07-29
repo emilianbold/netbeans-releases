@@ -227,7 +227,6 @@ public class XSLTDataObject extends MultiDataObject {
         
         @Override
         public Action getPreferredAction() {
-            System.out.println("xslt dataobject getPreffered action");
             return SystemAction.get(XsltDesignViewOpenAction.class);
 //            return new AbstractAction() {
 //                    private static final long serialVersionUID = 1L;

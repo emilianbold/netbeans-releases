@@ -12,45 +12,48 @@
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.xslt.core.multiview;
 
 import org.netbeans.modules.xslt.core.XSLTDataEditorSupport;
 import org.netbeans.modules.xslt.core.XSLTDataObject;
+import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Vitaly Bychkov
  */
-public class XsltDesignViewOpenAction extends NodeAction {
-
+public class XsltSourceViewOpenAction extends OpenAction {
     private static final long serialVersionUID = 1L;
 
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(XsltSourceViewOpenAction.class,
+                "XsltSourceViewOpenAction_Name");
+    }
+
+    @Override
     protected void performAction(Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes[0] == null) {
             return;
         }
-        XSLTDataObject dObj = activatedNodes[0].getLookup().
-                                                lookup(XSLTDataObject.class);
+        XSLTDataObject dObj = activatedNodes[0].getLookup().lookup(
+                XSLTDataObject.class);
         if (dObj != null) {
             XSLTDataEditorSupport editorSupport = dObj.getEditorSupport();
             if ( editorSupport.getOpenedPanes()==null ||
                     editorSupport.getOpenedPanes().length==0 ) 
             {
-                editorSupport.open();
+                editorSupport.edit();
                 XsltMultiViewSupport support = 
                     XsltMultiViewSupport.getInstance();
                 support.requestViewOpen(editorSupport);
             } else {
-                editorSupport.open();
+                editorSupport.edit();
             }
             return;
         }
@@ -59,23 +62,5 @@ public class XsltDesignViewOpenAction extends NodeAction {
         if (oc != null) {
             oc.open();
         }
-    }
-
-    protected boolean enable(Node[] activatedNodes) {
-        return true;
-    }
-
-    public String getName() {
-        return NbBundle.getMessage(XsltDesignViewOpenAction.class,
-                "XsltDesignViewOpenAction_Name");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
-    @Override
-	protected boolean asynchronous() {
-        return false;
     }
 }
