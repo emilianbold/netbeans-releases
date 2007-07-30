@@ -40,38 +40,38 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
     public NewTestcaseWsdlVisualPanel(Project project, NewTestcaseWsdlWizardPanel panel) {
         mProject = project;     
         mPanel = panel;
-        mWsdlTreeView = new WsdlTreeView(mProject);
-        mWsdlTreeView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(!evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
-                    return;
-                }
-                FileObject wsdlFile = mWsdlTreeView.getSelectedWsdlFile();
-                if (wsdlFile == null) {
-                    mWsdlTf.setText("");  // NOI18N
-                } else {
-                    mWsdlTf.setText(FileUtil.toFile(wsdlFile).getPath());
-                }
-            }
-        });        
-        //in initComponents generated code, post creation code for wsdlTreeView in jPanel1
+//        mWsdlTreeView = new WsdlTreeView(mProject);
+//        mWsdlTreeView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
+//            public void propertyChange(PropertyChangeEvent evt) {
+//                if(!evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
+//                    return;
+//                }
+//                FileObject wsdlFile = mWsdlTreeView.getSelectedWsdlFile();
+//                if (wsdlFile == null) {
+//                    mWsdlTf.setText("");  // NOI18N
+//                } else {
+//                    mWsdlTf.setText(FileUtil.toFile(wsdlFile).getPath());
+//                }
+//            }
+//        });        
+//        //in initComponents generated code, post creation code for wsdlTreeView in jPanel1
         initComponents(); 
-        mWsdlTreeView.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WsdlTreeView_A11YName"));  // NOI18N
-        mWsdlTreeView.getAccessibleContext().setAccessibleDescription(
-                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WsdlTreeView_A11YDesc"));  // NOI18N
-        org.jdesktop.layout.GroupLayout jPanel1Layout = (org.jdesktop.layout.GroupLayout) jPanel1.getLayout();
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-        );
-        
-        JTree tree = (JTree) mWsdlTreeView.getTreeView().getViewport().getComponent(0);
-        tree.getSelectionModel().addTreeSelectionListener(this);
+//        mWsdlTreeView.getAccessibleContext().setAccessibleName(
+//                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WsdlTreeView_A11YName"));  // NOI18N
+//        mWsdlTreeView.getAccessibleContext().setAccessibleDescription(
+//                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WsdlTreeView_A11YDesc"));  // NOI18N
+//        org.jdesktop.layout.GroupLayout jPanel1Layout = (org.jdesktop.layout.GroupLayout) jPanel1.getLayout();
+//        jPanel1Layout.setHorizontalGroup(
+//            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+//        );
+//        jPanel1Layout.setVerticalGroup(
+//            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+//            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+//        );
+//        
+//        JTree tree = (JTree) mWsdlTreeView.getTreeView().getViewport().getComponent(0);
+//        tree.getSelectionModel().addTreeSelectionListener(this);
         
 //        TreeNode root = (TreeNode) tree.getModel().getRoot();
 //        int cnt = root.getChildCount();
@@ -106,6 +106,12 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        mWsdlLbl = new javax.swing.JLabel();
+        mWsdlTf = new javax.swing.JTextField();
+        jLabelWSDLDocuments = new javax.swing.JLabel();
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         mWsdlTreeView = new WsdlTreeView(mProject);
         mWsdlTreeView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -120,11 +126,24 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
                 }
             }
         });
-        jPanel1 = new javax.swing.JPanel();
-        mWsdlLbl = new javax.swing.JLabel();
-        mWsdlTf = new javax.swing.JTextField();
+        jLabelWSDLDocuments.setLabelFor(mWsdlTreeView);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        mWsdlTreeView.getAccessibleContext().setAccessibleName(
+            NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WsdlTreeView_A11YName"));  // NOI18N
+        mWsdlTreeView.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WsdlTreeView_A11YDesc"));  // NOI18N
+        /*org.jdesktop.layout.GroupLayout jPanel1Layout = (org.jdesktop.layout.GroupLayout) jPanel1.getLayout();
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+        );*/
+
+        JTree tree = (JTree) mWsdlTreeView.getTreeView().getViewport().getComponent(0);
+        tree.getSelectionModel().addTreeSelectionListener(this);
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -134,13 +153,15 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 271, Short.MAX_VALUE)
+            .add(0, 251, Short.MAX_VALUE)
         );
 
         mWsdlLbl.setLabelFor(mWsdlTf);
-        mWsdlLbl.setText(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "LBL_The_WSDL_selected")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(mWsdlLbl, org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "LBL_The_WSDL_selected")); // NOI18N
 
         mWsdlTf.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelWSDLDocuments, "&WSDL Documents:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -149,12 +170,17 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
             .add(layout.createSequentialGroup()
                 .add(mWsdlLbl)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mWsdlTf, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE))
+                .add(mWsdlTf, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(jLabelWSDLDocuments)
+                .addContainerGap())
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jLabelWSDLDocuments)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -162,8 +188,10 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
                     .add(mWsdlTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
-        mWsdlLbl.getAccessibleContext().setAccessibleName("Selected &WSDL: ");
+        mWsdlLbl.getAccessibleContext().setAccessibleName("Selected WSDL: ");
         mWsdlLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_SELECTED_WSDL_LABEL")); // NOI18N
+        jLabelWSDLDocuments.getAccessibleContext().setAccessibleName("WSDL Documents:");
+        jLabelWSDLDocuments.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WSDL_DOCUMENTS_LABEL")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_NewTestcaseWsdlVisualPanel_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -171,6 +199,7 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabelWSDLDocuments;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel mWsdlLbl;
     private javax.swing.JTextField mWsdlTf;

@@ -22,7 +22,11 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="mWsdlLbl" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="mWsdlTf" pref="317" max="32767" attributes="0"/>
+              <Component id="mWsdlTf" pref="310" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="jLabelWSDLDocuments" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
       </Group>
@@ -30,6 +34,8 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
+              <Component id="jLabelWSDLDocuments" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel1" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -50,7 +56,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value="        mWsdlTreeView = new WsdlTreeView(mProject);&#xa;        mWsdlTreeView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {&#xa;            public void propertyChange(PropertyChangeEvent evt) {&#xa;                if(!evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {&#xa;                    return;&#xa;                }&#xa;                FileObject wsdlFile = mWsdlTreeView.getSelectedWsdlFile();&#xa;                if (wsdlFile == null) {&#xa;                    mWsdlTf.setText(&quot;&quot;);  // NOI18N&#xa;                } else {&#xa;                    mWsdlTf.setText(FileUtil.toFile(wsdlFile).getPath());&#xa;                }&#xa;            }&#xa;        });"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="        mWsdlTreeView = new WsdlTreeView(mProject);&#xa;        mWsdlTreeView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {&#xa;            public void propertyChange(PropertyChangeEvent evt) {&#xa;                if(!evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {&#xa;                    return;&#xa;                }&#xa;                FileObject wsdlFile = mWsdlTreeView.getSelectedWsdlFile();&#xa;                if (wsdlFile == null) {&#xa;                    mWsdlTf.setText(&quot;&quot;);  // NOI18N&#xa;                } else {&#xa;                    mWsdlTf.setText(FileUtil.toFile(wsdlFile).getPath());&#xa;                }&#xa;            }&#xa;        });&#xa;        jLabelWSDLDocuments.setLabelFor(mWsdlTreeView);&#xa;        &#xa;        mWsdlTreeView.getAccessibleContext().setAccessibleName(&#xa;                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, &quot;ACS_WsdlTreeView_A11YName&quot;));  // NOI18N&#xa;        mWsdlTreeView.getAccessibleContext().setAccessibleDescription(&#xa;                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, &quot;ACS_WsdlTreeView_A11YDesc&quot;));  // NOI18N&#xa;        /*org.jdesktop.layout.GroupLayout jPanel1Layout = (org.jdesktop.layout.GroupLayout) jPanel1.getLayout();&#xa;        jPanel1Layout.setHorizontalGroup(&#xa;            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)&#xa;            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)&#xa;        );&#xa;        jPanel1Layout.setVerticalGroup(&#xa;            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)&#xa;            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)&#xa;        );*/&#xa;        &#xa;        JTree tree = (JTree) mWsdlTreeView.getTreeView().getViewport().getComponent(0);&#xa;        tree.getSelectionModel().addTreeSelectionListener(this);"/>
       </AuxValues>
 
       <Layout>
@@ -61,7 +67,7 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="271" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="251" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>
@@ -76,16 +82,33 @@
         </Property>
       </Properties>
       <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Selected &amp;WSDL: "/>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Selected WSDL: "/>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/compapp/test/ui/wizards/Bundle.properties" key="ACS_SELECTED_WSDL_LABEL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="mWsdlTf">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="jLabelWSDLDocuments">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&amp;WSDL Documents:"/>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="WSDL Documents:"/>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/compapp/test/ui/wizards/Bundle.properties" key="ACS_WSDL_DOCUMENTS_LABEL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>
