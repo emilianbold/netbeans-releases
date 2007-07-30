@@ -49,6 +49,7 @@ import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 /**
  * Commit action
@@ -358,115 +359,55 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
             }
             
             // perform adds
-
-            List<File> addFiles = new ArrayList<File>();
-            List<File> addDirs = new ArrayList<File>();
-            // XXX waht if user denied directory add but wants to add a file in it?
-            it = addCandidates.iterator();
-            while (it.hasNext()) {
-                if(support.isCanceled()) {
-                    return;
-                }
-                SvnFileNode svnFileNode = it.next();
-                File file = svnFileNode.getFile();
-                if (file.isDirectory()) {
-                    addDirs.add(file);
-                } else if (file.isFile()) {
-                    addFiles.add(file);
-                }
-            }
+            performAdds(client, support, addCandidates);
             if(support.isCanceled()) {
                 return;
-            }
-
-            Iterator<File> itFiles = addDirs.iterator();
-            List<File> dirsToAdd = new ArrayList<File>();
-            while (itFiles.hasNext()) {
-                File dir = itFiles.next();
-                if (!dirsToAdd.contains(dir)) {
-                    dirsToAdd.add(dir);
-                }
-            }
-            if(dirsToAdd.size() > 0) {
-                client.addFile(dirsToAdd.toArray(new File[dirsToAdd.size()]), false);
-            }
-            if(support.isCanceled()) {
-                return;
-            }
-
-            if(addFiles.size() > 0) {
-                client.addFile(addFiles.toArray(new File[addFiles.size()]), false);       
-            }
+            }                    
             
             // TODO perform removes. especialy package removes where
             // metadata must be replied from SvnMetadata (hold by FileSyatemHandler)
 
-            // set binary mimetype and group commitCandidates by managed trees
-            FileStatusCache cache = Subversion.getInstance().getStatusCache();
-            List<List<File>> managedTrees = new ArrayList<List<File>>();
-            for (Iterator<File> itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
-                File commitCandidateFile = itCommitCandidates.next();
-                
-                // set MIME property application/octet-stream
-                if(binnaryCandidates.contains(commitCandidateFile)) {
-                    ISVNProperty prop = client.propertyGet(commitCandidateFile, ISVNProperty.MIME_TYPE);
-                    if(prop != null) {
-                        String s = prop.getValue();
-                        if (s == null || s.startsWith("text/")) { // NOI18N
-                            client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false); // NOI18N
-                        }    
-                    } else {
-                         client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false); // NOI18N
-                    }   
-                }
-                
-                List<File> managedTreesList = null;
-                for (Iterator<List<File>> itManagedTrees = managedTrees.iterator(); itManagedTrees.hasNext();) {
-                    List<File> list = itManagedTrees.next();
-                    File managedTreeFile = list.get(0);
-
-                    File base = SVNBaseDir.getRootDir(new File[] {commitCandidateFile, managedTreeFile});
-                    if(base != null) {
-                        FileInformation status = cache.getStatus(base);
-                        if ((status.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
-                            // found a list with files from the same working copy
-                            managedTreesList = list;
-                            break;
-                        }
-                    }
-                }
-                if(managedTreesList == null) {
-                    // no list for files from the same wc as commitCandidateFile created yet
-                    managedTreesList = new ArrayList<File>();
-                    managedTrees.add(managedTreesList);
-                }                
-                managedTreesList.add(commitCandidateFile);                
-            }
-
+            // set binary mimetype and group commitCandidates by managed trees            
+            List<List<File>> managedTrees = getManagedTrees(client, support, commitCandidates, binnaryCandidates);
+            if(support.isCanceled()) {
+                return;
+            }                    
+            
             // finally commit            
             for (Iterator<List<File>> itCandidates = managedTrees.iterator(); itCandidates.hasNext();) {
+                
                 // one commit for each wc
                 List<File> commitList = itCandidates.next();
-                List<File> removeList = new ArrayList<File>();
                 
-                // deleted directories have to commited recursively 
-                boolean removingDirectories = false;
-                for(File removeFile : removeCandidates) {
-                    if(removeFile.isDirectory()) {
-                        removingDirectories = true;
-                    }
-                    removeList.add(removeFile); 
-                }                
-                if(removingDirectories) {
-                    commitList.removeAll(removeList);
-                    File[] files = removeList.toArray(new File[commitList.size()]);                
-                    client.commit(files, message, true);
-                }                                                
+                // handle recursive commits - deleted and copied folders can't be commited non recursively
+                List<File> recursiveCommits = getRecursiveCommits(commitList, removeCandidates);                                                
+                if(recursiveCommits.size() > 0) {                                        
+                    // remove from the commits list all files which are supposed to be commited recursively 
+                    // or are children from recursively commited folders
+                    commitList.removeAll(getAllChildren(recursiveCommits, commitList));
+                    
+                    // commit recursively
+                    File[] files = recursiveCommits.toArray(new File[recursiveCommits.size()]);                
+                    client.commit(files, message, true); // true = recursive
+                    
+                    if(support.isCanceled()) {
+                        return;
+                    }                    
+                }  
+
+                // commit the remaining files non recursively
                 if(commitList.size() > 0) {
+                    
                     File[] files = commitList.toArray(new File[commitList.size()]);                
-                    client.commit(files, message, false);    
-                }
+                    client.commit(files, message, false); // false = non recursive
+                    
+                    if(support.isCanceled()) {
+                        return;
+                    }                    
+                }                
                 
+                // update and refresh 
+                FileStatusCache cache = Subversion.getInstance().getStatusCache();
                 if(rootUpdate) {
                     File[] rootFiles = ctx.getRootFiles();
                     for (int i = 0; i < rootFiles.length; i++) {
@@ -482,7 +423,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
                 if(support.isCanceled()) {
                     return;
                 }
-                refreshFiles(cache, removeList);                
+                refreshFiles(cache, recursiveCommits);                
                 if(support.isCanceled()) {
                     return;
                 }
@@ -493,6 +434,142 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
         } 
     }
 
+    
+    /**
+     * Groups files by distinct working copies and sets the binary mimetypes
+     */ 
+    private static List<List<File>> getManagedTrees(SvnClient client, SvnProgressSupport support, Set<File> commitCandidates, Set<File> binnaryCandidates) throws SVNClientException {        
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        List<List<File>> managedTrees = new ArrayList<List<File>>();
+        for (Iterator<File> itCommitCandidates = commitCandidates.iterator(); itCommitCandidates.hasNext();) {
+            File commitCandidateFile = itCommitCandidates.next();
+
+            // set MIME property application/octet-stream
+            if(binnaryCandidates.contains(commitCandidateFile)) {
+                ISVNProperty prop = client.propertyGet(commitCandidateFile, ISVNProperty.MIME_TYPE);
+                if(prop != null) {
+                    String s = prop.getValue();
+                    if (s == null || s.startsWith("text/")) { // NOI18N
+                        client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false); // NOI18N
+                    }    
+                } else {
+                     client.propertySet(commitCandidateFile, ISVNProperty.MIME_TYPE, "application/octet-stream", false); // NOI18N
+                }   
+            }
+            if(support.isCanceled()) {
+                return null;
+            }
+            
+            List<File> managedTreesList = null;
+            for (Iterator<List<File>> itManagedTrees = managedTrees.iterator(); itManagedTrees.hasNext();) {
+                List<File> list = itManagedTrees.next();
+                File managedTreeFile = list.get(0);
+
+                File base = SVNBaseDir.getRootDir(new File[] {commitCandidateFile, managedTreeFile});
+                if(base != null) {
+                    FileInformation status = cache.getStatus(base);
+                    if ((status.getStatus() & FileInformation.STATUS_MANAGED) != 0) {
+                        // found a list with files from the same working copy
+                        managedTreesList = list;
+                        break;
+                    }
+                }
+                if(support.isCanceled()) {
+                    return null;
+                }                
+            }
+            if(managedTreesList == null) {
+                // no list for files from the same wc as commitCandidateFile created yet
+                managedTreesList = new ArrayList<File>();
+                managedTrees.add(managedTreesList);
+            }                
+            managedTreesList.add(commitCandidateFile);                
+        }
+        
+        return managedTrees;
+    }
+    
+    /**
+     * Calls the svn add command on not yet added files
+     */ 
+    private static void performAdds(SvnClient client, SvnProgressSupport support, List<SvnFileNode> addCandidates) throws SVNClientException {
+        List<File> addFiles = new ArrayList<File>();
+        List<File> addDirs = new ArrayList<File>();
+        // XXX waht if user denied directory add but wants to add a file in it?
+        Iterator<SvnFileNode> it = addCandidates.iterator();
+        while (it.hasNext()) {
+            if(support.isCanceled()) {
+                return;
+            }
+            SvnFileNode svnFileNode = it.next();
+            File file = svnFileNode.getFile();
+            if (file.isDirectory()) {
+                addDirs.add(file);
+            } else if (file.isFile()) {
+                addFiles.add(file);
+            }
+        }
+        if(support.isCanceled()) {
+            return;
+        }
+
+        Iterator<File> itFiles = addDirs.iterator();
+        List<File> dirsToAdd = new ArrayList<File>();
+        while (itFiles.hasNext()) {
+            File dir = itFiles.next();
+            if (!dirsToAdd.contains(dir)) {
+                dirsToAdd.add(dir);
+            }
+        }
+        if(dirsToAdd.size() > 0) {
+            client.addFile(dirsToAdd.toArray(new File[dirsToAdd.size()]), false);
+        }
+        if(support.isCanceled()) {
+            return;
+        }
+
+        if(addFiles.size() > 0) {
+            client.addFile(addFiles.toArray(new File[addFiles.size()]), false);       
+        }
+    }
+    
+    /**
+     * Returns all files which have to be commited recursively (deleted and copied folders)
+     */ 
+    private static List<File> getRecursiveCommits(List<File> nonRecursiveComits, List<File> removeCandidates) {
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        List<File> recursiveCommits = new ArrayList<File>();
+        // deleted and copied directories have to be commited recursively 
+        for(File file : nonRecursiveComits) {
+            if(file.isDirectory() && 
+                ( removeCandidates.contains(file) ||
+                  file.isDirectory() && cache.getStatus(file).getEntry(file).isCopied() )) 
+            {
+                recursiveCommits.add(file); 
+            }            
+        }                
+        return recursiveCommits;
+    }
+    
+    /**
+     * Returns all files from the children list which have a parent in or are equal to a folder from the parents list 
+     */
+    private static List<File> getAllChildren(List<File> parents, List<File> children) {
+        List<File> ret = new ArrayList<File>();
+        if(parents.size() > 0) {            
+            for(File child : children) {                        
+                File parent = child;
+                while(parent != null) {
+                    if(parents.contains(parent)) {
+                        ret.add(child);
+                    }
+                    parent = parent.getParentFile();
+                }                        
+            }                                                                    
+        }            
+        return ret;
+    }
+    
     private static void refreshFiles(FileStatusCache cache, List<File> files) {
         for (File file : files) {
             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
