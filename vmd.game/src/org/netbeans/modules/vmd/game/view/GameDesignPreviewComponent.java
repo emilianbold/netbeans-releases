@@ -6,6 +6,7 @@
 
 package org.netbeans.modules.vmd.game.view;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -25,6 +26,10 @@ import org.netbeans.modules.vmd.game.model.GlobalRepository;
  * @author  kaja
  */
 public class GameDesignPreviewComponent extends JPanel implements MouseListener, PropertyChangeListener {
+	
+	private static final Color COLOR_HILITE = ColorConstants.COLOR_OUTLINE_HILITE;
+	private static final Color COLOR_PLAIN = ColorConstants.COLOR_OUTLINE_PLAIN;
+	private static final Color COLOR_BACKGROUND = ColorConstants.COLOR_EDITOR_PANEL;
 	
 	private GlobalRepository gameDesign;
 	
@@ -59,12 +64,13 @@ public class GameDesignPreviewComponent extends JPanel implements MouseListener,
         panelPreview = new javax.swing.JPanel();
         labelName = new javax.swing.JLabel();
 
-        setBackground(new java.awt.Color(255, 255, 255));
+        setBackground(COLOR_BACKGROUND);
 
         panelPreview.setBackground(new java.awt.Color(255, 255, 255));
         panelPreview.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
         panelPreview.setLayout(new java.awt.BorderLayout());
 
+        labelName.setBackground(COLOR_BACKGROUND);
         labelName.setForeground(new java.awt.Color(100, 123, 156));
         labelName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelName.setText(org.openide.util.NbBundle.getMessage(GameDesignPreviewComponent.class, "GameDesignPreviewComponent.labelName.text")); // NOI18N
@@ -126,17 +132,15 @@ public class GameDesignPreviewComponent extends JPanel implements MouseListener,
 	}
 	
     public void mouseEntered(MouseEvent e) {
-        panelPreview.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 164, 0), 1, true));
-        labelName.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(255, 164, 0), 1, true));
-		//labelName.setFont(labelName.getFont().deriveFont(Font.BOLD));
-		labelName.setOpaque(true);
+        panelPreview.setBorder(new javax.swing.border.LineBorder(COLOR_HILITE, 1, true));
+        labelName.setBorder(new javax.swing.border.LineBorder(COLOR_HILITE, 1, true));
+		//labelName.setOpaque(true);
     }
 
     public void mouseExited(MouseEvent e) {
-		panelPreview.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
-		labelName.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(163, 184, 215), 1, true));
-		//labelName.setFont(labelName.getFont().deriveFont(Font.PLAIN));
-		labelName.setOpaque(false);
+		panelPreview.setBorder(new javax.swing.border.LineBorder(COLOR_PLAIN, 1, true));
+		labelName.setBorder(new javax.swing.border.LineBorder(COLOR_PLAIN, 1, true));
+		//labelName.setOpaque(false);
     }
 
     @Override

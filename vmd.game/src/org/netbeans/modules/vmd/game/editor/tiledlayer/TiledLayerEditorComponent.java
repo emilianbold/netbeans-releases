@@ -76,6 +76,7 @@ import org.netbeans.modules.vmd.game.model.Tile;
 import org.netbeans.modules.vmd.game.model.TileDataFlavor;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.netbeans.modules.vmd.game.model.TiledLayerListener;
+import org.netbeans.modules.vmd.game.view.ColorConstants;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -93,7 +94,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	public static final byte GRID_MODE_LINES = 1;
 	public static final byte GRID_MODE_NOGRID = 2;
 	
-	private static final Color GRID_COLOR = Color.LIGHT_GRAY;
+	private static final Color GRID_COLOR = ColorConstants.COLOR_OUTLINE_PLAIN;
 	private static final Color ANIMATED_TILE_GRID_COLOR = Color.CYAN;
 	private static final Color HILITE_COLOR = new Color(0, 0, 255, 20);
 		
@@ -216,7 +217,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		this.paintCells(g2d);
 		
 		if (this.cellHiLited != null) {
-			this.paintGridHiLite((Graphics2D) g, cellHiLited, Color.ORANGE);
+			this.paintGridHiLite((Graphics2D) g, cellHiLited, ColorConstants.COLOR_OUTLINE_SELECTED);
 		}
 	}
 	

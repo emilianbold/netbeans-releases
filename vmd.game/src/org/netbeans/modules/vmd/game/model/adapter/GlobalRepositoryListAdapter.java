@@ -38,9 +38,9 @@ public class GlobalRepositoryListAdapter extends AbstractListModel implements Gl
 	private static final String ADDITIONAL_LIST_ITEM_SCENES_LABEL = 
 			NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryListAdapter.labelScenes");
 	private static final String ADDITIONAL_LIST_ITEM_TILEDLAYERS_LABEL =
-			NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryListAdapter.labelSprites");
-	private static final String ADDITIONAL_LIST_ITEM_SPRITES_LABEL =
 			NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryListAdapter.labelTiledLayers");
+	private static final String ADDITIONAL_LIST_ITEM_SPRITES_LABEL =
+			NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryListAdapter.labelSprites");
 	
 	private GlobalRepository gameDesign;	
 	

@@ -128,10 +128,10 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 	}
 	
 	private void manualInit() {
-		this.setBackground(Color.WHITE);
-		this.panelTiledLayers.setBackground(Color.WHITE);
-		this.panelSprites.setBackground(Color.WHITE);
-		this.panelScenes.setBackground(Color.WHITE);
+		this.setBackground(ColorConstants.COLOR_EDITOR_PANEL);
+		this.panelTiledLayers.setBackground(ColorConstants.COLOR_EDITOR_PANEL);
+		this.panelSprites.setBackground(ColorConstants.COLOR_EDITOR_PANEL);
+		this.panelScenes.setBackground(ColorConstants.COLOR_EDITOR_PANEL);
 		
 		((FlowLayout) this.getLayout()).setAlignment(FlowLayout.LEFT);
 		((FlowLayout) this.panelTiledLayers.getLayout()).setAlignment(FlowLayout.LEFT);

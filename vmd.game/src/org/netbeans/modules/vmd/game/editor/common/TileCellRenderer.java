@@ -28,6 +28,7 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.vmd.game.model.StaticTile;
+import org.netbeans.modules.vmd.game.view.ColorConstants;
 import org.openide.util.NbBundle;
 
 public class TileCellRenderer extends JComponent implements ListCellRenderer {
@@ -38,9 +39,9 @@ public class TileCellRenderer extends JComponent implements ListCellRenderer {
 	private int padY;
 
 	//TODO : replace those colors with the correct color resources from L&F
-	private final static Color MOST_COLOR = Color.RED;
-	private final static Color NO_COLOR = Color.LIGHT_GRAY;
-	private final static Color MEDIUM_COLOR = Color.ORANGE;
+	private final static Color MOST_COLOR = ColorConstants.COLOR_OUTLINE_SELECTED;
+	private final static Color NO_COLOR = ColorConstants.COLOR_OUTLINE_PLAIN;
+	private final static Color MEDIUM_COLOR = ColorConstants.COLOR_OUTLINE_HILITE;
 	
 	private StaticTile tile;
 	private boolean isSelected;
