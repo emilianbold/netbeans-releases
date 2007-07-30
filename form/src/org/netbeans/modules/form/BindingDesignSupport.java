@@ -964,9 +964,9 @@ public class BindingDesignSupport {
         
         try {
             binding.bind();
-        } catch (PropertyResolverException prex) {
+        } catch (Exception ex) { // PropertyResolverException, com.sun.el.parser.ParseException
             // PENDING implement better error handling and reporting
-            String message = prex.getMessage();
+            String message = ex.getMessage();
             // simple heuristics that gets rid of JComponent.toString()
             int index = message.indexOf('[');
             if (index != -1) {
