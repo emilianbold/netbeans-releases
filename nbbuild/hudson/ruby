@@ -6,7 +6,7 @@ unzip -d nbbuild/ ../../trunk/lastSuccessful/archive/nbbuild/dist/zip/netbeans-h
 cp nbbuild/netbeans/nb6.0/netbeans.icns nbbuild/netbeans/nb6.0/netbeans.png .
 
 mkdir core
-ant -Dverify.checkout=false -f ruby/build.xml clean build-zip && \
+ant -Dverify.checkout=false -f ruby/build.xml clean build-experimental-zip && \
     ant -Dnbplatform.default.netbeans.dest.dir=$PWD/nbbuild/netbeans \
         -Dnbplatform.default.harness.dir=$PWD/nbbuild/netbeans/harness \
         -Dverify.checkout=false \
