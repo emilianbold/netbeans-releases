@@ -71,7 +71,7 @@ public class TopPanel extends JPanel {
     private static final Color COLOR_DRAW_DND_LINE = new Color(36, 76, 114);
     //private static final Color COLOR_DRAW_DND_SHAPE = Color.GREEN;
     private static final Stroke STROKE = new BasicStroke(2.0f);
-    private static final Stroke STROKE_DND_SHAPE = new BasicStroke(1.0f);
+    //private static final Stroke STROKE_DND_SHAPE = new BasicStroke(1.0f);
     private static final Stroke STROKE_DND_LINE = new BasicStroke(3.0f,
             BasicStroke.CAP_SQUARE,
             BasicStroke.JOIN_MITER,
