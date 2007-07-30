@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.installer.utils.applications.GlassFishUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
@@ -45,6 +46,7 @@ import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.products.glassfish.wizard.panels.GlassFishPanel;
 import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
 
 /**
  *
@@ -75,6 +77,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         final File javaHome =
                 new File(getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));
+        JavaInfo info = JavaUtils.getInfo(javaHome);
+        LogManager.log("Using the following JDK for GlassFish configuration : ");
+        LogManager.log("... path    : "  + javaHome);
+        LogManager.log("... version : "  + info.getVersion().toJdkStyle());
+        LogManager.log("... vendor  : "  + info.getVendor());
+        LogManager.log("... final   : "  + info.isNonFinal());
         
         final FilesList list = getProduct().getInstalledFiles();
         
