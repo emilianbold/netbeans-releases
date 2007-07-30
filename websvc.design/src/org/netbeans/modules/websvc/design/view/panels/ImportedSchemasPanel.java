@@ -20,7 +20,6 @@ package org.netbeans.modules.websvc.design.view.panels;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
@@ -153,15 +152,6 @@ public class ImportedSchemasPanel extends javax.swing.JPanel {
             return this;
         }
     }
-    
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        addBtn.setMinimumSize(new java.awt.Dimension(
-            g.getFontMetrics().stringWidth(addBtn.getText()),g.getFontMetrics().getHeight()));
-        removeBtn.setMinimumSize(new java.awt.Dimension(
-            g.getFontMetrics().stringWidth(removeBtn.getText()),g.getFontMetrics().getHeight()));
-    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -201,14 +191,16 @@ public class ImportedSchemasPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(schemasLabel)
                     .add(layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 327, Short.MAX_VALUE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(addBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 112, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(removeBtn, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 112, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .add(4, 4, 4)))
-                .add(0, 0, 0))
+                            .add(removeBtn, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE))))
+                .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {addBtn, removeBtn}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
