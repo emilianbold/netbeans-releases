@@ -24,13 +24,18 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.rest.codegen.JAXWSwrapperRESTServiceGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WADLResourceCodeGenerator;
+import org.netbeans.modules.websvc.rest.codegen.model.JaxwsBasedResourceBean;
 import org.netbeans.modules.websvc.rest.wizard.RESTServicesProgressPanel;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -64,6 +69,16 @@ public class RestComponentHandler implements ActiveEditorDrop {
                 try {
                     if (RestComponentData.isWSDL(type)) {
                         JAXWSwrapperRESTServiceGenerator codegen = new JAXWSwrapperRESTServiceGenerator(targetFO, data);
+                        if (codegen.needsInputs()) {
+                            InputValuesPanel panel = new InputValuesPanel(codegen.getInputParameterTypes());
+                            DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(RestComponentHandler.class, "LBL_ConstantParams"));
+                            Object response = DialogDisplayer.getDefault().notify(desc);
+                            if (response.equals(NotifyDescriptor.YES_OPTION)) {
+                                codegen.setConstantInputValues(panel.getInputParamValues());
+                            } else { // cancel
+                                return;
+                            }     
+                        }
                         codegen.generate();
                     } else if (RestComponentData.isWADL(type)) {
                         WADLResourceCodeGenerator codegen = new WADLResourceCodeGenerator(targetFO, data);

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -97,6 +98,10 @@ public class SourceGroupSupport {
         }
     }
 
+    public static SourceGroup findSourceGroupForFile(Project project, FileObject folder) {
+        return findSourceGroupForFile(getJavaSourceGroups(project), folder);
+    }
+    
     public static SourceGroup findSourceGroupForFile(SourceGroup[] sourceGroups, FileObject folder) {
         for (int i = 0; i < sourceGroups.length; i++) {
             if (FileUtil.isParentOf(sourceGroups[i].getRootFolder(), folder)) {
@@ -219,6 +224,21 @@ public class SourceGroupSupport {
                         if (qualifiedClassName.endsWith(fo.getName())) {
                             return fo;
                         }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static FileObject findJavaSourceFile(Project project, String name) {
+        for (SourceGroup group : getJavaSourceGroups(project)) {
+            Enumeration<? extends FileObject> files = group.getRootFolder().getChildren(true);
+            while (files.hasMoreElements()) {
+                FileObject fo = files.nextElement();
+                if ("java".equals(fo.getExt())) { //NOI18N
+                    if (name.equals(fo.getName())) {
+                        return fo;
                     }
                 }
             }

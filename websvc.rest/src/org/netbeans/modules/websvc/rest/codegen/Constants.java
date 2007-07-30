@@ -169,4 +169,7 @@ public class Constants {
     }
     
     public static final String REST_STUBS = "reststubs"; //NOI18N
+    
+    public static final String NOT_SET = "<not set>"; //NOI18N
+
 }
