@@ -340,6 +340,10 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                         }
                     }
                 }
+            } else {
+                // No ruby token -- leave the formatting alone!
+                // (Probably an RHTML file)
+                return true;
             }
         }
 
@@ -644,6 +648,33 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                 }
 
                 offset = endOfLine;
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+    }
+    
+    public void reflowParagraph(Document document, int offset) {
+        BaseDocument doc = (BaseDocument)document;
+        try {
+            offset = Utilities.getRowFirstNonWhite(doc, offset);
+            if (offset == -1) {
+                // XXX be smarter about empty lines -- do previous line for example? Or next?
+                return;
+            }
+            Token<? extends GsfTokenId> token = LexUtilities.getToken(doc, offset);
+            if (token == null) {
+                return;
+            }
+            
+            if (token.id() != RubyTokenId.LINE_COMMENT) {
+                // Currently only reflows comments
+                // In RHTML I could reflow text too...
+                
+                // I could compute the surrounding block (e.g. look for empty lines
+                // on both sides?, or {start}/end
+                // blocks, and reindent that as a "paragraph"
+                return;
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
