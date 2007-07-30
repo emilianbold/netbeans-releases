@@ -1477,6 +1477,42 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             }
         };
         testSource.runModificationTask(task).commit();
+        task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED); // is it neccessary?
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = null;
+                for (Tree typeDecl : cut.getTypeDecls()) {
+                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        clazz = (ClassTree) typeDecl;
+                        break;
+                    }
+                }
+
+                TypeElement typeElement = workingCopy.getElements().getTypeElement("java.util.List");
+                Tree typeTree = make.QualIdent(typeElement);
+                ExpressionTree initializer = make.NewClass(
+                        null,
+                        Collections.<ExpressionTree>emptyList(),
+                        (ExpressionTree) typeTree,
+                        Collections.<ExpressionTree>emptyList(), null
+                );
+                VariableTree vtree = make.Variable(
+                    make.Modifiers(
+                        java.lang.reflect.Modifier.PUBLIC,
+                        Collections.<AnnotationTree>emptyList()
+                    ),
+                    "foo",
+                    typeTree,
+                    initializer
+                );
+                ClassTree newClazz = make.addClassMember(clazz, vtree);
+                workingCopy.rewrite(clazz, newClazz);
+            }
+        };
+        testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
