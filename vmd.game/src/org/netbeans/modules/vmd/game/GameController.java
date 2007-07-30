@@ -189,7 +189,6 @@ public class GameController implements DesignDocumentAwareness, GlobalRepository
 					this.validateImageResource(imageResource, imageResourceDC);
 				}
 			}
-			gameDesign.initUI();
 			gameDesign.getMainView().addEditorManagerListener(gameEditorView);
 			view = gameDesign.getMainView().getRootComponent();
 

@@ -72,14 +72,13 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	}
 	
 	public MainView getMainView() {
+		if (this.mainView == null) {
+			this.mainView = new MainView();
+			this.addGlobalRepositoryListener(this.mainView);
+		}
 		return this.mainView;
 	}
-	
-	public void initUI() {
-		this.mainView = new MainView();
-		this.addGlobalRepositoryListener(this.mainView);
-	}
-	
+		
 	/**
 	 * Removes all layers, scenes
 	 */
