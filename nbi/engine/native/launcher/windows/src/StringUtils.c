@@ -383,7 +383,7 @@ WCHAR *createWCHAR(SizedString * sz) {
     for(i=0;i<len/2;i++) {
         ptr[2*i] = (ptr[2*i]) & 0xFF;
         ptr[2*i+1] = (ptr[2*i+1])& 0xFF;
-        wstr[i] = ptr[2*i] + (ptr[2*i+1]  << 8);
+        wstr[i] = ((unsigned char) ptr[2*i]) + (((unsigned char)ptr[2*i+1])  << 8);
     }
     
     FREE(string);

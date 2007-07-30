@@ -410,7 +410,7 @@ void resolveLauncherProperties(LauncherProperties * props, WCHAR **result) {
                     
                     
                     if(propValue!=NULL) {
-                        WCHAR * tmp = newpWCHAR(getLengthW(*result) - getLengthW(propName) - 4 + getLengthW(propValue));
+                        WCHAR * tmp = newpWCHAR(getLengthW(*result) - getLengthW(propName) - 3 + getLengthW(propValue));
                         wcsncat(tmp, *result, getLengthW(*result) - getLengthW(propStart));
                         wcscat(tmp, propValue);
                         wcsncat(tmp, propEnd + 1, getLengthW(propEnd + 1));
