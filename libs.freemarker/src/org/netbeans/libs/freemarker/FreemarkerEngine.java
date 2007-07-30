@@ -83,14 +83,12 @@ class FreemarkerEngine extends AbstractScriptEngine {
     }
 
     public ScriptEngineFactory getFactory() {
-        if (factory == null) {
-            synchronized (this) {
-	          if (factory == null) {
-	              factory = new FreemarkerFactory();
-	          }
+        synchronized (this) {
+            if (factory == null) {
+                factory = new FreemarkerFactory();
             }
         }
-	  return factory;
+        return factory;
     }
 
     public Bindings createBindings() {
