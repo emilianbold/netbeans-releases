@@ -166,17 +166,17 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
     
     public String toObject( ClassData type, String variable ) {
         if( booleanClassData.equals( type )) {
-            return "new java.lang.Boolean(" + variable + ")";
+            return "new Boolean(" + variable + ")";
         } else if( byteClassData.equals( type )) {
-            return "new java.lang.Byte(" + variable + ")";
+            return "new Byte(" + variable + ")";
         } else if( charClassData.equals( type )) {
-            return "new java.lang.Char(" + variable + ")";
+            return "new Char(" + variable + ")";
         } else if( intClassData.equals( type )) {
-            return "new java.lang.Integer(" + variable + ")";
+            return "new Integer(" + variable + ")";
         } else if( longClassData.equals( type )) {
-            return "new java.lang.Long(" + variable + ")";
+            return "new Long(" + variable + ")";
         } else if( shortClassData.equals( type )) {
-            return "new java.lang.Short(" + variable + ")";
+            return "new Short(" + variable + ")";
         } else if( stringClassData.equals( type )) {
             return "(String)" + variable;
         } else if( voidClassData.equals( type )) {
@@ -267,17 +267,30 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
         if( object != null ) result = object + " = ";
         if( voidClassData.equals( type )) {
             return object + " = _;";
-        } else if( BooleanClassData.equals( type ) || booleanClassData.equals( type)) {
+            
+        } else if(booleanClassData.equals( type )) {
+            result += stream + ".readBoolean()";
+        } else if( BooleanClassData.equals( type )) {
             result += toObject( booleanClassData, stream + ".readBoolean()" );
-        } else if( ByteClassData.equals( type ) || byteClassData.equals( type)) {
+        } else if( byteClassData.equals( type )) {
+            result += stream + ".readByte()";
+        } else if( ByteClassData.equals( type )) {
             result += toObject( byteClassData, stream + ".readByte()" );
-        } else if( CharClassData.equals( type ) || charClassData.equals( type)) {
+        } else if( charClassData.equals( type )) {
+            result += stream + ".readChar()";
+        } else if( CharClassData.equals( type )) {
             result += toObject( charClassData, stream + ".readChar()" );
-        } else if( IntClassData.equals( type ) || intClassData.equals( type)) {
+        } else if( intClassData.equals( type )) {
+            result += stream + ".readInt()";
+        } else if( IntClassData.equals( type )) {
             result += toObject( intClassData, stream + ".readInt()" );
-        } else if( LongClassData.equals( type ) || longClassData.equals( type)) {
+        } else if( longClassData.equals( type )) {
+            result += stream + ".readLong()";
+        } else if( LongClassData.equals( type )) {
             result += toObject( longClassData, stream + ".readLong()" );
-        } else if( ShortClassData.equals( type ) || shortClassData.equals( type)) {
+        } else if( shortClassData.equals( type )) {
+            result += stream + ".readShort()";
+        } else if( ShortClassData.equals( type )) {
             result += toObject( shortClassData, stream + ".readShort()" );
         } else if( stringClassData.equals( type )) {
             result += stream + ".readUTF()";

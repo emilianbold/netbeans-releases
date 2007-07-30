@@ -115,6 +115,7 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
             bind.put( "registry", mapping.getRegistry());
             bind.put( "bean", beanType );
             bind.put( "createStubs", mapping.getProperty( "create-stubs" ).equals( "true" ));
+            bind.put( "utils", new Utils( mapping.getRegistry()));
             
             Writer w = null;
             Reader is = null;

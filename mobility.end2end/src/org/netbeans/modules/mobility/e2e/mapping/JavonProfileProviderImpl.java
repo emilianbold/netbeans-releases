@@ -50,7 +50,7 @@ public class JavonProfileProviderImpl implements JavonProfileProvider {
      * @return 
      */
     public List<JavonTemplate> getTemplates( JavonMappingImpl mapping ) {
-        List<JavonTemplate> templates = new ArrayList( 1 );
+        List<JavonTemplate> templates = new ArrayList<JavonTemplate>( 1 );
         templates.add( new ClientJavonTemplate( mapping ));
         templates.add( new ServerJavonTemplate( mapping ));
         templates.add( new ClientBeanGeneratorTemplate( mapping ));
@@ -58,11 +58,12 @@ public class JavonProfileProviderImpl implements JavonProfileProvider {
     }
 
     public List<JavonSerializer> getSerializers() {
-        List<JavonSerializer> serializers = new ArrayList();
+        List<JavonSerializer> serializers = new ArrayList<JavonSerializer>();
         serializers.add( new PrimitiveTypeSerializer());
         serializers.add( new RealTypeSerializer());
         serializers.add( new ArrayTypeSerializer());
         serializers.add( new CollectionSerializer());
+        serializers.add( new GenericTypeSerializer());
         serializers.add( new BeanTypeSerializer());
         return Collections.unmodifiableList( serializers );
     }

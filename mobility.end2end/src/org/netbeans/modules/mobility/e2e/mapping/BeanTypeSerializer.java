@@ -201,19 +201,23 @@ public class BeanTypeSerializer implements JavonSerializer {
             String beanInstanceName = "b_" + type.getFullyQualifiedName().replace( ".", "_" );
             serialization += type.getFullyQualifiedName() + " " + beanInstanceName + " = (" + type.getFullyQualifiedName() + ")" + object + ";\n";
             for( FieldData field : type.getFields()) {
+                String id = "";
+                if( mapping.getProperty( "target" ).equals( "client" )) {
+                    id = ", " + mapping.getRegistry().getRegisteredTypeId( field.getType());
+                }
                 if( mapping.getProperty( "target" ).equals( "client" ) && mapping.getProperty( "create-stubs" ).equals( "true" )) {
                     if( field.getType().isPrimitive()) {
                         serialization += mapping.getRegistry().getTypeSerializer( field.getType()).
                                 toStream( mapping , field.getType(), stream, beanInstanceName + "." + field.getName()) + "\n";
                     } else {
-                        serialization += "writeObject(" + stream + ", " + beanInstanceName + "." + field.getName() + ");\n";
+                        serialization += "writeObject(" + stream + ", " + beanInstanceName + "." + field.getName() + id + ");\n";
                     }
                 } else {
                     if( field.getType().isPrimitive()) {
                         serialization += mapping.getRegistry().getTypeSerializer( field.getType()).
                                 toStream( mapping , field.getType(), stream, beanInstanceName + "." + getGetter( field ) + "()" ) + "\n";
                     } else {
-                        serialization += "writeObject(" + stream + ", " + beanInstanceName + "." + getGetter( field ) + "());\n";
+                        serialization += "writeObject(" + stream + ", " + beanInstanceName + "." + getGetter( field ) + "()" + id + ");\n";
                     }
                 }
             }

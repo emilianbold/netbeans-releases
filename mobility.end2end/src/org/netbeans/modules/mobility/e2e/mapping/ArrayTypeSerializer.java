@@ -94,11 +94,20 @@ public class ArrayTypeSerializer implements JavonSerializer {
     public String toStream( JavonMapping mapping, ClassData type, String stream, String object ) {
         if( arrayTypes.contains( type )) {
             String serializationCode = "";
-            serializationCode += "Object[] array = (Object[]) o;\n";
-            serializationCode += stream + ".writeInt( array.length );\n";
-            serializationCode += "for( int i = 0; i < array.length; i++ ) {\n";
-            serializationCode += "writeObject( " + stream + "array[i] );\n";
-            serializationCode += "}\n";
+            if( mapping.getProperty( "target" ).equals( "client" )) {
+                serializationCode += "Object[] array = (Object[]) o;\n";
+                serializationCode += stream + ".writeInt( array.length );\n";
+                serializationCode += "for( int i  = 0; i < array.length; i++ ) {\n";
+                serializationCode += "writeObject( " + stream + ", array[i], " + 
+                        mapping.getRegistry().getRegisteredTypeId( type.getComponentType()) + " );\n";
+                serializationCode += "}\n";
+            } else {
+                serializationCode += "Object[] array = (Object[]) o;\n";
+                serializationCode += stream + ".writeInt( array.length );\n";
+                serializationCode += "for( int i = 0; i < array.length; i++ ) {\n";
+                serializationCode += "writeObject( " + stream + "array[i] );\n";
+                serializationCode += "}\n";
+            }
             return serializationCode;
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        

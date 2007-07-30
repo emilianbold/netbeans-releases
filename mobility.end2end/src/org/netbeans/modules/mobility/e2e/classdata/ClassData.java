@@ -40,10 +40,11 @@ public class ClassData {
     private ClassData parent;
     private JavonSerializer supportingSerializer=null;
     
-    private List<FieldData> fields;
-    private List<MethodData> methods;
+    private List<FieldData> fields = new ArrayList<FieldData>();
+    private List<MethodData> methods = new ArrayList<MethodData>();
 
     private ClassData componentType;
+    private List<ClassData> typeParameters = new ArrayList<ClassData>();
     
     public static final ClassData java_lang_Object = new ClassData( "java.lang", "Object", false, false, false );
     
@@ -54,9 +55,6 @@ public class ClassData {
         this.array = array;
         this.generics = generics;
 
-        this.fields = new ArrayList();
-        this.methods = new ArrayList();
-        
         parent = java_lang_Object;
     }
 
@@ -160,6 +158,14 @@ public class ClassData {
 
     public List<MethodData> getMethods() {
         return Collections.unmodifiableList( methods );
+    }
+    
+    public List<ClassData> getParameterTypes() {
+        return Collections.unmodifiableList( typeParameters );
+    }
+    
+    public void setParameterTypes( List<ClassData> parameters ) {
+        typeParameters = parameters;
     }
 
     public String toString() {

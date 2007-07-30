@@ -122,19 +122,29 @@ public class RealTypeSerializer implements JavonSerializer {
     }
 
     public String toStream( JavonMapping mapping, ClassData type, String stream, String object ) {
-        if( floatClassData.equals( type ) || FloatClassData.equals( type )) {
-            return stream + ".writeFloat(" + fromObject( floatClassData, object ) + ");";
-        } else if( doubleClassData.equals( type ) || DoubleClassData.equals( type )) {
-            return stream + ".writeDouble(" + fromObject( doubleClassData, object ) + ");";
+        if( floatClassData.equals( type )) {
+            return stream + ".writeFloat( " + object + " );";
+        } else if( FloatClassData.equals( type )) {
+            return stream + ".writeFloat( " + fromObject( floatClassData, object ) + " );";
+        } else if( doubleClassData.equals( type )) {
+            return stream + ".writeDouble( " + object + " );";
+        } else if( DoubleClassData.equals( type )) {
+            return stream + ".writeDouble( " + fromObject( doubleClassData, object ) + " );";
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
 
     public String fromStream( JavonMapping mapping, ClassData type, String stream, String object ) {
-        if( floatClassData.equals( type ) || FloatClassData.equals( type )) {
-            return object + " = " + toObject( floatClassData, stream + ".readFloat()" ) + ";";
-        } else if( doubleClassData.equals( type ) || DoubleClassData.equals( type )) {
-            return object + " = " + toObject( doubleClassData, stream + ".readDouble()" ) + ";";
+        String result = "";
+        if( object != null ) result = object + " = ";
+        if( floatClassData.equals( type )) {
+            return result + stream + ".readFloat()";
+        } else if( FloatClassData.equals( type )) {
+            return result + toObject( floatClassData, stream + ".readFloat()" );
+        } else if ( doubleClassData.equals( type )) {
+            return result + stream + ".readDouble()";
+        } else if( DoubleClassData.equals( type )) {
+            return result + toObject( doubleClassData, stream + ".readDouble()" );
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }
