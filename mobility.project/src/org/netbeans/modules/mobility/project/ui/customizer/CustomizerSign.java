@@ -96,7 +96,7 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         setLayout(new java.awt.GridBagLayout());
 
         cDefault.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Use_Default").charAt(0));
-        cDefault.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Use_Default"));
+        cDefault.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Use_Default")); // NOI18N
         cDefault.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -105,12 +105,12 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(cDefault, gridBagConstraints);
-        cDefault.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_UseDefault"));
+        cDefault.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_UseDefault")); // NOI18N
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         cEnabled.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_Enabled").charAt(0));
-        cEnabled.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Enabled"));
+        cEnabled.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Enabled")); // NOI18N
         cEnabled.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -118,17 +118,15 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 12, 0);
         jPanel1.add(cEnabled, gridBagConstraints);
-        cEnabled.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Sign"));
+        cEnabled.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Sign")); // NOI18N
 
         bOpenSecurityManager.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_OpenSecurityManager").charAt(0));
-        bOpenSecurityManager.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_OpenSecurityManager"));
+        bOpenSecurityManager.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_OpenSecurityManager")); // NOI18N
         bOpenSecurityManager.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bOpenSecurityManagerActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -136,7 +134,7 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 12, 0);
         jPanel1.add(bOpenSecurityManager, gridBagConstraints);
-        bOpenSecurityManager.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_OpenManager"));
+        bOpenSecurityManager.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_OpenManager")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -147,14 +145,13 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
 
         lKeystore.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_Keystore").charAt(0));
         lKeystore.setLabelFor(cKeystore);
-        lKeystore.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Keystore"));
+        lKeystore.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Keystore")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         add(lKeystore, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -162,35 +159,32 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         add(cKeystore, gridBagConstraints);
-        cKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Keystore"));
+        cKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Keystore")); // NOI18N
 
         bKeyStoreUnlock.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_UnlockKeyStore").charAt(0));
-        bKeyStoreUnlock.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_UnlockKeyStore"));
+        bKeyStoreUnlock.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_UnlockKeyStore")); // NOI18N
         bKeyStoreUnlock.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bKeyStoreUnlockActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(bKeyStoreUnlock, gridBagConstraints);
-        bKeyStoreUnlock.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_UnlockKeystore"));
+        bKeyStoreUnlock.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_UnlockKeystore")); // NOI18N
 
         lAlias.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_Alias").charAt(0));
         lAlias.setLabelFor(cAlias);
-        lAlias.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Alias"));
+        lAlias.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Alias")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(lAlias, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -198,28 +192,26 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(cAlias, gridBagConstraints);
-        cAlias.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Alias"));
+        cAlias.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Alias")); // NOI18N
 
         bAliasUnlock.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_UnlockAlias").charAt(0));
-        bAliasUnlock.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_UnlockAlias"));
+        bAliasUnlock.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_UnlockAlias")); // NOI18N
         bAliasUnlock.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bAliasUnlockActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         add(bAliasUnlock, gridBagConstraints);
-        bAliasUnlock.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_UnlockAlias"));
+        bAliasUnlock.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_UnlockAlias")); // NOI18N
 
+        pDetails.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Details"))); // NOI18N
+        pDetails.setEnabled(false);
         pDetails.setLayout(new java.awt.GridBagLayout());
 
-        pDetails.setBorder(new javax.swing.border.TitledBorder(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Details")));
-        pDetails.setEnabled(false);
         lDetails.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -228,21 +220,19 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         pDetails.add(lDetails, gridBagConstraints);
 
         bExport.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_Export").charAt(0));
-        bExport.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Export"));
+        bExport.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Export")); // NOI18N
         bExport.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bExportActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         pDetails.add(bExport, gridBagConstraints);
-        bExport.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Export"));
+        bExport.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Export")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -253,7 +243,6 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(pDetails, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -261,9 +250,7 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(pError, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSign.class, "ACSN_Sign"));

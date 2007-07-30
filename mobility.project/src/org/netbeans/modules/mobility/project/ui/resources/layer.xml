@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <file name="SecurityManagerAction.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.mobility.project.ui.security.SecurityManagerAction"/>
-                <attr name="position" intvalue="1600"/>
+                <attr name="position" intvalue="950"/>
             </file>
         </folder>
     </folder>
