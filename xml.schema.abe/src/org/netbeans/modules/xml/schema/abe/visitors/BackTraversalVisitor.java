@@ -93,6 +93,8 @@ public class BackTraversalVisitor extends TraversalVisitor{
     }
 
     public void visit(StartTagPanel panel) {
+        if(panel == null)
+            return;
         if(currentComponent instanceof AttributePanel){
             //go the the Attr before the current attar
             List<AbstractAttribute> attrList = ((AXIContainer)panel.getAXIComponent()).getAttributes();
@@ -108,7 +110,8 @@ public class BackTraversalVisitor extends TraversalVisitor{
                 }
                return ;
             }
-        }
+            }
+       
         //else go up to the next peer of me
         ElementPanel ep = (ElementPanel)panel.getParent();
         //upward traversal visitors job

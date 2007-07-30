@@ -300,7 +300,7 @@ public class InstanceDesignerPanel extends ABEBaseDropPanel {
     }*/
     
     public void accept(UIVisitor visitor) {
-        //do nothing
+        visitor.visit(context.getNamespacePanel());
     }
     
     public ABEAbstractNode getNBNode() {

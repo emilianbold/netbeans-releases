@@ -72,6 +72,9 @@ public abstract class ABEBaseDropPanel extends JPanel {
     private void initKeyList(){
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
+               if(context.getFocusTraversalManager().isFocusChangeEvent(e)) {
+                    context.getFocusTraversalManager().handleEvent(e, ABEBaseDropPanel.this);
+                }
                 if( e.getKeyCode() ==  KeyEvent.VK_CONTEXT_MENU) {
                     context.getMultiComponentActionManager().showPopupMenu(e, ABEBaseDropPanel.this);
                     return;
