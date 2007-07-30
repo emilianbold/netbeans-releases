@@ -84,7 +84,7 @@
     <folder name="Services">
         <!-- Recognize application/xslt+xml: -->
         <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-xslt-core-mi   me-resolver.xml" url="mime-resolver.xml">
+            <file name="org-netbeans-modules-xslt-core-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xslt/core/resources/xslt_file.gif"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xslt.core.resources.Bundle"/>
             </file>
