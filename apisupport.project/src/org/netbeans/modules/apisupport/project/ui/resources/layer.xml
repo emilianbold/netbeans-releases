@@ -164,7 +164,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="JavaHelp">
             <!-- Merge after J2EE Help: -->
             <file name="org-netbeans-modules-apisupport-project-helpset.xml" url="helpset-decl.xml">
-                <attr name="position" intvalue="800"/>
+                <attr name="position" intvalue="2700"/>
             </file>
             <!-- Merge before 3rd party help: -->
             </folder>

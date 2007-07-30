@@ -4,7 +4,7 @@
     <folder name="Services">
         <folder name="JavaHelp">
             <file name="org-netbeans-modules-ruby-help-helpset.xml" url="helpsetref.xml">
-                <attr name="position" intvalue="2700"/>
+                <attr name="position" intvalue="800"/>
             </file>
         </folder>
     </folder>
