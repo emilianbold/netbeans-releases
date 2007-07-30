@@ -43,18 +43,21 @@ import org.netbeans.modules.subversion.client.SvnClientFactory;
  */
 public class SearchHistoryAction extends ContextAction {
 
+    static final int DIRECTORY_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    static final int FILE_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+    
     protected String getBaseName(Node [] activatedNodes) {
         return "CTL_MenuItem_SearchHistory"; // NOI18N
     }
 
     protected int getFileEnabledStatus() {
-        return FileInformation.STATUS_IN_REPOSITORY;
+        return FILE_ENABLED_STATUS;
     }
 
     protected int getDirectoryEnabledStatus() {
-        return FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
+        return DIRECTORY_ENABLED_STATUS;
     }
-
+    
     protected boolean asynchronous() {
         return false;
     }

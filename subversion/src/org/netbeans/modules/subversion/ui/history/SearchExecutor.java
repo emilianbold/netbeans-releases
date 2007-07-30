@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.text.DateFormat;
 import java.util.*;
 import java.io.File;
+import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 
 /**
@@ -74,18 +75,7 @@ class SearchExecutor implements Runnable {
             } else {
                 workFiles = new HashMap<SVNUrl, Set<File>>();
                 for (File file : master.getRoots()) {
-                    String rootPath = SvnUtils.getRepositoryPath(file);
-                    String fileAbsPath = file.getAbsolutePath().replace(File.separatorChar, '/');
-                    int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);                
-                    pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength), 
-                                   new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
-                    SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
-                    Set<File> set = workFiles.get(rootUrl);
-                    if (set == null) {
-                        set = new HashSet<File>(2);
-                        workFiles.put(rootUrl, set);
-                    }
-                    set.add(file);
+                    populatePathToRoot(file);
                 }
             }                
         } catch (SVNClientException ex) {
@@ -93,8 +83,42 @@ class SearchExecutor implements Runnable {
             return;
         }
     }
+    
+    private void populatePathToRoot(File file) throws SVNClientException {
         
-    private int getCommonPostfixLength(String a, String b) {        
+        String rootPath = SvnUtils.getRepositoryPath(file);
+        String fileAbsPath = file.getAbsolutePath().replace(File.separatorChar, '/');
+        int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
+        pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength),
+                       new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
+        SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
+        Set<File> set = workFiles.get(rootUrl);
+        if (set == null) {
+            set = new HashSet<File>(2);
+            workFiles.put(rootUrl, set);
+        }
+        set.add(file);
+        
+        File[] files = file.listFiles();
+        if(files == null || files.length == 0) {
+            return; 
+        }
+        
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
+        for(File f : files) {
+            if(Subversion.getInstance().isAdministrative(f)) {
+                continue;
+            }
+            int status = cache.getStatus(f).getStatus();
+            if( ( f.isDirectory() && (status & SearchHistoryAction.DIRECTORY_ENABLED_STATUS) != 0)  ||                    
+                (                    (status & SearchHistoryAction.FILE_ENABLED_STATUS)      != 0) )
+            {
+                populatePathToRoot(f);    
+            }            
+        }
+    }
+    
+    private int getCommonPostfixLength(String a, String b) {
         int ai = a.length() - 1;        
         int bi = b.length() - 1;
         int slash = -1;
