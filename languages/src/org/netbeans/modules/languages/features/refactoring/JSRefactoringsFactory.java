@@ -162,10 +162,10 @@ public class JSRefactoringsFactory implements RefactoringPluginFactory {
         }
         
         public Problem prepare(RefactoringElementsBag elements) {
-            elements.add(refactoring, new UsageElement(dataObject, doc, item));
-            Iterator<DatabaseUsage> iter = item instanceof DatabaseDefinition ? 
-                ((DatabaseDefinition) item).getUsages().iterator() :
-                ((DatabaseUsage) item).getDefinition ().getUsages().iterator();
+            DatabaseDefinition def = item instanceof DatabaseDefinition ?
+                (DatabaseDefinition) item : ((DatabaseUsage) item).getDefinition ();
+            elements.add(refactoring, new UsageElement(dataObject, doc, def));
+            Iterator<DatabaseUsage> iter = def.getUsages().iterator();
             while (iter.hasNext()) {
                 elements.add(refactoring, new UsageElement(dataObject, doc, iter.next()));
             }
@@ -285,10 +285,10 @@ public class JSRefactoringsFactory implements RefactoringPluginFactory {
             String newName = refactoring.getNewName();
             List<FileObject> refactoredFiles = new ArrayList<FileObject>();
             refactoredFiles.add(dataObject.getPrimaryFile());
-            elements.add(refactoring, new RenameElement(dataObject, document, item, newName));
-            Iterator<DatabaseUsage> iter = item instanceof DatabaseDefinition ? 
-                ((DatabaseDefinition) item).getUsages().iterator() :
-                ((DatabaseUsage) item).getDefinition ().getUsages().iterator();
+            DatabaseDefinition def = item instanceof DatabaseDefinition ?
+                (DatabaseDefinition) item : ((DatabaseUsage) item).getDefinition ();
+            elements.add(refactoring, new RenameElement(dataObject, document, def, newName));
+            Iterator<DatabaseUsage> iter = def.getUsages().iterator();
             while (iter.hasNext()) {
                 elements.add(refactoring, new RenameElement(dataObject, document, iter.next(), newName));
             }
