@@ -563,9 +563,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if (fieldType.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
                     return "if (this." + fieldName + " != other." + fieldName + ") return false;"; // NOI18N
                 }
-                return "if (this." + fieldName + " != other." + fieldName + // NOI18N
-                        " && (this." + fieldName + " == null || !this." + // NOI18N
-                        fieldName + ".equals(other." + fieldName + "))) return false;"; // NOI18N
+                return "if ((this." + fieldName + " == null && other." + fieldName + " != null) || " + // NOI18N
+                        "(this." + fieldName + " != null && !this." + fieldName + ".equals(other." + fieldName + ")) return false;"; // NOI18N
             }
 
             protected MethodTree createToStringMethod(String simpleClassName, List<VariableTree> fields) {
