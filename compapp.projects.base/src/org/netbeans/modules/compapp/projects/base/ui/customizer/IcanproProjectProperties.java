@@ -848,7 +848,7 @@ public class IcanproProjectProperties {
                         break;
                     case VisualClassPathItem.TYPE_ARTIFACT:
                         AntArtifact aa = (AntArtifact)vcpi.getObject();
-                        String reference = refHelper.addReference( aa, null );
+                        String reference = refHelper.addReference(aa, aa.getArtifactLocations()[0]);
                         library_tag_value = reference;
                         break;
                     case VisualClassPathItem.TYPE_CLASSPATH:
