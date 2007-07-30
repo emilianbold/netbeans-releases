@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Profiling an EJB Module</title>
+        <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+    </head>
+    <body>
+        <h2>Profiling an EJB Module</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+<p>There are two ways to profile an EJB module:</p>
+<ul>
+  <li>As a stand-alone EJB module</li>
+  <li>As part of an enterprise application</li>
+</ul>
+<p><b>To profile a stand-alone EJB module:</b></p>
+<ul>
+  <li>In the Projects window, right-click the EJB module project and choose Profile. </li>
+  <li>Select a profiling task and click Run.</li>
+</ul>
+<p>When you profile a stand-alone EJB module, the IDE does the following:</p>
+<ul>
+  <li>Compiles the EJB module if necessary.</li>
+  <li>Stops the application server and starts it in profile mode.</li>
+  <li>Deploys the EJB module to the application server.</li>
+  <li>Starts a profiling session, attaches the profiler to the server, and opens the Profiler window in the IDE. 
+    After the application is deployed to the server, you should invoke its code the same way as you would for debugging or 
+    just evaluating application functionality. 
+    You can use an application clietn or a web application to access the EJB and invoke its code. 
+    You can view the profiling data once the code of the application is invoked.</li>
+</ul>
+<p><b>To profile an enterprise application:</b></p>
+<ul>
+  <li>In the Projects window, right-click the enterprise application project and choose Profile.</li>
+  <li>Select a profiling task and click Run.</li>
+</ul>
+<p>When you profile an enterprise application, the IDE does the following:</p>
+<ul>
+  <li>Compiles the EAR file if necessary.</li>
+  <li>Stops the application server and starts it in profile mode.</li>
+  <li>Deploys the enterprise application to the application server.</li>
+  <li>Starts a profiling session, attaches the profiler to the server, and opens 
+    the Profiler window in the IDE. If the application has 
+    a designated web application and URL to run, the IDE opens the URL in the 
+    external browser.</li>
+</ul>
+<p><b>Notes:</b></p>
+<ul>
+  <li>If your EJB module is part of an enterprise application, you should always 
+    profile it by running the profile command on the enterprise application project. 
+    Since the IDE does not know which enterprise applications an EJB module project 
+    belongs to, running the Profile command on an EJB module project deploys it 
+    as a stand-alone module.</li>
+  <li>The information in this page only applies to <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+      <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
+      <param name="viewerActivator" value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,220">
+      <param name="text" value="standard projects">
+      <param name="textFontSize" value="medium">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontStyle" value="italic">
+      <param name="textFontWeight" value="bold">
+      <param name="textColor" value="blue">
+    </object>. For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+      <param name="content" value="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
+      <param name="viewerActivator" value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,220">
+      <param name="text" value="free-form projects">
+      <param name="textFontSize" value="medium">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontStyle" value="italic">
+      <param name="textFontWeight" value="bold">
+      <param name="textColor" value="blue">
+    </object>, you have to create an Ant target for profiling the project and modify the server startup script
+    to attach the Profiler to the server. 
+    You can use the Attach wizard to help you set up the target server for profiling the application.</li>
+</ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="nbdocs:/org/netbeans/modules/profiler/docs/helppages/profile_quickref.html">Profiling Tasks: Quick Reference</a></dd>
+            <dd><a href="nbdocs:/org/netbeans/modules/profiler/docs/helppages/profile_windows.html">Profiling Windows</a></dd>
+            <dd><a href="nbdocs:/org/netbeans/modules/profiler/docs/helppages/profile_tasks_overview.html">Selecting a Profiling Task</a></dd>
+        </dl>
+        <hr>
+        <small><a href="nbdocs:/org/netbeans/modules/usersguide/credits.html">Legal Notices</a></small>
+        <table border="0" cellpadding="50">
+        <tr><td>&nbsp;</td></tr>
+        </table>
+    </body>
+</html>

@@ -131,11 +131,7 @@
 <mapID target="deploy_tomcat_manager" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html" /> -->
 	<!-- End of "Deploy" section -->
 
-	<!-- Start of "Debug" section -->
-	<!-- <mapID target="about_debug" url="web/debug/about_debug.html" />
-	<mapID target="debug_webapp" url="web/debug/debug_webapp.html" />
-<mapID target="debug_freeform" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" /> -->
-	<!-- End of "Debug" section -->
+
 
 <!-- End of "Developing Web Applications" help -->
 	
@@ -449,10 +445,12 @@
 
     <mapID target="build_ejb" url="ejb/deploy/build_ejb.html" />
 
+    <!-- Debug and test EJB section -->
     <mapID target="deploy_ejb" url="ejb/deploy/deploy_ejb.html" />
     <mapID target="debug_ejb_freeform" url="ejb/debug/debug_ejb_freeform.html" />
     <mapID target="test_ejb" url="ejb/debug/test_ejb.html" />
     <mapID target="debug_ejb" url="ejb/debug/debug_ejb.html" />
+    <mapID target="profile_ejb" url="ejb/debug/profile_ejb.html" />
 
     <mapID target="config_ejb_about" url="ejb/configuring/config_ejb_about.html" />
     <mapID target="ejb_relationship" url="ejb/configuring/ejb_relationship.html" />
