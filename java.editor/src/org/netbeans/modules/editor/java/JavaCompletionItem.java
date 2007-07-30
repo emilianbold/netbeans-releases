@@ -150,6 +150,16 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
+    public static final JavaCompletionItem createGetterSetterMethodItem(VariableElement elem, TypeMirror type, int substitutionOffset, boolean setter) {
+        switch (elem.getKind()) {
+            case ENUM_CONSTANT:
+            case FIELD:
+                return new GetterSetterMethodItem(elem, type, substitutionOffset, setter);
+            default:
+                throw new IllegalArgumentException("kind=" + elem.getKind());
+        }
+    }
+
     public static final JavaCompletionItem createDefaultConstructorItem(TypeElement elem, int substitutionOffset) {
         return new DefaultConstructorItem(elem, substitutionOffset);
     }
@@ -1402,6 +1412,168 @@ public abstract class JavaCompletionItem implements CompletionItem {
             return sb.toString();
         }
 
+        public boolean instantSubstitution(JTextComponent component) {
+            return false;//no instant substitution for override method item.
+        }
+   }
+
+    private static class GetterSetterMethodItem extends JavaCompletionItem {
+        
+        private static final String METHOD_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_16.png"; //NOI18N
+        private static final String GETTER_BADGE_PATH = "org/netbeans/modules/java/editor/resources/getter_badge.png"; //NOI18N
+        private static final String SETTER_BADGE_PATH = "org/netbeans/modules/java/editor/resources/setter_badge.png"; //NOI18N
+        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
+        private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
+        
+        private static ImageIcon superIcon;
+        private static ImageIcon[] merged_icons = new ImageIcon[2];
+        
+        protected ElementHandle<VariableElement> elementHandle;
+        private boolean setter;
+        private String simpleName;
+        private String name;
+        private String typeName;
+        private String sortText;
+        private String leftText;
+        private String rightText;
+        
+        private GetterSetterMethodItem(VariableElement elem, TypeMirror type, int substitutionOffset, boolean setter) {
+            super(substitutionOffset);
+            this.elementHandle = ElementHandle.create(elem);            
+            this.setter = setter;
+            this.simpleName = elem.getSimpleName().toString();
+            if (setter)
+                this.name = "set" + Character.toUpperCase(simpleName.charAt(0)) + simpleName.substring(1, simpleName.length()); //NOI18N
+            else
+                this.name = (elem.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + Character.toUpperCase(simpleName.charAt(0)) + simpleName.substring(1, simpleName.length()); //NOI18N
+            this.typeName = Utilities.getTypeName(type, false).toString();
+        }
+        
+        public int getSortPriority() {
+            return 500;
+        }
+        
+        public CharSequence getSortText() {
+            if (sortText == null) {
+                StringBuilder sortParams = new StringBuilder();
+                sortParams.append('('); //NOI18N
+                if (setter)
+                    sortParams.append(typeName);
+                sortParams.append(')'); //NOI18N
+                sortText = name + "#" + (setter ? "01" : "00") + "#" + sortParams.toString(); //NOI18N
+            }
+            return sortText;
+        }
+        
+        public CharSequence getInsertPrefix() {
+            return name;
+        }
+        
+        @Override
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder lText = new StringBuilder();
+                lText.append(METHOD_COLOR);
+                lText.append(BOLD);
+                lText.append(name);
+                lText.append(BOLD_END);
+                lText.append(COLOR_END);
+                lText.append('(');
+                if (setter) {
+                    lText.append(escape(typeName));
+                    lText.append(' ');
+                    lText.append(PARAMETER_NAME_COLOR);
+                    lText.append(simpleName);
+                    lText.append(COLOR_END);
+                }
+                lText.append(") - generate"); //NOI18N
+                leftText = lText.toString();
+            }
+            return leftText;
+        }
+        
+        @Override
+        protected String getRightHtmlText() {
+            if (rightText == null)
+                rightText = setter ? "void" : escape(typeName);
+            return rightText;
+        }
+        
+        @Override
+        protected ImageIcon getIcon() {
+            if (merged_icons[setter ? 1 : 0] == null) {
+                if (superIcon == null)
+                    superIcon = new ImageIcon(org.openide.util.Utilities.loadImage(METHOD_PUBLIC));
+                if (setter) {
+                    ImageIcon setterBadge = new ImageIcon(org.openide.util.Utilities.loadImage(SETTER_BADGE_PATH));
+                    merged_icons[1] = new ImageIcon(org.openide.util.Utilities.mergeImages(superIcon.getImage(), 
+                            setterBadge.getImage(), 16 - 8, 16 - 8));
+                } else {
+                    ImageIcon getterBadge = new ImageIcon(org.openide.util.Utilities.loadImage(GETTER_BADGE_PATH));
+                    merged_icons[0] = new ImageIcon(org.openide.util.Utilities.mergeImages(superIcon.getImage(), 
+                            getterBadge.getImage(), 16 - 8, 16 - 8));
+                }
+            }
+            return merged_icons[setter ? 1 : 0];
+        }
+        
+        @Override
+        protected void substituteText(final JTextComponent c, final int offset, final int len, String toAdd) {
+            BaseDocument doc = (BaseDocument)c.getDocument();
+            if (len > 0) {
+                doc.atomicLock();
+                try {
+                    doc.remove(offset, len);
+                } catch (BadLocationException e) {
+                    // Can't update
+                } finally {
+                    doc.atomicUnlock();
+                }
+            }
+            try {
+                JavaSource js = JavaSource.forDocument(doc);
+                js.runModificationTask(new Task<WorkingCopy>() {
+
+                    public void run(WorkingCopy copy) throws IOException {
+                        copy.toPhase(Phase.ELEMENTS_RESOLVED);
+                        VariableElement ve = elementHandle.resolve(copy);                        
+                        if (ve == null)
+                            return;
+                        TreePath tp = copy.getTreeUtilities().pathFor(offset);
+                        if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                            if (Utilities.isInMethod(tp))
+                                copy.toPhase(Phase.RESOLVED);
+                            int idx = 0;
+                            for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
+                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < offset)
+                                    idx++;
+                                else
+                                    break;
+                            }
+                            TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
+                            if (te != null) {
+                                GeneratorUtilities gu = GeneratorUtilities.get(copy);
+                                MethodTree method = setter ? gu.createSetter(te, ve) : gu.createGetter(te, ve);
+                                ClassTree decl = copy.getTreeMaker().insertClassMember((ClassTree)tp.getLeaf(), idx, method);
+                                copy.rewrite(tp.getLeaf(), decl);
+                            }
+                        }
+                    }
+                }).commit();
+            } catch (IOException ex) {
+                Logger.getLogger("global").log(Level.WARNING, null, ex);
+            }
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(super.toString());
+            sb.append(" - generate");
+            return sb.toString();
+        }
+
+        @Override
         public boolean instantSubstitution(JTextComponent component) {
             return false;//no instant substitution for override method item.
         }

@@ -32,6 +32,7 @@ import static javax.lang.model.element.ElementKind.*;
 import static javax.lang.model.element.Modifier.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import javax.swing.JToolTip;
 import javax.swing.text.BadLocationException;
@@ -2938,6 +2939,33 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (Utilities.startsWith(ee.getSimpleName().toString(), prefix)) {
                     ExecutableType type = (ExecutableType)types.asMemberOf(clsType, ee);                    
                     results.add(JavaCompletionItem.createOverrideMethodItem(ee, type, anchorOffset, false));
+                }
+            }
+            if (prefix == null || prefix.startsWith("get") || prefix.startsWith("set") || prefix.startsWith("is") ||
+                    "get".startsWith(prefix) || "set".startsWith(prefix) || "is".startsWith(prefix)) {
+                List<? extends Element> members = controller.getElements().getAllMembers(te);
+                Map<String, List<ExecutableElement>> methods = new HashMap<String, List<ExecutableElement>>();
+                for (ExecutableElement method : ElementFilter.methodsIn(members)) {
+                    List<ExecutableElement> l = methods.get(method.getSimpleName().toString());
+                    if (l == null) {
+                        l = new ArrayList<ExecutableElement>();
+                        methods.put(method.getSimpleName().toString(), l);
+                    }
+                    l.add(method);
+                }
+                for (VariableElement variableElement : ElementFilter.fieldsIn(members)) {
+                    Name name = variableElement.getSimpleName();
+                    if (!name.contentEquals(ERROR)) {
+                        String nameBase = Character.toUpperCase(name.charAt(0)) + name.subSequence(1, name.length()).toString();
+                        String setterName = "set" + nameBase; //NOI18N
+                        String getterName = (variableElement.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + nameBase; //NOI18N
+                        if ((prefix == null || getterName.startsWith(prefix)) && !GeneratorUtils.hasGetter(controller, variableElement, methods)) {
+                            results.add(JavaCompletionItem.createGetterSetterMethodItem(variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, false));
+                        }
+                        if ((prefix == null || setterName.startsWith(prefix)) && !(variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, variableElement, methods))) {
+                            results.add(JavaCompletionItem.createGetterSetterMethodItem(variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, true));                        
+                        }
+                    }
                 }
             }
             if (Utilities.startsWith(te.getSimpleName().toString(), prefix)) {
