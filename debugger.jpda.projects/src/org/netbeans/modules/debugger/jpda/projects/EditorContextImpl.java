@@ -649,6 +649,8 @@ public class EditorContextImpl extends EditorContext {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
+                        return;
                     Elements elms = ci.getElements();
                     TypeElement classElement = elms.getTypeElement(className);
                     if (classElement == null) return ;
@@ -731,6 +733,8 @@ public class EditorContextImpl extends EditorContext {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
+                    if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) //TODO: ELEMENTS_RESOLVED may be sufficient
+                        return;
                     Elements elms = ci.getElements();
                     TypeElement classElement = elms.getTypeElement(className);
                     if (classElement == null) return ;
