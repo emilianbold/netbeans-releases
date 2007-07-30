@@ -113,13 +113,12 @@ public class DalpBuilder extends Task {
                 pw.println("    <encode-file>" + getProject().getProperty("main.class").toLowerCase() + "</encode-file>");
             pw.println("  </resources>");
             
-            String appTypeStr, mainClassStr, visibleStr;
-            appTypeStr = getProject().getProperty("ricoh.application.type");
+            String mainClassStr, visibleStr;
             //We support just xlets
             mainClassStr = getProject().getProperty("main.class");
             visibleStr   = getProject().getProperty("ricoh.dalp.application-desc.visible");
             
-            pw.println("  <application-desc type=\""       + appTypeStr +
+            pw.println("  <application-desc type=\"xlet"   + 
                                         "\" main-class=\"" + mainClassStr + 
                                         "\" visible=\""    + visibleStr + "\">");
             String args = getProject().getProperty("application.args");

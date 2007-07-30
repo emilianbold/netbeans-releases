@@ -7,36 +7,18 @@
             </fileset>
             <flattenmapper/>
         </copy>
-        <taskIf if="ricoh.application.type" value="xlet">
-            <parallel>
-                <ant antfile="${{platform.home}}/startemulator_debug.xml" target="debug_emulator" dir="${{platform.home}}">
-                    <property name="emulator.skin" value="WVGA.xml"/>
-                    <property name="emulator.autolaunchid" value="${{ricoh.application.uid}}"/>
-                </ant>
-                <sequential>
-                    <sleep seconds="5"/>
-                    <property name="jpda.port" value="8000"/>
-                    <property name="debug.period" value="3000"/>
-                    <property name="debug.timeout" value="30000"/>
-                    <antcall target="nbdebug" inheritall="true" inheritrefs="true"/>
-                </sequential>
-            </parallel>
-        </taskIf>
-        <taskIf if="ricoh.application.type" value="servlet">
-            <echo message="Starting OSGI framework (debug mode not available)..."/>
-            <ant antfile="${{ricoh.osgi.path}}/startOsgiFramework.xml" target="startup" dir="${{ricoh.osgi.path}}"/>
-            <java classname="org.knopflerfish.framework.Main" fork="true">
-                <classpath>
-                    <pathelement location="${{ricoh.osgi.path}}/framework.jar"/>
-                    <pathelement location="${{ricoh.osgi.path}}/serverservice.jar"/>
-                    <pathelement location="${{ricoh.osgi.path}}/tomcat_lib/container/jasper.jar"/>
-                    <pathelement location="${{ricoh.osgi.path}}/tomcat_lib/common/jasper-runtime.jar"/>
-                    <pathelement location="${{ricoh.osgi.path}}/jars/jsdk/jdsk-2.2.jar"/>
-                    <pathelement location="${{ricoh.osgi.path}}/jars/http/http_api-1.1.0.jar"/>
-                    <pathelement location="${{ricoh.osgi.path}}/jars/util/util-1.0.0.jar"/>
-                </classpath>
-                <arg line="-xargs init.xargs"/>
-            </java>
-        </taskIf>
+        <parallel>
+            <ant antfile="${{platform.home}}/startemulator_debug.xml" target="debug_emulator" dir="${{platform.home}}">
+                <property name="emulator.skin" value="WVGA.xml"/>
+                <property name="emulator.autolaunchid" value="${{ricoh.application.uid}}"/>
+            </ant>
+            <sequential>
+                <sleep seconds="5"/>
+                <property name="jpda.port" value="8000"/>
+                <property name="debug.period" value="3000"/>
+                <property name="debug.timeout" value="30000"/>
+                <antcall target="nbdebug" inheritall="true" inheritrefs="true"/>
+            </sequential>
+        </parallel>
     </target>
     

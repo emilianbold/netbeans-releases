@@ -9,13 +9,7 @@
         <available property="jcifs" classname="jcifs.smb.SmbFile" classpath="${{libs.RicohAntTools.classpath}}"/>
         <condition property="no.vendor.name" value="true">
             <equals arg1="${{application.vendor}}" arg2="" trim="true"/>
-        </condition>
-        <condition property="xlet-project" value="true">
-            <equals arg1="${{ricoh.application.type}}" arg2="xlet" trim="true"/>
-        </condition>
-        <condition property="servlet-project" value="true">
-            <equals arg1="${{ricoh.application.type}}" arg2="server" trim="true"/>
-        </condition>
+        </condition>        
         <condition property="ricoh.dalp.install.mode" value="auto" else="manual">
             <istrue value="${{ricoh.dalp.install.mode.auto}}"/>
         </condition>
@@ -29,7 +23,6 @@
         <property name="signed.jar" value="${{dist.dir}}/RICOH.jar"/>
         <property name="rideploy.zip" value="${{dist.dir}}/RICOH.zip"/>
         <property name="ricoh.dalp.is-managed" value="true"/>
-        <property name="ricoh.application.type" value="xlet"/>
         <property name="ricoh.dalp.information.is-icon-used" value="true"/>
         <property name="ricoh.platform.target.version" value="2.0"/>
         <property name="ricoh.dalp.version" value=""/>

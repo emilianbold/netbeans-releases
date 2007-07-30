@@ -43,12 +43,6 @@ public class RicohPropertiesDescriptor implements ProjectPropertiesDescriptor {
     public static final String RICOH_TARGET_JAR          = "ricoh.application.target-jar"; //NOI18N                    
     public static final String RICOH_APP_VERSION         = "ricoh.application.version"; //NOI18N                       
                                                                                                       
-    //servlet build environment properties                                                            
-    public static final String RICOH_TOMCAT_PATH         = "ricoh.tomcat.path"; //NOI18N                               
-    public static final String RICOH_OSGI_PATH           = "ricoh.osgi.path"; //NOI18N                                 
-    public static final String RICOH_BUNDLE_CLASS        = "ricoh.bundle.activator"; //NOI18N                          
-    public static final String RICOH_SERVLET_EXPORT_PATH = "ricoh.application.export-path"; //NOI18N                   
-    public static final String RICOH_APP_TYPE            = "ricoh.application.type"; //NOI18N                          
     public static final String RICOH_PLATFORM_TARGET_VER = "ricoh.platform.target.version"; //NOI18N                   
     public static final String RICOH_ICON_INVERT                 = "ricoh.icon.invert"; //NOI18N                       
                                                                                                       
@@ -89,24 +83,19 @@ public class RicohPropertiesDescriptor implements ProjectPropertiesDescriptor {
         return s.substring(s.length()-8, s.length());
     }
    
-    public synchronized Set getPropertyDescriptors() {
+    public synchronized Set<PropertyDescriptor> getPropertyDescriptors() {
         Set<PropertyDescriptor> set = ref.get();
         if (set == null) {
             String FALSE = "false"; //NOI18N
             String TRUE = "true"; //NOI18N
             String EMPTY = ""; //NOI18N
-            set = new HashSet();
+            set = new HashSet<PropertyDescriptor>();
             set.add(new PropertyDescriptor(RICOH_EMAIL, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
             set.add(new PropertyDescriptor(RICOH_FAX, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
             set.add(new PropertyDescriptor(RICOH_PHONE, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
             set.add(new PropertyDescriptor(RICOH_ICON, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
             set.add(new PropertyDescriptor(RICOH_TARGET_JAR, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
-            set.add(new PropertyDescriptor(RICOH_APP_VERSION, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
-            set.add(new PropertyDescriptor(RICOH_TOMCAT_PATH, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
-            set.add(new PropertyDescriptor(RICOH_OSGI_PATH, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
-            set.add(new PropertyDescriptor(RICOH_BUNDLE_CLASS, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
-            set.add(new PropertyDescriptor(RICOH_SERVLET_EXPORT_PATH, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
-            set.add(new PropertyDescriptor(RICOH_APP_TYPE, true, DefaultPropertyParsers.STRING_PARSER, "xlet")); //NOI18N                            
+            set.add(new PropertyDescriptor(RICOH_APP_VERSION, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                                        
             set.add(new PropertyDescriptor(RICOH_PLATFORM_TARGET_VER, true, DefaultPropertyParsers.STRING_PARSER, EMPTY));                            
             set.add(new PropertyDescriptor(RICOH_ICON_INVERT, true, DefaultPropertyParsers.BOOLEAN_PARSER, FALSE));          
             set.add(new PropertyDescriptor(RICOH_DALP_MANAGE_DISABLE, true, DefaultPropertyParsers.INVERSE_BOOLEAN_PARSER, TRUE));                    
