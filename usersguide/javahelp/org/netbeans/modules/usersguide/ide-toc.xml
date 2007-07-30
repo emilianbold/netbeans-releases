@@ -55,7 +55,10 @@
     </tocitem>
     
     <tocitem text="Version Control and File History">
-      <tocitem text="Local History" target="pending" />
+      <tocitem text="Local History">
+          <tocitem text="About the IDE's Local File History Support" target="pending" />
+          <tocitem text="Working with Local File History" target="pending" />
+      </tocitem>
     </tocitem>
 
 <tocitem text="Managing Plugins" >
