@@ -24,6 +24,8 @@
  */
 package org.netbeans.modules.mobility.editor.pub;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.api.java.loaders.JavaDataSupport;
 import org.netbeans.modules.mobility.editor.J2MENode;
 import org.netbeans.modules.mobility.project.ApplicationDescriptorHandler;
@@ -66,6 +68,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
@@ -103,6 +106,31 @@ public class J2MEDataObject extends MultiDataObject {
     protected void handleDelete() throws java.io.IOException {
         ApplicationDescriptorHandler.getDefault().handleDelete(getPrimaryFile());
         super.handleDelete();
+    }
+
+    public @Override Lookup getLookup() {
+        return new ProxyLookup((isValid() ? getNodeDelegate() : createNodeDelegate()).getLookup(),
+                new Lookup() {
+                    public <T> T lookup(Class<T> clazz) {
+                        return (T) getCookie(clazz);
+                    }
+
+                    public <T> Result<T> lookup(final Template<T> template) {
+                        return new Lookup.Result<T> () {
+                            public void addLookupListener(LookupListener l) {
+                            }
+
+                            public void removeLookupListener(LookupListener l) {
+                            }
+
+                            public Collection<? extends T> allInstances() {
+                                Cookie c = getCookie(template.getType());
+                                return c == null ? Collections.EMPTY_SET : Collections.singleton((T)c); 
+                            }
+
+                        };
+                    }
+                });
     }
     
     public @Override Cookie getCookie(Class type) {
