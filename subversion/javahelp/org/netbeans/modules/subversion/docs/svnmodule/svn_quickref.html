@@ -2,7 +2,7 @@
 <html>
     <head>
         <!--
-        * Copyright © 2006 Sun Microsystems, Inc.
+        * Copyright 2007 Sun Microsystems, Inc.
         * All rights reserved. 
         * Use is subject to license terms.
         -->
@@ -11,14 +11,17 @@
         href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <!--TODO check all of this-->
+
         <h2>Subversion Tasks: Quick Reference</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
+        
         <p>The following table describes common Subversion tasks.</p>
+        
         <table
             summary="The left column lists the
             task name. The right column lists the steps to perform."
-            border="1" cellpadding="5" cellspacing="0">
+            border="1" cellpadding="5">
             <tbody>
                 <tr valign="top">
                     <th scope="col" align="left">To perform this task</th>
@@ -28,16 +31,12 @@
                     <td>Check out sources.</td>
                     <td>
                         <ol>
-                            <li>Choose Subversion&nbsp;&gt; <a href="svn_checkout.html">Checkout</a> from the main menu.</li>
-                            <li>In the Subversion Checkout wizard, specify the
-                                location of the Subversion repository, enter your password and proxy, and
-                                click Next.
-                            </li>
-                            <li>Specify the folders
-                            you want to check out in the Folders to Checkout field.</li>
-                            <li>Specify the local working directory into which you want to
-                            check
-                            out the selected folders.</li>
+                            <li>Choose Versioning &gt; Subversion &gt; <a href="svn_checkout.html">Checkout</a> 
+                                from the main menu.</li>
+                            <li>In the Subversion Checkout wizard, specify the location of the Subversion repository, 
+                                enter your password and proxy, and click Next.</li>
+                            <li>Specify the folders you want to check out in the Folders to Checkout field.</li>
+                            <li>Specify the local working directory into which you want to check out the selected folders.</li>
                             <li>Click Finish to check out the files.</li>
                         </ol>
                     </td>
@@ -46,10 +45,9 @@
                     <td>View versioning information.</td>
                     <td>
                         <ul>
-                            <li>Choose Subversion&nbsp;&gt; Show All Changes from the main menu.</li>
-                            <li>Right-click any project, directory, or file that 
-                            is in a Subversion working directory and choose Subversion
-                            &gt; Show Changes. </li>
+                            <li>Choose Versioning &gt; Subversion &gt; Show All Changes from the main menu.</li>
+                            <li>Right-click any project, directory, or file that is in a Subversion 
+                                working directory and choose Subversion &gt; Show Changes.</li>
                         </ul>
                     </td>
                 </tr>                
@@ -58,7 +56,7 @@
                     <td>
                         <ol>
                             <li>Right-click the file that you want to update.</li>
-                            <li>Choose Subversion &gt; <a href="svn_updating.html">Update</a> from the pop-up menu.</li>
+                            <li>Choose Subversion &gt; <a href="svn_updating.html">Update</a> from the menu.</li>
                         </ol>
                     </td>
                 </tr>
@@ -66,9 +64,8 @@
                     <td>Diff files.</td>
                     <td>
                         <ol>
-                            <li>Right-click the file that you want to diff. 
-                            </li>
-                            <li>Choose <a href="svn_diff.html">Diff</a> from the pop-up menu. </li>
+                            <li>Right-click the file that you want to perform a diff on.</li>
+                            <li>Choose <a href="svn_diff.html">Diff</a> from the menu.</li>
                         </ol>
                     </td>
                 </tr>
@@ -77,68 +74,18 @@
                     <td>
                         <ol>
                             <li>Right-click the file or directory you want to commit.</li>
-                            <li>Choose Subversion &gt; <a href="svn_commit.html">Commit</a> from the pop-up menu.</li>
+                            <li>Choose Subversion &gt; <a href="svn_commit.html">Commit</a> from the menu.</li>
                         </ol>
                     </td>
                 </tr>
-<!--                <tr valign="top">
-                    <td>Switch to a branch.</td>
-                    <td>
-                        <ol>
-                            <li>Right-click the
-                            file or folder you want to be the root of your branch and choose Subversion
-                            &gt; Switch To</a>.</li>
-                            <li>In the Switch to Branch dialog, enter a Branch name or click Browse to see
-                            a list of available branches.</li>
-                            <li>Click Switch.</li>
-                        </ol>
-                    </td>
-                </tr>                 
-                <tr valign="top">
-                    <td>Create a branch.</td>
-                    <td>
-                        <ol>
-                            <li>Right-click the
-                            file or folder you want to be the root of your branch and choose Subversion
-                            &gt; <a href="svn_branches.html">Branch</a>.</li>
-                            <li>In the Branch dialog, enter a Branch name or click Browse to see
-                                a list of available branches.
-                            </li>
-                            <li>If you want to tag the file or directory, select the Tag Before
-                            Branching checkbox and enter a Tag name.</li>
-                            <li>If you want to switch to the new branch after creating it, select
-                                the Switch to This Branch Afterwards checkbox. 
-                            </li>
-                            <li>Click Branch.</li>
-                        </ol>
-
-                    </td>
-                </tr> 
-                <tr valign="top">
-                    <td>Apply a tag.</td>
-                    <td>
-                        <ol>
-                            <li>Right-click the file or folder and choosing Subversion &gt; <a href="svn_tagging.html">Tag</a>.
-                            <li>Enter the tag name in the text field  
-                            or click Browse to choose from a list of existing tags.
-                            <li>If you want to ensure that the tag is not attached to local revisions that 
-                            are out of date, select the Avoid Tagging Locally Modified Files checkbox.
-                            <li>If you want to move an existing tag to the current revision in your local 
-                            working directory, select the Move Existing Tags checkbox.
-                        </ol>
-
-                    </td>
-                </tr> -->              
                 <tr valign="top">
                     <td>Merge revisions.</td>
                     <td>
                         <ol>
                             <li>Right-click the files or folders that you want to merge
-                            into your local
-                            working copy and choose Subversion &gt; <a href="svn_merge.html">Merge Changes</a>.</li>
-                            <li>Select the branch you want to merge
-                                the changes to. 
-                            </li>
+                                into your local working copy and choose Subversion &gt; 
+                                <a href="svn_merge.html">Merge Changes</a>.</li>
+                            <li>Select the branch you want to merge the changes to.</li>
                             <li>Click Merge.</li>
                         </ol>
                     </td>
@@ -148,11 +95,9 @@
                     <td>
                         <ol>
                             <li>Select the locally modified file or folder and choose
-                            Subversion&nbsp;&gt; Export Diff
-                            Patch from the main menu. </li>
+                                Subversion &gt; Export Diff Patch from the main menu.</li>
                             <li>Enter a name for the patch file and specify the location
-                            where
-                            you want to save the patch.</li>
+                                where you want to save the patch.</li>
                             <li>Click Export.</li>
                         </ol>
                     </td>
@@ -162,9 +107,9 @@
                     <td>
                         <ol>
                             <li>Right-click the file or folder on which you want to apply
-                            the patch and choose Tools&nbsp;&gt;Apply Diff Patch</a>. </li>
+                                the patch and choose Tools &gt; Apply Diff Patch</a>.</li>
                             <li>Type the path or navigate to the patch file you want to
-                            apply. </li>
+                                apply.</li>
                             <li>Click Patch.</li>
                         </ol>
                     </td>
@@ -178,12 +123,6 @@
             <dd><a href="svn_overview.html">Working with Subversion</a> </dd>
         </dl>
         <hr><small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        <br><br><br>
     </body>
 </html>

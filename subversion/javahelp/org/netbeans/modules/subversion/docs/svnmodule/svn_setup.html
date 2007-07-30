@@ -3,24 +3,29 @@
     <head>
         <!--
         * 
-        *     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+        *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
         *     Use is subject to license terms.
-        *
         *
         -->
         <title>Setting Up Subversion</title>
-        <link rel="StyleSheet"
-        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link rel="StyleSheet" type="text/css"
+            href="nbdocs:/org/netbeans/modules/usersguide/ide.css">
     </head>
+    
     <body>
         <h2>Setting Up Subversion</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
+        
         <p>Before you can take advantage of the IDE's Subversion support, you need 
             to have Subversion client software installed on your system. The IDE 
-            supports Subversion client versions 1.3.x and 1.4.0. The IDE's Subversion support 
-        works by interacting with the Subversion client to carry out the commands.</p>
+            supports Subversion client versions 1.3.x and higher. The IDE's Subversion 
+            support works by interacting with the Subversion client to carry out the 
+            commands.</p>
+            
         <p>You can download Subversion as either sources or as a binary from the 
         following link:</p>
+        
         <ul>
             <li><object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://subversion.tigris.org/project_packages.html">
@@ -29,44 +34,34 @@
                     <param name="textColor" value="blue">
             </object></li>
         </ul>
-                <p>
-            Though the Subversion site does not guarantee the quality of the 
-            binary downloads, you might find them easier to work with. For example, 
-            the executable binary for Microsoft Windows systems sets up the environment 
-        variable to make your system and the IDE recognize the Subversion installation. 
-        If you do not use an installer, follow the Subversion installation instructions closely 
-        to make sure that you set up everything correctly on your system.</p>
-        <p>After the Subversion client is set up, you can run Subversion commands from 
-        the IDE's Subversion menu.
-        <!--need only to 
-        check out the files located in a remote repository to a local working directory on your system. 
-        In the process of checking out, the IDE automatically registers the working directory where
-        your local copies of version-controlled files and their 
-        status information will be stored. </p>-->
-        <p>If you have already checked out files from a Subversion repository (using Subversion 1.3 or 1.4), the IDE automatically 
-            recognizes the files as versioned files if those files are part of an open IDE 
-            project or if they are added to the Favorites window. You can call Subversion commands on 
-            such files from the Subversion menu or by right-clicking a file or folder and choosing 
-        from the Subversion submenu.</p>
-        <p>If you have not checked out any files from a Subversion repository, you can 
-            check them out by choosing Subversion &gt; Checkout. 
-            See <a href="svn_checkout.html">Checking Out Files from a
-        Subversion Repository</a> for more information.</p>
-        <!--TODO add specifics about Subversion binaries-->
+        
+        <p>Though the Subversion site does not guarantee the quality of the binary downloads, 
+            you might find them easier to work with. For example, the executable binary for 
+            Microsoft Windows systems sets up the environment variable that enables your system 
+            and the IDE to recognize the Subversion installation. If you do not use an installer, 
+            follow the Subversion installation instructions closely to make sure that you set up 
+            everything correctly on your system.</p>
+            
+        <p>After the Subversion client is set up, you can run Subversion commands from the IDE's 
+            Versioning &gt; Subversion menu. To check out files from a Subversion repository,
+            choose Versioning &gt; Subversion &gt; Checkout. In the process of checking out, the 
+            IDE automatically registers the working directory where your local copies of 
+            version-controlled files and their status information will be stored. See 
+            <a href="svn_checkout.html">Checking Out Files from a Subversion Repository</a> for 
+            more information.</p>
  
+        <p>If you have already checked out files from a Subversion repository (using Subversion client 
+            1.3.x or higher), the IDE automatically recognizes the files as versioned files if those 
+            files are part of an open IDE project or if they are added to the Favorites window. You 
+            can call Subversion commands on such files from the Subversion menu or by right-clicking 
+            a file or folder and choosing from the Subversion submenu.</p>
         
         <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="svn_overview.html">Working with Subversion </a></dd>
-            <dd> <a href="svn_quickref.html">Subversion Tasks: Quick Reference</a></dd>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="svn_overview.html">Working with Subversion</a></dd>
+            <dd><a href="svn_quickref.html">Subversion Tasks: Quick Reference</a></dd>
         </dl>
         <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        <br><br><br>
     </body>
 </html>

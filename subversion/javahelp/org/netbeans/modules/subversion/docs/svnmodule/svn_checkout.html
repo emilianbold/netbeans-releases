@@ -3,67 +3,70 @@
     <head>
         <!--
         *
-        *     Copyright ©  2006 Sun Microsystems, Inc. All rights reserved.
+        *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
         *     Use is subject to license terms.
         *
         -->
         <title>Checking Out Files From a Subversion Repository</title>
-        <link rel="StyleSheet"
-        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link rel="StyleSheet" type="text/css"
+        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" >
     </head>
+    
     <body>
         <h2>Checking Out Files From a Subversion Repository</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
+        
         <p>In order to work on shared files located in a remote repository, you
-        need to copy the necessary files and directories to your local working
-        directory. This is done by checking out the files from the repository.</p>
-        <p><b></b>To check out files from a Subversion repository:</b></p>
+            need to copy the necessary files and directories to your local working
+            directory. This is done by checking out the files from the repository.</p>
+            
+        <p><strong>To check out files from a Subversion repository:</strong></p>
+        
         <ol>
             <li>Choose Subversion &gt; Checkout from the main menu.</li>
-            <li>On the Subversion Checkout page of the wizard, fill in a 
-            URL that contains the connection protocol and the location of the repository.
-            <p>If you enter a protocol such as <tt>https://</tt> or <tt>svn+ssh://</tt>, User 
-            and Password fields appear in the wizard. Fill in those fields as 
-            necessary.</p>
-            <p>If you are using a proxy, click the Proxy Configuration button
-                and enter the required information.</p></li>
+            <li>On the Subversion Checkout page of the wizard, fill in a URL that 
+                contains the connection protocol and the location of the repository.
+                
+                <br>If you enter a protocol such as <tt>http</tt>, <tt>https</tt>,
+                or <tt>svn+ssh</tt>, User and Password fields appear in the wizard. 
+                Fill in those fields as necessary.
+                
+                <br>If you are using a proxy, click the Proxy Configuration button
+                and enter the required information.</li>
             <li>On the Folders to Checkout page of the wizard, specify the folder
-            that you want to check out in the Repository Folder(s) field or click the Browse button to
-            choose from a list of all folders in the repository. </li>
-            <li>If you need to specify a revision number, enter the information in the Repository Revision field or click
-            the Browse button to choose from a list of all revisions in the
-            repository.</li>
-            <li>Specify the local folder into which you want to check
-            out the selected folders. Alternately, you can click the
-            Browse button to navigate to the desired directory on your system.</li>
-            <li>Click Finish to check out the files.</li>
-            <p>The IDE initiates the <tt>checkout</tt> command and the IDE's status bar
-            indicates the progress of the files downloading from the repository to your
-            local working directory.</p>
+                that you want to check out in the Repository Folder(s) field or click 
+                the Browse button to choose from a list of all folders in the repository.</li>
+            <li>If you need to specify a revision number, enter the information in the 
+                Repository Revision field or click the Browse button to choose from a 
+                list of all revisions in the repository.</li>
+            <li>Specify the local folder into which you want to check out the selected 
+                folders. Alternately, you can click the Browse button to navigate to 
+                the desired directory on your system.</li>
+            <li>Click Finish to check out the files.
+                <br>The IDE initiates the <tt>checkout</tt> command and the IDE's status bar
+                indicates the progress of the files downloading from the repository to your
+                local working directory. You can also view files being checked out from the 
+                Output window (Ctrl+4)</li>
         </ol>
+        
         <ul class="note">
             <li>If the checked-out sources contain a project, a dialog will appear 
-            prompting you to open them in the IDE. 
-            If the sources do not contain a project, the dialog will appear prompting 
-            you to create a new project from the sources and then 
-            open them in the IDE. When you create a new project for such sources, 
-            select the project category and then use the "With Existing Sources" template 
-            in that category.</li>
+                prompting you to open them in the IDE. If the sources do not contain 
+                a project, the dialog will appear prompting you to create a new project 
+                from the sources and then them in the IDE. When you create a new project 
+                for such sources, select the project category and then use the "With 
+                Existing Sources" template in that category.</li>
         </ul>
+        
         <dl>
             <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="svn_commit.html">Committing Local Changes to a
-            Subversion Repository</a></dd>
+            <dd> <a href="svn_commit.html">Committing Local Changes to a Subversion 
+                Repository</a></dd>
             <dd> <a href="svn_diff.html">Comparing File Revisions in Subversion</a></dd>
             <dd> <a href="svn_setup.html">Setting Up Subversion</a></dd>
         </dl>
         <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        <br><br><br>
     </body>
 </html>
