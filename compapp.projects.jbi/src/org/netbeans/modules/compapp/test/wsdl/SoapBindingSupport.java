@@ -90,7 +90,9 @@ public class SoapBindingSupport implements BindingSupport {
                     SOAPAddress soapAddress = (SOAPAddress)
                             Util.getAssignableExtensiblityElement(
                             eeList, SOAPAddress.class);
-                    result.add(soapAddress.getLocation());
+                    if (soapAddress != null) {
+                        result.add(soapAddress.getLocation());
+                    }
                 }
             }
         }

@@ -151,6 +151,11 @@ public class AddTestcaseAction extends NodeAction implements NewTestcaseConstant
             String[] endPoints = bindingSupport.getEndpoints();
             if (endPoints == null || endPoints.length == 0) {
                 properties.setProperty(PropertySpec.DESTINATION.getName(), "");  // NOI18N
+                String msg = NbBundle.getMessage(AddTestcaseAction.class,
+                        "MSG_NO_ENDPOINT_DEFINITION"); // NOI18N
+                NotifyDescriptor d =
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
             } else {
                 properties.setProperty(PropertySpec.DESTINATION.getName(), endPoints[0]);  // NOI18N
                 String[] comment = new String[endPoints.length - 1];
