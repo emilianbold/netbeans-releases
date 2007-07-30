@@ -227,7 +227,7 @@ public class EditorContextBridge {
             lineNumbers = lns;
             condition = ((MethodBreakpoint) b).getCondition();
         } else {
-            return new Object[] {};
+            return null;
         }
         
         boolean isConditional = (condition != null) &&
@@ -249,19 +249,24 @@ public class EditorContextBridge {
                 EditorContext.METHOD_BREAKPOINT_ANNOTATION_TYPE :
                 EditorContext.DISABLED_METHOD_BREAKPOINT_ANNOTATION_TYPE;
         } else {
-            return new Object[] {};
+            return null;
         }
         if (isInvalid && b.isEnabled ()) annotationType += "_broken";
 
         List annotations = new ArrayList(URLs.length);
         for (int i = 0; i < URLs.length; i++) {
             if (lineNumbers[i] >= 1) {
-                annotations.add(
-                        getContext().annotate (URLs[i], lineNumbers[i], annotationType, null)
-                );
+                Object annotation = getContext().annotate (URLs[i], lineNumbers[i], annotationType, null);
+                if (annotation != null) {
+                    annotations.add(annotation);
+                }
             }
         }
-        return annotations.toArray();
+        if (annotations.size() == 0) {
+            return null;
+        } else {
+            return annotations.toArray();
+        }
     }
     
     private static String[] getClassURLs(String className) {
