@@ -2009,7 +2009,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private final List<Work> tasks;
         
         public Delay () {
-            this.timer = new Timer ();
+            this.timer = new Timer(RepositoryUpdater.class.getName());
             this.tasks = new LinkedList<Work> ();
         }
         

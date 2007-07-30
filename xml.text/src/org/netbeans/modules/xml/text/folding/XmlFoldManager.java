@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.xml.text.folding;
+
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -45,7 +46,6 @@ import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldOperation;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
-
 
 /**
  * This class is an implementation of @see org.netbeans.spi.editor.fold.FoldManager
@@ -95,15 +95,16 @@ public class XmlFoldManager implements FoldManager, SettingsChangeListener, Docu
     }
     
     public void initFolds(FoldHierarchyTransaction transaction) {
+        Document doc = getDocument();
         //I do not know exactly why, but this method is called twice during the initialization
         //during first call getDocument() doesn't return an instance of BaseDocument
-        if(!(getDocument() instanceof BaseDocument)) return ;
+        if (!(doc instanceof BaseDocument)) return;
         
         //the initFolds is called when the document is disposed - I need to filter this call
-        if(getDocument().getLength() > 0) {
+        if (doc.getLength() > 0) {
             //start folds updater timer
             //put off the initial fold search due to the processor overhead during page opening
-            timer = new Timer();
+            timer = new Timer("XmlFoldManager[" + doc.getProperty(Document.StreamDescriptionProperty) + "]");
             restartTimer();
         }
     }
