@@ -43,6 +43,17 @@ import com.nwoods.jgo.JGoObject;
 import com.nwoods.jgo.JGoPen;
 import com.nwoods.jgo.JGoPort;
 import com.nwoods.jgo.JGoView;
+import java.awt.AWTKeyStroke;
+import java.awt.KeyboardFocusManager;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.soa.mapper.common.basicmapper.canvas.IMapperCanvasView;
 import org.netbeans.modules.soa.mapper.common.basicmapper.canvas.gtk.ICanvasMapperLink;
 import org.netbeans.modules.soa.mapper.common.basicmapper.canvas.gtk.ICanvasView;
@@ -142,6 +153,7 @@ public abstract class AbstractCanvasView
         mDropTargetListener = new DropTargetListenerWapper();
         setDnDHandler(getDefaultDnDHandler());
         mIsPathHighlightingEnabled = false;
+        configureFocusTravers();
     }
 
     /**
@@ -1053,5 +1065,172 @@ public abstract class AbstractCanvasView
         currentObj = obj;
 
         return returnStatus;
+    }
+    
+    
+    private void configureFocusTravers() {
+        KeyStroke tabForward = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
+        KeyStroke tabBackward = KeyStroke.getKeyStroke(KeyEvent.VK_TAB,
+                KeyEvent.SHIFT_DOWN_MASK);
+        
+        Set<AWTKeyStroke> oldForwardTK = getFocusTraversalKeys(
+                KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS);
+        Set<AWTKeyStroke> oldBackwardTK = getFocusTraversalKeys(
+                KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS);
+        
+        Set<AWTKeyStroke> newForwardTK = new HashSet<AWTKeyStroke>(
+                oldForwardTK);
+        Set<AWTKeyStroke> newBackwardTK = new HashSet<AWTKeyStroke>(
+                oldBackwardTK);
+        
+        newForwardTK.remove(tabForward);
+        newBackwardTK.remove(tabBackward);
+        
+        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS,
+                newForwardTK);
+        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
+                newBackwardTK);
+        
+        getInputMap().put(tabForward, "tabNextAction"); // NOI18N
+        getInputMap().put(tabBackward, "tabPrevAction"); // NOI18N
+        
+        getActionMap().put("tabNextAction", new TabNextAction());
+        getActionMap().put("tabPrevAction", new TabPrevAction());
+    }
+    
+    
+    public AbstractCanvasMethoidNode getNextNode() {
+        AbstractCanvasMethoidNode firstSelected = null;
+        int selectedCount = 0;
+        
+        Collection<?> selection = getSelectedNodes();
+        
+        if (selection != null) {
+            for (Object o : selection) {
+                if (o instanceof AbstractCanvasMethoidNode) {
+                    if (firstSelected == null) {
+                        firstSelected = (AbstractCanvasMethoidNode) o;
+                    }
+                    selectedCount++;
+                }
+            }
+        }
+        
+        if (selectedCount > 1) {
+            return firstSelected;
+        }
+        
+        List<?> nodes = getNodes();
+        int size = (nodes == null) ? 0 : nodes.size();
+        
+        if (size != 0) {
+            if (firstSelected == null) {
+                for (int i = 0; i < size; i++) {
+                    Object o = nodes.get(i);
+                    if (o instanceof AbstractCanvasMethoidNode) {
+                        return (AbstractCanvasMethoidNode) o;
+                    }
+                }
+            } else {
+                for (int i = 0; i < size; i++) {
+                    if (nodes.get(i) == firstSelected) {
+                        for (int j = i + 1; j < size; j++) {
+                            Object o = nodes.get(j);
+                            if (o instanceof AbstractCanvasMethoidNode) {
+                                return (AbstractCanvasMethoidNode) o;
+                            }
+                        }
+                        
+                        return null;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    
+    public AbstractCanvasMethoidNode getPrevNode() {
+        AbstractCanvasMethoidNode lastSelected = null;
+        int selectedCount = 0;
+        
+        Collection<?> selection = getSelectedNodes();
+        
+        if (selection != null) {
+            for (Object o : selection) {
+                if (o instanceof AbstractCanvasMethoidNode) {
+                    lastSelected = (AbstractCanvasMethoidNode) o;
+                    selectedCount++;
+                }
+            }
+        }
+        
+        if (selectedCount > 1) {
+            return lastSelected;
+        }
+        
+        List<?> nodes = getNodes();
+        int size = (nodes == null) ? 0 : nodes.size();
+        
+        if (size != 0) {
+            if (lastSelected == null) {
+                for (int i = size - 1; i >= 0; i--) {
+                    Object o = nodes.get(i);
+                    if (o instanceof AbstractCanvasMethoidNode) {
+                        return (AbstractCanvasMethoidNode) o;
+                    }
+                }
+            } else {
+                for (int i = size - 1; i >= 0; i--) {
+                    if (nodes.get(i) == lastSelected) {
+                        for (int j = i - 1; j >= 0; j--) {
+                            Object o = nodes.get(j);
+                            if (o instanceof AbstractCanvasMethoidNode) {
+                                return (AbstractCanvasMethoidNode) o;
+                            }
+                        }
+                        
+                        return null;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    
+    private void scrollNodeToBeVisible(AbstractCanvasMethoidNode node) {
+        Rectangle bounds = node.getBoundingRect();
+        if (bounds != null) {
+            scrollRectToVisible(bounds);
+        }
+    }
+    
+    
+    private class TabNextAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            AbstractCanvasMethoidNode nextNode = getNextNode();
+            if (nextNode != null) {
+                selectObject(nextNode);
+                scrollNodeToBeVisible(nextNode);
+            } else {
+                transferFocus();
+            }
+        }
+    }
+
+
+    private class TabPrevAction extends AbstractAction {
+        public void actionPerformed(ActionEvent e) {
+            AbstractCanvasMethoidNode prevNode = getPrevNode();
+            if (prevNode != null) {
+                selectObject(prevNode);
+                scrollNodeToBeVisible(prevNode);
+            } else {
+                transferFocusBackward();
+            }
+        }
     }
 }
