@@ -207,7 +207,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
      */
     void refreshAnnotations(Set<File> files) {
         if (files == null) {            
-            refreshAllAnnotationsTask.schedule(3000);
+            refreshAllAnnotationsTask.schedule(2000);
             return;
         }
         
@@ -234,7 +234,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             addToMap(filesToRefresh, fo);                                                    
         }
         
-        fireFileStatusChangedTask.schedule(3000);
+        fireFileStatusChangedTask.schedule(2000);
     }    
     
     /**
