@@ -283,7 +283,7 @@ public class ExeLauncher extends CommonLauncher {
                 list.size());//NOI18N
         for(LauncherResource file : list) {
             LogManager.log("    adding file " +  //NOI18N
-                    file.toString());//NOI18N
+                    file.getPath());//NOI18N
             addFileSection(fos, file, progress, total);
         }
     }
