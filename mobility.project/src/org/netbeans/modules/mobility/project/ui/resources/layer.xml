@@ -121,6 +121,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/class.gif"/> 
             </file>
 
             <file name="MIDPCanvas.java" url="templates/MIDP/MIDPCanvas_java.template">
@@ -132,6 +133,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/class.gif"/> 
             </file>
 
             <file name="LocalizationSupport.java" url="templates/MIDP/LocalizationSupport_java.template">
@@ -143,7 +145,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-             </file>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/project/ui/resources/class.gif"/> 
+            </file>
             <file name="LocalizationSupport.properties" url="templates/MIDP/LocalizationSupport_properties.template">
                 <attr name="position" intvalue="0"/>
                 <!--
