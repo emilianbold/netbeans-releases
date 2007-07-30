@@ -27,9 +27,9 @@ import javax.lang.model.type.TypeKind;
 import org.netbeans.api.java.source.JavaSource;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.jackpot.test.TestUtilities;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
 
@@ -54,7 +54,6 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
         return suite;
     }
 
-    @SuppressWarnings("unchecked")
     public void testAddFieldToBeginning() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -83,7 +82,7 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -107,7 +106,6 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
-    @SuppressWarnings("unchecked")
     public void testAddFieldToEnd() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -138,7 +136,7 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -161,7 +159,6 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
-    @SuppressWarnings("unchecked")
     public void testAddFieldToEmpty() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -182,7 +179,7 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -202,7 +199,6 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
-    @SuppressWarnings("unchecked")
     public void testAddNonAbstractMethod() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
@@ -223,14 +219,13 @@ public class FeatureAddingTest extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
-                ModifiersTree parMods = make.Modifiers(Collections.<Modifier>emptySet(), Collections.<AnnotationTree>emptyList());
                 MethodTree newMethod = make.Method(
                     make.Modifiers( 
                         Collections.singleton(Modifier.PUBLIC), // modifiers

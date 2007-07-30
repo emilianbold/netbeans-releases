@@ -27,10 +27,10 @@ import java.io.IOException;
 import java.util.List;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.jackpot.test.TestUtilities;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -79,7 +79,7 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -121,7 +121,7 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -172,7 +172,7 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
             "}\n";
         JavaSource src = getJavaSource(testFile);
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -188,7 +188,7 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
                                 classTree.getSimpleName(),
                                 classTree.getTypeParameters(),
                                 null,
-                                (List<ExpressionTree>) classTree.getImplementsClause(),
+                                classTree.getImplementsClause(),
                                 classTree.getMembers()
                             );
                         workingCopy.rewrite(classTree, copy);

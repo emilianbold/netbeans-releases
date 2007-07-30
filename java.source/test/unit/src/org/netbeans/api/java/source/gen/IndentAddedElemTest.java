@@ -28,7 +28,7 @@ import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import junit.textui.TestRunner;
-import org.netbeans.jackpot.test.TestUtilities;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestSuite;
 
@@ -73,6 +73,7 @@ public class IndentAddedElemTest extends GeneratorTest {
         
         process(
                 new Transformer<Void, Object>() {
+            @Override
             public Void visitClass(ClassTree node, Object p) {
                 super.visitClass(node, p);
                 if ("Test".contentEquals(node.getSimpleName())) {
@@ -83,14 +84,14 @@ public class IndentAddedElemTest extends GeneratorTest {
                     MethodTree member = make.Method(
                             make.Modifiers(
                             Collections.singleton(Modifier.PUBLIC), // modifiers
-                            Collections.EMPTY_LIST // annotations
+                            Collections.<AnnotationTree>emptyList() // annotations
                             ), // modifiers and annotations
                             "Eval", // name
                             make.PrimitiveType(TypeKind.DOUBLE), // return type
-                            Collections.EMPTY_LIST, // type parameters for parameters
+                            Collections.<TypeParameterTree>emptyList(), // type parameters for parameters
                             parList, // parameters
-                            Collections.EMPTY_LIST, // throws
-                            make.Block(Collections.EMPTY_LIST, false), // empty statement block
+                            Collections.<ExpressionTree>emptyList(), // throws
+                            make.Block(Collections.<StatementTree>emptyList(), false), // empty statement block
                             null // default value - not applicable here, used by annotations
                             );
                     
@@ -100,6 +101,7 @@ public class IndentAddedElemTest extends GeneratorTest {
                 return null;
             }
         }
+        
         );
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
@@ -123,6 +125,7 @@ public class IndentAddedElemTest extends GeneratorTest {
         
         process(
                 new Transformer<Void, Object>() {
+            @Override
             public Void visitClass(ClassTree node, Object p) {
                 super.visitClass(node, p);
                 if ("Test".contentEquals(node.getSimpleName())) {
@@ -142,6 +145,7 @@ public class IndentAddedElemTest extends GeneratorTest {
                 return null;
             }
         }
+        
         );
         String res = TestUtilities.copyFileToString(testFile);
         assertEquals(golden, res);
