@@ -27,23 +27,5 @@ Microsystems, Inc. All Rights Reserved.
             </file>
              </folder>
     </folder>
-
-    <folder name="Menu">
-        <folder name="Help">
-            <folder name="Tutorials">
-                <file name="quick-start-mobility.url" url="nbresloc:/org/netbeans/modules/mobility/javahelp/quick-start-mobility.url">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.javahelp.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
-                    <attr name="position" intvalue="300"/>
-                </file>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.javahelp.Bundle"/>
-                <file name="quick-start-cdc.url" url="nbresloc:/org/netbeans/modules/mobility/javahelp/quick-start-cdc.url">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.javahelp.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
-                    <attr name="position" intvalue="400"/>
-                </file>                
-                </folder> 
-        </folder>
-    </folder>
-
+    
 </filesystem>
