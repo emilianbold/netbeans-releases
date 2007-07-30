@@ -245,12 +245,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             map.put(UC_AS_HOME_TOKEN, directory);
             
             if(SystemUtils.isWindows()) {
-                map.put(JDIC_LIB_TOKEN, 
+                map.put(JDIC_LIB_TOKEN,
                         new File(directory, JDIC_LIB_WINDOWS));
-                map.put(JDIC_STUB_LIB_TOKEN, 
+                map.put(JDIC_STUB_LIB_TOKEN,
                         new File(directory, JDIC_STUB_LIB_WINDOWS));
             } else if (SystemUtils.isLinux()) {
-                map.put(JDIC_LIB_TOKEN, 
+                map.put(JDIC_LIB_TOKEN,
                         new File(directory, JDIC_LIB_LINUX));
                 map.put(JDIC_STUB_LIB_TOKEN,
                         new File(directory, JDIC_STUB_LIB_LINUX));
@@ -275,7 +275,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
             FileUtils.modifyFile(new File(directory, UC_BIN_SUBDIR), map);
             FileUtils.modifyFile(new File(directory, UC_CONFIG_SUBDIR), map);
-        
+            
             
             final String javaHomeString = javaHome.getAbsolutePath();
             final String imqVarHomeString = new File(
@@ -310,7 +310,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         /////////////////////////////////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.files.permissions")); // NOI18N
-        
+            
             SystemUtils.correctFilesPermissions(
                     new File(directory, "bin"));
             SystemUtils.correctFilesPermissions(
@@ -354,7 +354,11 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         
                         try {
                             FileUtils.deleteFile(asadminpass);
-                            FileUtils.deleteFile(asadmintruststore);
+                            FileUtils.deleteFile(asadmintruststore);                            
+                            FileUtils.deleteFile(
+                                    new File(directory,
+                                    DOMAINS_SUBDIR + File.separator + DOMAIN_NAME),
+                                    true);
                             
                             GlassFishUtils.createDomain(
                                     directory,
