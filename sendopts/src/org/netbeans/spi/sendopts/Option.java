@@ -70,6 +70,7 @@ public final class Option {
             case 2: this.impl = OptionImpl.createOneArg(this, true); break;
             case 3: this.impl = OptionImpl.createAdd(this, false); break;
             case 4: this.impl = OptionImpl.createAdd(this, true); break;
+            case 5: this.impl = OptionImpl.createAlways(this); break;
             default: throw new IllegalArgumentException("Type: " + type); // NOI18N
         }
         this.keys = EMPTY;
@@ -290,6 +291,24 @@ public final class Option {
      */
     public static Option defaultArguments() {
         return new Option(NO_SHORT_NAME, null, 4);
+    }
+
+    /** Creates an option that is always present. This can be useful for
+     * processors that want to be notified everytime the command line
+     * is successfuly parsed. 
+     * 
+     * Option always = Option.always();</pre> 
+     * and inside of the {@link OptionProcessor} declaring this
+     * option use:<pre>
+     *   public void process(Env env, Map&lt;Option,String[]&gt; values) throws CommandException {
+     *     assert values.contains(always);
+     *   }</pre>
+     * 
+     * @return the option that always matches correct command line
+     * @since 2.1
+     */
+    public static Option always() {
+        return new Option(NO_SHORT_NAME, null, 5);
     }
 
     /** Associates a name with given option. By default 

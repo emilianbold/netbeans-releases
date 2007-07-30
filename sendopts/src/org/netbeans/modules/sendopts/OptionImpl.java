@@ -281,6 +281,31 @@ public abstract class OptionImpl implements Cloneable {
     public OptionImpl findNotUsedOption(Set<OptionImpl> used) {
         return appear == null && used.contains(this) ? this : null;
     }
+    public static OptionImpl createAlways(Option o) {
+        class Always extends OptionImpl {
+            public Always(Option o, OptionProcessor p, int t) {
+                super(o, p, 5);
+            }
+    
+            public void process(String[] additionalArgs, Map<Option,String[]> optionsAndTheirArgs) throws CommandException {
+                optionsAndTheirArgs.put(option, NO_VALUE);
+            }
+            public void associateValue(String value) {
+                throw new IllegalStateException();
+            }
+            
+            public Appearance checkConsistent(Set<OptionImpl> presentOptions) {
+                return Appearance.YES;
+            }
+            
+            protected OptionImpl handleAdd(Collection<OptionImpl> allOptions) {
+                Always n = doClone(this);
+                allOptions.add(n);
+                return n;
+            }
+        }
+        return new Always(o, null, 0);
+    }
     
     /** Creates an impl that delegates to given option and NoArgumentProcessor processor.
      */

@@ -26,7 +26,23 @@ Microsystems, Inc. All Rights Reserved.
     <apidef name="sendoptsspi">SendOpts SPI</apidef>
 </apidefs>
 <changes>
+    <change id="always">
+      <api name="sendoptsspi"/>
+      <summary>An option that is always on</summary>
+      <version major="2" minor="1"/>
+      <date day="30" month="7" year="2007"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+      <description>
+          Those processors that wish to be informed about every command line
+          processing, can register themselves as providers of 
+          <a href="@TOP@/org/netbeans/spi/sendopts/Option.html#always()">always</a>
+          option. This one is automatically present in each successfully parsed
+          command line.
+     </description>
+    </change>
     <change id="completerewrite">
+      <api name="sendoptsspi"/>
       <summary>Completelly rewritten</summary>
       <version major="2" minor="0"/>
       <date day="20" month="8" year="2006"/>
