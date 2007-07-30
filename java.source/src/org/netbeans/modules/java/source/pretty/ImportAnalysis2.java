@@ -266,10 +266,10 @@ public class ImportAnalysis2 {
         Element alreadyImported = simpleNames2Elements.get(element.getSimpleName().toString());
         
         if (alreadyImported != null && !element.equals(alreadyImported)) {
-            //clashing import, use FQN:
-            model.setElement(orig, null);
-            model.setType(orig, null);
-            return orig;
+            // clashing import, use FQN - no need to continue with QualIdent,
+            // make MemberSelectTree
+            // (see issue #111024 for details)
+            return make.MemberSelect(orig.getExpression(), orig.getIdentifier());
         }
         
         //no creation of static imports yet, import class for fields and methods:

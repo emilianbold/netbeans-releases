@@ -1439,6 +1439,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
             "        testClass.getFoo().toString().toString();\n" +
             "    }\n" +
             "    public List foo = new List();\n" +
+            "    public java.util.List foo = new java.util.List();\n" +
             " }\n";
         JavaSource testSource = getJavaSource(testFile);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
