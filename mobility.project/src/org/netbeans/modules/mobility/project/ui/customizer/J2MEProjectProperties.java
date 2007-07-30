@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.mobility.project.ui.customizer;
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import org.netbeans.api.mobility.project.ui.customizer.ProjectProperties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
 import org.netbeans.spi.mobility.deployment.DeploymentPlugin;
@@ -302,6 +304,10 @@ public class J2MEProjectProperties implements ProjectProperties {
                     CustomizerGeneral cg = new CustomizerGeneral();
                     cg.initValues(J2MEProjectProperties.this, null);
                     cg.getSortedSubprojectsList();
+                    
+                    //storing global default encoding by dcurrent project (see issue #97855)
+                    String enc = sharedProps.getProperty(DefaultPropertiesDescriptor.JAVAC_ENCODING);
+                    if (enc != null) FileEncodingQuery.setDefaultEncoding(Charset.forName(enc));
                     
                     return null;
                 }
