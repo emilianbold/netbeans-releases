@@ -63,7 +63,6 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
                 return instances.get(key);
         }
         instances.put(filtersList, new AddAction(filters));
-        
         return instances.get(filtersList);
     } 
     
@@ -110,7 +109,6 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
             else
                 menu.add(getSeparator( (String) addAction.getValue(Action.NAME)));
         }
-        
         return menu;
     }
     
@@ -125,7 +123,6 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
             if (addActionItems != null && addActionItems.length > 0)
                 enabled = true;
         }
-        
         return enabled;
     }
     
@@ -133,11 +130,10 @@ public final class AddAction extends AbstractAction  implements ActionContext , 
         JPanel panel = new JPanel(new BorderLayout());
         JLabel label = new JLabel(name);
         
-        panel.setBackground(new Color(230,230,230));
+        //panel.setBackground(new Color(230,230,230));
         label.setHorizontalAlignment(SwingConstants.CENTER);
-        label.setFont(label.getFont().deriveFont(Font.BOLD, 10f));
+        //label.setFont(label.getFont().deriveFont(Font.PLAIN, 12));
         panel.add(label, BorderLayout.CENTER);
-        
         return panel;
     }
 
