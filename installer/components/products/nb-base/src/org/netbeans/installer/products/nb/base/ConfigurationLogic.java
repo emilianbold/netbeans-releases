@@ -82,7 +82,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             LogManager.log("... path    : "  + jdkHome);
             LogManager.log("... version : "  + info.getVersion().toJdkStyle());
             LogManager.log("... vendor  : "  + info.getVendor());
-            LogManager.log("... final   : "  + info.isNonFinal());
+            LogManager.log("... final   : "  + (!info.isNonFinal()));
             NetBeansUtils.setJavaHome(installLocation, jdkHome);
         } catch (IOException e) {
             throw new InstallationException(

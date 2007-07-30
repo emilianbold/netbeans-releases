@@ -82,7 +82,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         LogManager.log("... path    : "  + javaHome);
         LogManager.log("... version : "  + info.getVersion().toJdkStyle());
         LogManager.log("... vendor  : "  + info.getVendor());
-        LogManager.log("... final   : "  + info.isNonFinal());
+        LogManager.log("... final   : "  + (!info.isNonFinal()));
         
         final FilesList list = getProduct().getInstalledFiles();
         
