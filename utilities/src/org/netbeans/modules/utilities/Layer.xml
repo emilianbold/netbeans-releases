@@ -246,24 +246,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- Window -->
 
         <folder name="Help">
-            <folder name="Tutorials">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-          <!--      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/> -->
-                <!-- XXX this is probably bogus, supplied by ide/welcome, should be deleted? what about the other items? should be moved to ide cluster -->
-                <attr name="position" intvalue="600"/>
-                <file name="quick-start.url" url="nbresloc:/org/netbeans/modules/utilities/quick-start.url">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                    <attr name="position" intvalue="200"/>
-                </file>
-                <file name="platform-tutorial.url" url="nbresloc:/org/netbeans/modules/utilities/platform-tutorial.url">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                    <attr name="position" intvalue="100"/>
-                </file>
-                <file name="using-netbeans.url" url="nbresloc:/org/netbeans/modules/utilities/using-netbeans.url">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                    <attr name="position" intvalue="500"/>
-                </file>
-            </folder>
             <file name="shortcuts.xml" url="nbresloc:/org/netbeans/modules/utilities/shortcuts.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="position" intvalue="700"/>
