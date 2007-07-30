@@ -173,7 +173,13 @@ public class SchemaParser extends DefaultHandler {
         } catch( IOException e ) {
             validationResults.add( new WSDL2Java.ValidationResult(
                 WSDL2Java.ValidationResult.ErrorLevel.FATAL, "Connection problem. Cannot download schema from " + uri + " location." ));
-        }        
+        } catch( IllegalArgumentException e ) {
+            validationResults.add( new WSDL2Java.ValidationResult(
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, e.getLocalizedMessage()));
+        } catch( Exception e ) {
+            validationResults.add( new WSDL2Java.ValidationResult(
+                WSDL2Java.ValidationResult.ErrorLevel.FATAL, e.getLocalizedMessage()));
+        }
     }
 
     public void setDocumentLocator( Locator locator ) {
