@@ -24,22 +24,14 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
-import java.io.IOException;
-
 import javax.swing.text.*;
 import javax.swing.Icon;
-
-import org.netbeans.editor.*;
-//import org.netbeans.editor.ext.*;
-import org.netbeans.editor.Utilities;
 import javax.swing.JLabel;
+import org.netbeans.editor.*;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.spi.editor.completion.CompletionItem;
-
 import org.netbeans.editor.ext.CompletionQuery.ResultItem;
-import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 
 /**
  * This class carries result information required by NetBeans Editor module.
@@ -126,8 +118,9 @@ class XMLResultItem implements ResultItem, CompletionItem {
         try {
             String currentText = doc.getText(offset, (doc.getLength() - offset) < text.length() ? (doc.getLength() - offset) : text.length()) ;
             if(!text.equals(currentText)) {
-                doc.remove( offset, len );
-                doc.insertString( offset, text, null);
+                if(!text.startsWith("&")) //NOI18N
+                    doc.remove( offset, len);
+                doc.insertString(offset, text, null);
             } else {
                 int newCaretPos = component.getCaret().getDot() + text.length() - len;
                 //#82242 workaround - the problem is that in some situations
