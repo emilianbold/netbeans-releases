@@ -15,11 +15,10 @@
 <tocitem text="IDE Basics" expand="false">
 
   <tocitem text="Getting Started" >
-   <tocitem text="IDE Overview" target="gs.tour" />
+    <tocitem text="IDE Overview" target="gs.tour" />
     <tocitem text="Key Concepts" target="gs.key" />
   </tocitem>
   
-
 
   <tocitem text="Basic File Features" >
     <tocitem text="Searching Files" target="files.search" />
@@ -53,6 +52,10 @@
       <tocitem text="Customizing the Contextual Menu for an Object" target="configure.menucontextual" />
       <tocitem text="Customizing Toolbars in the IDE" target="configure.tbcustomize" />
       <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
+    </tocitem>
+    
+    <tocitem text="Version Control and File History">
+      <tocitem text="Local History" target="pending" />
     </tocitem>
 
 <tocitem text="Managing Plugins" >
@@ -124,16 +127,8 @@
         <tocitem text="Checking a Cascading Style Sheet for Validity" target="css_checkcss" />
         <tocitem text="Copying and Pasting CSS References" target="css_copypastecss" />
       </tocitem>
-    </tocitem>   
-
-
-
+    </tocitem>
 
   </tocitem>
 
-
 </toc>
-  
-  
-  
-  
