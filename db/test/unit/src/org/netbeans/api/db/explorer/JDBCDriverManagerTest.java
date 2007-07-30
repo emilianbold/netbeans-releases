@@ -19,7 +19,9 @@
 
 package org.netbeans.api.db.explorer;
 
+import java.lang.ref.WeakReference;
 import java.net.URL;
+import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
 import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
 import org.openide.cookies.OpenCookie;
@@ -44,19 +46,17 @@ public class JDBCDriverManagerTest extends TestBase {
         Util.deleteDriverFiles();
 
         JDBCDriver driver1 = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[0]);
-        JDBCDriverManager.getDefault().addDriver(driver1);
+        // JDBCDriverManager.getDefault().addDriver(driver1);
+        DataObject driver1DO = JDBCDriverConvertor.create(driver1);
 
         // must recognize another XMLDataObject first, since the last one
         // is held in XMLDataObject.sharedParserImpl and can't be GC'd
         DataObject dobj = DataObject.find(Repository.getDefault().getDefaultFileSystem().getRoot().createData("foo.xml"));
         dobj.getCookie(OpenCookie.class);
 
-        // this used to pass before issue 75204 was fixed
-        // we can now GC the driver's DataObject
-        // Reference ref = new WeakReference(DataObject.find(getDrivesFolder().getFileObject("org_bar_BarDriver.xml")));
-        // assertGC("Should be able to GC the driver's DataObject", ref);
-
-        System.gc();
+        WeakReference driver1DORef = new WeakReference(driver1DO);
+        driver1DO = null;
+        assertGC("Can GC the driver's DataObject", driver1DORef);
 
         // this used to fail as described in issue 75204
         assertEquals(1, JDBCDriverManager.getDefault().getDrivers().length);
