@@ -51,7 +51,7 @@ import java.util.*;
 
 public final class PIMBrowserCD extends ComponentDescriptor {
     
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.PIMBrowser"); // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.pda.PIMBrowser"); // NOI18N
     
     public static final int VALUE_CONTACT_LIST = 1;
     public static final int VALUE_EVENT_LIST = 2;
@@ -118,7 +118,8 @@ public final class PIMBrowserCD extends ComponentDescriptor {
     
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
-        MidpProjectSupport.addLibraryToProject(component.getDocument(), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
+        //MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_LAF); //NOI18N
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_PDA); //NOI18N
     }
     
     protected void gatherPresenters(ArrayList<Presenter> presenters) {

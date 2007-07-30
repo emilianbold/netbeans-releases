@@ -143,7 +143,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
 
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY); //NOI18N
     }
 
     protected void gatherPresenters(ArrayList<Presenter> presenters) {

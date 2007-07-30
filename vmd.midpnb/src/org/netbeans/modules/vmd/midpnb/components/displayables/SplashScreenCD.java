@@ -36,6 +36,7 @@ import org.openide.util.NbBundle;
 
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 
 /**
  *
@@ -62,7 +63,12 @@ public class SplashScreenCD extends ComponentDescriptor {
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP_2;
     }
-
+    
+    public void postInitialize(DesignComponent component) {
+        super.postInitialize(component);
+        MidpProjectSupport.addLibraryToProject(component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY); //NOI18N
+    }
+    
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
             new PropertyDescriptor(PROP_TIMEOUT, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue (5000), false, true, MidpVersionable.MIDP_2),

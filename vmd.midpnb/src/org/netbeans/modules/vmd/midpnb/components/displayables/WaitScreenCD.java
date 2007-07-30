@@ -62,6 +62,11 @@ public final class WaitScreenCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP_2;
     }
     
+    public void postInitialize(DesignComponent component) {
+        super.postInitialize(component);
+        MidpProjectSupport.addLibraryToProject(component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY); //NOI18N
+    }
+    
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
         return Arrays.asList(
                 new PropertyDescriptor(PROP_TASK, CancellableTaskCD.TYPEID, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)

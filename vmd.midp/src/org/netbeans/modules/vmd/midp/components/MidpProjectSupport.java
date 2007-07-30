@@ -70,8 +70,8 @@ public final class MidpProjectSupport {
                     return;
                 ProjectClassPathExtender extender = project.getLookup().lookup(ProjectClassPathExtender.class);
                 final LibraryManager libraryManager = LibraryManager.getDefault();
-                for (int i = 0; i < libraryNames.length; i++) {
-                    final Library library = libraryManager.getLibrary(libraryNames[i]);
+                for (String libraryName : libraryNames) {
+                    final Library library = libraryManager.getLibrary(libraryName);
                     if (library != null) {
                         try {
                             extender.addLibrary(library);

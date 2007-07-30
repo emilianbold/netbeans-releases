@@ -54,8 +54,11 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
     public static final String PROP_IMAGE = "image"; // NOI18N
     public static final String PROP_TEXT = "text"; // NOI18N
     public static final String PROP_TEXT_FONT = "textFont"; // NOI18N
-
-    public static final String[] MIDP_NB_LIBRARY = {"NetBeans MIDP Components"}; // NOI18N
+    
+    public static final String[] MIDP_NB_LIBRARY_PDA = {"netbeans_midp_components_pda"}; // NOI18N
+    public static final String[] MIDP_NB_LIBRARY_WMA = {"netbeans_midp_components_wma"}; // NOI18N
+    public static final String[] MIDP_NB_LIBRARY_LAF = {"netbeans_midp_components_laf"}; // NOI18N
+    public static final String[] MIDP_NB_LIBRARY = {"netbeans_midp_components_basic"}; // NOI18N
 
     public AbstractInfoScreenCD () {
     }
@@ -66,11 +69,6 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
 
     public VersionDescriptor getVersionDescriptor() {
         return MidpVersionDescriptor.MIDP_2;
-    }
-
-    @Override
-    public void postInitialize (DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), MIDP_NB_LIBRARY);
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {

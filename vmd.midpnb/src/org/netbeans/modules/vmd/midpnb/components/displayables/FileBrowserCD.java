@@ -57,7 +57,7 @@ import java.util.List;
 
 public final class FileBrowserCD extends ComponentDescriptor {
     
-    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.FileBrowser"); // NOI18N
+    public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "org.netbeans.microedition.lcdui.pda.FileBrowser"); // NOI18N
     
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/file_browser_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/file_browser_32.png"; // NOI18N
@@ -121,7 +121,8 @@ public final class FileBrowserCD extends ComponentDescriptor {
 
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
+        //MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_LAF); //NOI18N
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_PDA); //NOI18N
     }
 
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
