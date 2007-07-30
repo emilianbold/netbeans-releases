@@ -193,4 +193,16 @@ Microsystems, Inc. All Rights Reserved.
         <file name="persistence_ORM-1.0.xml" url="persistence_ORM-1.0.xml"/>
     </folder>
 
+    <folder name="Plugins">
+        <!-- Register XML module catalog plugin -->
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <file name="org-netbeans-modules-j2ee-persistence-unit-PersistenceCatalog.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.persistence.unit.PersistenceCatalog"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>
