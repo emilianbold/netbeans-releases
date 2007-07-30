@@ -114,7 +114,7 @@ public class SubResourceLocatorsChildren extends Children.Keys {
             
         }
         
-        setKeys(sortKeys(keys));
+        setKeys(Utils.sortKeys(keys));
     }
     
     protected Node[] createNodes(final Object key) {
@@ -144,19 +144,7 @@ public class SubResourceLocatorsChildren extends Children.Keys {
         
         return new Node[0];
     }
-    
-    private Collection<String> sortKeys(Collection<String> keys) {
-        Collection<String> sortedKeys = new TreeSet<String>(
-                new Comparator<String> () {
-            public int compare(String str1, String str2) {
-                return str1.compareTo(str2);
-            }
-        });
-        
-        sortedKeys.addAll(keys);
-        return sortedKeys;
-    }
-    
+   
     class RestServicesListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             updateNodeTask.schedule(2000);

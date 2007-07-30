@@ -37,6 +37,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.Element;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.Icon;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
@@ -85,18 +86,11 @@ public class RestServicesImpl implements RestServices {
     private void initialize() {
         restServiceManager = helper.createPersistentObjectManager(new RestServiceProvider());
         restServiceManager.addChangeListener(new ChangeListener() {
-            private boolean isBusy;
-            
             public synchronized void stateChanged(ChangeEvent e) {
-                System.out.println("RestServices.stateChanged");
-                //(new Exception()).printStackTrace();
-                System.out.println("changeEvent source = " + e.getSource());
                 if (disableChangeSupport) {
-                    System.out.println("skipping");
                     return;
                 }
                 propChangeSupport.firePropertyChange("/restservices", null, null); // NOI18N
-                isBusy = false;
             }
         });
     }

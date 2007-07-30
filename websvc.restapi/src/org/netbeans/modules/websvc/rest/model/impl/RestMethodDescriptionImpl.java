@@ -17,6 +17,7 @@
 package org.netbeans.modules.websvc.rest.model.impl;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.netbeans.modules.websvc.rest.model.impl.RestServicesImpl.Status;
 
 /**
@@ -24,15 +25,42 @@ import org.netbeans.modules.websvc.rest.model.impl.RestServicesImpl.Status;
  * @author Peter Liu
  */
 public abstract class RestMethodDescriptionImpl {
-    protected String name;
+    private String name;
+    private String returnType;
     
-    public RestMethodDescriptionImpl(Element methodElement) {       
+    public RestMethodDescriptionImpl(ExecutableElement methodElement) {       
         this.name = methodElement.getSimpleName().toString();
+        this.returnType = methodElement.getReturnType().toString();
     }
     
     public String getName() {
         return name;
     }
     
-    public abstract Status refresh(Element element);
+    public String getReturnType() {
+        return returnType;
+    }
+    
+    public Status refresh(Element element) {
+        ExecutableElement methodElement = (ExecutableElement) element;
+        boolean isModified = false;
+        
+        String newValue = methodElement.getSimpleName().toString();
+        if (!name.equals(newValue)) {
+            name = newValue;
+            isModified = true;
+        }
+        
+        newValue = methodElement.getReturnType().toString();
+        if (!returnType.equals(newValue)) {
+            returnType = newValue;
+            isModified = true;
+        }
+        
+        if (isModified) {
+            return Status.UNMODIFIED;
+        }
+        
+        return Status.UNMODIFIED;
+    }
 }

@@ -17,6 +17,7 @@
 package org.netbeans.modules.websvc.rest.model.impl;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
 import org.netbeans.modules.websvc.rest.model.impl.RestServicesImpl.Status;
 
@@ -30,7 +31,7 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
     private String consumeMime;
     private String produceMime;
     
-    public HttpMethodImpl(Element methodElement) {
+    public HttpMethodImpl(ExecutableElement methodElement) {
         super(methodElement);   
         
         this.type = Utils.getHttpMethod(methodElement);
@@ -50,13 +51,17 @@ public class HttpMethodImpl extends RestMethodDescriptionImpl implements HttpMet
         return produceMime;
     }
     
-    public Status refresh(Element element) {
+    public Status refresh(Element element) {    
+        boolean isModified = false;
+        
+        if (super.refresh(element) == Status.MODIFIED) {
+            isModified = true;
+        }
+        
         if (!Utils.hasHttpMethod(element)) {
             return Status.REMOVED;
         }
-        
-        boolean isModified = false;
-        
+    
         String newValue = Utils.getConsumeMime(element);
         if (!consumeMime.equals(newValue)) {
             consumeMime = newValue;

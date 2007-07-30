@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.TreeSet;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
@@ -39,6 +40,7 @@ import org.openide.util.RequestProcessor;
 
 
 public class RestServicesChildren extends Children.Keys {
+    private Project project;
     private MetadataModel<RestServicesMetadata> model;
     private RestServicesListener listener;
     
@@ -48,8 +50,9 @@ public class RestServicesChildren extends Children.Keys {
         }
     });
     
-    public RestServicesChildren(MetadataModel<RestServicesMetadata> model) {
+    public RestServicesChildren(Project project, MetadataModel<RestServicesMetadata> model) {
         this.model = model;
+        this.project = project;
     }
     
     protected void addNotify() {
@@ -105,7 +108,7 @@ public class RestServicesChildren extends Children.Keys {
             
         }
         
-        setKeys(sortKeys(keys));
+        setKeys(Utils.sortKeys(keys));
     }
     
     protected Node[] createNodes(final Object key) {
@@ -116,7 +119,7 @@ public class RestServicesChildren extends Children.Keys {
                     RestServiceDescription desc = root.getRestServiceDescription((String) key);
                     
                     if (desc != null) {
-                        return new Node[] {new RestServiceNode(model, desc)};
+                        return new Node[] {new RestServiceNode(project, model, desc)};
                     }
                     
                     return new Node[0];
@@ -129,20 +132,7 @@ public class RestServicesChildren extends Children.Keys {
         }
         
         return new Node[0];
-    }
-    
-    private Collection<String> sortKeys(Collection<String> keys) {
-        Collection<String> sortedKeys = new TreeSet<String>(
-                new Comparator<String> () {
-            public int compare(String str1, String str2) {
-                return str1.compareTo(str2);
-            }
-        });
-        
-        sortedKeys.addAll(keys);
-        return sortedKeys;
-    }
-    
+    }  
     
     class RestServicesListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {

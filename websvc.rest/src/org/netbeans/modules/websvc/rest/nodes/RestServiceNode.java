@@ -19,32 +19,62 @@
 package org.netbeans.modules.websvc.rest.nodes;
 
 import java.awt.Image;
+import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.openide.nodes.AbstractNode;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
+import org.openide.ErrorManager;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.OpenAction;
+import org.openide.actions.PropertiesAction;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 public class RestServiceNode extends AbstractNode{
+    private Project project;
     private String serviceName;
     private String uriTemplate;
-    
+    private String className;
+   
     private MetadataModel<RestServicesMetadata> model;
     
-    public RestServiceNode(MetadataModel<RestServicesMetadata> model,
+    public  RestServiceNode(Project project, MetadataModel<RestServicesMetadata> model,
             RestServiceDescription desc) {
-        super(new RestServiceChildren(model, desc.getName()));
+        this(project, model, desc, new InstanceContent());
+    }
+    
+    private RestServiceNode(Project project, MetadataModel<RestServicesMetadata> model,
+            RestServiceDescription desc, InstanceContent content) {
+        super(new RestServiceChildren(model, desc.getName()), new AbstractLookup(content));
+        this.project = project;
         this.serviceName = desc.getName();
         this.uriTemplate = desc.getUriTemplate();
+        this.className = desc.getClassName();
+        
+        content.add(this);
+        content.add(getOpenCookie());
     }
     
     public String getDisplayName() {
-        return serviceName + " [\"" + uriTemplate + "\"]";
+        if (uriTemplate.length() > 0) {
+            return serviceName + " [\"" + uriTemplate + "\"]";
+        } else {
+            return serviceName;
+        }
     }
     
     public String getShortDescription() {
         return "";
     }
-
+    
     private static final java.awt.Image SERVICE_BADGE =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/restservice.png" ); //NOI18N
     
@@ -59,4 +89,35 @@ public class RestServiceNode extends AbstractNode{
     public Image getOpenedIcon(int type){
         return getIcon( type);
     }
+    
+    public Action getPreferredAction() {
+        return SystemAction.get(OpenAction.class);
+    }
+    
+    // Create the popup menu:
+    public Action[] getActions(boolean context) {
+        return new SystemAction[] {
+            SystemAction.get(OpenAction.class),
+            null,
+            SystemAction.get(DeleteAction.class),
+            null,
+            SystemAction.get(PropertiesAction.class),
+        };
+    }
+    
+    private OpenCookie getOpenCookie() {
+        OpenCookie oc = null;
+        
+        try {
+            FileObject source = SourceGroupSupport.getFileObjectFromClassName(className, project);
+            System.out.println("source = " + source);
+            DataObject d = DataObject.find(source);
+            oc = (OpenCookie)d.getCookie(OpenCookie.class);
+        } catch (Exception de) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+        } 
+        
+        return oc;
+    }
+    
 }

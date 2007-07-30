@@ -203,6 +203,10 @@ public class SourceGroupSupport {
     }
     
     public static JavaSource getJavaSourceFromClassName(String qualifiedClassName, Project project) throws IOException {
+        return JavaSource.forFileObject(getFileObjectFromClassName(qualifiedClassName, project));
+    }
+    
+    public static FileObject getFileObjectFromClassName(String qualifiedClassName, Project project) throws IOException {
         String name = qualifiedClassName;
         for (String pkg = getPackageName(name); pkg != null; name = pkg) {
             for (SourceGroup sg : getJavaSourceGroups(project)) {
@@ -213,7 +217,7 @@ public class SourceGroupSupport {
                             continue;
                         }
                         if (qualifiedClassName.endsWith(fo.getName())) {
-                            return JavaSource.forFileObject(fo);
+                            return fo;
                         }
                     }
                 }

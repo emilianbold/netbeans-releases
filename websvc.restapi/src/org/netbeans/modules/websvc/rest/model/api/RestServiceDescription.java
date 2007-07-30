@@ -32,6 +32,8 @@ public interface RestServiceDescription {
     public String getUriTemplate();
 
     public List<RestMethodDescription> getMethods();
-    
+ 
+    public String getClassName();
+  
     public boolean isRest();
 }

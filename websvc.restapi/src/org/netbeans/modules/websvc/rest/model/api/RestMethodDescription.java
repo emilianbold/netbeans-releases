@@ -23,4 +23,5 @@ package org.netbeans.modules.websvc.rest.model.api;
 public interface RestMethodDescription {
     public String getName();
     
+    public String getReturnType();
 }

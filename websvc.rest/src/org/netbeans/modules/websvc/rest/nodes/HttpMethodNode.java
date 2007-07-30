@@ -29,6 +29,7 @@ public class HttpMethodNode extends AbstractNode{
     private String methodName;
     private String produceMime;
     private String consumeMime;
+    private String returnType;
     private MetadataModel<RestServicesMetadata> model;
     
     public HttpMethodNode(MetadataModel<RestServicesMetadata> model, HttpMethod method) {
@@ -36,16 +37,22 @@ public class HttpMethodNode extends AbstractNode{
         this.methodName = method.getName();
         this.produceMime = method.getProduceMime();
         this.consumeMime = method.getConsumeMime();
+        this.returnType = method.getReturnType();
     }
     
     public String getDisplayName() {
-        return methodName + "() : [\"" + consumeMime + "\" : \"" + produceMime + "\"]";
+        if (consumeMime.length() > 0 || produceMime.length() > 0) {
+            return methodName + "() : " + Utils.stripPackageName(returnType) +
+                    " [\"" + consumeMime + "\" \"" + produceMime + "\"]";
+        } else {
+            return methodName + "() : " + Utils.stripPackageName(returnType);
+        }
     }
     
     public String getShortDescription() {
         return "";
     }
-
+    
     private static final java.awt.Image METHOD_BADGE =
             org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/method.png" ); //NOI18N
     

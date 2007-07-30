@@ -46,7 +46,7 @@ public class RestServicesNode extends AbstractNode { //implements PropertyChange
     static Icon openedFolderIconCache;
     
     public RestServicesNode(Project project, MetadataModel<RestServicesMetadata> model) {
-        super(new RestServicesChildren(model));
+        super(new RestServicesChildren(project, model));
         setDisplayName(NbBundle.getBundle(RestServicesNode.class).getString("LBL_RestServices"));
         this.project=project;
     }

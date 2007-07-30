@@ -41,16 +41,9 @@ import org.openide.util.RequestProcessor;
 public class RestServiceChildren extends Children.Keys {
     private MetadataModel<RestServicesMetadata> model;
     private String serviceName;
-    private RestServicesListener listener;
-    
+  
     private static final String KEY_HTTP_METHODS = "http_methods";  //NOI18N
     private static final String KEY_SUB_RESOURCE_LOCATORS = "sub_resource_locators";        //NOI18N
-    
-    private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
-        public void run() {
-            updateKeys();
-        }
-    });
     
     public RestServiceChildren(MetadataModel<RestServicesMetadata> model, String serviceName) {
         this.model = model;
@@ -59,73 +52,20 @@ public class RestServiceChildren extends Children.Keys {
     
     protected void addNotify() {
         super.addNotify();
-        listener = new RestServicesListener();
-        try {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    metadata.getRoot().addPropertyChangeListener(listener);
-                    
-                    return null;
-                }
-            });
-        } catch (IOException ex) {
-            
-        }
-        
+ 
         updateKeys();
     }
     
     protected void removeNotify() {
-        try {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    metadata.getRoot().removePropertyChangeListener(listener);
-                    
-                    return null;
-                }
-            });
-        } catch (IOException ex) {
-            
-        }
+        super.removeNotify();
         
         setKeys(Collections.EMPTY_SET);
     }
     
     private void updateKeys() {
         final List keys = new ArrayList();
-        
-        try {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                public Void run(RestServicesMetadata metadata) throws IOException {
-                    RestServices root = metadata.getRoot();
-                    RestServiceDescription desc = root.getRestServiceDescription(serviceName);
-                    
-                    if (desc != null) {
-                        int httpMethodCount = 0;
-                        int subResLocatorCount = 0;
-                        
-                        for (RestMethodDescription methodDesc : desc.getMethods()) {
-                            if (methodDesc instanceof HttpMethod) {
-                                httpMethodCount++;
-                            } else if (methodDesc instanceof SubResourceLocator) {
-                                subResLocatorCount++;
-                            }
-                        }
-                        
-                        if (httpMethodCount > 0) {
-                            keys.add(KEY_HTTP_METHODS);
-                        }
-                        
-                        if (subResLocatorCount > 0) {
-                            keys.add(KEY_SUB_RESOURCE_LOCATORS);
-                        }
-                    }
-                    return null;
-                }
-            });
-        } catch (IOException ex) {
-            
-        }
+        keys.add(KEY_HTTP_METHODS);
+        keys.add(KEY_SUB_RESOURCE_LOCATORS);
         
         setKeys(keys);
     }
@@ -138,11 +78,5 @@ public class RestServiceChildren extends Children.Keys {
         }
         
         return new Node[0];
-    }
-    
-    class RestServicesListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            updateNodeTask.schedule(2000);
-        }
     }
 }

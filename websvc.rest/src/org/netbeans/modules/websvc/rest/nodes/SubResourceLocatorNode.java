@@ -28,16 +28,19 @@ import org.openide.nodes.Children;
 public class SubResourceLocatorNode extends AbstractNode{
     private String methodName;
     private String uriTemplate;
+    private String returnType;
     private MetadataModel<RestServicesMetadata> model;
     
     public SubResourceLocatorNode(MetadataModel<RestServicesMetadata> model, SubResourceLocator method) {
         super(Children.LEAF);
         this.methodName = method.getName();
         this.uriTemplate = method.getUriTemplate();
+        this.returnType = method.getReturnType();
     }
     
     public String getDisplayName() {
-        return methodName + "() : [\"" + uriTemplate+ "\"]";
+        return methodName + "() : " + Utils.stripPackageName(returnType) + 
+                " [\"" + uriTemplate+ "\"]";
     }
     
     public String getShortDescription() {
