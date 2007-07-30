@@ -48,6 +48,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private boolean isActivePlatformValid;
     private List<PathResourceImplementation> resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private long eventId;
 
     public BootClassPathImplementation(PropertyEvaluator evaluator) {
         assert evaluator != null;
@@ -55,24 +56,37 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    public synchronized List<PathResourceImplementation> getResources() {
-        if (this.resourcesCache == null) {
-            JavaPlatform jp = findActivePlatform ();
-            if (jp != null) {
-                //TODO: May also listen on CP, but from Platform it should be fixed.
-                List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-                ClassPath cp = jp.getBootstrapLibraries();
-                assert cp != null : jp;
-                for (ClassPath.Entry entry : cp.entries()) {
-                    result.add(ClassPathSupport.createResource(entry.getURL()));
-                }
-                resourcesCache = Collections.unmodifiableList (result);
+    public List<PathResourceImplementation> getResources() {
+        long currentId;
+        synchronized (this) {
+            if (this.resourcesCache != null) {
+                return this.resourcesCache;
             }
-            else {
-                resourcesCache = Collections.emptyList();
+            currentId = eventId;
+        }
+        
+        JavaPlatform jp = findActivePlatform ();
+        final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        if (jp != null) {
+            //TODO: May also listen on CP, but from Platform it should be fixed.            
+            final ClassPath cp = jp.getBootstrapLibraries();
+            assert cp != null : jp;
+            for (ClassPath.Entry entry : cp.entries()) {
+                result.add(ClassPathSupport.createResource(entry.getURL()));
             }
         }
-        return this.resourcesCache;
+        
+        synchronized (this) {
+            if (currentId == eventId) {
+                if (this.resourcesCache == null) {
+                    this.resourcesCache = Collections.unmodifiableList(result);
+                }
+                return this.resourcesCache;
+            }
+            else {
+                return Collections.unmodifiableList (result);
+            }           
+        }       
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -121,6 +135,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private void resetCache () {
         synchronized (this) {
             resourcesCache = null;
+            eventId++;
         }
         support.firePropertyChange(PROP_RESOURCES, null, null);
     }
