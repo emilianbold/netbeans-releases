@@ -29,7 +29,7 @@
 package org.netbeans.modules.websvc.design.configuration;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.openide.util.Lookup;
 
@@ -41,7 +41,7 @@ import org.openide.util.Lookup;
 public class WSConfigurationProviderRegistry {
     static WSConfigurationProviderRegistry registry = new WSConfigurationProviderRegistry();
     
-    private Set<WSConfigurationProvider> providers = new HashSet<WSConfigurationProvider>();
+    private Set<WSConfigurationProvider> providers = new LinkedHashSet<WSConfigurationProvider>();
     
     
     /** Creates a new instance of WSConfigurationProviderRegistry */
