@@ -92,7 +92,7 @@ public class CommentsTest extends GeneratorTest {
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -141,7 +141,7 @@ public class CommentsTest extends GeneratorTest {
             );
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -159,7 +159,7 @@ public class CommentsTest extends GeneratorTest {
     
     // #99329
     public void testAddJavaDocToMethod() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
             "\n" +
@@ -221,7 +221,7 @@ public class CommentsTest extends GeneratorTest {
     }
     
     public void testAddJavaDocToExistingMethod() throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
             "\n" +
@@ -297,7 +297,7 @@ public class CommentsTest extends GeneratorTest {
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -322,8 +322,8 @@ public class CommentsTest extends GeneratorTest {
     
     // issue #100829
     public void testCopyMethodWithCommments() throws Exception {
-        File originFile = new File(getWorkDir(), "Origin.java");
-        TestUtilities.copyStringToFile(originFile, 
+        testFile = new File(getWorkDir(), "Origin.java");
+        TestUtilities.copyStringToFile(testFile, 
             "public class Origin {\n" +
             "    /**\n" +
             "     * comment\n" +
@@ -359,7 +359,7 @@ public class CommentsTest extends GeneratorTest {
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy wc) throws IOException {
                 wc.toPhase(Phase.RESOLVED);
@@ -370,7 +370,7 @@ public class CommentsTest extends GeneratorTest {
                 TypeElement originClass = wc.getElements().getTypeElement("Origin");
                 assertNotNull(originClass);
                 
-                ClassTree origClassTree = (ClassTree) wc.getTrees().getTree(originClass);
+                ClassTree origClassTree = wc.getTrees().getTree(originClass);
                 Tree method = origClassTree.getMembers().get(1);
                 assertNotNull(method);
                 
@@ -422,7 +422,7 @@ public class CommentsTest extends GeneratorTest {
 
         JavaSource src = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         
-        Task task = new Task<WorkingCopy>() {
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
