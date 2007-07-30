@@ -23,7 +23,6 @@ import java.net.URL;
 import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
 import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 
