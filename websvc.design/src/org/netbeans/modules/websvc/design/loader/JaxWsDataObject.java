@@ -66,7 +66,6 @@ public final class JaxWsDataObject extends MultiDataObject {
                 createEditorSupport().saveAs( folder, fileName );
             }
         });
-        set.add(createEditorSupport());
     }
 
     private void lazyInitialize() {
@@ -110,16 +109,17 @@ public final class JaxWsDataObject extends MultiDataObject {
         return dob;
     }
     
-    private synchronized JaxWsJavaEditorSupport createEditorSupport () {
+    private synchronized JaxWsJavaEditorSupport createEditorSupport() {
         if (jes == null) {
             jes = new JaxWsJavaEditorSupport (this);
         }
         return jes;
     }            
     
-    private synchronized MultiViewSupport createMultiViewCookie () {
+    private synchronized MultiViewSupport createMultiViewCookie() {
         lazyInitialize();
         if (mvc == null) {
+            createEditorSupport();
             ServiceModel sm = ServiceModel.getServiceModel(getPrimaryFile());
             if(sm!=null && sm.getStatus()!=ServiceModel.STATUS_NOT_SERVICE)
                 mvc = new MultiViewSupport(service, this);
