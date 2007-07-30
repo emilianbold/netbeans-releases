@@ -199,7 +199,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         if (!widgets.contains(malFormedLabel)) {
             addChild(malFormedLabel);
             validate();
-        } else   {
+        } else {
             addChild(malFormedLabel);
             validate();
         }
@@ -212,7 +212,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         List<Widget> widgets = getChildren();
         if (widgets.contains(malFormedLabel)) {
             addChild(malFormedLabel);
-validate();
+            validate();
         } else {
             removeChild(malFormedLabel);
             validate();
@@ -261,12 +261,14 @@ validate();
 
     public final void updateNodeWidgetActions(Page page) {
         Widget nodeWidget = findWidget(page);
-        if (actionMapAction != null) {
-            nodeWidget.getActions().removeAction(actionMapAction);
-        }
-        actionMapAction = createActionMapAction(page);
-        if (actionMapAction != null) {
-            nodeWidget.getActions().addAction(actionMapAction);
+        if (nodeWidget != null) {
+            if (actionMapAction != null) {
+                nodeWidget.getActions().removeAction(actionMapAction);
+            }
+            actionMapAction = createActionMapAction(page);
+            if (actionMapAction != null) {
+                nodeWidget.getActions().addAction(actionMapAction);
+            }
         }
     }
 
@@ -399,7 +401,7 @@ validate();
         } else {
             connectionWidget = new VMDConnectionWidget(this, new PFENotModifiableScheme());
         }
-        if ( getEdges().size() > MAX_EDGES ) {
+        if (getEdges().size() > MAX_EDGES) {
             connectionWidget.setRouter(routerDirect);
         } else {
             connectionWidget.setRouter(router);
@@ -424,14 +426,15 @@ validate();
         //        connectionWidget.getActions().addAction(createActionMap());
         return connectionWidget;
     }
-/*    
+
+/*
     protected Widget attachEdgeWidget(NavigationCaseEdge edge, boolean directEdge){
-        ConnectionWidget connectionWidget = (ConnectionWidget)attachEdgeWidget(edge);
-        if( directEdge ){
-            connectionWidget.setRouter(router);
-        }
+    ConnectionWidget connectionWidget = (ConnectionWidget)attachEdgeWidget(edge);
+    if( directEdge ){
+    connectionWidget.setRouter(router);
     }
- * */
+    }
+     * */
 
     public void renameEdgeWidget(NavigationCaseEdge edge, String newName, String oldName) {
         VMDConnectionWidget edgeWidget = (VMDConnectionWidget) findWidget(edge);
