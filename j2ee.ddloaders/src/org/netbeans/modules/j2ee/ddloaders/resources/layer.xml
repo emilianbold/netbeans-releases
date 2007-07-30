@@ -77,6 +77,10 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.ddloaders.web.DDCatalog"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
                 </file>
+                <file name="org-netbeans-modules-j2ee-ddloaders-app-EnterpriseCatalog.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.j2ee.ddloaders.app.EnterpriseCatalog"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
             </folder>
             <folder name="GrammarQueryManagers">
                 <!-- register semantics grammar for web.xml(2.4) jsp_taglibrary2_0 due to code completion -->
