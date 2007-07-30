@@ -39,12 +39,14 @@ public class ImportPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jLabel4 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
 
         setName(org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Name")); // NOI18N
+
         jLabel1.setLabelFor(messageTextArea);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Message")); // NOI18N
 
@@ -56,10 +58,8 @@ public class ImportPanel extends javax.swing.JPanel {
 
         jLabel4.setLabelFor(repositoryPathTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Folder")); // NOI18N
-        jLabel4.getAccessibleContext().setAccessibleDescription("Repository Folder");
 
         org.openide.awt.Mnemonics.setLocalizedText(browseRepositoryButton, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Browse")); // NOI18N
-        browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Folders");
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ImportPanel.class, "CTL_Import_Hint")); // NOI18N
 
@@ -78,12 +78,12 @@ public class ImportPanel extends javax.swing.JPanel {
                         .add(15, 15, 15)
                         .add(repositoryPathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
                     .add(jLabel2)
-                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE))
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(browseRepositoryButton))
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
-            .add(progressLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
-            .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 579, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
+            .add(progressLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
+            .add(progressPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -104,6 +104,9 @@ public class ImportPanel extends javax.swing.JPanel {
                 .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        jLabel4.getAccessibleContext().setAccessibleDescription("Repository Folder");
+        browseRepositoryButton.getAccessibleContext().setAccessibleDescription("Browse Repository Folders");
     }// </editor-fold>//GEN-END:initComponents
     
     
