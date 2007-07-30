@@ -45,12 +45,12 @@ public class NewTestcaseNameVisualPanel extends JPanel implements DocumentListen
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         mNameLbl = new javax.swing.JLabel();
         mNameTf = new javax.swing.JTextField();
 
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "ACS_NewTestcaseNameVisualPanel_A11YDesc"));
         mNameLbl.setLabelFor(mNameTf);
-        org.openide.awt.Mnemonics.setLocalizedText(mNameLbl, org.openide.util.NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "LBL_Testcase_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(mNameLbl, org.openide.util.NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "LBL_Testcase_Name")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -70,6 +70,10 @@ public class NewTestcaseNameVisualPanel extends JPanel implements DocumentListen
                     .add(mNameTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(281, Short.MAX_VALUE))
         );
+
+        mNameLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "ACS_TEST_CASE_NAME_LABEL")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseNameVisualPanel.class, "ACS_NewTestcaseNameVisualPanel_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

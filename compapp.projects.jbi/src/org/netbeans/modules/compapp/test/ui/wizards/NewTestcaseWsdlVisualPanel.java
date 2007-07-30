@@ -105,6 +105,7 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         mWsdlTreeView = new WsdlTreeView(mProject);
         mWsdlTreeView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -123,8 +124,8 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
         mWsdlLbl = new javax.swing.JLabel();
         mWsdlTf = new javax.swing.JTextField();
 
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_NewTestcaseWsdlVisualPanel_A11YDesc"));
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -137,7 +138,7 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
         );
 
         mWsdlLbl.setLabelFor(mWsdlTf);
-        mWsdlLbl.setText(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "LBL_The_WSDL_selected"));
+        mWsdlLbl.setText(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "LBL_The_WSDL_selected")); // NOI18N
 
         mWsdlTf.setEditable(false);
 
@@ -160,6 +161,11 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
                     .add(mWsdlLbl)
                     .add(mWsdlTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
+
+        mWsdlLbl.getAccessibleContext().setAccessibleName("Selected &WSDL: ");
+        mWsdlLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_SELECTED_WSDL_LABEL")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_NewTestcaseWsdlVisualPanel_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     

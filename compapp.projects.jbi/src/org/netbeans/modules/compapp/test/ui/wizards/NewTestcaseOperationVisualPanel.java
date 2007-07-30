@@ -167,11 +167,11 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jPanel1 = new javax.swing.JPanel();
         mOperationLbl = new javax.swing.JLabel();
         mOperationTf = new javax.swing.JTextField();
 
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_NewTestcaseOperationVisualPanel_A11YDesc"));
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -184,7 +184,7 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         );
 
         mOperationLbl.setLabelFor(mOperationTf);
-        mOperationLbl.setText(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "LBL_The_operation_selected"));
+        mOperationLbl.setText(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "LBL_The_operation_selected")); // NOI18N
 
         mOperationTf.setEditable(false);
 
@@ -207,6 +207,11 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
                     .add(mOperationLbl)
                     .add(mOperationTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
+
+        mOperationLbl.getAccessibleContext().setAccessibleName("Selected &Operation: ");
+        mOperationLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_SELECTED_OPERATION_LABEL")); // NOI18N
+
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_NewTestcaseOperationVisualPanel_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
