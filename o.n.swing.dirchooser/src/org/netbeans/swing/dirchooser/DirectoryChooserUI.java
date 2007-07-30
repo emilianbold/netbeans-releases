@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.security.AccessControlException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -781,7 +782,6 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             }
 
     // remove multiple directories
-    // Todo - instead of printing out the files, just print out the numbers of directories that will be deleted
     private void deleteAction() {
         // fixed #97079 to be able to delete one or more folders
         final TreePath[] nodePath = tree.getSelectionPaths();
@@ -798,9 +798,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             if(!canWrite(file)) {
                 return;
             }
-            message = getBundle().getString("MSG_Delete") + " " + file.getName() + getBundle().getString("Q_Mark");
+            message = MessageFormat.format(getBundle().getString("MSG_Delete"), file.getName());
         } else {
-            message = getBundle().getString("MSG_Delete1") + " " + nodePath.length + " " + getBundle().getString("MSG_Delete2");
+            message = MessageFormat.format(getBundle().getString("MSG_Delete_Multiple"), nodePath.length);
         }
         
         int answer = JOptionPane.showConfirmDialog(fileChooser, message , getBundle().getString("MSG_Confirm"), JOptionPane.YES_NO_OPTION);
