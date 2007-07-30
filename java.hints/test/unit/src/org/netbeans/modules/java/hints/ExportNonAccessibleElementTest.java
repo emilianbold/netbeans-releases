@@ -187,6 +187,15 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
             "0:99-0:107:verifier:Exporting non-public type through public API");       
         
     }
+    public void testWildCardsIssue108829() throws Exception {
+        String  before = "package proxy.test.impl; import java.util.Comparable;" +
+        "public class IfaceFactory {" +
+            "public void func";
+        String after = "tion (Comparable<?> c) { }" +
+        "}";
+        
+        performAnalysisTest("test/Test.java", before + after, before.length());       
+    }
     
     public void testElementHandle() throws Exception {
         String before = "public final class ElementHa";

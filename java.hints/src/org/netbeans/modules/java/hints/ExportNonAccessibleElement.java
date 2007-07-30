@@ -290,8 +290,8 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
     public Boolean visitWildcard(WildcardType wild, Void arg1) {
         TypeMirror eb = wild.getExtendsBound();
         TypeMirror sb = wild.getSuperBound();
-        return (eb == null || eb.accept(this, arg1)) &&
-               (sb == null || sb.accept(this, arg1));
+        return (eb != null && eb.accept(this, arg1)) ||
+               (sb != null && sb.accept(this, arg1));
     }
 
     public Boolean visitExecutable(ExecutableType arg0, Void arg1) {
