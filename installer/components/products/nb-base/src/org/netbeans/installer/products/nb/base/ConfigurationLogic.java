@@ -29,6 +29,8 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
+import org.netbeans.installer.utils.applications.JavaUtils.JavaInfo;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
@@ -75,7 +77,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 product.getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));
         try {
             progress.setDetail(getString("CL.install.jdk.home")); // NOI18N
-            
+            JavaInfo info = JavaUtils.getInfo(jdkHome);
+            LogManager.log("Using the following JDK for NetBeans configuration : ");
+            LogManager.log("... path    : "  + jdkHome);
+            LogManager.log("... version : "  + info.getVersion().toJdkStyle());
+            LogManager.log("... vendor  : "  + info.getVendor());
+            LogManager.log("... final   : "  + info.isNonFinal());
             NetBeansUtils.setJavaHome(installLocation, jdkHome);
         } catch (IOException e) {
             throw new InstallationException(
@@ -163,26 +170,26 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     LogManager.log(
                             "... current user is an administrator " + // NOI18N
                             "-- creating the shortcut for all users"); // NOI18N
-                            
+                    
                     SystemUtils.createShortcut(
                             getDesktopShortcut(installLocation),
                             LocationType.ALL_USERS_DESKTOP);
                     
                     getProduct().setProperty(
-                            DESKTOP_SHORTCUT_LOCATION_PROPERTY, 
+                            DESKTOP_SHORTCUT_LOCATION_PROPERTY,
                             ALL_USERS_PROPERTY_VALUE);
                 } else {
                     LogManager.log(
                             "... current user is an ordinary user " + // NOI18N
                             "-- creating the shortcut for the current " + // NOI18N
                             "user only"); // NOI18N
-                            
+                    
                     SystemUtils.createShortcut(
                             getDesktopShortcut(installLocation),
                             LocationType.CURRENT_USER_DESKTOP);
                     
                     getProduct().setProperty(
-                            DESKTOP_SHORTCUT_LOCATION_PROPERTY, 
+                            DESKTOP_SHORTCUT_LOCATION_PROPERTY,
                             CURRENT_USER_PROPERTY_VALUE);
                 }
             } catch (NativeException e) {
@@ -215,20 +222,20 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         LocationType.ALL_USERS_START_MENU);
                 
                 getProduct().setProperty(
-                        START_MENU_SHORTCUT_LOCATION_PROPERTY, 
+                        START_MENU_SHORTCUT_LOCATION_PROPERTY,
                         ALL_USERS_PROPERTY_VALUE);
             } else {
                 LogManager.log(
                         "... current user is an ordinary user " + // NOI18N
                         "-- creating the shortcut for the current " + // NOI18N
                         "user only"); // NOI18N
-                      
+                
                 SystemUtils.createShortcut(
                         getStartMenuShortcut(installLocation),
                         LocationType.CURRENT_USER_START_MENU);
                 
                 getProduct().setProperty(
-                        START_MENU_SHORTCUT_LOCATION_PROPERTY, 
+                        START_MENU_SHORTCUT_LOCATION_PROPERTY,
                         CURRENT_USER_PROPERTY_VALUE);
             }
         } catch (NativeException e) {
@@ -330,10 +337,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         try {
             progress.setDetail(getString("CL.uninstall.start.menu")); // NOI18N
             
-            final String shortcutLocation = 
+            final String shortcutLocation =
                     getProduct().getProperty(START_MENU_SHORTCUT_LOCATION_PROPERTY);
             
-            if ((shortcutLocation == null) || 
+            if ((shortcutLocation == null) ||
                     shortcutLocation.equals(CURRENT_USER_PROPERTY_VALUE)) {
                 SystemUtils.removeShortcut(
                         getStartMenuShortcut(installLocation),
@@ -358,8 +365,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 
                 final String shortcutLocation = getProduct().getProperty(
                         DESKTOP_SHORTCUT_LOCATION_PROPERTY);
-            
-                if ((shortcutLocation == null) || 
+                
+                if ((shortcutLocation == null) ||
                         shortcutLocation.equals(CURRENT_USER_PROPERTY_VALUE)) {
                     SystemUtils.removeShortcut(
                             getDesktopShortcut(installLocation),
@@ -537,13 +544,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final long REQUIRED_XMX_VALUE =
             192 * NetBeansUtils.M;
     
-    private static final String DESKTOP_SHORTCUT_LOCATION_PROPERTY = 
+    private static final String DESKTOP_SHORTCUT_LOCATION_PROPERTY =
             "desktop.shortcut.location"; // NOI18N
     
-    private static final String START_MENU_SHORTCUT_LOCATION_PROPERTY = 
+    private static final String START_MENU_SHORTCUT_LOCATION_PROPERTY =
             "start.menu.shortcut.location"; // NOI18N
-            
-    private static final String ALL_USERS_PROPERTY_VALUE = 
+    
+    private static final String ALL_USERS_PROPERTY_VALUE =
             "all.users"; // NOI18N
     
     private static final String CURRENT_USER_PROPERTY_VALUE =
