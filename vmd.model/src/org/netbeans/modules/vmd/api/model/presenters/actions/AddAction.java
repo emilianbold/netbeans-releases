@@ -20,8 +20,6 @@
 package org.netbeans.modules.vmd.api.model.presenters.actions;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Font;
 
 import java.awt.event.ActionEvent;
 import java.lang.ref.WeakReference;
