@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.xam.Model;
 
 /**
  *
@@ -55,6 +56,32 @@ public class MapperContextChangeSupport {
             writeLock.unlock();
         }
     }
+    
+    public void fireXslModelStateChanged(Model.State oldValue, 
+            Model.State newValue) 
+    {
+        MapperContextChangeListener[] tmp = new MapperContextChangeListener[myListeners.size()];
+        synchronized (myListeners){
+            tmp = myListeners.toArray(tmp);
+        }
+
+        for (MapperContextChangeListener listener : tmp) {
+            listener.xslModelStateChanged(oldValue, newValue);
+        }
+    }    
+    
+    public void fireTMapModelStateChanged(Model.State oldValue, 
+            Model.State newValue) 
+    {
+        MapperContextChangeListener[] tmp = new MapperContextChangeListener[myListeners.size()];
+        synchronized (myListeners){
+            tmp = myListeners.toArray(tmp);
+        }
+
+        for (MapperContextChangeListener listener : tmp) {
+            listener.tMapModelStateChanged(oldValue, newValue);
+        }
+    }    
     
     public void fireSourceTypeChanged(AXIComponent oldComponent, AXIComponent newComponent) {
         MapperContextChangeListener[] tmp = new MapperContextChangeListener[myListeners.size()];

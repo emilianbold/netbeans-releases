@@ -19,6 +19,7 @@
 package org.netbeans.modules.xslt.mapper.model;
 
 import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xslt.model.XslModel;
 
 /**
@@ -30,4 +31,7 @@ public interface MapperContextChangeListener {
    void sourceTypeChanged(AXIComponent oldComponent, AXIComponent newComponent);
    void targetTypeChanged(AXIComponent oldComponent, AXIComponent newComponent);
    void xslModelChanged(XslModel oldModel, XslModel newModel);
+   void xslModelStateChanged(Model.State oldValue, Model.State newValue);
+   void tMapModelStateChanged(Model.State oldValue, Model.State newValue);
+   
 }

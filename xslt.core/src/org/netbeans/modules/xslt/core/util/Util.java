@@ -27,8 +27,10 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
+import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xslt.model.spi.XslModelFactory;
 import org.netbeans.modules.xslt.model.XslModel;
+import org.openide.util.Lookup;
 
 
 /**
@@ -46,6 +48,19 @@ public class Util {
         }
         
         return model;
+    }
+
+    public static FileObject getFileObjectByModel(Model model){
+        if (model != null){
+            ModelSource src = model.getModelSource();
+            if (src != null){
+                Lookup lookup = src.getLookup();
+                if (lookup != null){
+                    return lookup.lookup(FileObject.class);
+                }
+            }
+        }
+        return null;
     }
 
     public static FileObject getProjectSource(Project project) {

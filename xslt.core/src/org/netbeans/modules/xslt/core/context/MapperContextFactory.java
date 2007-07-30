@@ -103,6 +103,37 @@ public class MapperContextFactory {
         return context;
     }
 
+    public void reinitMapperContext(MapperContextImpl context,
+            FileObject xsltFo, Project project) 
+    {
+        assert project != null;
+        
+        FileObject tMapFo = Util.getTMapFo(project);
+        TMapModel tMapModel = tMapFo == null ? null : Util.getTMapModel(tMapFo);
+
+        if (xsltFo == null || tMapModel == null ) {
+            context.setSourceType(null);
+            context.setTargetType(null);
+            return;
+        }
+        
+        Transform transformContextComponent = getTransform(tMapModel, xsltFo);
+        
+        if (transformContextComponent == null) {
+            context.setSourceType(null);
+            context.setTargetType(null);
+            return;
+        }
+        
+        // TODO m
+        AXIComponent sourceComponent = getSourceComponent(transformContextComponent);
+        AXIComponent targetComponent = getTargetComponent(transformContextComponent);
+        // TODO m
+        
+        context.setSourceType(sourceComponent);
+        context.setTargetType(targetComponent);
+    }
+
     // TODO m
     private Transform getTransform(TMapModel tMapModel, FileObject xsltFo) {
         assert tMapModel != null && xsltFo != null;

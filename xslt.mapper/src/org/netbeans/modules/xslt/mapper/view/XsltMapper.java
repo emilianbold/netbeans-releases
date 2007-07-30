@@ -39,6 +39,7 @@ import org.netbeans.modules.soa.mapper.common.basicmapper.literal.ILiteralUpdate
 import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeView;
 import org.netbeans.modules.xml.axi.AXIComponent;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xslt.mapper.methoid.LiteralUpdaterFactory;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.mapper.model.MapperContextChangeListener;
@@ -104,6 +105,16 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
                 public void xslModelChanged(XslModel oldModel, XslModel newModel) {
                     // TODO a
                     //                    System.out.println("mappperView xslModel changed ");
+                }
+
+                public void xslModelStateChanged(State oldValue, State newValue) {
+                    // TODO a
+                    //                    System.out.println("mappperView xslModelStateChanged changed ");
+                }
+
+                public void tMapModelStateChanged(State oldValue, State newValue) {
+                    // TODO a
+                    //                    System.out.println("mappperView tMapModelStateChanged changed ");
                 }
             });
         }
