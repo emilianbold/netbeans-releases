@@ -20,6 +20,7 @@
 package org.netbeans.modules.vmd.game.preview;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -37,6 +38,7 @@ import org.netbeans.modules.vmd.game.model.Sequence;
 import org.netbeans.modules.vmd.game.model.SequenceContainer;
 import org.netbeans.modules.vmd.game.model.SequenceListener;
 import org.netbeans.modules.vmd.game.model.StaticTile;
+import org.netbeans.modules.vmd.game.view.ColorConstants;
 import org.netbeans.modules.vmd.game.view.ImagePreviewComponent;
 
 /**
@@ -48,6 +50,13 @@ public class SequencePreviewPanel extends javax.swing.JPanel  implements
 		PropertyChangeListener, ActionListener {
     
 	public static final boolean DEBUG = false;
+
+	public static final Color COLOR_BORDER_PLAIN = ColorConstants.COLOR_OUTLINE_PLAIN;
+	public static final Color COLOR_BORDER_SELECTED = ColorConstants.COLOR_OUTLINE_SELECTED;
+
+	public static final Color COLOR_TEXT_PLAIN = ColorConstants.COLOR_OUTLINE_SELECTED;
+	public static final Color COLOR_TEXT_SELECTED = ColorConstants.COLOR_OUTLINE_SELECTED;
+	
 
 	
 	private boolean isPlaying = false;
@@ -91,6 +100,16 @@ public class SequencePreviewPanel extends javax.swing.JPanel  implements
 			return new Dimension(10, 10);
 		return this.sequence.getFrameSize();
 	}
+	
+	public void setSelected(boolean selected) {
+		if (selected) {
+			this.labelName.setForeground(ColorConstants.COLOR_TEXT_SELECTED);
+		}
+		else {
+			this.labelName.setForeground(ColorConstants.COLOR_TEXT_PLAIN);
+		}
+	}
+	
 	
 	//ActionListener----------------------------------------------------------------------
 	public void actionPerformed(ActionEvent e) {
@@ -274,80 +293,113 @@ public class SequencePreviewPanel extends javax.swing.JPanel  implements
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        panelSequenceAnimatedPreview = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
         labelName = new javax.swing.JLabel();
-        panelSpinner = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
         buttonPlayBackward = new javax.swing.JButton();
         buttonPause = new javax.swing.JButton();
         buttonPlayForward = new javax.swing.JButton();
+        jPanel6 = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
+        panelSequenceAnimatedPreview = new javax.swing.JPanel();
+        jPanel8 = new javax.swing.JPanel();
+        panelSpinner = new javax.swing.JPanel();
 
-        panelSequenceAnimatedPreview.setBackground(new java.awt.Color(255, 255, 255));
-        panelSequenceAnimatedPreview.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(102, 102, 102), 1, true));
-        panelSequenceAnimatedPreview.setLayout(new java.awt.BorderLayout());
+        setBorder(new javax.swing.border.LineBorder(COLOR_BORDER_PLAIN, 2, true));
 
+        jPanel5.setMinimumSize(new java.awt.Dimension(300, 126));
+        jPanel5.setLayout(new java.awt.GridLayout());
+
+        jPanel2.setLayout(new java.awt.BorderLayout());
+
+        labelName.setFont(new java.awt.Font("Dialog", 1, 14));
+        labelName.setForeground(ColorConstants.COLOR_TEXT_PLAIN);
+        labelName.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelName.setText("<NONE>");
 
+        org.jdesktop.layout.GroupLayout jPanel3Layout = new org.jdesktop.layout.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(labelName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(labelName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 106, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+        );
+
+        jPanel2.add(jPanel3, java.awt.BorderLayout.CENTER);
+
+        jPanel4.setMaximumSize(new java.awt.Dimension(174, 34));
+        jPanel4.setLayout(new java.awt.GridLayout(1, 0));
+
+        buttonPlayBackward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/sequece/resources/playrev.png"))); // NOI18N
+        jPanel4.add(buttonPlayBackward);
+
+        buttonPause.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/sequece/resources/pause.gif"))); // NOI18N
+        jPanel4.add(buttonPause);
+
+        buttonPlayForward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/sequece/resources/play.png"))); // NOI18N
+        jPanel4.add(buttonPlayForward);
+
+        jPanel2.add(jPanel4, java.awt.BorderLayout.PAGE_END);
+
+        jPanel5.add(jPanel2);
+
+        jPanel6.setLayout(new java.awt.BorderLayout());
+
+        jPanel7.setLayout(new java.awt.GridBagLayout());
+
+        panelSequenceAnimatedPreview.setBackground(new java.awt.Color(255, 255, 255));
+        panelSequenceAnimatedPreview.setBorder(javax.swing.BorderFactory.createLineBorder(ColorConstants.COLOR_OUTLINE_PLAIN));
+        panelSequenceAnimatedPreview.setMaximumSize(new java.awt.Dimension(80, 80));
+        panelSequenceAnimatedPreview.setMinimumSize(new java.awt.Dimension(80, 80));
+        panelSequenceAnimatedPreview.setPreferredSize(new java.awt.Dimension(80, 80));
+        panelSequenceAnimatedPreview.setLayout(new java.awt.BorderLayout());
+        jPanel7.add(panelSequenceAnimatedPreview, new java.awt.GridBagConstraints());
+
+        jPanel6.add(jPanel7, java.awt.BorderLayout.CENTER);
+
+        jPanel8.setMaximumSize(new java.awt.Dimension(174, 44));
+        jPanel8.setMinimumSize(new java.awt.Dimension(174, 44));
+
         panelSpinner.setBackground(new java.awt.Color(255, 255, 255));
+        panelSpinner.setMaximumSize(new java.awt.Dimension(100, 20));
+        panelSpinner.setMinimumSize(new java.awt.Dimension(100, 20));
+        panelSpinner.setPreferredSize(new java.awt.Dimension(100, 20));
         panelSpinner.setLayout(new java.awt.BorderLayout());
 
-        buttonPlayBackward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/sequece/resources/playrev.png")));
-
-        buttonPause.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/sequece/resources/pause.gif")));
-
-        buttonPlayForward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/sequece/resources/play.png")));
-
-        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(labelName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 127, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .add(buttonPlayBackward, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 35, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonPause, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 34, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(buttonPlayForward, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 34, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .add(jPanel1Layout.createSequentialGroup()
-                        .add(panelSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 97, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())))
+        org.jdesktop.layout.GroupLayout jPanel8Layout = new org.jdesktop.layout.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel8Layout.createSequentialGroup()
+                .addContainerGap()
+                .add(panelSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(labelName)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelSpinner, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 13, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPlayBackward)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(buttonPlayForward)
-                        .add(buttonPause))))
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jPanel8Layout.createSequentialGroup()
+                .add(panelSpinner, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        jPanel6.add(jPanel8, java.awt.BorderLayout.PAGE_END);
+
+        jPanel5.add(jPanel6);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(panelSequenceAnimatedPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 82, Short.MAX_VALUE)
-                .addContainerGap())
+            .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 264, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, panelSequenceAnimatedPreview, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .add(jPanel5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
 	
@@ -356,7 +408,13 @@ public class SequencePreviewPanel extends javax.swing.JPanel  implements
     private javax.swing.JButton buttonPause;
     private javax.swing.JButton buttonPlayBackward;
     private javax.swing.JButton buttonPlayForward;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JLabel labelName;
     private javax.swing.JPanel panelSequenceAnimatedPreview;
     private javax.swing.JPanel panelSpinner;

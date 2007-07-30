@@ -29,4 +29,7 @@ public interface ColorConstants {
 	
 	Color COLOR_EDITOR_PANEL = new Color(0xfcfaf5);
 	
+	Color COLOR_TEXT_PLAIN = new Color(163, 184, 215);
+	Color COLOR_TEXT_SELECTED = new Color(0xff4700);
+	
 }

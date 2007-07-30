@@ -16,7 +16,6 @@
  */
 package org.netbeans.modules.vmd.game.view;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -141,7 +140,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 		//add scenes label
 		labelScenes = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelScenes.txt"));
         labelScenes.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        labelScenes.setForeground(new java.awt.Color(163, 184, 215));
+        labelScenes.setForeground(ColorConstants.COLOR_TEXT_PLAIN);
 		labelScenes.setHorizontalAlignment(SwingConstants.LEFT);
 		this.add(labelScenes);		
 		//add scenes list
@@ -159,7 +158,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
 		//add sprites label
 		labelSprites = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelSprites.txt"));
         labelSprites.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
-        labelSprites.setForeground(new java.awt.Color(163, 184, 215));
+        labelSprites.setForeground(ColorConstants.COLOR_TEXT_PLAIN);
 		labelSprites.setHorizontalAlignment(SwingConstants.LEFT);
 		this.add(labelSprites);
 		//add sprites list
