@@ -37,7 +37,7 @@ import org.openide.filesystems.FileObject;
 final class FilesSet implements Set<FileObject> {
 
     /** MDO which created this set */
-    private MultiDataObject mymdo;
+    private final MultiDataObject mymdo;
     
     /** A flag */
     private boolean lazyWorkDone;
@@ -61,11 +61,7 @@ final class FilesSet implements Set<FileObject> {
      *     for initialization <code>delegate</code> variable when necessary.
      */
     public FilesSet(MultiDataObject mdo) {
-        
         this.mymdo = mdo;
-        this.lazyWorkDone = false;
-        this.primaryFile = null;
-        this.secondary = null;
     }
 
     /** Does the work which was originally done in MDO.files() method. */

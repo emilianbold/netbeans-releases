@@ -665,22 +665,24 @@ public class MultiDataObject extends DataObject {
                    );
         }
 
-        FileObject fo = null;
+        FileObject primary = null;
         Map<String,Object> params = null;
         for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
             FileObject current = getPrimaryEntry().getFile();
             if (h.accept(current)) {
                 if (params == null) {
-                    params = DataObject.CreateAction.findParameters(name);
+                    params = DataObject.CreateAction.findParameters(name, current.getExt());
                 }
-                fo = h.createFromTemplate(current, df.getPrimaryFile(), name, params);
-                assert fo != null;
+                primary = h.createFromTemplate(current, df.getPrimaryFile(), name, 
+                    DataObject.CreateAction.enhanceParameters(params, name, current.getExt())
+                );
+                assert primary != null;
                 break;
             }
         }
         if (params == null) {
             // do the regular creation
-            fo = getPrimaryEntry().createFromTemplate (df.getPrimaryFile (), name);
+            primary = getPrimaryEntry().createFromTemplate (df.getPrimaryFile (), name);
         }
         
         
@@ -691,9 +693,11 @@ public class MultiDataObject extends DataObject {
                 FileObject current = entry.getFile();
                 if (h.accept(current)) {
                     if (params == null) {
-                        params = DataObject.CreateAction.findParameters(name);
+                        params = DataObject.CreateAction.findParameters(name, current.getExt());
                     }
-                    fo = h.createFromTemplate(current, df.getPrimaryFile(), name, params);
+                    FileObject fo = h.createFromTemplate(current, df.getPrimaryFile(), name, 
+                        DataObject.CreateAction.enhanceParameters(params, name, current.getExt())
+                    );
                     assert fo != null;
                     continue NEXT_ENTRY;
                 }
@@ -704,10 +708,10 @@ public class MultiDataObject extends DataObject {
         try {
             // #61600: not very object oriented, but covered by DefaultVersusXMLDataObjectTest
             if (this instanceof DefaultDataObject) {
-                return DataObject.find(fo);
+                return DataObject.find(primary);
             }
             
-            return createMultiObject (fo);
+            return createMultiObject (primary);
         } catch (DataObjectExistsException ex) {
             return ex.getDataObject ();
         }

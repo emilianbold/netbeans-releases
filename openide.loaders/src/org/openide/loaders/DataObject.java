@@ -1213,7 +1213,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             }
         }
         
-        public static Map<String,Object> findParameters(String name) {
+        public static Map<String,Object> findParameters(String name, String ext) {
             CreateAction c  = CURRENT.get();
             if (c == null) {
                 return Collections.emptyMap();
@@ -1247,6 +1247,18 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
                 all.put("time", DateFormat.getTimeInstance().format(d)); // NOI18N
             }
             
+            return Collections.unmodifiableMap(all);
+        }
+        
+        public static Map<String,Object> enhanceParameters(Map<String,Object> old, String name, String ext) {
+            HashMap<String,Object> all = new HashMap<String,Object>(old);
+            if (!all.containsKey("nameAndExt") && name != null) { // NOI18N
+                if (ext != null && ext.length() > 0) {
+                    all.put("nameAndExt", name + '.' + ext); // NOI18N
+                } else {
+                    all.put("nameAndExt", name); // NOI18N
+                }
+            }
             return Collections.unmodifiableMap(all);
         }
         

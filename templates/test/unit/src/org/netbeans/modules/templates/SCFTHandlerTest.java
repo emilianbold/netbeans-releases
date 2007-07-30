@@ -32,9 +32,10 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -71,14 +72,29 @@ public class SCFTHandlerTest extends NbTestCase {
         super(testName);
     }
     
+    @Override
     protected boolean runInEQ() {
         return true;
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
     
+
+    public static Test suite() {
+        return new SCFTHandlerTest("testCreateWithNameAndExtForForm");
+        // return new NbTestSuite(SCFTHandlerTest.class);
+    }
+    
+    @Override
     protected void setUp() throws Exception {
+        clearWorkDir();
         MockServices.setServices(DD.class, Pool.class, FEQI.class);
     }
 
+    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
     }
@@ -106,6 +122,78 @@ public class SCFTHandlerTest extends NbTestCase {
         String exp = "<html><h1>Nazdar</h1></html>";
         assertEquals(exp, readFile(n.getPrimaryFile()));
         
+    }
+
+    public void testCreateWithNameAndExt() throws Exception {
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        FileObject fo = FileUtil.createData(root, "simpleObject.txt");
+        OutputStream os = fo.getOutputStream();
+        String txt = "<html><h1>${nameAndExt}</h1></html>";
+        os.write(txt.getBytes());
+        os.close();
+        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        
+        
+        DataObject obj = DataObject.find(fo);
+        
+        DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
+        
+        Map<String,String> parameters = Collections.emptyMap();
+        DataObject n = obj.createFromTemplate(folder, "complex", parameters);
+        
+        assertEquals("Created in right place", folder, n.getFolder());
+        assertEquals("Created with right name", "complex.txt", n.getName());
+        
+        String exp = "<html><h1>complex.txt</h1></html>";
+        assertEquals(exp, readFile(n.getPrimaryFile()));
+        
+    }
+
+    public void testCreateWithNameAndExtForForm() throws Exception {
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        FileObject root = lfs.getRoot();
+        FileObject fo = FileUtil.createData(root, "j.java");
+        OutputStream os = fo.getOutputStream();
+        String txt = "<html><h1>${nameAndExt}</h1></html>";
+        os.write(txt.getBytes());
+        os.close();
+        fo.setAttribute("javax.script.ScriptEngine", "freemarker");
+        
+        FileObject fo2 = FileUtil.createData(root, "j.form");
+        OutputStream os2 = fo2.getOutputStream();
+        String txt2 = "<html><h2>${nameAndExt}</h2></html>";
+        os2.write(txt2.getBytes());
+        os2.close();
+        fo2.setAttribute("javax.script.ScriptEngine", "freemarker");
+        
+        DataObject obj = DataObject.find(fo);
+        assertEquals("Both files", 2, obj.files().size());
+        
+        DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
+        
+        Map<String,String> parameters = Collections.emptyMap();
+        DataObject n = obj.createFromTemplate(folder, "complex", parameters);
+        
+        assertEquals("Two files", 2, n.files().size());
+        
+        
+        FileObject newForm = FileUtil.findBrother(n.getPrimaryFile(), "form");
+        
+        assertEquals("Primary file is java", "java", n.getPrimaryFile().getExt());
+        
+        assertNotNull("Form copied", newForm);
+        DataObject frm = DataObject.find(newForm);
+        assertSame("Form belongs to java", n, frm);
+        
+        assertEquals("Created in right place", folder, n.getFolder());
+        assertEquals("Created with right name", "complex", n.getName());
+        
+        String exp = "<html><h1>complex.java</h1></html>";
+        assertEquals("Primary file" + n.getPrimaryFile(), exp, readFile(n.getPrimaryFile()));
+        
+        String exp2 = "<html><h2>complex.form</h2></html>";
+        assertEquals(exp2, readFile(newForm));
     }
     
      public void testCreateFromTemplateUsingFreemarkerAndInclude() throws Exception {
@@ -374,11 +462,13 @@ public class SCFTHandlerTest extends NbTestCase {
             super(fo, l);
         }
         
+        @Override
         public String getName() {
             return getPrimaryFile().getNameExt();
         }
     }
 
+    static final Logger LOG = Logger.getLogger("tst.TwoPartLoader");
     public static final class TwoPartLoader extends MultiFileLoader {
         static Map<FileObject,Integer> queried = new HashMap<FileObject,Integer>();
         
@@ -391,20 +481,27 @@ public class SCFTHandlerTest extends NbTestCase {
         protected FileObject findPrimaryFile(FileObject fo) {
             Integer i = queried.get(fo);
             queried.put(fo, i == null ? 1 : i + 1);
+            FileObject ret;
             
             if (fo.hasExt("java") || fo.hasExt("form")) {
-                return org.openide.filesystems.FileUtil.findBrother(fo, "java");
+                ret = org.openide.filesystems.FileUtil.findBrother(fo, "java");
             } else {
-                return null;
+                ret = null;
             }
+            
+            LOG.fine("findPrimaryFile for " + fo + " yeilded " + ret);
+            return ret;
         }
         protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
+            LOG.info("New data object for " + primaryFile);
             return new TwoPartObject(this, primaryFile);
         }
         protected MultiDataObject.Entry createPrimaryEntry(MultiDataObject obj, FileObject primaryFile) {
+            LOG.fine("new primary entry " + primaryFile);
             return new FE(obj, primaryFile);
         }
         protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, FileObject secondaryFile) {
+            LOG.fine("new snd entry: " + secondaryFile);
             return new FE(obj, secondaryFile);
         }
     }
