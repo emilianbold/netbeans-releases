@@ -19,6 +19,7 @@
 package org.netbeans.modules.gsf;
 
 import java.util.Map;
+import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtFormatter;
@@ -40,6 +41,12 @@ public class GsfEditorSettings extends Settings.AbstractInitializer {
     public GsfEditorSettings() {
         super(SETTINGS_NAME);
     }
+    
+    public static final Acceptor defaultAbbrevResetAcceptor = new Acceptor() {
+          public final boolean accept(char ch) {
+              return !Character.isJavaIdentifierPart(ch) && ch != ':';
+          }
+      };
 
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
         if (kitClass == null) {
@@ -58,6 +65,8 @@ public class GsfEditorSettings extends Settings.AbstractInitializer {
             settingsMap.put(ExtSettingsNames.COMPLETION_AUTO_POPUP, Boolean.TRUE);
             settingsMap.put(SettingsNames.PAIR_CHARACTERS_COMPLETION, Boolean.TRUE);
                     
+            settingsMap.put(SettingsNames.ABBREV_RESET_ACCEPTOR, defaultAbbrevResetAcceptor);
+
             //ExtSettingsNames.SHOW_DEPRECATED_MEMBERS
             //ExtSettingsNames.COMPLETION_INSTANT_SUBSTITUTION
             //ExtSettingsNames.COMPLETION_CASE_SENSITIVE
