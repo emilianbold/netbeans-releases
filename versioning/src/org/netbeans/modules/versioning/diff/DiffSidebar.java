@@ -299,10 +299,13 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
     }
 
     public void fileDeleted(FileEvent fe) {
-        DataObject dobj = (DataObject) document.getProperty(Document.StreamDescriptionProperty);
-        if (dobj != null) {
+        if (fileObject != null) {
             // needed since we are changing the fileObject instance
             fileObject.removeFileChangeListener(this);
+            fileObject = null;
+        }
+        DataObject dobj = (DataObject) document.getProperty(Document.StreamDescriptionProperty);
+        if (dobj != null) {
             fileObject = dobj.getPrimaryFile();
         }
         fileRenamed(null);
