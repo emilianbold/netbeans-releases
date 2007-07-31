@@ -134,7 +134,7 @@ public class DocumentationPane extends JPanel
         
         m_TextPane.getStyledDocument().addDocumentListener(this);
         m_TextPane.getDocument().addUndoableEditListener(undoableEditListner);
-        m_TextPane.setText("<HTML><BODY></BODY></HTML>");
+        //        m_TextPane.setText("<HTML><BODY></BODY></HTML>");
         m_TextPane.setCaretPosition(0);
         
         registerAccelerator();
@@ -182,7 +182,7 @@ public class DocumentationPane extends JPanel
         underlineAction   = new StyledEditorKit.UnderlineAction();
         leftAction        = new StyledEditorKit.AlignmentAction(NbBundle.getMessage(DocumentationPane.class, "IDS_ALIGNLEFT"), StyleConstants.ALIGN_LEFT);
         centerAction      = new StyledEditorKit.AlignmentAction(NbBundle.getMessage(DocumentationPane.class, "IDS_CENTER"), StyleConstants.ALIGN_CENTER);
-        rightAction       = new StyledEditorKit.AlignmentAction(NbBundle.getMessage(DocumentationPane.class, "IDS_ALIGNRIGHT"), StyleConstants.ALIGN_RIGHT);
+        rightAction       = new StyledEditorKit.AlignmentAction(NbBundle.getMessage(DocumentationPane.class, "IDS_ALIGNRIGHT"), StyleConstants.ALIGN_RIGHT);      
         colorAction       = new ColorAction();
         saveAction        = new SaveAction();
         
@@ -304,10 +304,12 @@ public class DocumentationPane extends JPanel
     }
     
     public void keyPressed(KeyEvent e)
-    {}
+    {
+    }
     
     public void keyReleased(KeyEvent e)
-    {}
+    {
+    }
     
     /* FocusListener methods */
     public void focusGained(FocusEvent fe)
