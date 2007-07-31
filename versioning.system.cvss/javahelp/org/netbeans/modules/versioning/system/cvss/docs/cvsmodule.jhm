@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2006 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
@@ -42,6 +42,7 @@
 	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard$ModuleStep" url="cvsmodule/csh/cvs-lite_chkout_wizard_p2.html" />
 
 	<!-- first panel of Import wizard has same id as first panel of checkout - CVS Root panel -->
+        <!-- TODO: find out if possible to change this id. Page has been created for first panel:   cvs-lite_import_wizard_p1.html   --> 
         <!-- CSH for 2nd panel of Import wizard -->
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction$ImportStep" url="cvsmodule/csh/cvs-lite_import_wizard_p2.html" />
 
@@ -64,6 +65,7 @@
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.SwitchBranchAction" url="cvsmodule/csh/cvs-lite_switchbranch_dialog.html" />
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.MergeBranchAction" url="cvsmodule/csh/cvs-lite_mergebranch_dialog.html" />
 	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction" url="cvsmodule/csh/cvs-lite_tag_dialog.html" />
+        <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.ChangeCVSRootAction" url="cvsmodule/csh/cvs-lite_change_root.html" />
 
 	<!-- CSH topics for merge conflicts resolver -->
 	<mapID target="org.netbeans.modules.merge.builtin.visualizer.MergeDialogComponent" url="cvsmodule/csh/cvs-lite_merge_resolver.html" />
