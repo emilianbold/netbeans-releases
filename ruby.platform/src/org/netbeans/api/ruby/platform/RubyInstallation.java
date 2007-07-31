@@ -241,6 +241,10 @@ public class RubyInstallation {
     }
     
     private String askForRuby(final Set<String> rubies) {
+        // used by tests
+        if (Boolean.getBoolean("org.netbeans.api.ruby.platform.RubyInstallation.force.jruby")) { // NOI18N
+            return "jruby"; // NOI18N
+        }
         // Ruby found in the path -- offer to use it
         String jrubyLabel = NbBundle.getMessage(RubyInstallation.class, "JRuby");
         String nativeRubyLabel = NbBundle.getMessage(RubyInstallation.class, "NativeRuby") + " "; 
