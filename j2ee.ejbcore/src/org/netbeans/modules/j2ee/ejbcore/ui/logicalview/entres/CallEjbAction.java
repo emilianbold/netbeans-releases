@@ -20,7 +20,6 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entres;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 import org.netbeans.api.java.source.ElementHandle;
@@ -38,7 +37,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
-
 
 /**
  * Provide action for calling another EJB
@@ -88,7 +86,7 @@ public class CallEjbAction extends NodeAction {
         }
         FileObject srcFile = nodes[0].getLookup().lookup(FileObject.class);
         Project project = FileOwnerQuery.getOwner(srcFile);
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
         if (j2eeModuleProvider != null) {
             String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
             if (serverInstanceId == null) {

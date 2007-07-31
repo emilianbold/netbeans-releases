@@ -29,7 +29,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
-import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardDescriptor;
 import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -75,7 +74,7 @@ public class EntityEJBWizardDescriptor implements WizardDescriptor.FinishablePan
             return true;
         }
         Project project = Templates.getProject(wizardDescriptor);
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup ().lookup (J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
         if (EjbJar.VERSION_3_0.equals(j2eeVersion)) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityEJBWizardDescriptor.class,"MSG_DisabledForEJB3")); //NOI18N

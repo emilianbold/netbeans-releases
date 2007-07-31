@@ -86,7 +86,7 @@ public final class EjbJarXmlWizardIterator implements WizardDescriptor.Instantia
     public Set instantiate() throws IOException {
         FileObject confRoot = ((EjbJarXmlWizardPanel1) panels[0]).getSelectedLocation();
         Project project = ((EjbJarXmlWizardPanel1) panels[0]).getProject();
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
         if (confRoot != null) {
             String resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-" + j2eeModule.getModuleVersion() + ".xml";

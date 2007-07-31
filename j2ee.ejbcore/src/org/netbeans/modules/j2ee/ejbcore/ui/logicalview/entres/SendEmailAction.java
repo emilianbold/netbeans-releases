@@ -28,7 +28,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -82,11 +81,10 @@ public class SendEmailAction extends NodeAction {
         Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
         
         //make sure configuration is ready
-        J2eeModuleProvider pwm = (J2eeModuleProvider) enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider pwm = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
         pwm.getConfigSupport().ensureConfigurationReady();
         
-        EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
-        enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
+        EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
         
         SendEmailPanel sendEmailPanel = new SendEmailPanel(erc.getServiceLocatorName()); //NOI18N
         final DialogDescriptor dialogDescriptor = new DialogDescriptor(
@@ -283,7 +281,7 @@ public class SendEmailAction extends NodeAction {
             return false;
         }
         Project project = FileOwnerQuery.getOwner(fileObject);
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
         if (serverInstanceId == null) {
             return true;

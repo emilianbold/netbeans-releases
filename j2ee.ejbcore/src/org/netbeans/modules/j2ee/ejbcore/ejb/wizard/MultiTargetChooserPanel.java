@@ -193,6 +193,11 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
         }
     }
 
+    /* 
+     * you don't really want to generify this class,
+     * it's fork, so keep it as close to original as possible
+     */
+    @SuppressWarnings("unchecked")
     public void readSettings( Object settings ) {
         
         wizard = (WizardDescriptor)settings;
@@ -218,6 +223,11 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
         }
     }
 
+    /* 
+     * you don't really want to generify this class,
+     * it's fork, so keep it as close to original as possible
+     */
+    @SuppressWarnings("unchecked")
     public void storeSettings(Object settings) { 
         Object value = ((WizardDescriptor)settings).getValue();
         if (WizardDescriptor.PREVIOUS_OPTION.equals(value) || WizardDescriptor.CANCEL_OPTION.equals(value) ||
