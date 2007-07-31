@@ -34,9 +34,9 @@ import org.netbeans.modules.xml.wsdl.ui.api.property.Writable;
  */
 public interface NamedPropertyAdapter extends Writable{
 	
-	public void setName(final String name);
-	
-	 public String getName();	
-     
-     public boolean isWritable();
+    public void setName(final String name);
+
+    public String getName();	
+
+    public boolean isWritable();
 }

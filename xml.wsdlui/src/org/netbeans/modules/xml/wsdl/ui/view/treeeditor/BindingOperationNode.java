@@ -117,7 +117,7 @@ public class BindingOperationNode extends WSDLExtensibilityElementNode<BindingOp
         try {
             String attrName = attrQName.getLocalPart();
             //name
-            if(attrName.equals(NAME_PROP)) { //NOT I18N
+            if(attrName.equals(BindingOperation.NAME_PROPERTY)) { //NOT I18N
                 //name
                 attrValueProperty = createNameProperty();
 

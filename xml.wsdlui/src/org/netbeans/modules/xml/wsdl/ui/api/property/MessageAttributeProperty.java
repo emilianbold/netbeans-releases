@@ -41,23 +41,28 @@ import org.openide.nodes.PropertySupport;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class MessageAttributeProperty extends PropertySupport.Reflection {
-	
-	private WSDLModel mDocument;
-	
-	public MessageAttributeProperty(Object instance, WSDLComponent element, Class valueType, String getter, String setter) throws NoSuchMethodException {
-		super(instance, valueType, getter, setter);
+
+    private WSDLModel mDocument;
+
+    public MessageAttributeProperty(Object instance, WSDLComponent element, Class valueType, String getter, String setter) throws NoSuchMethodException {
+        super(instance, valueType, getter, setter);
         mDocument = element.getModel();
-	}
-	
-	@Override
-    public PropertyEditor getPropertyEditor() {
-		String[] messages = PropertyUtil.getAllMessages(this.mDocument);
-		return new ComboBoxPropertyEditor(messages);
-	}
+    }
     
+    public MessageAttributeProperty(Object instance, WSDLComponent element, Class valueType, String attributeName) throws NoSuchMethodException {
+        super(instance, valueType, attributeName);
+        mDocument = element.getModel();
+    }
+
+    @Override
+    public PropertyEditor getPropertyEditor() {
+        String[] messages = PropertyUtil.getAllMessages(this.mDocument);
+        return new ComboBoxPropertyEditor(messages);
+    }
+
     @Override
     public boolean canWrite() {
         return XAMUtils.isWritable(mDocument);
     }
-	
+
 }

@@ -71,8 +71,6 @@ public class BindingNode extends WSDLExtensibilityElementNode<Binding> {
     private static Image ICON  = Utilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/binding.png");
 
-    private static final String TYPE_PROP = "type";//NOI18N
-    
     public BindingNode(Binding wsdlConstruct) {
         super(new GenericWSDLComponentChildren<Binding>(wsdlConstruct), wsdlConstruct, new BindingNewTypesFactory());
         mWSDLConstruct = wsdlConstruct;
@@ -102,10 +100,10 @@ public class BindingNode extends WSDLExtensibilityElementNode<Binding> {
         try {
             String attrName = attrQName.getLocalPart();
             //name
-            if(attrName.equals(NAME_PROP)) { //NOT I18N
+            if(attrName.equals(Binding.NAME_PROPERTY)) { //NOT I18N
                 attrValueProperty = createNameProperty();
                 
-            } else if(attrName.equals(TYPE_PROP)) { //NOT I18N
+            } else if(attrName.equals(Binding.TYPE_PROPERTY)) { //NOT I18N
                 //type
                 attrValueProperty = createTypeProperty();
                 
@@ -131,7 +129,7 @@ public class BindingNode extends WSDLExtensibilityElementNode<Binding> {
     
     private Node.Property createNameProperty() throws NoSuchMethodException {
         Node.Property attrValueProperty;
-        attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, NAME_PROP);
+        attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, Binding.NAME_PROPERTY);
         attrValueProperty.setName(Binding.NAME_PROPERTY);
         attrValueProperty.setDisplayName(NbBundle.getMessage(BindingNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(BindingNode.class, "BINDINGNODE_NAME_DESCRIPTION"));
@@ -142,7 +140,7 @@ public class BindingNode extends WSDLExtensibilityElementNode<Binding> {
     private Node.Property createTypeProperty() throws NoSuchMethodException {
         Node.Property attrValueProperty;
         attrValueProperty = new BindingTypeAttributeProperty(mPropertyAdapter,
-                String.class, "getType", "setType");
+                String.class, Binding.TYPE_PROPERTY);
         
         attrValueProperty.setName(Binding.TYPE_PROPERTY);
         attrValueProperty.setDisplayName(NbBundle.getMessage(BindingNode.class, "PROP_TYPE_DISPLAYNAME"));

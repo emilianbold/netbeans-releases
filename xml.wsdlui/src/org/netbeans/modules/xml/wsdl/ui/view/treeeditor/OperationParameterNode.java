@@ -118,11 +118,11 @@ public abstract class OperationParameterNode<T extends OperationParameter> exten
         try {
             String attrName = attrQName.getLocalPart();
             //name
-            if(attrName.equals(NAME_PROP)) { //NOT I18N
+            if(attrName.equals(OperationParameter.NAME_PROPERTY)) { //NOT I18N
                 //name
                 attrValueProperty = createNameProperty();
                 
-            } else if(attrName.equals(MESSAGE_PROP)) {
+            } else if(attrName.equals(OperationParameter.MESSAGE_PROPERTY)) {
                 attrValueProperty = createMessageProperty();
             } else {
                 attrValueProperty = super.createAttributeProperty(attrQName);
@@ -147,7 +147,7 @@ public abstract class OperationParameterNode<T extends OperationParameter> exten
     
     private Node.Property createNameProperty() throws NoSuchMethodException {
         Node.Property attrValueProperty;
-        attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, NAME_PROP);
+        attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, OperationParameter.NAME_PROPERTY);
         
         
         attrValueProperty.setName(OperationParameter.NAME_PROPERTY);
@@ -159,7 +159,7 @@ public abstract class OperationParameterNode<T extends OperationParameter> exten
     
     private Node.Property createMessageProperty() throws NoSuchMethodException {
         Node.Property attrValueProperty;
-        attrValueProperty = new MessageAttributeProperty(mPropertyAdapter, mWSDLConstruct, String.class, "getMessage", "setMessage"); 
+        attrValueProperty = new MessageAttributeProperty(mPropertyAdapter, mWSDLConstruct, String.class, OperationParameter.MESSAGE_PROPERTY); 
         
         attrValueProperty.setName(OperationParameter.MESSAGE_PROPERTY);
         attrValueProperty.setDisplayName(NbBundle.getMessage(OperationParameterNode.class, "PROP_MESSAGE_DISPLAYNAME"));
@@ -168,8 +168,6 @@ public abstract class OperationParameterNode<T extends OperationParameter> exten
         return attrValueProperty;
     }
     
-    
-    private static final String MESSAGE_PROP = "message";//NOI18N
     
     @Override
     public String getHtmlDisplayName() {

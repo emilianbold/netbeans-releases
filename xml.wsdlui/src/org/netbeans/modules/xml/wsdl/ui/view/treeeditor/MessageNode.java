@@ -89,7 +89,7 @@ public class MessageNode extends WSDLExtensibilityElementNode<Message> {
         try {
             String attrName = attrQName.getLocalPart();
             //name
-            if(attrName.equals(NAME_PROP)) { //NOT I18N
+            if(attrName.equals(Message.NAME_PROPERTY)) { //NOT I18N
                 //name
                 attrValueProperty = createNameProperty();
                 
@@ -117,8 +117,8 @@ public class MessageNode extends WSDLExtensibilityElementNode<Message> {
     private Node.Property createNameProperty() throws NoSuchMethodException {
         Node.Property attrValueProperty;
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, 
-                String.class, NAME_PROP);
-        attrValueProperty.setName(NAME_PROP);
+                String.class, Message.NAME_PROPERTY);
+        attrValueProperty.setName(Message.NAME_PROPERTY);
         attrValueProperty.setDisplayName(NbBundle.getMessage(MessageNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(MessageNode.class, "MESSAGE_NAME_DESC"));
         

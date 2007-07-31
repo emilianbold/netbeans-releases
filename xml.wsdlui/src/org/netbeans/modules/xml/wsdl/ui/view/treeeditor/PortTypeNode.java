@@ -124,7 +124,7 @@ public class PortTypeNode extends WSDLNamedElementNode<PortType> {
             try {
             String attrName = attrQName.getLocalPart();
              //name
-            if(attrName.equals(NAME_PROP)) { 
+            if(attrName.equals(PortType.NAME_PROPERTY)) { 
                 //name
                 attrValueProperty = createNameProperty();
             }  else {
@@ -150,7 +150,7 @@ public class PortTypeNode extends WSDLNamedElementNode<PortType> {
     
       private Node.Property createNameProperty() throws NoSuchMethodException {
           Node.Property attrValueProperty;
-          attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, NAME_PROP);
+          attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, PortType.NAME_PROPERTY);
           attrValueProperty.setName(PortType.NAME_PROPERTY);
           attrValueProperty.setDisplayName(NbBundle.getMessage(PortTypeNode.class, "PROP_NAME_DISPLAYNAME"));
           attrValueProperty.setShortDescription(NbBundle.getMessage(PortTypeNode.class, "PORTTYPE_NAME_DESC"));

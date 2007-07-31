@@ -97,7 +97,7 @@ public class ServiceNode extends WSDLExtensibilityElementNode<Service> {
         try {
             String attrName = attrQName.getLocalPart();
             //name
-            if(attrName.equals(NAME_PROP)) { //NOT I18N
+            if(attrName.equals(Service.NAME_PROPERTY)) { //NOT I18N
                 //name
                 attrValueProperty = createNameProperty();
                 
@@ -125,7 +125,7 @@ public class ServiceNode extends WSDLExtensibilityElementNode<Service> {
         Node.Property attrValueProperty;
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter,
                 String.class,
-                NAME_PROP);
+                Service.NAME_PROPERTY);
         attrValueProperty.setName(Service.NAME_PROPERTY);
         attrValueProperty.setDisplayName(NbBundle.getMessage(ServiceNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(ServiceNode.class, "SERVICE_NAME_DESC"));

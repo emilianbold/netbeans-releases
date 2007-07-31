@@ -48,6 +48,13 @@ public class BindingTypeAttributeProperty extends PropertySupport.Reflection {
     
     public BindingTypeAttributeProperty(PropertyAdapter instance, 
                                     Class valueType, 
+                                    String attributeName) throws NoSuchMethodException {
+        super(instance, valueType, attributeName);
+        this.mDocument = instance.getDelegate().getModel();
+    }
+
+    public BindingTypeAttributeProperty(PropertyAdapter instance, 
+                                    Class valueType, 
                                     String getter, 
                                     String setter) throws NoSuchMethodException {
         super(instance, valueType, getter, setter);

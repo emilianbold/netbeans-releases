@@ -83,7 +83,7 @@ public class BindingOperationFaultNode extends WSDLExtensibilityElementNode<Bind
         try {
             String attrName = attrQName.getLocalPart();
             //name
-            if(attrName.equals(NAME_PROP)) { //NOT I18N
+            if(attrName.equals(BindingFault.NAME_PROPERTY)) { //NOT I18N
                 //name
                 attrValueProperty = createNameProperty();
                 

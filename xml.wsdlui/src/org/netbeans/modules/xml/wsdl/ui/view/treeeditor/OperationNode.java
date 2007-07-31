@@ -83,8 +83,6 @@ public abstract class OperationNode<T extends Operation> extends WSDLExtensibili
     
     protected Operation mWSDLConstruct;
     
-    private static final String PARAMETER_ORDER_PROP = "parameterOrder";//NOI18N
-    
     private OperationPropertyAdapter mPropertyAdapter;
 
     private static final SystemAction[] ACTIONS = new SystemAction[]{
@@ -142,9 +140,9 @@ public abstract class OperationNode<T extends Operation> extends WSDLExtensibili
         try {
             String attrName = attrQName.getLocalPart();
             //name
-            if(attrName.equals(NAME_PROP)) { 
+            if(attrName.equals(Operation.NAME_PROPERTY)) { 
                 attrValueProperty = createNameProperty();
-            } else if(attrName.equals(PARAMETER_ORDER_PROP)) { 
+            } else if(attrName.equals(Operation.PARAMETER_ORDER_PROPERTY)) { 
                 //optional parameterOrder
                 attrValueProperty = createParameterOrderProperty();
             } else {
@@ -170,7 +168,7 @@ public abstract class OperationNode<T extends Operation> extends WSDLExtensibili
     
       private Node.Property createNameProperty() throws NoSuchMethodException {
           Node.Property attrValueProperty;
-          attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, NAME_PROP);
+          attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, String.class, Operation.NAME_PROPERTY);
           attrValueProperty.setName(Operation.NAME_PROPERTY);
           attrValueProperty.setDisplayName(NbBundle.getMessage(OperationNode.class, "PROP_NAME_DISPLAYNAME"));
           attrValueProperty.setShortDescription(NbBundle.getMessage(OperationNode.class, "OPERATION_NAME_DESC"));
@@ -179,7 +177,7 @@ public abstract class OperationNode<T extends Operation> extends WSDLExtensibili
       
       private Node.Property createParameterOrderProperty() throws NoSuchMethodException {
           Node.Property attrValueProperty;
-          attrValueProperty = new ParameterOrderProperty(this, mPropertyAdapter, String.class, "parameterOrder");  //NOI18N 
+          attrValueProperty = new ParameterOrderProperty(this, mPropertyAdapter, String.class, Operation.PARAMETER_ORDER_PROPERTY);  //NOI18N 
           attrValueProperty.setName(Operation.PARAMETER_ORDER_PROPERTY);
           attrValueProperty.setDisplayName(NbBundle.getMessage(OperationNode.class, "PROP_PARAMETER_ORDER_DISPLAYNAME"));
           attrValueProperty.setShortDescription(NbBundle.getMessage(OperationNode.class, "OPERATION_PARAM_ORDER_DESC"));

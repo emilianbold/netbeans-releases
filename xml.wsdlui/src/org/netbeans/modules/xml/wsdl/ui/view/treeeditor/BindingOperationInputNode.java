@@ -88,7 +88,7 @@ public class BindingOperationInputNode extends WSDLExtensibilityElementNode<Bind
         try {
             String attrName = attrQName.getLocalPart();
             //name
-            if(attrName.equals(NAME_PROP)) { 
+            if(attrName.equals(BindingInput.NAME_PROPERTY)) { 
                 //name
                 attrValueProperty = createNameProperty();
                 

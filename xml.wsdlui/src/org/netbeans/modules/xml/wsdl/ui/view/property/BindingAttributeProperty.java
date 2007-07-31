@@ -43,17 +43,24 @@ import org.openide.nodes.PropertySupport;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class BindingAttributeProperty extends PropertySupport.Reflection {
-    
+
     private WSDLModel mDocument;
-    
+
     public BindingAttributeProperty(PropertyAdapter instance, 
-                                    Class valueType, 
-                                    String getter, 
-                                    String setter) throws NoSuchMethodException {
+            Class valueType, 
+            String getter, 
+            String setter) throws NoSuchMethodException {
         super(instance, valueType, getter, setter);
         this.mDocument = instance.getDelegate().getModel();
     }
-    
+
+    public BindingAttributeProperty(PropertyAdapter instance, 
+            Class valueType, 
+            String attributeName) throws NoSuchMethodException {
+        super(instance, valueType, attributeName);
+        this.mDocument = instance.getDelegate().getModel();
+    }
+
     @Override
     public PropertyEditor getPropertyEditor() {
         String[] bindings = PropertyUtil.getAllBindings(this.mDocument);
@@ -64,9 +71,9 @@ public class BindingAttributeProperty extends PropertySupport.Reflection {
     public boolean canWrite() {
         return XAMUtils.isWritable(mDocument);
     }
-    
-    
-    
-    
+
+
+
+
 }
 

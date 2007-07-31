@@ -157,10 +157,11 @@ public class PartNode extends WSDLNamedElementNode<Part> {
         try {
             String attrName = attrQName.getLocalPart();
             //name
-            if(attrName.equals(NAME_PROP)) { //NOT I18N
+            if(attrName.equals(Part.NAME_PROPERTY)) { //NOT I18N
                 //name
                 attrValueProperty = createNameProperty();
-            } else if(attrName.equals("element") || attrName.equals("type")) {
+            } else if(attrName.equals(Part.ELEMENT_PROPERTY) || 
+                        attrName.equals(Part.TYPE_PROPERTY)) {
                 attrValueProperty = createElementOrTypeProperty();
             } else {
                 attrValueProperty = super.createAttributeProperty(attrQName);
@@ -186,7 +187,7 @@ public class PartNode extends WSDLNamedElementNode<Part> {
     private Node.Property createNameProperty() throws NoSuchMethodException {
         Node.Property attrValueProperty;
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter,
-                String.class, NAME_PROP);
+                String.class, Part.NAME_PROPERTY);
         
         
         attrValueProperty.setName(Part.NAME_PROPERTY);

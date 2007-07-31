@@ -80,7 +80,6 @@ import org.netbeans.modules.xml.wsdl.ui.spi.WSDLLookupProviderFactory;
 import org.netbeans.modules.xml.wsdl.ui.view.property.BaseAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.property.XSDBooleanAttributeProperty;
 import org.netbeans.modules.xml.wsdl.ui.view.property.XSDEnumeratedAttributeProperty;
-import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.ExtensibilityElementNode;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.MixedContentFinderVisitor;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;

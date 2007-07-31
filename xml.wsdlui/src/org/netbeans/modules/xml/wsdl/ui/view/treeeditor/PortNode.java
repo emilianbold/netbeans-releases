@@ -102,12 +102,12 @@ public class PortNode extends WSDLExtensibilityElementNode<Port> {
         try {
             String attrName = attrQName.getLocalPart();
             //name
-            if(attrName.equals(NAME_PROP)) { //NOT I18N
+            if(attrName.equals(Port.NAME_PROPERTY)) { //NOT I18N
                 //name
                 attrValueProperty = createNameProperty();
                 
                 
-            } else if(attrName.equals("binding")) {
+            } else if(attrName.equals(Port.BINDING_PROPERTY)) {
                 attrValueProperty = createBindingProperty();
                 
             } else {
@@ -134,7 +134,7 @@ public class PortNode extends WSDLExtensibilityElementNode<Port> {
         Node.Property attrValueProperty;
         attrValueProperty = new BaseAttributeProperty(mPropertyAdapter,
                 String.class,
-                NAME_PROP);
+                Port.NAME_PROPERTY);
         attrValueProperty.setName(Port.NAME_PROPERTY);
         attrValueProperty.setDisplayName(NbBundle.getMessage(PortNode.class, "PROP_NAME_DISPLAYNAME"));
         attrValueProperty.setShortDescription(NbBundle.getMessage(PortNode.class, "PORT_NAME_DESC"));
@@ -146,8 +146,7 @@ public class PortNode extends WSDLExtensibilityElementNode<Port> {
         Node.Property attrValueProperty;
         attrValueProperty = new BindingAttributeProperty(mPropertyAdapter,
                 String.class,
-                "getBinding",
-                "setBinding");
+                Port.BINDING_PROPERTY);
         
         attrValueProperty.setName(Port.BINDING_PROPERTY);
         attrValueProperty.setDisplayName(NbBundle.getMessage(PortNode.class, "PROP_BINDING_DISPLAYNAME"));

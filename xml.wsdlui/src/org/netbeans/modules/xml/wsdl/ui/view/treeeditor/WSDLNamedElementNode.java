@@ -47,7 +47,6 @@ import org.openide.util.NbBundle;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public abstract class WSDLNamedElementNode<T extends WSDLComponent> extends WSDLElementNode<T> {
-    public static final String NAME_PROP = "name";
     
     private NamedPropertyAdapter mPropertyAdapter;
     private String nameAttributeName;
@@ -110,9 +109,7 @@ public abstract class WSDLNamedElementNode<T extends WSDLComponent> extends WSDL
             //name
             if(attrName.equals(nameAttributeName) && mPropertyAdapter != null) { //NOT I18N
                 attrValueProperty = new BaseAttributeProperty(mPropertyAdapter, 
-                        String.class, 
-                        "getName", 
-                        "setName");
+                        String.class, Named.NAME_PROPERTY);
                 attrValueProperty.setName(attrName);
                 attrValueProperty.setDisplayName(NbBundle.getMessage(WSDLNamedElementNode.class, "PROP_NAME_NAME"));
                 
