@@ -39,7 +39,10 @@ final class FeedbackSurvey {
     }
     
     public static void start() {
-        String url = NbBundle.getMessage(FeedbackSurvey.class, "MSG_FeedbackSurvey_URL");
+        final Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate"); // NOI18N
+        String id = p.get ("ideIdentity", "unknown"); // NOI18N
+        long mem = Runtime.getRuntime().maxMemory();
+        String url = NbBundle.getMessage(FeedbackSurvey.class, "MSG_FeedbackSurvey_URL", id, mem);
         if (url.length() == 0) {
             return;
         }
