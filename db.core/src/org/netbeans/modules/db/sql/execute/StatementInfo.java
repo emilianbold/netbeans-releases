@@ -43,30 +43,52 @@ public class StatementInfo {
         this.rawEndOffset = rawEndOffset;
     }
 
+    /**
+     * Returns the SQL text statement with comments and leading and trailing
+     * whitespace removed.
+     */
     public String getSQL() {
         return sql;
     }
 
+    /**
+     * Returns the start offset of the raw SQL text (including comments and leading whitespace).
+     */
     public int getRawStartOffset() {
         return rawStartOffset;
     }
 
+    /**
+     * Returns the start offset of the text returned by {@link #getSQL}.
+     */
     public int getStartOffset() {
         return startOffset;
     }
 
+    /**
+     * Returns the zero-based number of the line corresponding to {@link #getStartOffset}.
+     */
     public int getStartLine() {
         return startLine;
     }
 
+    /**
+     * Returns the zero-based number of the column corresponding to {@link #getStartOffset}.
+     */
     public int getStartColumn() {
         return startColumn;
     }
 
+    /**
+     * Returns the end offset of the text returned by {@link #getSQL}.
+     */
     public int getEndOffset() {
         return endOffset;
     }
 
+    /**
+     * Returns the end offset of the raw SQL text (including comments and trailing whitespace).
+     */
     public int getRawEndOffset() {
         return rawEndOffset;
     }
