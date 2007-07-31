@@ -76,10 +76,11 @@ public class AddWatchAction extends CallableSystemAction {
 
     /** The action's icon location.
     * @return the action's icon location
-    */
+    * Not in toolbar - no icon
     protected String iconResource () {
         return "org/netbeans/modules/debugger/resources/actions/NewWatch.gif"; // NOI18N
     }
+     */
 
     
     public void performAction () {
