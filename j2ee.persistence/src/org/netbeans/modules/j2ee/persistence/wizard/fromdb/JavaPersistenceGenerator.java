@@ -237,6 +237,8 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
         private final Map<String, EntityClass> beanMap = new HashMap<String, EntityClass>();
         private final EntityClass[] entityClasses;
         private final boolean generateNamedQueries;
+        private final Set<FileObject> generatedEntityFOs;
+        private final Set<FileObject> generatedFOs;
 
         public Generator(EntityClass[] entityClasses, boolean generateNamedQueries,
                 ProgressContributor progressContributor, ProgressPanel progressPanel) {
@@ -244,10 +246,23 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             this.generateNamedQueries = generateNamedQueries;
             this.progressContributor = progressContributor;
             this.progressPanel = progressPanel;
+            generatedFOs = new HashSet<FileObject>();
+            generatedEntityFOs = new HashSet<FileObject>();
         }
 
         public Set<FileObject> run() throws IOException {
+            try {
+                runImpl();
+            } catch (IOException e) {
+                for (FileObject generatedFO : generatedFOs) {
+                    generatedFO.delete();
+                }
+                throw e;
+            }
+            return generatedEntityFOs;
+        }
 
+        public void runImpl() throws IOException {
 
             // first generate empty entity classes -- this is needed as
             // in the field and method generation it will be necessary to resolve
@@ -257,8 +272,6 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             beanMap.clear();
             Set<FileObject> generationPackageFOs = new HashSet<FileObject>();
             Set<String> generatedEntityClasses = new HashSet<String>();
-            Set<FileObject> generatedFOs = new HashSet<FileObject>();
-
 
             for (int i = 0; i < entityClasses.length; i++) {
                 final EntityClass entityClass = entityClasses[i];
@@ -282,10 +295,14 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                 // XXX Javadoc
                 FileObject entity = GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
+                generatedEntityFOs.add(entity);
                 generatedFOs.add(entity);
                 if (!entityClass.isUsePkField()) {
                     String pkClassName = createPKClassName(entityClassName);
-                    GenerationUtils.createClass(packageFileObject, pkClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_PKClass", pkClassName, entityClassName));
+                    if (packageFileObject.getFileObject(pkClassName, "java") == null) { // NOI18N
+                        FileObject pkClass = GenerationUtils.createClass(packageFileObject, pkClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_PKClass", pkClassName, entityClassName));
+                        generatedFOs.add(pkClass);
+                    }
                 }
             }
 
@@ -341,7 +358,6 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
 
             }
-            return generatedFOs;
         }
 
 
