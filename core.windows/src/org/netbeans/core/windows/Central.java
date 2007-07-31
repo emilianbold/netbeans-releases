@@ -33,6 +33,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.core.windows.model.DockingStatus;
@@ -355,34 +357,39 @@ final class Central implements ControllerHandler {
                 
                 //return the maximized TopComponent to its original mode
                 ModeImpl currentMaximizedMode = getViewMaximizedMode();
-                assert currentMaximizedMode.getTopComponents().length == 1;
-                TopComponent maximizedTC = currentMaximizedMode.getTopComponents()[0];
-                String tcID = wm.findTopComponentID( maximizedTC );
-                //find the mode where the TopComponent was before its maximization
-                ModeImpl prevMode = getModeTopComponentPreviousMode( tcID, currentMaximizedMode );
-                int prevIndex = model.getModeTopComponentPreviousIndex( currentMaximizedMode, tcID );
-                if( null == prevMode ) {
-                    //TODO log a warning here because we somehow lost the previous mode
-                    if ((prevMode == null) || !model.getModes().contains(prevMode)) {
-                        // mode to return to isn't valid anymore, try constraints
-                        SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(currentMaximizedMode, tcID);
-                        if (constraints != null) {
-                            // create mode with the same constraints to dock topcomponent back into
-                            prevMode = WindowManagerImpl.getInstance().createModeImpl(
-                                    ModeImpl.getUnusedModeName(), Constants.MODE_KIND_VIEW, false);
-                            model.addMode(prevMode, constraints);
+                if( currentMaximizedMode.getTopComponents().length == 1 ) {
+                    TopComponent maximizedTC = currentMaximizedMode.getTopComponents()[0];
+                    String tcID = wm.findTopComponentID( maximizedTC );
+                    //find the mode where the TopComponent was before its maximization
+                    ModeImpl prevMode = getModeTopComponentPreviousMode( tcID, currentMaximizedMode );
+                    int prevIndex = model.getModeTopComponentPreviousIndex( currentMaximizedMode, tcID );
+                    if( null == prevMode ) {
+                        //TODO log a warning here because we somehow lost the previous mode
+                        if ((prevMode == null) || !model.getModes().contains(prevMode)) {
+                            // mode to return to isn't valid anymore, try constraints
+                            SplitConstraint[] constraints = model.getModeTopComponentPreviousConstraints(currentMaximizedMode, tcID);
+                            if (constraints != null) {
+                                // create mode with the same constraints to dock topcomponent back into
+                                prevMode = WindowManagerImpl.getInstance().createModeImpl(
+                                        ModeImpl.getUnusedModeName(), Constants.MODE_KIND_VIEW, false);
+                                model.addMode(prevMode, constraints);
+                            }
+                        }
+
+                        if (prevMode == null) {
+                            // fallback, previous saved mode not found somehow, use default modes
+                            prevMode = WindowManagerImpl.getInstance().getDefaultViewMode();
                         }
                     }
-
-                    if (prevMode == null) {
-                        // fallback, previous saved mode not found somehow, use default modes
-                        prevMode = WindowManagerImpl.getInstance().getDefaultViewMode();
-                    }
+                    prevMode.addOpenedTopComponent( maximizedTC, prevIndex );
+                    prevMode.setSelectedTopComponent( maximizedTC );
+                    setActiveMode(prevMode);
+                    model.removeMode( currentMaximizedMode );
+                } else {
+                    Logger.getLogger( Central.class.getName() ).log( Level.WARNING, 
+                            "A 'view' mode is maximized but it has wrong number of TopComponents, Mode=[" 
+                            + currentMaximizedMode.getName() + "], TC count=" + currentMaximizedMode.getTopComponents().length );
                 }
-                prevMode.addOpenedTopComponent( maximizedTC, prevIndex );
-                prevMode.setSelectedTopComponent( maximizedTC );
-                setActiveMode(prevMode);
-                model.removeMode( currentMaximizedMode );
                 //cancel the maximized mode
                 setViewMaximizedMode( null );
                 
