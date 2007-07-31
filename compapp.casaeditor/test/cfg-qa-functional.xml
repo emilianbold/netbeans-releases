@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -17,9 +17,20 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="org.netbeans.modules.compapp.casaeditor/test-unit" basedir="." default="all">
+<!-- Configation file to group tests into testbags. For details see
+     http://xtest.netbeans.org/xtest_config.html.
+-->
+<mconfig name="qa-functional config">
 
-    <!-- Imports default-compiler, run-unit-test targets referenced from cfg-unit.xml. -->
-    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
-</project>
+    <testbag testattribs="validation,stable" executor="ide" name="qa-functional tests">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
 
+    <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml"
+              target="qa-functional-compiler" default="true"/>
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
+</mconfig>
