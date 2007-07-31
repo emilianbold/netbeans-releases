@@ -32,6 +32,7 @@ public class TestData implements Serializable {
     private String workDirCanonicalPath = null;
     private String platformName = null;
     private String platformExt = null;
+    private String installerType = null;
 
     public TestData(Logger logger) {
         assert logger != null;
@@ -190,5 +191,13 @@ public class TestData implements Serializable {
             return false;
         }
         return true;
+    }
+
+    public String getInstallerType() {
+        return installerType;
+    }
+
+    public void setInstallerType(String installerType) {
+        this.installerType = installerType;
     }
 }
