@@ -135,9 +135,9 @@ public class J2MEEditorDocument extends JavaDocument {
         super(kitClass);
         if (LL == null) initColoring();
         cbl = new ConfigurationBlocksLayer();
-        this.addLayer(cbl, 1300);
+        this.addLayer(cbl, 1200);
         chl = new ConfigurationHeadersLayer();
-        this.addLayer(chl, 1200);
+        this.addLayer(chl, 1300);
                 
         updateBlockChain(J2MEEditorDocument.this);
         
