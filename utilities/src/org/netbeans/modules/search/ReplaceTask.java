@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,7 +26,10 @@ import java.util.List;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.search.MatchingObject.InvalidityStatus;
+import org.openide.filesystems.FileAlreadyLockedException;
+import org.openide.filesystems.FileLock;
 import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 
 /**
  * Task that checks validity of found files and then
@@ -138,18 +141,28 @@ final class ReplaceTask implements Runnable {
             }
             
             String errMessage = null;
+            FileLock fileLock = null;
             try {
+                fileLock = obj.lock();
                 MatchingObject.InvalidityStatus status = obj.replace();
                 if (status == null) {
-                    obj.write();
+                    obj.write(fileLock);
                 } else {
                     errMessage = status.getDescription(obj.getFile().getPath());
                 }
+            } catch (FileAlreadyLockedException ex) {
+                errMessage = createMsgFileLocked(obj);
+            } catch (UserQuestionException ex) {
+                errMessage = createMsgFileLocked(obj);
             } catch (IOException ex) {
                 ex.printStackTrace();      //PENDING - ex.printStackTrace()?
                 errMessage = ex.getLocalizedMessage();
                 if (errMessage == null) {
                     errMessage = ex.getMessage();
+                }
+            } finally {
+                if (fileLock != null) {
+                    fileLock.releaseLock();
                 }
             }
             if (errMessage != null) {
@@ -158,6 +171,13 @@ final class ReplaceTask implements Runnable {
         }
         resultStatus = problems.isEmpty() ? ResultStatus.SUCCESS
                                           : ResultStatus.PROBLEMS_ENCOUNTERED;
+    }
+
+    private static String createMsgFileLocked(MatchingObject matchingObj) {
+        return NbBundle.getMessage(
+                ReplaceTask.class,
+                "MSG_cannot_access_file_already_locked",                //NOI18N
+                matchingObj.getName());
     }
     
     /**
