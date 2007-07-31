@@ -491,35 +491,39 @@ public final class J2MEProject implements Project, AntProjectListener {
     private void refreshBuildScripts(final boolean checkForProjectXmlModified) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Buildsystem/org.netbeans.modules.kjava.j2meproject"); //NOI18N
-                LinkedList<FileObject> files = new LinkedList();
+                final FileObject root = Repository.getDefault().getDefaultFileSystem().findResource("Buildsystem/org.netbeans.modules.kjava.j2meproject"); //NOI18N
+                final LinkedList<FileObject> files = new LinkedList();
                 files.addAll(Arrays.asList(root.getChildren()));
-                try {
-                    ProjectManager.getDefault().saveProject(J2MEProject.this);
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
-                }
-                URL u = null;
-                while (!files.isEmpty()) try {
-                    FileObject fo = files.removeFirst();
-                    if (fo.getExt().equals("xml") && isAuthorized(fo)) { //NOI18N
-                        u = fo.isData() ? fo.getURL() : new URL("", null, -1, fo.getPath(), COMPOSED_STREAM_HANDLER); //NOI18N
-                        genFilesHelper.refreshBuildScript(FileUtil.getRelativePath(root, fo), u, checkForProjectXmlModified);
-                    } else if (fo.isFolder()) {
-                        files.addAll(Arrays.asList(fo.getChildren()));
+                ProjectManager.mutex().postWriteRequest(new Runnable() {
+                    public void run() {
+                        try {
+                            ProjectManager.getDefault().saveProject(J2MEProject.this);
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ioe);
+                        }
+                        URL u = null;
+                        while (!files.isEmpty()) try {
+                            FileObject fo = files.removeFirst();
+                            if (fo.getExt().equals("xml") && isAuthorized(fo)) { //NOI18N
+                                u = fo.isData() ? fo.getURL() : new URL("", null, -1, fo.getPath(), COMPOSED_STREAM_HANDLER); //NOI18N
+                                genFilesHelper.refreshBuildScript(FileUtil.getRelativePath(root, fo), u, checkForProjectXmlModified);
+                            } else if (fo.isFolder()) {
+                                files.addAll(Arrays.asList(fo.getChildren()));
+                            }
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ioe);
+                            BufferedReader br = null;
+                            if (u != null) try {
+                                br = new BufferedReader(new InputStreamReader(u.openStream()));
+                                String s;
+                                while ((s = br.readLine()) != null) ErrorManager.getDefault().log(ErrorManager.ERROR, s);
+                            } catch (Exception e) {
+                            } finally {
+                                if (br != null) try {br.close();} catch (IOException e) {}
+                            }
+                        }
                     }
-                } catch (IOException ioe) {
-                    ErrorManager.getDefault().notify(ioe);
-                    BufferedReader br = null;
-                    if (u != null) try {
-                        br = new BufferedReader(new InputStreamReader(u.openStream()));
-                        String s;
-                        while ((s = br.readLine()) != null) ErrorManager.getDefault().log(ErrorManager.ERROR, s);
-                    } catch (Exception e) {
-                    } finally {
-                        if (br != null) try {br.close();} catch (IOException e) {}
-                    }
-                }
+                });
             }
         });
     }
