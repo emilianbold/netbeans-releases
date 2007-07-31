@@ -147,7 +147,12 @@ public class DnDSupport  implements DragGestureListener, DropTargetListener {
             try {
                 dge.startDrag( null, t );
             } catch( InvalidDnDOperationException idndE ) {
-                ERR.log( Level.INFO, idndE.getMessage(), idndE );
+                //attempt to fix #110670
+                try {
+                    dge.startDrag( null, t );
+                } catch( InvalidDnDOperationException e ) {
+                    ERR.log( Level.INFO, idndE.getMessage(), e );
+                }
             }
         }
     }
