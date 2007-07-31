@@ -99,4 +99,13 @@ public abstract class JavaSourceAccessor {
      */
     public abstract boolean isDispatchThread ();
     
+    /**
+     * Locks java compiler. Private API for indentation engine only!
+     */
+    public abstract void lockJavaCompiler ();
+    
+    /**
+     * Unlocks java compiler. Private API for indentation engine only!
+     */
+    public abstract void unlockJavaCompiler ();
 }

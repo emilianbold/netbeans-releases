@@ -1823,6 +1823,8 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     private static class JavaSourceAccessorImpl extends JavaSourceAccessor {
         
+        private StackTraceElement[] javacLockedStackTrace;
+        
         protected @Override void runSpecialTaskImpl (CancellableTask<CompilationInfo> task, Priority priority) {
             handleAddRequest(new Request (task, null, null, priority, false));
         }                
@@ -1871,6 +1873,25 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         @Override
         public boolean isDispatchThread () {
             return factory.isDispatchThread(Thread.currentThread());
+        }
+        
+        @Override
+        public void lockJavaCompiler () {            
+            javacLock.lock();
+            try {
+                this.javacLockedStackTrace = Thread.currentThread().getStackTrace();
+            } catch (RuntimeException e) {
+                //Not important, thrown by logging code
+            }
+        }
+        
+        @Override
+        public void unlockJavaCompiler () {
+            try {
+                this.javacLockedStackTrace = null;
+            } finally {
+                javacLock.unlock();
+            }
         }
 
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
