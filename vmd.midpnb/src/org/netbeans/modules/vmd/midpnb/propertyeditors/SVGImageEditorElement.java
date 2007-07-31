@@ -17,7 +17,16 @@
 
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
+import java.awt.BorderLayout;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
+import javax.microedition.m2g.SVGImage;
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -34,13 +43,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import javax.microedition.m2g.SVGImage;
-import javax.swing.*;
-import javax.swing.filechooser.FileFilter;
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
 
 /**
  *
@@ -71,6 +73,10 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         return SVGImageCD.TYPEID;
     }
 
+    public List<String> getPropertyValueNames() {
+        return Arrays.asList(new String[] {SVGImageCD.PROP_RESOURCE_PATH});
+    }
+    
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {

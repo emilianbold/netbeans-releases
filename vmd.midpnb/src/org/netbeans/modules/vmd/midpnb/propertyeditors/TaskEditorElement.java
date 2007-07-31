@@ -21,6 +21,8 @@ import java.awt.Cursor;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
@@ -50,6 +52,10 @@ public class TaskEditorElement extends PropertyEditorResourceElement implements 
         return SimpleCancellableTaskCD.TYPEID;
     }
 
+    public List<String> getPropertyValueNames() {
+        return Arrays.asList(new String[] {SimpleCancellableTaskCD.PROP_CODE});
+    }
+    
     @Override
     public String getResourceNameSuggestion() {
         return "task"; // NOI18N

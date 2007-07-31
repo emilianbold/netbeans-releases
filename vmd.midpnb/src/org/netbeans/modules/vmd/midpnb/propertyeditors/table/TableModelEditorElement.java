@@ -20,6 +20,7 @@ package org.netbeans.modules.vmd.midpnb.propertyeditors.table;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -64,6 +65,10 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         return SimpleTableModelCD.TYPEID;
     }
 
+    public List<String> getPropertyValueNames() {
+        return Arrays.asList(new String[] {SimpleTableModelCD.PROP_COLUMN_NAMES, SimpleTableModelCD.PROP_VALUES});
+    }
+    
     @Override
     public String getResourceNameSuggestion() {
         return "tableModel"; // NOI18N

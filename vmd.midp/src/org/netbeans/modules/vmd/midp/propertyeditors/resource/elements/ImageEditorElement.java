@@ -24,6 +24,8 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.DefaultComboBoxModel;
@@ -74,6 +76,10 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         return ImageCD.TYPEID;
     }
 
+    public List<String> getPropertyValueNames() {
+        return Arrays.asList(new String[] {ImageCD.PROP_RESOURCE_PATH});
+    }
+    
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {

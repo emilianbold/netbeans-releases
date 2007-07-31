@@ -17,6 +17,8 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
@@ -49,6 +51,10 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
         return TickerCD.TYPEID;
     }
 
+    public List<String> getPropertyValueNames() {
+        return Arrays.asList(new String[] {TickerCD.PROP_STRING});
+    }
+    
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         if (wrapper == null) {
             // UI stuff

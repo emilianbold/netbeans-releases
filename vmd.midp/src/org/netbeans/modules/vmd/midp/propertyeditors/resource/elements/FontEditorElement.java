@@ -20,6 +20,8 @@ package org.netbeans.modules.vmd.midp.propertyeditors.resource.elements;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -55,6 +57,10 @@ public class FontEditorElement extends PropertyEditorResourceElement {
         return FontCD.TYPEID;
     }
 
+    public List<String> getPropertyValueNames() {
+        return Arrays.asList(new String[] {FontCD.PROP_FONT_KIND, FontCD.PROP_FACE, FontCD.PROP_STYLE, FontCD.PROP_SIZE});
+    }
+    
     private void attachListeners() {
         ActionListener kindActionListener = new KindActionListener();
         defaultRadioButton.addActionListener(kindActionListener);
