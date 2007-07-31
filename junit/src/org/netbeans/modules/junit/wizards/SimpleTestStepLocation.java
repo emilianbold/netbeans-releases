@@ -362,7 +362,7 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         JLabel lblProject = new JLabel();
         JLabel lblLocation = new JLabel();
         JLabel lblFile = new JLabel();
-        tfClassToTest = new JTextField(35);
+        tfClassToTest = new JTextField(25);
         btnBrowse = new JButton();
         tfTestClass = new JTextField();
         tfProjectName = new JTextField();
