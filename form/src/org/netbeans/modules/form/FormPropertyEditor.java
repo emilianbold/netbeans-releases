@@ -252,7 +252,9 @@ public class FormPropertyEditor implements PropertyEditor,
         FormModel formModel = property.getPropertyContext().getFormModel();
         if (formModel != null) {
             JavaCodeGenerator codeGen = (JavaCodeGenerator) FormEditor.getCodeGenerator(formModel);
-            codeGen.regenerateCode();
+            if (codeGen != null) { // may happen property sheet wants something from an already closed form (#111205)
+                codeGen.regenerateCode();
+            }
         }
 
         Component customEditor;
