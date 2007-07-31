@@ -52,20 +52,23 @@
     <!--Subversion Diff window-->
     <mapID target="org.netbeans.modules.subversion.ui.diff.DiffTopComponent" url="pending.html" />
     
-    <!--Subversion Versioning window-->
-    <mapID target="org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" url="pending.html" />
+    <!--Subversion Property Editor-->
+    <mapID target="org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction" url="svnmodule/csh/svn_prop_editor.html" />
 
-    <!--Subversion Switch To dialog-->
-    <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="svnmodule/csh/svn_switch_dialog.html" />
+    <!--Subversion Merge dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.copy.Merge" url="svnmodule/csh/svn_merge_dialog.html" />
+
+    <!--Subversion Revert Modifications dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.update.RevertModifications" url="svnmodule/csh/svn_revert_mod_dialog.html" />
 
     <!--Subversion Search History window-->
     <mapID target="org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent" url="svnmodule/csh/svn_search_rev_dialog.html" />
-    
-    <!--Subversion Revert Modifications dialog-->
-    <mapID target="org.netbeans.modules.subversion.ui.update.RevertModifications" url="svnmodule/csh/revert_mod_dialog.html" />
+ 
+    <!--Subversion Switch To dialog-->
+    <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="svnmodule/csh/svn_switch_dialog.html" />
 
-    <!--Merge dialog-->
-    <mapID target="org.netbeans.modules.subversion.ui.copy.Merge" url="svnmodule/csh/svn_merge_dialog.html" />
+    <!--Subversion Versioning window-->
+    <mapID target="org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" url="pending.html" />
 
 </map>
 

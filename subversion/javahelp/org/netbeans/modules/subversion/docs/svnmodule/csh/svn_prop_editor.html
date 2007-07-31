@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * 
+ *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ *
+-->
+<html>
+    <head>
+        <title>Subversion: Subversion Property Editor</title>
+        <link href="nbdocs:/org/netbeans/modules/usersguide/ide.css" 
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Subversion: Subversion Property Editor</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The Subversion Property Editor serves as an interface allowing you to apply arbitrary 
+            metadata to files or directories. Metadata is maintained in the form of Subversion 
+            properties, which are name/value pairs associated with items located in your working 
+            copy.</p>
+           
+        <p>The Property Editor is accessed either by choosing Versioning &gt; Subversion &gt; Svn 
+            Properties from the main menu, or by choosing Subversion &gt; Svn Properties from the
+            right-click menu of a selected versioned file in the Projects, Files, or Favorites
+            window.</p>
+        
+        <p>With the Property Editor, you can add, modify and delete properties associated with a 
+            given file or directory. In the editor, specify the following:</p>
+            
+        <ul>
+            <li><strong>Property Name.</strong> Specify a name for the property you want to add to
+                the selected file or directory. You can enter your own name, otherwise select a
+                Subversion reserved property name from the drop-down list.</li>
+            <li><strong>Property Value.</strong> Specify the value(s) you want to associate to the
+                property name.</li>
+        </ul>
+        
+        <ul class="note">
+            <li>To attach properties from an existing file, click Load to open a dialog allowing you 
+                to navigate to that file. When you select a file in this manner, the properties of the
+                file will be automatically loaded into the Property Value text area.</li>
+        </ul>        
+        
+        <h4>To add a property to a selected file or directory:</h4>
+        
+        <ul>
+            <li>Click Add. The IDE performs the action of attaching the specified property to the 
+                selected file or directory. The name/value property pair displays in the Subversion 
+                Properties table displayed at the bottom of the editor.</li>
+        </ul>
+        
+        <ul class="note">
+            <li>If you are performing changes on a directory and want to add the specified property to
+                all files and directories included in that directory, select the <strong>Recursively</strong>
+                option located next to the Add button.</li>
+            <li>The <strong>Refresh</strong> button is designed to be used only in circumstances where 
+                property files can be modified externally.</li>
+            <li>When working with files or directories that contain many properties, it can be useful to 
+                sort properties alphabetically by name or value. To do so, click on the Name or Value
+                heading in the Subversion Proerties table displayed at the bottom of the editor.</li>
+        </ul>        
+                
+        <h4>To remove a property from a selected file or directory:</h4>
+        
+        <ul>
+            <li>Click Remove. The IDE performs the action of deleting the specified property to the 
+                selected file or directory. The name/value property pair is removed from the Subversion 
+                Properties table displayed at the bottom of the editor.</li>
+        </ul>        
+    
+        <dl>
+            <dt>
+            <a name="seealso">See Also</a></dt>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>
