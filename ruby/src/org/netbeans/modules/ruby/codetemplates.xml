@@ -2,6 +2,9 @@
 <!DOCTYPE codetemplates PUBLIC "-//NetBeans//DTD Editor Code Templates settings 1.0//EN" "http://www.netbeans.org/dtds/EditorCodeTemplates-1_0.dtd">
 <codetemplates>
     <!-- TODO Add unusedlocal and other logical parameters to some of the TM snippets -->
+    <codetemplate abbreviation="l" descriptionId="ct_l" contexts="ruby">
+<code><![CDATA[=> ]]></code>
+    </codetemplate>
     <codetemplate abbreviation="jc" descriptionId="ct_jc" contexts="ruby">
 <code><![CDATA[require 'java'
 include_class '${0 default="package.class"}']]></code>
@@ -44,15 +47,11 @@ end
 
 <!-- The following templates were imported from TextMate -->
 
-  <!-- Only alphanum chars seem to be allowed as tabtriggers
   <codetemplate abbreviation=":" descriptionId="ct_:">
     <code>
-<![CDATA[:${1 default="key"} => ${4 default=", "}]]>
+<![CDATA[:${1 default="key"} => "${2 default="value"}"${4 default=", "}]]>
     </code>
   </codetemplate>
-  -->
-
-
   <codetemplate abbreviation="defs" descriptionId="ct_defs">
     <code>
 <![CDATA[def self.${1 default="class_method_name"}
