@@ -307,6 +307,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (results != null) {
                         if (filterPrefix != null) {
                             resultSet.addAllItems(getFilteredData(results, filterPrefix));
+                            resultSet.setHasAdditionalItems(hasAdditionalItems);
                         } else {
                             Completion.get().hideDocumentation();
                             Completion.get().hideCompletion();
@@ -2480,7 +2481,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             addPackages(env, env.getPrefix());
         }
         
-        private void addLocalAndImportedTypes(Env env, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final Element toExclude) throws IOException {
+        private void addLocalAndImportedTypes(final Env env, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final Element toExclude) throws IOException {
             final String prefix = env.getPrefix();
             final CompilationController controller = env.getController();
             final Trees trees = controller.getTrees();
@@ -2495,7 +2496,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 public boolean accept(Element e, TypeMirror t) {
                     if (e.getKind().isClass() || e.getKind().isInterface() || e.getKind() == TYPE_PARAMETER) {
                         String name = e.getSimpleName().toString();
-                        return name.length() > 0 && !Character.isDigit(name.charAt(0)) && Utilities.startsWith(name, prefix) &&
+                        return name.length() > 0 && !Character.isDigit(name.charAt(0)) && (env.isCamelCasePrefix() ? Utilities.startsWithCamelCase(name, prefix) : Utilities.startsWith(name, prefix)) &&
                                 (!isStatic || e.getModifiers().contains(STATIC)) && isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
                     }
                     return false;
@@ -2516,7 +2517,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             acceptor = new ElementUtilities.ElementAcceptor() {
                 public boolean accept(Element e, TypeMirror t) {
-                    return toExclude != e && Utilities.startsWith(e.getSimpleName().toString(), prefix) &&
+                    return toExclude != e && (env.isCamelCasePrefix() ? Utilities.startsWithCamelCase(e.getSimpleName().toString(), prefix) : Utilities.startsWith(e.getSimpleName().toString(), prefix)) &&
                             trees.isAccessible(scope, (TypeElement)e) &&
                             isOfKindAndType(e.asType(), e, kinds, baseType, scope, trees, types);
                 }
@@ -2531,7 +2532,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             String prefix = env.getPrefix();
             CompilationController controller = env.getController();
             LazyTypeCompletionItem lastItem = null;
-            for(ElementHandle<TypeElement> name : controller.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+            for(ElementHandle<TypeElement> name : controller.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, env.isCamelCasePrefix() ? ClassIndex.NameKind.CAMEL_CASE : Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                 LazyTypeCompletionItem item = LazyTypeCompletionItem.create(name, kinds, offset, controller.getJavaSource());
                 if (lastItem != null)
                     lastItem.setNextItem(item);
@@ -2558,7 +2559,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 TypeElement elem = (TypeElement)head.asElement();
                 if (!elems.add(elem))
                     continue;
-                if (Utilities.startsWith(elem.getSimpleName().toString(), prefix) && trees.isAccessible(scope, elem)) {
+                if (env.isCamelCasePrefix() ? Utilities.startsWithCamelCase(elem.getSimpleName().toString(), prefix) : Utilities.startsWith(elem.getSimpleName().toString(), prefix) && trees.isAccessible(scope, elem)) {
                     results.add(JavaCompletionItem.createTypeItem(elem, head, anchorOffset, true, elements.isDeprecated(elem), smartTypes));
                 }
                 List<? extends TypeMirror> tas = head.getTypeArguments();
@@ -3117,9 +3118,11 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (prefix.length() == 0)
                 return data;
             List ret = new ArrayList();
+            boolean camelCase = prefix.length() > 1 && prefix.equals(prefix.toUpperCase());
             for (Iterator<JavaCompletionItem> it = data.iterator(); it.hasNext();) {
                 CompletionItem itm = it.next();
-                if (Utilities.startsWith(itm.getInsertPrefix().toString(), prefix))
+                if (Utilities.startsWith(itm.getInsertPrefix().toString(), prefix)
+                        || (camelCase && (itm instanceof JavaCompletionItem.ClassItem || itm instanceof LazyTypeCompletionItem) && Utilities.startsWithCamelCase(itm.getInsertPrefix().toString(), prefix)))
                     ret.add(itm);
             }
             return ret;
@@ -3896,6 +3899,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private class Env {
             private int offset;
             private String prefix;
+            private boolean isCamelCasePrefix;
             private CompilationController controller;
             private TreePath path;
             private SourcePositions sourcePositions;
@@ -3907,6 +3911,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             private Env(int offset, String prefix, CompilationController controller, TreePath path, SourcePositions sourcePositions, Scope scope) {
                 this.offset = offset;
                 this.prefix = prefix;
+                this.isCamelCasePrefix = prefix != null && prefix.length() > 1 && prefix.equals(prefix.toUpperCase());
                 this.controller = controller;
                 this.path = path;
                 this.sourcePositions = sourcePositions;
@@ -3919,6 +3924,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             
             public String getPrefix() {
                 return prefix;
+            }
+            
+            public boolean isCamelCasePrefix() {
+                return isCamelCasePrefix;
             }
             
             public CompilationController getController() {

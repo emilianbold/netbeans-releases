@@ -37,7 +37,6 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtSettingsDefaults;
@@ -68,6 +67,22 @@ public class Utilities {
             theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
     
+    public static boolean startsWithCamelCase(String theString, String prefix) {
+        if (theString == null || theString.length() == 0 || prefix == null || prefix.length() == 0)
+            return false;
+        int pi = 0;
+        int sni = 0;
+        while (sni < theString.length() && pi < prefix.length()) {
+            char ch = theString.charAt(sni++);
+            if (Character.isUpperCase(ch)) {
+                if (ch != prefix.charAt(pi++)) {
+                    return false;
+                }
+            }
+        }
+        return pi == prefix.length();
+    }
+
     public static boolean isCaseSensitive() {
         lazyInit();
         return caseSensitive;
