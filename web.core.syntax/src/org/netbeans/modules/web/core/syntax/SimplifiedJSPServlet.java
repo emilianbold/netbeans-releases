@@ -57,16 +57,16 @@ import static org.netbeans.api.jsp.lexer.JspTokenId.JavaCodeType;
 public class SimplifiedJSPServlet {
 
     private static final String CLASS_HEADER = "\nclass SimplifiedJSPServlet extends HttpServlet {\n"; //NOI18N
-    private static final String METHOD_HEADER = "\n\tvoid mergedScriptlets("
-            + "\t\tHttpServletRequest request;\n" 
-            + "\t\tHttpServletResponse response;\n" 
-            + "\t\tHttpSession session;\n" 
-            + "\t\tServletContext application;\n" 
-            + "\t\tJspWriter out;\n" 
-            + "\t\tServletConfig config;\n"
-            + "\t\tJspContext jspContext;\n" 
-            + "\t\tObject page;\n" 
-            + "\t\tPageContext pageContext;\n"
+    private static final String METHOD_HEADER = "\n\tvoid mergedScriptlets(\n"
+            + "\t\tHttpServletRequest request,\n" 
+            + "\t\tHttpServletResponse response,\n" 
+            + "\t\tHttpSession session,\n" 
+            + "\t\tServletContext application,\n" 
+            + "\t\tJspWriter out,\n" 
+            + "\t\tServletConfig config,\n"
+            + "\t\tJspContext jspContext,\n" 
+            + "\t\tObject page,\n" 
+            + "\t\tPageContext pageContext\n"
             + ") throws javax.servlet.ServletException, java.io.IOException {\n\n"; //NOI18N
     private static final String CLASS_FOOTER = "\n\t}\n}"; //NOI18N
     @Deprecated
