@@ -229,8 +229,12 @@ public class BoxList {
                 }
             }
         } else {
-            // Add to end of the list
-            assert before == null;
+            // XXX #111179 This assertion seems to be incorrect here.
+            // Revise, does it mean there is some issue with the computation,
+            // or the parameters are invalid? If former, fix the computation,
+            // if latter, validate the parameters at the beginning.
+//            // Add to end of the list
+//            assert before == null;
 
             // Simple case: just append
             ensureCapacity(size + 1);
