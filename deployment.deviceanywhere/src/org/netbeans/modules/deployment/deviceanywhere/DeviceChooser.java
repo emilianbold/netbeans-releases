@@ -174,6 +174,9 @@ public class DeviceChooser extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         deviceList = new javax.swing.JList();
 
+        jLabel1.setLabelFor(deviceList);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DeviceChooser.class, "LBL_AvailableDevices")); // NOI18N
+
         jScrollPane1.setViewportView(deviceList);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -193,9 +196,12 @@ public class DeviceChooser extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceChooser.class, "ACSN_AvailableDevices")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceChooser.class, "ACSD_AvailableDevices")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     

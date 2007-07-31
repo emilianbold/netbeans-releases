@@ -169,6 +169,9 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "ACSN_InsertPass")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "ACSD_InsertPass")); // NOI18N
+
         jLabel5.setLabelFor(devicesComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "LBL_Device")); // NOI18N
 
@@ -196,6 +199,11 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
                     .add(devicesComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(173, Short.MAX_VALUE))
         );
+
+        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "ACSN_Device")); // NOI18N
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "ACSD_Device")); // NOI18N
+        retriveButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "ACSN_RetriveDevices")); // NOI18N
+        retriveButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "ACSD_RetriveDevices")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -216,8 +224,9 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
         protected final JButton okButton;
         
         DeviceListener() {
-        this.okButton  = new JButton (NbBundle.getMessage (DeviceAnywhereCustomizerPanel.class, "MSG_ChooseOK")); //NOI18N
-            //this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (CustomizerRun.class, "AD_ChooseMainClass_OK"));
+            this.okButton  = new JButton (NbBundle.getMessage (DeviceAnywhereCustomizerPanel.class, "LBL_ChooseOK")); //NOI18N
+            this.okButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage (DeviceAnywhereCustomizerPanel.class, "ACSN_ChooseOK")); //NOI18N
+            this.okButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (DeviceAnywhereCustomizerPanel.class, "ACSD_ChooseOK")); //NOI18N
         }
         
         // Implementation of ActionListener ------------------------------------
@@ -244,7 +253,7 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
 
             String password = evaluator.evaluateGlobalProperty(
                     DeviceAnywhereDeploymentPlugin.PROP_PASSWORD, 
-                    evaluator.evaluateProperty("deployment.instance"));
+                    evaluator.evaluateProperty("deployment.instance")); //NOI18N
 
             if (password.trim().length() == 0){     
                 DialogDescriptor input = new DialogDescriptor(
@@ -283,7 +292,7 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
             okButton.setEnabled (false);
             DialogDescriptor desc = new DialogDescriptor (
                     panel,
-                    NbBundle.getMessage (DeviceAnywhereCustomizerPanel.class, "MSG_ChooseDevice" ), //NOI18N
+                    NbBundle.getMessage (DeviceAnywhereCustomizerPanel.class, "TITLE_ChooseDevice" ), //NOI18N
                     true,
                     options,
                     options[0],
