@@ -272,10 +272,11 @@ final public class WebApplicationPanel extends JPanel
         serviceCombo = new javax.swing.JComboBox();
         jPanel2 = new javax.swing.JPanel();
 
+        setPreferredSize(new java.awt.Dimension(560, 350));
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(560, 350));
-        jLabel7.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/end2end/ui/wizard/Bundle").getString("LBL_Title"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/end2end/ui/wizard/Bundle"); // NOI18N
+        jLabel7.setText(bundle.getString("LBL_Title")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -286,7 +287,7 @@ final public class WebApplicationPanel extends JPanel
 
         jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_Web_Application").charAt(0));
         jLabel1.setLabelFor(enterpriseProjectsComboBox);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Web_Application"));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Web_Application")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -304,14 +305,13 @@ final public class WebApplicationPanel extends JPanel
 
         jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_Servlet_Name").charAt(0));
         jLabel2.setLabelFor(documentNameTextField);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Servlet_Name"));
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Servlet_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 1, 0, 0);
         add(jLabel2, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -323,7 +323,7 @@ final public class WebApplicationPanel extends JPanel
 
         jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_Location").charAt(0));
         jLabel3.setLabelFor(rootComboBox);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Location"));
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Location")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -341,7 +341,7 @@ final public class WebApplicationPanel extends JPanel
 
         jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_Server_Package").charAt(0));
         jLabel4.setLabelFor(packageComboBox);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Server_Package"));
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Server_Package")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -360,7 +360,7 @@ final public class WebApplicationPanel extends JPanel
 
         jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_Server_Created_File").charAt(0));
         jLabel5.setLabelFor(fileTextField);
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Server_Created_File"));
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Server_Created_File")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -377,7 +377,6 @@ final public class WebApplicationPanel extends JPanel
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
         add(fileTextField, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -392,7 +391,7 @@ final public class WebApplicationPanel extends JPanel
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_ServiceTypeSelection"));
+        jLabel6.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_ServiceTypeSelection")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -406,7 +405,7 @@ final public class WebApplicationPanel extends JPanel
         clientTypeButtonGroup.add(clientToWebAppRadio);
         clientToWebAppRadio.setMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_ClassClientType").charAt(0));
         clientToWebAppRadio.setSelected(true);
-        clientToWebAppRadio.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_ClassClientType"));
+        clientToWebAppRadio.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_ClassClientType")); // NOI18N
         clientToWebAppRadio.setActionCommand("class");
         clientToWebAppRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         clientToWebAppRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -421,17 +420,15 @@ final public class WebApplicationPanel extends JPanel
 
         clientTypeButtonGroup.add(clientToWebServiceRadio);
         clientToWebServiceRadio.setMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_WebServiceClientType").charAt(0));
-        clientToWebServiceRadio.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_WebServiceClientType"));
+        clientToWebServiceRadio.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_WebServiceClientType")); // NOI18N
         clientToWebServiceRadio.setActionCommand("wsdlClient");
         clientToWebServiceRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         clientToWebServiceRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
         clientToWebServiceRadio.addChangeListener(new javax.swing.event.ChangeListener() {
-            @SuppressWarnings("synthetic-access")
-			public void stateChanged(javax.swing.event.ChangeEvent evt) {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 clientToWebServiceRadioStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -455,7 +452,6 @@ final public class WebApplicationPanel extends JPanel
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(jPanel1, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -465,7 +461,6 @@ final public class WebApplicationPanel extends JPanel
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel2, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void clientToWebServiceRadioStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_clientToWebServiceRadioStateChanged
