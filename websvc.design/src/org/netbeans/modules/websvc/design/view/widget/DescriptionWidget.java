@@ -79,7 +79,7 @@ public class DescriptionWidget extends AbstractTitledWidget implements TabWidget
     
     private void populateContentWidget(Widget parentWidget) {
         EditorPaneWidget descPaneWidget = new EditorPaneWidget(getScene(),model.getText(),"text/java");
-        descPaneWidget.setBorder(BorderFactory.createBevelBorder(false));
+        descPaneWidget.setBorder(BorderFactory.createEmptyBorder(1));
         parentWidget.addChild(descPaneWidget);
     }
     
