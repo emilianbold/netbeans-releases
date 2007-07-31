@@ -238,6 +238,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         add(jTextFieldSrcRoot, gridBagConstraints);
         jTextFieldSrcRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_PrjSources")); // NOI18N
 
+        jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "MNM_CustMain_AppVersion").charAt(0));
         jLabel5.setLabelFor(jTextFieldAppVersion);
         jLabel5.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AppVersion")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -255,6 +256,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jTextFieldAppVersion, gridBagConstraints);
 
+        jLabel6.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "MNM_CustMain_AppCounter").charAt(0));
         jLabel6.setLabelFor(jSpinnerCounter);
         jLabel6.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AppCounter")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -271,6 +273,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jSpinnerCounter, gridBagConstraints);
 
+        jCheckBoxAutoIncrement.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "MNM_CustMain_AutoIncrement").charAt(0));
         jCheckBoxAutoIncrement.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AutoIncrement")); // NOI18N
         jCheckBoxAutoIncrement.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBoxAutoIncrement.setMargin(new java.awt.Insets(0, 0, 0, 0));
