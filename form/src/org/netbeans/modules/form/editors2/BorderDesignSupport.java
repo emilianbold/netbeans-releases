@@ -23,6 +23,8 @@ import javax.swing.border.*;
 import java.util.*;
 import java.beans.*;
 import java.lang.reflect.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openide.nodes.*;
 import org.netbeans.modules.form.*;
@@ -164,7 +166,7 @@ public class BorderDesignSupport implements FormDesignValue
         }
         PropertyDescriptor[] props = bInfo.getPropertyDescriptors();
 
-        ArrayList nodeProps = new ArrayList();
+        List<FormProperty> nodeProps = new ArrayList<FormProperty>();
         for (int i = 0; i < props.length; i++) {
             PropertyDescriptor pd = props[i];
             if (!pd.isHidden()
@@ -279,6 +281,7 @@ public class BorderDesignSupport implements FormDesignValue
             writeMethod.invoke(theBorder, new Object[] { value });
         }
 
+        @Override
         protected Object getRealValue(Object value) {
             Object realValue = super.getRealValue(value);
 
@@ -289,10 +292,12 @@ public class BorderDesignSupport implements FormDesignValue
             return realValue;
         }
 
+        @Override
         public boolean supportsDefaultValue () {
             return true;
         }
 
+        @Override
         public Object getDefaultValue() {
             Method readMethod = desc.getReadMethod();
             Object value = null;
@@ -307,20 +312,23 @@ public class BorderDesignSupport implements FormDesignValue
             return value;
         }
 
+        @Override
         public PropertyEditor getExpliciteEditor() {
             try {
                 return desc.createPropertyEditor(theBorder);
             } 
             catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 return null;
             }
         }
 	
+        @Override
 	protected Method getWriteMethod() {
 	    return desc.getWriteMethod();	    
 	}
     
+        @Override
         protected void propertyValueChanged(Object old, Object current) {
             super.propertyValueChanged(old, current);
             borderNeedsUpdate = (getAccessType() & DETACHED_WRITE) != 0;

@@ -28,13 +28,14 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFormattedTextField;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.MaskFormatter;
 import javax.swing.text.NumberFormatter;
 import org.netbeans.modules.form.FormAwareEditor;
-import org.netbeans.modules.form.FormDesignValue;
 import org.netbeans.modules.form.FormDesignValueAdapter;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
@@ -62,6 +63,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
      * 
      * @return custom property editor. 
      */
+    @Override
     public Component getCustomEditor() {
         if (selector == null) {
             selector = new FormatSelector();
@@ -83,6 +85,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
      * 
      * @return Java code that corresponds to the selected formatter factory.
      */
+    @Override
     public String getJavaInitializationString() {
         Object value = getValue();
         if (!(value instanceof FormFormatter)) {
@@ -198,6 +201,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
         setValue(new FormFormatter(selector.getFormat()));
     }
 
+    @Override
     public void setValue(Object value) {
         updatePrePostCode(value, getValue());
         super.setValue(value);
@@ -232,6 +236,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
      * 
      * @return <code>true</code>.
      */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -288,7 +293,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
         try {
             updatePrePostCode(null, property.getValue());
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }
 
@@ -329,7 +334,7 @@ public class AbstractFormatterFactoryEditor extends PropertyEditorSupport
                 try {
                     value = new MaskFormatter(format.getFormat());
                 } catch (ParseException pex) {
-                    pex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, pex.getMessage(), pex);
                     value = new MaskFormatter();
                 }
             } else if (type == FormatSelector.FormatInfo.DATE) {

@@ -28,6 +28,8 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -43,7 +45,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.form.FormUtils.TypeHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -274,9 +275,9 @@ public class BindingCustomizer extends JPanel {
                         try {
                             property.setValue(value);
                         } catch (IllegalAccessException iaex) {
-                            iaex.printStackTrace();
+                            Logger.getLogger(getClass().getName()).log(Level.INFO, iaex.getMessage(), iaex);
                         } catch (InvocationTargetException itex) {
-                            itex.printStackTrace();
+                            Logger.getLogger(getClass().getName()).log(Level.INFO, itex.getMessage(), itex);
                         }
                     }                    
                 }
@@ -450,9 +451,9 @@ public class BindingCustomizer extends JPanel {
         try {
             value = new FormProperty.ValueWithEditor(property.getValue(), property.getCurrentEditor());
         } catch (IllegalAccessException iaex) {
-            iaex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, iaex.getMessage(), iaex);
         } catch (InvocationTargetException itex) {
-            itex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, itex.getMessage(), itex);
         }
         return value;
     }
@@ -999,7 +1000,7 @@ private void importDataButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                             }
                         });
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             }).start();

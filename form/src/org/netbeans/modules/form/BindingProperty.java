@@ -25,13 +25,15 @@ import java.awt.event.ActionListener;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.beans.binding.BindingConverter;
 import javax.beans.binding.BindingValidator;
 import org.openide.nodes.Node;
 
 import org.openide.nodes.PropertySupport;
 
-public class BindingProperty extends PropertySupport.ReadWrite {
+public class BindingProperty extends PropertySupport.ReadWrite<MetaBinding> {
 
     private RADComponent bindingComponent;
     private BindingDescriptor bindingDescriptor;
@@ -70,14 +72,14 @@ public class BindingProperty extends PropertySupport.ReadWrite {
         return binding != null ? "<b>" + getDisplayName() : null; // NOI18N
     }
 
-    public Object getValue() {
+    public MetaBinding getValue() {
         return binding;
     }
 
-    public void setValue(Object val) {
+    public void setValue(MetaBinding val) {
         MetaBinding old = binding;
         if ((old == null) && (val != null)) FormEditor.updateProjectForBeansBinding(bindingComponent.getFormModel());
-        binding = (MetaBinding) val;
+        binding = val;
         FormEditor.getBindingSupport(getFormModel()).changeBindingInModel(old, binding);
 
         getFormModel().fireBindingChanged(
@@ -104,14 +106,14 @@ public class BindingProperty extends PropertySupport.ReadWrite {
             nullValueProperty.setValue(null);
             incompleteValueProperty.setValue(null);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         Node.Property prop = bindingComponent.getPropertyByName(bindingDescriptor.getPath());
         if ((prop != null) && prop.supportsDefaultValue()) {
             try {
                 prop.restoreDefaultValue();
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
     }

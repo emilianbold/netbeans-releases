@@ -21,6 +21,8 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.plaf.metal.*;
 import org.jdesktop.layout.LayoutStyle;
@@ -45,7 +47,7 @@ public class FormLAF {
     /** User UIDefaults of components */
     private static Map userDefaults = new HashMap();
     /** Maps LAF class to its theme. */
-    private static Map lafToTheme = new HashMap();
+    private static Map<Class, MetalTheme> lafToTheme = new HashMap<Class, MetalTheme>();
     /** Determines whether the IDE LAF is subclass of MetalLookAndFeel. */
     private static boolean ideLafIsMetal;
     private static boolean preview;
@@ -63,7 +65,7 @@ public class FormLAF {
             }
             LookAndFeel previewLookAndFeel = (LookAndFeel)lafClass.newInstance();
             if (previewLafIsMetal) {
-                MetalTheme theme = (MetalTheme)lafToTheme.get(lafClass);
+                MetalTheme theme = lafToTheme.get(lafClass);
                 if (theme == null) {
                     lafToTheme.put(lafClass, MetalLookAndFeel.getCurrentTheme());
                 } else {
@@ -93,7 +95,7 @@ public class FormLAF {
 
             if (previewLafIsMetal && ideLafIsMetal) {
                 LookAndFeel ideLaf = UIManager.getLookAndFeel();
-                MetalTheme theme = (MetalTheme)lafToTheme.get(ideLaf.getClass());
+                MetalTheme theme = lafToTheme.get(ideLaf.getClass());
                 MetalLookAndFeel.setCurrentTheme(theme);
             }
 
@@ -128,7 +130,7 @@ public class FormLAF {
             method.setAccessible(true);
             method.invoke(null);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(FormLAF.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }
 
@@ -145,7 +147,7 @@ public class FormLAF {
         try {
             original = laf.getClass().newInstance();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(FormLAF.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
 
         java.lang.reflect.Method method = UIManager.class.getDeclaredMethod("getLAFState", new Class[0]); // NOI18N
@@ -232,7 +234,7 @@ public class FormLAF {
             try {
                 initialize();
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(FormLAF.class.getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
         UIDefaults defaults = UIManager.getDefaults();
@@ -244,7 +246,7 @@ public class FormLAF {
         if (!preview) {
             setUseDesignerDefaults(true);
         } else if (MetalLookAndFeel.class.isAssignableFrom(previewLaf)) {
-            MetalLookAndFeel.setCurrentTheme((MetalTheme)lafToTheme.get(previewLaf));
+            MetalLookAndFeel.setCurrentTheme(lafToTheme.get(previewLaf));
         }
     }
 
@@ -256,7 +258,7 @@ public class FormLAF {
         if (!preview) {
             setUseDesignerDefaults(false);
         } else if (ideLafIsMetal) {
-            MetalLookAndFeel.setCurrentTheme((MetalTheme)lafToTheme.get(UIManager.getLookAndFeel().getClass()));
+            MetalLookAndFeel.setCurrentTheme(lafToTheme.get(UIManager.getLookAndFeel().getClass()));
         }
     }
 
@@ -297,7 +299,7 @@ public class FormLAF {
             constr.setAccessible(true);
             layoutStyle = (LayoutStyle)constr.newInstance(null);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(FormLAF.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return layoutStyle;
     }
@@ -407,10 +409,12 @@ public class FormLAF {
             return delegating ? original : (previewing ? preview : ide);
         }
 
+        @Override
         public Object get(Object key) {
             return delegating ? original.get(key) : (previewing ? preview.get(key) : ide.get(key));
         }
 
+        @Override
         public Object put(Object key, Object value) {
             if (delegating) {
                 if (customizingUI) {
@@ -422,44 +426,54 @@ public class FormLAF {
             }
         }
 
+        @Override
         public void putDefaults(Object[] keyValueList) {
             getCurrentDefaults().putDefaults(keyValueList);
         }
 
+        @Override
         public Object get(Object key, Locale l) {
             return getCurrentDefaults().get(key, l);
         }
 
+        @Override
         public synchronized void addResourceBundle(String bundleName) {
             getCurrentDefaults().addResourceBundle(bundleName);
         }
 
+        @Override
         public synchronized void removeResourceBundle(String bundleName) {
             getCurrentDefaults().removeResourceBundle(bundleName);
         }
 
+        @Override
         public void setDefaultLocale(Locale l) {
             getCurrentDefaults().setDefaultLocale(l);
         }
 
+        @Override
         public Locale getDefaultLocale() {
             return getCurrentDefaults().getDefaultLocale();
         }
 
+        @Override
         public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
             getCurrentDefaults().addPropertyChangeListener(listener);
         }
 
+        @Override
         public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
             getCurrentDefaults().removePropertyChangeListener(listener);
         }
 
+        @Override
         public synchronized PropertyChangeListener[] getPropertyChangeListeners() {
             return getCurrentDefaults().getPropertyChangeListeners();
         }
 
+        @Override
         protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-            System.out.println("Warning: FormLAF.firePropertyChange called, but not implemented."); // NOI18N
+            Logger.getLogger(getClass().getName()).log(Level.INFO, "FormLAF.firePropertyChange called, but not implemented."); // NOI18N
         }
 
     }

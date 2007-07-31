@@ -26,6 +26,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -37,7 +39,6 @@ import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.editors2.JTableHeaderEditor;
 import org.netbeans.modules.form.editors2.TableColumnModelEditor;
 import org.netbeans.modules.form.editors2.TableModelEditor;
-import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.util.NbBundle;
 
 /**
@@ -967,7 +968,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 modelProperty.setValue(new FormProperty.ValueWithEditor(value, propEd));
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }
 
@@ -1057,7 +1058,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 try {
                     modelProperty.restoreDefaultValue();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
             modelBoundCustomizer.getBindingFromUI();
@@ -1082,7 +1083,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                                 titleProp.restoreDefaultValue();
                             }
                         } catch (Exception ex) {
-                            ex.printStackTrace();
+                            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                         }
                     }
                     MetaBinding subBinding = binding.addSubBinding(expression, null);
@@ -1107,20 +1108,20 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 try {
                     value = prop.getValue();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
                 if (value instanceof String) {
                     try {
                         prop.restoreDefaultValue();
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                 }
             }
             try {
                 modelProperty.setValue(rowTableModel);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
 
@@ -1134,12 +1135,12 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         try {
             columnModelProperty.setValue(model);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         try {
             columnSelectionAllowedProperty.setValue(selectionModel != 0);
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
 
         // tableHeader
@@ -1147,7 +1148,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         try {
             value = headerProperty.getValue();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         boolean resizingAllowed = true;
         if (value instanceof JTableHeaderEditor.FormTableHeader) {
@@ -1157,7 +1158,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         try {
             headerProperty.setValue(new JTableHeaderEditor.FormTableHeader(headerProperty, resizingAllowed, reorderingAllowedChoice.isSelected()));
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }
     
@@ -1194,7 +1195,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         bindingProperty = comp.getBindingProperty("elements"); // NOI18N
         MetaBinding binding = (MetaBinding)bindingProperty.getValue();
@@ -1252,7 +1253,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         try {
             value = columnModelProperty.getValue();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         if (value instanceof TableColumnModelEditor.FormTableColumnModel) {
             TableColumnModelEditor.FormTableColumnModel columnModel = (TableColumnModelEditor.FormTableColumnModel)value;
@@ -1265,7 +1266,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             try {
                 value = columnSelectionAllowedProperty.getRealValue();
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
             if (Boolean.TRUE.equals(value)) {
                 selectionModelCombo.setSelectedIndex(2); // multiple interval selection
@@ -1277,7 +1278,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
         try {
             value = headerProperty.getValue();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         boolean reorderingAllowed = true;
         if (value instanceof JTableHeaderEditor.FormTableHeader) {
@@ -1321,7 +1322,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                 ensureColumnCount(0);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }
 
@@ -1359,7 +1360,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                     }
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }            
         } else if (modelBoundChoice.isSelected()) {
             MetaBinding binding = (MetaBinding)bindingProperty.getValue();
@@ -1391,7 +1392,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                                 try {
                                     title.setValue(model.getColumnName(index));
                                 } catch (Exception ex) {
-                                    ex.printStackTrace();
+                                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                                 }
                             }
                         }
@@ -1519,7 +1520,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                     title = value.toString();
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
         return title;
@@ -1827,7 +1828,7 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
                         info.getColumn().getTitle().setValue(value);
                         columnTitlePanel.repaint();
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                     break;
                 case 1:

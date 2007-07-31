@@ -24,13 +24,13 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.*;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.codestructure.CodeVariable;
@@ -75,6 +75,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
      * 
      * @return <code>true</code>.
      */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -84,6 +85,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
      * 
      * @return custom editor.
      */
+    @Override
     public Component getCustomEditor() {
         JLabel label = new JLabel(NbBundle.getMessage(getClass(), "TableColumnModelEditor_Customizer")); // NOI18N
         label.setHorizontalAlignment(SwingConstants.CENTER);
@@ -252,7 +254,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }
 
@@ -302,9 +304,9 @@ public class TableColumnModelEditor extends PropertyEditorSupport
                         System.err.println("Unable to store " + property); // NOI18N
                     }
                 } catch (IllegalAccessException iaex) {
-                    iaex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, iaex.getMessage(), iaex);
                 } catch (InvocationTargetException itex) {
-                    itex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, itex.getMessage(), itex);
                 }
             }
         }
@@ -341,13 +343,14 @@ public class TableColumnModelEditor extends PropertyEditorSupport
                     designValue(columnModel);
                 }
             } catch (IllegalAccessException iaex) {
-                iaex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, iaex.getMessage(), iaex);
             } catch (InvocationTargetException itex) {
-                itex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, itex.getMessage(), itex);
             }
             return value;
         }
 
+        @Override
         public Object getDesignValue(Object target) {
             TableColumnModel columnModel = null;
             if (target instanceof javax.swing.JTable) {
@@ -381,7 +384,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
                         column.setHeaderValue(prop.getRealValue());
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
                 prop = formColumn.getEditor();
                 try {
@@ -392,7 +395,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
                         }
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
                 prop = formColumn.getRenderer();
                 try {
@@ -403,7 +406,7 @@ public class TableColumnModelEditor extends PropertyEditorSupport
                         }
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
         }

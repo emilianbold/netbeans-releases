@@ -29,6 +29,8 @@ import javax.beans.binding.ext.PropertyDelegateProvider;
 import java.util.*;
 import java.beans.*;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -175,7 +177,7 @@ public class BindingDesignSupport {
             try {
                  pd = FormUtils.getBeanInfo(beanClass).getPropertyDescriptors();
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 pd = new PropertyDescriptor[0];
             }
             fds = Arrays.asList(pd);
@@ -362,7 +364,7 @@ public class BindingDesignSupport {
 
                     }, true);
                 } catch (IOException ioex) {
-                    ioex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);
                 }
             } while (!Object.class.equals(superClass[0]));
             typesFromSource = types;
@@ -394,7 +396,7 @@ public class BindingDesignSupport {
                     list[i] = new LinkedList<BindingDescriptor>(maps[i].values());
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
         }
         return list;
@@ -474,7 +476,7 @@ public class BindingDesignSupport {
                         newMap.put(clazz.getTypeParameters()[0].getName(), elemType);
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
             type = new TypeHelper(t, newMap);
@@ -548,7 +550,7 @@ public class BindingDesignSupport {
                 }
             }, true);
         } catch (IOException ioex) {
-            ioex.printStackTrace();
+            Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, ioex.getMessage(), ioex);
         }
         if (result[0] == null) {
             // fallback - covers the situation where the component
@@ -572,7 +574,7 @@ public class BindingDesignSupport {
                         }
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
         }
@@ -856,9 +858,9 @@ public class BindingDesignSupport {
                     binding.setNullSourceValue(value);
                 }
             } catch (IllegalAccessException iaex) {
-                iaex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
             } catch (InvocationTargetException itex) {
-                itex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
         }
         if (bindingDef.isIncompletePathValueSpecified()) {
@@ -870,9 +872,9 @@ public class BindingDesignSupport {
                     binding.setValueForIncompleteSourcePath(value);
                 }
             } catch (IllegalAccessException iaex) {
-                iaex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
             } catch (InvocationTargetException itex) {
-                itex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
         }
         if (bindingDef.isConverterSpecified()) {
@@ -884,9 +886,9 @@ public class BindingDesignSupport {
                     binding.setConverter((BindingConverter)value);
                 }
             } catch (IllegalAccessException iaex) {
-                iaex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
             } catch (InvocationTargetException itex) {
-                itex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
         }
         if (bindingDef.isValidatorSpecified()) {
@@ -898,9 +900,9 @@ public class BindingDesignSupport {
                     binding.setValidator((BindingValidator)value);
                 }
             } catch (IllegalAccessException iaex) {
-                iaex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
             } catch (InvocationTargetException itex) {
-                itex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
         }
         if (bindingDef.hasSubBindings()) {
@@ -913,7 +915,7 @@ public class BindingDesignSupport {
                         int column = Integer.parseInt(tableColumn);
                         subBinding.putParameter(ParameterKeys.COLUMN, column);
                     } catch (NumberFormatException nfex) {
-                        nfex.printStackTrace();
+                        Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, nfex.getMessage(), nfex);
                     }
                 }
                 String columnClass = sub.getParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER);
@@ -929,7 +931,7 @@ public class BindingDesignSupport {
                         Class clazz = FormUtils.loadClass(columnClass, bindingDef.getSource().getFormModel());
                         subBinding.putParameter(ParameterKeys.COLUMN_CLASS, clazz);
                     } catch (ClassNotFoundException cnfex) {
-                        cnfex.printStackTrace();
+                        Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, cnfex.getMessage(), cnfex);
                     }
                 }
                 String editable = sub.getParameter(MetaBinding.EDITABLE_PARAMETER);
@@ -956,9 +958,9 @@ public class BindingDesignSupport {
                 // duplicate name
                 System.err.println(iaex.getMessage());
             } catch (IllegalAccessException iaex) {
-                iaex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, iaex.getMessage(), iaex);
             } catch (InvocationTargetException itex) {
-                itex.printStackTrace();
+                Logger.getLogger(BindingDesignSupport.class.getName()).log(Level.INFO, itex.getMessage(), itex);
             }
         }
         

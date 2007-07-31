@@ -22,6 +22,8 @@ package org.netbeans.modules.form.editors;
 import java.awt.Component;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.codestructure.CodeVariable;
@@ -109,6 +111,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
         return string;
     }
 
+    @Override
     public String getAsText() {
         String text = null;
         Object value = getValue();
@@ -125,6 +128,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
         return text;
     }
 
+    @Override
     public void setAsText(String text) {
         if (text == null) throw new IllegalArgumentException();
         int index = text.indexOf(' ');
@@ -150,6 +154,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
      * 
      * @return <code>true</code>.
      */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -159,6 +164,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
      * 
      * @return custom editor.
      */
+    @Override
     public Component getCustomEditor() {
         fireChanges = false;
         if (!initialized) {
@@ -289,7 +295,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
                         modelProperty.setValue(new SpinnerModelEditor.FormSpinnerModel(newModel, newModel.getValue()));
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
         }
@@ -382,6 +388,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
      * 
      * @return initialization string. 
      */
+    @Override
     public String getJavaInitializationString() {
         Object value = getValue();
         if (!(value instanceof FormSpinnerEditor)) {
@@ -494,6 +501,7 @@ public class SpinnerEditorEditor extends PropertyEditorSupport
          * @param targetFormProperty property where this value should be copied to.
          * @return copy of the current value.
          */
+        @Override
         public Object copy(FormProperty targetFormProperty) {
             return new FormSpinnerEditor(targetFormProperty, type, format);
         }

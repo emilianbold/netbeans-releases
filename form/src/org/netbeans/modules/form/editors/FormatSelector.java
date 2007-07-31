@@ -20,7 +20,6 @@ package org.netbeans.modules.form.editors;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.DateFormat;
@@ -33,6 +32,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.text.DateFormatter;
 import javax.swing.text.InternationalFormatter;
@@ -429,7 +430,7 @@ public class FormatSelector {
                 }
             }
         } catch (ParseException pex) {
-            pex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, pex.getMessage(), pex);
         }
     }
     
@@ -857,7 +858,7 @@ public class FormatSelector {
             try {
                 example = formatter.valueToString(value);
             } catch (ParseException pex) {
-                pex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, pex.getMessage(), pex);
             }
         }
 

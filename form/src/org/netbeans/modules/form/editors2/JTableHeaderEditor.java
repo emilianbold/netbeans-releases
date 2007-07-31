@@ -23,6 +23,8 @@ import java.awt.Component;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.JTableHeader;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.codestructure.CodeVariable;
@@ -67,6 +69,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
      * 
      * @return <code>true</code>.
      */
+    @Override
     public boolean supportsCustomEditor() {
         return true;
     }
@@ -76,6 +79,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
      * 
      * @return custom editor.
      */
+    @Override
     public Component getCustomEditor() {
         if (!initialized) {
             initialized = true;
@@ -159,23 +163,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
      * Updates property according to the value in the customizer.
      */
     private void updateFromUI() {
-//        if (resizingCheckBox.isSelected() && reorderingCheckBox.isSelected()) {
-//            try {
-//                Object value = property.getRealValue();
-//                if (value instanceof JTableHeader) {
-//                    JTableHeader header = (JTableHeader)value;
-//                    header.setResizingAllowed(true);
-//                    header.setReorderingAllowed(true);
-//                    setValue(header);
-//                }
-//            } catch (IllegalAccessException iaex) {
-//                iaex.printStackTrace();
-//            } catch (InvocationTargetException itex) {
-//                itex.printStackTrace();
-//            }
-//        } else {
-            setValue(new FormTableHeader(property, resizingCheckBox.isSelected(), reorderingCheckBox.isSelected()));
-//        }
+        setValue(new FormTableHeader(property, resizingCheckBox.isSelected(), reorderingCheckBox.isSelected()));
     }
 
     /**
@@ -293,13 +281,14 @@ public class JTableHeaderEditor extends PropertyEditorSupport
                     header.setReorderingAllowed(reorderingAllowed);
                 }
             } catch (IllegalAccessException iaex) {
-                iaex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, iaex.getMessage(), iaex);
             } catch (InvocationTargetException itex) {
-                itex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, itex.getMessage(), itex);
             }
             return value;
         }
 
+        @Override
         public Object getDesignValue(Object target) {
             // PENDING
             JTableHeader header = null;
@@ -311,6 +300,7 @@ public class JTableHeaderEditor extends PropertyEditorSupport
             return header;
         }
 
+        @Override
         public Object copy(FormProperty targetFormProperty) {
             return new FormTableHeader(targetFormProperty, resizingAllowed, reorderingAllowed);
         }
