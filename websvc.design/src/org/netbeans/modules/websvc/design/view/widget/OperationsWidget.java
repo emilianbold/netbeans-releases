@@ -101,7 +101,6 @@ public class OperationsWidget extends AbstractTitledWidget {
                 new DesignViewPopupProvider(new Action [] {
             addAction,
         })));
-        getActions().addAction(scene.createSelectAction());
         createContent(service);
     }
     

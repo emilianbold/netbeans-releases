@@ -31,7 +31,7 @@ import org.netbeans.api.visual.widget.Widget;
 /**
  * @author David Kaspar
  */
-public class RoundedBorder3D implements Border, Selectable {
+public class RoundedBorder3D implements Border {
     
     private static final Color SHADOW_COLOR = new Color(208,208,208);
     private static final Color SELECTED_BORDER_COLOR = new Color(255,153,0);
@@ -42,7 +42,6 @@ public class RoundedBorder3D implements Border, Selectable {
     private int insetHeight;
     private Color drawColor;
     private int depth = 3;
-    private boolean selected = false;
     
     /**
      *
@@ -78,11 +77,7 @@ public class RoundedBorder3D implements Border, Selectable {
             raisedArea.subtract(new Area(rect));
             gr.setPaint(SHADOW_COLOR);
             gr.fill(raisedArea);
-            gr.setPaint(drawColor);
-            gr.draw(rect);
-        }
-        if(widget.getState().isSelected()) {
-            gr.setPaint(SELECTED_BORDER_COLOR);
+            gr.setPaint(widget.getState().isSelected()?SELECTED_BORDER_COLOR:drawColor);
             gr.draw(rect);
         }
         gr.setPaint(oldPaint);
@@ -90,10 +85,6 @@ public class RoundedBorder3D implements Border, Selectable {
     
     public boolean isOpaque() {
         return true;
-    }
-
-    public void setSelected(boolean flag) {
-        if(selected!=flag) selected=flag;
     }
 
 }
