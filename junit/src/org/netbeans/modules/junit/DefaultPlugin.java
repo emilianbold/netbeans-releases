@@ -1126,7 +1126,7 @@ public final class DefaultPlugin extends JUnitPlugin {
      * @param  project  project whose configuration file is to be checked
      * @see  #junitVer
      */
-    private void storeProjectSettingsJUnitVer(Project project) {
+    private void storeProjectSettingsJUnitVer(final Project project) {
         assert junitVer != null;
 
         final AuxiliaryConfiguration cfg
@@ -1135,7 +1135,8 @@ public final class DefaultPlugin extends JUnitPlugin {
             return;
         }
 
-        ProjectManager.getDefault().mutex().writeAccess(
+        final ProjectManager prjManager = ProjectManager.getDefault();
+        prjManager.mutex().writeAccess(
                 new Runnable() {
                         public void run() {
                             Element cfgElem = cfg.getConfigurationFragment(
@@ -1153,6 +1154,12 @@ public final class DefaultPlugin extends JUnitPlugin {
                             cfgElem.setAttribute(JUNIT_VERSION_ATTR_NAME,
                                                  junitVer.name().toLowerCase());
                             cfg.putConfigurationFragment(cfgElem, true);//shared
+                            try {
+                                prjManager.saveProject(project);
+                            } catch (IOException ex) {
+                                ErrorManager.getDefault().notify(
+                                        ErrorManager.ERROR, ex);
+                            }
                         }
                 });
     }
