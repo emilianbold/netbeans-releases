@@ -19,6 +19,7 @@ import javax.swing.ListModel;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java;
 import org.netbeans.modules.e2e.api.wsdl.wsdl2java.WSDL2Java.ValidationResult.ErrorLevel;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -35,12 +36,20 @@ public class ValidationNotifier extends javax.swing.JPanel {
         
         initComponents();
         
-        initData();
+        initData(); 
+        
+        initAccessibility();
     }
     
     private void initData() {
         validationList.setModel( new IconListModel( validationResults ));
         validationList.setCellRenderer( new IconListRenderer());
+    }
+    
+    private void initAccessibility() {
+        getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ClientInfo.class, "ACSD_Validation_Results" ));
+        
+        validationList.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage( ValidationNotifier.class, "ACSD_Validation_List" ));
     }
     
     /** This method is called from within the constructor to
