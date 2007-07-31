@@ -29,8 +29,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
@@ -43,6 +45,7 @@ import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import static java.util.logging.Level.FINER;
 
 
 /**
@@ -56,6 +59,8 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     /** Generated Serialized Version UID. */
     static final long serialVersionUID = 4795737295255253334L;
     
+    static final Logger LOG = Logger.getLogger(PropertiesDataObject.class.getName());
+
     /** Structural view of the dataobject */
     private transient BundleStructure bundleStructure;
     
@@ -150,6 +155,10 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
      * @throws UserCancelException if the user cancelled the copy */
     @Override
     protected synchronized DataObject handleCopy(DataFolder df) throws IOException {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("handleCopy("                                     //NOI18N
+                    + FileUtil.getFileDisplayName(df.getPrimaryFile()) + ')');
+        }
         try {
             pasteSuffix = createPasteSuffix(df);
 
@@ -167,6 +176,10 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
      * @throws UserCancelException if the user cancelled the move */
     @Override
     protected FileObject handleMove(DataFolder df) throws IOException {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("handleMove("                                     //NOI18N
+                    + FileUtil.getFileDisplayName(df.getPrimaryFile()) + ')');
+        }
         try {
             pasteSuffix = createPasteSuffix(df);
         
@@ -185,6 +198,10 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
      * from this package.
      */
     void removeSecondaryEntry2(Entry fe) {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("removeSecondaryEntry2(Entry "                    //NOI18N
+                      + FileUtil.getFileDisplayName(fe.getFile()) + ')');
+        }
         removeSecondaryEntry (fe);
     }
 
@@ -237,6 +254,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
 
     /** Updates modification status of this dataobject from its entries. */
     void updateModificationStatus() {
+        LOG.finer("updateModificationStatus()");                        //NOI18N
         boolean modif = false;
         if (((PresentableFileEntry)getPrimaryEntry()).isModified())
             modif = true;
@@ -286,6 +304,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     /**
      */
     void fireNameChange() {
+        LOG.finer("fireNameChange()");                                  //NOI18N
         firePropertyChange(PROP_NAME, null, null);
     }
     

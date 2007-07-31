@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
@@ -36,8 +37,10 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import static java.util.logging.Level.FINER;
 
 /**
  * Item in a set of properties files represented by a single
@@ -48,6 +51,8 @@ import org.openide.util.NbBundle;
  */
 public class PropertiesFileEntry extends PresentableFileEntry
                                  implements CookieSet.Factory {
+
+    static final Logger LOG = Logger.getLogger(PropertiesFileEntry.class.getName());
 
     /** Basic name of bundle .properties file. */
     private String basicName;
@@ -70,6 +75,12 @@ public class PropertiesFileEntry extends PresentableFileEntry
      */
     PropertiesFileEntry(MultiDataObject obj, FileObject file) {
         super(obj, file);
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("new PropertiesFileEntry(<MultiDataObject>, "     //NOI18N
+                      + FileUtil.getFileDisplayName(file) + ')');
+            LOG.finer("  - new PresentableFileEntry(<MultiDataObject>, "//NOI18N
+                      + FileUtil.getFileDisplayName(file) + ')');
+        }
         FileObject fo = getDataObject().getPrimaryFile();
         if (fo == null)
             // primary file not init'ed yet => I'm the primary entry
@@ -87,6 +98,12 @@ public class PropertiesFileEntry extends PresentableFileEntry
      * @exception IOException when error happens */
     @Override
     public FileObject copy(FileObject folder, String suffix) throws IOException {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("copy("                                           //NOI18N
+                      + FileUtil.getFileDisplayName(folder) + ", "      //NOI18N
+                      + (suffix != null ? '"' + suffix + '"' : "<null>")//NOI18N
+                      + ')');
+        }
         String pasteSuffix = ((PropertiesDataObject)getDataObject()).getPasteSuffix();
         
         if(pasteSuffix == null)
@@ -103,6 +120,9 @@ public class PropertiesFileEntry extends PresentableFileEntry
     /** Deletes file. Overrides superclass method. */
     @Override
     public void delete() throws IOException {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("delete()");                                      //NOI18N
+        }
         getHandler().stopParsing();
 
         try {
@@ -119,6 +139,12 @@ public class PropertiesFileEntry extends PresentableFileEntry
      * @exception IOException when error happens */
     @Override
     public FileObject move(FileObject folder, String suffix) throws IOException {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("move("                                           //NOI18N
+                      + FileUtil.getFileDisplayName(folder) + ", "      //NOI18N
+                      + (suffix != null ? '"' + suffix + '"' : "<null>")//NOI18N
+                      + ')');
+        }
         String pasteSuffix = ((PropertiesDataObject)getDataObject()).getPasteSuffix();
 
         if(pasteSuffix == null)
@@ -194,6 +220,9 @@ public class PropertiesFileEntry extends PresentableFileEntry
      */
     @Override
     public FileObject rename (String name) throws IOException {
+        if (LOG.isLoggable(FINER)) {
+            LOG.finer("rename(" + name + ')');                          //NOI18N 
+        }
     
         if (!getFile().getName().startsWith(basicName))
             throw new IllegalStateException("Resource Bundles: error in Properties loader/rename."); // NOI18N

@@ -90,6 +90,7 @@ import org.openide.windows.CloneableOpenSupport;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.windows.TopComponent;
+import static java.util.logging.Level.FINER;
 
 /** 
  * Support for viewing .properties files (EditCookie) by opening them in a text editor.
@@ -101,7 +102,7 @@ public class PropertiesEditorSupport extends CloneableEditorSupport
 implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serializable, SaveAsCapable {
     
     /** error manager for CloneableEditorSupport logging and error reporting */
-    static final Logger ERR = Logger.getLogger("org.netbeans.modules.properties.PropertiesEditorSupport"); // NOI18N
+    static final Logger LOG = Logger.getLogger("org.netbeans.modules.properties.PropertiesEditorSupport"); // NOI18N
     
     /** */
     private FileStatusListener fsStatusListener;
@@ -598,7 +599,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                         os = null;
 
                     } catch( BadLocationException ex ) {
-                        ERR.log( Level.INFO, null, ex );
+                        LOG.log( Level.INFO, null, ex );
                     } finally {
                         if (os != null) { // try to close if not yet done
                             os.close();
@@ -683,6 +684,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * @param obj this support should be associated with
          */
         public Environment (PropertiesFileEntry entry) {
+            LOG.finer("PropertiesEditorSupport(<PropertiesFileEntry>)");//NOI18N
+            LOG.finer(" - new Environment(<PropertiesFileEntry>)");     //NOI18N
             this.entry = entry;
             entry.getFile().addFileChangeListener(new EnvironmentListener(this));
             entry.addPropertyChangeListener(this);
@@ -690,12 +693,20 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
 
         /** Implements <code>CloneableEditorSupport.Env</code> inetrface. Adds property listener. */
         public void addPropertyChangeListener(PropertyChangeListener l) {
+            LOG.finer("Environment.addPropertyChangeListener(...)");    //NOI18N
             prop().addPropertyChangeListener (l);
         }
 
         
         /** Accepts property changes from entry and fires them to own listeners. */
         public void propertyChange(PropertyChangeEvent evt) {
+            if (LOG.isLoggable(FINER)) {
+                LOG.finer("Environment.propertyChange("                 //NOI18N
+                          + evt.getPropertyName()
+                          + ", " + evt.getOldValue()                    //NOI18N
+                          + ", " + evt.getNewValue()                    //NOI18N
+                          + ')');
+            }
             // We will handle the object invalidation here.
             if(DataObject.PROP_VALID.equals(evt.getPropertyName ())) { 
                 // do not check it if old value is not true
@@ -722,16 +733,19 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         
         /** Implements <code>CloneableEditorSupport.Env</code> inetrface. Removes property listener. */
         public void removePropertyChangeListener(PropertyChangeListener l) {
+            LOG.finer("Environment.removePropertyChangeListener(...)"); //NOI18N
             prop().removePropertyChangeListener (l);
         }
             
         /** Implements <code>CloneableEditorSupport.Env</code> inetrface. Adds veto listener. */
         public void addVetoableChangeListener(VetoableChangeListener l) {
+            LOG.finer("Environment.addVetoableChangeListener(...)");    //NOI18N
             veto().addVetoableChangeListener (l);
         }
             
         /** Implements <code>CloneableEditorSupport.Env</code> inetrface. Removes veto listener. */
         public void removeVetoableChangeListener(VetoableChangeListener l) {
+            LOG.finer("Environment.removeVetoableChangeListener(...)"); //NOI18N
             veto().removeVetoableChangeListener (l);
         }
 
@@ -774,6 +788,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          *   is the support should discard all previous changes
          */
         public void markModified() throws java.io.IOException {
+            LOG.finer("Environment.markModified()");                    //NOI18N
             if (fileLock == null || !fileLock.isValid()) {
                 fileLock = entry.takeLock();
             }
@@ -787,6 +802,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * unmodified.
          */
         public void unmarkModified() {
+            LOG.finer("Environment.unmarkModified()");                  //NOI18N
             if (fileLock != null && fileLock.isValid()) {
                 fileLock.releaseLock();
             }
@@ -818,6 +834,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * @exception IOException if an I/O error occures
          */
         public InputStream inputStream() throws IOException {
+            LOG.finer("Environment.inputStream()");                     //NOI18N
             return entry.getFile().getInputStream();
         }
             
@@ -827,6 +844,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * @exception IOException if an I/O error occures
          */
         public OutputStream outputStream() throws IOException {
+            LOG.finer("Environment.outputStream()");                    //NOI18N
             return entry.getFile().getOutputStream(fileLock);
         }
 
@@ -836,6 +854,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * @throws IOException if the object could not be saved
          */
         public void save() throws IOException {
+            LOG.finer("Environment.save()");                            //NOI18N
             // Do saving job. Note it gets editor support, not open support.
             ((PropertiesEditorSupport)findCloneableOpenSupport()).saveThisEntry();
         }
@@ -881,6 +900,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             
         /** Helper method. Adds save cookie to the entry. */
         private void addSaveCookie() {
+            LOG.finer("Environment.addSaveCookie(...)");                //NOI18N
             if (entry.getCookie(SaveCookie.class) == null) {
                 entry.getCookieSet().add(this);
             }
@@ -889,6 +909,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             
         /** Helper method. Removes save cookie from the entry. */
         private void removeSaveCookie() {
+            LOG.finer("Environment.removeSaveCookie(...)");             //NOI18N
             // remove Save cookie from the entry
             SaveCookie sc = entry.getCookie(SaveCookie.class);
             
@@ -908,6 +929,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * @param time of the change
          */
         private void fileChanged(boolean expected, long time) {
+            LOG.finer("Environment.fileChanged(...)");                  //NOI18N
             if (expected) {
                 // newValue = null means do not ask user whether to reload
                 firePropertyChange (PROP_TIME, null, null);
@@ -921,6 +943,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * The components are going to be closed anyway and in case of
          * modified document its asked before if to save the change. */
         private void fileRemoved() {
+            LOG.finer("Environment.fileRemoved() ... ");                //NOI18N
             try {
                 fireVetoableChange(PROP_VALID, Boolean.TRUE, Boolean.FALSE);
             } catch(PropertyVetoException pve) {
@@ -942,6 +965,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         /** @param environment <code>Environment<code> to use
          */
         public EnvironmentListener(Environment environment) {
+            LOG.finer("new EnvironmentListener(<Environment>)");        //NOI18N
             reference = new WeakReference<Environment>(environment);
         }
         
@@ -950,6 +974,13 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          */
         @Override
         public void fileChanged(FileEvent evt) {
+            if (LOG.isLoggable(FINER)) {
+                LOG.finer("EnviromentListener.fileChanged(...)");       //NOI18N
+                LOG.finer(" - original file: "                          //NOI18N
+                          + FileUtil.getFileDisplayName(evt.getFile()));
+                LOG.finer(" - current file: "                           //NOI18N
+                          + FileUtil.getFileDisplayName((FileObject) evt.getSource()));
+            }
             Environment environment = reference.get();
             if (environment != null) {
                 if(!environment.entry.getFile().equals(evt.getFile()) ) {
