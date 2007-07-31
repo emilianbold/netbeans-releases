@@ -21,17 +21,19 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.visualweb.rowset</code-name-base>           
-            <module-dependencies/>           
+            <code-name-base>org.netbeans.modules.visualweb.rowset</code-name-base>
+            <module-dependencies/>
             <friend-packages>
-                <friend>org.netbeans.modules.visualweb.dataprovider</friend>
                 <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
                 <friend>org.netbeans.modules.visualweb.dataconnectivity.designtime</friend>
-                <friend>org.netbeans.modules.visualweb.jsfsupport.components</friend>
+                <friend>org.netbeans.modules.visualweb.dataprovider</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
+                <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.jsfsupport</friend>
-                <friend>org.netbeans.modules.visualweb.woodstock.webui.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.jsfsupport.components</friend>
                 <friend>org.netbeans.modules.visualweb.propertyeditors</friend>
                 <friend>org.netbeans.modules.visualweb.webui.designtime</friend>
+                <friend>org.netbeans.modules.visualweb.woodstock.webui.jsf</friend>
                 <package>com.sun.sql.rowset</package>
             </friend-packages>
             <class-path-extension>
