@@ -87,6 +87,15 @@ public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint 
         return scriptBPs.toArray(new RubyBreakpoint[scriptBPs.size()]);
     }
     
+    public static boolean isBreakpointOnLine(final FileObject file, final int line) {
+        for (RubyBreakpoint bp : getBreakpoints()) {
+            if (file.equals(bp.getFileObject()) && line == bp.getLineNumber()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private void updateBreakpoint() {
         for (RubyDebuggerProxy proxy : RubyDebuggerProxy.PROXIES) {
             try {

@@ -19,14 +19,18 @@
 
 package org.netbeans.modules.ruby.debugger;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebugEvent;
 
@@ -87,7 +91,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             return;
         }
         if (frontEndSemaphore.getQueueLength() > 10) {
-            Util.info("Too much pending events. Action \"" + action + "\" is rejected."); // NOI18N
+            Util.info("Too much pending events (> 10). Action \"" + action + "\" is rejected."); // NOI18N
             return;
         }
         try {
@@ -97,7 +101,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             return;
         }
         if (terminated) {
-            Util.warning("Flushing cached actions: " + action);
+            Util.info("Flushing cached actions: " + action + ", process is terminated.");
             frontEndSemaphore.release();
             return; // ignore cached actions
         }
@@ -125,6 +129,11 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
         if (event.isTerminateType()) {
             finish(false);
             frontEndSemaphore.release();
+            int beEvents = backEndSemaphore.getQueueLength();
+            if (beEvents > 0) {
+                Util.finest("Flushing " + beEvents + " backend events.");
+                backEndSemaphore.release(beEvents);
+            }
             return;
         }
         try {
@@ -133,9 +142,23 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             Util.severe(e);
             return;
         }
-        assert !terminated;
+        if (terminated) {
+            Util.info("Flushing pending event: " + event + ", process is terminated."); // NOI18N
+            backEndSemaphore.release();
+            return;
+        }
         if (event.isSuspensionType()) {
-            stopHere(event);
+            String absPath = rubySession.resolveAbsolutePath(event.getFilePath());
+            if (absPath != null) {
+                FileObject fo = FileUtil.toFileObject(new File(absPath));
+                if (event.isStepping() || (fo != null && RubyBreakpoint.isBreakpointOnLine(fo, event.getLine()))) {
+                    stopHere(event);
+                } else {
+                    event.getRubyThread().resume();
+                    backEndSemaphore.release();
+                    return;
+                }
+            }
         } else {
             assert false : "Unkown event type: " + event;
         }
