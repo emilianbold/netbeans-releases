@@ -22,6 +22,7 @@ import java.util.*;
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import org.openide.util.Utilities;
 
 /**
  * Component that allows you to select (reordered) sublist from given list of items.
@@ -147,7 +148,9 @@ public class ListSelector extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Up")); // NOI18N
         upButton.setEnabled(false);
         upButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
-        upButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        if (!Utilities.isMac()) {
+            upButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        }
         upButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 upButtonActionPerformed(evt);
@@ -158,7 +161,9 @@ public class ListSelector extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getMessage(ListSelector.class, "MSG_ListSelector_Down")); // NOI18N
         downButton.setEnabled(false);
         downButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
-        downButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        if (!Utilities.isMac()) {
+            downButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        }
         downButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 downButtonActionPerformed(evt);

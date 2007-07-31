@@ -204,7 +204,7 @@
             </Property>
             <Property name="enabled" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="10"/>
-            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor" preCode="if (!Utilities.isMac()) {" postCode="}">
               <Insets value="[2, 6, 2, 6]"/>
             </Property>
           </Properties>
@@ -222,7 +222,7 @@
             </Property>
             <Property name="enabled" type="boolean" value="false"/>
             <Property name="horizontalAlignment" type="int" value="10"/>
-            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+            <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor" preCode="if (!Utilities.isMac()) {" postCode="}">
               <Insets value="[2, 6, 2, 6]"/>
             </Property>
           </Properties>

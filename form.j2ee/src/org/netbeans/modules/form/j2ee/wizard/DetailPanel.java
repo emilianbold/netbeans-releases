@@ -31,6 +31,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Wizard panel for detail information of master/detail wizard.
@@ -197,14 +198,18 @@ public class DetailPanel implements WizardDescriptor.Panel {
         upButton.setText(org.openide.util.NbBundle.getMessage(DetailPanel.class, "LBL_DetailUp")); // NOI18N
         upButton.setEnabled(false);
         upButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
-        upButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        if (!Utilities.isMac()) {
+            upButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        }
         upButton.addActionListener(formListener);
 
         downButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/form/j2ee/resources/down.gif")));
         downButton.setText(org.openide.util.NbBundle.getMessage(DetailPanel.class, "LBL_DetailDown")); // NOI18N
         downButton.setEnabled(false);
         downButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
-        downButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        if (!Utilities.isMac()) {
+            downButton.setMargin(new java.awt.Insets(2, 6, 2, 6));
+        }
         downButton.addActionListener(formListener);
 
         includeLabel.setText(org.openide.util.NbBundle.getMessage(DetailPanel.class, "LBL_DetailFieldsToInclude")); // NOI18N
@@ -295,10 +300,10 @@ public class DetailPanel implements WizardDescriptor.Panel {
                     .add(includePane, 0, 0, Short.MAX_VALUE)
                     .add(masterPanelLayout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 18, Short.MAX_VALUE)
-                        .add(addAllButton)
+                        .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(addButton)
+                            .add(addAllButton)
                             .add(upButton))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(masterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
