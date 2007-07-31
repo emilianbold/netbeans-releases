@@ -150,6 +150,8 @@ public class PropertiesFileEntry extends PresentableFileEntry
         if(pasteSuffix == null)
             return super.move(folder, suffix);
 
+        boolean wasLocked = isLocked();
+
         FileObject fileObject = getFile();
         FileLock lock = takeLock ();
 
@@ -159,7 +161,9 @@ public class PropertiesFileEntry extends PresentableFileEntry
 
             return fileObject.move (lock, folder, newName, fileObject.getExt());
         } finally {
-            lock.releaseLock ();
+            if (!wasLocked) {
+                lock.releaseLock ();
+            }
         }
     }
     
