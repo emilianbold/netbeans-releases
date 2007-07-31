@@ -27,6 +27,8 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -557,8 +559,8 @@ public final class MainWindow extends JFrame {
             WindowManagerImpl.getInstance().setVisible(false);
         
         dispose();
+        
         setUndecorated( isFullScreenMode );
-        setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );
 
         String toolbarConfigName = ToolbarPool.getDefault().getConfiguration();
         if( null != toolbarConfigName ) {
@@ -568,7 +570,17 @@ public final class MainWindow extends JFrame {
         }
         getToolbarComponent().setVisible( !isFullScreenMode );
         final boolean updateBounds = ( !isFullScreenMode );//&& restoreExtendedState != JFrame.MAXIMIZED_BOTH );
-                    
+
+        GraphicsDevice device = null;
+        if( getGraphics() instanceof Graphics2D ) {
+            device = ((Graphics2D)getGraphics()).getDeviceConfiguration().getDevice();
+        }
+        if( null != device && device.isFullScreenSupported() ) {
+            device.setFullScreenWindow( isFullScreenMode ? this : null );
+        } else {
+            setExtendedState( isFullScreenMode ? JFrame.MAXIMIZED_BOTH : restoreExtendedState );
+        }
+        
         if( updateBounds || (isFullScreenMode() && !Utilities.isWindows()) ) {
             if( updateBounds ) {
                 forcedBounds = restoreBounds;
