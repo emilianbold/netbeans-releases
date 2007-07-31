@@ -24,6 +24,8 @@ import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.EventListener;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,7 +57,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     public static final String PROP_SERVLET_DATAOBJECT = "servlet_do"; // NOI18N
     public static final String PROP_CONTENT_LANGUAGE   = "contentLanguage"; // NOI18N
     public static final String PROP_SCRIPTING_LANGUAGE = "scriptingLanguage"; // NOI18N
-    public static final String PROP_ENCODING = "encoding"; // NOI18N
     public static final String PROP_SERVER_CHANGE = "PROP_SERVER_CHANGE";// NOI18N
     public static final String PROP_REQUEST_PARAMS = "PROP_REQUEST_PARAMS"; //NOI18N
     
@@ -170,7 +171,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
             updateFileEncoding(false);
             isEncodingRetrieved = true;
         }
-        String retrievedEncoding = (String)getPrimaryFile().getAttribute(PROP_ENCODING);
+        String retrievedEncoding = (String)getPrimaryFile().getAttribute(ATTR_FILE_ENCODING);
         retrievedEncoding = retrievedEncoding != null ? retrievedEncoding : DEFAULT_ENCODING;
         
         return retrievedEncoding ;
@@ -181,7 +182,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         if (tlps != null) {
             String encoding = tlps.getCachedOpenInfo(true, fromEditor).getEncoding();
             try {
-                getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
+                getPrimaryFile().setAttribute(ATTR_FILE_ENCODING, encoding);
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.WARNING, null, e);
             }
@@ -443,7 +444,17 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 assert file.equals(getPrimaryFile());
                 
                 String charsetName = getFileEncoding();
-                return Charset.forName(charsetName);
+                
+                  try {
+                      return Charset.forName(charsetName);
+                  } catch (IllegalCharsetNameException ichse) {
+                      Logger.getLogger("global").log(Level.WARNING, null, ichse);
+                  } catch (UnsupportedCharsetException uchse) {
+                      Logger.getLogger("global").log(Level.WARNING, null, uchse);
+                  }
+
+                return null;
+                
             }
         };
         
