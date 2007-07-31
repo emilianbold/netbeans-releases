@@ -28,6 +28,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import javax.xml.namespace.QName;
 
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -36,8 +37,6 @@ import org.openide.util.HelpCtx;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
@@ -45,6 +44,7 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
+import org.netbeans.modules.xml.xam.NamedReferenceable;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -218,22 +218,14 @@ abstract class Panel<T> implements WizardDescriptor.ValidatingPanel<T> {
   }
 
   private String getType(Part part) {
-    NamedComponentReference<GlobalType> refType = part.getType();
+    NamedComponentReference<? extends NamedReferenceable> refTypeEl = part.getType();
+    refTypeEl = refTypeEl == null ? part.getElement() : refTypeEl;
+    
+    if (refTypeEl != null) {
 
-    if (refType != null) {
-      GlobalType type = refType.get();
-
-      if (type != null) {
-        return type.getName();
-      }
-    }
-    NamedComponentReference<GlobalElement> refElement = part.getElement();
-
-    if (refElement != null) {
-      GlobalElement element = refElement.get();
-
-      if (element != null) {
-        return element.getName();
+      QName qName = refTypeEl.getQName();
+      if (qName != null) {
+          return qName.getLocalPart();
       }
     }
     return EMPTY;
