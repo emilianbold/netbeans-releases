@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="web/jstl11" default="netbeans" basedir=".">
+
+    <import file="../../../nbbuild/templates/projectized.xml"/>
+
+    <target name="netbeans-extra" depends="release"/>
+
+    <target name="release" depends="init">
+        <ant dir="../../external" target="unzip"/>
+
+        <mkdir dir="${cluster}/modules/ext"/>
+        <copy file="../../external/standard-1.1.2.jar"
+              tofile="${cluster}/modules/ext/standard.jar"/>
+        <copy file="../../external/jstl-1.1.2.jar"
+              tofile="${cluster}/modules/ext/jstl.jar"/>
+              
+    </target>
+
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <property name="nbm.target.cluster" value=""/> <!-- fallback -->
+        <makenbm file="build/${nbm}"
+                 productdir="${cluster}"
+                 module="${module.jar}"
+                 homepage="${nbm.homepage}"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}"
+                 releasedate="${nbm.release.date}"
+		 moduleauthor="${nbm.module.author}"
+                 global="${nbm.is.global}"
+                 targetcluster="${nbm.target.cluster}">
+            <license>
+                <text>For the integration module:</text>
+                <file location="${license.file}"/>
+                <text>For the JSTL 1.1 library:</text>
+                <file location="${nb_all}/web/external/jstl-1.1.2-license.txt"/>
+            </license>
+            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+        </makenbm>
+    </target>
+
+</project>
