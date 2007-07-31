@@ -30,7 +30,7 @@
         <folder name="MIMEResolver">
             <file name="org-netbeans-modules-xml-wsdl-ui-netbeans-module-resources-mime-resolver.xml" url="mime-resolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png"/>
             </file>
         </folder>
     </folder>
@@ -157,7 +157,7 @@
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png"/>
                 <attr name="templateCategory" stringvalue="XML"/>
             </file>
             <file name="WSDL_import.wsdl" url="WSDL_import.template">

@@ -85,7 +85,7 @@ public class DefinitionsNode extends WSDLExtensibilityElementNode<Definitions> {
     
     
     private Image ICON = Utilities.loadImage
-    ("org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.png");
+    ("org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png");
     
     private DefinitionsPropertyAdapter mPropertyAdapter;
     

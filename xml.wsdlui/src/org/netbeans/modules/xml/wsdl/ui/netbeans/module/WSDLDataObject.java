@@ -130,5 +130,5 @@ public class WSDLDataObject extends MultiDataObject {
     private static final long serialVersionUID = 6338889116068357651L;
     private transient WSDLEditorSupport editorSupport;
 
-    public static final String WSDL_ICON_BASE_WITH_EXT = "org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.png";
+    public static final String WSDL_ICON_BASE_WITH_EXT = "org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png";
 }

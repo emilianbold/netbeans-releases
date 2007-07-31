@@ -48,7 +48,7 @@ public class WSDLNode extends DataNode implements ModelProvider {
 
     private WSDLNode(DataObject obj, Children ch) {
         super (obj, ch);
-        setIconBaseWithExtension("org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl16.png");
+        setIconBaseWithExtension("org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl_file.png");
     }
 
     @Override

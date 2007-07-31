@@ -95,9 +95,9 @@ public class WSDLDataLoaderBeanInfo extends SimpleBeanInfo {
     @Override
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            return Utilities.loadImage ("org.netbeans.modules.xml.wsdl.ui.netbeans.module/resources/wsdl16.gif");
+            return Utilities.loadImage ("org.netbeans.modules.xml.wsdl.ui.netbeans.module/resources/wsdl_file.png");
         }
-        return Utilities.loadImage ("org.netbeans.modules.xml.wsdl.ui.netbeans.module/resources/wsdl32.gif");
+        return null;
     }
 
 }
