@@ -147,7 +147,6 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jTextArea1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     

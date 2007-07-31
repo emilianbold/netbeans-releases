@@ -232,7 +232,6 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
                 jButtonBrowseActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
@@ -276,7 +275,6 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jTextArea1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed

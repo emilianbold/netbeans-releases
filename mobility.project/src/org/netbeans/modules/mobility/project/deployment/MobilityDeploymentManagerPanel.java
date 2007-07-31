@@ -118,6 +118,7 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
 
         setLayout(new java.awt.GridBagLayout());
 
+        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MNM_DeployementInstances").charAt(0));
         jLabel1.setLabelFor(btw);
         jLabel1.setText(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -127,12 +128,11 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(jLabel1, gridBagConstraints);
 
-        jPanel1.setLayout(new java.awt.BorderLayout());
-
         jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jPanel1.setMaximumSize(new java.awt.Dimension(270, 350));
         jPanel1.setOpaque(false);
         jPanel1.setPreferredSize(new java.awt.Dimension(270, 350));
+        jPanel1.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -142,13 +142,13 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 0);
         add(jPanel1, gridBagConstraints);
 
+        jButton1.setMnemonic(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MNM_AddInstance").charAt(0));
         jButton1.setText(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jButton1.text")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createInstance(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -156,13 +156,13 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
         add(jButton1, gridBagConstraints);
 
+        jButton2.setMnemonic(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MNM_RemoveInstance").charAt(0));
         jButton2.setText(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jButton2.text")); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeInstance(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -171,10 +171,9 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 11, 11);
         add(jButton2, gridBagConstraints);
 
-        jPanel2.setLayout(new java.awt.BorderLayout());
-
         jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 12, 1, 1));
         jPanel2.setPreferredSize(new java.awt.Dimension(500, 350));
+        jPanel2.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -184,7 +183,6 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         add(jPanel2, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void removeInstance(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeInstance
