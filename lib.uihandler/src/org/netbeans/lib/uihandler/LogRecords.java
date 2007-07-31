@@ -60,6 +60,14 @@ public final class LogRecords {
     private static final Logger LOG = Logger.getLogger(LogRecords.class.getName());
     
     private static final Formatter FORMATTER = new LogFormatter();
+  
+    /** Inspects the log record and decorates its content.
+     * @param r the log record
+     * @param d callback to be called with inspected values
+     */
+    public static void decorate(LogRecord r, Decorable d) {
+        Decorations.decorate(r, d);
+    }
     
     public static void write(OutputStream os, LogRecord rec) throws IOException {
         String formated = FORMATTER.format(rec);

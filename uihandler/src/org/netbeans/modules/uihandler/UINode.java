@@ -28,6 +28,8 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import javax.swing.JButton;
+import org.netbeans.lib.uihandler.Decorable;
+import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.awt.Actions;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -41,7 +43,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jaroslav Tulach
  */
-final class UINode extends AbstractNode implements VisualData {
+final class UINode extends AbstractNode implements VisualData, Decorable {
     private static final SimpleFormatter FORMATTER = new SimpleFormatter();
     private LogRecord log;
     private String htmlKey;
@@ -49,77 +51,15 @@ final class UINode extends AbstractNode implements VisualData {
     private UINode(LogRecord r, Children ch) {
         super(ch, Lookups.fixed(r));
         log = r;
-        if (r.getMessage() == null) {
-            setName("Seq: " + r.getSequenceNumber());
-        } else {
-            setName(r.getMessage());
-        }
-        if (r.getResourceBundle() != null) {
-            try {
-                String msg = r.getResourceBundle().getString(r.getMessage());
-                if (r.getParameters() != null) {
-                    msg = MessageFormat.format(msg, r.getParameters());
-                }
-                setDisplayName(msg);
-            } catch (MissingResourceException ex) {
-                Logger.getAnonymousLogger().log(Level.INFO, null, ex);
-            }
-            
-            
-            try {
-                String iconBase = r.getResourceBundle().getString(r.getMessage() + "_ICON_BASE"); // NOI18N
-                setIconBaseWithExtension(iconBase);
-            } catch (MissingResourceException ex) {
-                // ok, use default
-                setIconBaseWithExtension("org/netbeans/modules/uihandler/def.png");
-            }
-        }
-        
-        
-        
-        if (ch != Children.LEAF) {
-            setIconBaseWithExtension("org/netbeans/modules/uihandler/exception.gif");
-            htmlKey = "HTML_exception";
-        }
-        
-        if ("UI_ACTION_BUTTON_PRESS".equals(r.getMessage())) { // NOI18N
-            setDisplayName(Actions.cutAmpersand(getParam(r, 4)));
-            String thru = getParam(r, 1, String.class);
-            if ((thru != null && thru.contains("Toolbar")) || getParam(r, 0, Object.class) instanceof JButton) {
-                setIconBaseWithExtension("org/netbeans/modules/uihandler/toolbars.gif");
-                htmlKey = "HTML_toolbar";
-            } else if (thru != null && thru.contains("MenuItem")) {
-                setIconBaseWithExtension("org/netbeans/modules/uihandler/menus.gif");
-                htmlKey = "HTML_menu";
-            }
-        } else if ("UI_ACTION_KEY_PRESS".equals(r.getMessage())) { // NOI18N
-            setDisplayName(Actions.cutAmpersand(getParam(r, 4)));
-            setIconBaseWithExtension("org/netbeans/modules/uihandler/key.png");
-            htmlKey = "HTML_key";
-        } else if ("UI_ACTION_EDITOR".equals(r.getMessage())) { // NOI18N
-            setDisplayName(Actions.cutAmpersand(getParam(r, 4)));
-            setIconBaseWithExtension("org/netbeans/modules/uihandler/key.png");
-            htmlKey = "HTML_key";
-        } else if ("UI_ENABLED_MODULES".equals(r.getMessage())) { // NOI18N
-            setDisplayName(NbBundle.getMessage(UINode.class, "MSG_EnabledModules"));
-            setIconBaseWithExtension("org/netbeans/modules/uihandler/module.gif");
-            htmlKey = null;
-        } else if ("UI_DISABLED_MODULES".equals(r.getMessage())) { // NOI18N
-            setDisplayName(NbBundle.getMessage(UINode.class, "MSG_DisabledModules"));
-            setIconBaseWithExtension("org/netbeans/modules/uihandler/module.gif");
-            htmlKey = null;
-        } else if (Installer.USER_CONFIGURATION.equals(r.getMessage())){// NOI18N
-            setDisplayName(NbBundle.getMessage(UINode.class, "MSG_USER_CONFIGURATION"));
-            htmlKey = null;
-        }
 
+        LogRecords.decorate(r, this);
         
         Sheet.Set s = Sheet.createPropertiesSet();
         s.put(createPropertyDate(this));
         s.put(createPropertyLogger(this));
         s.put(createPropertyMessage(this));
         getSheet().put(s);
-        
+
         if (r.getParameters() != null && r.getParameters().length > 0) {
             Sheet.Set paramSheet = new Sheet.Set();
             paramSheet.setName("parameters"); // NOI18N
@@ -129,8 +69,6 @@ final class UINode extends AbstractNode implements VisualData {
             }
             getSheet().put(paramSheet);
         }
-        
-        setShortDescription(FORMATTER.format(log));
     }
 
     public long getMillis() {
@@ -336,7 +274,7 @@ final class UINode extends AbstractNode implements VisualData {
         protected Node[] createNodes(Object key) {
             AbstractNode an = new AbstractNode(Children.LEAF);
             an.setName((String)key);
-            an.setIconBaseWithExtension("org/netbeans/modules/uihandler/module.gif"); // NOI18N
+            an.setIconBaseWithExtension("org/netbeans/lib/uihandler/module.gif"); // NOI18N
             return new Node[] { an };
         }
         

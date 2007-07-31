@@ -23,6 +23,19 @@ Microsystems, Inc. All Rights Reserved.
 <apidef name="uihandler">UI Handler Library</apidef>
 </apidefs>
 <changes>
+    <change id="LogRecords.decorate">
+      <api name="uihandler"/>
+      <summary>LogRecords.decorate extracts UI info about LogRecords</summary>
+      <version major="1" minor="13"/>
+      <date day="30" month="7" year="2007"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" modification="no" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no"/>
+      <description>
+          LogRecords.decorate inspects the content of the log record and
+          finds its icon, display name, etc.
+      </description>
+      <class package="org.netbeans.lib.uihandler" name="Decorable"/>
+    </change>    
     <change id="LogRecords.scan.gzip">
       <api name="uihandler"/>
       <summary>LogRecords.scan is able to recognize and read GZIP</summary>
