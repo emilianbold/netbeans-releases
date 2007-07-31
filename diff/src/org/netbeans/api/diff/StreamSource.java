@@ -38,8 +38,7 @@ import org.openide.util.io.ReaderInputStream;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileUtil;
-
-import org.netbeans.modules.diff.EncodedReaderFactory;
+import org.netbeans.api.queries.FileEncodingQuery;
 
 /**
  * This class provides streams and information about them to be used by diff
@@ -167,7 +166,7 @@ public abstract class StreamSource extends Object {
             this.readerSource = null;
             this.w = null;
             this.file = file;
-            encoding = EncodedReaderFactory.getDefault().getEncoding(file);
+            encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(file)).name();
         }
         
         private File createReaderSource(Reader r) throws IOException {
@@ -205,7 +204,7 @@ public abstract class StreamSource extends Object {
         
         public Reader createReader() throws IOException {
             if (file != null) {
-                return new BufferedReader(EncodedReaderFactory.getDefault().getReader(file, MIMEType, encoding));
+                return new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding));
             } else {
                 synchronized (this) {
                     if (r != null) {

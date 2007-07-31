@@ -689,6 +689,18 @@ public final class Utils {
         }        
     }
     
+    public static Reader createReader(File file) throws FileNotFoundException {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) {
+            return new FileReader(file);
+        } else {
+            return createReader(fo);
+        }
+    }
+
+    public static Reader createReader(FileObject file) throws FileNotFoundException {
+        return new InputStreamReader(file.getInputStream(), FileEncodingQuery.getEncoding(file));
+    }
     
     private static class ViewEnv implements CloneableEditorSupport.Env {
         

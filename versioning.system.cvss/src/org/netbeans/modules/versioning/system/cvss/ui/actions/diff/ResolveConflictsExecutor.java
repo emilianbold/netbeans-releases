@@ -19,17 +19,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.ui.actions.diff;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.FilterWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.Writer;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.Iterator;
@@ -47,8 +37,8 @@ import org.openide.util.Lookup;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.spi.diff.MergeVisualizer;
-import org.netbeans.modules.diff.EncodedReaderFactory;
 
 import javax.swing.*;
 
@@ -130,7 +120,7 @@ public class ResolveConflictsExecutor {
         
         final StreamSource s1;
         final StreamSource s2;
-        String encoding = EncodedReaderFactory.getDefault().getEncoding(fo);
+        String encoding = FileEncodingQuery.getEncoding(fo).name();
         if (encoding != null) {
             s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, new InputStreamReader(new FileInputStream(f1), encoding));
             s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, new InputStreamReader(new FileInputStream(f2), encoding));
@@ -422,7 +412,7 @@ public class ResolveConflictsExecutor {
             this.fo = fo;
             this.lock = lock;
             if (encoding == null) {
-                encoding = EncodedReaderFactory.getDefault().getEncoding(tempf1);
+                encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(tempf1)).name();
             }
             this.encoding = encoding;
         }
@@ -452,9 +442,9 @@ public class ResolveConflictsExecutor {
         public Writer createWriter(Difference[] conflicts) throws IOException {
             Writer w;
             if (fo != null) {
-                w = EncodedReaderFactory.getDefault().getWriter(fo, lock, encoding);
+                w = new OutputStreamWriter(fo.getOutputStream(lock), encoding);
             } else {
-                w = EncodedReaderFactory.getDefault().getWriter(outputFile, mimeType, encoding);
+                w = new OutputStreamWriter(new FileOutputStream(outputFile), encoding);
             }
             if (conflicts == null || conflicts.length == 0) {
                 fileToRepairEntriesOf = outputFile;

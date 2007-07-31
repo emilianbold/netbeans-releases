@@ -22,6 +22,7 @@ package org.netbeans.modules.diff;
 import java.awt.Component;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import javax.swing.SwingUtilities;
 
@@ -32,7 +33,6 @@ import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.Cancellable;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
@@ -44,6 +44,7 @@ import org.netbeans.api.diff.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -153,13 +154,12 @@ public class DiffAction extends NodeAction {
         Reader r1 = null;
         Reader r2 = null;
         try {
-            EncodedReaderFactory rf = EncodedReaderFactory.getDefault();
             if (type != null) {
-                r1 = rf.getReader(fo1, rf.getEncoding(type), type);
-                r2 = rf.getReader(fo2, rf.getEncoding(type), type);
+                r1 = new InputStreamReader(fo1.getInputStream(), FileEncodingQuery.getEncoding(type));
+                r2 = new InputStreamReader(fo2.getInputStream(), FileEncodingQuery.getEncoding(type));
             } else {
-                r1 = rf.getReader(fo1, rf.getEncoding(fo1), fo2.getExt());
-                r2 = rf.getReader(fo2, rf.getEncoding(fo2), fo1.getExt());
+                r1 = new InputStreamReader(fo1.getInputStream(), FileEncodingQuery.getEncoding(fo1));
+                r2 = new InputStreamReader(fo2.getInputStream(), FileEncodingQuery.getEncoding(fo2));
             }
             String mimeType;
             if (type != null) {

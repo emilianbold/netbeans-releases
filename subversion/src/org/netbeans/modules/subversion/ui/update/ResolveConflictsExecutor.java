@@ -31,8 +31,7 @@ import org.openide.windows.TopComponent;
 import org.openide.filesystems.*;
 
 import org.netbeans.api.diff.*;
-import org.netbeans.modules.diff.EncodedReaderFactory;
-import org.netbeans.modules.subversion.*;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.subversion.client.*;
 
 import org.tigris.subversion.svnclientadapter.*;
@@ -132,7 +131,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         
         final StreamSource s1;
         final StreamSource s2;
-        String encoding = EncodedReaderFactory.getDefault().getEncoding(fo);
+        String encoding = FileEncodingQuery.getEncoding(fo).name();
         if (encoding != null) {
             s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, new InputStreamReader(new FileInputStream(f1), encoding));
             s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, new InputStreamReader(new FileInputStream(f2), encoding));
@@ -369,7 +368,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
             this.fo = fo;
             this.lock = lock;
             if (encoding == null) {
-                encoding = EncodedReaderFactory.getDefault().getEncoding(tempf1);
+                encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(tempf1)).name();
             }
             this.encoding = encoding;
         }
@@ -399,9 +398,9 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         public Writer createWriter(Difference[] conflicts) throws IOException {
             Writer w;
             if (fo != null) {
-                w = EncodedReaderFactory.getDefault().getWriter(fo, lock, encoding);
+                w = new OutputStreamWriter(fo.getOutputStream(lock), encoding);
             } else {
-                w = EncodedReaderFactory.getDefault().getWriter(outputFile, mimeType, encoding);
+                w = new OutputStreamWriter(new FileOutputStream(outputFile), encoding);
             }
             if (conflicts == null || conflicts.length == 0) {
                 fileToRepairEntriesOf = outputFile;

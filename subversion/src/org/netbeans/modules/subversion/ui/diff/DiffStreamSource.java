@@ -21,7 +21,6 @@ package org.netbeans.modules.subversion.ui.diff;
 
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
-import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.versioning.util.Utils;
@@ -103,8 +102,7 @@ public class DiffStreamSource extends StreamSource {
             if (!mimeType.startsWith("text/")) {
                 return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle())); // NOI18N
             } else {
-                // XXX diff implementation dependency, we need Encoding API or rewrite to binary diff
-                return EncodedReaderFactory.getDefault().getReader(remoteFile, mimeType);  
+                return Utils.createReader(remoteFile);
             }
         }
     }

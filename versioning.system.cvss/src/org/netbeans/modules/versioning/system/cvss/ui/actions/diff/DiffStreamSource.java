@@ -23,7 +23,6 @@ import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.util.Utils;
-import org.netbeans.modules.diff.EncodedReaderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -97,7 +96,7 @@ public class DiffStreamSource extends StreamSource {
             return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle()));
         } else {
             FileObject remoteFo = FileUtil.toFileObject(remoteFile);
-            return EncodedReaderFactory.getDefault().getReader(remoteFo, null);
+            return Utils.createReader(remoteFo);
         }
     }
 
