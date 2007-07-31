@@ -154,7 +154,7 @@ public final class SMSComposerCD extends ComponentDescriptor {
 
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_WMA);
     }
 
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
