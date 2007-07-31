@@ -122,6 +122,7 @@ public class ActionManager {
     
     public static synchronized ActionManager getActionManager(Project project) {
         Sources srcs = project.getLookup().lookup(Sources.class);
+        if(srcs == null) return null;
         SourceGroup groups[] = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if(groups != null && groups.length > 0) {
             return ActionManager.getActionManager(groups[0].getRootFolder());
