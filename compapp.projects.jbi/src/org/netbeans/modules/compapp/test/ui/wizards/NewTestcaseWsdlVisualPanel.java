@@ -22,8 +22,11 @@ package org.netbeans.modules.compapp.test.ui.wizards;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JTree;
+import javax.swing.tree.TreeNode;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 import org.netbeans.api.project.Project;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
@@ -33,65 +36,29 @@ import org.openide.util.NbBundle;
 public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements TreeSelectionListener {
 
     private Project mProject;
-    private WsdlTreeView mWsdlTreeView;   
+    private WsdlTreeViewPanel mWsdlTreeViewPanel;   
     private NewTestcaseWsdlWizardPanel mPanel;
     
-    /** Creates new form NewTestcaseWsdlVisualPanel_1 */
+    /** Creates new form NewTestcaseWsdlVisualPanel */
     public NewTestcaseWsdlVisualPanel(Project project, NewTestcaseWsdlWizardPanel panel) {
         mProject = project;     
         mPanel = panel;
-//        mWsdlTreeView = new WsdlTreeView(mProject);
-//        mWsdlTreeView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
-//            public void propertyChange(PropertyChangeEvent evt) {
-//                if(!evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
-//                    return;
-//                }
-//                FileObject wsdlFile = mWsdlTreeView.getSelectedWsdlFile();
-//                if (wsdlFile == null) {
-//                    mWsdlTf.setText("");  // NOI18N
-//                } else {
-//                    mWsdlTf.setText(FileUtil.toFile(wsdlFile).getPath());
-//                }
-//            }
-//        });        
-//        //in initComponents generated code, post creation code for wsdlTreeView in jPanel1
-        initComponents(); 
-//        mWsdlTreeView.getAccessibleContext().setAccessibleName(
-//                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WsdlTreeView_A11YName"));  // NOI18N
-//        mWsdlTreeView.getAccessibleContext().setAccessibleDescription(
-//                NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WsdlTreeView_A11YDesc"));  // NOI18N
-//        org.jdesktop.layout.GroupLayout jPanel1Layout = (org.jdesktop.layout.GroupLayout) jPanel1.getLayout();
-//        jPanel1Layout.setHorizontalGroup(
-//            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-//            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-//        );
-//        jPanel1Layout.setVerticalGroup(
-//            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-//            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-//        );
-//        
-//        JTree tree = (JTree) mWsdlTreeView.getTreeView().getViewport().getComponent(0);
-//        tree.getSelectionModel().addTreeSelectionListener(this);
         
-//        TreeNode root = (TreeNode) tree.getModel().getRoot();
-//        int cnt = root.getChildCount();
-//        for (int i = 0; i < cnt; i++) {
-//        System.out.println(((DefaultMutableTreeNode)root.getChildAt(i)).getPath());
-//            tree.expandPath(new TreePath(((DefaultMutableTreeNode)root.getChildAt(i)).getPath()));
-//        }
-     }
+        initComponents(); 
+    }
      
+    @Override
     public String getName() {
         return NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, 
                                    "LBL_Select_the_WSDL_document");  // NOI18N
     }
 
     public FileObject getSelectedWsdlFile() {
-        return mWsdlTreeView.getSelectedWsdlFile();
+        return mWsdlTreeViewPanel.getSelectedWsdlFile();
     }
 
-    public WsdlTreeView getWsdlTreeView() {
-        return mWsdlTreeView;
+    public WsdlTreeViewPanel getWsdlTreeView() {
+        return mWsdlTreeViewPanel;
     }
         
     public void valueChanged(TreeSelectionEvent e) {
@@ -107,43 +74,17 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        mWsdlLbl = new javax.swing.JLabel();
-        mWsdlTf = new javax.swing.JTextField();
+        jLabelSelectedWSDL = new javax.swing.JLabel();
+        jTextFieldSelectedWSDL = new javax.swing.JTextField();
         jLabelWSDLDocuments = new javax.swing.JLabel();
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        mWsdlTreeView = new WsdlTreeView(mProject);
-        mWsdlTreeView.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(!evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
-                    return;
-                }
-                FileObject wsdlFile = mWsdlTreeView.getSelectedWsdlFile();
-                if (wsdlFile == null) {
-                    mWsdlTf.setText("");  // NOI18N
-                } else {
-                    mWsdlTf.setText(FileUtil.toFile(wsdlFile).getPath());
-                }
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                expandWsdlTree(evt);
             }
         });
-        jLabelWSDLDocuments.setLabelFor(mWsdlTreeView);
 
-        mWsdlTreeView.getAccessibleContext().setAccessibleName(
-            NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WsdlTreeView_A11YName"));  // NOI18N
-        mWsdlTreeView.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WsdlTreeView_A11YDesc"));  // NOI18N
-        /*org.jdesktop.layout.GroupLayout jPanel1Layout = (org.jdesktop.layout.GroupLayout) jPanel1.getLayout();
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(mWsdlTreeView, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-        );*/
-
-        JTree tree = (JTree) mWsdlTreeView.getTreeView().getViewport().getComponent(0);
-        tree.getSelectionModel().addTreeSelectionListener(this);
+        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -156,10 +97,10 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
             .add(0, 251, Short.MAX_VALUE)
         );
 
-        mWsdlLbl.setLabelFor(mWsdlTf);
-        org.openide.awt.Mnemonics.setLocalizedText(mWsdlLbl, org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "LBL_The_WSDL_selected")); // NOI18N
+        jLabelSelectedWSDL.setLabelFor(jTextFieldSelectedWSDL);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelSelectedWSDL, org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "LBL_The_WSDL_selected")); // NOI18N
 
-        mWsdlTf.setEditable(false);
+        jTextFieldSelectedWSDL.setEditable(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabelWSDLDocuments, "&WSDL Documents:");
 
@@ -168,9 +109,9 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(mWsdlLbl)
+                .add(jLabelSelectedWSDL)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mWsdlTf, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE))
+                .add(jTextFieldSelectedWSDL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(jLabelWSDLDocuments)
                 .addContainerGap())
@@ -184,25 +125,62 @@ public class NewTestcaseWsdlVisualPanel extends javax.swing.JPanel implements Tr
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(mWsdlLbl)
-                    .add(mWsdlTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(jLabelSelectedWSDL)
+                    .add(jTextFieldSelectedWSDL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
-        mWsdlLbl.getAccessibleContext().setAccessibleName("Selected WSDL: ");
-        mWsdlLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_SELECTED_WSDL_LABEL")); // NOI18N
+        // init the WSDL tree view
+        {
+            mWsdlTreeViewPanel = new WsdlTreeViewPanel(mProject);
+            mWsdlTreeViewPanel.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if(!evt.getPropertyName().equals(ExplorerManager.PROP_SELECTED_NODES)) {
+                        return;
+                    }
+                    FileObject wsdlFile = mWsdlTreeViewPanel.getSelectedWsdlFile();
+                    jTextFieldSelectedWSDL.setText(wsdlFile == null ?
+                        "" : FileUtil.toFile(wsdlFile).getPath());  // NOI18N
+                }
+            });
+
+            jPanel1Layout.setHorizontalGroup(
+                jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(mWsdlTreeViewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+            );
+            jPanel1Layout.setVerticalGroup(
+                jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                .add(mWsdlTreeViewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+            );
+
+            JTree tree = (JTree) mWsdlTreeViewPanel.getTreeView().getViewport().getComponent(0);
+            tree.getSelectionModel().addTreeSelectionListener(this);
+            jLabelWSDLDocuments.setLabelFor(tree);
+        }
+        jLabelSelectedWSDL.getAccessibleContext().setAccessibleName("Selected WSDL: ");
+        jLabelSelectedWSDL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_SELECTED_WSDL_LABEL")); // NOI18N
         jLabelWSDLDocuments.getAccessibleContext().setAccessibleName("WSDL Documents:");
         jLabelWSDLDocuments.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_WSDL_DOCUMENTS_LABEL")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseWsdlVisualPanel.class, "ACS_NewTestcaseWsdlVisualPanel_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    private void expandWsdlTree(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_expandWsdlTree
+        /*JTree tree = (JTree) mWsdlTreeView.getTreeView().getViewport().getComponent(0);
+        TreeNode root = (TreeNode) tree.getModel().getRoot();
+        int cnt = root.getChildCount();
+        for (int i = cnt - 1; i >= 0; i--) {
+            System.out.println(((DefaultMutableTreeNode)root.getChildAt(i)).getPath());
+            tree.expandPath(new TreePath(((DefaultMutableTreeNode)root.getChildAt(i)).getPath()));
+        }*/
+}//GEN-LAST:event_expandWsdlTree
+
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabelSelectedWSDL;
     private javax.swing.JLabel jLabelWSDLDocuments;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel mWsdlLbl;
-    private javax.swing.JTextField mWsdlTf;
+    private javax.swing.JTextField jTextFieldSelectedWSDL;
     // End of variables declaration//GEN-END:variables
     
 }

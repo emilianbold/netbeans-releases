@@ -60,9 +60,9 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
             public void valueChanged(TreeSelectionEvent e) {
                 BindingOperation bindingOp = getSelectedBindingOperation();
                 if (bindingOp == null) {
-                    mOperationTf.setText("");  // NOI18N
+                    jTextFieldSelectedOperation.setText("");  // NOI18N
                 } else {
-                    mOperationTf.setText(getOperationSignature(bindingOp));
+                    jTextFieldSelectedOperation.setText(getOperationSignature(bindingOp));
                 }
                 mPanel.fireChangeEvent(); // Notify that the panel changed
             }
@@ -169,8 +169,9 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        mOperationLbl = new javax.swing.JLabel();
-        mOperationTf = new javax.swing.JTextField();
+        jLabelSelectedOperation = new javax.swing.JLabel();
+        jTextFieldSelectedOperation = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -180,45 +181,55 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 275, Short.MAX_VALUE)
+            .add(0, 255, Short.MAX_VALUE)
         );
 
-        mOperationLbl.setLabelFor(mOperationTf);
-        mOperationLbl.setText(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "LBL_The_operation_selected")); // NOI18N
+        jLabelSelectedOperation.setLabelFor(jTextFieldSelectedOperation);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelSelectedOperation, org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "LBL_The_operation_selected")); // NOI18N
 
-        mOperationTf.setEditable(false);
+        jTextFieldSelectedOperation.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Binding &Operations:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(mOperationLbl)
+                .add(jLabelSelectedOperation)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(mOperationTf, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
+                .add(jTextFieldSelectedOperation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(jLabel1)
+                .addContainerGap())
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(mOperationLbl)
-                    .add(mOperationTf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(jLabelSelectedOperation)
+                    .add(jTextFieldSelectedOperation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
-        mOperationLbl.getAccessibleContext().setAccessibleName("Selected &Operation: ");
-        mOperationLbl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_SELECTED_OPERATION_LABEL")); // NOI18N
+        jLabelSelectedOperation.getAccessibleContext().setAccessibleName("&Selected Operation: ");
+        jLabelSelectedOperation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_SELECTED_OPERATION_LABEL")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleName("Binding Operations:");
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_BINDING_OPERATIONS")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_NewTestcaseOperationVisualPanel_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabelSelectedOperation;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel mOperationLbl;
-    private javax.swing.JTextField mOperationTf;
+    private javax.swing.JTextField jTextFieldSelectedOperation;
     // End of variables declaration//GEN-END:variables
     
     private static String getOperationSignature(BindingOperation bindingOp) {
