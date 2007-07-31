@@ -80,7 +80,7 @@ public final class SearchBar extends JToolBar {
     private static final Logger LOG = Logger.getLogger(SearchBar.class.getName());
 
     private static final Insets BUTTON_INSETS = new Insets(2, 1, 0, 1);
-    private static final Color NOT_FOUND = new Color(220, 90, 90, 255);
+    private static final Color NOT_FOUND = Color.RED.darker();
     private static final Color INVALID_REGEXP = Color.red;
     
     /** Shared mouse listener used for setting the border painting property
@@ -468,8 +468,8 @@ public final class SearchBar extends JToolBar {
             } else {
                 // text not found - indicate error in incremental search
                 // text field with red foreground
-                incrementalSearchTextField.setBackground(NOT_FOUND);
-                incrementalSearchTextField.setForeground(Color.WHITE);
+                incrementalSearchTextField.setBackground(null);
+                incrementalSearchTextField.setForeground(NOT_FOUND);
                 Toolkit.getDefaultToolkit().beep();
             }
         }
@@ -518,8 +518,8 @@ public final class SearchBar extends JToolBar {
             incrementalSearchTextField.setForeground(Color.BLACK);
         } else {
             // text not found - indicate error in incremental search text field with red foreground
-            incrementalSearchTextField.setBackground(NOT_FOUND);
-            incrementalSearchTextField.setForeground(Color.WHITE);
+            incrementalSearchTextField.setBackground(null);
+            incrementalSearchTextField.setForeground(NOT_FOUND);
             Toolkit.getDefaultToolkit().beep();
         }
     }
