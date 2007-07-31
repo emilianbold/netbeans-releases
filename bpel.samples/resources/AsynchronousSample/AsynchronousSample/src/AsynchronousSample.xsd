@@ -3,8 +3,7 @@
 <xsd:schema
     xmlns="http://www.w3.org/2001/XMLSchema"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace"
-    elementFormDefault="qualified">
+    targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace">
 
     <element name="typeA">
         <complexType>

@@ -11,30 +11,30 @@
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype"
                   xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/varprop">
-    
+
     <import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSample" location="AsynchronousSample.wsdl"/>
-    
+        
     <types>
         <xsd:schema xmlns="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace" 
                     targetNamespace="http://enterprise.netbeans.org/bpel/AsynchronousSample">
             <xsd:import namespace="http://enterprise.netbeans.org/bpel/AsynchronousSampleSchemaNamespace" schemaLocation="AsynchronousSample.xsd"/>
         </xsd:schema>
     </types>
-    
+
     <wsdl:message name="requestMessageClient">
         <wsdl:part name="inputType" element="xs:typeA"/>
     </wsdl:message>
     <wsdl:message name="responseMessageClient">
         <wsdl:part name="resultType" element="xs:typeA"/>
     </wsdl:message>
-    
+               
     <wsdl:portType name="MyPortTypeClient">
         <wsdl:operation name="operationA">
             <wsdl:input  message="tns:requestMessageClient" />
             <wsdl:output message="tns:responseMessageClient"/>
         </wsdl:operation>              
     </wsdl:portType>
-    
+
     <binding name="SoapBindingClient" type="tns:MyPortTypeClient">
         <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <operation name="operationA">
@@ -47,13 +47,13 @@
             </output>
         </operation>         
     </binding>
-    
+        
     <wsdl:service name="AsynchronousClientService">
         <wsdl:port name="AsynchronousClientPortName" binding="tns:SoapBindingClient">                    
             <soap:address location="http://localhost:18181/AsynchronousSampleClient"/>
         </wsdl:port>
     </wsdl:service>
-    
+   
     <plnk:partnerLinkType name="AsynchronousClientPartnerLinkType">
         <plnk:role name="AsynchronousClientProvider"
                    portType="tns:MyPortTypeClient">
@@ -61,18 +61,18 @@
     </plnk:partnerLinkType>
     
     <bpws:property name="correlatorProp" type="xsd:string" />    
-    
+
     <bpws:propertyAlias 
         propertyName="tns:correlatorProp"
         messageType="tns:requestMessageClient"
         part="inputType">
-        <bpws:query>/xs:typeA/xs:id</bpws:query>
+        <bpws:query>/typeA/id</bpws:query>
     </bpws:propertyAlias>
-    
+
     <bpws:propertyAlias 
         propertyName="tns:correlatorProp"
         messageType="partnerNS:responseMessage"
         part="resultType">
-        <bpws:query>/xs:typeA/xs:id</bpws:query>
+        <bpws:query>/typeA/id</bpws:query>        
     </bpws:propertyAlias>
 </wsdl:definitions>
