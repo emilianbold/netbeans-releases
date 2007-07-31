@@ -50,6 +50,8 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
     private static ScriptEngineManager manager;
     private static final Logger LOG = Logger.getLogger(ScriptingCreateFromTemplateHandler.class.getName());
     
+    private static final String ENCODING_PROPERTY_NAME = "encoding"; //NOI18N
+    
     protected boolean accept(FileObject orig) {
         return engine(orig) != null;
     }
@@ -58,17 +60,18 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
                                             String name,
                                             Map<String, Object> values) throws IOException {
         
-        ScriptEngine eng = engine(template);
-        Bindings bind = eng.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
-        bind.putAll(values);
-        for (Map.Entry<String, Object> entry : values.entrySet()) {
-            eng.getContext().setAttribute(entry.getKey(), entry.getValue(), ScriptContext.ENGINE_SCOPE);
-        }
-        
         String nameUniq = FileUtil.findFreeFileName(f, name, template.getExt());
         FileObject output = FileUtil.createData(f, nameUniq + '.' + template.getExt());
         Charset targetEnc = FileEncodingQuery.getEncoding(output);
         Charset sourceEnc = FileEncodingQuery.getEncoding(template);
+        
+        ScriptEngine eng = engine(template);
+        Bindings bind = eng.getContext().getBindings(ScriptContext.ENGINE_SCOPE);
+        bind.putAll(values);
+        
+        if(!values.containsKey(ENCODING_PROPERTY_NAME)) {
+            bind.put(ENCODING_PROPERTY_NAME, targetEnc.name());
+        }
         
         Writer w = null;
         Reader is = null;
