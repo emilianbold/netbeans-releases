@@ -331,7 +331,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
 
     private void targetProjectComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_targetProjectComboItemStateChanged
         // TODO add your handling code here:
-	Project targetPrj = (Project)targetProjectCombo.getSelectedItem();
+	targetPrj = (Project)targetProjectCombo.getSelectedItem();
 	populateSourceFolderCombo(targetPrj);
     }//GEN-LAST:event_targetProjectComboItemStateChanged
 
@@ -415,9 +415,14 @@ public class GenerateCodePanel extends javax.swing.JPanel
     
     public String getSelectedFolderName()
     {
-	if (srcGroup != null && srcGroup.getRootFolder() != null) 
+	try {
+	    if (srcGroup != null && srcGroup.getRootFolder() != null) 
+	    {
+		return FileUtil.toFile(srcGroup.getRootFolder()).getCanonicalPath();
+	    }
+	} 
+	catch (IOException e) 
 	{
-	    return srcGroup.getRootFolder().getPath();
 	}
 	return null;
     }
@@ -607,6 +612,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
 	if (targetPrj == null) 
 	{
 	    targetProjectCombo.setSelectedIndex(0);
+	    targetPrj = (Project)targetProjectCombo.getSelectedItem();
 	}
 	else 
 	{
@@ -636,7 +642,6 @@ public class GenerateCodePanel extends javax.swing.JPanel
 		    JavaProjectConstants.SOURCES_TYPE_JAVA);
 		if (srcGrps != null) 
 		{	
-		    int i = 0;
 		    for (SourceGroup g: srcGrps)
 		    {			
 			if (g != null) 
@@ -645,9 +650,8 @@ public class GenerateCodePanel extends javax.swing.JPanel
 			    if (g.getRootFolder() != null 
 				&& g.getRootFolder().equals(sfo))
 			    {
-				index = i;
+				index = srcRoots.size() - 1;
 			    }
-			    i++;
 			}
 		    }
 		}
@@ -659,6 +663,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
 	if (srcRoots.size() > 0) 
 	{
 	    srcFolderCombo.setSelectedIndex(index);
+	    srcGroup = srcRoots.get(index);
 	}
     }
 

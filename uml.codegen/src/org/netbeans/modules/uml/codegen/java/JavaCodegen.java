@@ -67,6 +67,7 @@ public class JavaCodegen implements ICodeGenerator
 			 String targetFolderName, 
 			 Properties props) 
     {
+
 	boolean backup = Boolean.valueOf(
             props.getProperty("backup", "true")).booleanValue(); // NOI18N
         
@@ -231,7 +232,7 @@ public class JavaCodegen implements ICodeGenerator
 			    {
 				extAdd = "." + templExt; // NOI18N
 			    }
-			    String targetPackageFolderPath = exportPkgFileObject.getPath();
+			    String targetPackageFolderPath = FileUtil.toFile(exportPkgFileObject).getCanonicalPath();
 			    String targName = getOutputName(clinfo.getName(), domainTemplate) + extAdd;
 			    String targetFilePath = targetPackageFolderPath + SEP + targName;
 			    fmap.targetFilePath = targetFilePath;
@@ -243,7 +244,7 @@ public class JavaCodegen implements ICodeGenerator
 				FileObject buFileObj = backupFile(targetFile);
 				if (buFileObj != null) 
 				{
-				    fmap.existingSourceBackupPath = buFileObj.getPath();
+				    fmap.existingSourceBackupPath = FileUtil.toFile(buFileObj).getCanonicalPath();
 				}
 				ParsedInfo existingFileInfo = merger.parse(targetFilePath);
 				if (existingFileInfo != null)
@@ -380,7 +381,7 @@ public class JavaCodegen implements ICodeGenerator
 			    FileObject genedFO = n.getPrimaryFile();
 			    if (genedFO != null) 
 			    {
-				String genedPath = genedFO.getPath();
+				String genedPath = FileUtil.toFile(genedFO).getCanonicalPath();
 				String genedExt = genedFO.getExt();
 				if (fmap.ext != null && ! fmap.ext.equals(genedExt)) 
 				{ 				    
@@ -471,7 +472,7 @@ public class JavaCodegen implements ICodeGenerator
 				    {
 					FileObject buFileObj 
 					    = backupFile(new File(ascInfo.getFilePath()));		
-					fmap.existingSourceBackupPath = buFileObj.getPath();
+					fmap.existingSourceBackupPath = FileUtil.toFile(buFileObj).getCanonicalPath();
 				    }
 				    fmap.merge = true;
 				    task.log(task.SUMMARY, LOG_INDENT 
