@@ -67,7 +67,7 @@ public class JDKDerbyHelper {
         // see issue 83144
         if (Utilities.isWindows()) {
             LOGGER.log(Level.FINE, "Operating system: Windows");
-            String programFilesPath = System.getProperty("Env-ProgramFiles"); // NOI18N
+            String programFilesPath = System.getenv("ProgramFiles"); // NOI18N
             LOGGER.log(Level.FINE, "Program Files path: {0}", programFilesPath);
             if (programFilesPath != null) {
                 File derbyDirFile = new File(programFilesPath, "Sun/JavaDB"); // NOI18N
