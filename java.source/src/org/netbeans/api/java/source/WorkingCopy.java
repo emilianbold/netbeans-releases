@@ -46,7 +46,7 @@ import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.builder.TreeFactory;
-import org.netbeans.modules.java.source.engine.DefaultApplicationContext;
+import org.netbeans.modules.java.source.engine.ApplicationContext;
 import org.netbeans.modules.java.source.engine.ReattributionException;
 import org.netbeans.modules.java.source.engine.SourceReader;
 import org.netbeans.modules.java.source.engine.SourceRewriter;
@@ -242,11 +242,10 @@ public class WorkingCopy extends CompilationController {
             
     // Innerclasses ------------------------------------------------------------
 
-    private class WorkingCopyContext extends DefaultApplicationContext {
+    private class WorkingCopyContext implements ApplicationContext {
         
         private ArrayList<Difference> diffs = new ArrayList<Difference>();
 
-        @Override
         public PrintWriter getOutputWriter(String title) {
             // Sink any log output so it isn't displayed.
             return new PrintWriter(new Writer() {
@@ -257,8 +256,7 @@ public class WorkingCopy extends CompilationController {
         }
 
         private Map<Integer, String> userInfo = Collections.<Integer, String>emptyMap();
-        
-        @Override
+       
         @SuppressWarnings("unchecked")
         public void setResult(Object result, String title) {
             if ("user-info".equals(title)) {
@@ -266,11 +264,18 @@ public class WorkingCopy extends CompilationController {
             }
         }
 
-        @Override
         public SourceRewriter getSourceRewriter(JavaFileObject sourcefile) throws IOException {
             return new Rewriter();
         }
-        
+    
+        public void setStatusMessage(String message) {
+            System.out.println(message);
+        }
+
+        public void setErrorMessage(String message, String title) {
+            setStatusMessage(title + ": " + message);
+        }
+
         private class Rewriter implements SourceRewriter {
             
             private int offset = 0;
