@@ -33,7 +33,7 @@
 #include "ExtractUtils.h"
 #include "Main.h"
 
-const DWORD NUMBER_OF_HELP_ARGUMENTS = 9;
+const DWORD NUMBER_OF_HELP_ARGUMENTS = 10;
 
 const WCHAR * outputFileArg       = L"--output";
 const WCHAR * javaArg             = L"--javahome";
@@ -46,6 +46,7 @@ const WCHAR * helpArg             = L"--help";
 const WCHAR * helpOtherArg        = L"/?";
 const WCHAR * silentArg           = L"--silent";
 const WCHAR * nospaceCheckArg     = L"--nospacecheck";
+const WCHAR * localeArg           = L"--locale";
 
 const WCHAR * javaParameterPrefix = L"-J";
 
@@ -711,6 +712,7 @@ DWORD isOnlyHelp(LauncherProperties * props) {
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_CPA_PROP), 1, classPathAppend);
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_CPP_PROP), 1, classPathPrepend);
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_DISABLE_SPACE_CHECK), 1, nospaceCheckArg);
+        help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_LOCALE_PROP), 1, localeArg);
         help->items[counter++] = formatMessageW(getI18nProperty(props, ARG_HELP_PROP), 1, helpArg);
         
         
@@ -796,7 +798,7 @@ LauncherProperties * createLauncherProperties() {
     props->i18nMessages = NULL;
     props->userDefinedJavaHome    = getArgumentValue(props, javaArg, 1, 1);
     props->userDefinedTempDir     = getArgumentValue(props, tempdirArg, 1, 1);
-    
+    props->userDefinedLocale = getArgumentValue(props, localeArg, 0, 1);
     props->userDefinedExtractDir  = NULL;
     props->extractOnly = 0;
     
@@ -865,6 +867,7 @@ void freeLauncherProperties(LauncherProperties **props) {
         FREE((*props)->userDefinedTempDir);
         FREE((*props)->userDefinedExtractDir);
         FREE((*props)->userDefinedOutput);
+        FREE((*props)->userDefinedLocale);
         FREE((*props)->command);
         FREE((*props)->exePath);
         FREE((*props)->exeDir);

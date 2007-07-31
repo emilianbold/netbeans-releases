@@ -46,6 +46,7 @@ extern const char *  ARG_CPA_PROP;
 extern const char *  ARG_CPP_PROP;               
 extern const char *  ARG_EXTRACT_PROP;
 extern const char *  ARG_DISABLE_SPACE_CHECK;
+extern const char *  ARG_LOCALE_PROP;
 extern const char *  ARG_HELP_PROP;
 extern const char * MSG_CREATE_TMPDIR;     
 extern const char * MSG_EXTRACT_DATA;     

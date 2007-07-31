@@ -47,6 +47,7 @@ const char * ARG_CPA_PROP                 = "nlw.arg.classpatha";
 const char * ARG_CPP_PROP                 = "nlw.arg.classpathp";
 const char * ARG_EXTRACT_PROP             = "nlw.arg.extract";
 const char * ARG_DISABLE_SPACE_CHECK      = "nlw.arg.disable.space.check";
+const char * ARG_LOCALE_PROP              = "nlw.arg.locale";
 const char * ARG_HELP_PROP                = "nlw.arg.help";
 
 const char * MSG_CREATE_TMPDIR     = "nlw.msg.create.tmpdir";
@@ -150,6 +151,8 @@ WCHAR * getDefaultString(const char *name) {
         return L"%s Using this help";
     } else if(lstrcmpA(name, ARG_DISABLE_SPACE_CHECK)==0) {
         return L"%s Disable free space check";
+    } else if(lstrcmpA(name, ARG_LOCALE_PROP )==0) {
+        return L"%s Use specified locale for messagess";       
     } else if(lstrcmpA(name, MSG_CREATE_TMPDIR)==0) {
         return L"Creating tmp directory...";
     } else if(lstrcmpA(name, MSG_EXTRACT_DATA)==0) {

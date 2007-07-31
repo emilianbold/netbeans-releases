@@ -465,6 +465,13 @@ void loadI18NStrings(LauncherProperties * props) {
         writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Current System Locale : ", 0);
         writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0,  currentLocale, 1);
         
+         if(props->userDefinedLocale!=NULL) { // using user-defined locale via command-line parameter
+            writeMessageA(props, OUTPUT_LEVEL_NORMAL, 0, "[CMD Argument] Try to use locale ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_NORMAL, 0, props->userDefinedLocale, 1);
+            FREE(currentLocale);
+            currentLocale = appendStringW(NULL, props->userDefinedLocale);
+         }
+        
         for(j=0;j<numberOfLocales;j++) { //  for all locales in file...
             // read locale name as UNICODE ..
             // it should be like en_US or smth like that

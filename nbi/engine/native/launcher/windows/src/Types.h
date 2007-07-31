@@ -135,6 +135,7 @@ extern "C" {
         WCHAR * userDefinedTempDir;
         WCHAR * userDefinedExtractDir;
         WCHAR * userDefinedOutput;
+        WCHAR * userDefinedLocale;
         SizedString * restOfBytes;
         I18NStrings * i18nMessages;
         DWORD I18N_PROPERTIES_NUMBER;
