@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.logging.Logger;
+import org.openide.cookies.SaveCookie;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -180,6 +181,13 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
             LOG.finer("handleMove("                                     //NOI18N
                     + FileUtil.getFileDisplayName(df.getPrimaryFile()) + ')');
         }
+
+        // a simple fix of issue #92195 (impossible to save a moved prop. file):
+        SaveCookie saveCookie = getCookie(SaveCookie.class);
+        if (saveCookie != null) {
+            saveCookie.save();
+        }
+
         try {
             pasteSuffix = createPasteSuffix(df);
         
