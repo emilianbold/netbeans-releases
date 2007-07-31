@@ -57,6 +57,6 @@ public class WsCompileConfigDataLoader extends UniFileLoader {
     }
     
     protected String actionsContext() {
-        return "Loaders/text/wsdl/Actions/"; // NOI18N
+        return "Loaders/text/jaxrpc-config-1-1/Actions/"; // NOI18N
     }
 }
