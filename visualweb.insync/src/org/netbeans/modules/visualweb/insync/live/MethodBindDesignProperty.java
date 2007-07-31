@@ -74,13 +74,19 @@ public class MethodBindDesignProperty extends BeansDesignProperty {
      *
      */
     protected void initLive() {
-        if (property != null) {
-            // intercept if the source is a string that we know is a binding EL
-            Object value = property.getValue(descriptor.getPropertyType());
-            if (value instanceof String)
-                invokeSetter(fromSource((String)value));
-            else
-                super.initLive();
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(((LiveUnit)getDesignBean().getDesignContext()).getBeansUnit().getClassLoader());
+            if (property != null) {
+                // intercept if the source is a string that we know is a binding EL
+                Object value = property.getValue(descriptor.getPropertyType());
+                if (value instanceof String)
+                    invokeSetter(fromSource((String)value));
+                else
+                    super.initLive();
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
     }
 

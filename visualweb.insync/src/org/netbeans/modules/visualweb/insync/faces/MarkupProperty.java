@@ -121,25 +121,27 @@ public class MarkupProperty extends Property {
             return Double.valueOf(value);
         // EAT: Not sure how safe this is, will have to see
         if (type == MethodBinding.class) {
-	        if (value.startsWith("#{")) { //NOI18N
-	            // This is not the right thing to do here, but its working
-	            // original code stolen from MethodBindingPropertyEditor
-	            Application app = FacesContext.getCurrentInstance().getApplication();
-	            return app.createMethodBinding(value, new Class[] {});
-	        } else if (value.length() > 0) {
-	            return new ConstantMethodBinding(value);
-	        } else {
-	            return null;
-	        }
+            if (value.startsWith("#{")) { //NOI18N
+                // This is not the right thing to do here, but its working
+                // original code stolen from MethodBindingPropertyEditor
+                if(getUnit() instanceof FacesPageUnit) {
+                    FacesContext facesContext = ((FacesPageUnit)getUnit()).getFacesContext();
+                    Application app = facesContext.getApplication();
+                    return app.createMethodBinding(value, new Class[] {});
+                }
+            } else if (value.length() > 0) {
+                return new ConstantMethodBinding(value);
+            } 
         }
         if(type == MethodExpression.class) {
             if (value.startsWith("#{")) { //NOI18N
-                Application app = FacesContext.getCurrentInstance().getApplication();
-                app.getExpressionFactory().createMethodExpression(
-                        FacesContext.getCurrentInstance().getELContext(), value, String.class, new Class[] {});
-            } else {
-                return null;
-            }
+                if(getUnit() instanceof FacesPageUnit) {
+                    FacesContext facesContext = ((FacesPageUnit)getUnit()).getFacesContext();
+                    Application app = facesContext.getApplication();
+                    return app.getExpressionFactory().createMethodExpression(
+                            FacesContext.getCurrentInstance().getELContext(), value, String.class, new Class[] {});
+                }
+            } 
         }
         assert Trace.trace("insync.faces", "Unconvertable markup type:" + type + 
                            " attr:" + attr.getName() + " value:" + value);
