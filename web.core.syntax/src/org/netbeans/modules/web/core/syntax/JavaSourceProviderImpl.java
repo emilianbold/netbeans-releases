@@ -25,8 +25,8 @@ import java.io.Writer;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
-import org.netbeans.modules.web.core.syntax.SimplifiedJSPServlet;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -43,7 +43,14 @@ public class JavaSourceProviderImpl implements JavaSourceProvider {
     }
     
     public boolean accept(FileObject file) {
-        return "jsp".equals(file.getExt());
+        if (FileOwnerQuery.getOwner(file) == null){
+            // turn off scriptlets editing support for files that do not belong
+            // to any project and therefore it is not possible to determine
+            // class path, see issue 108842
+            return false;
+        }
+        
+        return "jsp".equals(file.getExt()); //NOI18N
     }
     
     public PositionTranslatingJavaFileFilterImplementation forFileObject(FileObject file) {
