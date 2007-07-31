@@ -29,12 +29,29 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 
 import org.netbeans.modules.uml.codegen.CodeGenUtil;
 import org.netbeans.modules.uml.codegen.action.GenerateCodeAction;
@@ -45,26 +62,6 @@ import org.netbeans.modules.uml.codegen.ui.customizer.VerticalTabbedPanel;
 import org.netbeans.modules.uml.project.ProjectUtil;
 import org.netbeans.modules.uml.project.UMLProject;
 import org.netbeans.modules.uml.project.ui.customizer.UMLProjectProperties;
-
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.awt.Mnemonics;
-
-import org.openide.util.NbBundle;
-
-
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.ListCellRenderer;
 
 
 /**
