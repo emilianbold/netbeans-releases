@@ -50,7 +50,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 /**
  *
@@ -86,7 +91,8 @@ public class LookupProviderImpl implements LookupProvider {
     }
    
     public static boolean isMyProject(AuxiliaryConfiguration aux) {
-        return aux.getConfigurationFragment("web-data", WebProjectNature.NS_WEB, true) != null; // NOI18N
+        return aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_1, true) != null // NOI18N
+                || aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true) != null; // NOI18N
     }   
     
     private static final class HelpIDFragmentProviderImpl implements HelpIDFragmentProvider {
@@ -105,6 +111,82 @@ public class LookupProviderImpl implements LookupProvider {
         }
         protected void projectClosed() {
             webcp.prjClosed();
+        }
+    }
+    
+    /**
+     * Transparently handles /1 -> /2 schema upgrade (on read only, not write!).
+     * See Java FreeForm for more info.
+     */
+    static final class UpgradingAuxiliaryConfiguration implements AuxiliaryConfiguration {
+        
+        private final AuxiliaryConfiguration delegate;
+        
+        public UpgradingAuxiliaryConfiguration(AuxiliaryConfiguration delegate) {
+            this.delegate = delegate;
+        }
+
+        public Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
+            if (elementName.equals(WebProjectNature.EL_WEB) && namespace.equals(WebProjectNature.NS_WEB_2) && shared) {
+                Element nue = delegate.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true);
+                if (nue == null) {
+                    Element old = delegate.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_1, true);
+                    if (old != null) {
+                        nue = upgradeSchema(old);
+                    }
+                }
+                return nue;
+            } else {
+                return delegate.getConfigurationFragment(elementName, namespace, shared);
+            }
+        }
+
+        public void putConfigurationFragment(Element fragment, boolean shared) throws IllegalArgumentException {
+            delegate.putConfigurationFragment(fragment, shared);
+        }
+        
+        public boolean removeConfigurationFragment(String elementName, String namespace, boolean shared) throws IllegalArgumentException {
+            return delegate.removeConfigurationFragment(elementName, namespace, shared);
+        }
+    }
+    
+    static Element upgradeSchema(Element old) {
+        Document doc = old.getOwnerDocument();
+        Element nue = doc.createElementNS(WebProjectNature.NS_WEB_2, WebProjectNature.EL_WEB);
+        copyXMLTree(doc, old, nue, WebProjectNature.NS_WEB_2);
+        return nue;
+    }
+    
+    // copied from org.netbeans.modules.java.j2seproject.UpdateHelper with changes; could be an API eventually:
+    private static void copyXMLTree(Document doc, Element from, Element to, String newNamespace) {
+        NodeList nl = from.getChildNodes();
+        int length = nl.getLength();
+        for (int i = 0; i < length; i++) {
+            org.w3c.dom.Node node = nl.item(i);
+            org.w3c.dom.Node newNode;
+            switch (node.getNodeType()) {
+                case org.w3c.dom.Node.ELEMENT_NODE:
+                    Element oldElement = (Element) node;
+                    newNode = doc.createElementNS(newNamespace, oldElement.getTagName());
+                    NamedNodeMap attrs = oldElement.getAttributes();
+                    int alength = attrs.getLength();
+                    for (int j = 0; j < alength; j++) {
+                        org.w3c.dom.Attr oldAttr = (org.w3c.dom.Attr) attrs.item(j);
+                        ((Element)newNode).setAttributeNS(oldAttr.getNamespaceURI(), oldAttr.getName(), oldAttr.getValue());
+                    }
+                    copyXMLTree(doc, oldElement, (Element) newNode, newNamespace);
+                    break;
+                case org.w3c.dom.Node.TEXT_NODE:
+                    newNode = doc.createTextNode(((Text) node).getData());
+                    break;
+                case org.w3c.dom.Node.COMMENT_NODE:
+                    newNode = doc.createComment(((Comment) node).getData());
+                    break;
+                default:
+                    // Other types (e.g. CDATA) not yet handled.
+                    throw new AssertionError(node);
+            }
+            to.appendChild(newNode);
         }
     }
     
@@ -170,7 +252,8 @@ public class LookupProviderImpl implements LookupProvider {
         private synchronized void updateClasspath() {
             if (!prjClosed) {
                 List newRoots = getWebRoots(aux, project, evaluator);
-                if (!newRoots.equals(registeredRoots)) {
+                if (newRoots != null
+                        &&  !newRoots.equals(registeredRoots)) {
                     FileObject fos[] = new FileObject[newRoots.size()];
                     ClassPath cp = ClassPathSupport.createClassPath((FileObject[]) newRoots.toArray(fos));
                     GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, registeredCP);
@@ -183,7 +266,7 @@ public class LookupProviderImpl implements LookupProvider {
         }
         
         private List/*<FileObject>*/ getWebRoots(AuxiliaryConfiguration aux, Project proj, PropertyEvaluator evaluator) {
-            Element web = aux.getConfigurationFragment("web-data", WebProjectNature.NS_WEB, true); // NOI18N
+            Element web = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true); // NOI18N
             if (web == null) {
                 return null;
             }
@@ -199,7 +282,7 @@ public class LookupProviderImpl implements LookupProvider {
         }
         
         private File getFile(Element parent, String fileElName, Project proj, PropertyEvaluator evaluator) {
-            Element el = Util.findElement(parent, fileElName, WebProjectNature.NS_WEB);
+            Element el = Util.findElement(parent, fileElName, WebProjectNature.NS_WEB_2);
             return Util.resolveFile(evaluator, FileUtil.toFile(proj.getProjectDirectory()), Util.findText(el));
         }
         
@@ -218,7 +301,7 @@ public class LookupProviderImpl implements LookupProvider {
             this.project = project;
             this.helper = helper;
             this.evaluator = evaluator;
-            this.aux = aux;
+            this.aux = new UpgradingAuxiliaryConfiguration(aux);
             this.isMyProject = isMyProject(aux);
             updateLookup();
             helper.addAntProjectListener(this);

@@ -24,8 +24,8 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
 -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://www.netbeans.org/ns/freeform-project-web/1"
-            xmlns="http://www.netbeans.org/ns/freeform-project-web/1"
+            targetNamespace="http://www.netbeans.org/ns/freeform-project-web/2"
+            xmlns="http://www.netbeans.org/ns/freeform-project-web/2"
             elementFormDefault="qualified">
 
     <xsd:element name="web-data">
@@ -50,7 +50,8 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
                     </xsd:restriction>
                 </xsd:simpleType>
             </xsd:element>
-            <!-- XXX other locations (web.xml, WEB-INF, libraries,... -->
+            <xsd:element name="web-inf" minOccurs="0" maxOccurs="1" type="substitutable-text"/>
+            <!-- XXX other locations (web.xml, libraries,... -->
         </xsd:sequence>
     </xsd:complexType>
 

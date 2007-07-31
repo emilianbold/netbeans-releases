@@ -681,11 +681,11 @@ public class WebFreeFormActionProvider implements ActionProvider {
     }
     
     private String findContextPath() {
-        Element data = aux.getConfigurationFragment("web-data", WebProjectNature.NS_WEB, true); // NOI18N
-        Element webModulEl = Util.findElement(data, "web-module", WebProjectNature.NS_WEB); // NOI18N
+        Element data = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true); // NOI18N
+        Element webModulEl = Util.findElement(data, "web-module", WebProjectNature.NS_WEB_2); // NOI18N
         if (webModulEl == null)
             return null;
-        Element contextPathEl = Util.findElement(webModulEl, "context-path", WebProjectNature.NS_WEB); // NOI18N
+        Element contextPathEl = Util.findElement(webModulEl, "context-path", WebProjectNature.NS_WEB_2); // NOI18N
         if (contextPathEl == null)
             return null;
         return Util.findText(contextPathEl);

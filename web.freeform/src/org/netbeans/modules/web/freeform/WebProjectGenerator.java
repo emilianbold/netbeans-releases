@@ -26,6 +26,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -33,6 +34,9 @@ import org.w3c.dom.Node;
 
 /**
  * Reads/writes project.xml.
+ * Handling of /1 vs. /2 namespace: either namespace can be read;
+ * when writing, attempts to keep existing namespace when possible, but
+ * will always write a /2 namespace when it is necessary (for <tt>web-inf</tt> elemennt).
  *
  * @author  Jesse Glick, David Konecny, Pavel Buzek
  */
@@ -58,6 +62,7 @@ public class WebProjectGenerator {
     /**
      * @param sources list of pairs[relative path, display name]
      */
+    // TMYSIK handle this (version 1/2)
     public static void putWebInfFolder(AntProjectHelper helper, List<String> sources) {
         putFolder(WebProjectConstants.TYPE_WEB_INF, helper, sources);
     }
@@ -175,15 +180,21 @@ public class WebProjectGenerator {
      * @param aux AuxiliaryConfiguration instance
      * @return list of WebModule instances
      */
-    public static List/*<WebModule>*/ getWebmodules (
+    public static List<WebModule> getWebmodules (
             AntProjectHelper helper, AuxiliaryConfiguration aux) {
         //assert ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess();
-        ArrayList list = new ArrayList();
-        Element data = aux.getConfigurationFragment("web-data", WebProjectNature.NS_WEB, true); // NOI18N
-        List/*<Element>*/ wms = Util.findSubElements(data);
-        Iterator it = wms.iterator();
+        List<WebModule> list = new ArrayList<WebModule>();
+        Element data = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true); // NOI18N
+        if (data == null) {
+            data = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_1, true); // NOI18N
+            if (data == null) {
+                return list;
+            }
+        }
+        List<Element> wms = Util.findSubElements(data);
+        Iterator<Element> it = wms.iterator();
         while (it.hasNext()) {
-            Element wmEl = (Element)it.next();
+            Element wmEl = it.next();
             WebModule wm = new WebModule();
             Iterator it2 = Util.findSubElements(wmEl).iterator();
             while (it2.hasNext()) {
@@ -221,48 +232,82 @@ public class WebProjectGenerator {
      * @param webModules list of WebModule instances
      */
     public static void putWebModules(AntProjectHelper helper, 
-            AuxiliaryConfiguration aux, List/*<WebModule>*/ webModules) {
+            AuxiliaryConfiguration aux, List<WebModule> webModules) {
         //assert ProjectManager.mutex().isWriteAccess();
-        Element data = aux.getConfigurationFragment("web-data", WebProjectNature.NS_WEB, true); // NOI18N
-        if (data == null) {
-            data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
-                createElementNS(WebProjectNature.NS_WEB, "web-data"); // NOI18N
+        // do we need /2 data?
+        boolean need2 = false;
+        String namespace;
+        // Look for existing /2 data.
+        Element data = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true);
+        if (data != null) {
+            // Fine, use it as is.
+            need2 = true;
+            namespace = WebProjectNature.NS_WEB_2;
+        } else {
+            // Or, for existing /1 data.
+            
+            // check whether we need /2 data.
+            for (WebModule webModule : webModules) {
+                String expected = webModule.docRoot + "/WEB-INF"; //NOI18N
+                String webInf = webModule.webInf;
+                if (webInf != null
+                        && !webInf.equals(expected)) {
+                    need2 = true;
+                    break;
+                }
+            }
+            namespace = need2 ? WebProjectNature.NS_WEB_2 : WebProjectNature.NS_WEB_1;
+            data = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_1, true);
+            if (data != null) {
+                if (need2) {
+                    // Have to upgrade.
+                    aux.removeConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_1, true);
+                    data = Util.getPrimaryConfigurationData(helper).getOwnerDocument()
+                            .createElementNS(WebProjectNature.NS_WEB_2, WebProjectNature.EL_WEB);
+                } // else can use it as is
+            } else {
+                // Create /1 or /2 data acc. to need.
+                data = Util.getPrimaryConfigurationData(helper).getOwnerDocument()
+                        .createElementNS(namespace, WebProjectNature.EL_WEB);
+            }
         }
+        
         Document doc = data.getOwnerDocument();
-        List wms = Util.findSubElements(data);
-        Iterator it = wms.iterator();
+        List<Element> wms = Util.findSubElements(data);
+        Iterator<Element> it = wms.iterator();
         while (it.hasNext()) {
-            Element wmEl = (Element)it.next();
+            Element wmEl = it.next();
             data.removeChild(wmEl);
         }
-        Iterator it2 = webModules.iterator();
+        Iterator<WebModule> it2 = webModules.iterator();
         while (it2.hasNext()) {
-            Element wmEl = doc.createElementNS(WebProjectNature.NS_WEB, "web-module"); // NOI18N
+            Element wmEl = doc.createElementNS(namespace, "web-module"); // NOI18N
             data.appendChild(wmEl);
-            WebModule wm = (WebModule)it2.next();
+            WebModule wm = it2.next();
             Element el;
             if (wm.docRoot != null) {
-                el = doc.createElementNS(WebProjectNature.NS_WEB, "doc-root"); // NOI18N
+                el = doc.createElementNS(namespace, "doc-root"); // NOI18N
                 el.appendChild(doc.createTextNode(wm.docRoot));
                 wmEl.appendChild(el);
             }
             if (wm.classpath != null) {
-                el = doc.createElementNS(WebProjectNature.NS_WEB, "classpath"); // NOI18N
+                el = doc.createElementNS(namespace, "classpath"); // NOI18N
                 el.appendChild(doc.createTextNode(wm.classpath));
                 wmEl.appendChild(el);
             }
             if (wm.contextPath != null) {
-                el = doc.createElementNS(WebProjectNature.NS_WEB, "context-path"); // NOI18N
+                el = doc.createElementNS(namespace, "context-path"); // NOI18N
                 el.appendChild(doc.createTextNode(wm.contextPath));
                 wmEl.appendChild(el);
             }
             if (wm.j2eeSpecLevel != null) {
-                el = doc.createElementNS(WebProjectNature.NS_WEB, "j2ee-spec-level"); // NOI18N
+                el = doc.createElementNS(namespace, "j2ee-spec-level"); // NOI18N
                 el.appendChild(doc.createTextNode(wm.j2eeSpecLevel));
                 wmEl.appendChild(el);
             }
-            if (wm.webInf != null) {
-                el = doc.createElementNS(WebProjectNature.NS_WEB, "web-inf"); // NOI18N
+            if (need2 && wm.webInf != null) {
+                assert namespace.equals(WebProjectNature.NS_WEB_2);
+                el = doc.createElementNS(namespace, "web-inf"); // NOI18N
                 el.appendChild(doc.createTextNode(wm.webInf));
                 wmEl.appendChild(el);
             }

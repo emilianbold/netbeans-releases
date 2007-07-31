@@ -117,7 +117,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         cache.clear();
         AuxiliaryConfiguration aux = (AuxiliaryConfiguration)project.getLookup().lookup(AuxiliaryConfiguration.class);
         assert aux != null;
-        Element web = aux.getConfigurationFragment("web-data", WebProjectNature.NS_WEB, true);
+        Element web = aux.getConfigurationFragment(WebProjectNature.EL_WEB, WebProjectNature.NS_WEB_2, true);
         if (web == null) {
             return;
         }
@@ -127,15 +127,15 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
             Element webModulesEl = (Element)it.next();
             assert webModulesEl.getLocalName().equals("web-module") : webModulesEl;
             FileObject docRootFO = getFile (webModulesEl, "doc-root"); //NOI18N
-            Element j2eeSpecEl = Util.findElement (webModulesEl, "j2ee-spec-level", WebProjectNature.NS_WEB);
+            Element j2eeSpecEl = Util.findElement (webModulesEl, "j2ee-spec-level", WebProjectNature.NS_WEB_2);
             String j2eeSpec = j2eeSpecEl == null ? null : evaluator.evaluate (Util.findText (j2eeSpecEl));
-            Element contextPathEl = Util.findElement (webModulesEl, "context-path", WebProjectNature.NS_WEB);
+            Element contextPathEl = Util.findElement (webModulesEl, "context-path", WebProjectNature.NS_WEB_2);
             String contextPathText = contextPathEl == null ? null : Util.findText (contextPathEl);
             String contextPath = contextPathText == null ? null : evaluator.evaluate (contextPathText);
-            Element classpathEl = Util.findElement (webModulesEl, "classpath", WebProjectNature.NS_WEB);
+            Element classpathEl = Util.findElement (webModulesEl, "classpath", WebProjectNature.NS_WEB_2);
             FileObject [] sources = getSources ();
             ClassPath cp = classpathEl == null ? null : createClasspath (classpathEl, sources);
-            Element webInfEl = Util.findElement (webModulesEl, "web-inf", WebProjectNature.NS_WEB);
+            Element webInfEl = Util.findElement (webModulesEl, "web-inf", WebProjectNature.NS_WEB_2);
             FileObject webInf = null;
             if (webInfEl != null) {
                 webInf = getFile (webModulesEl, "web-inf"); //NOI18N
@@ -145,7 +145,7 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
     }
     
     private FileObject getFile (Element parent, String fileElName) {
-        Element el = Util.findElement (parent, fileElName, WebProjectNature.NS_WEB);
+        Element el = Util.findElement (parent, fileElName, WebProjectNature.NS_WEB_2);
         String fname = Util.findText (el);
         if (fname == null) {
             // empty element => cannot find fileobject
@@ -344,9 +344,9 @@ public class WebModules implements WebModuleProvider, AntProjectListener, ClassP
         
         public FileObject getWebInf () {
             //NetBeans 5.x and older projects (WEB-INF is placed under Web Pages)
-            if (webInf == null)
-                webInf = getDocumentBase ().getFileObject(FOLDER_WEB_INF);
-            
+            if (webInf == null) {
+                webInf = getDocumentBase().getFileObject(FOLDER_WEB_INF);
+            }
             return webInf;
         }
         
