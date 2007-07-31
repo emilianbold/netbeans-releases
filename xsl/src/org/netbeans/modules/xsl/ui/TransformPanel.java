@@ -655,7 +655,7 @@ public final class TransformPanel extends javax.swing.JPanel {
             File selectedFile=getFileFromChooser(getXSL());
             if (selectedFile==null) return;
             FileObject fo = FileUtil.toFileObject(selectedFile);
-            DataObject dObj = DataObject.find(fo);
+            DataObject dObj = fo == null ? null : DataObject.find(fo);
             if (dObj==null || !TransformUtil.isXSLTransformation(dObj)) {
                 NotifyDescriptor desc =  new NotifyDescriptor.Message(
                     Util.THIS.getString("MSG_notXslFile", //NOI18N
@@ -691,7 +691,7 @@ public final class TransformPanel extends javax.swing.JPanel {
             File selectedFile=getFileFromChooser(getInput());
             if (selectedFile==null) return;
             FileObject fo = FileUtil.toFileObject(selectedFile);
-            DataObject dObj = DataObject.find(fo);
+            DataObject dObj = fo == null ? null : DataObject.find(fo);
             if (dObj==null || dObj.getCookie(TransformableCookie.class)==null) {
                 NotifyDescriptor desc =  new NotifyDescriptor.Message(
                     Util.THIS.getString("MSG_notXmlFile", //NOI18N
