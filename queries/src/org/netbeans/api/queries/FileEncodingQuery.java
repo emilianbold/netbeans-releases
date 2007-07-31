@@ -158,8 +158,15 @@ public class FileEncodingQuery {
                 lastCharBuffer = out;
                 if (buffer == null) {
                     if (remainder!=null) {
-                        CoderResult result = currentDecoder.decode(remainder,out,false);
-                        if (!remainder.hasRemaining()) {
+                        ByteBuffer tmp = ByteBuffer.allocate(remainder.remaining() + in.remaining());
+                        tmp.put(remainder);
+                        tmp.put(in);
+                        tmp.flip();
+                        CoderResult result = currentDecoder.decode(tmp,out,false);
+                        if (tmp.hasRemaining()) {
+                            remainder = tmp;
+                        }
+                        else {
                             remainder = null;
                         }
                         return result;
@@ -199,19 +206,29 @@ public class FileEncodingQuery {
                     int outPos = out.position();
                     try {
                         ByteBuffer view = buffer.asReadOnlyBuffer();
-                        result = currentDecoder.decode(view, out, in==null);                        
-                        if (in != null) {
-                            result = currentDecoder.decode(in, out, false);
-                        }
-                        if (flush) {
-                            result = currentDecoder.flush(out);
-                        }
-                        LOG.log (Level.FINEST,DECODER_SELECTED,currentDecoder);
+                        result = currentDecoder.decode(view, out, in==null);                                                
                         if (view.hasRemaining()) {
-                            remainder = view;
+                            //Should never happen for files stored by NB, but may be some
+                            //broken file ending with a non complete mbyte char.
+                            if (flush) {
+                                result = currentDecoder.flush(out);
+                            }
+                            LOG.log (Level.FINEST,DECODER_SELECTED,currentDecoder);
+                            remainder = view;                            
+                            buffer = null;
+                            return result;
                         }
-                        buffer = null;
-                        return result;
+                        else {
+                            if (in != null) {
+                                result = currentDecoder.decode(in, out, false);
+                            }
+                            if (flush) {
+                                result = currentDecoder.flush(out);
+                            }
+                            LOG.log (Level.FINEST,DECODER_SELECTED,currentDecoder);
+                            buffer = null;
+                            return result;
+                        }
                     } catch (UnknownEncoding e) {
                         //continue when there was no already an output
                         if (outPos != out.position()) {
