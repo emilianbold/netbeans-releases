@@ -185,7 +185,7 @@ public final class SQLExecuteHelper {
     
     private static final class SQLSplitter {
         
-        private static final int STATE_START = 0;
+        private static final int STATE_MEANINGFUL_TEXT = 0;
         private static final int STATE_MAYBE_LINE_COMMENT = 1;
         private static final int STATE_LINE_COMMENT = 2;
         private static final int STATE_MAYBE_BLOCK_COMMENT = 3;
@@ -209,7 +209,7 @@ public final class SQLExecuteHelper {
         private int startColumn;
         private int endOffset;
         
-        private int state = STATE_START;
+        private int state = STATE_MEANINGFUL_TEXT;
         
         /**
          * @param sql the SQL string to parse. If it contains multiple lines
@@ -247,7 +247,7 @@ public final class SQLExecuteHelper {
                 }
                 
                 switch (state) {
-                    case STATE_START:
+                    case STATE_MEANINGFUL_TEXT:
                         if (ch == '-') {
                             state = STATE_MAYBE_LINE_COMMENT;
                         }
@@ -263,7 +263,7 @@ public final class SQLExecuteHelper {
                         if (ch == '-') {
                             state = STATE_LINE_COMMENT;
                         } else {
-                            state = STATE_START;
+                            state = STATE_MEANINGFUL_TEXT;
                             statement.append('-'); // previous char
                             endOffset = pos;
                         }
@@ -271,7 +271,7 @@ public final class SQLExecuteHelper {
                         
                     case STATE_LINE_COMMENT:
                         if (ch == '\n') {
-                            state = STATE_START;
+                            state = STATE_MEANINGFUL_TEXT;
                             // avoid appending the final \n to the result
                             pos++;
                             continue;
@@ -285,7 +285,7 @@ public final class SQLExecuteHelper {
                             statement.append('/'); // previous char
                             endOffset = pos;
                             if (ch != '/') {
-                                state = STATE_START;
+                                state = STATE_MEANINGFUL_TEXT;
                             }
                         }
                         break;
@@ -298,7 +298,7 @@ public final class SQLExecuteHelper {
                         
                     case STATE_MAYBE_END_BLOCK_COMMENT:
                         if (ch == '/') {
-                            state = STATE_START;
+                            state = STATE_MEANINGFUL_TEXT;
                             // avoid writing the final / to the result
                             pos++;
                             continue;
@@ -309,7 +309,7 @@ public final class SQLExecuteHelper {
                         
                     case STATE_STRING:
                         if (ch == '\n' || ch == '\'') {
-                            state = STATE_START;
+                            state = STATE_MEANINGFUL_TEXT;
                         }
                         break;
                         
@@ -317,11 +317,11 @@ public final class SQLExecuteHelper {
                         assert false;
                 }
                 
-                if (state == STATE_START && ch == ';') {
+                if (state == STATE_MEANINGFUL_TEXT && ch == ';') {
                     addStatement();
                     statement.setLength(0);
                 } else {
-                    if (state == STATE_START || state == STATE_STRING) {
+                    if (state == STATE_MEANINGFUL_TEXT || state == STATE_STRING) {
                         // don't append leading whitespace
                         if (statement.length() > 0 || !Character.isWhitespace(ch)) {
                             // remember the position of the first appended char
