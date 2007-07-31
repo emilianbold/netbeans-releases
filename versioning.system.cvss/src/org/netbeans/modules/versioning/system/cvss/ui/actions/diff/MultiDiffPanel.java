@@ -25,10 +25,7 @@ import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
-import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
-import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
-import org.netbeans.modules.versioning.system.cvss.FileStatusCache;
-import org.netbeans.modules.versioning.system.cvss.FileInformation;
+import org.netbeans.modules.versioning.system.cvss.*;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitAction;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.api.diff.DiffController;
@@ -118,7 +115,11 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         currentType = initialType;
         initComponents();
         setupComponents();
-        onRefreshButton();
+        if (CvsModuleConfig.getDefault().getPreferences().getBoolean("autoDiffRefresh", true)) {
+            onRefreshButton();
+        } else {
+            refreshSetups();
+        }
         refreshComponents();
         refreshTask = org.netbeans.modules.versioning.util.Utils.createTask(new RefreshViewTask());
     }
@@ -237,12 +238,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             nextAction.setEnabled(false);
         }
         prevAction.setEnabled(currentIndex > 0 || currentDifferenceIndex > 0);
-        
-        if (!dividerSet) {
-            int dl = splitPane.getDividerLocation();
-            splitPane.setDividerLocation(0.2);
-            dividerSet = dl != splitPane.getDividerLocation();
-        }
+        dividerSet = false;
+        updateSplitLocation();
     }
     
     public void addNotify() {
@@ -253,6 +250,29 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         JComponent parent = (JComponent) getParent();
         parent.getActionMap().put("jumpNext", nextAction);  // NOI18N
         parent.getActionMap().put("jumpPrev", prevAction); // NOI18N
+    }
+
+    private void updateSplitLocation() {
+        if (dividerSet) return;
+        JComponent parent = (JComponent) getParent();
+        Dimension dim = parent == null ? new Dimension() : parent.getSize();
+        if (dim.width <=0 || dim.height <=0) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateSplitLocation();
+                }
+            });
+        }
+        dividerSet = true;
+        JTable jt = fileTable.getTable();
+        int optimalLocation = jt.getPreferredSize().height + jt.getTableHeader().getPreferredSize().height;
+        if (optimalLocation > dim.height / 3) {
+            optimalLocation = dim.height / 3;
+        }
+        if (optimalLocation <= jt.getTableHeader().getPreferredSize().height) {
+            optimalLocation = jt.getTableHeader().getPreferredSize().height * 3;
+        }
+        splitPane.setDividerLocation(optimalLocation);
     }
 
     public void removeNotify() {

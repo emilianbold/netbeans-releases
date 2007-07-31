@@ -171,6 +171,10 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         return component;
     }
     
+    public JTable getTable() {
+        return table;
+    }
+
     /**
      * Sets visible columns in the Versioning table.
      * 

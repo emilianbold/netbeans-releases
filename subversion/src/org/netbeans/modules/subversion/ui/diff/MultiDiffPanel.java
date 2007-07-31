@@ -235,12 +235,8 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
             nextAction.setEnabled(false);
         }
         prevAction.setEnabled(currentIndex > 0 || currentDifferenceIndex > 0);
-        
-        if (!dividerSet) {
-            int dl = splitPane.getDividerLocation();
-            splitPane.setDividerLocation(0.2);
-            dividerSet = dl != splitPane.getDividerLocation();
-        }
+        dividerSet = false;
+        updateSplitLocation();
     }
     
     public void addNotify() {
@@ -253,6 +249,29 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         parent.getActionMap().put("jumpPrev", prevAction); // NOI18N
     }
 
+    private void updateSplitLocation() {
+        if (dividerSet) return;
+        JComponent parent = (JComponent) getParent();
+        Dimension dim = parent == null ? new Dimension() : parent.getSize();
+        if (dim.width <=0 || dim.height <=0) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    updateSplitLocation();
+                }
+            });
+        }
+        dividerSet = true;
+        JTable jt = fileTable.getTable();
+        int optimalLocation = jt.getPreferredSize().height + jt.getTableHeader().getPreferredSize().height;
+        if (optimalLocation > dim.height / 3) {
+            optimalLocation = dim.height / 3;
+        }
+        if (optimalLocation <= jt.getTableHeader().getPreferredSize().height) {
+            optimalLocation = jt.getTableHeader().getPreferredSize().height * 3;
+        }
+        splitPane.setDividerLocation(optimalLocation);
+    }
+    
     public void removeNotify() {
         Subversion.getInstance().getStatusCache().removeVersioningListener(this);
         super.removeNotify();

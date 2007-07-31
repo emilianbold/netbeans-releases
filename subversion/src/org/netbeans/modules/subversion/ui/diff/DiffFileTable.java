@@ -232,6 +232,10 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         return viewIndex != -1 ? sorter.modelIndex(viewIndex) : -1;
     }
 
+    public JTable getTable() {
+        return table;
+    }
+
     private static class ColumnDescriptor extends PropertySupport.ReadOnly {
         
         public ColumnDescriptor(String name, Class type, String displayName, String shortDescription) {
