@@ -191,6 +191,10 @@ public final class SourceRoots {
                                     if (!f.exists()) {
                                         url = new URL(url.toExternalForm() + "/"); // NOI18N
                                     }
+                                    else if (f.isFile()) {
+                                        //File cannot be a source root (archives are not supported as source roots).
+                                        continue;
+                                    }
                                     assert url.toExternalForm().endsWith("/") : "#90639 violation for " + url + "; " + f + " exists? " + f.exists() + " dir? " + f.isDirectory() + " file? " + f.isFile();
                                     result.add(url);
                                 } catch (MalformedURLException e) {
