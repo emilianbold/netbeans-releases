@@ -99,7 +99,7 @@ public class EntityClassInfo {
                 }
             }, true);
         } catch (IOException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.ALL, "init", ex);
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
     }
     

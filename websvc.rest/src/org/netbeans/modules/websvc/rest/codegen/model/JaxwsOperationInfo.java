@@ -108,7 +108,7 @@ public class JaxwsOperationInfo {
             File folder = FileUtil.toFile(support.getLocalWsdlFolderForClient(clientName, false));
             return new File(folder, localWsdlFilePath).toURL();
         } catch(MalformedURLException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.FINE, "getWsdlModel", ex);
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             throw new IllegalArgumentException(ex);
         }
     }

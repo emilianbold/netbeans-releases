@@ -99,8 +99,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
         
         if (errors.size() > 0) {
             for (Exception e : errors) {
-                Logger.getLogger(getClass().getName()).log(Level.FINE, "handleTransfer", e);
-                e.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, "handleTransfer", e);
             }
             return false;
         }

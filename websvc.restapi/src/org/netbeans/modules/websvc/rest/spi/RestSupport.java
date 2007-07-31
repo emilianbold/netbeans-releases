@@ -263,8 +263,7 @@ public abstract class RestSupport {
                     ProjectClassPathModifier.removeLibraries(new Library[] {library}, sourceRoot, ClassPath.COMPILE);
                 }
             } catch(UnsupportedOperationException ex) {
-                Logger.getLogger(getClass().getName()).log(Level.ALL, type+" not supported.");
-                
+                Logger.getLogger(getClass().getName()).info(type+" not supported.");
             }
         }
     }
@@ -355,7 +354,7 @@ public abstract class RestSupport {
         try {
             ProjectManager.getDefault().saveProject(getProject());
         } catch(IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
         }
     }
 

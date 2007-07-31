@@ -70,7 +70,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                         }
                     });
                 } catch (java.io.IOException ex) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.ALL, "projectOpened", ex);
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
             
@@ -86,7 +86,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                         }
                     });
                 } catch (java.io.IOException ex) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.ALL, "projectOpened", ex);
+                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
         };
@@ -131,7 +131,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                     }
                 });
             } catch (IOException ex) {
-                Logger.getLogger(this.getClass().getName()).log(Level.ALL, "updateRestServices", ex);
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
             //System.out.println("done updating rest services");
         }
