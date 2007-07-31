@@ -461,9 +461,9 @@ public class PathValidatorVisitor extends AbstractXPathVisitor {
                         addResultItem(ResultType.WARNING,
                                 "GLOBAL_ELEMENT_PREFIX_REQUIRED", name); // NOI18N
                     } else {
-                        addResultItem(ResultType.WARNING,
-                                "GLOBAL_ELEMENT_SPECIFIC_PREFIX_REQUIRED",
-                                name, preferredPrefix); // NOI18N
+//                      addResultItem(ResultType.WARNING,
+//                              "GLOBAL_ELEMENT_SPECIFIC_PREFIX_REQUIRED",
+//                              name, preferredPrefix); // NOI18N
                     }
                 } else if (sComp instanceof Attribute){
                     if (preferredPrefix == null) {
