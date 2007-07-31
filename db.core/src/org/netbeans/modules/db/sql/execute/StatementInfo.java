@@ -26,21 +26,29 @@ package org.netbeans.modules.db.sql.execute;
 public class StatementInfo {
 
     private final String sql;
+    private final int rawStartOffset;
     private final int startOffset;
     private final int startLine;
     private final int startColumn;
+    private final int rawEndOffset;
     private final int endOffset;
 
-    public StatementInfo(String sql, int startOffset, int startLine, int startColumn, int endOffset) {
+    public StatementInfo(String sql, int rawStartOffset, int startOffset, int startLine, int startColumn, int endOffset, int rawEndOffset) {
         this.sql = sql;
+        this.rawStartOffset = rawStartOffset;
         this.startOffset = startOffset;
         this.startLine = startLine;
         this.startColumn = startColumn;
         this.endOffset = endOffset;
+        this.rawEndOffset = rawEndOffset;
     }
 
     public String getSQL() {
         return sql;
+    }
+
+    public int getRawStartOffset() {
+        return rawStartOffset;
     }
 
     public int getStartOffset() {
@@ -57,5 +65,9 @@ public class StatementInfo {
 
     public int getEndOffset() {
         return endOffset;
+    }
+
+    public int getRawEndOffset() {
+        return rawEndOffset;
     }
 }

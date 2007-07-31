@@ -166,7 +166,7 @@ public final class SQLExecuteHelper {
             StatementInfo stmt = (StatementInfo)i.next();
             if (startOffset == endOffset) {
                 // only find the statement at offset startOffset
-                if (stmt.getStartOffset() <= startOffset && stmt.getEndOffset() >= endOffset) {
+                if (stmt.getRawStartOffset() <= startOffset && stmt.getRawEndOffset() >= endOffset) {
                     statements.add(stmt);
                 }
             } else {
@@ -204,10 +204,12 @@ public final class SQLExecuteHelper {
         private int column;
         private boolean wasEOL = true;
         
+        private int rawStartOffset;
         private int startOffset;
         private int startLine;
         private int startColumn;
         private int endOffset;
+        private int rawEndOffset;
         
         private int state = STATE_MEANINGFUL_TEXT;
         
@@ -318,8 +320,10 @@ public final class SQLExecuteHelper {
                 }
                 
                 if (state == STATE_MEANINGFUL_TEXT && ch == ';') {
+                    rawEndOffset = pos;
                     addStatement();
                     statement.setLength(0);
+                    rawStartOffset = pos + 1; // skip the semicolon
                 } else {
                     if (state == STATE_MEANINGFUL_TEXT || state == STATE_STRING) {
                         // don't append leading whitespace
@@ -343,6 +347,7 @@ public final class SQLExecuteHelper {
                 pos++;
             }
             
+            rawEndOffset = pos;
             addStatement();
         }
         
@@ -355,7 +360,7 @@ public final class SQLExecuteHelper {
                 return;
             }
             
-            StatementInfo info = new StatementInfo(sql, startOffset, startLine, startColumn, endOffset);
+            StatementInfo info = new StatementInfo(sql, rawStartOffset, startOffset, startLine, startColumn, endOffset, rawEndOffset);
             statements.add(info);
         }
         

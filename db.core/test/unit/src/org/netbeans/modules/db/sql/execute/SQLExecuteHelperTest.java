@@ -57,9 +57,9 @@ public class SQLExecuteHelperTest extends NbTestCase {
         String test = "  select foo  ;   select /* comment */bar;\n   select baz -- comment";
         // System.out.println(test.substring(12));
         assertSplit(test, new StatementInfo[] { 
-            new StatementInfo("select foo", 2, 0, 2, 12),
-            new StatementInfo("select bar", 18, 0, 18, 41),
-            new StatementInfo("select baz", 46, 1, 3, 56),
+            new StatementInfo("select foo", 0, 2, 0, 2, 12, 14),
+            new StatementInfo("select bar", 15, 18, 0, 18, 41, 41),
+            new StatementInfo("select baz", 42, 46, 1, 3, 56, 67),
         });
     }
     
@@ -80,10 +80,12 @@ public class SQLExecuteHelperTest extends NbTestCase {
         assertEquals(expected.length, stmts.length);
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i].getSQL(), stmts[i].getSQL());
+            assertEquals(expected[i].getRawStartOffset(), stmts[i].getRawStartOffset());
             assertEquals(expected[i].getStartOffset(), stmts[i].getStartOffset());
             assertEquals(expected[i].getStartLine(), stmts[i].getStartLine());
             assertEquals(expected[i].getStartColumn(), stmts[i].getStartColumn());
             assertEquals(expected[i].getEndOffset(), stmts[i].getEndOffset());
+            assertEquals(expected[i].getRawEndOffset(), stmts[i].getRawEndOffset());
         }
     }
 }
