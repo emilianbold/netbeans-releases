@@ -19,24 +19,17 @@
 package org.netbeans.modules.websvc.rest.model.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.ClasspathInfo.PathKind;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.impl.RestServicesImpl.Status;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -49,7 +42,7 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
     private String className;
     private Map<String, RestMethodDescriptionImpl> methods;
     private boolean isRest;
-    
+  
     public RestServiceDescriptionImpl(AnnotationModelHelper helper, TypeElement typeElement) {
         super(helper, typeElement);
         
@@ -57,7 +50,7 @@ public class RestServiceDescriptionImpl extends PersistentObject implements Rest
         this.uriTemplate = Utils.getUriTemplate(typeElement);
         this.className = typeElement.getQualifiedName().toString();
         this.isRest = true;
-        
+  
         initMethods(typeElement);
     }
     

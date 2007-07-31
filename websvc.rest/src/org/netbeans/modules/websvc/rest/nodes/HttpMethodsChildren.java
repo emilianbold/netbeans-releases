@@ -26,9 +26,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.TreeSet;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
@@ -41,6 +39,7 @@ import org.openide.util.RequestProcessor;
 
 
 public class HttpMethodsChildren extends Children.Keys {
+    private Project project;
     private MetadataModel<RestServicesMetadata> model;
     private String serviceName;
     private RestServicesListener listener;
@@ -51,7 +50,9 @@ public class HttpMethodsChildren extends Children.Keys {
         }
     });
     
-    public HttpMethodsChildren(MetadataModel<RestServicesMetadata> model, String serviceName) {
+    public HttpMethodsChildren(Project project,MetadataModel<RestServicesMetadata> model, 
+            String serviceName) {
+        this.project = project;
         this.model = model;
         this.serviceName = serviceName;
     }
@@ -128,7 +129,8 @@ public class HttpMethodsChildren extends Children.Keys {
                         for (RestMethodDescription method : desc.getMethods()) {
                             if (method instanceof HttpMethod) {
                                 if (method.getName().equals(key)) {
-                                    return new Node[] { new HttpMethodNode(model, (HttpMethod) method) };
+                                    return new Node[] { new HttpMethodNode(project, 
+                                            desc.getClassName(), (HttpMethod) method) };
                                 }
                             }
                         }

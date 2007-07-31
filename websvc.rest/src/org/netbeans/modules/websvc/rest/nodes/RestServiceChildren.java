@@ -18,34 +18,27 @@
  */
 package org.netbeans.modules.websvc.rest.nodes;
 
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
-import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
-import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
-import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
-import org.netbeans.modules.websvc.rest.model.api.SubResourceLocator;
-import org.openide.util.RequestProcessor;
-
 
 
 public class RestServiceChildren extends Children.Keys {
+    private Project project;
     private MetadataModel<RestServicesMetadata> model;
     private String serviceName;
   
     private static final String KEY_HTTP_METHODS = "http_methods";  //NOI18N
     private static final String KEY_SUB_RESOURCE_LOCATORS = "sub_resource_locators";        //NOI18N
     
-    public RestServiceChildren(MetadataModel<RestServicesMetadata> model, String serviceName) {
+    public RestServiceChildren(Project project, MetadataModel<RestServicesMetadata> model, 
+            String serviceName) {
+        this.project = project;
         this.model = model;
         this.serviceName = serviceName;
     }
@@ -72,9 +65,9 @@ public class RestServiceChildren extends Children.Keys {
     
     protected Node[] createNodes(final Object key) {
         if (key.equals(KEY_HTTP_METHODS)) {
-            return new Node[] { new HttpMethodsNode(model, serviceName) };
+            return new Node[] { new HttpMethodsNode(project, model, serviceName) };
         } else if (key.equals(KEY_SUB_RESOURCE_LOCATORS)) {
-            return new Node[] { new SubResourceLocatorsNode(model, serviceName) };
+            return new Node[] { new SubResourceLocatorsNode(project, model, serviceName) };
         }
         
         return new Node[0];

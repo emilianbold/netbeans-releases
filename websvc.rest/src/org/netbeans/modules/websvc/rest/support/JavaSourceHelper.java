@@ -899,5 +899,49 @@ public class JavaSourceHelper {
             
         }
         return allMethods;
-    }    
+    }
+    
+    public static long[] getPosition(JavaSource source, final String methodName) {
+        final long position[] = {0, 0};
+        
+        try {
+            source.runUserActionTask(new AbstractTask<CompilationController>() {
+                public void run(CompilationController controller)
+                        throws IOException {
+                    TypeElement classElement = getTopLevelClassElement(controller);
+                    controller.toPhase(Phase.RESOLVED);
+                    CompilationUnitTree tree = controller.getCompilationUnit();
+                    Trees trees = controller.getTrees();
+                    Tree elementTree;
+                    Element element = null;
+                    
+                    if (methodName == null) {
+                        element = classElement;
+                    } else {
+                        List<ExecutableElement> methods = ElementFilter.methodsIn(classElement.getEnclosedElements());
+                        
+                        for (ExecutableElement method : methods) {
+                            if (method.getSimpleName().toString().equals(methodName)) {
+                                element = method;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (element != null) {
+                        elementTree = trees.getTree(element);
+                        long pos = trees.getSourcePositions().getStartPosition(tree, elementTree);
+                        position[0] = tree.getLineMap().getLineNumber(pos) - 1;
+                        position[1] = tree.getLineMap().getColumnNumber(pos) - 1;
+                        
+                        System.out.println("lineNumber = " + position[0] + " column = " + position[1]);
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            
+        }
+        
+        return position;
+    }
 }

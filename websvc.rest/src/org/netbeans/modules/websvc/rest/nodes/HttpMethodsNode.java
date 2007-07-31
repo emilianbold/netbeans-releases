@@ -24,6 +24,7 @@ import java.beans.BeanInfo;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.openide.filesystems.Repository;
@@ -41,8 +42,9 @@ public class HttpMethodsNode extends AbstractNode { //implements PropertyChangeL
     
     private String serviceName;
     
-    public HttpMethodsNode(MetadataModel<RestServicesMetadata> model, String serviceName) {
-        super(new HttpMethodsChildren(model, serviceName));
+    public HttpMethodsNode(Project project, MetadataModel<RestServicesMetadata> model, 
+            String serviceName) {
+        super(new HttpMethodsChildren(project, model, serviceName));
         this.serviceName = serviceName;
         setDisplayName(NbBundle.getBundle(HttpMethodsNode.class).getString("LBL_HttpMethods"));
         

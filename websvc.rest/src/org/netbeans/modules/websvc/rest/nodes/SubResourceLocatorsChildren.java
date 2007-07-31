@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.TreeSet;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
@@ -41,6 +42,7 @@ import org.openide.util.RequestProcessor;
 
 
 public class SubResourceLocatorsChildren extends Children.Keys {
+    private Project project;
     private MetadataModel<RestServicesMetadata> model;
     private String serviceName;
     private RestServicesListener listener;
@@ -51,7 +53,8 @@ public class SubResourceLocatorsChildren extends Children.Keys {
         }
     });
     
-    public SubResourceLocatorsChildren(MetadataModel<RestServicesMetadata> model, String serviceName) {
+    public SubResourceLocatorsChildren(Project project, MetadataModel<RestServicesMetadata> model, String serviceName) {
+        this.project = project;
         this.model = model;
         this.serviceName = serviceName;
     }
@@ -128,7 +131,8 @@ public class SubResourceLocatorsChildren extends Children.Keys {
                         for (RestMethodDescription method : desc.getMethods()) {
                             if (method instanceof SubResourceLocator) {
                                 if (method.getName().equals(key)) {
-                                    return new Node[] { new SubResourceLocatorNode(model, (SubResourceLocator) method) };
+                                    return new Node[] { new SubResourceLocatorNode(
+                                            project, desc.getClassName(), (SubResourceLocator) method) };
                                 }
                             }
                         }

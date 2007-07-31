@@ -53,14 +53,14 @@ public class RestServiceNode extends AbstractNode{
     
     private RestServiceNode(Project project, MetadataModel<RestServicesMetadata> model,
             RestServiceDescription desc, InstanceContent content) {
-        super(new RestServiceChildren(model, desc.getName()), new AbstractLookup(content));
+        super(new RestServiceChildren(project, model, desc.getName()), new AbstractLookup(content));
         this.project = project;
         this.serviceName = desc.getName();
         this.uriTemplate = desc.getUriTemplate();
         this.className = desc.getClassName();
         
         content.add(this);
-        content.add(getOpenCookie());
+        content.add(OpenCookieFactory.create(project, className));
     }
     
     public String getDisplayName() {
@@ -104,20 +104,4 @@ public class RestServiceNode extends AbstractNode{
             SystemAction.get(PropertiesAction.class),
         };
     }
-    
-    private OpenCookie getOpenCookie() {
-        OpenCookie oc = null;
-        
-        try {
-            FileObject source = SourceGroupSupport.getFileObjectFromClassName(className, project);
-            System.out.println("source = " + source);
-            DataObject d = DataObject.find(source);
-            oc = (OpenCookie)d.getCookie(OpenCookie.class);
-        } catch (Exception de) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
-        } 
-        
-        return oc;
-    }
-    
 }

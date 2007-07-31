@@ -47,8 +47,9 @@ public class SubResourceLocatorsNode extends AbstractNode { //implements Propert
     
     private String serviceName;
     
-    public SubResourceLocatorsNode(MetadataModel<RestServicesMetadata> model, String serviceName) {
-        super(new SubResourceLocatorsChildren(model, serviceName));
+    public SubResourceLocatorsNode(Project project, MetadataModel<RestServicesMetadata> model, 
+            String serviceName) {
+        super(new SubResourceLocatorsChildren(project, model, serviceName));
         this.serviceName = serviceName;
         setDisplayName(NbBundle.getBundle(SubResourceLocatorsNode.class).getString("LBL_SubResourceLocators"));
     }
