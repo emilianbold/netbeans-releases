@@ -227,6 +227,6 @@
 	<mapID target="cldc.svg_splashscreen" url="svg/svg_splashscreen.html"/>
 	<mapID target="cldc.svg_waitscreen" url="svg/svg_waitscreen.html"/>
 	<mapID target="cldc.svg_working" url="svg/svg_working.html"/>
-	<mapID target="cdc.gloss_svg" url="glossary/gloss_svg.html"/>
-	<mapID target="cdc.dialog_upgradeinformation" url="ui/dialog_upgradeinformation.html"/>
+	<mapID target="cldc.gloss_svg" url="glossary/gloss_svg.html"/>
+	<mapID target="org.netbeans.modules.mvd.ui.editors.UpgradePanel" url="ui/dialog_upgradeinformation.html"/>
 </map>
