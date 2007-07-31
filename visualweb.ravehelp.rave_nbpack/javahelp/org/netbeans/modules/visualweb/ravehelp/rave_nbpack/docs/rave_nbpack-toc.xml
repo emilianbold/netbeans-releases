@@ -136,15 +136,11 @@
 							<tocitem text="Page Alert Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_page_alert" />
 							<tocitem text="Page Fragment Box Component" target="projrave_ui_elements_palette_jsfstd_page_fragment" />
 							<tocitem text="Page Separator Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_page_separator" />
-							<tocitem text="Property Sheet Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_property_sheet">
-								<tocitem text="Property Sheet Section Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_property_sheet_section" />
-								<tocitem text="Property Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_property" />
-							</tocitem>
-							<tocitem text="Tab Set Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_tab_set">
-								<tocitem text="Tab Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_tab">
-									<tocitem text="Layout Panel Component Properties" target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_layoutPanel_props" />
-								</tocitem>
-							</tocitem>
+							<tocitem text="Property Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_property" />
+							<tocitem text="Property Sheet Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_property_sheet" />
+							<tocitem text="Property Sheet Section Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_property_sheet_section" />
+							<tocitem text="Tab Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_tab" />
+							<tocitem text="Tab Set Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_tab_set" />
 						</tocitem>
 						<tocitem text="Composite Components (JSF 1.2)">
 							<tocitem text="Add Remove List Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_add_remove_list" />

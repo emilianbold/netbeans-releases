@@ -654,4 +654,6 @@
 	<mapID target="webapps_process" url="web/about/webapps_process.html"/>
 	<mapID target="webapps_quickref" url="web/about/webapps_quickref.html"/>
 	<mapID target="webapps_techsupport" url="web/about/webapps_techsupport.html"/>
+	<mapID target="projrave_ui_elements_palette_wdstk-jsf1_2_progressbar" url="ui_elements/palette/wdstk-jsf1_2/progressbar.html"/>
+	<mapID target="projrave_ui_elements_palette_wdstk-jsf1_2_propsheets_progress_bar_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/progress_bar_props.html"/>
 </map>

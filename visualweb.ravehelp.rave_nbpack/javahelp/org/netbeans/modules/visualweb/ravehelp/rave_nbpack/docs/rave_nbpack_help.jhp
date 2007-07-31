@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/Users/james/VisWebCVS/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
+		<directory title="C:/!MySunProjects/Rave/cvstree/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
 			<directory title="a11y">
 				<directory title="CVS">
 					<file title="Entries"/>
@@ -218,6 +218,7 @@
 				<file title="code_clips_tab.gif"/>
 				<file title="code_process.gif"/>
 				<file title="color_btn.gif"/>
+				<file title="common_tasks_section_icon.gif"/>
 				<file title="complib_icon.gif"/>
 				<file title="componentlabelicon.gif"/>
 				<file title="config_files_icon.gif"/>
@@ -287,6 +288,7 @@
 				<file title="palette_win.gif"/>
 				<file title="palleteaddcomponent.gif"/>
 				<file title="print_nesting.gif"/>
+				<file title="progress_bar_icon.gif"/>
 				<file title="project_nav.gif"/>
 				<file title="properties_process.gif"/>
 				<file title="propertiesKey.gif"/>
@@ -780,6 +782,7 @@
 							<file title="page_alert_props.html"/>
 							<file title="page_separator_props.html"/>
 							<file title="password_field_props.html"/>
+							<file title="progress_bar_props.html"/>
 							<file title="property_props.html"/>
 							<file title="property_sheet_props.html"/>
 							<file title="property_sheet_section_props.html"/>
@@ -828,6 +831,7 @@
 						<file title="page_alert.html"/>
 						<file title="page_separator.html"/>
 						<file title="password_field.html"/>
+						<file title="progressbar.html"/>
 						<file title="property.html"/>
 						<file title="property_sheet.html"/>
 						<file title="property_sheet_graphic.html"/>

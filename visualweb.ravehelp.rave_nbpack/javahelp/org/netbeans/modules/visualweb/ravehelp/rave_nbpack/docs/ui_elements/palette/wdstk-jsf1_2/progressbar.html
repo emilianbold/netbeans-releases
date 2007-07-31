@@ -1,0 +1,72 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Progress Bar Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Progress Bar Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+<p>A Progress Bar component <img src="../../../images/progress_bar_icon.gif" alt="Progress Bar icon">&nbsp;provides a progress indicator for a task or job in progress.  </p>
+   <p>The Progress Bar component supports the following types of progress indicators, which you set in the <code>type</code> property in the Progress Bar Properties window:</p>
+   <ul>
+     <li>
+   <b>Determinate.</b> An animated horizontal bar used to show the percentage of the task that has been completed.
+     </li>
+     <li>
+ <b>Indeterminate.</b> An animated horizontal bar used to show only that a task is progressing when it is not possible to determine the task completion percentage.        
+     </li>
+     <li>
+    <b>Busy.</b> A smaller animation used where space is constrained to indicate activity for a task when it is not possible to determine the task completion percentage.</li>
+   </ul>
+   <p>By default, the Progress Bar is a determinate  progress bar with the <code>refreshRate</code> property set to 3000 milliseconds (3 seconds). A progress bar can include details such as a description and the status of the operation. </p>
+   <p>For a determinate progress bar, you would bind the <code> progress</code> property to data that updates as the task progresses and  resolves to an integer value that indicates the percentage of task completion. Optionally, you could bind the <code>status</code> attribute to data that updates as the task progresses reflects the current status of the task, such as a string indicating the percent completed or time remaining.</p>
+<p>The Progress Bar component also provides JavaScript functions you can call to control the  task on the server. For information on these functions, on the client side and Ajax functionality of the component, and for some examples of how to set up the component, choose Help &gt; Javadoc References &gt; Project Woodstock 4.1 Tag Library and navigate to the <code>webuijsf:progressBar</code>  description. </p>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="propsheets/progress_bar_props.html">Progress Bar Component Properties Window</a></dd>  
+  <dd><a href="../../../components/component_process.html">Working With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>     <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">
+          <param name="text" value="Delving Into Components"></object>
+      </dd>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Progress Bar Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
