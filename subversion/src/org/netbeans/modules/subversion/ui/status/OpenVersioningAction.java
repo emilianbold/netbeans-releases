@@ -21,11 +21,12 @@ package org.netbeans.modules.subversion.ui.status;
 
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.util.Utilities;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
+
+import javax.swing.*;
 
 /**
  * Open the Subversion view. It focuses recently opened
@@ -38,8 +39,8 @@ import org.netbeans.modules.subversion.client.SvnClientFactory;
 public class OpenVersioningAction extends ShowAllChangesAction {
 
     public OpenVersioningAction() {
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-        setIcon(null);
+        putValue("noIconInMenu", Boolean.FALSE); // NOI18N
+        setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/subversion/resources/icons/versioning-view.png"))); // NOI18N
     }
 
     public String getName() {
