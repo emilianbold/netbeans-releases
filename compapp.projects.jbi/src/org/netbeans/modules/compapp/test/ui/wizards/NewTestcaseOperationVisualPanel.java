@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.compapp.test.ui.wizards;
 
-import org.netbeans.modules.compapp.test.wsdl.WsdlSupport;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -43,11 +42,10 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
     
     private javax.swing.JScrollPane mScrollPanel;
     private javax.swing.JTree mTree;
-    private NewTestcaseOperationWizardPanel mPanel;
-    
+    private NewTestcaseOperationWizardPanel mPanel;    
     private WSDLModel wsdlModel;
     
-    /** Creates new form NewTestcaseOperationVisualPanel_1 */
+    /** Creates new form NewTestcaseOperationVisualPanel */
     public NewTestcaseOperationVisualPanel(NewTestcaseOperationWizardPanel panel) {
         mPanel = panel;
         initComponents();
@@ -59,11 +57,8 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         mTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
             public void valueChanged(TreeSelectionEvent e) {
                 BindingOperation bindingOp = getSelectedBindingOperation();
-                if (bindingOp == null) {
-                    jTextFieldSelectedOperation.setText("");  // NOI18N
-                } else {
-                    jTextFieldSelectedOperation.setText(getOperationSignature(bindingOp));
-                }
+                jTextFieldSelectedOperation.setText(bindingOp == null ? 
+                    "" : getOperationSignature(bindingOp)); // NOI18N
                 mPanel.fireChangeEvent(); // Notify that the panel changed
             }
         });
@@ -91,6 +86,7 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         });
         
         mScrollPanel.setViewportView(mTree);
+        jLabelOperations.setLabelFor(mTree);
         
         org.jdesktop.layout.GroupLayout jPanel1Layout = (org.jdesktop.layout.GroupLayout) jPanel1.getLayout();
         jPanel1Layout.setHorizontalGroup(
@@ -171,7 +167,7 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
         jPanel1 = new javax.swing.JPanel();
         jLabelSelectedOperation = new javax.swing.JLabel();
         jTextFieldSelectedOperation = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
+        jLabelOperations = new javax.swing.JLabel();
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -189,7 +185,7 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
 
         jTextFieldSelectedOperation.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Binding &Operations:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelOperations, "Binding &Operations:");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -198,16 +194,16 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
             .add(layout.createSequentialGroup()
                 .add(jLabelSelectedOperation)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jTextFieldSelectedOperation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE))
+                .add(jTextFieldSelectedOperation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
-                .add(jLabel1)
+                .add(jLabelOperations)
                 .addContainerGap())
             .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(jLabel1)
+                .add(jLabelOperations)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -216,17 +212,16 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
                     .add(jTextFieldSelectedOperation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
-        jLabelSelectedOperation.getAccessibleContext().setAccessibleName("&Selected Operation: ");
         jLabelSelectedOperation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_SELECTED_OPERATION_LABEL")); // NOI18N
-        jLabel1.getAccessibleContext().setAccessibleName("Binding Operations:");
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_BINDING_OPERATIONS")); // NOI18N
+        jLabelOperations.getAccessibleContext().setAccessibleName("Binding Operations:");
+        jLabelOperations.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_BINDING_OPERATIONS")); // NOI18N
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewTestcaseOperationVisualPanel.class, "ACS_NewTestcaseOperationVisualPanel_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabelOperations;
     private javax.swing.JLabel jLabelSelectedOperation;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JTextField jTextFieldSelectedOperation;
