@@ -25,13 +25,18 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
+import org.netbeans.modules.j2ee.ejbcore.naming.EJBNameOptions;
+import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePanel, ChangeListener {
     
     private SessionEJBWizardPanel wizardPanel;
+    private final EJBNameOptions ejbNames;
     //TODO: RETOUCHE
 //    private boolean isWaitingForScan = false;
     
@@ -39,6 +44,10 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
 
     private WizardDescriptor wizardDescriptor;
 
+    public SessionEJBWizardDescriptor() {
+        this.ejbNames = new EJBNameOptions();
+    }
+    
     public void addChangeListener(ChangeListener changeListener) {
         changeListeners.add(changeListener);
     }
@@ -62,10 +71,34 @@ public class SessionEJBWizardDescriptor implements WizardDescriptor.FinishablePa
         if (wizardDescriptor == null) {
             return true;
         }
-        boolean isLocalOrRemote = (wizardPanel.isLocal() || wizardPanel.isRemote());
-        if (!isLocalOrRemote) {
+        boolean isLocal = wizardPanel.isLocal();
+        boolean isRemote = wizardPanel.isRemote();
+        if (!isLocal && !isRemote) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_RemoteOrLocal_MustBeSelected")); //NOI18N
             return false;
+        }
+        
+        FileObject targetFolder = (FileObject) wizardDescriptor.getProperty(MultiTargetChooserPanel.TARGET_FOLDER);
+        if (targetFolder != null) {
+            String targetName = (String) wizardDescriptor.getProperty(MultiTargetChooserPanel.TARGET_NAME);
+            List<String> proposedNames = new ArrayList<String>();
+            proposedNames.add(ejbNames.getSessionEjbClassPrefix() + targetName + ejbNames.getSessionEjbClassSuffix());
+            if (isLocal) {
+                proposedNames.add(ejbNames.getSessionLocalPrefix() + targetName + ejbNames.getSessionLocalSuffix());
+                proposedNames.add(ejbNames.getSessionLocalHomePrefix() + targetName + ejbNames.getSessionLocalHomeSuffix());
+            } 
+            if (isRemote) {
+                proposedNames.add(ejbNames.getSessionRemotePrefix() + targetName + ejbNames.getSessionRemoteSuffix());
+                proposedNames.add(ejbNames.getSessionRemoteHomePrefix() + targetName + ejbNames.getSessionRemoteHomeSuffix());
+            }
+            for (String name : proposedNames) {
+                if (targetFolder.getFileObject(name + ".java") != null) { // NOI18N
+                    wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                            NbBundle.getMessage(SessionEJBWizardDescriptor.class,"ERR_FileAlreadyExists", name + ".java")); //NOI18N
+                    return false;
+                }
+            }
+
         }
         
         //TODO: RETOUCHE waitScanFinished

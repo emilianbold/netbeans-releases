@@ -24,15 +24,14 @@ import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.EntityGenerator;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -64,11 +63,8 @@ public final class EntityEJBWizard implements WizardDescriptor.InstantiatingIter
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         ejbPanel = new EntityEJBWizardDescriptor();
-        WizardDescriptor.Panel wizardPanel = JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true);
+        WizardDescriptor.Panel wizardPanel = new MultiTargetChooserPanel(project,sourceGroups, ejbPanel, true);
 
-        JComponent jComponent = (JComponent) wizardPanel.getComponent();
-        Util.changeLabelInComponent(jComponent, NbBundle.getMessage(EntityEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(EntityEJBWizard.class, "LBL_EJB_Name") );
-        Util.hideLabelAndLabelFor(jComponent, NbBundle.getMessage(EntityEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
         panels = new WizardDescriptor.Panel[] {wizardPanel};
         Utils.mergeSteps(wiz, panels, null);
 

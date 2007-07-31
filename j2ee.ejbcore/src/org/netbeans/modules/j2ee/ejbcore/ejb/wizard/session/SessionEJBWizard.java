@@ -24,17 +24,16 @@ import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.SessionGenerator;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -68,14 +67,8 @@ public final class SessionEJBWizard implements WizardDescriptor.InstantiatingIte
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         ejbPanel = new SessionEJBWizardDescriptor();
-        WizardDescriptor.Panel wizardDescriptorPanel = JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true);
+        WizardDescriptor.Panel wizardDescriptorPanel = new MultiTargetChooserPanel(project, sourceGroups, ejbPanel, true);
 
-    JComponent jComponent = (JComponent) wizardDescriptorPanel.getComponent();
-        Util.changeLabelInComponent(jComponent,
-                NbBundle.getMessage(SessionEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"),
-                NbBundle.getMessage(SessionEJBWizard.class, "LBL_EJB_Name"));
-        Util.hideLabelAndLabelFor(jComponent,
-                NbBundle.getMessage(SessionEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
         panels = new WizardDescriptor.Panel[] {wizardDescriptorPanel};
         Utils.mergeSteps(wiz, panels, null);
     }

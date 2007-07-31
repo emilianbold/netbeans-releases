@@ -24,18 +24,17 @@ import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.MessageGenerator;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.DelegatingWizardDescriptorPanel;
-import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
+import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.MultiTargetChooserPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -67,10 +66,7 @@ public final class MessageEJBWizard implements WizardDescriptor.InstantiatingIte
         Project project = Templates.getProject(wiz);
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         ejbPanel = new MessageEJBWizardPanel(wiz);
-        WizardDescriptor.Panel wizardPanel = new ValidatingPanel(JavaTemplates.createPackageChooser(project,sourceGroups, ejbPanel, true));
-        JComponent jComponent = (JComponent) wizardPanel.getComponent ();
-        Util.changeLabelInComponent(jComponent, NbBundle.getMessage(MessageEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(MessageEJBWizard.class, "LBL_EJB_Name") );
-        Util.hideLabelAndLabelFor(jComponent, NbBundle.getMessage(MessageEJBWizard.class, "LBL_JavaTargetChooserPanelGUI_CreatedFile_Label"));
+        WizardDescriptor.Panel wizardPanel = new ValidatingPanel(new MultiTargetChooserPanel(project,sourceGroups, ejbPanel, true));
         panels = new WizardDescriptor.Panel[] {wizardPanel};
         Utils.mergeSteps(wiz, panels, SESSION_STEPS);
     }
