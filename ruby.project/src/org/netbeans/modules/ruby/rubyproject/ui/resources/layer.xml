@@ -199,9 +199,12 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="org-netbeans-modules-ruby-rubyproject-RubyOptionsAdvancedPanel.instance"/>
+    <folder name="org.netbeans.modules.ruby">
+        <folder name="options">
+            <file name="Platform.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.rubyproject.RubyOptionsAdvancedPanel"/>
+                <attr name="position" intvalue="100"/>
+            </file>
         </folder>
     </folder>
     <folder name="RubyOptionsDialog">
@@ -209,7 +212,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="position" intvalue="100"/>
         </file>
     </folder>
-
     
     <folder name="Windows2">
         <folder name="Components">

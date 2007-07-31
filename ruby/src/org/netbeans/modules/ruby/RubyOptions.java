@@ -2,12 +2,10 @@ package org.netbeans.modules.ruby;
 
 class RubyOptions {
     // TODO: completion parentheses
-    // Formatting: tabs, hanging indent, indent when's
-    // What else?
+    // Formatting: tabs, hanging indent, indent when's, right margin
     // RDoc "#" insertion
     // Mark occurrences, including keep marks
     // Tasklist
-    // Rails: Execution F6 versus testing
     
     
     // Formatting:
@@ -22,6 +20,7 @@ class RubyOptions {
     // NO space between methods and parens, SPACE between keywords and parens!
 
     // Make comment-action put comments at the left margin or at the indented position
+    // Comment wrapping and reindentation
     
 }
 
