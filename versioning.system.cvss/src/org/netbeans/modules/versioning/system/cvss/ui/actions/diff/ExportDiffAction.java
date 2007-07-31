@@ -207,12 +207,12 @@ public class ExportDiffAction extends AbstractSystemAction {
             // prepare setups and common parent - root
 
             File root;
-            Collection setups;
+            List<Setup> setups;
 
             TopComponent activated = TopComponent.getRegistry().getActivated();
             if (activated instanceof DiffSetupSource) {
-                setups = ((DiffSetupSource) activated).getSetups();
-                List setupFiles = new ArrayList(setups.size());
+                setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
+                List<File> setupFiles = new ArrayList<File>(setups.size());
                 for (Iterator i = setups.iterator(); i.hasNext();) {
                     Setup setup = (Setup) i.next();
                     setupFiles.add(setup.getBaseFile()); 
@@ -222,7 +222,7 @@ public class ExportDiffAction extends AbstractSystemAction {
                 Context context = getContext(nodes);
                 File [] files = DiffExecutor.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE);
                 root = getCommonParent(context.getRootFiles());
-                setups = new ArrayList(files.length);
+                setups = new ArrayList<Setup>(files.length);
                 for (int i = 0; i < files.length; i++) {
                     File file = files[i];
                     Setup setup = new Setup(file, Setup.DIFFTYPE_LOCAL);
@@ -248,6 +248,11 @@ public class ExportDiffAction extends AbstractSystemAction {
             out.write(("# Above lines and this line are ignored by the patching process." + sep).getBytes("utf8"));  // NOI18N
 
 
+            Collections.sort(setups, new Comparator<Setup>() {
+                public int compare(Setup o1, Setup o2) {
+                    return o1.getBaseFile().compareTo(o2.getBaseFile());
+                }
+            });
             Iterator it = setups.iterator();
             int i = 0;
             while (it.hasNext()) {

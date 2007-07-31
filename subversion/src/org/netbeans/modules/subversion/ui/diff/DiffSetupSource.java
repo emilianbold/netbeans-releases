@@ -38,7 +38,7 @@ public interface DiffSetupSource {
      *
      * @return read-only {@link Setup}s copy never <code>null</code>
      */
-    Collection getSetups();
+    Collection<Setup> getSetups();
 
     /**
      * Prefered display name or null.

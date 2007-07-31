@@ -50,7 +50,6 @@ import java.awt.event.ActionEvent;
 import java.awt.*;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -210,11 +209,11 @@ public class ExportDiffAction extends ContextAction {
             // prepare setups and common parent - root
 
             File root;
-            Collection<Setup> setups;
+            List<Setup> setups;
 
             TopComponent activated = TopComponent.getRegistry().getActivated();
             if (activated instanceof DiffSetupSource) {
-                setups = ((DiffSetupSource) activated).getSetups();
+                setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
                 List<File> setupFiles = new ArrayList<File>(setups.size());
                 for (Iterator i = setups.iterator(); i.hasNext();) {
                     Setup setup = (Setup) i.next();
@@ -251,6 +250,11 @@ public class ExportDiffAction extends ContextAction {
             out.write(("# Above lines and this line are ignored by the patching process." + sep).getBytes("utf8"));  // NOI18N
 
 
+            Collections.sort(setups, new Comparator<Setup>() {
+                public int compare(Setup o1, Setup o2) {
+                    return o1.getBaseFile().compareTo(o2.getBaseFile());
+                }
+            });
             Iterator<Setup> it = setups.iterator();
             int i = 0;
             while (it.hasNext()) {
