@@ -104,7 +104,7 @@ public final class UseDatabaseGenerator {
         }
 
         J2eeModule module = j2eeModuleProvider.getJ2eeModule();
-        if (isWebModule(module)) {
+        if (isWebOrAppClientModule(module)) {
             bindDataSourceReference(j2eeModuleProvider, datasourceReferenceName, datasource);
         }
         else if (isEjbModule(module)) {
@@ -149,8 +149,9 @@ public final class UseDatabaseGenerator {
         j2eeModuleProvider.getConfigSupport().bindDatasourceReferenceForEjb(ejbName[0], ejbType[0], dsRefName, dsJndiName);
     }
     
-    private boolean isWebModule(J2eeModule module) {
-        return module.getModuleType().equals(J2eeModule.WAR);
+    private boolean isWebOrAppClientModule(J2eeModule module) {
+        Object moduleType = module.getModuleType();
+        return J2eeModule.WAR.equals(moduleType) || J2eeModule.CLIENT.equals(moduleType);
     }
     
     private boolean isEjbModule(J2eeModule module) {
