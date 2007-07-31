@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.wsdl.ui.wizard.NewWSDLWizardIterator"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/wsdl/ui/wizard/newWSDL.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl16.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/wsdl/resources/wsdl_16.png"/>
                 <attr name="templateCategory" stringvalue="wsdl"/>
             </file>
             <file name="WSDL_import.wsdl" url="nbres:/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/WSDL_import.template">
@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateCategory" stringvalue="web-service-clients"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClient.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.core.client.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/WebServiceClientTemplate.png"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/client/resources/ws_client_16.png"/>
             </file>
             <file name="WebService.java" url="nbres:/org/netbeans/modules/websvc/core/dev/resources/WebService.template">         
                 <attr name="template" boolvalue="true"/>
