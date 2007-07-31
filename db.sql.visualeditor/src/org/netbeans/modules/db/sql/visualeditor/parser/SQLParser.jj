@@ -1,8 +1,7 @@
 // Build and test outside Rave with:
-//     % javacc SQLParser.jj
-//     % javac SQLParser.java
-//     % cd $RAVE/queryeditor/src
-//     % java org.netbeans.modules.db.sql.visualeditor.parser.SQLParser < org/netbeans/modules/db/sql/visualeditor/parser/test
+//     % java -classpath .../db/visualsqleditor/external/javacc.jar org.javacc.parser.Main -OUTPUT_DIRECTORY:. [-debug_parser] SQLParser.jj
+//     % javac -classpath .:.../nbbuild/netbeans/ide8/modules/org-netbeans-modules-db-sql-visualeditor.jar SQLParser.java
+//     % java -classpath .:/Users/jdavidso/rave/cvs/dev/nbbuild/netbeans/ide8/modules/org-netbeans-modules-db-sql-visualeditor.jar SQLParser < test
 
 options {
     // DEBUG_PARSER = true;
@@ -78,7 +77,7 @@ TOKEN : /* Reserved Words */
 
 TOKEN : /* Operators */
 {
-    < RELOP: "=" | "!=" | "<" | "<=" | ">" | ">=" | "<>" | " LIKE " | " IN " | "BETWEEN" >
+    < RELOP: "=" | "!=" | "<" | "<=" | ">" | ">=" | "<>" | " LIKE " | " IN " >
 }
 
 
