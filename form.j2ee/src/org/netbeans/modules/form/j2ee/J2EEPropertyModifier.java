@@ -26,6 +26,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.form.ComponentChooserEditor;
 import org.netbeans.modules.form.FormEditor;
@@ -63,7 +65,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
                 normalProps.add(new PUProperty(metacomp));
                 expertProps.add(new FlushModeProperty(metacomp));
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
             return true;
         } else if (className.equals("javax.persistence.Query")) { // NOI18N
@@ -76,7 +78,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
                 expertProps.add(new FirstResultProperty(metacomp));
                 expertProps.add(new MaxResultsProperty(metacomp));
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
             return true;
         } else if (className.equals("java.util.List")) { // NOI18N
@@ -88,7 +90,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
                 prefProps.add(new QueryBeanProperty(metacomp, true));
                 expertProps.add(new ObservableProperty(metacomp));
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
             return true;
         }
@@ -101,7 +103,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
                 try {
                     prefProps.add(new QueryBeanProperty(metacomp, false));
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
                 return true;
             }
@@ -125,7 +127,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
             try {
                 setValue("pu"); // "default value" // NOI18N
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
             setShortDescription(NbBundle.getMessage(PUProperty.class, "HINT_PersistenceUnitName")); // NOI18N
         }
@@ -177,7 +179,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
                     try {
                         m = FlushModeProperty.class.getMethod("setFlushMode", Object.class); // NOI18N
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                     }
                     return m;
                 }
@@ -365,7 +367,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
             try {
                 setValue(""); // NOI18N "default value"
             } catch (Exception ex) {
-                ex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
             setShortDescription(NbBundle.getMessage(QueryProperty.class, "HINT_QueryProperty")); // NOI18N
         }

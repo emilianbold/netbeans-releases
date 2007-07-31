@@ -20,6 +20,8 @@
 package org.netbeans.modules.form.j2ee;
 
 import java.awt.datatransfer.Transferable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.modules.form.FormModel;
@@ -57,7 +59,7 @@ public class J2EEComponentDropProvider implements NewComponentDropProvider {
             }
         } catch (Exception ex) {
             // should not happen
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return null;
     }

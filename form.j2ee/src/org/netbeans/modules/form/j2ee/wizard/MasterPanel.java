@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.*;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -364,7 +366,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
                 rs.close();
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }//GEN-LAST:event_tableComboActionPerformed
 
@@ -506,7 +508,7 @@ public class MasterPanel implements WizardDescriptor.Panel {
                 valid = (name.length() != 0);
                 wizard.putProperty("WizardPanel_errorMessage", valid ? null : NbBundle.getMessage(getClass(), "MSG_MasterDefaultPackage")); // NOI18N
             } catch (IOException ioex) {
-                ioex.printStackTrace();
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);
             }
         }
         connectionCombo.setEnabled(valid);

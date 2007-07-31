@@ -29,6 +29,8 @@ import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -168,7 +170,7 @@ public class J2EEUtils {
         try {
             persistenceXML = J2EEUtils.getPersistenceXML(project, false);
         } catch (InvalidPersistenceXmlException ipxex) {
-            ipxex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ipxex.getMessage(), ipxex);
             return new String[0];
         }
         if (persistenceXML == null) return new String[0];
@@ -176,7 +178,7 @@ public class J2EEUtils {
         try {
              persistence = PersistenceMetadata.getDefault().getRoot(persistenceXML);
         } catch (IOException ioex) {
-            ioex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ioex.getMessage(), ioex);
             return new String[0];
         }
         PersistenceUnit[] unit = persistence.getPersistenceUnit();
@@ -199,7 +201,7 @@ public class J2EEUtils {
             try {
                 ProviderUtil.addManagedClass(unit, entityClass, ProviderUtil.getPUDataObject(project));
             } catch (InvalidPersistenceXmlException ipxex) {
-                ipxex.printStackTrace();
+                Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ipxex.getMessage(), ipxex);
             }
         }
     }
@@ -222,7 +224,7 @@ public class J2EEUtils {
                 return ClassPathUtils.updateProject(fileInProject, cs);
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return false;
     }
@@ -257,7 +259,7 @@ public class J2EEUtils {
                 return ClassPathUtils.updateProject(fileInProject, cs);
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return false;
     }
@@ -299,7 +301,7 @@ public class J2EEUtils {
                         return metacomp;
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             }
         }
@@ -353,9 +355,9 @@ public class J2EEUtils {
                 }
             }).get();
         } catch (InterruptedException iex) {
-            iex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, iex.getMessage(), iex);
         } catch (ExecutionException eex) {
-            eex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, eex.getMessage(), eex);
         }
         return entity;
     }
@@ -393,7 +395,7 @@ public class J2EEUtils {
             }
             return result;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return null;
     }
@@ -501,7 +503,7 @@ public class J2EEUtils {
                 break;
             }
         } catch (InterruptedException iex) {
-            iex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, iex.getMessage(), iex);
         }
     }
 
@@ -558,7 +560,7 @@ public class J2EEUtils {
             hasPK = rs.next();
             rs.close();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return hasPK;
     }
@@ -581,7 +583,7 @@ public class J2EEUtils {
             }
             rs.close();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return tables;
     }
@@ -822,7 +824,7 @@ public class J2EEUtils {
 
             }).commit();
         } catch (IOException ioex) {
-            ioex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ioex.getMessage(), ioex);
         }
     }
 
@@ -889,7 +891,7 @@ public class J2EEUtils {
                 }
             }, true);
         } catch (IOException ioex) {
-            ioex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ioex.getMessage(), ioex);
         }
         return types;
     }
@@ -973,9 +975,9 @@ public class J2EEUtils {
                 }
             }).get();
         } catch (InterruptedException iex) {
-            iex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, iex.getMessage(), iex);
         } catch (ExecutionException eex) {
-            eex.printStackTrace();
+            Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, eex.getMessage(), eex);
         }
         return properties;
     }

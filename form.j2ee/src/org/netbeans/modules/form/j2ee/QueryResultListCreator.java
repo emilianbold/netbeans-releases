@@ -20,6 +20,8 @@ package org.netbeans.modules.form.j2ee;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.form.CreationDescriptor;
 import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.codestructure.CodeExpression;
@@ -114,7 +116,7 @@ class QueryResultListCreator implements CreationDescriptor.Creator {
                 try {
                     observableValue = props[i].getRealValue();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
             } else {
                 assert false;

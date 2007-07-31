@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
@@ -277,7 +279,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                                     OpenCookie cookie = dob.getCookie(OpenCookie.class);
                                     cookie.open();
                                 } catch (IOException ioex) {
-                                    ioex.printStackTrace();
+                                    Logger.getLogger(getClass().getName()).log(Level.INFO, ioex.getMessage(), ioex);
                                 }
                                 break;
                             } // else something went wrong - don't attempt to instantiate
@@ -323,7 +325,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             try {
                 dob = DataObject.find(javaFile);
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace(); // should not happen
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex); // should not happen
             }
             FileObject formFile = FileUtil.findBrother(dob.getPrimaryFile(), "form"); // NOI18N
 
@@ -360,7 +362,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
 
             generator.generate();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         
         return resultSet;
@@ -458,7 +460,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
 
             return result;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return null;
     }
@@ -540,9 +542,9 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
                 }
             }).get();
         } catch (InterruptedException iex) {
-            iex.printStackTrace();
+            Logger.getLogger(MasterDetailWizard.class.getName()).log(Level.INFO, iex.getMessage(), iex);
         } catch (ExecutionException eex) {
-            eex.printStackTrace();
+            Logger.getLogger(MasterDetailWizard.class.getName()).log(Level.INFO, eex.getMessage(), eex);
         }
         return properties;
     }
@@ -688,7 +690,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
 
                 }).commit();
             } catch (IOException ioex) {
-                ioex.printStackTrace();
+                Logger.getLogger(MasterDetailWizard.class.getName()).log(Level.INFO, ioex.getMessage(), ioex);
             }
         }
 
@@ -803,7 +805,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
 
             }).commit();
         } catch (IOException ioex) {
-            ioex.printStackTrace();
+            Logger.getLogger(MasterDetailWizard.class.getName()).log(Level.INFO, ioex.getMessage(), ioex);
         }
     }
 

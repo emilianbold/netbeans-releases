@@ -23,6 +23,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.*;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -110,7 +112,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
             tableCombo.setModel(model);
             rs.close();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         boolean empty = (tableCombo.getModel().getSize() == 0);
         if (empty) {
@@ -456,7 +458,7 @@ public class DetailPanel implements WizardDescriptor.Panel {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }
 

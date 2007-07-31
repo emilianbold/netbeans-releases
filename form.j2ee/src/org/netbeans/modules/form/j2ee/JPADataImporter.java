@@ -22,6 +22,8 @@ import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.sql.Connection;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -223,12 +225,12 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
                                 RADComponent queryBean = DBTableDrop.createQueryBean(formModel, entityManager, info[0]);
                                 resultList[0] = DBTableDrop.createResultListBean(formModel, queryBean, info);
                             } catch (Exception ex) {
-                                ex.printStackTrace();
+                                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                             }
                         }
                     });
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
                 }
                 return resultList[0];
             }
