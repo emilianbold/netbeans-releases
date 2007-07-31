@@ -60,7 +60,7 @@ public class MultiPartHandler {
   private static final int DEFAULT_MAX_UPLOAD_SIZE = 1024 * 1024;  // 1Mb
 
   protected Hashtable<String,Vector<String>> formFields = new Hashtable<String,Vector<String>>();
-  protected Hashtable<String,OneUpload> uploadFiles = new Hashtable<String,OneUpload>();
+  Hashtable<String,OneUpload> uploadFiles = new Hashtable<String,OneUpload>();
 
   /** servlet request */
   private RequestFacade req;
