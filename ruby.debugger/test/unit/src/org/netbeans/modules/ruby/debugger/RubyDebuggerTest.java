@@ -24,7 +24,6 @@ import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -45,8 +44,6 @@ public final class RubyDebuggerTest extends TestBase {
         super.setUp();
         watchStepping = false;
         DebuggerPreferences.getInstance().setVerboseDebugger(VERBOSE);
-        File rubyExecutable = TestBase.getFile("ruby.executable", true);
-        RubyInstallation.getInstance().setRuby(rubyExecutable.getAbsolutePath());
     }
     
     public void testBasics() throws Exception {

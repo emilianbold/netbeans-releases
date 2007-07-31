@@ -241,10 +241,6 @@ public class RubyInstallation {
     }
     
     private String askForRuby(final Set<String> rubies) {
-        // used by tests
-        if (Boolean.getBoolean("org.netbeans.api.ruby.platform.RubyInstallation.force.jruby")) { // NOI18N
-            return "jruby"; // NOI18N
-        }
         // Ruby found in the path -- offer to use it
         String jrubyLabel = NbBundle.getMessage(RubyInstallation.class, "JRuby");
         String nativeRubyLabel = NbBundle.getMessage(RubyInstallation.class, "NativeRuby") + " "; 
@@ -929,7 +925,7 @@ public class RubyInstallation {
      * force a recomputation of the installed classpath roots */
     public void recomputeRoots() {
         this.gemFiles = null;
-        this.cp = null;
+        RubyInstallation.cp = null;
 
         // Let RepositoryUpdater and friends know where they can root preindexing
         // This should be done in a cleaner way.

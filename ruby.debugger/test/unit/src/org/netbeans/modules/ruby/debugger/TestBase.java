@@ -67,7 +67,7 @@ public abstract class TestBase extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.setProperty("org.netbeans.api.ruby.platform.RubyInstallation.force.jruby", "true");
+        System.setProperty("ruby.interpreter", TestBase.getFile("ruby.executable", true).getAbsolutePath());
         doCleanUp();
     }
     
