@@ -168,7 +168,9 @@ public final class FileUtils {
                 try {
                     output.close();
                 } catch (IOException e) {
-                    ErrorManager.notifyDebug("Could not close stream", e);
+                    ErrorManager.notifyDebug(ResourceUtils.getString(
+                            FileUtils.class, ERROR_CLOSE_STREAM_KEY),
+                            e);
                 }
             }
         }
@@ -259,7 +261,8 @@ public final class FileUtils {
                 size = file.length();
             } catch (SecurityException e) {
                 ErrorManager.notifyError(
-                        "Something very unexpected - a security exception",
+                        ResourceUtils.getString(FileUtils.class, 
+                        ERROR_FILE_SECURITY_EXCEPTION_KEY, file),
                         e);
             }
         }
@@ -274,8 +277,8 @@ public final class FileUtils {
         try {
             freeSpace = SystemUtils.getNativeUtils().getFreeSpace(file);
         } catch (NativeException e) {
-            ErrorManager.notifyError(
-                    "Cannot get free disk space amount",
+            ErrorManager.notifyError(ResourceUtils.getString(
+                    FileUtils.class, ERROR_CANT_GET_FREE_SPACE_KEY, file),
                     e);
         }
         
@@ -313,9 +316,10 @@ public final class FileUtils {
     public static byte[] getMd5Bytes(
             final File file) throws IOException {
         try {
-            return getDigestBytes(file, "MD5");
+            return getDigestBytes(file, MD5_DIGEST_NAME);
         } catch (NoSuchAlgorithmException e) {
-            ErrorManager.notifyCritical("Holy crap, this jvm does not support MD5", e);
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    FileUtils.class, ERROR_MD5_NOT_SUPPORTED_KEY), e);
         }
         
         return null;
@@ -329,9 +333,10 @@ public final class FileUtils {
     public static byte[] getSha1Bytes(
             final File file) throws IOException {
         try {
-            return getDigestBytes(file, "SHA1");
+            return getDigestBytes(file, SHA1_DIGEST_NAME);
         } catch (NoSuchAlgorithmException e) {
-            ErrorManager.notifyCritical("Holy crap, this jvm does not support SHA1", e);
+            ErrorManager.notifyCritical(ResourceUtils.getString(
+                    FileUtils.class, ERROR_SHA1_NOT_SUPPORTED_KEY), e);
         }
         
         return null;
@@ -402,7 +407,8 @@ public final class FileUtils {
                 return true;
             } catch (IOException e) {
                 ErrorManager.notifyDebug(
-                        "The supplied file is not a jar archive",
+                        ResourceUtils.getString(FileUtils.class,
+                        ERROR_NOT_JAR_FILE_KEY, file),
                         e);
                 return false;
             } finally {
@@ -411,7 +417,9 @@ public final class FileUtils {
                         jar.close();
                     } catch (IOException e) {
                         ErrorManager.notifyDebug(
-                                "Cannot close the jar file",
+                                ResourceUtils.getString(
+                                FileUtils.class, ERROR_CANT_CLOSE_JAR_KEY,
+                                jar.getName()),
                                 e);
                     }
                 }
@@ -476,13 +484,13 @@ public final class FileUtils {
     }
     
     public static File getRoot(
-            final File file, 
+            final File file,
             final List<File> roots) {
         File result = null;
         for (File root: roots) {
             if (isParent(root, file)) {
-                if(result == null || 
-                        (result.getAbsolutePath().length() < 
+                if(result == null ||
+                        (result.getAbsolutePath().length() <
                         root.getAbsolutePath().length())) {
                     result = root;
                 }
@@ -813,7 +821,8 @@ public final class FileUtils {
             final Progress progress) throws IOException {
         final FilesList list = new FilesList();
         
-        progress.setDetail("Moving " + source + " to " + target);
+        progress.setDetail(StringUtils.format(
+                MESSAGE_MOVING, source, target));
         if (!source.renameTo(target)) {
             final CompositeProgress composite = new CompositeProgress();
             final Progress copyProgress = new Progress();
@@ -953,7 +962,8 @@ public final class FileUtils {
             try {
                 jar.close();
             } catch (IOException e) {
-                ErrorManager.notifyDebug("Cannot close jar", e);
+                ErrorManager.notifyDebug(ResourceUtils.getString(
+                        FileUtils.class, ERROR_CANT_CLOSE_JAR_KEY, jar.getName()), e);
             }
         }
     }
@@ -962,7 +972,7 @@ public final class FileUtils {
     public static File pack(
             final File source) throws IOException {
         final File target = new File(source.getParentFile(),
-                source.getName() + ".pack.gz");
+                source.getName() + PACK_GZ_SUFFIX);
         
         SystemUtils.executeCommand(
                 SystemUtils.getPacker().getAbsolutePath(),
@@ -976,7 +986,7 @@ public final class FileUtils {
             final File source) throws IOException {
         final String name = source.getName();
         final File target = new File(source.getParentFile(),
-                name.substring(0, name.length() - ".pack.gz".length()));
+                name.substring(0, name.length() - PACK_GZ_SUFFIX.length()));
         
         SystemUtils.executeCommand(
                 SystemUtils.getUnpacker().getAbsolutePath(),
@@ -996,14 +1006,16 @@ public final class FileUtils {
         }
         
         if (exists(file) && file.isFile()) {
-            throw new IOException("Cannot create directory " + file + " it is an existing file");
+            throw new IOException(ResourceUtils.getString(FileUtils.class,
+                    ERROR_CANT_CREATE_DIR_EXIST_FILE_KEY, file));
         }
         
         if (!exists(file)) {
             if (file.mkdir()) {
                 list.add(file);
             } else {
-                throw new IOException("Cannot create directory " + file);
+                throw new IOException(ResourceUtils.getString(FileUtils.class,
+                        ERROR_CANT_CREATE_DIR_KEY, file));
             }
         }
         
@@ -1151,26 +1163,22 @@ public final class FileUtils {
             final long total) throws IOException {
         long count = start;
         
-        if (SystemUtils.isDeletingAllowed(file)) {
-            final String type;
-            
-            if (file.isDirectory()) {
-                if (recurse) {
+        if (SystemUtils.isDeletingAllowed(file)) {            
+            final boolean isDir = file.isDirectory();
+            final String type = (isDir) ? "directory" : "file";
+            if (isDir && recurse) {
                     final File[] children = file.listFiles();
                     if (children != null) {
                         for (File child: children) {
                             count = deleteFile(child, true, progress, count, total);
                         }
-                    }
-                }
-                
-                type = "directory";
-            } else {
-                type = "file";
+                    }                
             }
             
             LogManager.log("deleting " + type + ": " + file);
-            progress.setDetail("Deleting " + type + ": " + file);
+            
+            progress.setDetail(StringUtils.format(
+                    isDir ? MESSAGE_DELETE_DIR : MESSAGE_DELETE_FILE, file));
             
             if (!exists(file)) {
                 LogManager.log("    ... " + type + " does not exist");
@@ -1205,14 +1213,16 @@ public final class FileUtils {
         
         if (source.isFile()) {
             LogManager.log("copying file: " + source + " to: " + target);
-            progress.setDetail("Copying file: " + source + " to: " + target);
+            progress.setDetail(StringUtils.format(MESSAGE_COPY_FILE, source,target));
             
             if (!source.canRead()) {
-                throw new IOException("source is not readable");
+                throw new IOException(ResourceUtils.getString(
+                        FileUtils.class,  ERROR_SOURCE_NOT_READABLE_KEY, source));
             }
             
             if (exists(target) && !target.isFile()) {
-                throw new IOException("destination is not a file");
+                throw new IOException(ResourceUtils.getString(FileUtils.class,
+                        ERROR_DEST_NOT_FILE_KEY, target));
             }
             
             File parent = target.getParentFile();
@@ -1221,11 +1231,13 @@ public final class FileUtils {
             }
             
             if (!exists(target) && !target.createNewFile()) {
-                throw new IOException("destination cannot be created");
+                throw new IOException(ResourceUtils.getString(FileUtils.class,
+                        ERROR_DEST_CREATION_KEY, target));
             }
             
             if (!target.canWrite()) {
-                throw new IOException("destination is not writable");
+                throw new IOException(ResourceUtils.getString(FileUtils.class,
+                        ERROR_DEST_NOT_WRITABLE_KEY, target));
             }
             
             FileInputStream in = null;
@@ -1239,21 +1251,21 @@ public final class FileUtils {
                 try {
                     out.close();
                 } catch (IOException e) {
-                    ErrorManager.notifyDebug(
-                            "Cannot close stream",
+                    ErrorManager.notifyDebug(ResourceUtils.getString(
+                            FileUtils.class, ERROR_CLOSE_STREAM_KEY),
                             e);
                 }
                 try {
                     in.close();
                 } catch (IOException e) {
-                    ErrorManager.notifyDebug(
-                            "Cannot close stream",
+                    ErrorManager.notifyDebug(ResourceUtils.getString(
+                            FileUtils.class, ERROR_CLOSE_STREAM_KEY),
                             e);
                 }
             }
         } else {
             LogManager.log("copying directory: " + source + " to: " + target + (recurse ? " with recursion" : ""));
-            progress.setDetail("Copying directory: " + source + " to: " + target);
+            progress.setDetail(StringUtils.format(MESSAGE_COPY_DIRECTORY, source, target));
             
             list.add(mkdirs(target));
             if (recurse) {
@@ -1390,7 +1402,8 @@ public final class FileUtils {
         
         // first some basic validation of the destination directory
         if (exists(target) && target.isFile()) {
-            throw new IOException("Directory is an existing file, cannot unjar.");
+            throw new IOException(ResourceUtils.getString(FileUtils.class,
+                    ERROR_UNJAR_TODIR_KEY, target));
         } else if (!exists(target)) {
             list.add(mkdirs(target));
         }
@@ -1402,10 +1415,10 @@ public final class FileUtils {
             boolean extractedWithList = false;
             
             // first we try to extract with the given list
-            if (zipEntryExists(file, "META-INF/files.list")) {
+            if (zipEntryExists(file, FILES_LIST_ENTRY)) {
                 try {
                     final File initialList =
-                            extractJarEntry("META-INF/files.list", file);
+                            extractJarEntry(FILES_LIST_ENTRY, file);
                     final FilesList toExtract =
                             new FilesList().loadXml(initialList, target);
                     
@@ -1416,7 +1429,8 @@ public final class FileUtils {
                     extractedWithList = true;
                 } catch (XMLException e) {
                     ErrorManager.notifyDebug(
-                            "Could not load xml files list for extraction",
+                            ResourceUtils.getString(FileUtils.class,
+                            ERROR_LOAD_XML_FILE_LIST_KEY),
                             e);
                 }
             }
@@ -1460,7 +1474,7 @@ public final class FileUtils {
             progress.setPercentage(Progress.COMPLETE * extracted / total);
             
             // set the progress detail and add a log entry
-            progress.setDetail("Extracting " + listEntryFile);
+            progress.setDetail(StringUtils.format(MESSAGE_EXTRACTING, listEntryFile));
             LogManager.log("extracting " + listEntryFile);
             
             if (listEntry.isDirectory()) {
@@ -1507,8 +1521,8 @@ public final class FileUtils {
                 listEntryFile.setLastModified(listEntry.getLastModified());
                 
                 SystemUtils.setPermissions(
-                        listEntry.getFile(), 
-                        listEntry.getPermissions(), 
+                        listEntry.getFile(),
+                        listEntry.getPermissions(),
                         NativeUtils.FA_MODE_SET);
             }
             
@@ -1558,15 +1572,15 @@ public final class FileUtils {
             final File file = new File(target, entry.getName()).getAbsoluteFile();
             
             // set the progress detail and add a log entry
-            progress.setDetail("Extracting " + file);
+            progress.setDetail(StringUtils.format(MESSAGE_EXTRACTING, file));
             LogManager.log("extracting " + file);
             
             if (entry.getName().endsWith(SLASH)) {
                 // some validation (this is a directory entry and thus an existing
                 // file will definitely break things)
                 if (exists(file) && !file.isDirectory()) {
-                    throw new IOException(
-                            "An directory entry exists and is not a directory");
+                    throw new IOException(ResourceUtils.getString(
+                            FileUtils.class, ERROR_OUTPUT_DIR_ENTRY_KEY, file));
                 }
                 
                 // if the directory does not exist, it will be created and added to
@@ -1584,7 +1598,8 @@ public final class FileUtils {
                 
                 // some validation of the file itself
                 if (exists(file) && !file.isFile()) {
-                    throw new IOException("An file entry exists and is not a file");
+                    throw new IOException(ResourceUtils.getString(
+                            FileUtils.class, ERROR_OUTPUT_FILE_ENTRY_KEY, file));
                 }
                 
                 // actual data transfer
@@ -1639,14 +1654,73 @@ public final class FileUtils {
             ".jar"; // NOI18N
     public static final String PROPERTIES_EXTENSION =
             ".properties"; // NOI18N
-    
+    public static final String PACK_GZ_SUFFIX =
+            ".pack.gz"; // NOI18N
     public static final String SUN_MICR_RSA =
             "META-INF/SUN_MICR.RSA"; // NOI18N
     public static final String SUN_MICR_SF =
             "META-INF/SUN_MICR.SF"; // NOI18N
-    
+    public static final String FILES_LIST_ENTRY =
+            "META-INF/files.list";//NOI18N
     public static final String CURRENT =
             "."; // NOI18N
     public static final String PARENT =
             ".."; // NOI18N
+    public static final String SHA1_DIGEST_NAME =
+            "SHA1";//NOI18N
+    public static final String MD5_DIGEST_NAME =
+            "MD5";//NOI18N
+    public static final String ERROR_OUTPUT_FILE_ENTRY_KEY =
+            "FU.error.output.file.entry";// NOI18N
+    
+    public static final String ERROR_OUTPUT_DIR_ENTRY_KEY =
+            "FU.error.output.dir.entry";// NOI18N
+    public static final String MESSAGE_MOVING =
+            ResourceUtils.getString(FileUtils.class,
+            "FU.message.moving");//NOI18N
+    public static final String MESSAGE_EXTRACTING =
+            ResourceUtils.getString(FileUtils.class,
+            "FU.message.extracting");//NOI18N
+    public static final String ERROR_LOAD_XML_FILE_LIST_KEY =
+            "FU.error.load.xml.file.list";//NOI18N
+    public static final String ERROR_UNJAR_TODIR_KEY =
+            "FU.error.unjar.todir";//NOI18N
+    public static final String MESSAGE_COPY_DIRECTORY =
+            ResourceUtils.getString(FileUtils.class,
+            "FU.message.copy.dir");//NOI18N
+    public static final String MESSAGE_COPY_FILE =
+            ResourceUtils.getString(FileUtils.class,
+            "FU.message.copy.file");//NOI18N
+    public static final String ERROR_CLOSE_STREAM_KEY =
+            "FU.error.close.stream";//NOI18N
+    public static final String ERROR_SOURCE_NOT_READABLE_KEY =
+            "FU.error.source.not.readable";//NOI18N
+    public static final String ERROR_DEST_NOT_FILE_KEY =
+            "FU.error.dest.not.file";//NOI18N
+    public static final String ERROR_DEST_CREATION_KEY =
+            "FU.error.dest.creation";//NOI18N
+    public static final String ERROR_DEST_NOT_WRITABLE_KEY =
+            "FU.error.dest.not.writable";//NOI18N
+    public static final String ERROR_CANT_GET_FREE_SPACE_KEY =
+            "FU.error.freespace";//NOI18N
+    public static final String ERROR_CANT_CLOSE_JAR_KEY =
+            "FU.error.cannot.close.jar";//NOI18N
+    public static final String ERROR_CANT_CREATE_DIR_EXIST_FILE_KEY=
+            "FU.error.cannot.create.dir.exist.file";//NOI18N
+    public static final String ERROR_CANT_CREATE_DIR_KEY=
+            "FU.error.cannot.create.dir";//NOI18N
+    public static final String ERROR_NOT_JAR_FILE_KEY=
+            "FU.error.not.jar.file";//NOI18N
+    public static final String ERROR_SHA1_NOT_SUPPORTED_KEY =
+            "FU.error.sha1.not.supported";//NOI18N
+    public static final String ERROR_MD5_NOT_SUPPORTED_KEY =
+            "FU.error.md5.not.supported";//NOI18N
+    public static final String ERROR_FILE_SECURITY_EXCEPTION_KEY =
+            "FU.error.file.security.exception";//NOI18N
+    public static final String MESSAGE_DELETE_FILE =
+            ResourceUtils.getString(FileUtils.class, 
+            "FU.message.delete.file");//NOI18N
+    public static final String MESSAGE_DELETE_DIR =
+            ResourceUtils.getString(FileUtils.class, 
+            "FU.message.delete.DIR");//NOI18N
 }
