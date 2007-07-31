@@ -57,7 +57,6 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
     
     public static final String[] MIDP_NB_LIBRARY_PDA = {"netbeans_midp_components_pda"}; // NOI18N
     public static final String[] MIDP_NB_LIBRARY_WMA = {"netbeans_midp_components_wma"}; // NOI18N
-    public static final String[] MIDP_NB_LIBRARY_LAF = {"netbeans_midp_components_laf"}; // NOI18N
     public static final String[] MIDP_NB_LIBRARY = {"netbeans_midp_components_basic"}; // NOI18N
 
     public AbstractInfoScreenCD () {
