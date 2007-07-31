@@ -62,6 +62,8 @@ public final class FileBrowserCD extends ComponentDescriptor {
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/file_browser_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/file_browser_32.png"; // NOI18N
 
+    public static final String ICON_PATH_SD = "org/netbeans/modules/vmd/midpnb/resources/file_browser_sd.png"; // NOI18N
+
     public static final String PROP_FILTER = "filter"; //NOI18N
     
     static {
@@ -115,7 +117,7 @@ public final class FileBrowserCD extends ComponentDescriptor {
             // inspector
             InspectorPositionPresenter.create(new DisplayablePC()),
             // screen
-            new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH))
+            new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH_SD))
         );
     }
 

@@ -112,7 +112,7 @@ public final class PIMBrowserCD extends ComponentDescriptor {
                 //inspector
                 InspectorPositionPresenter.create(new DisplayablePC()),
                 //screen
-                new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH))
+                new DisplayableDisplayPresenter(Utilities.loadImage(ICON_LARGE_PATH))
          );
     }
     

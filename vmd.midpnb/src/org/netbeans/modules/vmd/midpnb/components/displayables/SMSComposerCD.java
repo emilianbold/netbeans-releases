@@ -67,6 +67,8 @@ public final class SMSComposerCD extends ComponentDescriptor {
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/sms_composer_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/sms_composer_32.png"; // NOI18N
 
+    private static final String ICON_PATH_SD = "org/netbeans/modules/vmd/midpnb/resources/sms_composer_sd.png"; // NOI18N
+
     public static final String PROP_PHONE_NUMBER = "phoneNumber"; //NOI18N
     public static final String PROP_MESSAGE = "message"; //NOI18N
     public static final String PROP_PORT_NUMBER = "portNumber"; //NOI18N
@@ -148,7 +150,7 @@ public final class SMSComposerCD extends ComponentDescriptor {
             // actions
             AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, CommandCD.TYPEID),
             // screen
-            new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH))
+            new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH_SD))
         );
     }
 
