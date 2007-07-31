@@ -6,20 +6,20 @@
 -->
 <html>
     <head>
-    <title>Runtime Window</title>
+    <title>Services Window</title>
     <link rel="stylesheet" href="../ide.css" type="text/css"></head>
     <body>
-    <h2>Runtime Window</h2>
+    <h2>Services Window</h2>
     <p><small><a href="#seealso">See Also</a></small></p>
-    <p>The Runtime window is the main entry point to your runtime resources. It shows 
-    a logical view of important runtime resources such as the servers, databases, and
-    web services that are registered with the IDE. 
-    You can open the Runtime window by choosing Window  &gt; Runtime 
-    (Ctrl-5).
+    <p>The Services window is the main entry point to your runtime resources. It shows 
+        a logical view of important runtime resources such as the servers, databases, and
+        web services that are registered with the IDE. 
+        You can open the Services window by choosing Window &gt; Services
+    (Ctrl-5).</p>
 
-    <h3>Runtime Resources</h3>
-    <p>The following table lists the runtime resources as they appear in the Runtime 
-    window, with their icons and their descriptions. 
+    <h3>Services Resources</h3>
+    <p>The following table lists the runtime resources as they appear in the Services 
+    window, with their icons and their descriptions.</p>
     <table border="1" cellpadding="5" cellspacing="0">
         <tr align="left"> 
             <th scope="col"><b>Icon</b></th>
@@ -29,19 +29,10 @@
             <td><img src="../images/runtime-window-servers.png"></td>
             <td><b>Servers</b>
             <br>Lists all servers currently registered with the IDE.
-            For versions of the IDE that are bundled only with the Tomcat Web Server, 
-            the Tomcat Web Server is automatically registered in the IDE. For versions of 
-            the IDE that are bundled with both the Tomcat Web Server and Sun Java System Application Server, 
-            both servers are automatically registered in the IDE. Use the IDE to
+            Any servers installed during the IDE installation process are automatically
+            registered with the IDE. Use the IDE to
             <a href="nbdocs://org.netbeans.modules.j2ee.platform/org/netbeans/modules/j2ee/platform/docs/server/server_register.html">register</a>
             all other servers.</td>
-        </tr>
-        <tr> 
-            <td><img src="../images/runtime-window-processes.png"></td>
-            <td><b>Processes</b>
-            <br>Lists all processes currently being executed within 
-            the IDE. You can terminate a running application by right-clicking its node
-            and choosing Terminate Process. </td>
         </tr>
         <tr> 
             <td><img src="../images/runtime-window-databases.png"></td>
@@ -51,17 +42,14 @@
             to the IDE.</td>
         </tr>
         <tr> 
-            <td><img src="../images/runtime-window-webservices.png"></td>
-            <td><b>HTTP Server</b>
-            <br>When you right-click the node, you can choose commands to start or stop the IDE's internal HTTP server.
-            You can also <a href="../webbrowser/httpserver-options.html">configure HTTP server options</a>.</td>
+            <td></td>
+            <td><b>Enterprise Java Beans</b>
+            </td>
         </tr>
         <tr> 
-            <td><img src="../images/runtime-window-xmlentitycatalogs.png"></td>
-            <td><b>DTD and XML Schema Catalogs</b>
-            <br>Lists all of the <a href="../xml/catalog/xmlcatalog_about.html">XML Catalogs</a> that are 
-            currently registered in the IDE.
-            When you right-click the node, you can <a href="../xml/catalog/xmlcatalog_mount.html">add and remove</a> XML catalogs.</td>
+            <td></td>
+            <td><b>Web Services</b>
+            </td>
         </tr>
     </table>
     <p>Other nodes may appear, depending on the modules that are installed in the
