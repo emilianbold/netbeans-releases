@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="${encoding}"?>
+<!-- 
+    Document   : ${name}
+    Created on : ${date}, ${time}
+    Author     : ${user}
+-->
 <jsp:root xmlns:jsp="http://java.sun.com/JSP/Page" version="2.0">
 
     <!-- to change the content type or response encoding change the following line -->
