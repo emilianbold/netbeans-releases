@@ -538,11 +538,13 @@ public final class MainWindow extends JFrame {
     private boolean isFullScreenMode = false;
     private Rectangle restoreBounds;
     private int restoreExtendedState = JFrame.NORMAL;
+    private boolean isSwitchingFullScreenMode = false;
     
     public void setFullScreenMode( boolean fullScreenMode ) {
-        if( isFullScreenMode == fullScreenMode ) {
+        if( isFullScreenMode == fullScreenMode || isSwitchingFullScreenMode ) {
             return;
         }
+        isSwitchingFullScreenMode = true;
         final TopComponent activatedTc = WindowManager.getDefault().getRegistry().getActivated();
         if( !isFullScreenMode ) {
             restoreExtendedState = getExtendedState();
@@ -586,6 +588,7 @@ public final class MainWindow extends JFrame {
                         setPreferredSize( restoreBounds.getSize() );
                         setBounds( restoreBounds );
                     }
+                    isSwitchingFullScreenMode = false;
                 }
             });
         } else {
@@ -595,6 +598,7 @@ public final class MainWindow extends JFrame {
                     invalidate();
                     validate();
                     repaint();
+                    isSwitchingFullScreenMode = false;
                 }
             });
         }
