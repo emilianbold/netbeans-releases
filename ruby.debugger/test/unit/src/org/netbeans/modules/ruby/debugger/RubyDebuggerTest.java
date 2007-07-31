@@ -86,26 +86,26 @@ public final class RubyDebuggerTest extends TestBase {
         p.waitFor();
     }
     
-    //    public void testStepOut() throws Exception {
-    //        String[] testContent = {
-    //            "def a",
-    //            "  puts 'a'",
-    //            "  puts 'aa'",
-    //            "  puts 'aaa'",
-    //            "  puts 'aaaa'",
-    //            "end",
-    //            "a",
-    //            "puts 'end'"
-    //        };
-    //        File testF = createScript(testContent);
-    //        FileObject testFO = FileUtil.toFileObject(testF);
-    //        addBreakpoint(testFO, 2);
-    //        Process p = startDebugging(testF);
-    //        doAction(ActionsManager.ACTION_STEP_OVER); // 2 -> 3
-    //        doAction(ActionsManager.ACTION_STEP_OUT); // 3 -> 8
-    //        doAction(ActionsManager.ACTION_STEP_OVER); // 8 -> finish
-    //        p.waitFor();
-    //    }
+    public void testStepOut() throws Exception {
+        String[] testContent = {
+            "def a",
+            "  puts 'a'",
+            "  puts 'aa'",
+            "  puts 'aaa'",
+            "  puts 'aaaa'",
+            "end",
+            "a",
+            "puts 'end'"
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        addBreakpoint(testFO, 2);
+        Process p = startDebugging(testF);
+        doAction(ActionsManager.ACTION_STEP_OVER); // 2 -> 3
+        doAction(ActionsManager.ACTION_STEP_OUT); // 3 -> 8
+        doAction(ActionsManager.ACTION_STEP_OVER); // 8 -> finish
+        p.waitFor();
+    }
     
     public void testSimpleLoop() throws Exception {
         String[] testContent = {
