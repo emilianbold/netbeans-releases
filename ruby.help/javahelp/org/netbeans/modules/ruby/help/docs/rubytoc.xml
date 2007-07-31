@@ -3,7 +3,7 @@
                      "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="2.0">
-	<tocitem text="Ruby Development">
+	<tocitem text="Ruby Development" expand="false">
 		<tocitem text="About Ruby Development in NetBeans" target="nbruby_about_ruby" />
 	</tocitem>
 </toc>
