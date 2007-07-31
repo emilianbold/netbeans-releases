@@ -1407,6 +1407,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                                          }
                                          finally {
                                              synchronized (getLock()) {
+                                                 if (targetStatus == DOCUMENT_NO) doc = null;
                                                  documentStatus = targetStatus;
                                                  getLock().notifyAll();
                                              }
