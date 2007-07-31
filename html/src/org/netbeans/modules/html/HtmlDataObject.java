@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -47,7 +49,7 @@ import org.openide.util.Lookup;
  * @author Ian Formanek
  */
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
-    public static final String PROP_ENCODING = "encoding"; // NOI18N
+    public static final String PROP_ENCODING = "Content-Encoding"; // NOI18N
     public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();
     static final long serialVersionUID =8354927561693097159L;
     
@@ -76,7 +78,19 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                 assert file.equals(getPrimaryFile());
                 
                 String charsetName = getFileEncoding();
-                return Charset.forName(charsetName);
+                try {
+                    return Charset.forName(charsetName);
+                } catch(IllegalCharsetNameException ichse) {
+                    //the jsp templates contains the ${encoding} property 
+                    //so the ICHNE is always thrown for them, just ignore
+                    Boolean template = (Boolean)file.getAttribute("template");//NOI18N
+                    if(template == null || !template.booleanValue()) {
+                        Logger.getLogger("global").log(Level.INFO, null, ichse);
+                    }
+                } catch (UnsupportedCharsetException uchse) {
+                    Logger.getLogger("global").log(Level.INFO, null, uchse);
+                }
+                return null;
             }
         };
         set.assign(FileEncodingQueryImplementation.class, feq);

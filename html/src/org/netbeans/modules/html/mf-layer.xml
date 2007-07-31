@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="html.html" url="templates/html.html">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.Bundle"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
@@ -32,6 +33,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="xhtml.xhtml" url="templates/xhtml.xhtml">
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/XhtmlTemplateHelp.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.Bundle"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>

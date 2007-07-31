@@ -84,7 +84,8 @@ Microsystems, Inc. All Rights Reserved.
       <!-- use template description from HTML module -->
       <file name="Html.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
          <attr name="position" intvalue="500"/>
-                <attr name="template" boolvalue="true"/>
+         <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createHtmlIterator"/>
@@ -93,7 +94,8 @@ Microsystems, Inc. All Rights Reserved.
       
       <file name="XHtml.xhtml" url="nbresloc:/org/netbeans/modules/html/templates/xhtml.xhtml">
          <attr name="position" intvalue="600"/>
-                <attr name="template" boolvalue="true"/>
+         <attr name="template" boolvalue="true"/>
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/XhtmlTemplateHelp.html"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
          <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.web.wizards.PageIterator.createXHtmlIterator"/>
