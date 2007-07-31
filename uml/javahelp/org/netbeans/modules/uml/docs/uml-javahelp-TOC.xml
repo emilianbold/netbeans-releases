@@ -9,7 +9,7 @@
 -->
 
 <toc version="2.0">
-	<tocitem text="UML Modeling">
+	<tocitem text="UML Modeling" expand="false">
 		<tocitem text="About UML Modeling" target="uml_modeling_introduction" />
 		<tocitem text="UML Modeling Basics" target="uml_modeling_basics">
 			<tocitem text="Design: UML Modeling Windows" target="uml_basics_design_windows">
