@@ -1420,7 +1420,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
             if(getSelectedAction().isTaskEnabled() != backgroundTaskCheckbox.isSelected()) {
                 task_changed = true;
             }
-            if(!acceleratorListener.getCurrentKeyStroke().equals(getSelectedAction().getValue(Action.ACCELERATOR_KEY))) {
+            if(acceleratorListener.getCurrentKeyStroke() == null && getSelectedAction().getValue() != null) {
+                accel_changed = true;
+            } else if(!acceleratorListener.getCurrentKeyStroke().equals(getSelectedAction().getValue(Action.ACCELERATOR_KEY))) {
                 accel_changed = true;
             }
         }
