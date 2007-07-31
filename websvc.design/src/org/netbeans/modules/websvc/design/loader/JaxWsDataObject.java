@@ -20,7 +20,6 @@
 package org.netbeans.modules.websvc.design.loader;
 
 import java.io.IOException;
-import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -28,7 +27,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.multiview.MultiViewSupport;
-import org.openide.actions.OpenAction;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -49,7 +47,6 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
-import org.openide.util.actions.SystemAction;
 import org.openide.windows.CloneableOpenSupport;
 
 public final class JaxWsDataObject extends MultiDataObject {
@@ -130,34 +127,18 @@ public final class JaxWsDataObject extends MultiDataObject {
     static class JaxWsDataNode extends DataNode {
         public JaxWsDataNode(DataObject dobj) {
             super(dobj, Children.LEAF);
-        }
-
-        private static final java.awt.Image SERVICE_BADGE =
-                org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif" ); //NOI18N
-    
-        @Override
-        public java.awt.Image getIcon(int type) {
-            return SERVICE_BADGE;
+            setIconBaseWithExtension("org/netbeans/modules/websvc/core/webservices/ui/resources/XMLServiceDataIcon.gif");
         }
 
         @Override
-        public java.awt.Image getOpenedIcon(int type) {
-            return getIcon(type);
+        public <T extends Cookie> T getCookie(Class<T> type) {
+            //preferred action - open in source mode
+            if (type.isAssignableFrom(OpenCookie.class)) {
+                return type.cast(((JaxWsDataObject)getDataObject()).createEditorSupport());
+            }
+            return super.getCookie(type);
         }
 
-        @Override
-        public String getDisplayName() {
-            Service service = ((JaxWsDataObject)getDataObject()).service;
-            if (service.getWsdlUrl()!=null)
-                return service.getServiceName()+"["+service.getPortName()+"]";
-            return service.getName();
-        } 
-
-        @Override
-        public Action getPreferredAction() {
-            return SystemAction.get(OpenAction.class);
-        }
-        
         @Override
         public boolean canCopy() {
             return false;

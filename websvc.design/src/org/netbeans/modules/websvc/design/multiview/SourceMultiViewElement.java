@@ -21,8 +21,6 @@ package org.netbeans.modules.websvc.design.multiview;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.text.Document;
@@ -31,7 +29,6 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.awt.UndoRedo;
-import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
@@ -87,6 +84,46 @@ public class SourceMultiViewElement extends CloneableEditor
         multiViewCallback = callback;
     }
     
+    @Override
+    public void componentActivated() {
+        super.componentActivated();
+    }
+    
+    @Override
+    public void componentDeactivated() {
+        super.componentDeactivated();
+    }
+    
+    @Override
+    public void componentOpened() {
+        super.componentOpened();
+    }
+    
+    @Override
+    public void componentClosed() {
+        super.componentClosed();
+    }
+    
+    @Override
+    public void componentShowing() {
+        super.componentShowing();
+    }
+    
+    @Override
+    public void componentHidden() {
+        super.componentHidden();
+    }
+    
+    public void open() {
+        if (multiViewCallback != null) {
+            multiViewCallback.requestVisible();
+        } else {
+            super.open();
+        }
+        
+    }
+    
+    @Override
     public void requestVisible() {
         if (multiViewCallback != null)
             multiViewCallback.requestVisible();
@@ -94,6 +131,7 @@ public class SourceMultiViewElement extends CloneableEditor
             super.requestVisible();
     }
     
+    @Override
     public void requestActive() {
         if (multiViewCallback != null)
             multiViewCallback.requestActive();
@@ -101,15 +139,18 @@ public class SourceMultiViewElement extends CloneableEditor
             super.requestActive();
     }
     
+    @Override
     protected String preferredID() {
         return getClass().getName();
     }
     
     
+    @Override
     public UndoRedo getUndoRedo() {
         return super.getUndoRedo();
     }
     
+    @Override
     protected boolean closeLast() {
         if(MultiViewSupport.getNumberOfClones(multiViewCallback.getTopComponent()) == 0) {
             // this is the last editor component so call super.closeLast
@@ -142,42 +183,6 @@ public class SourceMultiViewElement extends CloneableEditor
                         //discard changes
                     }
                 });
-    }
-    
-    public void componentActivated() {
-        super.componentActivated();
-        setActivatedNodes(new Node[] {getEditorSupport().getDataObject().getNodeDelegate()});
-    }
-    
-    public void componentDeactivated() {
-        super.componentDeactivated();
-        setActivatedNodes(new Node[] {});
-    }
-    
-    public void componentOpened() {
-        super.componentOpened();
-    }
-    
-    public void componentClosed() {
-        super.componentClosed();
-    }
-    
-    public void componentShowing() {
-        super.componentShowing();
-    }
-    
-    public void componentHidden() {
-        super.componentHidden();
-    }
-    
-    public void writeExternal(ObjectOutput out) throws IOException {
-        // The superclass persists things such as the caret position.
-        super.writeExternal(out);
-     }
-    
-    public void readExternal(ObjectInput in)
-            throws IOException, ClassNotFoundException {
-        super.readExternal(in);
     }
     
     private DataEditorSupport getEditorSupport() {

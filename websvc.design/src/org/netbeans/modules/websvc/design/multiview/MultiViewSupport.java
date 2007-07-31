@@ -24,12 +24,18 @@ import java.awt.event.ActionEvent;
 import java.io.Serializable;
 import java.util.Collections;
 import javax.swing.Action;
+
 import org.openide.text.DataEditorSupport;
 import org.openide.loaders.DataObject;
-import org.openide.windows.Mode;
-import org.openide.windows.WindowManager;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
+
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
@@ -37,14 +43,8 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.websvc.design.loader.JaxWsDataObject;
-import org.openide.cookies.EditCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.filesystems.FileObject;
 
 /**
  * Class for creating the Multiview
@@ -53,7 +53,7 @@ import org.openide.filesystems.FileObject;
 public class MultiViewSupport implements OpenCookie, EditCookie {
     
     static final long serialVersionUID = 1L;
-    private JaxWsDataObject dataObject;
+    private DataObject dataObject;
     private Service service;
     
     public static String SOURCE_UNSAFE_CLOSE = "SOURCE_UNSAFE_CLOSE";
@@ -84,7 +84,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * @param displayName 
      * @param dataObject 
      */
-    public MultiViewSupport(Service service, JaxWsDataObject dataObject) {
+    public MultiViewSupport(Service service, DataObject dataObject) {
         this.dataObject = dataObject;
         this.service = service;
     }
@@ -97,12 +97,12 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         view(View.SOURCE);
     }
 
-    JaxWsDataObject getDataObject() {
+    DataObject getDataObject() {
         return dataObject;
-}
+    }
 
-    DataEditorSupport getEditorSupport() {
-        return dataObject.getCookie(JaxWsDataObject.JaxWsJavaEditorSupport.class);
+    private DataEditorSupport getEditorSupport() {
+        return dataObject.getLookup().lookup(DataEditorSupport.class);
     }
 
     Service getService() {
@@ -111,41 +111,6 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
 
     FileObject getImplementationBean() {
         return getDataObject().getPrimaryFile();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if(obj==this) {
-            return true;
-        }
-        if(obj instanceof MultiViewSupport) {
-            MultiViewSupport sup = (MultiViewSupport)obj;
-            return getDataObject().equals(sup.getDataObject());
-        }
-        return false;
-    }
-
-    /**
-     * Ensures that the Multiview is created and is active.
-      */
-    private TopComponent ensureMultiViewActive() {
-        Mode editorMode = WindowManager.getDefault().findMode(
-                DataEditorSupport.EDITOR_MODE);
-        if (editorMode != null && editorMode.getSelectedTopComponent() != null) {
-            TopComponent activeTC = editorMode.getSelectedTopComponent();
-            DataObject dobj = activeTC.getLookup().lookup(DataObject.class);
-            if(dobj!=null && equals(dobj.getCookie(MultiViewSupport.class))) {
-                return activeTC;
-            }
-            for(TopComponent openedTC:editorMode.getTopComponents()) {
-                dobj = openedTC.getLookup().lookup(DataObject.class);
-                if(dobj!=null && equals(dobj.getCookie(MultiViewSupport.class))) {
-                    return openedTC;
-                }
-            }
-        }
-        getEditorSupport().open();
-        return editorMode.getSelectedTopComponent();
     }
 
     /**
@@ -173,11 +138,6 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
         multiview.setDisplayName(displayName);
         multiview.setName(displayName);
         
-        Mode editorMode = WindowManager.getDefault().findMode(
-                DataEditorSupport.EDITOR_MODE);
-        if (editorMode != null) {
-            editorMode.dockInto(multiview);
-        }
         return multiview;
     }
     
@@ -200,13 +160,13 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
     }
     
     private void viewInSwingThread(View view, Object... parameters) {
-        TopComponent activeTC = ensureMultiViewActive();
+        getEditorSupport().open();
         switch(view) {
         case SOURCE:
-            requestMultiviewActive(activeTC,SourceMultiViewDesc.PREFERRED_ID);
+            requestMultiviewActive(SourceMultiViewDesc.PREFERRED_ID);
             break;
         case DESIGN:
-            requestMultiviewActive(activeTC,DesignMultiViewDesc.PREFERRED_ID);
+            requestMultiviewActive(DesignMultiViewDesc.PREFERRED_ID);
             break;
         }
     }
@@ -217,9 +177,9 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
      * will be the active one in the registry.
      *
      * @param  id      identifier of the multiview element.
-     * @param  activeTc MultiView CloneableTopComponent
      */
-    private static void requestMultiviewActive(TopComponent activeTC, String id) {
+    private static void requestMultiviewActive(String id) {
+        TopComponent activeTC = TopComponent.getRegistry().getActivated();
         MultiViewHandler handler = MultiViews.findMultiViewHandler(activeTC);
         if (handler != null) {
             MultiViewPerspective[] perspectives = handler.getPerspectives();
