@@ -79,6 +79,7 @@ public class NewInstanceDialog extends JPanel implements DocumentListener, Actio
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabelType = new javax.swing.JLabel();
         jComboBoxType = new javax.swing.JComboBox();
         jLabelName = new javax.swing.JLabel();
@@ -86,10 +87,10 @@ public class NewInstanceDialog extends JPanel implements DocumentListener, Actio
         jLabelError = new javax.swing.JLabel();
 
         jLabelType.setLabelFor(jComboBoxType);
-        jLabelType.setText(NbBundle.getMessage(NewInstanceDialog.class, "NewInstanceDialog.jLabelType.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelType, NbBundle.getMessage(NewInstanceDialog.class, "NewInstanceDialog.jLabelType.text")); // NOI18N
 
         jLabelName.setLabelFor(jTextFieldName);
-        jLabelName.setText(NbBundle.getMessage(NewInstanceDialog.class, "NewInstanceDialog.jLabelName.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelName, NbBundle.getMessage(NewInstanceDialog.class, "NewInstanceDialog.jLabelName.text")); // NOI18N
 
         jLabelError.setForeground(new java.awt.Color(89, 79, 191));
 

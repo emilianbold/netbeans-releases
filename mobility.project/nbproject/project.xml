@@ -248,6 +248,14 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.11</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.dialogs</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -346,7 +354,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.mobility.svgcore</friend>
                 <friend>org.netbeans.modules.vmd.io.javame</friend>
                 <friend>org.netbeans.modules.vmd.midp</friend>
-		<friend>org.netbeans.modules.deployment.deviceanywhere</friend>
+                <friend>org.netbeans.modules.deployment.deviceanywhere</friend>
                 <package>org.netbeans.api.mobility.project</package>
                 <package>org.netbeans.api.mobility.project.ui.customizer</package>
                 <package>org.netbeans.modules.mobility.project</package>
