@@ -14,13 +14,14 @@
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. 
- * Portions Copyrighted 2006 Ricoh Corporation 
+ * Microsystems, Inc.
+ * Portions Copyrighted 2006 Ricoh Corporation
  * All Rights Reserved.
  */
 
 package org.netbeans.modules.j2me.cdc.project.ricoh;
 
+import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -28,6 +29,7 @@ import javax.swing.JButton;
 import javax.xml.parsers.*;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.*;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -40,7 +42,6 @@ import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySup
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -51,81 +52,49 @@ import ricoh.util.dom.*;
  * @author  suchys, esanchez, Adam Sotona
  */
 public class RicohProjectCategoryCustomizer extends JPanel implements CustomizerPanel, VisualPropertyGroup {
-    
-    private static String[] PROPERTY_NAMES = new String[] {
-        RicohPropertiesDescriptor.RICOH_UID,                          
-        RicohPropertiesDescriptor.RICOH_ICON,                         
-        RicohPropertiesDescriptor.RICOH_PHONE,                        
-        RicohPropertiesDescriptor.RICOH_FAX,                          
-        RicohPropertiesDescriptor.RICOH_EMAIL,                        
-        RicohPropertiesDescriptor.RICOH_DALP_VERSION,                 
-        RicohPropertiesDescriptor.RICOH_DALP_CODEBASE,                
-        RicohPropertiesDescriptor.RICOH_DALP_INFO_IS_ABREVIATION_USED,
-        RicohPropertiesDescriptor.RICOH_ICON_INVERT,                  
-        RicohPropertiesDescriptor.RICOH_DALP_INFO_ABBREVIATION,       
-        RicohPropertiesDescriptor.RICOH_DALP_ARGUMENT,                
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION,     
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION,     
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION,     
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION,     
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION,     
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION,     
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR,         
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR,         
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR,         
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR,         
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR,         
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR,         
-        RicohPropertiesDescriptor.RICOH_DALP_RESOURCES_DSDK_VERSION,  
-        RicohPropertiesDescriptor.RICOH_DALP_RESOURCES_DSDK_VERSION,  
-        RicohPropertiesDescriptor.RICOH_DALP_APPDESC_EXECAUTH,        
-        RicohPropertiesDescriptor.RICOH_DALP_APPDESC_EXECAUTH,        
-        RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_HVGA,        
-        RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_VGA,         
-        RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_WVGA,        
-        RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_4LINE,       
-        RicohPropertiesDescriptor.RICOH_DALP_APPDESC_AUTORUN,         
-        RicohPropertiesDescriptor.RICOH_DALP_INSTALL_MODE_AUTO,       
-        RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_COLOR,       
-        RicohPropertiesDescriptor.RICOH_DALP_APPDESC_VISIBLE,         
-        RicohPropertiesDescriptor.RICOH_DALP_MANAGE_DISABLE          
-    };
-    
-    private File   dalpFile = null;
-    private String projectName;
+
+    private static String[] PROPERTY_NAMES = new String[]{RicohPropertiesDescriptor.RICOH_UID, RicohPropertiesDescriptor.RICOH_ICON, RicohPropertiesDescriptor.RICOH_PHONE, RicohPropertiesDescriptor.RICOH_FAX, RicohPropertiesDescriptor.RICOH_EMAIL, RicohPropertiesDescriptor.RICOH_DALP_VERSION, RicohPropertiesDescriptor.RICOH_DALP_CODEBASE, RicohPropertiesDescriptor.RICOH_DALP_INFO_IS_ABREVIATION_USED, RicohPropertiesDescriptor.RICOH_ICON_INVERT, RicohPropertiesDescriptor.RICOH_DALP_INFO_ABBREVIATION, RicohPropertiesDescriptor.RICOH_DALP_ARGUMENT, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, RicohPropertiesDescriptor.RICOH_DALP_RESOURCES_DSDK_VERSION, RicohPropertiesDescriptor.RICOH_DALP_APPDESC_EXECAUTH, RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_HVGA, RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_VGA, RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_WVGA, RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_4LINE, RicohPropertiesDescriptor.RICOH_DALP_APPDESC_AUTORUN, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_MODE_AUTO, RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_COLOR, RicohPropertiesDescriptor.RICOH_DALP_APPDESC_VISIBLE, RicohPropertiesDescriptor.RICOH_DALP_MANAGE_DISABLE};
+
     private VisualPropertySupport vps;
     private String projectDir = ""; //NOI18N
     private File platformDir = new File(""); //NOI18N
-    private boolean comboBoxInitDone = false;
-    private boolean changedDalpInfo = false;
-    
+    private JTextField installLocationTextField = new JTextField();
+    private JTextField workingDirTextField      = new JTextField();
+
     /** Creates new form RicohProjectCategoryCustomizer */
     public RicohProjectCategoryCustomizer() {
         initComponents();
+        this.invertBitmapCheckBox.setVisible(false);
     }
-    
-  
+
+
     public void initValues(ProjectProperties props, String configuration) {
         vps = VisualPropertySupport.getDefault(props);
         vps.register(jCheckBox1, configuration, this);
         projectDir = FileUtil.toFile(props.getProjectDirectory()).getAbsolutePath();
         String pName = null;
-        if (configuration != null) pName = (String)props.get(VisualPropertySupport.prefixPropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_ACTIVE));
-        if (pName == null) pName = (String)props.get(DefaultPropertiesDescriptor.PLATFORM_ACTIVE);
+        if (configuration != null) {
+            pName = (String) props.get(VisualPropertySupport.prefixPropertyName(configuration, DefaultPropertiesDescriptor.PLATFORM_ACTIVE));
+        }
+        if (pName == null) {
+            pName = (String) props.get(DefaultPropertiesDescriptor.PLATFORM_ACTIVE);
+        }
         if (pName != null) {
-            JavaPlatform p[] = JavaPlatformManager.getDefault().getPlatforms(pName, null);
-            if (p.length > 0) platformDir = FileUtil.toFile((FileObject)p[0].getInstallFolders().iterator().next());
+            JavaPlatform[] p = JavaPlatformManager.getDefault().getPlatforms(pName, null);
+            if (p.length > 0) {
+                platformDir = FileUtil.toFile(p[0].getInstallFolders().iterator().next());
+            }
         }
     }
-    
+
     public String[] getGroupPropertyNames() {
         return PROPERTY_NAMES;
     }
-    
+
     public void initGroupValues(boolean useDefault) {
-        vps.register(applicationUID, RicohPropertiesDescriptor.RICOH_UID, useDefault);  
+        vps.register(applicationUID, RicohPropertiesDescriptor.RICOH_UID, useDefault);
         vps.register(applicationIcon, RicohPropertiesDescriptor.RICOH_ICON, useDefault);
-        vps.register(telephoneNumber, RicohPropertiesDescriptor.RICOH_PHONE, useDefault);    
+        vps.register(telephoneNumber, RicohPropertiesDescriptor.RICOH_PHONE, useDefault);
         vps.register(faxNumber, RicohPropertiesDescriptor.RICOH_FAX, useDefault);
         vps.register(email, RicohPropertiesDescriptor.RICOH_EMAIL, useDefault);
         vps.register(dalpVersionTextField, RicohPropertiesDescriptor.RICOH_DALP_VERSION, useDefault);
@@ -136,16 +105,10 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         vps.register(startupArgumentsTextField, RicohPropertiesDescriptor.RICOH_DALP_ARGUMENT, useDefault);
         vps.register(installHDDRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
         vps.register(installSDVMRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
-        vps.register(installOtherSDRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
-        vps.register(installOtherSDRadioButton1, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
-        vps.register(installOtherSDRadioButton2, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
-        vps.register(installOtherSDRadioButton3, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
+        vps.register(installLocationTextField, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_DESTINATION, useDefault);
         vps.register(workingDirHDDRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
         vps.register(workingDirSDVMRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
-        vps.register(workingDirOtherSDRadioButton, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
-        vps.register(workingDirOtherSDRadioButton1, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
-        vps.register(workingDirOtherSDRadioButton2, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
-        vps.register(workingDirOtherSDRadioButton3, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
+        vps.register(workingDirTextField, RicohPropertiesDescriptor.RICOH_DALP_INSTALL_WORKDIR, useDefault);
         vps.register(dalpSpecSDKJ1RadioButton, RicohPropertiesDescriptor.RICOH_DALP_RESOURCES_DSDK_VERSION, useDefault);
         vps.register(dalpSpecSDKJ2RadioButton, RicohPropertiesDescriptor.RICOH_DALP_RESOURCES_DSDK_VERSION, useDefault);
         vps.register(guestRadioButton, RicohPropertiesDescriptor.RICOH_DALP_APPDESC_EXECAUTH, useDefault);
@@ -159,7 +122,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         vps.register(colorEnableCheckBox, RicohPropertiesDescriptor.RICOH_DALP_DISPLAYMODE_COLOR, useDefault);
         vps.register(visibleCheckBox, RicohPropertiesDescriptor.RICOH_DALP_APPDESC_VISIBLE, useDefault);
         vps.register(disableDalpManagementCheckBox, RicohPropertiesDescriptor.RICOH_DALP_MANAGE_DISABLE, useDefault);
- 
+
         jLabel1.setEnabled(!useDefault);
         jLabel2.setEnabled(!useDefault);
         jLabel3.setEnabled(!useDefault);
@@ -167,22 +130,30 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         jLabel5.setEnabled(!useDefault);
         jLabel7.setEnabled(!useDefault);
         jLabel9.setEnabled(!useDefault);
-        advancedButton.setEnabled(!useDefault);                      
+        advancedButton.setEnabled(!useDefault);
         browseApplicationIcon.setEnabled(!useDefault);
         changeApplicationUID.setEnabled(!useDefault);
-    }  
-    
+        useAbbreviationCheckBoxActionPerformed(null);
+        if (dalpSpecSDKJ1RadioButton.isSelected()) {
+            dalpSpecSDKJ1RadioButtonActionPerformed(null);
+        }
+        if (dalpSpecSDKJ2RadioButton.isSelected()) {
+            dalpSpecSDKJ2RadioButtonActionPerformed(null);
+        }
+    }
+
     public File getDalpFile() {
         File projectDir = new File(this.projectDir);
-        File [] contents = projectDir.listFiles();
-        for (int i = 0; i < contents.length; i++)
-        {
-            if (contents[i].getName().endsWith(".dalp")) //NOI18N
+        File[] contents = projectDir.listFiles();
+        for (int i = 0; i < contents.length; i++) {
+            if (contents[i].getName().endsWith(".dalp")) {
+                //NOI18N
                 return contents[i];
+            }
         }
         return null;
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -231,12 +202,8 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         jSeparator2 = new javax.swing.JSeparator();
         visibleCheckBox = new javax.swing.JCheckBox();
         invertBitmapCheckBox = new javax.swing.JCheckBox();
-        installOtherSDRadioButton1 = new javax.swing.JRadioButton();
-        installOtherSDRadioButton2 = new javax.swing.JRadioButton();
-        installOtherSDRadioButton3 = new javax.swing.JRadioButton();
-        workingDirOtherSDRadioButton1 = new javax.swing.JRadioButton();
-        workingDirOtherSDRadioButton2 = new javax.swing.JRadioButton();
-        workingDirOtherSDRadioButton3 = new javax.swing.JRadioButton();
+        installLocationComboBox = new javax.swing.JComboBox();
+        workingDirComboBox = new javax.swing.JComboBox();
         disableDalpManagementCheckBox = new javax.swing.JCheckBox();
         appTypeButtonGroup = new javax.swing.ButtonGroup();
         installLocationButtonGroup = new javax.swing.ButtonGroup();
@@ -263,12 +230,18 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         advancedButton = new javax.swing.JButton();
         jCheckBox1 = new javax.swing.JCheckBox();
 
+        advancedOptionsPanel.setPreferredSize(new java.awt.Dimension(700, 400));
+
         jLabel15.setFont(new java.awt.Font("Tahoma", 1, 12));
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel15, "Advanced Options");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel15, org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "LBL_AdvancedOptions")); // NOI18N
 
         jLabel18.setLabelFor(dalpVersionTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/cdc/project/ricoh/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel18, bundle.getString("LBL_DalpVersion")); // NOI18N
+
+        dalpVersionTextField.setNextFocusableComponent(codeBaseTextField);
+
+        codeBaseTextField.setNextFocusableComponent(useAbbreviationCheckBox);
 
         jLabel14.setLabelFor(codeBaseTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel14, bundle.getString("LBL_CodebaseURL")); // NOI18N
@@ -281,14 +254,23 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         iconPathOrAbbrevLabel.setEnabled(false);
 
         abbrevationTextField.setEnabled(false);
+        abbrevationTextField.setNextFocusableComponent(startupArgumentsTextField);
 
         org.openide.awt.Mnemonics.setLocalizedText(useAbbreviationCheckBox, bundle.getString("LBL_UseAbbrevCheckBox")); // NOI18N
         useAbbreviationCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         useAbbreviationCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        useAbbreviationCheckBox.setNextFocusableComponent(invertBitmapCheckBox);
+        useAbbreviationCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useAbbreviationCheckBoxActionPerformed(evt);
+            }
+        });
 
         jLabel28.setFont(new java.awt.Font("Tahoma", 1, 11));
         jLabel28.setLabelFor(startupArgumentsTextField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel28, bundle.getString("LBL_StartupArgs")); // NOI18N
+
+        startupArgumentsTextField.setNextFocusableComponent(installHDDRadioButton);
 
         jLabel30.setFont(new java.awt.Font("Tahoma", 1, 11));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel30, bundle.getString("LBL_InstallLocation")); // NOI18N
@@ -299,30 +281,58 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         installHDDRadioButton.setActionCommand("hdd"); // NOI18N
         installHDDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         installHDDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        installHDDRadioButton.setNextFocusableComponent(installSDVMRadioButton);
+        installHDDRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                installHDDRadioButtonActionPerformed(evt);
+            }
+        });
 
         installLocationButtonGroup.add(installSDVMRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(installSDVMRadioButton, bundle.getString("LBL_InstallLocVM")); // NOI18N
         installSDVMRadioButton.setActionCommand("sdcard"); // NOI18N
         installSDVMRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         installSDVMRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        installSDVMRadioButton.setNextFocusableComponent(installOtherSDRadioButton);
+        installSDVMRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                installSDVMRadioButtonActionPerformed(evt);
+            }
+        });
 
         installLocationButtonGroup.add(installOtherSDRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(installOtherSDRadioButton, bundle.getString("LBL_InstallLocOther")); // NOI18N
         installOtherSDRadioButton.setActionCommand("sdcard0"); // NOI18N
         installOtherSDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         installOtherSDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        installOtherSDRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                installOtherSDRadioButtonActionPerformed(evt);
+            }
+        });
 
         workingDirectoryButtonGroup.add(workingDirOtherSDRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(workingDirOtherSDRadioButton, bundle.getString("LBL_WorkingDirOther")); // NOI18N
         workingDirOtherSDRadioButton.setActionCommand("sdcard0"); // NOI18N
         workingDirOtherSDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         workingDirOtherSDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        workingDirOtherSDRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                workingDirOtherSDRadioButtonActionPerformed(evt);
+            }
+        });
 
         workingDirectoryButtonGroup.add(workingDirSDVMRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(workingDirSDVMRadioButton, bundle.getString("LBL_WorkingDirVM")); // NOI18N
         workingDirSDVMRadioButton.setActionCommand("sdcard"); // NOI18N
         workingDirSDVMRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         workingDirSDVMRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        workingDirSDVMRadioButton.setNextFocusableComponent(workingDirOtherSDRadioButton);
+        workingDirSDVMRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                workingDirSDVMRadioButtonActionPerformed(evt);
+            }
+        });
 
         workingDirectoryButtonGroup.add(workingDirHDDRadioButton);
         workingDirHDDRadioButton.setSelected(true);
@@ -330,6 +340,12 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         workingDirHDDRadioButton.setActionCommand("hdd"); // NOI18N
         workingDirHDDRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         workingDirHDDRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        workingDirHDDRadioButton.setNextFocusableComponent(workingDirSDVMRadioButton);
+        workingDirHDDRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                workingDirHDDRadioButtonActionPerformed(evt);
+            }
+        });
 
         jLabel31.setFont(new java.awt.Font("Tahoma", 1, 11));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel31, bundle.getString("LBL_WorkingDir")); // NOI18N
@@ -344,6 +360,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         dalpSpecSDKJ1RadioButton.setActionCommand("1.0"); // NOI18N
         dalpSpecSDKJ1RadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         dalpSpecSDKJ1RadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        dalpSpecSDKJ1RadioButton.setNextFocusableComponent(dalpSpecSDKJ2RadioButton);
         dalpSpecSDKJ1RadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dalpSpecSDKJ1RadioButtonActionPerformed(evt);
@@ -356,6 +373,7 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         dalpSpecSDKJ2RadioButton.setActionCommand("2.0"); // NOI18N
         dalpSpecSDKJ2RadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         dalpSpecSDKJ2RadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        dalpSpecSDKJ2RadioButton.setNextFocusableComponent(guestRadioButton);
         dalpSpecSDKJ2RadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dalpSpecSDKJ2RadioButtonActionPerformed(evt);
@@ -372,12 +390,14 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         guestRadioButton.setActionCommand("guest"); // NOI18N
         guestRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         guestRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        guestRadioButton.setNextFocusableComponent(adminRadioButton);
 
         execLevelButtonGroup.add(adminRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(adminRadioButton, bundle.getString("LBL_AppExecLvlAdmin")); // NOI18N
         adminRadioButton.setActionCommand("admin"); // NOI18N
         adminRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         adminRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        adminRadioButton.setNextFocusableComponent(hvgaCheckBox);
 
         jLabel29.setFont(new java.awt.Font("Tahoma", 1, 11));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel29, bundle.getString("LBL_DisplayModes")); // NOI18N
@@ -386,31 +406,38 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         org.openide.awt.Mnemonics.setLocalizedText(hvgaCheckBox, bundle.getString("LBL_HVGA")); // NOI18N
         hvgaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         hvgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        hvgaCheckBox.setNextFocusableComponent(vgaCheckBox);
 
         org.openide.awt.Mnemonics.setLocalizedText(vgaCheckBox, bundle.getString("LBL_VGA")); // NOI18N
         vgaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         vgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        vgaCheckBox.setNextFocusableComponent(wvgaCheckBox);
 
         org.openide.awt.Mnemonics.setLocalizedText(wvgaCheckBox, bundle.getString("LBL_WVGA")); // NOI18N
         wvgaCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         wvgaCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        wvgaCheckBox.setNextFocusableComponent(lcdCheckBox);
 
         org.openide.awt.Mnemonics.setLocalizedText(lcdCheckBox, bundle.getString("LBL_4LineLED")); // NOI18N
         lcdCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         lcdCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        lcdCheckBox.setNextFocusableComponent(autoRunCheckBox);
 
         org.openide.awt.Mnemonics.setLocalizedText(autoRunCheckBox, bundle.getString("LBL_EnableAutoRun")); // NOI18N
         autoRunCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         autoRunCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        autoRunCheckBox.setNextFocusableComponent(autoInstallCheckBox);
 
         autoInstallCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(autoInstallCheckBox, bundle.getString("LBL_EnableAutoInstall")); // NOI18N
         autoInstallCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         autoInstallCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        autoInstallCheckBox.setNextFocusableComponent(colorEnableCheckBox);
 
         org.openide.awt.Mnemonics.setLocalizedText(colorEnableCheckBox, bundle.getString("LBL_EnableColorDisplay")); // NOI18N
         colorEnableCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         colorEnableCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        colorEnableCheckBox.setNextFocusableComponent(visibleCheckBox);
 
         visibleCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(visibleCheckBox, bundle.getString("LBL_Visible")); // NOI18N
@@ -420,48 +447,29 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         invertBitmapCheckBox.setText(bundle.getString("LBL_InvertIconBitmap")); // NOI18N
         invertBitmapCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         invertBitmapCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        invertBitmapCheckBox.setNextFocusableComponent(abbrevationTextField);
 
-        installLocationButtonGroup.add(installOtherSDRadioButton1);
-        org.openide.awt.Mnemonics.setLocalizedText(installOtherSDRadioButton1, bundle.getString("LBL_InstallLocSlot2")); // NOI18N
-        installOtherSDRadioButton1.setActionCommand("sdcard1"); // NOI18N
-        installOtherSDRadioButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        installOtherSDRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        installLocationComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "SD Card Slot 1", "SD Card Slot 2", "SD Card Slot 3" }));
+        installLocationComboBox.setNextFocusableComponent(workingDirHDDRadioButton);
+        installLocationComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                installLocationComboBoxActionPerformed(evt);
+            }
+        });
 
-        installLocationButtonGroup.add(installOtherSDRadioButton2);
-        org.openide.awt.Mnemonics.setLocalizedText(installOtherSDRadioButton2, bundle.getString("LBL_InstallLocSlot3")); // NOI18N
-        installOtherSDRadioButton2.setActionCommand("sdcard2"); // NOI18N
-        installOtherSDRadioButton2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        installOtherSDRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        installLocationButtonGroup.add(installOtherSDRadioButton3);
-        org.openide.awt.Mnemonics.setLocalizedText(installOtherSDRadioButton3, bundle.getString("LBL_InstallLocSlot4")); // NOI18N
-        installOtherSDRadioButton3.setActionCommand("sdcard3"); // NOI18N
-        installOtherSDRadioButton3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        installOtherSDRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        workingDirectoryButtonGroup.add(workingDirOtherSDRadioButton1);
-        org.openide.awt.Mnemonics.setLocalizedText(workingDirOtherSDRadioButton1, bundle.getString("LBL_WorkingDirSlot2")); // NOI18N
-        workingDirOtherSDRadioButton1.setActionCommand("sdcard1"); // NOI18N
-        workingDirOtherSDRadioButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        workingDirOtherSDRadioButton1.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        workingDirectoryButtonGroup.add(workingDirOtherSDRadioButton2);
-        org.openide.awt.Mnemonics.setLocalizedText(workingDirOtherSDRadioButton2, bundle.getString("LBL_WorkingDirSlot3")); // NOI18N
-        workingDirOtherSDRadioButton2.setActionCommand("sdcard2"); // NOI18N
-        workingDirOtherSDRadioButton2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        workingDirOtherSDRadioButton2.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        workingDirectoryButtonGroup.add(workingDirOtherSDRadioButton3);
-        org.openide.awt.Mnemonics.setLocalizedText(workingDirOtherSDRadioButton3, bundle.getString("LBL_WorkingDirSlot4")); // NOI18N
-        workingDirOtherSDRadioButton3.setActionCommand("sdcard3"); // NOI18N
-        workingDirOtherSDRadioButton3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        workingDirOtherSDRadioButton3.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        workingDirComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "SD Card Slot 1", "SD Card Slot 2", "SD Card Slot 3" }));
+        workingDirComboBox.setNextFocusableComponent(dalpSpecSDKJ1RadioButton);
+        workingDirComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                workingDirComboBoxActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout advancedOptionConfigPanelLayout = new org.jdesktop.layout.GroupLayout(advancedOptionConfigPanel);
         advancedOptionConfigPanel.setLayout(advancedOptionConfigPanelLayout);
         advancedOptionConfigPanelLayout.setHorizontalGroup(
             advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(advancedOptionConfigPanelLayout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedOptionConfigPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 625, Short.MAX_VALUE)
@@ -497,21 +505,21 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                                 .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                     .add(installSDVMRadioButton)
                                     .add(installHDDRadioButton)
-                                    .add(installOtherSDRadioButton)
-                                    .add(jLabel30)
-                                    .add(installOtherSDRadioButton1)
-                                    .add(installOtherSDRadioButton2)
-                                    .add(installOtherSDRadioButton3))
-                                .add(95, 95, 95)
+                                    .add(advancedOptionConfigPanelLayout.createSequentialGroup()
+                                        .add(installOtherSDRadioButton)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(installLocationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                    .add(jLabel30))
+                                .add(31, 31, 31)
                                 .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(workingDirOtherSDRadioButton3)
-                                    .add(workingDirOtherSDRadioButton2)
-                                    .add(workingDirOtherSDRadioButton1)
                                     .add(jLabel31)
                                     .add(workingDirSDVMRadioButton)
                                     .add(workingDirHDDRadioButton)
-                                    .add(workingDirOtherSDRadioButton))
-                                .add(143, 143, 143)))
+                                    .add(advancedOptionConfigPanelLayout.createSequentialGroup()
+                                        .add(workingDirOtherSDRadioButton)
+                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                        .add(workingDirComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 95, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                                .add(63, 63, 63)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jSeparator1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -587,23 +595,13 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(workingDirOtherSDRadioButton)
-                            .add(installOtherSDRadioButton))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(installOtherSDRadioButton1)
-                            .add(workingDirOtherSDRadioButton1))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(installOtherSDRadioButton2)
-                            .add(workingDirOtherSDRadioButton2))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(installOtherSDRadioButton3)
-                            .add(workingDirOtherSDRadioButton3)))
+                            .add(installOtherSDRadioButton)
+                            .add(installLocationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(workingDirComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(advancedOptionConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
                             .add(advancedOptionConfigPanelLayout.createSequentialGroup()
                                 .add(jLabel16, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -635,9 +633,11 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(colorEnableCheckBox)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(visibleCheckBox)))))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .add(visibleCheckBox)))
+                        .add(18, 18, 18)
+                        .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                .addContainerGap())
         );
 
         advancedOptionConfigPanelLayout.linkSize(new java.awt.Component[] {abbrevationTextField, codeBaseTextField, dalpVersionTextField, jLabel14, jLabel22, useAbbreviationCheckBox}, org.jdesktop.layout.GroupLayout.VERTICAL);
@@ -718,24 +718,30 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         org.openide.awt.Mnemonics.setLocalizedText(disableDalpManagementCheckBox, bundle.getString("LBL_DalpManagement")); // NOI18N
         disableDalpManagementCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         disableDalpManagementCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        disableDalpManagementCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                disableDalpManagementCheckBoxActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout advancedOptionsPanelLayout = new org.jdesktop.layout.GroupLayout(advancedOptionsPanel);
         advancedOptionsPanel.setLayout(advancedOptionsPanelLayout);
         advancedOptionsPanelLayout.setHorizontalGroup(
             advancedOptionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(advancedOptionConfigPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(advancedOptionsPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(disableDalpManagementCheckBox)
                 .addContainerGap(284, Short.MAX_VALUE))
-            .add(advancedOptionConfigPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         advancedOptionsPanelLayout.setVerticalGroup(
             advancedOptionsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, advancedOptionsPanelLayout.createSequentialGroup()
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(advancedOptionConfigPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(disableDalpManagementCheckBox))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(disableDalpManagementCheckBox)
+                .add(139, 139, 139))
         );
 
         disableDalpManagementCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_DalpManagement")); // NOI18N
@@ -879,11 +885,10 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         this.wvgaCheckBox.setEnabled(true);
         this.lcdCheckBox.setEnabled(true);
         this.workingDirHDDRadioButton.setEnabled(true);
-        this.workingDirOtherSDRadioButton.setEnabled(true);
-        this.workingDirOtherSDRadioButton1.setEnabled(true);
-        this.workingDirOtherSDRadioButton2.setEnabled(true);
-        this.workingDirOtherSDRadioButton3.setEnabled(true);
+        this.workingDirOtherSDRadioButton.setEnabled(true);        
         this.workingDirSDVMRadioButton.setEnabled(true);
+        if (workingDirOtherSDRadioButton.isSelected())
+            this.workingDirComboBox.setEnabled(true);
     }//GEN-LAST:event_dalpSpecSDKJ2RadioButtonActionPerformed
 
     private void dalpSpecSDKJ1RadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dalpSpecSDKJ1RadioButtonActionPerformed
@@ -895,26 +900,23 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         this.lcdCheckBox.setEnabled(false);
         this.workingDirHDDRadioButton.setEnabled(false);
         this.workingDirOtherSDRadioButton.setEnabled(false);
-        this.workingDirOtherSDRadioButton1.setEnabled(false);
-        this.workingDirOtherSDRadioButton2.setEnabled(false);
-        this.workingDirOtherSDRadioButton3.setEnabled(false);
+        this.workingDirComboBox.setEnabled(false);
         this.workingDirSDVMRadioButton.setEnabled(false);
     }//GEN-LAST:event_dalpSpecSDKJ1RadioButtonActionPerformed
 
     private void advancedButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_advancedButtonActionPerformed
     {//GEN-HEADEREND:event_advancedButtonActionPerformed
 // TODO add your handling code here:
-        visibleCheckBox.setEnabled(false);        
-        if (disableDalpManagementCheckBox.isSelected() == false)
+        visibleCheckBox.setEnabled(false);
+        if (disableDalpManagementCheckBox.isSelected() == false) {
             visibleCheckBox.setEnabled(true);
-        else
+        } else {
             visibleCheckBox.setEnabled(false);
-        
+        }
         JButton closingOption = new JButton(NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "LBL_ButtonAdvancedClose"));
         closingOption.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSN_ButtonAdvancedClose"));
         closingOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "ACSD_ButtonAdvancedClose"));
-        final DialogDescriptor dd = new DialogDescriptor(advancedOptionsPanel, NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "TITLE_AdvancedOptionsDialog"), true, 
-                new Object[]{closingOption}, closingOption, DialogDescriptor.DEFAULT_ALIGN, HelpCtx.DEFAULT_HELP, null); //NOI18N
+        final DialogDescriptor dd = new DialogDescriptor(advancedOptionsPanel, NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "TITLE_AdvancedOptionsDialog"), true, new Object[]{closingOption}, closingOption, DialogDescriptor.DEFAULT_ALIGN, HelpCtx.DEFAULT_HELP, null); //NOI18N
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
         //this.advancedOptionsDialog.setTitle(NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "TITLE_AdvancedOptionsDialog")); //NOI18N
         //this.advancedOptionsDialog.pack();
@@ -924,14 +926,15 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         RicohApplicationUIDCustomizer customizer = new RicohApplicationUIDCustomizer(applicationUID.getText(), platformDir);
         final DialogDescriptor dd = new DialogDescriptor(customizer, NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "TITLE_ChangeUID")); //NOI18N
         customizer.addPropertyChangeListener(new PropertyChangeListener() {
+
             public void propertyChange(PropertyChangeEvent evt) {
-                if ( NotifyDescriptor.PROP_VALID.equals(evt.getPropertyName())){
-                    dd.setValid(((Boolean)evt.getNewValue()).booleanValue());
+                if (NotifyDescriptor.PROP_VALID.equals(evt.getPropertyName())) {
+                    dd.setValid(((Boolean) evt.getNewValue()).booleanValue());
                 }
             }
         });
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
-        if( dd.getValue() == DialogDescriptor.OK_OPTION ){
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             applicationUID.setText(customizer.getUID());
         }
     }//GEN-LAST:event_changeApplicationUIDActionPerformed
@@ -939,22 +942,25 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
     private void browseApplicationIconActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseApplicationIconActionPerformed
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-        chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileFilter(new FileFilter() {
+
             public boolean accept(File f) {
-                if (f.isDirectory())
+                if (f.isDirectory()) {
                     return true;
+                }
                 String ext = f.toString().toLowerCase();
                 int i = ext.lastIndexOf('.');
-                if (i != -1){
-                    ext = ext.substring(i+1);
+                if (i != -1) {
+                    ext = ext.substring(i + 1);
                 }
-                if (ext.equalsIgnoreCase("bmp")){
+                if (ext.equalsIgnoreCase("bmp")) {
                     return true;
                 }
                 return false;
             }
+
             public String getDescription() {
                 return NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "LBL_LogoImageFiles");
             }
@@ -965,15 +971,89 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
         }
         chooser.setSelectedFile(new File(workDir));
         chooser.setDialogTitle(NbBundle.getMessage(RicohProjectCategoryCustomizer.class, "TITLE_BrowseLogo"));
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            //NOI18N
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
             applicationIcon.setText(file.getAbsolutePath());
         }
     }//GEN-LAST:event_browseApplicationIconActionPerformed
 
-   
+private void useAbbreviationCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useAbbreviationCheckBoxActionPerformed
+    if (useAbbreviationCheckBox.isSelected()) {
+        this.abbrevationTextField.setEnabled(true);
+        this.applicationIcon.setEnabled(false);
+        this.browseApplicationIcon.setEnabled(false);
+        this.invertBitmapCheckBox.setEnabled(false);
+        iconPathOrAbbrevLabel.setEnabled(true);
+    } else {
+        this.abbrevationTextField.setEnabled(false);
+        this.applicationIcon.setEnabled(true);
+        this.browseApplicationIcon.setEnabled(true);
+        this.invertBitmapCheckBox.setEnabled(true);
+        iconPathOrAbbrevLabel.setEnabled(false);
+    }
+}//GEN-LAST:event_useAbbreviationCheckBoxActionPerformed
 
-    
+private void disableDalpManagementCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disableDalpManagementCheckBoxActionPerformed
+
+    if (disableDalpManagementCheckBox.isSelected()) {
+        //disable all components and set ant variable to disable dalp generation in favor of dalp copying
+        Component[] compArr = advancedOptionConfigPanel.getComponents();
+        for (int i = 0; i < compArr.length; i++) {
+            compArr[i].setEnabled(false);
+        }
+    } else {
+        //enable all components; we will update their corresponding status next
+        Component[] compArr = advancedOptionConfigPanel.getComponents();
+        for (int i = 0; i < compArr.length; i++) {
+            compArr[i].setEnabled(true);
+        }
+        //checkboxes (which auto check state before setting ant properties)
+        this.useAbbreviationCheckBoxActionPerformed(evt);
+    }
+}//GEN-LAST:event_disableDalpManagementCheckBoxActionPerformed
+
+private void installLocationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installLocationComboBoxActionPerformed
+    installLocationTextField.setText("sdcard" + (installLocationComboBox.getSelectedIndex() + 1)); //NOI18N
+}//GEN-LAST:event_installLocationComboBoxActionPerformed
+
+private void workingDirComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workingDirComboBoxActionPerformed
+    workingDirTextField.setText("sdcard" + (this.workingDirComboBox.getSelectedIndex() + 1)); //NOI18N
+}//GEN-LAST:event_workingDirComboBoxActionPerformed
+
+private void installOtherSDRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installOtherSDRadioButtonActionPerformed
+    installLocationComboBox.setEnabled(true);
+    installLocationComboBoxActionPerformed(evt);
+}//GEN-LAST:event_installOtherSDRadioButtonActionPerformed
+
+private void installSDVMRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installSDVMRadioButtonActionPerformed
+    installLocationComboBox.setEnabled(false);
+    installLocationTextField.setText("sdcard"); //NOI18N
+}//GEN-LAST:event_installSDVMRadioButtonActionPerformed
+
+private void installHDDRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installHDDRadioButtonActionPerformed
+    installLocationComboBox.setEnabled(false);
+    installLocationTextField.setText("hdd"); //NOI18N
+}//GEN-LAST:event_installHDDRadioButtonActionPerformed
+
+private void workingDirOtherSDRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workingDirOtherSDRadioButtonActionPerformed
+    workingDirComboBox.setEnabled(true);
+    workingDirComboBoxActionPerformed(evt);
+}//GEN-LAST:event_workingDirOtherSDRadioButtonActionPerformed
+
+private void workingDirSDVMRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workingDirSDVMRadioButtonActionPerformed
+    workingDirComboBox.setEnabled(false);
+    workingDirTextField.setText("sdcard");  //NOI18N
+}//GEN-LAST:event_workingDirSDVMRadioButtonActionPerformed
+
+private void workingDirHDDRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workingDirHDDRadioButtonActionPerformed
+    workingDirComboBox.setEnabled(false);
+    workingDirTextField.setText("hdd");  //NOI18N
+}//GEN-LAST:event_workingDirHDDRadioButtonActionPerformed
+
+
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField abbrevationTextField;
     private javax.swing.JRadioButton adminRadioButton;
@@ -1005,10 +1085,8 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
     private javax.swing.JLabel iconPathOrAbbrevLabel;
     private javax.swing.JRadioButton installHDDRadioButton;
     private javax.swing.ButtonGroup installLocationButtonGroup;
+    private javax.swing.JComboBox installLocationComboBox;
     private javax.swing.JRadioButton installOtherSDRadioButton;
-    private javax.swing.JRadioButton installOtherSDRadioButton1;
-    private javax.swing.JRadioButton installOtherSDRadioButton2;
-    private javax.swing.JRadioButton installOtherSDRadioButton3;
     private javax.swing.JRadioButton installSDVMRadioButton;
     private javax.swing.JCheckBox invertBitmapCheckBox;
     private javax.swing.JCheckBox jCheckBox1;
@@ -1038,14 +1116,11 @@ public class RicohProjectCategoryCustomizer extends JPanel implements Customizer
     private javax.swing.JCheckBox useAbbreviationCheckBox;
     private javax.swing.JCheckBox vgaCheckBox;
     private javax.swing.JCheckBox visibleCheckBox;
+    private javax.swing.JComboBox workingDirComboBox;
     private javax.swing.JRadioButton workingDirHDDRadioButton;
     private javax.swing.JRadioButton workingDirOtherSDRadioButton;
-    private javax.swing.JRadioButton workingDirOtherSDRadioButton1;
-    private javax.swing.JRadioButton workingDirOtherSDRadioButton2;
-    private javax.swing.JRadioButton workingDirOtherSDRadioButton3;
     private javax.swing.JRadioButton workingDirSDVMRadioButton;
     private javax.swing.ButtonGroup workingDirectoryButtonGroup;
     private javax.swing.JCheckBox wvgaCheckBox;
     // End of variables declaration//GEN-END:variables
-    
 }
