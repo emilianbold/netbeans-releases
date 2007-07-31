@@ -23,9 +23,13 @@ Microsystems, Inc. All Rights Reserved.
 copy of this file in ide/applemenu. Check whether I need to do something there!
 -->
 <bindings>
+    <bind actionName="goto-declaration" key="D-B"/>
     <bind actionName="toggle-comment" key="D-SLASH"/>
-    <bind actionName="in-place-refactoring" key="D-R"/>
     <bind actionName="goto-help" key="O-F1"/>
-    <bind actionName="goto-declaration" key="O-G"/>
-    <bind actionName="ruby-goto-test" key="OS-E"/>
+    <!--
+    <bind actionName="select-element-next" key="OS-PERIOD"/>
+    <bind actionName="select-element-previous" key="OS-COMMA"/>
+    -->
+    <bind actionName="in-place-refactoring" key="D-R"/>
+    <bind actionName="ruby-goto-test" key="DS-T"/>
 </bindings>

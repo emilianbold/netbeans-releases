@@ -24,6 +24,12 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <bindings>
+    <!-- This is what the Java module does.... is this obsolete?
     <bind key="O-G" remove="true"/>
     <bind key="OS-G" actionName="goto-declaration"/>
+    <bind key="OS-UP" remove="true"/>
+    <bind key="DOS-UP" actionName="select-element-next"/>
+    <bind key="OS-DOWN" remove="true"/>
+    <bind key="DOS-DOWN" actionName="select-element-previous"/>
+    -->
 </bindings>
