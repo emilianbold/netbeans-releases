@@ -41,7 +41,6 @@ public class TaglibCatalog implements CatalogReader, CatalogDescriptor, org.xml.
     private static final String URL_TAGLIB_1_2="nbres:/org/netbeans/modules/web/taglib/resources/web-jsptaglibrary_1_2.dtd"; // NOI18N
     private static final String URL_TAGLIB_2_0="nbres:/org/netbeans/modules/web/taglib/resources/web-jsptaglibrary_2_0.xsd"; // NOI18N
     private static final String URL_WEB_SERVICES_CLIENT = "nbres:/org/netbeans/modules/web/taglib/resources/j2ee_web_services_client_1_1.xsd"; // NOI18N
-    private static final String URL_TAGLIB_2_0_DTD="nbres:/org/netbeans/modules/web/taglib/resources/web-jsptaglibrary_2_0.dtd"; // NOI18N
     
     private static final String XML_XSD="http://www.w3.org/2001/xml.xsd"; // NOI18N
     private static final String XML_XSD_DEF="<?xml version='1.0'?><xs:schema targetNamespace=\"http://www.w3.org/XML/1998/namespace\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xml:lang=\"en\"><xs:attribute name=\"lang\" type=\"xs:language\"><xs:annotation><xs:documentation>In due course, we should install the relevant ISO 2- and 3-letter codes as the enumerated possible values . . .</xs:documentation></xs:annotation></xs:attribute></xs:schema>"; // NOI18N
@@ -72,7 +71,7 @@ public class TaglibCatalog implements CatalogReader, CatalogDescriptor, org.xml.
         else if (TAGLIB_1_1.equals(publicId))
             return URL_TAGLIB_1_1;
         else if (TAGLIB_2_0_ID.equals(publicId))
-            return URL_TAGLIB_2_0_DTD;
+            return URL_TAGLIB_2_0;
         else return null;
     }
     
