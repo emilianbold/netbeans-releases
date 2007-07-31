@@ -44,6 +44,7 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         myPanel = panel;
         projectNameTextField.getDocument().addDocumentListener( this );
         projectLocationTextField.getDocument().addDocumentListener( this );
+        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(SampleWizardPanelVisual.class).getString("ACS_SampleWizardPanel_Description"));
     }
 
     protected String getDefaultProjectName() {
@@ -73,7 +74,7 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         org.openide.awt.Mnemonics.setLocalizedText(projectNameLabel,NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_ProjectName_Label"));
         add(projectNameLabel, gridBagConstraints);
-
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_ProjectName_Description"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -83,6 +84,8 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         add(projectNameTextField, gridBagConstraints);
 
         projectLocationLabel.setLabelFor(projectLocationTextField);
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_ProjectLocation_Description"));
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -110,6 +113,7 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(SampleWizardPanelVisual.class, "LBL_BrowseLocation_Button"));
+        browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_BrowseLocation__Description"));
         add(browseButton, gridBagConstraints);
 
         createdFolderLabel.setLabelFor(createdFolderTextField);
@@ -120,6 +124,8 @@ public class SampleWizardPanelVisual extends JPanel implements DocumentListener 
         add(createdFolderLabel, gridBagConstraints);
 
         createdFolderTextField.setEditable(false);
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SampleWizardPanelVisual.class, "ACS_CreatedProjectFolder_Description"));
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
