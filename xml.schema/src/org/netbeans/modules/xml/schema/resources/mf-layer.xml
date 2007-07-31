@@ -32,23 +32,23 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.xml.schema.wizard.SchemaWizardIterator"/>
                 <attr name="templateCategory" stringvalue="XML"/>
             </file>
-            <file name="retrieveWSDLResource">
-                <attr name="position" intvalue="270"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/xmlObject.gif"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.retriever.Bundle"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.schema.ui.retriever.RetrieveXMLResourceWizardIterator"/>
-                <attr name="template" boolvalue="true"/>
-		<attr name="templateCategory" stringvalue="XML"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/retrieveWSDLResource.html"/>
-            </file>
 	    <file name="retrieveSchemaResource">
                 <attr name="position" intvalue="260"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/xmlObject.gif"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.ui.retriever.Bundle"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.schema.ui.retriever.RetrieveXMLResourceWizardIterator"/>
                 <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/XML_file.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/retrieveSchemaResource.html"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.schema.wizard.RetrieveXMLResourceWizardIterator"/>
 		<attr name="templateCategory" stringvalue="XML"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/ui/retriever/retrieveSchemaResource.html"/>
+            </file>
+            <file name="retrieveWSDLResource">
+                <attr name="position" intvalue="270"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.schema.wizard.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/XML_file.png"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/schema/resources/retrieveWSDLResource.html"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.xml.schema.wizard.RetrieveXMLResourceWizardIterator"/>
+		<attr name="templateCategory" stringvalue="XML"/>
             </file>
             <file name="PurchaseOrder.xsd" url="nbresloc:/org/netbeans/modules/xml/schema/wizard/templates/PurchaseOrder.xsd">
                 <attr name="position" intvalue="2000"/>
