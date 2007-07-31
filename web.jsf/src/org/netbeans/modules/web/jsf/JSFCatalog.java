@@ -45,7 +45,6 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
     private static final String JSF_1_2=JAVAEE_NS+"/"+JSF_1_2_XSD; // NOI18N
     public static final String JSF_ID_1_2="SCHEMA:"+JSF_1_2; // NOI18N
     private static final String URL_JSF_1_2="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_2.xsd"; // NOI18N
-    private static final String URL_JSF_1_2_DTD="nbres:/org/netbeans/modules/web/jsf/resources/web-facesconfig_1_2.dtd"; // NOI18N
     
     /** Creates a new instance of StrutsCatalog */
     public JSFCatalog() {
@@ -73,7 +72,7 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
         else if (JSF_ID_1_1.equals(publicId))
             return URL_JSF_1_1;
         else if (JSF_ID_1_2.equals(publicId))
-            return URL_JSF_1_2_DTD;
+            return URL_JSF_1_2;
         else return null;
     }
     
