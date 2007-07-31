@@ -111,4 +111,40 @@ public final class RubySessionTest extends TestBase {
         p.waitFor();
     }
 
+    public void testSynchronization() throws Exception { // #111088
+        String[] testContent = {
+            "require 'thread'",
+            "m = Mutex.new",
+            "i = 0",
+            "(1..2).each do",
+            "  Thread.new do",
+            "    (1..5).each do",
+            "      Thread.new do",
+            "        (1..10).each do",
+            "          Thread.new do",
+            "            sleep 0.01",
+            "            m.synchronize do",
+            "              i += 1",
+            "            end",
+            "          end",
+            "        end",
+            "      end",
+            "    end",
+            "  end",
+            "end",
+            "while i != 100",
+            "  sleep 0.4",
+            "end",
+            "puts 'main thread'"
+        };
+        File testF = createScript(testContent);
+        FileObject testFO = FileUtil.toFileObject(testF);
+        RubyBreakpoint bp = addBreakpoint(testFO, 10);
+        Process p = startDebugging(testF);
+        doContinue();
+        RubyBreakpoint.removeBreakpoint(bp);
+        doContinue();
+        p.waitFor();
+    }
+
 }
