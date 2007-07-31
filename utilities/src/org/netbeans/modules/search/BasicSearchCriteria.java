@@ -358,7 +358,8 @@ final class BasicSearchCriteria {
     private void compileSimpleFileNamePattern() {
         assert fileNamePatternExpr != null;
         try {
-            fileNamePattern = Pattern.compile(RegexpMaker.makeMultiRegexp(fileNamePatternExpr));
+            fileNamePattern = Pattern.compile(RegexpMaker.makeMultiRegexp(fileNamePatternExpr),
+                                              Pattern.CASE_INSENSITIVE);
         } catch (PatternSyntaxException ex) {
             assert false;
             fileNamePattern = null;
