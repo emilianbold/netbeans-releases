@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <!--  JSP Document --> 
       <file name="JSPX.jspx" url="templates/JSPDoc.template">
+        <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
         <attr name="position" intvalue="0"/>
       </file>
       <!--  JSP Segment --> 
