@@ -437,27 +437,31 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     
     private void createLookup() {
         Lookup noEncodingLookup = super.getLookup();
-        
+
         org.netbeans.spi.queries.FileEncodingQueryImplementation feq = new org.netbeans.spi.queries.FileEncodingQueryImplementation() {
+
             public Charset getEncoding(FileObject file) {
                 assert file != null;
                 assert file.equals(getPrimaryFile());
-                
+
                 String charsetName = getFileEncoding();
-                
-                  try {
-                      return Charset.forName(charsetName);
-                  } catch (IllegalCharsetNameException ichse) {
-                      Logger.getLogger("global").log(Level.WARNING, null, ichse);
-                  } catch (UnsupportedCharsetException uchse) {
-                      Logger.getLogger("global").log(Level.WARNING, null, uchse);
-                  }
+                try {
+                    return Charset.forName(charsetName);
+                } catch (IllegalCharsetNameException ichse) {
+                    //the jsp templates contains the ${encoding} property 
+                    //so the ICHNE is always thrown for them, just ignore
+                    Boolean template = (Boolean)file.getAttribute("template");//NOI18N
+                    if(template == null || !template.booleanValue()) {
+                        Logger.getLogger("global").log(Level.INFO, null, ichse);
+                    }
+                } catch (UnsupportedCharsetException uchse) {
+                    Logger.getLogger("global").log(Level.INFO, null, uchse);
+                }
 
                 return null;
-                
             }
         };
-        
+
         currentLookup = new ProxyLookup(noEncodingLookup, Lookups.singleton(feq));
     }
     
