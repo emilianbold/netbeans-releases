@@ -55,9 +55,8 @@ import org.openide.util.WeakListeners;
 public class ConnectionAction extends SQLExecutionBaseAction {
 
     protected String getDisplayName(SQLExecution sqlExecution) {
-        // not localized because not displayed in the UI, 
         // just needed in order to satisfy issue 101775
-        return "ConnectionAction"; // NOI18N
+        return NbBundle.getMessage(ConnectionAction.class, "LBL_DatabaseConnection");
     }
 
     protected void actionPerformed(SQLExecution sqlExecution) {
@@ -137,6 +136,9 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             model = new DatabaseConnectionModel();
             combo.setModel(model);
             combo.setRenderer(new DatabaseConnectionRenderer());
+            String accessibleName = NbBundle.getMessage(ConnectionAction.class, "LBL_DatabaseConnection");
+            combo.getAccessibleContext().setAccessibleName(accessibleName);
+            combo.getAccessibleContext().setAccessibleDescription(accessibleName);
 
             add(combo, BorderLayout.CENTER);
 
