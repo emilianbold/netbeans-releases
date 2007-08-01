@@ -21,6 +21,7 @@ package org.netbeans.modules.websvc.core.jaxws.nodes;
 import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
+import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -118,6 +119,14 @@ public class JaxWsNode extends AbstractNode implements WsWsdlCookie, JaxWsTester
         this.srcRoot=srcRoot;
         this.content = content;
         this.implBeanClass=implBeanClass;
+        if(implBeanClass.getAttribute("jax-ws-service")==null) {
+            try {
+                implBeanClass.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);
+                getDataObject().setValid(false);
+            } catch (PropertyVetoException ex) {
+            } catch (IOException ex) {
+            }
+        }
         setName(service.getName());
         content.add(this);
         content.add(service);

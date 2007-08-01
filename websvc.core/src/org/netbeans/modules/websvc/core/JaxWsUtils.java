@@ -144,6 +144,9 @@ public class JaxWsUtils {
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         
         FileObject implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
+        implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);
+        implClassFo.setAttribute("jax-ws-service-provider", Boolean.TRUE);
+        DataObject.find(implClassFo).setValid(false);
         
         ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
@@ -269,6 +272,8 @@ public class JaxWsUtils {
         JAXWSSupport jaxWsSupport = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
         
         FileObject implClassFo = GenerationUtils.createClass(targetFolder, targetName, null);
+        implClassFo.setAttribute("jax-ws-service", Boolean.TRUE);
+        DataObject.find(implClassFo).setValid(false);
         
         ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);
         String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);

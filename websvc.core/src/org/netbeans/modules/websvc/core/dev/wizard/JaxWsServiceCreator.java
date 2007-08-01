@@ -29,6 +29,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.VariableTree;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -225,7 +226,9 @@ public class JaxWsServiceCreator implements ServiceCreator {
         DataObject dTemplate = DataObject.find(template);
         DataObject dobj = dTemplate.createFromTemplate(df, wsName);
         FileObject createdFile = dobj.getPrimaryFile();
-        
+        createdFile.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);
+        dobj.setValid(false);
+        dobj = DataObject.find(createdFile);
         final JaxWsModel jaxWsModel = projectInfo.getProject().getLookup().lookup(JaxWsModel.class);
         if ( jaxWsModel!= null) {
             ClassPath classPath = ClassPath.getClassPath(createdFile, ClassPath.SOURCE);
@@ -348,7 +351,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
         }
     }
     
-    private void generateWebServiceFromEJB(String wsName, FileObject pkg, ProjectInfo projectInfo, Node[] nodes) throws IOException, ServiceAlreadyExistsExeption {
+    private void generateWebServiceFromEJB(String wsName, FileObject pkg, ProjectInfo projectInfo, Node[] nodes) throws IOException, ServiceAlreadyExistsExeption, PropertyVetoException {
 
         if (nodes!=null && nodes.length == 1) {
             
@@ -357,7 +360,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 
                 DataFolder df = DataFolder.findFolder(pkg);
                 FileObject template = Templates.getTemplate(wiz);
-
+                
                 if (projectType==ProjectInfo.EJB_PROJECT_TYPE) { //EJB Web Service
                     FileObject templateParent = template.getParent();
                     template = templateParent.getFileObject("EjbWebService","java"); //NOI18N
@@ -365,6 +368,9 @@ public class JaxWsServiceCreator implements ServiceCreator {
                 DataObject dTemplate = DataObject.find(template);
                 DataObject dobj = dTemplate.createFromTemplate(df, wsName);
                 FileObject createdFile = dobj.getPrimaryFile();               
+                createdFile.setAttribute("jax-ws-service", java.lang.Boolean.TRUE);
+                dobj.setValid(false);
+                dobj = DataObject.find(createdFile);
 
                 ClassPath classPath = ClassPath.getClassPath(createdFile, ClassPath.SOURCE);
                 String serviceImplPath = classPath.getResourceName(createdFile, '.', false);

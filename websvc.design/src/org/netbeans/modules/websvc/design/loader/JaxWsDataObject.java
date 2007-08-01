@@ -25,7 +25,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.design.javamodel.ServiceModel;
 import org.netbeans.modules.websvc.design.multiview.MultiViewSupport;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -67,11 +66,12 @@ public final class JaxWsDataObject extends MultiDataObject {
 
     private void lazyInitialize() {
         if(service==null) {
-            service = findService(getPrimaryFile());
+            service = findService();
         }
     }
 
-    static Service findService(FileObject fo) {
+    private Service findService() {
+        FileObject fo = getPrimaryFile();
         Project p = FileOwnerQuery.getOwner(fo);
         if(p==null) return null;
         JaxWsModel model = p.getLookup().lookup(JaxWsModel.class);
@@ -117,8 +117,7 @@ public final class JaxWsDataObject extends MultiDataObject {
         lazyInitialize();
         if (mvc == null) {
             createEditorSupport();
-            ServiceModel sm = ServiceModel.getServiceModel(getPrimaryFile());
-            if(sm!=null && sm.getStatus()!=ServiceModel.STATUS_NOT_SERVICE)
+            if(getPrimaryFile().getAttribute("jax-ws-service-provider")==null)
                 mvc = new MultiViewSupport(service, this);
         }
         return mvc;

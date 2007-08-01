@@ -87,7 +87,7 @@ public final class JaxWsDataLoader extends MultiFileLoader {
         if (fo.getAttribute("template") != null && fo.getAttribute("javax.script.ScriptEngine") != null) // NOI18N
             return null;
         
-        if (fo.getExt().equals(JAVA_EXTENSION) && JaxWsDataObject.findService(fo)!=null) {
+        if (fo.getExt().equals(JAVA_EXTENSION) && fo.getAttribute("jax-ws-service")!=null) {
             return fo;
         }
         return null;
