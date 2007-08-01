@@ -18,13 +18,11 @@
  */
 package org.netbeans.modules.xslt.mapper.model.targettree;
 
-import java.awt.ComponentOrientation;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
-import javax.xml.namespace.QName;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.soa.ui.TooltipTextProvider;
 import org.netbeans.modules.soa.ui.axinodes.AxiomUtils;
@@ -40,6 +38,7 @@ import org.netbeans.modules.xslt.mapper.model.nodes.visitor.NodeVisitor;
 import org.netbeans.modules.xslt.mapper.view.GetExpressionVisitor;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 import org.netbeans.modules.xslt.model.Attribute;
+import org.netbeans.modules.xslt.model.AttributeValueTemplate;
 import org.netbeans.modules.xslt.model.XslComponent;
 
 /**
@@ -136,6 +135,27 @@ public class AttributeDeclarationNode extends DeclarationNode
                     new SoaUiUtil.TextChunk(name, SoaUiUtil.MISTAKE_RED));
         }
     }
+    
+        public String toString() {
+
+
+
+        Attribute component = (Attribute) getComponent();
+
+        AttributeValueTemplate atv = component.getName();
+
+        if (atv != null && atv.getQName() != null) {
+            return atv.getQName().getLocalPart();
+        }
+
+        org.netbeans.modules.xml.axi.Attribute attribute = (org.netbeans.modules.xml.axi.Attribute) getType();
+        if (attribute != null && attribute.getName() != null) {
+            return attribute.getName();
+        }
+
+        return super.toString();
+    }
+
     
     public String getTooltipText() {
         AXIComponent axiComponent = getType();

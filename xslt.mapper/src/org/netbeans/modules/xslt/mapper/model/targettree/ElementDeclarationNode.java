@@ -123,9 +123,9 @@ public class ElementDeclarationNode extends DeclarationNode
     public String toString(){
         XslComponent comp  = getComponent();
         if (comp instanceof Element) {
-            return ((Element) comp).getName().toString();
+            return ((Element) comp).getName().getQName().getLocalPart();
         } else if (comp instanceof LiteralResultElement) {
-            return ((LiteralResultElement) comp).getQName().toString();
+            return ((LiteralResultElement) comp).getQName().getLocalPart();
         }
         return comp.toString();
     }

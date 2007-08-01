@@ -182,7 +182,7 @@ public abstract class TreeNode extends Node {
     }
     
     public boolean isSourceViewNode() {
-        return ((IMapperTreeNode)getMapperNode()).isSourceTreeNode();
+        return (((IMapperTreeNode)getMapperNode()) != null) && ((IMapperTreeNode)getMapperNode()).isSourceTreeNode();
     }
     
     private void removeFromTree(){
