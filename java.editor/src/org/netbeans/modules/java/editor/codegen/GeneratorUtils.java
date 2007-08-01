@@ -33,9 +33,11 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,13 +65,16 @@ import javax.lang.model.util.Types;
 import javax.lang.model.util.Types;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.text.Document;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.editor.GuardedDocument;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -281,14 +286,15 @@ public class GeneratorUtils {
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();
+            GeneratorUtilities gu = GeneratorUtilities.get(wc);
             ClassTree clazz = (ClassTree)path.getLeaf();
             List<Tree> members = new ArrayList<Tree>(clazz.getMembers());
             List<Tree> methods = new ArrayList<Tree>();
             for(VariableElement element : fields) {
                 if (type != SETTERS_ONLY)
-                    methods.add(createGetterMethod(wc, element, (DeclaredType)te.asType()));
+                    methods.add(gu.createGetter(te, element));
                 if (type != GETTERS_ONLY)
-                    methods.add(createSetterMethod(wc, element, (DeclaredType)te.asType()));
+                    methods.add(gu.createSetter(te, element));
             }
             members.addAll(index, methods);
             ClassTree nue = make.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), (List<ExpressionTree>)clazz.getImplementsClause(), members);
@@ -328,6 +334,31 @@ public class GeneratorUtils {
             }
         }
         return false;
+    }
+    
+    public static int findClassMemberIndex(WorkingCopy wc, ClassTree clazz, int offset) {
+        int index = 0;
+        SourcePositions sp = wc.getTrees().getSourcePositions();
+        GuardedDocument gdoc = null;
+        try {
+            Document doc = wc.getDocument();
+            if (doc != null && doc instanceof GuardedDocument)
+                gdoc = (GuardedDocument)doc;
+        } catch (IOException ioe) {}
+        Tree lastMember = null;
+        for (Tree tree : clazz.getMembers()) {
+            if (offset <= sp.getStartPosition(wc.getCompilationUnit(), tree)) {
+                if (gdoc == null)
+                    break;
+                int pos = (int)(lastMember != null ? sp.getEndPosition(wc.getCompilationUnit(), lastMember) : sp.getStartPosition(wc.getCompilationUnit(), clazz));
+                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+                if (pos <= sp.getStartPosition(wc.getCompilationUnit(), tree))
+                    break;
+            }
+            index++;
+            lastMember = tree;
+        }
+        return index;
     }
     
     private static MethodTree createMethodImplementation(WorkingCopy wc, ExecutableElement element, DeclaredType type) {

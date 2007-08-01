@@ -23,6 +23,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -44,6 +45,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.util.NbBundle;
@@ -297,10 +299,14 @@ public final class CompletionLayout {
                                     CompletionItem selectedItem
                                             = completionScrollPane.getSelectedCompletionItem();
                                     if (selectedItem != null) {
-                                        LogRecord r = new LogRecord(Level.FINE, "COMPL_MOUSE_SELECT"); // NOI18N
-                                        r.setParameters(new Object[] { null, completionScrollPane.getSelectedIndex(), selectedItem.getClass().getSimpleName()});
-                                        CompletionImpl.uilog(r);
-                                        selectedItem.defaultAction(c);
+                                        if (c.getDocument() instanceof GuardedDocument && ((GuardedDocument)c.getDocument()).isPosGuarded(c.getSelectionEnd())) {
+                                            Toolkit.getDefaultToolkit().beep();
+                                        } else {
+                                            LogRecord r = new LogRecord(Level.FINE, "COMPL_MOUSE_SELECT"); // NOI18N
+                                            r.setParameters(new Object[] { null, completionScrollPane.getSelectedIndex(), selectedItem.getClass().getSimpleName()});
+                                            CompletionImpl.uilog(r);
+                                            selectedItem.defaultAction(c);
+                                        }
                                     }
                                 }
                             }

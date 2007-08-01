@@ -20,7 +20,6 @@ package org.netbeans.modules.java.editor.codegen;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.awt.Dialog;
 import java.io.IOException;
@@ -141,14 +140,7 @@ public class ConstructorGenerator implements CodeGenerator {
                         copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
                         path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-                        int idx = 0;
-                        SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
-                        for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
-                            if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
-                                idx++;
-                            else
-                                break;
-                        }
+                        int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                         ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
                         if (fieldHandles != null) {
                             for (ElementHandle<? extends Element> elementHandle : fieldHandles)

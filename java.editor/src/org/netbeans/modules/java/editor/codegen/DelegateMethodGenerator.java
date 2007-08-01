@@ -27,7 +27,6 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.awt.Dialog;
@@ -141,14 +140,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
                             copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
                             path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
-                            int idx = 0;
-                            SourcePositions sourcePositions = copy.getTrees().getSourcePositions();
-                            for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
-                                if (sourcePositions.getStartPosition(path.getCompilationUnit(), tree) < caretOffset)
-                                    idx++;
-                                else
-                                    break;
-                            }
+                            int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                             ElementHandle<? extends Element> handle = panel.getDelegateField();
                             VariableElement delegate = handle != null ? (VariableElement)handle.resolve(copy) : null;
                             ArrayList<ExecutableElement> methods = new ArrayList<ExecutableElement>();

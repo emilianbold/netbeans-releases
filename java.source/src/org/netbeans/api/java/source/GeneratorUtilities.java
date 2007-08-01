@@ -33,6 +33,8 @@ import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,8 +53,10 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.text.Document;
 
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 import org.openide.filesystems.FileObject;
@@ -94,10 +98,27 @@ public final class GeneratorUtilities {
     public ClassTree insertClassMember(ClassTree clazz, Tree member) {
         assert clazz != null && member != null;
         int idx = 0;
+        GuardedDocument gdoc = null;
+        SourcePositions sp = null;
+        try {
+            Document doc = copy.getDocument();
+            if (doc != null && doc instanceof GuardedDocument) {
+                gdoc = (GuardedDocument)doc;
+                sp = copy.getTrees().getSourcePositions();
+            }
+        } catch (IOException ioe) {}
+        Tree lastMember = null;
         for (Tree tree : clazz.getMembers()) {
-            if (ClassMemberComparator.compare(member, tree) < 0)
-                break;
+            if (ClassMemberComparator.compare(member, tree) < 0) {
+                if (gdoc == null)
+                    break;
+                int pos = (int)(lastMember != null ? sp.getEndPosition(copy.getCompilationUnit(), lastMember) : sp.getStartPosition(copy.getCompilationUnit(), clazz));
+                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+                if (pos <= sp.getStartPosition(copy.getCompilationUnit(), tree))
+                    break;
+            }
             idx++;
+            lastMember = tree;
         }
         return copy.getTreeMaker().insertClassMember(clazz, idx, member);        
     }

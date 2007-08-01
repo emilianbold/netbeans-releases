@@ -45,6 +45,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.SettingsNames;
@@ -486,6 +487,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(e);
         JTextComponent comp = getActiveComponent();
         boolean compEditable = (comp != null && comp.isEditable());
+        boolean guardedPos = !(comp.getDocument() instanceof GuardedDocument) || ((GuardedDocument)comp.getDocument()).isPosGuarded(comp.getSelectionEnd());
         Object obj = inputMap.get(ks);
         if (obj != null) {
             Action action = actionMap.get(obj);
@@ -499,22 +501,26 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
         if (layout.isCompletionVisible()) {
             CompletionItem item = layout.getSelectedCompletionItem();
             if (item != null) {
+                if (compEditable && !guardedPos) {
                     LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT"); // NOI18N
                     r.setParameters(new Object[] {e.getKeyChar(), layout.getSelectedIndex(), item.getClass().getSimpleName()});
-                if (compEditable)
                     item.processKeyEvent(e);
-                if (e.isConsumed()) {
-                    uilog(r);
-                    return;
+                    if (e.isConsumed()) {
+                        uilog(r);
+                        return;
+                    }
                 }
                 // Call default action if ENTER was pressed
                 if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED) {
                     e.consume();
-                    r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT_DEFAULT"); // NOI18N
-                    r.setParameters(new Object[] {'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
-                    if (compEditable)
-                        item.defaultAction(getActiveComponent());
-                    uilog(r);
+                    if (guardedPos) {
+                        Toolkit.getDefaultToolkit().beep();
+                    } else if (compEditable) {
+                        LogRecord r = new LogRecord(Level.FINE, "COMPL_KEY_SELECT_DEFAULT"); // NOI18N
+                        r.setParameters(new Object[] {'\n', layout.getSelectedIndex(), item.getClass().getSimpleName()});
+                            item.defaultAction(getActiveComponent());
+                        uilog(r);
+                    }
                     return;
                 }
             } else if (e.getKeyCode() == KeyEvent.VK_UP || e.getKeyCode() == KeyEvent.VK_DOWN
@@ -524,7 +530,9 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
             if (e.getKeyCode() == KeyEvent.VK_TAB) {
                 e.consume();
-                if (compEditable && e.getID() == KeyEvent.KEY_PRESSED)
+                if (guardedPos) {
+                    Toolkit.getDefaultToolkit().beep();
+                } else if (compEditable && e.getID() == KeyEvent.KEY_PRESSED)
                     insertCommonPrefix();
                 return;
             }
@@ -775,16 +783,17 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         final boolean displayAdditionalItems = hasAdditionalItems;
         Runnable requestShowRunnable = new Runnable() {
             public void run() {
-                int caretOffset = getActiveComponent().getSelectionStart();
+                JTextComponent c = getActiveComponent();
+                int caretOffset = c.getSelectionStart();
                 // completionResults = null;
                 if (sortedResultItems.size() == 1 && !refreshedQuery && explicitQuery
                         && CompletionSettings.INSTANCE.completionInstantSubstitution()
-                        && getActiveComponent().isEditable()) {
+                        && c.isEditable() && !(c.getDocument() instanceof GuardedDocument && ((GuardedDocument)c.getDocument()).isPosGuarded(caretOffset))) {
                     try {
-                        int[] block = Utilities.getIdentifierBlock(getActiveComponent(), caretOffset);
+                        int[] block = Utilities.getIdentifierBlock(c, caretOffset);
                         if (block == null || block[1] == caretOffset) { // NOI18N
                             CompletionItem item = (CompletionItem) sortedResultItems.get(0);
-                            if (item.instantSubstitution(getActiveComponent())) {
+                            if (item.instantSubstitution(c)) {
                                 return;
                             }
                         }
