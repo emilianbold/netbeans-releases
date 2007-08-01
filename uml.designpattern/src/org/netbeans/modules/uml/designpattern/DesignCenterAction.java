@@ -85,7 +85,7 @@ public class DesignCenterAction extends CallbackSystemAction
    
    protected String iconResource()
    {
-       return ImageUtil.instance().IMAGE_FOLDER + "designcenter.gif"; // NOI18N
+       return ImageUtil.instance().IMAGE_FOLDER + "design-center.gif"; // NOI18N
    }
    
    public boolean isEnabled()	{
