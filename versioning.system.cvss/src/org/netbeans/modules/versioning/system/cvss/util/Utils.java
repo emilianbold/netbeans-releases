@@ -418,6 +418,12 @@ public class Utils {
         return branchNames.toString();
     }
 
+    public static boolean containsMetadata(File folder) {
+        File repository = new File(folder, CvsVersioningSystem.FILENAME_CVS_REPOSITORY);
+        File entries = new File(folder, CvsVersioningSystem.FILENAME_CVS_ENTRIES);
+        return repository.canRead() && entries.canRead();
+    }
+
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */ 

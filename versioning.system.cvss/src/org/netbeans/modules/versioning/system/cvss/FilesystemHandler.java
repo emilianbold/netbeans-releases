@@ -81,11 +81,7 @@ class FilesystemHandler extends VCSInterceptor {
      */
     public boolean beforeMove(File from, File to) {
         File destDir = to.getParentFile();
-        if (from != null && destDir != null && from.isDirectory()) {
-            FileInformation info = cache.getStatus(from);
-            return (info.getStatus() & FileInformation.STATUS_MANAGED) != 0;
-        }
-        return false;
+        return from != null && destDir != null && org.netbeans.modules.versioning.system.cvss.util.Utils.containsMetadata(from);
     }
     
     /**
@@ -104,6 +100,7 @@ class FilesystemHandler extends VCSInterceptor {
     private void moveRecursively(List<File> affectedFiles, File from, File to) throws IOException {
         File [] files = from.listFiles();
         if (files != null) {
+            to.mkdirs(); // make sure destination fodler is created even if the source folder is empty
             for (File file : files) {
                 String fileName = file.getName();
                 if (file.isDirectory()) {
@@ -116,7 +113,6 @@ class FilesystemHandler extends VCSInterceptor {
                     affectedFiles.add(file);
                     affectedFiles.add(toFile);
                 } else {
-                    to.mkdirs();
                     File toFile = new File(to, fileName);
                     file.renameTo(toFile);
                     affectedFiles.add(file);

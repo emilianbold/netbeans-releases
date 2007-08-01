@@ -21,7 +21,6 @@ package org.netbeans.modules.versioning.system.cvss;
 
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.lib.cvsclient.admin.AdminHandler;
 import org.netbeans.lib.cvsclient.admin.Entry;
 import org.netbeans.lib.cvsclient.command.*;
@@ -50,7 +49,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import java.beans.PropertyChangeListener;
 
 /**
  * A singleton CVS manager class, center of CVS module. Use {@link #getInstance()} to get access
@@ -71,8 +69,8 @@ public class CvsVersioningSystem {
 
     public static final Object EVENT_REFRESH_ANNOTATIONS = new Object();    
 
-    private static final String FILENAME_CVS_REPOSITORY = FILENAME_CVS + "/Repository"; // NOI18N
-    private static final String FILENAME_CVS_ENTRIES = FILENAME_CVS + "/Entries"; // NOI18N
+    public static final String FILENAME_CVS_REPOSITORY = FILENAME_CVS + "/Repository"; // NOI18N
+    public static final String FILENAME_CVS_ENTRIES = FILENAME_CVS + "/Entries"; // NOI18N
 
     /**
      * Extensions to be treated as text although MIME type may suggest otherwise.
@@ -399,9 +397,7 @@ public class CvsVersioningSystem {
         File topmost = null;
         for (; file != null; file = file.getParentFile()) {
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
-            File repository = new File(file, FILENAME_CVS_REPOSITORY);
-            File entries = new File(file, FILENAME_CVS_ENTRIES);
-            if (repository.canRead() && entries.canRead()) {
+            if (Utils.containsMetadata(file)) {
                 topmost = file;
             }
         }
