@@ -29,6 +29,7 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.awt.UndoRedo;
+import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.NbDocument;
@@ -107,11 +108,13 @@ public class SourceMultiViewElement extends CloneableEditor
     @Override
     public void componentShowing() {
         super.componentShowing();
+        setActivatedNodes(new Node[] {getEditorSupport().getDataObject().getNodeDelegate()});
     }
     
     @Override
     public void componentHidden() {
         super.componentHidden();
+        setActivatedNodes(new Node[] {});
     }
     
     public void open() {
