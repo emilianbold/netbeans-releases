@@ -121,7 +121,6 @@ public class CloneConfigurationPanel2 extends JPanel implements DocumentListener
         setPreferredSize(new java.awt.Dimension(400, 100));
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(NbBundle.getMessage(CloneConfigurationPanel2.class, "MNM_NewConfigPanel_ConfigurationPrefix").charAt(0));
         jLabel1.setLabelFor(jTextFieldName);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CloneConfigurationPanel2.class, "LBL_NewConfigPanel_ConfigurationPrefix")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

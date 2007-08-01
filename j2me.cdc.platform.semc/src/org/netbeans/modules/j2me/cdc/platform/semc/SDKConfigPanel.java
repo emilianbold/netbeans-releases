@@ -64,7 +64,7 @@ public class SDKConfigPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(SDKConfigPanel.class, "LBL_SDKConfigLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SDKConfigPanel.class, "LBL_SDKConfigLabel")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(SDKConfigPanel.class, "LBL_SDKConfigLauncher")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
