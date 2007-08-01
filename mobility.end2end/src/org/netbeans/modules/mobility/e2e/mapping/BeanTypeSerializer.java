@@ -183,7 +183,7 @@ public class BeanTypeSerializer implements JavonSerializer {
     
     public String toObject( ClassData type, String variable ) {
         if( beanTypes.get( type.getFullyQualifiedName()) != null ) {
-            return "(" + type.getFullyQualifiedName() + ")";
+            return "(" + type.getFullyQualifiedName() + ")" + ( variable == null ? "" : variable );
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }

@@ -7,9 +7,6 @@ package ${mapping.getClientMapping().getPackageName()};
 import java.util.*;
 import java.io.*;
 import javax.microedition.io.*;
-<#list imports as import>
-import ${import};
-</#list>
 
 /**
  *
@@ -187,8 +184,13 @@ public class ${service.getClassName()} {
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
             <#if type.getName() != "void" && !type.isArray()>
                 case ${registry.getRegisteredTypeId( type )}:
-                    ${serializer.fromStream( mapping, type, "in", "result" )}
-                    return result;
+                    <#if type.isPrimitive()>
+                        <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>
+                        return ${serializer.toObject( type, typeFromStream )};
+                    <#else>
+                        ${serializer.fromStream( mapping, type, "in", "result" )};
+                        return result;
+                    </#if>
             </#if>
             <#if type.isArray()>
                 <#assign hasArrays = true/>
@@ -205,7 +207,7 @@ public class ${service.getClassName()} {
                         case ${registry.getRegisteredTypeId( type.getComponentType())}:
                             ${type.getName()} data = new ${type.getComponentType().getName()}[length];
                             for (int i = 0; i < length; i++) {
-                                ${registry.getTypeSerializer( type.getComponentType()).fromStream( mapping, type.getComponentType(), "in", "data[i]" )}
+                                data[i] = ${registry.getTypeSerializer( type.getComponentType()).toObject( type.getComponentType(), "readObject( in )" )};
                             }
                             return data;
                     </#if>
