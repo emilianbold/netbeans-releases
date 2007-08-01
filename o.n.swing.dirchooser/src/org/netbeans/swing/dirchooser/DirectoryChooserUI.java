@@ -407,7 +407,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     approveButton.getPreferredSize() : cancelButton.getPreferredSize();
             }
         };
-        approveButton.setMnemonic(getApproveButtonMnemonic(fc));
+        // #107791: No mnemonics desirable on Mac 
+        if (!Utilities.isMac()) {
+            approveButton.setMnemonic(getApproveButtonMnemonic(fc));
+        }
         approveButton.addActionListener(getApproveSelectionAction());
         approveButton.setToolTipText(getApproveButtonToolTipText(fc));
         buttonPanel.add(Box.createRigidArea(verticalStrut1));
@@ -420,7 +423,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     approveButton.getPreferredSize() : cancelButton.getPreferredSize();
             }
         };
-        cancelButton.setMnemonic(cancelButtonMnemonic);
+        // #107791: No mnemonics desirable on Mac 
+        if (!Utilities.isMac()) {
+            cancelButton.setMnemonic(cancelButtonMnemonic);
+        }
         cancelButton.setToolTipText(cancelButtonToolTipText);
         cancelButton.addActionListener(getCancelSelectionAction());
         buttonPanel.add(cancelButton);
@@ -1258,14 +1264,20 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         JFileChooser chooser = getFileChooser();
         approveButton.setText(getApproveButtonText(chooser));
         approveButton.setToolTipText(getApproveButtonToolTipText(chooser));
-        approveButton.setMnemonic(getApproveButtonMnemonic(chooser));
+        // #107791: No mnemonics desirable on Mac 
+        if (!Utilities.isMac()) {
+            approveButton.setMnemonic(getApproveButtonMnemonic(chooser));
+        }
     }
     
     private void fireDialogTypeChanged(PropertyChangeEvent e) {
         JFileChooser chooser = getFileChooser();
         approveButton.setText(getApproveButtonText(chooser));
         approveButton.setToolTipText(getApproveButtonToolTipText(chooser));
-        approveButton.setMnemonic(getApproveButtonMnemonic(chooser));
+        // #107791: No mnemonics desirable on Mac 
+        if (!Utilities.isMac()) {
+            approveButton.setMnemonic(getApproveButtonMnemonic(chooser));
+        }
         if (chooser.getDialogType() == JFileChooser.SAVE_DIALOG) {
             lookInComboBoxLabel.setText(saveInLabelText);
         } else {
@@ -1274,7 +1286,10 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     }
     
     private void fireApproveButtonMnemonicChanged(PropertyChangeEvent e) {
-        approveButton.setMnemonic(getApproveButtonMnemonic(getFileChooser()));
+        // #107791: No mnemonics desirable on Mac 
+        if (!Utilities.isMac()) {
+            approveButton.setMnemonic(getApproveButtonMnemonic(getFileChooser()));
+        }
     }
     
     private void fireControlButtonsChanged(PropertyChangeEvent e) {
