@@ -29,6 +29,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy description="Copying files" 
 	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/">
             <fileset dir="../external/rest/"/>
+            <fileset file="../external/rest-license.txt"/>
         </copy>
     </target>
 
