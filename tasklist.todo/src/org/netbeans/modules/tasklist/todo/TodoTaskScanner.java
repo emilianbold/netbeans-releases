@@ -139,6 +139,9 @@ public class TodoTaskScanner extends FileTaskScanner implements PropertyChangeLi
             }
         } catch( IOException e ) {
             Logger.getLogger( getClass().getName() ).log( Level.INFO, null, e );
+        } catch( OutOfMemoryError oomE ) {
+            System.gc();
+            Logger.getLogger( getClass().getName() ).log( Level.INFO, null, oomE );
         }
         return null == tasks ? getEmptyList() : tasks;
     }
