@@ -507,7 +507,7 @@ public class FileObjects {
         protected FileBase (final File file, final String pkgName, final String name) {
             super (pkgName, name);
             assert file != null;
-            assert file.equals(FileUtil.normalizeFile(file));
+            assert file.equals(FileUtil.normalizeFile(file)) : "File: " + file.getAbsolutePath() + " Normalized File: " + FileUtil.normalizeFile(file).getAbsolutePath();  //NOI18N
             this.f = file;
         }
         

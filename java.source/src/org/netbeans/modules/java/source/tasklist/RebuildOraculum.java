@@ -47,6 +47,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -220,7 +221,7 @@ public class RebuildOraculum {
             File source = new File(root, sourceName);
             
             if (source.canRead())
-                files.add(source);
+                files.add(FileUtil.normalizeFile(source));
             
 //            FileObject f = SourceUtils.getFile(e, cpInfo);
 //

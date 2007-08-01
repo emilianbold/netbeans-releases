@@ -435,7 +435,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         //new file creation may cause new error in this case
                         List<File> toReparse = new LinkedList<File>();
                         for (URL u : TaskCache.getDefault().getAllFilesInError(root)) {
-                            toReparse.add(new File(u.toURI()));
+                            toReparse.add(FileUtil.normalizeFile(new File(u.toURI())));
                         }
                         assureRecompiled(root, toReparse);
                     }
