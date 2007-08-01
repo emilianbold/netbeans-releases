@@ -794,6 +794,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="DS-3.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-favorites-Select.instance"/>
             </file>
+            <!-- #109224: give us Ctrl+~ back on KDE -->
+            <file name="D-BACK_QUOTE.shadow">
+                <attr name="originalFile" methodvalue="org.netbeans.core.windows.actions.RecentViewListAction.getStringRep4Unixes"/>
+            </file>
             <file name="D-N.shadow">
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-NewFile.instance"/>
             </file>
