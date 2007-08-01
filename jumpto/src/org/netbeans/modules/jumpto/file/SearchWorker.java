@@ -146,13 +146,9 @@ class SearchWorker implements Runnable {
                             SourceGroup group, 
                             File folder, 
                             List<FileDescription> target, 
-                            boolean prefered,
+                            boolean preferred,
                             int level ) {
-        
-        if ( level == 1 && !group.contains(FileUtil.toFileObject(folder)) ) {
-            return;
-        }
-        
+
         if (isCanceled) { return; }
                     
         File files[] = folder.listFiles();
@@ -160,12 +156,19 @@ class SearchWorker implements Runnable {
         for( File file : files ) {
             
             if (isCanceled) { return; }
-                    
+            
+            if (level <= 1) {
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null && !group.contains(fo)) {
+                    continue;
+                }
+            }
+
             if ( file.isDirectory() ) {
-                findFiles( project, group, file, target, prefered, level + 1 );
+                findFiles( project, group, file, target, preferred, level + 1 );
             }
             else if ( fileFilter.accept(file)) {
-                target.add( new FileDescription(file, project, group, prefered )); 
+                target.add( new FileDescription(file, project, group, preferred )); 
             }
         }
         
