@@ -63,8 +63,10 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
         //invisible components, only value holders
         allDevices.setVisible(false);
         selectedDevice.setVisible(false);
+        selectedDeviceCareer.setVisible(false);
         add(allDevices);
         add(selectedDevice);
+        add(selectedDeviceCareer);
         retriveButton.addActionListener(new DeviceListener());
         this.evaluator = evaluator;
     }
@@ -76,22 +78,30 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
             devicesComboBox.removeAllItems();
             devices = new ArrayList<ApplicationAPIDeviceWrapper>();
             //todo Is this good property parsing? Don't we have a better way to do it?
-            StringTokenizer st = new StringTokenizer(input, ","); //NOI18N
-            while(st.hasMoreElements()){
-                String token = st.nextToken();
-                StringTokenizer item = new StringTokenizer(token, ";"); //NOI18N
-                String s = item.nextToken();
-                assert s != null : "Missing token for DeviceID"; //NOI18N
-                int deviceId = Integer.parseInt(s.substring(s.indexOf(":")+1)); //NOI18N
-                s = item.nextToken();
-                assert s != null : "Missing token for DeviceName"; //NOI18N
-                String deviceName = s.substring(s.indexOf(":")+1); //NOI18N
-                ApplicationAPIDeviceWrapper wrapper = new ApplicationAPIDeviceWrapper();
-                wrapper.setId(deviceId);
-                wrapper.setName(deviceName);
-                devices.add(wrapper);
-                devicesComboBox.addItem(deviceName);
-            }           
+            //todo, need to remove asserts for dev builds
+            try {
+                StringTokenizer st = new StringTokenizer(input, ";"); //NOI18N
+                while(st.hasMoreElements()){
+                    String token = st.nextToken();
+                    StringTokenizer item = new StringTokenizer(token, ","); //NOI18N
+                    String s = item.nextToken();
+                    //assert s != null : "Missing token for DeviceID"; //NOI18N
+                    int deviceId = Integer.parseInt(s.substring(s.indexOf("=")+1)); //NOI18N
+                    s = item.nextToken();
+                    //assert s != null : "Missing token for DeviceName"; //NOI18N
+                    String deviceName = s.substring(s.indexOf("=")+1); //NOI18N
+                    s = item.nextToken();
+                    //assert s != null : "Missing token for DeviceCareer"; //NOI18N
+                    String deviceCareer = s.substring(s.indexOf("=")+1); //NOI18N
+                    ApplicationAPIDeviceWrapper wrapper = new ApplicationAPIDeviceWrapper();
+                    wrapper.setId(deviceId);
+                    wrapper.setName(deviceName);
+                    wrapper.setCarrier(deviceCareer);
+                    devices.add(wrapper);
+                    devicesComboBox.addItem(deviceName);
+                }           
+            } catch (Exception e){
+            }
         }
         if (devices == null || devices.size() == 0){
             selectedDevice.setText("-1");
@@ -132,6 +142,7 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
 
         allDevices = new javax.swing.JTextField();
         selectedDevice = new javax.swing.JTextField();
+        selectedDeviceCareer = new javax.swing.JTextField();
         inputPasswordPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
@@ -139,11 +150,11 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         retriveButton = new javax.swing.JButton();
 
-        allDevices.setText("jTextField1");
         allDevices.setName(DeviceAnywhereDeploymentPlugin.PROP_AVAILABLE_DEVICES);
 
-        selectedDevice.setText("jTextField1");
         selectedDevice.setName(DeviceAnywhereDeploymentPlugin.PROP_DEVICE);
+
+        selectedDeviceCareer.setName(DeviceAnywhereDeploymentPlugin.PROP_CAREER);
 
         jLabel1.setLabelFor(passwordField);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "MSG_InsertPass")); // NOI18N
@@ -216,6 +227,7 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JButton retriveButton;
     private javax.swing.JTextField selectedDevice;
+    private javax.swing.JTextField selectedDeviceCareer;
     // End of variables declaration//GEN-END:variables
     
 
@@ -267,12 +279,7 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
                 }                
             }
             
-            String serviceId = evaluator.evaluateGlobalProperty(
-                    DeviceAnywhereDeploymentPlugin.PROP_SERVICE,
-                    evaluator.evaluateProperty("deployment.instance")); //NOI18N 
-
-            serviceId = (serviceId != null)? serviceId : "0"; //NOI18N default value
-            final DeviceChooser panel = new DeviceChooser (user, password, null, Integer.parseInt(serviceId));
+            final DeviceChooser panel = new DeviceChooser (user, password, null);
             Object[] options = new Object[] {
                 okButton,
                 DialogDescriptor.CANCEL_OPTION
@@ -312,19 +319,25 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
                     devicesComboBox.addItem(elem.getName());
                     sb.append("DeviceID-"); //NOI18N
                     sb.append(i);
-                    sb.append(":"); //NOI18N
+                    sb.append("="); //NOI18N
                     sb.append(elem.getId());
-                    sb.append(";"); //NOI18N
+                    sb.append(","); //NOI18N
                     sb.append("DeviceName-"); //NOI18N
                     sb.append(i);
-                    sb.append(":"); //NOI18N
+                    sb.append("="); //NOI18N
                     sb.append(elem.getName());                    
                     sb.append(","); //NOI18N
+                    sb.append("DeviceCareer-"); //NOI18N
+                    sb.append(i);
+                    sb.append("="); //NOI18N
+                    sb.append(elem.getCarrier());                    
+                    sb.append(";"); //NOI18N
                     i++;
                 }
                 ApplicationAPIDeviceWrapper selected= panel.getSelectedDevice();
                 devicesComboBox.setSelectedItem(selected.getName());
                 selectedDevice.setText(String.valueOf(selected.getId()));
+                selectedDeviceCareer.setText(selected.getCarrier());
                 allDevices.setText(sb.toString());
                 devicesComboBox.addItemListener(il);
             }
@@ -341,6 +354,7 @@ public class DeviceAnywhereCustomizerPanel extends javax.swing.JPanel {
                 assert deviceName != null : "Device name must not be null here"; //NOI18N
                 if (deviceName.equals(elem.getName())){
                     selectedDevice.setText(String.valueOf(elem.getId()));
+                    selectedDeviceCareer.setText(elem.getCarrier());
                     return;
                 }
             }

@@ -45,7 +45,7 @@ public class DeviceAnywhereDeploymentPlugin implements DeploymentPlugin, Customi
     static final String PROP_AVAILABLE_DEVICES = "deployment.deviceanywhere.availabledevices"; //NOI18N
     static final String PROP_USERID = "deployment.deviceanywhere.userid"; //NOI18N
     static final String PROP_PASSWORD = "deployment.deviceanywhere.password"; //NOI18N
-    static final String PROP_SERVICE = "deployment.deviceanywhere.serviceurl"; //NOI18N
+    static final String PROP_CAREER = "deployment.deviceanywhere.career"; //NOI18N
     
     final Map<String, Object> propertyDefValues;
     final Map<String, Object> globalPropertyDefValues;
@@ -61,10 +61,10 @@ public class DeviceAnywhereDeploymentPlugin implements DeploymentPlugin, Customi
         HashMap<String, Object> m = new HashMap<String, Object>();
         m.put(PROP_USERID, "");//NOI18N
         m.put(PROP_PASSWORD, "");//NOI18N
-        m.put(PROP_SERVICE, "0");//NOI18N
         globalPropertyDefValues = Collections.unmodifiableMap(m);
         m = new HashMap<String, Object>();
         m.put(PROP_DEVICE, "");//NOI18N
+        m.put(PROP_CAREER, "");//NOI18N
         m.put(PROP_AVAILABLE_DEVICES, "");//NOI18N
         propertyDefValues = Collections.unmodifiableMap(m);
     }

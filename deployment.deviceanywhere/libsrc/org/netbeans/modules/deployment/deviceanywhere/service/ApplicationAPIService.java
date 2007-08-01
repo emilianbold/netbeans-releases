@@ -22,11 +22,13 @@ package org.netbeans.modules.deployment.deviceanywhere.service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ResourceBundle;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 import javax.xml.ws.WebEndpoint;
 import javax.xml.ws.WebServiceClient;
 import javax.xml.ws.WebServiceFeature;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -39,20 +41,36 @@ import javax.xml.ws.WebServiceFeature;
 public class ApplicationAPIService
     extends Service
 {
-    private static String[] SERVICES = new String[]{
-        "http://www.deviceanywhere.com/axis/services/ApplicationAPI", //default
-        "http://www.deviceanywhere.com/vdl/sprint/axis/services/ApplicationAPI", //vdl
-        "http://mcdemo5.mobilecomplete.com/axis/services/ApplicationAPI" //test
-    };
-
-    public static int SERVICE_LENGTH = SERVICES.length;       
+    private static URL url;
     
-//    public ApplicationAPIService(URL wsdlLocation, QName serviceName) {
-//        super(wsdlLocation, serviceName);
-//    }
+    static {
+        try {
+            String urlKey = "http://www.deviceanywhere.com/axis/services/ApplicationAPI";
+            try {
+                ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/deployment/deviceanywhere/service/Bundle"); //NOI18N
+                urlKey = bundle.getString("service_url");
+            } catch (Exception exception) {
+                //ignore
+            }
 
-    public ApplicationAPIService(int serviceIndex) throws MalformedURLException {
-        super(new URL(SERVICES[serviceIndex] + "?wsdl"), new QName("http://services.mc.com", "ApplicationAPIService")); //NOI18N
+            //lookup for replacement
+            String newUrl = System.getProperty("deviceanywhere.service.url");
+            if (newUrl != null) {
+                urlKey = newUrl;
+            }
+            url = new URL(urlKey + "?wsdl");
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    //    private static String[] SERVICES = new String[]{
+//        "http://www.deviceanywhere.com/axis/services/ApplicationAPI", //default
+//        "http://www.deviceanywhere.com/vdl/sprint/axis/services/ApplicationAPI", //vdl
+//        "http://mcdemo5.mobilecomplete.com/axis/services/ApplicationAPI" //test
+//    };
+
+    public ApplicationAPIService() throws MalformedURLException {
+        super(url, new QName("http://services.mc.com", "ApplicationAPIService")); //NOI18N
     }
 
     /**

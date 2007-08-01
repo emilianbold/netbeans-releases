@@ -4,7 +4,6 @@
   <NonVisualComponents>
     <Component class="javax.swing.JTextField" name="allDevices">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jTextField1"/>
         <Property name="name" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="DeviceAnywhereDeploymentPlugin.PROP_AVAILABLE_DEVICES" type="code"/>
         </Property>
@@ -12,9 +11,15 @@
     </Component>
     <Component class="javax.swing.JTextField" name="selectedDevice">
       <Properties>
-        <Property name="text" type="java.lang.String" value="jTextField1"/>
         <Property name="name" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="DeviceAnywhereDeploymentPlugin.PROP_DEVICE" type="code"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="selectedDeviceCareer">
+      <Properties>
+        <Property name="name" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="DeviceAnywhereDeploymentPlugin.PROP_CAREER" type="code"/>
         </Property>
       </Properties>
     </Component>

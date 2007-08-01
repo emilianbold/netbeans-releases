@@ -36,17 +36,13 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
-import org.netbeans.modules.deployment.deviceanywhere.service.ApplicationAPIService;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,32 +60,8 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
      */
     DeviceAnywhereGlobalCustomizerPanel() {
         initComponents(); 
-        //serviceLinkLabel.getFont().get
-        selectedService.setVisible(false);
-        add(selectedService);
     }
 
-    @Override
-    public void addNotify() {        
-        super.addNotify();
-        for (int i = 0; i < ApplicationAPIService.SERVICE_LENGTH; i++){
-            serviceType.addItem(NbBundle.getMessage(DeviceAnywhereCustomizerPanel.class, "Service_" + i)); //NOI18N
-        }        
-
-        int index = 0;
-        try {
-            index = Integer.parseInt(selectedService.getText());
-        } catch (Exception e){
-        }       
-        serviceType.setSelectedIndex(index);
-        serviceType.addActionListener(L);
-    }
-
-    @Override
-    public void removeNotify(){
-        serviceType.removeActionListener(L);
-        super.removeNotify();
-    }
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -98,15 +70,11 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        selectedService = new javax.swing.JTextField();
-        selectedService.setName(DeviceAnywhereDeploymentPlugin.PROP_SERVICE);
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jTextFieldUser = new javax.swing.JTextField();
         jPasswordField = new javax.swing.JPasswordField();
         jTextArea1 = new javax.swing.JTextArea();
-        jLabel1 = new javax.swing.JLabel();
-        serviceType = new javax.swing.JComboBox();
         jButton1 = new JButton(){
             @Override
             protected void paintComponent(Graphics g) {
@@ -151,9 +119,6 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "MSG_PassWarning")); // NOI18N
         jTextArea1.setWrapStyleWord(true);
 
-        jLabel1.setLabelFor(serviceType);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "LBL_Service")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "DA_url_text")); // NOI18N
         jButton1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jButton1.setBorderPainted(false);
@@ -181,26 +146,22 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jButton1)
+                .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, jTextArea1)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel3)
                             .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel3)
-                                    .add(layout.createSequentialGroup()
-                                        .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
-                                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                                .add(1, 1, 1))
-                            .add(layout.createSequentialGroup()
-                                .add(jLabel1)
+                                .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
+                        .add(1, 1, 1)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(jTextFieldUser)
-                            .add(jPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
-                            .add(serviceType, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jButton1))
+                            .add(jPasswordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE))))
                 .add(0, 0, 0))
         );
         layout.setVerticalGroup(
@@ -213,14 +174,10 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
                     .add(jPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(7, 7, 7)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(serviceType, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(jLabel1))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButton1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jTextArea1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 91, Short.MAX_VALUE))
+                .add(jTextArea1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 120, Short.MAX_VALUE))
         );
 
         jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSN_UserName")); // NOI18N
@@ -229,8 +186,6 @@ public class DeviceAnywhereGlobalCustomizerPanel extends javax.swing.JPanel {
         jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSD_Password")); // NOI18N
         jTextArea1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSN_PassWarning")); // NOI18N
         jTextArea1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSD_PassWarning")); // NOI18N
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSN_Service")); // NOI18N
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSD_Service")); // NOI18N
         jButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSN_Link")); // NOI18N
         jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DeviceAnywhereGlobalCustomizerPanel.class, "ACSD_Link")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -258,24 +213,13 @@ private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
     javax.swing.JLabel jLabel3;
     javax.swing.JLabel jLabel4;
     javax.swing.JPasswordField jPasswordField;
     javax.swing.JTextArea jTextArea1;
     javax.swing.JTextField jTextFieldUser;
-    private javax.swing.JTextField selectedService;
-    private javax.swing.JComboBox serviceType;
     // End of variables declaration//GEN-END:variables
     
-    private ActionListener L = new ActionListener(){
-        public void actionPerformed(ActionEvent e) {
-            selectedService.removeActionListener(L);
-            selectedService.setText(String.valueOf(serviceType.getSelectedIndex()));
-            selectedService.addActionListener(L);
-        }        
-    };        
-
     private static Color getColor( String resId ) {
         ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.deployment.deviceanywhere.Bundle"); // NOI18N
         try {

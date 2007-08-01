@@ -55,20 +55,19 @@ public class DeviceAnywhereUploadTask extends Task {
     private int deviceId;
     private File jadFile;
     private File jarFile;
-    private int service = 0;
+    private String career;
 
     @Override
     public void execute() throws BuildException {
         bundle = ResourceBundle.getBundle("org/netbeans/modules/deployment/deviceanywhere/messages"); //NOI18N
         
-
         ClassLoader oldClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(DeviceAnywhereUploadTask.class.getClassLoader());         
 
         System.setProperty("javax.xml.stream.XMLInputFactory", "com.sun.xml.stream.ZephyrParserFactory"); //NOI18N
         System.setProperty("javax.xml.stream.XMLOutputFactory", "com.sun.xml.stream.ZephyrWriterFactory"); //NOI18N        
         try {
-            org.netbeans.modules.deployment.deviceanywhere.service.ApplicationAPIService serviceApi = new org.netbeans.modules.deployment.deviceanywhere.service.ApplicationAPIService(service);
+            org.netbeans.modules.deployment.deviceanywhere.service.ApplicationAPIService serviceApi = new org.netbeans.modules.deployment.deviceanywhere.service.ApplicationAPIService();
             org.netbeans.modules.deployment.deviceanywhere.service.ApplicationAPI port = serviceApi.getApplicationAPI();
             boolean deviceLockedOK = false;
             try {
@@ -193,14 +192,14 @@ public class DeviceAnywhereUploadTask extends Task {
         this.jarFile = jarFile;
     }
 
-    public int getService() {
-        return service;
+    public String getCareer() {
+        return career;
     }
 
-    public void setService(int service) {
-        this.service = service;
-    }        
-
+    public void setCareer(String career) {
+        this.career = career;
+    }
+    
     private void handleReturnCode(int returnCode) {
         if (returnCode == ReturnCodes.INTERNAL_ERROR){
             throw new BuildException(bundle.getString("intenal_error"));

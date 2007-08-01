@@ -31,6 +31,6 @@
     <target name="deploy-deviceanywhere" depends="init,set-password">
         <property name="deployment.deviceanywhere.userid.eval" value="${deployment.deviceanywhere.userid}"/>
         <property name="deployment.deviceanywhere.password.eval" value="${deployment.deviceanywhere.password}"/>
-        <DeviceAnywhereUploadTask user="${deployment.deviceanywhere.userid.eval}" password="${deployment.deviceanywhere.password.eval}" deviceid="${deployment.deviceanywhere.device}" jadfile="${deployment.jad}" jarfile="${deployment.jar}" service="${deployment.deviceanywhere.serviceurl}"/>
+        <DeviceAnywhereUploadTask user="${deployment.deviceanywhere.userid.eval}" password="${deployment.deviceanywhere.password.eval}" deviceid="${deployment.deviceanywhere.device}" jadfile="${deployment.jad}" jarfile="${deployment.jar}" career="${deployment.deviceanywhere.career}"/>
     </target>
 </project>
