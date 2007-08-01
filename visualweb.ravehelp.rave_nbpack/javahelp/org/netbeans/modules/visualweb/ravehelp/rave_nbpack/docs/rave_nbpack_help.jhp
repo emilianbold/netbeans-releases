@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="C:/!MySunProjects/Rave/cvstree/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
+		<directory title="/Users/james/VisWebCVS/visualweb/ravehelp/rave_nbpack/javahelp/org/netbeans/modules/visualweb/ravehelp/rave_nbpack/docs">
 			<directory title="a11y">
 				<directory title="CVS">
 					<file title="Entries"/>
@@ -446,8 +446,6 @@
 					<file title="config_virtual_forms_db.html"/>
 					<file title="currencycodepopup.html"/>
 					<file title="data_table_layout_db.html"/>
-					<file title="delete_component_lib_db.html"/>
-					<file title="edit_database_svr_types_db.html"/>
 					<file title="findinfiles.html"/>
 					<file title="import_components_db.html"/>
 					<file title="new_database_connection_db.html"/>
