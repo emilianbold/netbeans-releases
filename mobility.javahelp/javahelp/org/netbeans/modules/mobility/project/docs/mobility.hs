@@ -3,7 +3,7 @@
                          "http://java.sun.com/products/javahelp/helpset_2_0.dtd">
 
 <helpset version="2.0">
-	<title>Java ME Development Help</title>
+	<title>Mobility Application Development</title>
 	<maps>
 		<homeID>me.welcome</homeID>
 		<mapref location="map.xml"/>

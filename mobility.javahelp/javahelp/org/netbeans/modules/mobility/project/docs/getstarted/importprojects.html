@@ -22,9 +22,12 @@
     Use this project template if you are importing source code created outside 
     of an IDE. You can also use this template to import <a href="#antenna">Antenna 
     projects</a>.</li>
-  <li>Import CDC Pack 5.5 Project</li>
-  <li>Import CDC Toolkit Project.Use this project template if the project was 
-    created using the Sun Java Wireless Toolkit.</li>
+  <li><a href="#cdc"><strong>Import CDC Pack 5.5 Project.</strong></a> use this 
+    project template to import a CDC project created with NetBeans Mobility Pack 
+    for CDC 5.5.</li>
+  <li><a href="#cdctoolkit"><strong>Import CDC Toolkit Project.</strong></a> Use 
+    this project template if the project was created using the Sun Java Wireless 
+    Toolkit.</li>
 </ul>
  
     <ul class="note">
@@ -37,10 +40,10 @@
 <ol>
   <li>Choose File &gt; New
     Project.</li>
-  <li>Under Categories, select Mobile. Under Projects, select Import Wireless
-        Toolkit Project and click Next.</li>
-  <li>In the Specify WTK Toolkit project page, Choose
-        the project you want to import. Click Next.</li>
+  <li>Under Categories, select Mobility. Under Projects, select Import Wireless 
+    Toolkit Project and click Next.</li>
+  <li>In the Specify WTK Toolkit project page, browse to select the project you 
+    want to import. Click Next.</li>
   <li>In the Project Name and Location
         page, choose a home and a location for the new project. If you want the
     project to be your main project, leave
@@ -57,9 +60,8 @@
 <ol>
   <li>Choose File &gt; New
     Project.</li>
-  <li>Under Categories, select Mobile.
-        Under Projects, select Mobile Project from Existing MIDP Sources and
-    click Next.</li>
+  <li>Under Categories, select Mobility. Under Projects, select Mobile Project 
+    from Existing MIDP Sources and click Next.</li>
   <li>Use the Specify Sources page to locate
           the source directory for the source code and <code>.jad</code> file
           you want to import. Click Next.</li>
@@ -71,7 +73,8 @@
     when the project is executed. Click Finish.</li>
 </ol>
 
-  <p><a name="antenna"></a><strong>To Import Antenna Projects:</strong></p>
+  
+<p><a name="antenna"></a><strong>To Import an Antenna Project:</strong></p>
 
   
 <p>The Mobility Pack preprocessor is almost fully compatible with the Antenna 
@@ -144,8 +147,39 @@
     <img src="../images/includestatement.gif" width="238" height="41"> </li>
 </ul>
   
-  <p>You can now build and run your applications in the IDE. </p>
-  <dl>
+  
+<p>You can now build and run your applications in the IDE. </p>
+<p><strong><a name="cdc"></a>To import a project created in Mobility Pack for 
+  CDC 5.5: </strong></p>
+<ul>
+  <li>Choose File &gt; New Project.</li>
+  <li>Under Categories, select Mobility. Under Projects, select Import Import 
+    CDC Pack 5.5 Project and click Next.</li>
+  <li>In the Specify CDC Pack 5.5 project page, browse to select the project you 
+    want to import. Click Next.</li>
+  <li>In the Project Name and Location page, choose a home and a location for 
+    the new project. If you want the project to be your main project, leave the 
+    Set as Main Project check box checked. Click Finish.</li>
+  <li>To test the Project, right-click the project node in the projects tab, and 
+    choose Run Project.</li>
+</ul>
+<p><strong><a name="cdctoolkit"></a>To import a project created with the Sun Java 
+  Toolkit for CDC:</strong></p>
+<ol>
+  <li>Choose File &gt; New Project.</li>
+  <li>Under Categories, select Mobility. Under Projects, select Import CDC Toolkit 
+    Project and click Next.</li>
+  <li>In the Specify CDC Toolkit project page, browse to select the project you 
+    want to import. Click Next.</li>
+  <li>In the Project Name and Location page, choose a home and a location for 
+    the new project. If you want the project to be your main project, leave the 
+    Set as Main Project check box checked. Click Next.</li>
+  <li>Use the Platform Selection page to set the emulator platform that the IDE 
+    will use to compile and run the project. Click Finish.</li>
+  <li>To test the Project, right-click the project node in the projects tab, and 
+    choose Run Project.</li>
+</ol>
+<dl>
 <dt><a name="seealso">See Also</a></dt>
   <dd><a href="../projects/proj_working.html">Working with Projects</a></dd>
         <dd><a href="../projects/proj_templates.html">Java ME MIDP Project and File Templates</a></dd>
