@@ -32,6 +32,7 @@ import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javadoc.DocCommentScanner;
 import com.sun.tools.javadoc.JavadocEnter;
 import com.sun.tools.javadoc.JavadocMemberEnter;
 import com.sun.tools.javadoc.Messager;
@@ -1015,6 +1016,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         ErrorHandlingJavadocEnter.preRegister(context);
         JavadocMemberEnter.preRegister(context);       
         JavadocEnv.preRegister(context, getClasspathInfo());
+        DocCommentScanner.Factory.preRegister(context);
         //Builder2.instance(context).keepComments = true;
         com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
         return javacTask;
