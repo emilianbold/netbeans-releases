@@ -12,44 +12,35 @@
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.xslt.mapper.model;
 
-import org.netbeans.modules.xml.axi.AXIComponent;
-import org.netbeans.modules.xslt.mapper.model.nodes.Node;
-import org.netbeans.modules.xslt.mapper.model.nodes.NodeFactory;
-import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
 import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 
 /**
  *
  * @author Alexey
+ * Keeps mapper trees in-sync with schema models 
+ * Subscribes on changes in schema model and reloads left and right trees
+ * 
  */
-public class SourceTreeModel extends XsltNodesTreeModel {
+public class SchemaModelBridge extends ModelBridge{
 
-
-    
-    public SourceTreeModel(XsltMapper mapper) {
+    public SchemaModelBridge(XsltMapper mapper) {
         super(mapper);
-       
-    }
-    public TreeNode loadRoot(){
-       
+        super.subscribe(mapper.getContext().getSourceType().getModel());
+        super.subscribe(mapper.getContext().getTargetType().getModel());
         
-        MapperContext context = getMapper().getContext();
-
-        AXIComponent sourceType = null;
-        if (context != null) {
-            sourceType = context.getSourceType();
+                
+    }
+    protected void onModelChanged() {
+        if (!checkErrors()) {
+            return;
         }
-       
-        return  (TreeNode) NodeFactory.createNode(sourceType, getMapper());
+        super.reloadTree(getMapper().getMapperViewManager().getDestView().getTree());
+        super.reloadTree(getMapper().getMapperViewManager().getSourceView().getTree());
         
-        
+        getMapper().getBuilder().updateDiagram();
     }
-
-    
 }

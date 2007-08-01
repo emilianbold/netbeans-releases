@@ -33,29 +33,27 @@ import org.netbeans.modules.xslt.model.Template;
  */
 public class TargetTreeModel extends XsltNodesTreeModel {
     
-    private XsltMapper mapper;
+
     
     public TargetTreeModel(XsltMapper mapper) {
-        this.mapper = mapper;
-        resetRoot();
+        super(mapper);
+
     }
 
-    public void resetRoot() {
-        if (mapper.getContext().getXSLModel() != null &&
-            mapper.getContext().getXSLModel().getStylesheet() != null){
-            Stylesheet stylesheet = mapper.getContext().getXSLModel().getStylesheet();
+    public TreeNode loadRoot() {
+        if (getMapper().getContext().getXSLModel() != null &&
+            getMapper().getContext().getXSLModel().getStylesheet() != null){
+            Stylesheet stylesheet = getMapper().getContext().getXSLModel().getStylesheet();
             
             List<Template> templates = stylesheet.getChildren(Template.class);
             for (Template t: templates){
                 if (t.getMatch().equals("/")){
-                    TreeNode rootNode = (TreeNode) NodeFactory.createNode(t, mapper);
-                    setRootNode(rootNode);
-                    break;
+                    return (TreeNode) NodeFactory.createNode(t, getMapper());
                 }
             }
-        }  else {
-            //rootNode = new textNode("XSLT Model is not available");
-        }
+        }  
+         return null;
+        
     }
     
 }

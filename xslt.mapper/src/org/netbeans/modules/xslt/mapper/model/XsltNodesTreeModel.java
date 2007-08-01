@@ -25,31 +25,42 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.xslt.mapper.model.nodes.TreeNode;
+import org.netbeans.modules.xslt.mapper.view.XsltMapper;
 
 /**
  *
  * @author nk160297
  */
-public class XsltNodesTreeModel implements TreeModel {
+public abstract class XsltNodesTreeModel implements TreeModel {
     
     private TreeNode myRootNode;
     private List<TreeModelListener> listeners = new ArrayList<TreeModelListener>();
-
-    public XsltNodesTreeModel() {
+    private XsltMapper mapper;
+    public XsltNodesTreeModel(XsltMapper mapper) {
+        this.mapper = mapper;
+        resetRoot();
     }
     
-    public XsltNodesTreeModel(TreeNode rootNode) {
-        myRootNode = rootNode;
-    }
+   
+    public abstract TreeNode loadRoot();
     
-    public void setRootNode(TreeNode rootNode) {
-        myRootNode = rootNode;
+    public XsltMapper getMapper(){
+        return this.mapper;
     }
     
     public Object getRoot() {
         return myRootNode;
     }
     
+    public void resetRoot(){
+        TreeNode newRootNode = loadRoot();
+        if (newRootNode != null && 
+            myRootNode!=null &&
+            newRootNode.getDataObject() == myRootNode.getDataObject()){
+            return;
+        }
+        myRootNode = newRootNode;
+    }
     public int getIndexOfChild(Object parent, Object requiredChild) {
         assert parent instanceof TreeNode;
         assert requiredChild instanceof TreeNode;

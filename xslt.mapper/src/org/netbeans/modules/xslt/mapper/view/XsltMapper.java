@@ -43,7 +43,8 @@ import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xslt.mapper.methoid.LiteralUpdaterFactory;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.mapper.model.MapperContextChangeListener;
-import org.netbeans.modules.xslt.mapper.model.ModelBridge;
+import org.netbeans.modules.xslt.mapper.model.SchemaModelBridge;
+import org.netbeans.modules.xslt.mapper.model.XsltModelBridge;
 import org.netbeans.modules.xslt.mapper.model.SourceTreeModel;
 import org.netbeans.modules.xslt.mapper.model.XsltNodesTreeRenderer;
 import org.netbeans.modules.xslt.mapper.model.nodes.Node;
@@ -69,8 +70,8 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
     private ILiteralUpdaterFactory myLiteralUpdaterFactory;
     private LiteralEditListener myLiteralEditListener;
     
-    private ModelBridge xslModelBridge;
-    
+    private XsltModelBridge xslModelBridge;
+    private SchemaModelBridge schemaModelBridge;
     private DiagramBuilder diagramBuilder;
     
     private ErrorPanel errorPanel;
@@ -87,7 +88,8 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
         
         initializeTrees();
         
-        xslModelBridge = new ModelBridge(this);
+        xslModelBridge = new XsltModelBridge(this);
+        schemaModelBridge = new SchemaModelBridge(this);
         diagramBuilder = new DiagramBuilder(this);
         super.addMapperListener(xslModelBridge);
         super.setMapperRule(new XsltMapperRule(this));
