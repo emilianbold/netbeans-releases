@@ -825,7 +825,6 @@ public class Widget implements Accessible {
      */
     public final void setAccessibleContext (AccessibleContext accessibleContext) {
         this.accessibleContext = accessibleContext;
-        customAccessibleContext = true;
     }
 
     /**
