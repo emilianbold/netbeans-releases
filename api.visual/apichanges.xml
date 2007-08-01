@@ -349,7 +349,7 @@
             <api name="general"/>
             <summary>BorderSupport.getSwingBorder method introduced</summary>
             <version major="2" minor="6"/>
-            <date day="18" month="7" year="2007"/>
+            <date day="1" month="8" year="2007"/>
             <author login="dkaspar"/>
             <compatibility addition="yes"/>
             <description>
