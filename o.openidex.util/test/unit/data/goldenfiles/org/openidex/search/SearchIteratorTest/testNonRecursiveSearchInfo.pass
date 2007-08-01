@@ -1,3 +1,1 @@
-build.xml
-build_invisible.xml
-manifest.mf
+src/RootClass.java

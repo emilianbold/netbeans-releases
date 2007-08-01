@@ -30,23 +30,29 @@ import static org.netbeans.api.queries.SharabilityQuery.SHARABLE;
  */
 public class SharabilityQueryImpl implements SharabilityQueryImplementation {
 
-    private static final String NON_SHARABLE_NAME = "private";
+    private static final String SHARABLE_SUFFIX = "_sharable";
+    private static final String NON_SHARABLE_SUFFIX = "_unsharable";
 
     public int getSharability(File file) {
-        boolean sharable = file.isFile() ? isSharable(file.getParentFile())
-                                         : isSharable(file);
-        return sharable ? (file.isFile() ? SHARABLE : MIXED)
-                          : NOT_SHARABLE;
+        final String simpleName = getSimpleName(file);
+        if (simpleName.endsWith(SHARABLE_SUFFIX)) {
+            return SHARABLE;
+        } else if (simpleName.endsWith(NON_SHARABLE_SUFFIX)) {
+            return NOT_SHARABLE;
+        } else {
+            return file.isDirectory() ? MIXED
+                                      : SHARABLE;
+        }
     }
 
-    private static boolean isSharable(File folder) {
-        assert folder.isDirectory();
-
-        if (folder.getName().equals(NON_SHARABLE_NAME)) {
-            return false;
+    private static String getSimpleName(File file) {
+        String name = file.getName();
+        if (file.isDirectory()) {
+            return name;
         } else {
-            File parent = folder.getParentFile();
-            return (parent != null) ? isSharable(parent) : true;
+            int lastDotIndex = name.lastIndexOf('.');
+            return (lastDotIndex != -1) ? name.substring(0, lastDotIndex)
+                                        : name;
         }
     }
 

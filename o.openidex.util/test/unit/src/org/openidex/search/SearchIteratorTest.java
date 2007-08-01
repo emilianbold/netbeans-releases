@@ -19,8 +19,6 @@
 
 package org.openidex.search;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,43 +61,8 @@ public final class SearchIteratorTest extends NbTestCase {
         
         projectRoot = dataDir.getFileObject("projects/Project1");       //NOI18N
         assert projectRoot != null;
-        
-        FileObject testDir;
-
-        ensurePrivateSettingsFileExists();
-
-        testDir = projectRoot;
-        ensureInvisibleCopyExists(testDir, "build", "xml");             //NOI18N
-
-        testDir = projectRoot.getFileObject("src/foo/bar/baz");     //NOI18N
-        ensureInvisibleCopyExists(testDir, "SampleClass", "java");      //NOI18N
     }
 
-    /**
-     */
-    private void ensurePrivateSettingsFileExists() throws IOException {
-        String relPath = "nbproject/private/private.properties";
-        FileObject settingsFile = projectRoot.getFileObject(relPath);
-        if (settingsFile == null) {
-            FileUtil.createData(new File(FileUtil.toFile(projectRoot), relPath));
-        }
-    }
-    
-    /**
-     */
-    private void ensureInvisibleCopyExists(FileObject folder,
-                                           String name,
-                                           String ext) throws IOException {
-        FileObject orig = folder.getFileObject(name, ext);
-        assert orig != null;
-        String invisibleCopyName = name + VisibilityQueryImpl.INVISIBLE_SUFFIX;
-        FileObject copy = folder.getFileObject(invisibleCopyName,
-                                               ext);
-        if (copy == null) {
-            orig.copy(folder, invisibleCopyName, ext);
-        }
-    }
-    
     /**
      */
     public void testPlainSearchInfo() throws Exception {
@@ -161,6 +124,15 @@ public final class SearchIteratorTest extends NbTestCase {
             boolean checkVisibility,
             boolean checkSharability,
             PrintStream refPrintStream) {
+
+        FileObject[] foldersToCheck = new FileObject[2];
+        foldersToCheck[0] = folder.getFileObject("src");
+        foldersToCheck[1] = folder.getFileObject("test");
+        for (FileObject f : foldersToCheck) {
+            if ((f == null) || !f.isFolder()) {
+                throw new IllegalStateException();
+            }
+        }
                 
         FileObjectFilter[] filters;
 
@@ -187,7 +159,7 @@ public final class SearchIteratorTest extends NbTestCase {
         }
 
         SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(
-                folder,
+                foldersToCheck,
                 recursive,
                 filters);
         

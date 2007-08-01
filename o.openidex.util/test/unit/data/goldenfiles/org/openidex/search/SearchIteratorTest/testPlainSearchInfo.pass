@@ -1,12 +1,8 @@
-build.xml
-build_invisible.xml
-manifest.mf
-nbproject/build-impl.xml
-nbproject/genfiles.properties
-nbproject/private/private.properties
-nbproject/project.properties
-nbproject/project.xml
 src/RootClass.java
 src/foo/bar/baz/SampleClass.java
 src/foo/bar/baz/SampleClass_invisible.java
+src/foo/bar/baz/SampleClass_unsharable.java
+src/foo/bar/baz_unsharable/SomeClass.java
+src/foo/bar_invisible/AnotherClass.java
+src/foo_sharable/DummyClass_unsharable.java
 test/abc/xyz/SimpleTest.java

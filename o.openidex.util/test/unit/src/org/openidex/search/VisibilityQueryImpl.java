@@ -28,10 +28,11 @@ import org.openide.filesystems.FileObject;
  */
 public class VisibilityQueryImpl implements VisibilityQueryImplementation {
 
-    static final String INVISIBLE_SUFFIX = "_invisible";
+    private static final String INVISIBLE_SUFFIX = "_invisible";
 
     public boolean isVisible(FileObject file) {
-        return !file.getName().endsWith(INVISIBLE_SUFFIX);
+        final String name = file.getName();
+        return !name.endsWith(INVISIBLE_SUFFIX);
     }
 
     public void addChangeListener(ChangeListener l) {

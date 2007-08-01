@@ -1,9 +1,4 @@
-build.xml
-manifest.mf
-nbproject/build-impl.xml
-nbproject/genfiles.properties
-nbproject/project.properties
-nbproject/project.xml
 src/RootClass.java
 src/foo/bar/baz/SampleClass.java
+src/foo_sharable/DummyClass_unsharable.java
 test/abc/xyz/SimpleTest.java
