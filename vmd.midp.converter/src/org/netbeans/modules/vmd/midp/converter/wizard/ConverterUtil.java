@@ -133,7 +133,7 @@ public class ConverterUtil {
 //        return value.substring (5);
 //    }
 
-    private static String decryptStringFromJavaCode (String value) {
+    public static String decryptStringFromJavaCode (String value) {
         if (value == null)
             return null;
         final int len = value.length ();

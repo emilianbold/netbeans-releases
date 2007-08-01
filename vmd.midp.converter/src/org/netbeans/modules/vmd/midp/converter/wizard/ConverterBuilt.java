@@ -61,7 +61,7 @@ public class ConverterBuilt {
         Converter.convertClass (item, task);
         MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (task);
 
-        String code = item.getPropertyValue ("runnableMethodBody"); // NOI18N
+        String code = ConverterUtil.decryptStringFromJavaCode (item.getPropertyValue ("runnableMethodBody")); // NOI18N
         if (code != null)
             task.writeProperty (SimpleCancellableTaskCD.PROP_CODE, MidpTypes.createJavaCodeValue (code));
     }
