@@ -1,0 +1,238 @@
+  # == What Is This Library?
+  # 
+  # This library provides your program functions to access WWW documents via
+  # HTTP, Hyper Text Transfer Protocol version 1.1. For details of HTTP, refer
+  # [RFC2616] (http://www.ietf.org/rfc/rfc2616.txt).
+  # 
+  # == Examples
+  # 
+  # === Getting Document From WWW Server
+  # 
+  # Example #1: Simple GET+print
+  # 
+  #     require 'net/http'
+  #     Net::HTTP.get_print 'www.example.com', '/index.html'
+  # 
+  # Example #2: Simple GET+print by URL
+  # 
+  #     require 'net/http'
+  #     require 'uri'
+  #     Net::HTTP.get_print URI.parse('http://www.example.com/index.html')
+  # 
+  # Example #3: More generic GET+print
+  # 
+  #     require 'net/http'
+  #     require 'uri'
+  # 
+  #     url = URI.parse('http://www.example.com/index.html')
+  #     res = Net::HTTP.start(url.host, url.port) {|http|
+  #       http.get('/index.html')
+  #     }
+  #     puts res.body
+  # 
+  # Example #4: More generic GET+print
+  # 
+  #     require 'net/http'
+  # 
+  #     url = URI.parse('http://www.example.com/index.html')
+  #     req = Net::HTTP::Get.new(url.path)
+  #     res = Net::HTTP.start(url.host, url.port) {|http|
+  #       http.request(req)
+  #     }
+  #     puts res.body
+  # 
+  # === Posting Form Data
+  # 
+  #     require 'net/http'
+  #     require 'uri'
+  # 
+  #     #1: Simple POST
+  #     res = Net::HTTP.post_form(URI.parse('http://www.example.com/search.cgi'),
+  #                               {'q'=>'ruby', 'max'=>'50'})
+  #     puts res.body
+  # 
+  #     #2: POST with basic authentication
+  #     res = Net::HTTP.post_form(URI.parse('http://jack:pass@www.example.com/todo.cgi'),
+  #                                         {'from'=>'2005-01-01', 'to'=>'2005-03-31'})
+  #     puts res.body
+  # 
+  #     #3: Detailed control
+  #     url = URI.parse('http://www.example.com/todo.cgi')
+  #     req = Net::HTTP::Post.new(url.path)
+  #     req.basic_auth 'jack', 'pass'
+  #     req.set_form_data({'from'=>'2005-01-01', 'to'=>'2005-03-31'}, ';')
+  #     res = Net::HTTP.new(url.host, url.port).start {|http| http.request(req) }
+  #     case res
+  #     when Net::HTTPSuccess, Net::HTTPRedirection
+  #       # OK
+  #     else
+  #       res.error!
+  #     end
+  # 
+  # === Accessing via Proxy
+  # 
+  # Net::HTTP.Proxy creates http proxy class. It has same methods of Net::HTTP
+  # but its instances always connect to proxy, instead of given host.
+  # 
+  #     require 'net/http'
+  # 
+  #     proxy_addr = 'your.proxy.host'
+  #     proxy_port = 8080
+  #             :
+  #     Net::HTTP::Proxy(proxy_addr, proxy_port).start('www.example.com') {|http|
+  #       # always connect to your.proxy.addr:8080
+  #             :
+  #     }
+  # 
+  # Since Net::HTTP.Proxy returns Net::HTTP itself when proxy_addr is nil,
+  # there's no need to change code if there's proxy or not.
+  # 
+  # There are two additional parameters in Net::HTTP.Proxy which allow to
+  # specify proxy user name and password:
+  # 
+  #     Net::HTTP::Proxy(proxy_addr, proxy_port, proxy_user = nil, proxy_pass = nil)
+  # 
+  # You may use them to work with authorization-enabled proxies:
+  # 
+  #     require 'net/http'
+  #     require 'uri'
+  # 
+  #     proxy_host = 'your.proxy.host'
+  #     proxy_port = 8080
+  #     uri = URI.parse(ENV['http_proxy'])
+  #     proxy_user, proxy_pass = uri.userinfo.split(/:/) if uri.userinfo
+  #     Net::HTTP::Proxy(proxy_host, proxy_port,
+  #                      proxy_user, proxy_pass).start('www.example.com') {|http|
+  #       # always connect to your.proxy.addr:8080 using specified username and password
+  #             :
+  #     }
+  # 
+  # Note that net/http never rely on HTTP_PROXY environment variable. If you
+  # want to use proxy, set it explicitly.
+  # 
+  # === Following Redirection
+  # 
+  #     require 'net/http'
+  #     require 'uri'
+  # 
+  #     def fetch(uri_str, limit = 10)
+  #       # You should choose better exception.
+  #       raise ArgumentError, 'HTTP redirect too deep' if limit == 0
+  # 
+  #       response = Net::HTTP.get_response(URI.parse(uri_str))
+  #       case response
+  #       when Net::HTTPSuccess     then response
+  #       when Net::HTTPRedirection then fetch(response['location'], limit - 1)
+  #       else
+  #         response.error!
+  #       end
+  #     end
+  # 
+  #     print fetch('http://www.ruby-lang.org')
+  # 
+  # Net::HTTPSuccess and Net::HTTPRedirection is a HTTPResponse class. All
+  # HTTPResponse objects belong to its own response class which indicate HTTP
+  # result status. For details of response classes, see section "HTTP Response
+  # Classes".
+  # 
+  # === Basic Authentication
+  # 
+  #     require 'net/http'
+  # 
+  #     Net::HTTP.start('www.example.com') {|http|
+  #       req = Net::HTTP::Get.new('/secret-page.html')
+  #       req.basic_auth 'account', 'password'
+  #       response = http.request(req)
+  #       print response.body
+  #     }
+  # 
+  # === HTTP Request Classes
+  # 
+  # Here is HTTP request class hierarchy.
+  # 
+  #   Net::HTTPRequest
+  #       Net::HTTP::Get
+  #       Net::HTTP::Head
+  #       Net::HTTP::Post
+  #       Net::HTTP::Put
+  #       Net::HTTP::Proppatch
+  #       Net::HTTP::Lock
+  #       Net::HTTP::Unlock
+  #       Net::HTTP::Options
+  #       Net::HTTP::Propfind
+  #       Net::HTTP::Delete
+  #       Net::HTTP::Move
+  #       Net::HTTP::Copy
+  #       Net::HTTP::Mkcol
+  #       Net::HTTP::Trace
+  # 
+  # === HTTP Response Classes
+  # 
+  # Here is HTTP response class hierarchy. All classes are defined in Net
+  # module.
+  # 
+  #   HTTPResponse
+  #       HTTPUnknownResponse
+  #       HTTPInformation                    # 1xx
+  #           HTTPContinue                       # 100
+  #           HTTPSwitchProtocl                  # 101
+  #       HTTPSuccess                        # 2xx
+  #           HTTPOK                             # 200
+  #           HTTPCreated                        # 201
+  #           HTTPAccepted                       # 202
+  #           HTTPNonAuthoritativeInformation    # 203
+  #           HTTPNoContent                      # 204
+  #           HTTPResetContent                   # 205
+  #           HTTPPartialContent                 # 206
+  #       HTTPRedirection                    # 3xx
+  #           HTTPMultipleChoice                 # 300
+  #           HTTPMovedPermanently               # 301
+  #           HTTPFound                          # 302
+  #           HTTPSeeOther                       # 303
+  #           HTTPNotModified                    # 304
+  #           HTTPUseProxy                       # 305
+  #           HTTPTemporaryRedirect              # 307
+  #       HTTPClientError                    # 4xx
+  #           HTTPBadRequest                     # 400
+  #           HTTPUnauthorized                   # 401
+  #           HTTPPaymentRequired                # 402
+  #           HTTPForbidden                      # 403
+  #           HTTPNotFound                       # 404
+  #           HTTPMethodNotAllowed               # 405
+  #           HTTPNotAcceptable                  # 406
+  #           HTTPProxyAuthenticationRequired    # 407
+  #           HTTPRequestTimeOut                 # 408
+  #           HTTPConflict                       # 409
+  #           HTTPGone                           # 410
+  #           HTTPLengthRequired                 # 411
+  #           HTTPPreconditionFailed             # 412
+  #           HTTPRequestEntityTooLarge          # 413
+  #           HTTPRequestURITooLong              # 414
+  #           HTTPUnsupportedMediaType           # 415
+  #           HTTPRequestedRangeNotSatisfiable   # 416
+  #           HTTPExpectationFailed              # 417
+  #       HTTPServerError                    # 5xx
+  #           HTTPInternalServerError            # 500
+  #           HTTPNotImplemented                 # 501
+  #           HTTPBadGateway                     # 502
+  #           HTTPServiceUnavailable             # 503
+  #           HTTPGatewayTimeOut                 # 504
+  #           HTTPVersionNotSupported            # 505
+  # 
+  # == Switching Net::HTTP versions
+  # 
+  # You can use net/http.rb 1.1 features (bundled with Ruby 1.6) by calling
+  # HTTP.version_1_1. Calling Net::HTTP.version_1_2 allows you to use 1.2
+  # features again.
+  # 
+  #     # example
+  #     Net::HTTP.start {|http1| ...(http1 has 1.2 features)... }
+  # 
+  #     Net::HTTP.version_1_1
+  #     Net::HTTP.start {|http2| ...(http2 has 1.1 features)... }
+  # 
+  #     Net::HTTP.version_1_2
+  #     Net::HTTP.start {|http3| ...(http3 has 1.2 features)... }
+  # 
+  # This function is NOT thread-safe.
+  # 
