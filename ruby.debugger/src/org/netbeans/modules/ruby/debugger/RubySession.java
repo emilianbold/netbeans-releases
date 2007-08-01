@@ -23,15 +23,19 @@ import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Level;
+import java.util.logging.Level;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.ruby.debugger.model.CallSite;
+import org.netbeans.modules.ruby.debugger.ui.CallStackAnnotation;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
+import org.openide.util.Exceptions;
 import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.model.RubyThreadInfo;
@@ -127,6 +131,7 @@ public final class RubySession {
     }
     
     public void finish(final RubyDebugEventListener listener, final boolean terminate) {
+        CallStackAnnotation.clearAnnotations();
         DebuggerManager.getDebuggerManager().removeDebuggerListener(sessionListener);
         proxy.removeRubyDebugEventListener(listener);
         if (terminate) {
@@ -246,6 +251,7 @@ public final class RubySession {
                     return;
                 }
                 EditorUtil.markCurrent(resolveAbsolutePath(frame.getFile()), frame.getLine() - 1);
+                annotateCallStack(thread);
                 if (contextProvider != null) {
                     contextProvider.fireModelChanges();
                 }
@@ -289,6 +295,23 @@ public final class RubySession {
             Util.finest("Cannot resolve absolute path for: \"" + path + '"'); // NOI18N
         }
         return result;
+    }
+
+    private void annotateCallStack(final RubyThread thread) {
+        try {
+            RubyFrame[] frames = thread.getFrames();
+            assert frames.length > 0 : "thread has >0 frames";
+            CallSite[] callSites = new CallSite[frames.length - 1]; // minus first frame
+            for (int i = 1; i < frames.length; i++) {
+                RubyFrame frame = frames[i];
+                final CallSite site = new CallSite(resolveAbsolutePath(frame.getFile()), frame.getLine() - 1);
+                callSites[i - 1] = site;
+            }
+            CallStackAnnotation.annotate(callSites);
+        } catch (RubyDebuggerException e) {
+            Util.LOGGER.log(Level.WARNING, "Cannot annotated current call stack", e);
+        }
+
     }
 
     private void refresh() {

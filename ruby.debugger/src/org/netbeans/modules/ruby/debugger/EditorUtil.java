@@ -44,7 +44,7 @@ import org.openide.windows.TopComponent;
  */
 public final class EditorUtil {
     
-    private static Object currentLine;
+    private static DebuggerAnnotation[] currentLineDA;
     
     public static boolean contains(final Object currentLine, final Line line) {
         if (currentLine == null) return false;
@@ -59,7 +59,20 @@ public final class EditorUtil {
         }
         return false;
     }
+
+    private static DebuggerAnnotation createCurrentLineAnnotation(final Annotatable annotable) {
+        String annType = (annotable instanceof Line.Part)
+                ? DebuggerAnnotation.CURRENT_LINE_PART_ANNOTATION_TYPE2
+                : DebuggerAnnotation.CURRENT_LINE_ANNOTATION_TYPE2;
+        return new DebuggerAnnotation(annType, annotable);
+    }
     
+    public static void removeAnnotation(DebuggerAnnotation[] annotations) {
+        for (DebuggerAnnotation annotation : annotations) {
+            annotation.detach();
+        }
+    }
+
     /**
      * Make line in the editor current - shows the line and colorizes it
      * appropriately (green-striped by default). Note that editor counts lines
@@ -76,28 +89,31 @@ public final class EditorUtil {
         if (line == null) {
             return;
         }
+        currentLineDA = createDebuggerAnnotation(line,
+                DebuggerAnnotation.CURRENT_LINE_PART_ANNOTATION_TYPE,
+                DebuggerAnnotation.CURRENT_LINE_ANNOTATION_TYPE);
+        showLine(line);
+    }
+    
+    public static DebuggerAnnotation[] createDebuggerAnnotation(final Object line,
+            final String lineAnnotation, final String partAnnotation) {
         Annotatable[] annotables = (Annotatable[]) line;
         DebuggerAnnotation[] annotations = new DebuggerAnnotation[annotables.length];
         
         // first line with icon in gutter
-        String annType = (annotables[0] instanceof Line.Part)
-                ? DebuggerAnnotation.CURRENT_LINE_PART_ANNOTATION_TYPE
-                : DebuggerAnnotation.CURRENT_LINE_ANNOTATION_TYPE;
+        String annType = (partAnnotation != null && annotables[0] instanceof Line.Part) ? partAnnotation : lineAnnotation;
         annotations[0] = new DebuggerAnnotation(annType, annotables[0]);
         
         // other lines
         for (int i = 1; i < annotables.length; i++) {
-            annotations[i] = createDebuggerAnnotation(annotables[i]);
+            annotations[i] = createCurrentLineAnnotation(annotables[i]);
         }
-        currentLine = annotations;
-        showLine(line);
+        return annotations;
     }
     
-    private static DebuggerAnnotation createDebuggerAnnotation(final Annotatable annotable) {
-        String annType = (annotable instanceof Line.Part)
-                ? DebuggerAnnotation.CURRENT_LINE_PART_ANNOTATION_TYPE2
-                : DebuggerAnnotation.CURRENT_LINE_ANNOTATION_TYPE2;
-        return new DebuggerAnnotation(annType, annotable);
+    public static DebuggerAnnotation[] createDebuggerAnnotation(final Object line,
+            final String lineAnnotation) {
+        return createDebuggerAnnotation(line, lineAnnotation, null);
     }
     
     /**
@@ -105,12 +121,9 @@ public final class EditorUtil {
      * annotation, usually the green stripe.
      */
     static void unmarkCurrent() {
-        if (currentLine != null) {
-            DebuggerAnnotation[] annotations = (DebuggerAnnotation[]) currentLine;
-            for (DebuggerAnnotation annotation : annotations) {
-                annotation.detach();
-            }
-            currentLine = null;
+        if (currentLineDA != null) {
+            removeAnnotation(currentLineDA);
+            currentLineDA = null;
         }
     }
     
