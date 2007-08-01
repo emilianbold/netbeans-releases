@@ -118,6 +118,7 @@ public final class PIMBrowserCD extends ComponentDescriptor {
     
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC); //NOI18N
         MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_PDA); //NOI18N
     }
     

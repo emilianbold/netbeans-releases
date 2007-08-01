@@ -80,7 +80,7 @@ public class TableItemCD extends ComponentDescriptor {
 
     @Override
     public void postInitialize (DesignComponent component) {
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC);
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {

@@ -64,7 +64,7 @@ public final class WaitScreenCD extends ComponentDescriptor {
     
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
-        MidpProjectSupport.addLibraryToProject(component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY); //NOI18N
+        MidpProjectSupport.addLibraryToProject(component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC); //NOI18N
     }
     
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {

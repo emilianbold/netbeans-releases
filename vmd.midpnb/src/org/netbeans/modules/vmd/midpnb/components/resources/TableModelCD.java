@@ -68,7 +68,7 @@ public class TableModelCD extends ComponentDescriptor {
     @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (ClassCD.PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested (component, "tableModel")); // NOI18N
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY);
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC);
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
