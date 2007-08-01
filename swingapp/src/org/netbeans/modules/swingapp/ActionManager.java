@@ -1069,7 +1069,15 @@ public class ActionManager {
             ProxyAction a = it.next();
             if (a.getId().equals(action.getId())) {
                 it.remove();
-                actionList.remove(a);
+                
+                //actionList.remove(a); // use this safer remove 
+                Iterator<ProxyAction> it2 = actionList.iterator();
+                while(it2.hasNext()) {
+                    ProxyAction pact = it2.next();
+                    if(actionsMatch(pact, a)) {
+                        it2.remove();
+                    }
+                }
                 break;
             }
         }
