@@ -23,7 +23,6 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.api.JavacTaskImpl;
-import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
@@ -44,7 +43,6 @@ import org.netbeans.modules.java.source.query.QueryException;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.modules.java.source.engine.RootTree;
 import org.netbeans.modules.java.source.builder.ASTService;
-import org.netbeans.modules.java.source.builder.DefaultEnvironment;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.engine.ApplicationContext;
 import org.netbeans.modules.java.source.engine.ReattributionException;
@@ -64,7 +62,6 @@ import org.openide.text.CloneableEditorSupport;
  */
 public class WorkingCopy extends CompilationController {
     
-    private DefaultEnvironment ce;
     private ChangeSet changes;
     private boolean afterCommit = false;
     private WorkingCopyContext wcc;
@@ -88,9 +85,7 @@ public class WorkingCopy extends CompilationController {
         }
         
         JavacTaskImpl task = this.delegate.getJavacTask();
-        ce = new DefaultEnvironment(
-                task, getCompilationUnit(), Source.instance(task.getContext()).name, wcc);
-        treeMaker = new TreeMaker(this, ce.getTreeMaker());
+        treeMaker = new TreeMaker(this, TreeFactory.instance(getContext()));
         changes = new ChangeSet("<no-description>");
         changes.attach(getContext());
     }
@@ -101,8 +96,8 @@ public class WorkingCopy extends CompilationController {
     
     // API of the class --------------------------------------------------------
 
-    DefaultEnvironment getCommandEnvironment() {
-        return ce;
+    ApplicationContext getCommandEnvironment() {
+        return wcc;
     }
 
     @Override
@@ -195,7 +190,7 @@ public class WorkingCopy extends CompilationController {
         }
         
         try {
-            RootTree newRoot = changes.commit(ce.getRootNode());
+            RootTree newRoot = changes.commit((RootTree) ASTService.instance(getContext()).getRoot());
             
             if (changes.hasChanges()) {
                 ASTService.instance(getContext()).setRoot(newRoot);
