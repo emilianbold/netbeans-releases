@@ -27,23 +27,22 @@ import org.netbeans.modules.soa.mapper.common.IMapperLink;
 import org.netbeans.modules.soa.mapper.common.IMapperNode;
 import org.netbeans.modules.soa.mapper.common.IMapperNode;
 import org.netbeans.modules.soa.mapper.common.basicmapper.methoid.IFieldNode;
+import org.netbeans.modules.soa.mapper.common.basicmapper.tree.IMapperTreeNode;
 
 /**
  *
  * @author Alexey
  */
 public class XsltMapperRule extends BasicMapperRule {
-    
-    
+
     /**
      *
      * @param mapper
      */
     public XsltMapperRule(XsltMapper mapper) {
         super(mapper);
-        
     }
-    
+
     @Override
     public boolean isAllowToCreate(IMapperLink link) {
         IMapperNode startNode = link.getStartNode();
@@ -57,60 +56,82 @@ public class XsltMapperRule extends BasicMapperRule {
         // In case of the start and end nodes are the field nodes
         // then they should be of different types: input and output
         if (startNode instanceof IFieldNode && endNode instanceof IFieldNode) {
-            boolean isStartInput = ((IFieldNode)startNode).isInput();
-            boolean isEndInput = ((IFieldNode)endNode).isInput();
+            boolean isStartInput = ((IFieldNode) startNode).isInput();
+            boolean isEndInput = ((IFieldNode) endNode).isInput();
             //
             if (isStartInput == isEndInput) {
-               return false;
+                return false;
             }
             //
-            boolean isStartOutput = ((IFieldNode)startNode).isOutput();
-            boolean isEndOutput = ((IFieldNode)endNode).isOutput();
+            boolean isStartOutput = ((IFieldNode) startNode).isOutput();
+            boolean isEndOutput = ((IFieldNode) endNode).isOutput();
             //
             if (isStartOutput == isEndOutput) {
-               return false;
+                return false;
+            }
+            if (startNode.getLinkCount() > 0) {
+                return false;
+            }
+            if (endNode.getLinkCount() > 0) {
+                return false;
             }
         }
+        if (startNode instanceof IMapperTreeNode &&
+            ((IMapperTreeNode) startNode).isDestTreeNode() && 
+            startNode.getLinkCount() > 0){
+                return false;
+            
+                
+                    
+        }
+        if (endNode instanceof IMapperTreeNode &&
+            ((IMapperTreeNode) endNode).isDestTreeNode() && 
+            endNode.getLinkCount() > 0){
+                return false;
+                    
+        }
+
+
         //
         return !(new CheckCyclicLinks(link).isCycle());
     }
-    
-    
-    private class CheckCyclicLinks{
+
+
+    private class CheckCyclicLinks {
+
         private IMapperGroupNode stopAt;
         private Set<IMapperNode> visited = new HashSet<IMapperNode>();
-        
+
         private boolean cycleFound = false;
-        public CheckCyclicLinks(IMapperLink link){
-            
-            if (link.getStartNode() instanceof IFieldNode &&
-                    link.getEndNode() instanceof IFieldNode){
+
+        public CheckCyclicLinks(IMapperLink link) {
+
+            if (link.getStartNode() instanceof IFieldNode && link.getEndNode() instanceof IFieldNode) {
                 this.stopAt = link.getStartNode().getGroupNode();
                 checkRecursive(link.getEndNode());
             }
-            
-            
         }
-        public boolean isCycle(){
+
+        public boolean isCycle() {
             return this.cycleFound;
         }
-        
-        private void checkRecursive(IMapperNode node){
-            
-            
-            if (node instanceof IFieldNode){
+
+        private void checkRecursive(IMapperNode node) {
+
+
+            if (node instanceof IFieldNode) {
                 IMapperGroupNode group = node.getGroupNode();
-                if (group == stopAt){
+                if (group == stopAt) {
                     cycleFound = true;
                     return;
                 }
-                if (group != null){
+                if (group != null) {
                     IMapperNode n = group.getFirstNode();
-                    while (n != null){
-                        
-                        for (Object obj: n.getLinks()){
+                    while (n != null) {
+
+                        for (Object obj : n.getLinks()) {
                             IMapperLink l = (IMapperLink) obj;
-                            if(l.getStartNode() == n){
+                            if (l.getStartNode() == n) {
                                 checkRecursive(l.getEndNode());
                             }
                         }
@@ -119,9 +140,5 @@ public class XsltMapperRule extends BasicMapperRule {
                 }
             }
         }
-        
     }
-     
-
-
 }
