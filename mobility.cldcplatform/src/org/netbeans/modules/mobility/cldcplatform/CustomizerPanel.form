@@ -13,7 +13,10 @@
     </Property>
   </AccessibilityProperties>
   <AuxValues>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -49,9 +52,6 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel3">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_Devices" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="lDevices"/>
                 </Property>
@@ -88,9 +88,6 @@
             </Container>
             <Component class="javax.swing.JButton" name="jButtonRefresh">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_Refresh" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_Refresh" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -112,7 +109,7 @@
         <Container class="javax.swing.JPanel" name="jPanel6">
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="Custom Commands">
+              <JTabbedPaneConstraints tabName="Commands">
                 <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_CMD_Tab" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -124,9 +121,6 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel6">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_Customizer_Device" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="jTextFieldDevice"/>
                 </Property>
@@ -152,9 +146,6 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel7">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_Customizer_Preverify" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="jTextFieldPreverify"/>
                 </Property>
@@ -177,9 +168,6 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel8">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_Customizer_Exec" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="jTextFieldExec"/>
                 </Property>
@@ -202,9 +190,6 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel9">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_Customizer_Debug" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="jTextFieldDebug"/>
                 </Property>
@@ -264,9 +249,6 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel2">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_Sources" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="lSourcePaths"/>
                 </Property>
@@ -311,9 +293,6 @@
             </Container>
             <Component class="javax.swing.JButton" name="bSourceAddArchive">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_AddSrcZip" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_AddArchive" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -332,9 +311,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bSourceAddFolder">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_SrcAddFolder" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_AddFolder" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -353,9 +329,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bSourceRemove">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_SrcRemove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_Remove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -374,9 +347,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bSourceMoveUp">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_SrcMoveUp" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_MoveUp" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -395,9 +365,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bSourceMoveDown">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_SrcMoveDown" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_MoveDown" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -431,9 +398,6 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel1">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_Javadoc" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="lJavaDocPaths"/>
                 </Property>
@@ -478,9 +442,6 @@
             </Container>
             <Component class="javax.swing.JButton" name="bJavaDocAddArchive">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_JavadocAddJar" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_AddArchive" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -499,9 +460,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bJavaDocAddFolder">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_JavadocAddFolder" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_AddFolder" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -520,9 +478,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bJavaDocRemove">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_JavadocRemove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_Remove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -541,9 +496,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bJavaDocMoveUp">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_JavadocMoveUp" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_MoveUp" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -562,9 +514,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bJavaDocMoveDown">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_JavadocMoveDown" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_MoveDown" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -613,9 +562,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bPreferences">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_ToolsPreferences" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_Preferences" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -634,9 +580,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bUtilities">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_ToolsUtilities" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_Utilities" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -670,9 +613,6 @@
             </Component>
             <Component class="javax.swing.JCheckBox" name="cMemoryMonitor">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_ToolsMemoryMon" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_MemoryMonitor" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -688,9 +628,6 @@
             </Component>
             <Component class="javax.swing.JCheckBox" name="cNetworkMonitor">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_ToolsNetworkMon" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_NetworkMonitor" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -706,9 +643,6 @@
             </Component>
             <Component class="javax.swing.JCheckBox" name="cProfiler">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="MNM_CustomizerPanel_ToolsProfiler" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/cldcplatform/Bundle.properties" key="LBL_Customizer_Profiler" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>

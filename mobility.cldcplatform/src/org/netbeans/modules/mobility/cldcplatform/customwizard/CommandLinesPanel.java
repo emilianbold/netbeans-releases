@@ -201,19 +201,18 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         jScrollPane1 = new javax.swing.JScrollPane();
         infoPanel = new javax.swing.JTextPane();
 
+        setName(NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_General_Information")); // NOI18N
+        setPreferredSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
 
-        setName(NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_General_Information"));
-        setPreferredSize(new java.awt.Dimension(600, 400));
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "MNM_CmdLinePanel_Platform_Home").charAt(0));
-        jLabel1.setText(NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinePanel_Platform_Home"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinePanel_Platform_Home")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinePanel_Platform_Home"));
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinePanel_Platform_Home"));
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinePanel_Platform_Home")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinePanel_Platform_Home")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -222,31 +221,27 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         gridBagConstraints.weightx = 1.0;
         add(platformHome, gridBagConstraints);
 
-        browseButton.setMnemonic(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "MNM_CmdLinesPanel_Browse").charAt(0));
-        browseButton.setText(NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Browse"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Browse")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(browseButton, gridBagConstraints);
-        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Browse"));
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Browse"));
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Browse")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Browse")); // NOI18N
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "MNM_CmdLinesPanel_Platform_Name").charAt(0));
-        jLabel2.setText(NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Platform_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Platform_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 6);
         add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Platform_Name"));
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Platform_Name"));
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Platform_Name")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Platform_Name")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -257,16 +252,15 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(platformName, gridBagConstraints);
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "MNM_CmdLinesPanel_Device_Name").charAt(0));
-        jLabel3.setText(NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Device_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Device_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 6);
         add(jLabel3, gridBagConstraints);
-        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Device_Name"));
-        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Device_Name"));
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Device_Name")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Device_Name")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -277,16 +271,15 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(deviceName, gridBagConstraints);
 
-        jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "MNM_CmdLinesPanel_Preverify_Command").charAt(0));
-        jLabel4.setText(NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Preverify_Command"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Preverify_Command")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 6);
         add(jLabel4, gridBagConstraints);
-        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Preverify_Command"));
-        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Preverify_Command"));
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Preverify_Command")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Preverify_Command")); // NOI18N
 
         preverifyCommand.setText("\"{platformhome}{/}bin{/}preverify\" {classpath|-classpath \"{classpath}\"} -d \"{destdir}\" \"{srcdir}\"");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -298,16 +291,15 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(preverifyCommand, gridBagConstraints);
 
-        jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "MNM_CmdLinesPanel_Execution_Command").charAt(0));
-        jLabel5.setText(NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Execution_Command"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Execution_Command")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 6);
         add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Execution_Command"));
-        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Execution_Command"));
+        jLabel5.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Execution_Command")); // NOI18N
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Execution_Command")); // NOI18N
 
         executionCommand.setText("\"{platformhome}{/}bin{/}emulator\" {device|-Xdevice:\"{device}\"} {jadfile|-Xdescriptor:\"{jadfile}\"} {securitydomain|-Xdomain:{securitydomain}} {cmdoptions}");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -319,16 +311,15 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(executionCommand, gridBagConstraints);
 
-        jLabel6.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "MNM_CmdLinesPanel_Debugger_Command").charAt(0));
-        jLabel6.setText(NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Debugger_Command"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, NbBundle.getMessage(CommandLinesPanel.class, "LBL_CmdLinesPanel_Debugger_Command")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 6);
         add(jLabel6, gridBagConstraints);
-        jLabel6.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Debugger_Command"));
-        jLabel6.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Debugger_Command"));
+        jLabel6.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Debugger_Command")); // NOI18N
+        jLabel6.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommandLinesPanel.class, "ACSD_CmdLinesPanel_Debugger_Command")); // NOI18N
 
         debuggerCommand.setText("\"{platformhome}{/}bin{/}emulator\" {device|-Xdevice:\"{device}\"} {jadfile|-Xdescriptor:\"{jadfile}\"} {securitydomain|-Xdomain:{securitydomain}} {debug|-Xdebug -Xrunjdwp:transport={debugtransport},server={debugserver},suspend={debugsuspend},address={debugaddress}} {cmdoptions}");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -353,7 +344,6 @@ public class CommandLinesPanel extends javax.swing.JPanel implements WizardPanel
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed

@@ -81,19 +81,18 @@ public class ClasspathPanel extends javax.swing.JPanel implements WizardPanel.Co
         jScrollPane2 = new javax.swing.JScrollPane();
         infoPanel = new javax.swing.JTextPane();
 
+        setName(NbBundle.getMessage(ClasspathPanel.class, "Title_CPPanel_Bootstrap_Libraries")); // NOI18N
+        setPreferredSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
 
-        setName(NbBundle.getMessage(ClasspathPanel.class, "Title_CPPanel_Bootstrap_Libraries"));
-        setPreferredSize(new java.awt.Dimension(600, 400));
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "MNM_CPPanel_Classpath").charAt(0));
         jLabel1.setLabelFor(classpathList);
-        jLabel1.setText(NbBundle.getMessage(ClasspathPanel.class, "LBL_CPPanel_Classpath"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(ClasspathPanel.class, "LBL_CPPanel_Classpath")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Classpath"));
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Classpath"));
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Classpath")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Classpath")); // NOI18N
 
         classpathList.setModel(classpathListModel);
         jScrollPane1.setViewportView(classpathList);
@@ -108,51 +107,46 @@ public class ClasspathPanel extends javax.swing.JPanel implements WizardPanel.Co
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jScrollPane1, gridBagConstraints);
 
-        addButton.setMnemonic(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "MNM_CPPanel_Add").charAt(0));
-        addButton.setText(NbBundle.getMessage(ClasspathPanel.class, "LBL_CPPanel_Add"));
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(ClasspathPanel.class, "LBL_CPPanel_Add")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(addButton, gridBagConstraints);
-        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Add"));
-        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Add"));
+        addButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Add")); // NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Add")); // NOI18N
 
-        removeButton.setMnemonic(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "MNM_CPPanel_Remove").charAt(0));
-        removeButton.setText(NbBundle.getMessage(ClasspathPanel.class, "LBL_CPPanel_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(ClasspathPanel.class, "LBL_CPPanel_Remove")); // NOI18N
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(removeButton, gridBagConstraints);
-        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Remove"));
-        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Remove"));
+        removeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Remove")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Remove")); // NOI18N
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "MNM_CPPanel_Detected_APIs").charAt(0));
         jLabel2.setLabelFor(infoPanel);
-        jLabel2.setText(NbBundle.getMessage(ClasspathPanel.class, "LBL_CPPanel_Detected_APIs"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(ClasspathPanel.class, "LBL_CPPanel_Detected_APIs")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Detected_APIs"));
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Detected_APIs"));
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Detected_APIs")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClasspathPanel.class, "ACSD_CPPanel_Detected_APIs")); // NOI18N
 
         infoPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         infoPanel.setEditable(false);
@@ -165,9 +159,7 @@ public class ClasspathPanel extends javax.swing.JPanel implements WizardPanel.Co
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         add(jScrollPane2, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         final File[] values = browse(NbBundle.getMessage(ClasspathPanel.class, "TITLE_ClasspathPanel_SelectClasspath"));//NOI18N

@@ -96,20 +96,20 @@ final public class FindPanel extends javax.swing.JPanel implements SearchRunnabl
         platformsList = new javax.swing.JList();
         jButton1 = new javax.swing.JButton();
 
+        setName(NbBundle.getMessage(FindPanel.class, "LBL_FindPanel_Platforms")); // NOI18N
+        setPreferredSize(new java.awt.Dimension(540, 450));
         setLayout(new java.awt.GridBagLayout());
 
-        setName(NbBundle.getMessage(FindPanel.class, "LBL_FindPanel_Platforms"));
-        setPreferredSize(new java.awt.Dimension(540, 450));
-        jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(FindPanel.class, "MNM_FindPanel_Select_Platform").charAt(0));
         jLabel5.setLabelFor(platformsList);
-        jLabel5.setText(NbBundle.getMessage(FindPanel.class, "LBL_FindPanel_Select_Platforms"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, NbBundle.getMessage(FindPanel.class, "LBL_FindPanel_Select_Platforms")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindPanel.class, "ACSD_FindPanel_Select_Platform"));
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindPanel.class, "ACSD_FindPanel_Select_Platform")); // NOI18N
 
         jScrollPane1.setPreferredSize(new java.awt.Dimension(300, 150));
+
         platformsList.setModel(platformsListModel);
         platformsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         platformsList.setCellRenderer(foldersRenderer);
@@ -125,15 +125,12 @@ final public class FindPanel extends javax.swing.JPanel implements SearchRunnabl
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
-        jButton1.setMnemonic(org.openide.util.NbBundle.getMessage(FindPanel.class, "MNM_FindPanel_Find_More").charAt(0));
-        jButton1.setText(NbBundle.getMessage(FindPanel.class, "LBL_FindPanel_Find_More"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, NbBundle.getMessage(FindPanel.class, "LBL_FindPanel_Find_More")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -142,10 +139,8 @@ final public class FindPanel extends javax.swing.JPanel implements SearchRunnabl
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jButton1, gridBagConstraints);
-        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindPanel.class, "ACSD_FindPanel_Find_More"));
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+        jButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FindPanel.class, "ACSD_FindPanel_Find_More")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
     
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         if (searchTask != null && !searchTask.isFinished()) return;

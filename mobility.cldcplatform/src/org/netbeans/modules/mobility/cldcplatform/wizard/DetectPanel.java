@@ -169,25 +169,26 @@ public class DetectPanel extends javax.swing.JPanel {
         addSourceButton = new javax.swing.JButton();
         removeSourceButton = new javax.swing.JButton();
 
+        setName(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Platforms")); // NOI18N
+        setPreferredSize(new java.awt.Dimension(540, 450));
         setLayout(new java.awt.BorderLayout());
 
-        setName(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Platforms"));
-        setPreferredSize(new java.awt.Dimension(540, 450));
         jSplitPane1.setBorder(null);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setResizeWeight(0.5);
+
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(DetectPanel.class, "MNM_DetectPanel_Select_Platform").charAt(0));
         jLabel5.setLabelFor(platformsList);
-        jLabel5.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Select_Platforms"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Select_Platforms")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel4.add(jLabel5, gridBagConstraints);
-        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ACSD_DetectPanel_Select_Platform"));
+        jLabel5.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ACSD_DetectPanel_Select_Platform")); // NOI18N
 
         jScrollPane1.setPreferredSize(new java.awt.Dimension(300, 150));
+
         platformsList.setModel(platformsListModel);
         platformsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         platformsList.setCellRenderer(platformsRenderer);
@@ -208,14 +209,13 @@ public class DetectPanel extends javax.swing.JPanel {
         switchPanel.setLayout(new java.awt.CardLayout());
 
         notSelectedPanel.setLayout(new java.awt.BorderLayout());
-
         switchPanel.add(notSelectedPanel, "NotSelected");
 
         notDetectedPanel.setLayout(new java.awt.BorderLayout());
 
         notDetectedLabel.setForeground(notDetectedPanel.getBackground ().darker ());
         notDetectedLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        notDetectedLabel.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Detecting_details"));
+        org.openide.awt.Mnemonics.setLocalizedText(notDetectedLabel, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Detecting_details")); // NOI18N
         notDetectedLabel.setOpaque(true);
         notDetectedPanel.add(notDetectedLabel, java.awt.BorderLayout.CENTER);
 
@@ -224,7 +224,7 @@ public class DetectPanel extends javax.swing.JPanel {
         errorPlatformPanel.setLayout(new java.awt.BorderLayout());
 
         errorPlatformLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        errorPlatformLabel.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Platform_detection_error"));
+        org.openide.awt.Mnemonics.setLocalizedText(errorPlatformLabel, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Platform_detection_error")); // NOI18N
         errorPlatformLabel.setOpaque(true);
         errorPlatformPanel.add(errorPlatformLabel, java.awt.BorderLayout.CENTER);
 
@@ -232,15 +232,14 @@ public class DetectPanel extends javax.swing.JPanel {
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(DetectPanel.class, "MNM_DetectPanel_Platform_Name").charAt(0));
         jLabel1.setLabelFor(nameField);
-        jLabel1.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Platform_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Platform_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         jPanel3.add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ACSD_DetectPanel_Platform_Name"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ACSD_DetectPanel_Platform_Name")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -250,9 +249,8 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 6, 6);
         jPanel3.add(nameField, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ACSD_DetectPanel_Platform_Name").charAt(0));
         jLabel2.setLabelFor(infoPanel);
-        jLabel2.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Platform_Details"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Platform_Details")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -260,7 +258,7 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 6);
         jPanel3.add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ACSD_DetectPanel_Platform_Details"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ACSD_DetectPanel_Platform_Details")); // NOI18N
 
         infoPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
         infoPanel.setEditable(false);
@@ -277,19 +275,18 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         jPanel3.add(jScrollPane2, gridBagConstraints);
 
-        jTabbedPane1.addTab(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Description"), jPanel3);
+        jTabbedPane1.addTab(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Description"), jPanel3); // NOI18N
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(DetectPanel.class, "MNM_DetectPanel_Platform_Details").charAt(0));
         jLabel3.setLabelFor(javadocList);
-        jLabel3.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Pl_Javadoc"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Pl_Javadoc")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPanel1.add(jLabel3, gridBagConstraints);
-        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Pl_Javadoc"));
-        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Pl_Javadoc"));
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Pl_Javadoc")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Pl_Javadoc")); // NOI18N
 
         javadocList.setModel(javadocListModel);
         javadocList.setCellRenderer(foldersRenderer);
@@ -305,34 +302,30 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
         jPanel1.add(jScrollPane3, gridBagConstraints);
 
-        addJavadocButton.setMnemonic(org.openide.util.NbBundle.getMessage(DetectPanel.class, "MNM_DetectPanel_Add").charAt(0));
-        addJavadocButton.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Add"));
-        addJavadocButton.setActionCommand(org.openide.util.NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Add"));
+        org.openide.awt.Mnemonics.setLocalizedText(addJavadocButton, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Add")); // NOI18N
+        addJavadocButton.setActionCommand(org.openide.util.NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Add")); // NOI18N
         addJavadocButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addJavadocButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         jPanel1.add(addJavadocButton, gridBagConstraints);
-        addJavadocButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Add"));
-        addJavadocButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Add"));
+        addJavadocButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Add")); // NOI18N
+        addJavadocButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Add")); // NOI18N
 
-        removeJavadocButton.setMnemonic(org.openide.util.NbBundle.getMessage(DetectPanel.class, "MNM_DetectPanel_Remove").charAt(0));
-        removeJavadocButton.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Remove"));
-        removeJavadocButton.setActionCommand(org.openide.util.NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeJavadocButton, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Remove")); // NOI18N
+        removeJavadocButton.setActionCommand(org.openide.util.NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Remove")); // NOI18N
         removeJavadocButton.setEnabled(false);
         removeJavadocButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeJavadocButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -340,18 +333,17 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         jPanel1.add(removeJavadocButton, gridBagConstraints);
 
-        jTabbedPane1.addTab(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Javadoc"), jPanel1);
+        jTabbedPane1.addTab(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Javadoc"), jPanel1); // NOI18N
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(DetectPanel.class, "MNM_DetectPanel_Platform_Details").charAt(0));
         jLabel4.setLabelFor(sourceList);
-        jLabel4.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_PL_Sources"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_PL_Sources")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPanel2.add(jLabel4, gridBagConstraints);
-        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_PL_Sources"));
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_PL_Sources")); // NOI18N
 
         sourceList.setModel(sourceListModel);
         sourceList.setCellRenderer(foldersRenderer);
@@ -367,53 +359,46 @@ public class DetectPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
         jPanel2.add(jScrollPane4, gridBagConstraints);
 
-        addSourceButton.setMnemonic(org.openide.util.NbBundle.getMessage(DetectPanel.class, "MNM_DetectPanel_Add").charAt(0));
-        addSourceButton.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Add"));
-        addSourceButton.setLabel(org.openide.util.NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Add"));
+        org.openide.awt.Mnemonics.setLocalizedText(addSourceButton, NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Add")); // NOI18N
+        addSourceButton.setLabel(org.openide.util.NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Add")); // NOI18N
         addSourceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addSourceButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         jPanel2.add(addSourceButton, gridBagConstraints);
-        addSourceButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Add"));
-        addSourceButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Add"));
+        addSourceButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Add")); // NOI18N
+        addSourceButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Add")); // NOI18N
 
-        removeSourceButton.setMnemonic(org.openide.util.NbBundle.getMessage(DetectPanel.class, "MNM_DetectPanel_Remove").charAt(0));
-        removeSourceButton.setText(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Remove"));
         removeSourceButton.setEnabled(false);
-        removeSourceButton.setLabel(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Remove"));
+        removeSourceButton.setLabel(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Remove")); // NOI18N
         removeSourceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeSourceButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         jPanel2.add(removeSourceButton, gridBagConstraints);
-        removeSourceButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Remove"));
-        removeSourceButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Remove"));
+        removeSourceButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Remove")); // NOI18N
+        removeSourceButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DetectPanel.class, "ASCD_DetectPanel_Remove")); // NOI18N
 
-        jTabbedPane1.addTab(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Sources"), jPanel2);
+        jTabbedPane1.addTab(NbBundle.getMessage(DetectPanel.class, "LBL_DetectPanel_Sources"), jPanel2); // NOI18N
 
         switchPanel.add(jTabbedPane1, "Details");
 
         jSplitPane1.setBottomComponent(switchPanel);
 
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void addJavadocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addJavadocButtonActionPerformed
         final J2MEPlatform platform = findSelectedPlatform();
