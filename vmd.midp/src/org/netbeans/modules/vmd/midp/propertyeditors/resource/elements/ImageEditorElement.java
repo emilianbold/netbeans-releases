@@ -109,9 +109,11 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
 
             this.componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
-
                 public void run() {
-                    _pathText[0] = MidpTypes.getString(component.readProperty(ImageCD.PROP_RESOURCE_PATH));
+                    PropertyValue propertyValue = component.readProperty(ImageCD.PROP_RESOURCE_PATH);
+                    if (!isPropertyValueAUserCodeType(propertyValue)) {
+                        _pathText[0] = MidpTypes.getString(propertyValue);
+                    }
                 }
             });
         }

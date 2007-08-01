@@ -97,8 +97,14 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
 
                 public void run() {
-                    columns[0] = component.readProperty(SimpleTableModelCD.PROP_COLUMN_NAMES);
-                    values[0] = component.readProperty(SimpleTableModelCD.PROP_VALUES);
+                    PropertyValue propertyValue = component.readProperty(SimpleTableModelCD.PROP_COLUMN_NAMES);
+                    if (!isPropertyValueAUserCodeType(propertyValue)) {
+                        columns[0] = propertyValue;
+                    }
+                    PropertyValue propertyValue2 = component.readProperty(SimpleTableModelCD.PROP_VALUES);
+                    if (!isPropertyValueAUserCodeType(propertyValue2)) {
+                        values[0] = propertyValue2;
+                    }
                 }
             });
         }

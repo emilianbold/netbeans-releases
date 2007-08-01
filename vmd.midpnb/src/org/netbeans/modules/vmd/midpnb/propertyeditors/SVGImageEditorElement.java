@@ -106,9 +106,11 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
 
             this.componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
-
                 public void run() {
-                    _pathText[0] = MidpTypes.getString(component.readProperty(SVGImageCD.PROP_RESOURCE_PATH));
+                    PropertyValue propertyValue = component.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
+                    if (!isPropertyValueAUserCodeType(propertyValue)) {
+                        _pathText[0] = MidpTypes.getString(propertyValue);
+                    }
                 }
             });
         }

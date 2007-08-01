@@ -249,10 +249,22 @@ public class FontEditorElement extends PropertyEditorResourceElement {
             componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
                 public void run() {
-                    kindCode[0] = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FONT_KIND));
-                    faceCode[0] = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FACE));
-                    styleCode[0] = MidpTypes.getInteger(component.readProperty(FontCD.PROP_STYLE));
-                    sizeCode[0] = MidpTypes.getInteger(component.readProperty(FontCD.PROP_SIZE));
+                    PropertyValue propertyValue = component.readProperty(FontCD.PROP_FONT_KIND);
+                    if (!isPropertyValueAUserCodeType(propertyValue)) {
+                        kindCode[0] = MidpTypes.getInteger(propertyValue);
+                    }
+                    propertyValue = component.readProperty(FontCD.PROP_FACE);
+                    if (!isPropertyValueAUserCodeType(propertyValue)) {
+                        faceCode[0] = MidpTypes.getInteger(propertyValue);
+                    }
+                    propertyValue = component.readProperty(FontCD.PROP_STYLE);
+                    if (!isPropertyValueAUserCodeType(propertyValue)) {
+                        styleCode[0] = MidpTypes.getInteger(propertyValue);
+                    }
+                    propertyValue = component.readProperty(FontCD.PROP_SIZE);
+                    if (!isPropertyValueAUserCodeType(propertyValue)) {
+                        sizeCode[0] = MidpTypes.getInteger(propertyValue);
+                    }
                 }
             });
         }

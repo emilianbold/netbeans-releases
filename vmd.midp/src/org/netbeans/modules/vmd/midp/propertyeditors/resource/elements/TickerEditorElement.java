@@ -34,15 +34,15 @@ import org.netbeans.modules.vmd.midp.components.resources.TickerCD;
  * @author Anton Chechel
  */
 public class TickerEditorElement extends PropertyEditorResourceElement implements DocumentListener {
-    
+
     private long componentID;
     private boolean doNotFireEvent;
-    
+
     public TickerEditorElement() {
         initComponents();
         tickerTextField.getDocument().addDocumentListener(this);
     }
-    
+
     public JComponent getJComponent() {
         return this;
     }
@@ -52,9 +52,9 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
     }
 
     public List<String> getPropertyValueNames() {
-        return Arrays.asList(new String[] {TickerCD.PROP_STRING});
+        return Arrays.asList(new String[]{TickerCD.PROP_STRING});
     }
-    
+
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         if (wrapper == null) {
             // UI stuff
@@ -62,12 +62,13 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
             setAllEnabled(false);
             return;
         }
-        
+
         this.componentID = wrapper.getComponentID();
         final String[] _tickerText = new String[1];
 
         final DesignComponent component = wrapper.getComponent();
-        if (component != null) { // existing component
+        if (component != null) {
+            // existing component
             if (!component.getType().equals(getTypeID())) {
                 throw new IllegalArgumentException("Passed component must have typeID " + getTypeID() + " instead passed " + component.getType()); // NOI18N
             }
@@ -75,7 +76,10 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
             this.componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
                 public void run() {
-                    _tickerText[0] = MidpTypes.getString(component.readProperty(TickerCD.PROP_STRING));
+                    PropertyValue propertyValue = component.readProperty(TickerCD.PROP_STRING);
+                    if (!isPropertyValueAUserCodeType(propertyValue)) {
+                        _tickerText[0] = MidpTypes.getString(propertyValue);
+                    }
                 }
             });
         }
@@ -100,12 +104,12 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
         tickerTextField.setText(text);
         doNotFireEvent = false;
     }
-    
+
     private void setAllEnabled(boolean isEnabled) {
         tickerLabel.setEnabled(isEnabled);
         tickerTextField.setEnabled(isEnabled);
     }
-    
+
     public void insertUpdate(DocumentEvent e) {
         textChanged();
     }
@@ -117,7 +121,7 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
     public void changedUpdate(DocumentEvent e) {
         textChanged();
     }
-    
+
     private synchronized void textChanged() {
         if (isShowing() && !doNotFireEvent) {
             fireElementChanged(componentID, TickerCD.PROP_STRING, MidpTypes.createStringValue(tickerTextField.getText()));
@@ -160,11 +164,8 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
                 .addContainerGap(110, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-    
-    
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+        // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel tickerLabel;
     private javax.swing.JTextField tickerTextField;
     // End of variables declaration//GEN-END:variables
-    
 }
