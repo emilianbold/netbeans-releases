@@ -1562,7 +1562,8 @@ class TreeTable extends JTable implements Runnable {
                     Rectangle r = tree.getPathBounds(path);
  
                     if ((e.getX() >= (r.x - positionX)) && (e.getX() <= (r.x - positionX + r.width))
-                        || isLocationInExpandControl( path, p ) ) {
+                        || isLocationInExpandControl( path, p )
+                        || e.getID() == MouseEvent.MOUSE_RELEASED || e.getID() == MouseEvent.MOUSE_CLICKED ) {
                         changeSelection = false;
                     }
                 }
