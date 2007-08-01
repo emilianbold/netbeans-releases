@@ -24,18 +24,9 @@ import org.netbeans.modules.compapp.javaee.sunresources.SunResourcesUtil;
 import org.netbeans.modules.compapp.projects.jbi.CasaHelper;
 import org.netbeans.modules.compapp.projects.jbi.ProjectPropertyProvider;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.ComponentInformationParser;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentDocument;
-import org.netbeans.modules.compapp.projects.jbi.descriptor.componentInfo.model.JBIComponentStatus;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 
-//import org.netbeans.modules.j2ee.common.ui.customizer.AntArtifactChooser;
-//import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
-//import org.netbeans.modules.j2ee.common.ui.customizer.ArchiveProjectProperties;
-//import org.netbeans.modules.j2ee.api.common.J2eeProjectConstants;
-//import org.netbeans.modules.j2ee.earproject.ProjectPropertyProvider;
-//import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.VisualClassPathItem;
 
 import org.netbeans.api.project.Project;
@@ -68,7 +59,7 @@ import org.openide.util.NbBundle;
 public class AddProjectAction implements ProjectActionPerformer {
     private List<String> componentNames = new ArrayList<String>();
     
-    private List<String> javaeeAntArtifactTypes = new ArrayList();
+    private List<String> javaeeAntArtifactTypes = new ArrayList<String>();
     private String descEjbProjectsOnly = "EJB projects only" ;
     private String descWebProjectsOnly = "Web projects only" ;
     private String descEarProjectsOnly = "Ear projects only" ;
@@ -137,7 +128,7 @@ public class AddProjectAction implements ProjectActionPerformer {
             }
         }
         
-        List<FileFilter> ffList = new ArrayList();
+        List<FileFilter> ffList = new ArrayList<FileFilter>();
         ffList.add(new EJBArtifactsFilter());
         ffList.add(new WebAppArtifactsFilter());
         ffList.add(new EarArtifactsFilter() );
@@ -156,8 +147,8 @@ public class AddProjectAction implements ProjectActionPerformer {
                 ((ProjectPropertyProvider) jbiProject).getProjectProperties();
         
         List os = (List) projProperties.get(JbiProjectProperties.META_INF);
-        List<VisualClassPathItem> oldList = 
-                (List) projProperties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
+        List<VisualClassPathItem> oldList = (List<VisualClassPathItem>) 
+                projProperties.get(JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
         
         if ((os == null) || (os.size() < 1)) {
             return false;
@@ -244,22 +235,29 @@ public class AddProjectAction implements ProjectActionPerformer {
             if ( f == null )
                 return false;
             
+            if (!f.isDirectory()){
+                return false;
+            }
+            
             try {
                 FileObject projectRoot = FileUtil.toFileObject( f );
-                
                 if ( projectRoot != null ) {
                     Project project = ProjectManager.getDefault().findProject( projectRoot );
-                    if ( project == null )
-                        return false;
-                    
-                    Lookup lookup = project.getLookup();
-                    Class clz = project.getClass();
-                    if ( clz.getName().indexOf( STR_EJB_PROJECT ) != -1 ) {
+                    if ( project != null ){
+                        Lookup lookup = project.getLookup();
+                        Class clz = project.getClass();
+                        if ( clz.getName().indexOf( STR_EJB_PROJECT ) != -1 ) {
+                            return true;
+                        }
+                    } else {
+                        // List directory
                         return true;
                     }
-                }
+                } 
             } catch ( IOException e ) {
                 // no action
+            } catch ( IllegalArgumentException iae ) {
+                // nop
             }
             
             return false;
@@ -287,22 +285,22 @@ public class AddProjectAction implements ProjectActionPerformer {
                 FileObject projectRoot = FileUtil.toFileObject( f );
                 
                 if ( projectRoot != null ) {
-                    try {
-                        Project project = ProjectManager.getDefault().findProject( projectRoot );
-                        if ( project == null )
-                            return false;
-                        
+                    Project project = ProjectManager.getDefault().findProject( projectRoot );
+                    if ( project != null ){
                         Lookup lookup = project.getLookup();
                         Class clz = project.getClass();
                         if ( clz.getName().indexOf( STR_WEB_PROJECT ) != -1 ) {
                             return true;
                         }
-                    } catch ( IllegalArgumentException iae ) {
-                        // No action here.
+                    } else {
+                        // List directory.
+                        return true;
                     }
-                }
+                } 
             } catch ( IOException e ) {
                 // Return null
+            } catch ( IllegalArgumentException iae ) {
+                // nop
             }
             
             return false;
@@ -331,17 +329,21 @@ public class AddProjectAction implements ProjectActionPerformer {
                 
                 if ( projectRoot != null ) {
                     Project project = ProjectManager.getDefault().findProject( projectRoot );
-                    if ( project == null )
-                        return false;
-                    
-                    Lookup lookup = project.getLookup();
-                    Class clz = project.getClass();
-                    if ( clz.getName().indexOf( STR_EAR_PROJECT ) != -1 ) {
+                    if ( project != null ){                    
+                        Lookup lookup = project.getLookup();
+                        Class clz = project.getClass();
+                        if ( clz.getName().indexOf( STR_EAR_PROJECT ) != -1 ) {
+                            return true;
+                        }
+                    } else {
+                        // List plain directory
                         return true;
                     }
                 }
             } catch ( IOException e ) {
                 // Return null
+            } catch ( IllegalArgumentException iae ) {
+                // nop
             }
             
             return false;

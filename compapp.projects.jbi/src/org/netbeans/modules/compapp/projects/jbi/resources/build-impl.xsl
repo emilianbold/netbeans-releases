@@ -933,10 +933,6 @@ Microsystems, Inc. All Rights Reserved.
                         </xsl:attribute>
                     </xsl:if>
                 </ant>
-                <basename> 
-                    <xsl:attribute name="property"><xsl:value-of select="$subproj"/>.se.jar.name</xsl:attribute>
-                    <xsl:attribute name="file">${reference.<xsl:value-of select="$subproj"/>.dist}</xsl:attribute>
-                </basename>
                 <basename>
                     <xsl:attribute name="property"><xsl:value-of select="$subproj"/>.su.name</xsl:attribute>
                     <xsl:attribute name="file">${project.<xsl:value-of select="$subproj"/>}</xsl:attribute>
@@ -946,7 +942,7 @@ Microsystems, Inc. All Rights Reserved.
                     <xsl:attribute name="value">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                 </property>                
                 <unzip>
-                    <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.dist}</xsl:attribute>
+                    <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.<xsl:value-of select="$subtarget"/>}</xsl:attribute>
                     <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/</xsl:text>${<xsl:value-of select="$subproj"/>.su.name}</xsl:attribute>
                     <patternset>
                         <include name="**/*.wsdl"/>
@@ -955,7 +951,7 @@ Microsystems, Inc. All Rights Reserved.
                     </patternset>
                 </unzip>  
                 <unzip>
-                    <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.dist}</xsl:attribute>
+                    <xsl:attribute name="src">${reference.<xsl:value-of select="$subproj"/>.<xsl:value-of select="$subtarget"/>}</xsl:attribute>
                     <xsl:attribute name="dest">${src.dir}<xsl:text>/../jbiServiceUnits/META-INF/<xsl:value-of select="$subproj"/></xsl:text></xsl:attribute>
                     <patternset>
                         <include name="META-INF/catalog.xml"/>
@@ -963,7 +959,7 @@ Microsystems, Inc. All Rights Reserved.
                 </unzip>
                 <jbi-javaee-dist>
                     <xsl:attribute name="projectName"><xsl:value-of select="$subproj"/></xsl:attribute>                                        
-                    <xsl:attribute name="subprojJar">${reference.<xsl:value-of select="$subproj"/>.dist}</xsl:attribute>
+                    <xsl:attribute name="subprojJar">${reference.<xsl:value-of select="$subproj"/>.<xsl:value-of select="$subtarget"/>}</xsl:attribute>
                     <xsl:attribute name="subprojDir">${project.<xsl:value-of select="$subproj"/>}</xsl:attribute>                    
                     <xsl:attribute name="suExtractDir">${<xsl:value-of select="$subproj"/>.su.dir}</xsl:attribute>
                     <xsl:attribute name="subprojResource">${resource.<xsl:value-of select="$subproj"/>}</xsl:attribute>

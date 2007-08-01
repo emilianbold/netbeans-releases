@@ -125,10 +125,8 @@ public class JbiProjectConstants {
     public static final String JAVA_EE_SE_COMPONENT_NAME = "sun-javaee-engine" ; // No I18N
     public static final List<String> JAVA_EE_AA_TYPES = new ArrayList<String>();
     static {
-        JbiProjectConstants.JAVA_EE_AA_TYPES.add("j2ee_archive");  // No I18N
-        JbiProjectConstants.JAVA_EE_AA_TYPES.add("war");  // No I18N
-        // TODO ear project does not have AntArtifactProvider yet
-        // JAVA_EE_AA_TYPES.add("ear");  // No I18N
+        // For both EJB and Web Projects use the same target
+        JbiProjectConstants.JAVA_EE_AA_TYPES.add("j2ee_ear_archive"); //NOI18N
     } ;
 
     private JbiProjectConstants() {
