@@ -26,7 +26,6 @@ import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
 import org.netbeans.modules.vmd.midp.components.items.ItemCD;
 import org.netbeans.modules.vmd.midp.components.items.StringItemCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
-
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,29 +37,30 @@ import java.awt.*;
  * @version 1.0
  */
 public class StringItemDisplayPresenter extends ItemDisplayPresenter {
-    
+
     private JLabel label;
-    
+
     public StringItemDisplayPresenter() {
         label = new JLabel();
         setContentComponent(label);
     }
-    
+
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
-        
+
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT));
         int appearanceMode = MidpTypes.getInteger(getComponent().readProperty(ItemCD.PROP_APPEARANCE_MODE));
         label.setBorder(appearanceMode == ItemCD.VALUE_BUTTON ? BorderFactory.createRaisedBevelBorder() : null);
-        label.setForeground (appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults ().getColor ("Label.foreground")); // NOI18N
+        label.setForeground(appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults().getColor("Label.foreground")); // NOI18N
         label.setText(text);
     }
 
 
-    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
-        ArrayList<ScreenPropertyDescriptor> list = new ArrayList<ScreenPropertyDescriptor> (super.getPropertyDescriptors ());
-        list.add (new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (StringItemCD.PROP_TEXT)));
+    @Override
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        ArrayList<ScreenPropertyDescriptor> list = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
+        list.add(new ScreenPropertyDescriptor(getComponent(), label, new ScreenStringPropertyEditor(StringItemCD.PROP_TEXT)));
         return list;
     }
-
 }

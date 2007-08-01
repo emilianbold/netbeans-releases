@@ -51,16 +51,19 @@ public class TextBoxDisplayPresenter extends DisplayableDisplayPresenter {
         contentPanel.add(textBox, BorderLayout.CENTER);
     }
     
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
         String text = MidpTypes.getString(getComponent().readProperty(TextBoxCD.PROP_STRING));
-        if (text != null)
+        if (text != null) {
             this.textBox.setText(text);
-        else
-            this.textBox.setText(NbBundle.getMessage(TextBoxDisplayPresenter.class, "DISP_empty_text"));
+        } else {
+            this.textBox.setText(NbBundle.getMessage(TextBoxDisplayPresenter.class, "DISP_empty_text")); // NOI18N
+        }
     }
     
+    @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         ArrayList<ScreenPropertyDescriptor> list = new ArrayList<ScreenPropertyDescriptor> (super.getPropertyDescriptors ());
         list.add (

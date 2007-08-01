@@ -186,8 +186,9 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     
     @Override
     protected void notifyDetached(DesignComponent component) {
-        if (imageFileObject != null && imageFileListener != null)
+        if (imageFileObject != null && imageFileListener != null) {
             imageFileObject.removeFileChangeListener(imageFileListener);
+        }
         imageFileObject = null;
         imageFileListener = null;
     }

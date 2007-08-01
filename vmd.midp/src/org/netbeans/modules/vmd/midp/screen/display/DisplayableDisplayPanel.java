@@ -100,6 +100,7 @@ public class DisplayableDisplayPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lTitle;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public JPopupMenu getComponentPopupMenu () {
         return Utilities.actionsToPopup (ActionsSupport.createActionsArray (presenter.getRelatedComponent ()), this);
     }

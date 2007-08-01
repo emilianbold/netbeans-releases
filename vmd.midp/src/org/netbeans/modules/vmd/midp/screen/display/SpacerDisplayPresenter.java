@@ -20,7 +20,6 @@
 
 package org.netbeans.modules.vmd.midp.screen.display;
 
-import java.awt.datatransfer.Transferable;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsSupport;
@@ -39,9 +38,8 @@ import java.util.Collections;
  */
 public class SpacerDisplayPresenter extends ScreenDisplayPresenter {
     
-    private Transferable transferable;
-    
     JSeparator separator = new JSeparator (JSeparator.HORIZONTAL) {
+        @Override
         public JPopupMenu getComponentPopupMenu () {
             return Utilities.actionsToPopup (ActionsSupport.createActionsArray (getRelatedComponent ()), this);
         }

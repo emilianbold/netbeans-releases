@@ -52,6 +52,7 @@ public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
         setContentComponent(panel);
     }
     
+    @Override
     public Collection<DesignComponent> getChildren() {
         PropertyValue elementsValue = getComponent().readProperty(ChoiceGroupCD.PROP_ELEMENTS);
         int type = (Integer) getComponent().readProperty(ChoiceGroupCD.PROP_CHOICE_TYPE).getPrimitiveValue();
@@ -63,6 +64,7 @@ public class ChoiceGroupDisplayPresenter extends ItemDisplayPresenter {
         return elements;
     }
     
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         

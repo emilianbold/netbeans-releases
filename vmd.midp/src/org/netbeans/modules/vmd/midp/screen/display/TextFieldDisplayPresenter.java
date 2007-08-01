@@ -48,6 +48,7 @@ public class TextFieldDisplayPresenter extends ItemDisplayPresenter {
         setContentComponent(label);
     }
     
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
@@ -55,6 +56,7 @@ public class TextFieldDisplayPresenter extends ItemDisplayPresenter {
         label.setText(text);
     }
 
+    @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
         ArrayList<ScreenPropertyDescriptor> list = new ArrayList<ScreenPropertyDescriptor> (super.getPropertyDescriptors ());
         list.add (new ScreenPropertyDescriptor (getComponent (), label, new ScreenStringPropertyEditor (TextFieldCD.PROP_TEXT)));

@@ -53,6 +53,7 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
         setContentComponent(label);
     }
     
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         DesignComponent imageComponent = getComponent().readProperty(ImageItemCD.PROP_IMAGE).getComponent();
@@ -73,11 +74,12 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
         } else if (icon == null && path != null) {
             label.setIcon(ICON_BROKEN);
         }  else if (alternText != null) {
-            label.setText(alternText); //NOI18N
+            label.setText(alternText);
             label.setIcon(null);
         }
     }
     
+    @Override
      public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         ResourcePropertyEditor imagePropertyEditor = new ResourcePropertyEditor(ImageItemCD.PROP_IMAGE, getComponent());
         List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>();
@@ -86,10 +88,11 @@ public class ImageItemDisplayPresenter extends ItemDisplayPresenter {
         return descriptors;
     }
      
-     @Override
+    @Override
     protected void notifyDetached(DesignComponent component) {
-        if (imageFileObject != null && imageFileListener != null)
+        if (imageFileObject != null && imageFileListener != null) {
             imageFileObject.removeFileChangeListener(imageFileListener);
+        }
         imageFileObject = null;
         imageFileListener = null;
     }

@@ -39,6 +39,7 @@ public class FormDisplayPresenter extends DisplayableDisplayPresenter {
         fillPanel.setOpaque(false);
     }
     
+    @Override
     public Collection<DesignComponent> getChildren() {
         PropertyValue itemsValue = getComponent().readProperty(FormCD.PROP_ITEMS);
         ArrayList<DesignComponent> items = new ArrayList<DesignComponent>();
@@ -46,6 +47,7 @@ public class FormDisplayPresenter extends DisplayableDisplayPresenter {
         return items;
     }
     
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         

@@ -30,7 +30,6 @@ import org.netbeans.modules.vmd.api.model.common.AcceptPresenter;
 import org.netbeans.modules.vmd.api.model.common.DesignComponentDataFlavorSupport;
 import org.netbeans.modules.vmd.api.model.common.AcceptSuggestion;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDeviceInfo;
-import org.netbeans.modules.vmd.midp.screen.display.ScreenMoveArrayAcceptSuggestion;
 
 /**
  *
@@ -47,6 +46,7 @@ public class ScreenMoveArrayAcceptPresenter extends AcceptPresenter {
         this.arrayType = arrayType;
     }
     
+    @Override
     public boolean isAcceptable(Transferable transferable, AcceptSuggestion suggestion) {
         if (!(transferable.isDataFlavorSupported(DesignComponentDataFlavorSupport.DESIGN_COMPONENT_DATA_FLAVOR))) 
             return false;
@@ -63,6 +63,7 @@ public class ScreenMoveArrayAcceptPresenter extends AcceptPresenter {
         return false;
     }
     
+    @Override
     public Result accept(Transferable transferable, AcceptSuggestion suggestion) {
         DesignComponent componentTrans = DesignComponentDataFlavorSupport.getTransferableDesignComponent(transferable);
         DesignComponent parentComponent = getComponent().getParentComponent();

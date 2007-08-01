@@ -47,6 +47,7 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
         setContentComponent(label);
     }
     
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
@@ -76,6 +77,7 @@ public class DateFieldDisplayPresenter extends ItemDisplayPresenter {
         label.setText(text);
     }
     
+    @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         ResourcePropertyEditor dateFieldPropertyEditor = new ResourcePropertyEditor(DateFieldCD.PROP_DATE, getComponent());
         List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>();

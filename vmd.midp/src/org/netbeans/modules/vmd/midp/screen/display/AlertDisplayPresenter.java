@@ -66,6 +66,7 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
         contentPanel.add(stringLabel, constraints);
     }
     
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
@@ -94,8 +95,9 @@ public class AlertDisplayPresenter extends DisplayableDisplayPresenter {
     
     @Override
     protected void notifyDetached(DesignComponent component) {
-        if (imageFileObject != null && imageFileListener != null)
+        if (imageFileObject != null && imageFileListener != null) {
             imageFileObject.removeFileChangeListener(imageFileListener);
+        }
         imageFileObject = null;
         imageFileListener = null;
     }

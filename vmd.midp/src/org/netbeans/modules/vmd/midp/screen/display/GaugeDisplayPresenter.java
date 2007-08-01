@@ -55,6 +55,7 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
     
     public GaugeDisplayPresenter() {
         panel = new JPanel() {
+            @Override
             public void paint(Graphics g) {
                 super.paint(g);
                 paintGauge(g);
@@ -108,6 +109,7 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
         }
     }
     
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         
@@ -127,6 +129,7 @@ public class GaugeDisplayPresenter extends ItemDisplayPresenter {
         panel.repaint();
     }
     
+    @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
         ResourcePropertyEditor gaugePropertyEditor = new ResourcePropertyEditor(GaugeCD.PROP_VALUE, getComponent());
         List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>();

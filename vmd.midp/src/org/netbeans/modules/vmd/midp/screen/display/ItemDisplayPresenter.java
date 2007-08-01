@@ -53,6 +53,7 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
     
     public ItemDisplayPresenter() {
         panel = new JPanel() {
+            @Override
             public JPopupMenu getComponentPopupMenu() {
                 return Utilities.actionsToPopup(ActionsSupport.createActionsArray(getRelatedComponent()), this);
             }
@@ -130,6 +131,7 @@ public class ItemDisplayPresenter extends ScreenDisplayPresenter {
                 );
     }
     
+    @Override
     public boolean isDraggable() {
         return true;
     }

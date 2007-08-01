@@ -46,7 +46,6 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
     
     private static final Image BATTERY = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/battery.png"); // NOI18N
     private static final Image SIGNAL = Utilities.loadImage("org/netbeans/modules/vmd/midp/screen/display/resources/signal.png"); // NOI18N
-    private Transferable transferable;
     
     private DisplayableDisplayPanel panel;
     
@@ -93,7 +92,7 @@ public class DisplayableDisplayPresenter extends ScreenDisplayPresenter {
                     tickerText = NbBundle.getMessage(DisplayableDisplayPresenter.class, "DISP_ticker_string_user_code"); // NOI18N
                 else {
                     tickerText = MidpValueSupport.getHumanReadableString(value);
-                    if (tickerText == null || "".equals(tickerText)) // NOI18N
+                    if (tickerText == null || tickerText.length() == 0)
                         tickerText = NbBundle.getMessage(DisplayableDisplayPresenter.class, "DISP_empty_ticker_string"); // NOI18N
                 }
             }

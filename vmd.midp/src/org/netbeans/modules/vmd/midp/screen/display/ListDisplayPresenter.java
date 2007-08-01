@@ -49,6 +49,7 @@ public class ListDisplayPresenter extends DisplayableDisplayPresenter {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
     }
     
+    @Override
     public Collection<DesignComponent> getChildren() {
         PropertyValue elementsValue = getComponent().readProperty(ListCD.PROP_ELEMENTS);
         List<DesignComponent> elements = new ArrayList<DesignComponent>();
@@ -56,6 +57,7 @@ public class ListDisplayPresenter extends DisplayableDisplayPresenter {
         return elements;
     }
     
+    @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         

@@ -145,7 +145,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         doNotFireEvent = false;
     }
 
-    private void setAllEnabled(boolean isEnabled) {
+    public void setAllEnabled(boolean isEnabled) {
         pathLabel.setEnabled(isEnabled);
         pathTextComboBox.setEnabled(isEnabled);
         previewLabel.setEnabled(isEnabled);
@@ -453,6 +453,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             FileObject fo = FileUtil.toFileObject(chooser.getSelectedFile());
             String relativePath = convertFile(fo);
             setText(relativePath);
+            pathTextComboBoxActionPerformed(null);
         }
     }//GEN-LAST:event_chooserButtonActionPerformed
 
