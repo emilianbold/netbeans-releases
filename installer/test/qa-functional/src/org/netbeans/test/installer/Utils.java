@@ -25,11 +25,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.logging.Level;
+import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -37,7 +36,9 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JProgressBarOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
@@ -49,7 +50,9 @@ public class Utils {
     public static final long MAX_INSTALATION_WAIT = 60000000;
     public static final int DELAY = 50;
 
-    public static int getInstaller(TestData data) {
+    public static final String OK = "OK";
+
+    public static String getInstaller(TestData data) {
         //File sourceBandle = new File(data.getInstallerFileName());
         File destBundle = new File(data.getTestWorkDir() + File.separator + "installer" + "." + data.getPlatformExt());
 
@@ -70,14 +73,14 @@ public class Utils {
             }
         } catch (IOException ex) {
             data.getLogger().log(Level.SEVERE, "Can not get bundle", ex);
-            return -2;
+            return toString(ex);
         } finally {
             if (in != null) {
                 try {
                     in.close();
                 } catch (IOException ex) {
                     data.getLogger().log(Level.SEVERE, "Can not get bundle", ex);
-                    return -3;
+                    return toString(ex);
                 }
             }
             if (out != null) {
@@ -85,15 +88,15 @@ public class Utils {
                     out.close();
                 } catch (IOException ex) {
                     data.getLogger().log(Level.SEVERE, "Can not get bundle", ex);
-                    return -4;
+                    return toString(ex);
                 }
             }
         }
         data.setInstallerFile(destBundle);
-        return 0;
+        return OK;
     }
 
-    public static int extractBundle(TestData data) {
+    public static String extractBundle(TestData data) {
         int errorLevel = 0;
 
         try {
@@ -121,9 +124,9 @@ public class Utils {
                     if (runningTime >= MAX_EXECUTION_TIME) {
                         process.destroy();
                         data.getLogger().log(Level.SEVERE, "Timeout. Chmod process destroyed");
-                        return -3;
+                        return "Timeout. Chmod process destroyed";
                     } else if (errorLevel != 0) {
-                        return errorLevel;
+                        return "ErrorLevel=>" + errorLevel;
                     }
                 }
             }
@@ -146,104 +149,118 @@ public class Utils {
             if (runningTime >= MAX_EXECUTION_TIME) {
                 process.destroy();
                 data.getLogger().log(Level.SEVERE, "Timeout. Process destroyed");
-                return -1;
+                return "Timeout. Extract process destroyed";
             } else if (errorLevel == 0) {
                 data.setBundleFile(new File(pathToExtract + java.io.File.separator + "bundle.jar"));
                 data.getInstallerFile().deleteOnExit();
-                return 0;
+                return OK;
             } else {
-                return errorLevel;
+                return "ErrorLevel=>" + errorLevel;
             }
         } catch (IOException ex) {
             data.getLogger().log(Level.SEVERE, null, ex);
-            return -2;
+            return toString(ex);
         }
     }
 
-    public static int loadClasses(TestData data) {
+    public static String loadClasses(TestData data) {
         try {
 
             data.setClassLoader(new URLClassLoader(new URL[]{data.getBundleFile().toURI().toURL()}, data.getClass().getClassLoader()));
             data.setInstallerMainClass(Class.forName(data.getInstallerMainClassName(), true, data.getClassLoader()));
-        } catch (IllegalArgumentException ex) {
+        }catch (Exception ex) {
             data.getLogger().log(Level.SEVERE, null, ex);
-        } catch (SecurityException ex) {
-            data.getLogger().log(Level.SEVERE, null, ex);
-        } catch (ClassNotFoundException ex) {
-            data.getLogger().log(Level.SEVERE, null, ex);
-        } catch (MalformedURLException ex) {
-            data.getLogger().log(Level.SEVERE, null, ex);
+            return toString(ex);
         }
+//        } catch (IllegalArgumentException ex) {
+//            data.getLogger().log(Level.SEVERE, null, ex);
+//        } catch (SecurityException ex) {
+//            data.getLogger().log(Level.SEVERE, null, ex);
+//        } catch (ClassNotFoundException ex) {
+//            data.getLogger().log(Level.SEVERE, null, ex);
+//        } catch (MalformedURLException ex) {
+//            data.getLogger().log(Level.SEVERE, null, ex);
+//        }
 
-        return 0;
+        return OK;
     }
 
-    public static int runInstaller(final TestData data) {
+    public static String runInstaller(final TestData data) {
         (new Runnable() {
 
             public void run() {
                 try {
                     data.getInstallerMainClass().getMethod("main", java.lang.String[].class).invoke(null, (java.lang.Object) (new String[] {}));
-                } catch (NoSuchMethodException ex) {
-                    data.getLogger().log(Level.SEVERE, null, ex);
-                } catch (SecurityException ex) {
-                    data.getLogger().log(Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
-                    data.getLogger().log(Level.SEVERE, null, ex);
-                } catch (IllegalArgumentException ex) {
-                    data.getLogger().log(Level.SEVERE, null, ex);
-                } catch (InvocationTargetException ex) {
+                } catch (Exception ex) {
                     data.getLogger().log(Level.SEVERE, null, ex);
                 }
+//                } catch (NoSuchMethodException ex) {
+//                    data.getLogger().log(Level.SEVERE, null, ex);
+//                } catch (SecurityException ex) {
+//                    data.getLogger().log(Level.SEVERE, null, ex);
+//                } catch (IllegalAccessException ex) {
+//                    data.getLogger().log(Level.SEVERE, null, ex);
+//                } catch (IllegalArgumentException ex) {
+//                    data.getLogger().log(Level.SEVERE, null, ex);
+//                } catch (InvocationTargetException ex) {
+//                    data.getLogger().log(Level.SEVERE, null, ex);
+//                }
             }
         }).run();
-        return 0;
+        return OK;
     }
 
-    public static int runUninstaller(final TestData data) {
+    public static String runUninstaller(final TestData data) {
         (new Runnable() {
 
             public void run() {
                 try {
                     //dirty hack --ignore-lock
                     data.getUninstallerMainClass().getMethod("main", java.lang.String[].class).invoke(null, (java.lang.Object) (new String[] {"--force-uninstall", "--ignore-lock"}));
-                } catch (NoSuchMethodException ex) {
-                    data.getLogger().log(Level.SEVERE, null, ex);
-                } catch (SecurityException ex) {
-                    data.getLogger().log(Level.SEVERE, null, ex);
-                } catch (IllegalAccessException ex) {
-                    data.getLogger().log(Level.SEVERE, null, ex);
-                } catch (IllegalArgumentException ex) {
-                    data.getLogger().log(Level.SEVERE, null, ex);
-                } catch (InvocationTargetException ex) {
+                } catch (Exception ex) {
                     data.getLogger().log(Level.SEVERE, null, ex);
                 }
+//                } catch (NoSuchMethodException ex) {
+//                    data.getLogger().log(Level.SEVERE, null, ex);
+//                } catch (SecurityException ex) {
+//                    data.getLogger().log(Level.SEVERE, null, ex);
+//                } catch (IllegalAccessException ex) {
+//                    data.getLogger().log(Level.SEVERE, null, ex);
+//                } catch (IllegalArgumentException ex) {
+//                    data.getLogger().log(Level.SEVERE, null, ex);
+//                } catch (InvocationTargetException ex) {
+//                    data.getLogger().log(Level.SEVERE, null, ex);
+//                }
             }
         }).run();
-        return 0;
+        return OK;
     }
 
-    public static int loadEngineClasses(TestData data) {
+    public static String loadEngineClasses(TestData data) {
         try {
             String jarFileName = data.getWorkDirCanonicalPath() + File.separator + ".nbi" + File.separator + "nbi-engine.jar";
 
             data.setEngineClassLoader(new URLClassLoader(new URL[]{new File(jarFileName).toURI().toURL()}, data.getClass().getClassLoader()));
             data.setUninstallerMainClass(Class.forName(data.getUninstallerMainClassName(), true, data.getEngineClassLoader()));
-        } catch (IllegalArgumentException ex) {
-            data.getLogger().log(Level.SEVERE, "-1", ex);
-            return -1;
-        } catch (SecurityException ex) {
-            data.getLogger().log(Level.SEVERE, "-2", ex);
-            return -2;
-        } catch (ClassNotFoundException ex) {
-            data.getLogger().log(Level.SEVERE, "-3", ex);
-            return -3;
-        } catch (MalformedURLException ex) {
-            data.getLogger().log(Level.SEVERE, "-4", ex);
-            return -4;
+        } catch (Exception ex) {
+            data.getLogger().log(Level.SEVERE, null, ex);
+            return toString(ex);
         }
+//        } catch (IllegalArgumentException ex) {
+//            data.getLogger().log(Level.SEVERE, "-1", ex);
+//            return -1;
+//        } catch (SecurityException ex) {
+//            data.getLogger().log(Level.SEVERE, "-2", ex);
+//            return -2;
+//        } catch (ClassNotFoundException ex) {
+//            data.getLogger().log(Level.SEVERE, "-3", ex);
+//            return -3;
+//        } catch (MalformedURLException ex) {
+//            data.getLogger().log(Level.SEVERE, "-4", ex);
+//            return -4;
+//        }
 
-        return 0;
+        return OK;
     }
 
     public static void stepWelcome() {
@@ -277,9 +294,95 @@ public class Utils {
         featureList.pressKey(KeyEvent.VK_SPACE);
         new JButtonOperator(customizeInstallation, "OK").push();
     }
+    
+    public static void stepInstall(TestData data) {
+        JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
+
+        new JButtonOperator(installerMain, "Install").push();
+        new JLabelOperator(installerMain, "Installing"); //dirty hack
+        JProgressBarOperator installingProgress = new JProgressBarOperator(installerMain);
+
+        long waitingTime;
+        for (waitingTime = 0; waitingTime < Utils.MAX_INSTALATION_WAIT; waitingTime += Utils.DELAY) {
+            int val = ((JProgressBar) installingProgress.getSource()).getValue();
+            if (val >= 100) {
+                break;
+            }
+            Utils.wait(data, 5);
+        }
+
+        if (waitingTime >= Utils.MAX_INSTALATION_WAIT) {
+            NbTestCase.fail("Installation timeout");
+        }
+    }
+    
+    public static void stepUninstall() {
+        new JButtonOperator(new JFrameOperator("Netbeans IDE"), "Uninstall").push();
+    }
 
     public static void stepFinish() {
         new JButtonOperator(new JFrameOperator("Netbeans IDE"), "Finish").push();
+    }
+
+    public static void phaseOne(NbTestCase thiz, TestData data, String installerType) {
+        try {
+            data.setWorkDir(thiz.getWorkDir());
+        } catch (IOException ex) {
+            NbTestCase.fail("Can not get WorkDir");
+        }
+
+        data.setInstallerType(installerType);
+        
+        System.setProperty("nbi.dont.use.system.exit", "true");
+        System.setProperty("nbi.utils.log.to.console", "false");
+        System.setProperty("user.home", data.getWorkDirCanonicalPath());
+
+        NbTestCase.assertEquals("Get installer", Utils.OK, Utils.getInstaller(data));
+        NbTestCase.assertEquals("Extract bundle", Utils.OK, Utils.extractBundle(data));
+        NbTestCase.assertEquals("Load class", Utils.OK, Utils.loadClasses(data));
+        NbTestCase.assertEquals("Run main method", Utils.OK, Utils.runInstaller(data));
+    }
+    
+    public static void phaseFour(TestData data) {
+        //Installation
+        Utils.stepInstall(data);
+        
+        //finish
+        Utils.stepFinish();
+        
+        Utils.wait(data, 5);
+        
+        NbTestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
+        
+        NbTestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
+        NbTestCase.assertEquals("Run uninstaller main class", OK, Utils.runUninstaller(data));
+        
+        Utils.stepUninstall();
+
+        Utils.stepFinish();
+
+        Utils.wait(data, 5);
+
+        NbTestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
+    }
+    
+    public static void phaseTwo(TestData data) {
+        //welcome
+        stepWelcome();
+
+        //license
+        stepLicense();
+        
+        //Choose dir
+        stepSetDir(data, "Install NetBeans IDE", "NetBeans");
+    }
+    
+    public static void phaseThree(TestData data) {
+        //Choose GF dir
+        Utils.stepSetDir(data, "Install GlassFish", "GlassFish");
+
+        //Choose Tomcat dir
+        Utils.stepSetDir(data, "Installation location", "Tomcat");
     }
     
     public static void wait(TestData data, int sec) {
@@ -288,5 +391,9 @@ public class Utils {
         } catch (InterruptedException ex) {
             data.getLogger().log(Level.SEVERE, "Interrupted");
         }
+    }
+    
+    private static String toString(Exception ex) {
+        return ex.getClass().getName() + "=>" + ex.getMessage();
     }
 }

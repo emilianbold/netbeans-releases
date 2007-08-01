@@ -25,7 +25,7 @@
 
     <!-- testbag with all MyModule tests running in jvm mode (i.e. in standard JVM)
          use ant runtests -Dxtest.attribs=all,jvm to run this testbag  -->
-    <testbag testattribs="all or basic" executor="installer-executor" name="installer tests (no ide)">
+    <testbag testattribs="all or basic" executor="installer-executor" name="installer basic bandle test">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerBasic.class"/>
@@ -33,7 +33,7 @@
         </testset>
     </testbag>
 
-    <testbag testattribs="all or standard" executor="installer-executor" name="installer tests (no ide)">
+    <testbag testattribs="all or standard" executor="installer-executor" name="installer standard bundle test">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerStandard.class"/>
@@ -41,7 +41,7 @@
         </testset>
     </testbag>
 
-    <testbag testattribs="all or full" executor="installer-executor" name="installer tests (no ide)">
+    <testbag testattribs="all or full" executor="installer-executor" name="installer full bundle test">
         <testset dir=".">
             <patternset>
 	        <include name="org/netbeans/test/installer/TestInstallerAndUninstallerFull.class"/>

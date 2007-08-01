@@ -28,7 +28,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Mikahil Vaysman
+ * @author Mikhail Vaysman
  */
 public class TestData implements Serializable {
 
