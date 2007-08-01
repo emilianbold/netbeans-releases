@@ -167,7 +167,7 @@ public final class ActionFactory {
 
     /**
      * Creates a add-remove control point action with a default sensitivity. The action is assigned to a FreeConnectionWidget.
-f     * @return the add-remove control point action
+     * @return the add-remove control point action
      */
     public static WidgetAction createAddRemoveControlPointAction () {
         return createAddRemoveControlPointAction (3.0, 5.0);
