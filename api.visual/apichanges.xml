@@ -414,6 +414,21 @@
             <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
             <issue number="110146"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>CycleFocusAction is using Shift+Tab keystroke for focus-to-previous action</summary>
+            <version major="2" minor="6"/>
+            <date day="1" month="8" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility semantic="incompatible" modification="yes"/>
+            <description>
+                CycleFocusAction (created using ActionFactory.createCycleFocusAction method) is using Shift+Tab keystroke for focus-to-previous action.
+                Previously it was Ctrl+Tab keystroke.
+            </description>
+            <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
+            <issue number="110389"/>
+        </change>
     </changes>
 
     <htmlcontents>

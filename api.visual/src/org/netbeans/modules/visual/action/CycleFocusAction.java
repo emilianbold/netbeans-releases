@@ -38,7 +38,7 @@ public class CycleFocusAction extends WidgetAction.Adapter {
     public State keyTyped (Widget widget, WidgetKeyEvent event) {
         boolean state = false;
         if (event.getKeyChar () == KeyEvent.VK_TAB) {
-            if ((event.getModifiersEx () & KeyEvent.CTRL_DOWN_MASK) != 0)
+            if ((event.getModifiers () & KeyEvent.SHIFT_MASK) == KeyEvent.SHIFT_MASK)
                 state = provider.switchPreviousFocus (widget);
             else
                 state = provider.switchNextFocus (widget);
