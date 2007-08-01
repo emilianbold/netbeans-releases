@@ -423,11 +423,20 @@ public class JavaSourceHelper {
     
     public static void addFields(WorkingCopy copy,
             String[] names, Object[] types, Object[] initialValues) {
+        addFields(copy, names, types, initialValues, Constants.PRIVATE);
+    }
+    
+    public static void addConstants(WorkingCopy copy,
+            String[] names, Object[] types, Object[] initialValues) {
+        addFields(copy, names, types, initialValues, Constants.PUBLIC_STATIC_FINAL);
+    }
+    
+    public static void addFields(WorkingCopy copy,
+            String[] names, Object[] types, Object[] initialValues, Modifier[] modifiers) {
         
         TreeMaker maker = copy.getTreeMaker();
         ClassTree classTree = getTopLevelClassTree(copy);
         ClassTree modifiedTree = classTree;
-        Modifier[] modifiers = Constants.PRIVATE;
         String[] annotations = new String[0];
         Object[] annotationAttrs = new Object[0];
         

@@ -205,6 +205,18 @@ public class GenericResourceBean {
         return queryParamTypes;
     }
     
+    public String[] getConstantParams() {
+        return new String[0];
+    }
+    
+    public String[] getConstantParamTypes() {
+        return new String[0];
+    }
+    
+    public Object[] getConstantParamValues() {
+        return new Object[0];
+    }
+    
     public void setQueryParams(String[] queryParams, String[] types) {
         this.queryParams = queryParams;
         if (types == null) {

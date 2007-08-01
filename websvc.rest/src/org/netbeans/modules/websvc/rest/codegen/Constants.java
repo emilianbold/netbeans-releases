@@ -118,6 +118,10 @@ public class Constants {
         Modifier.PUBLIC, Modifier.STATIC
     };
    
+    public static final Modifier[] PUBLIC_STATIC_FINAL = new Modifier[] {
+        Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL
+    };
+   
     public static final String JAVA_EXT = "java"; //NI18N
     
     public enum MimeType {
