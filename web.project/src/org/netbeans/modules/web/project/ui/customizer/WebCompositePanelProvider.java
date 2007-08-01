@@ -151,7 +151,7 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
         if (SOURCES.equals(nm)) {
             return new CustomizerSources(uiProps);
         } else if (FRAMEWORKS.equals(nm)) {
-            return new CustomizerFrameworks(uiProps);
+            return new CustomizerFrameworks(category, uiProps);
         } else if (LIBRARIES.equals(nm)) {
             CustomizerProviderImpl.SubCategoryProvider prov = (CustomizerProviderImpl.SubCategoryProvider)context.lookup(CustomizerProviderImpl.SubCategoryProvider.class);
             assert prov != null : "Assuming CustomizerProviderImpl.SubCategoryProvider in customizer context";

@@ -24,6 +24,8 @@ import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 
 import org.openide.DialogDescriptor;
@@ -35,17 +37,22 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebFrameworkSupport;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.WizardDescriptor;
 
 public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.Provider, ListSelectionListener {
     
+    private final ProjectCustomizer.Category category;
     private WebProject project;
     private WebProjectProperties uiProperties;
     private List usedFrameworks = new LinkedList();
     private List newFrameworks = new LinkedList();
     
     /** Creates new form CustomizerFrameworks */
-    public CustomizerFrameworks(WebProjectProperties uiProperties) {
+    public CustomizerFrameworks(ProjectCustomizer.Category category, WebProjectProperties uiProperties) {
+        this.category = category;
         this.uiProperties = uiProperties;
         initComponents();
         
@@ -86,31 +93,15 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
         jListFrameworks = new javax.swing.JList();
         jButtonAdd = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
-        jLabelConfig = new javax.swing.JLabel();
         jPanelConfig = new javax.swing.JPanel();
-
-        setLayout(new java.awt.GridBagLayout());
+        jLabelConfig = new javax.swing.JLabel();
 
         jLabelFrameworks.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "LBL_CustomizerFrameworks_ListMnemonic").charAt(0));
         jLabelFrameworks.setLabelFor(jListFrameworks);
         jLabelFrameworks.setText(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "LBL_UsedFrameworks")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jLabelFrameworks, gridBagConstraints);
 
         jScrollPane1.setViewportView(jListFrameworks);
         jListFrameworks.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "ACS_Frameworks_FrameworksList_A11YDesc")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.4;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 12);
-        add(jScrollPane1, gridBagConstraints);
 
         jButtonAdd.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "LBL_CustomizerFrameworks_AddButton_LabelMnemonic").charAt(0));
         jButtonAdd.setText(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "LBL_AddFramework")); // NOI18N
@@ -120,41 +111,45 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
                 jButtonAddActionPerformed(evt);
             }
         });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jButtonAdd, gridBagConstraints);
-        jButtonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "ACS_Frameworks_AddButton_A11YDesc")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
-        add(jSeparator1, gridBagConstraints);
-
-        jLabelConfig.setLabelFor(jPanelConfig);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(jLabelConfig, gridBagConstraints);
 
         jPanelConfig.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 0.6;
-        add(jPanelConfig, gridBagConstraints);
+
+        jLabelConfig.setLabelFor(jPanelConfig);
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jButtonAdd))
+            .add(layout.createSequentialGroup()
+                .add(jLabelFrameworks)
+                .addContainerGap())
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(jLabelConfig)
+                .addContainerGap())
+            .add(jPanelConfig, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(jLabelFrameworks)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                    .add(jButtonAdd)
+                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 253, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(9, 9, 9)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jLabelConfig)
+                .add(18, 18, 18)
+                .add(jPanelConfig, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 171, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        );
+
+        jButtonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerFrameworks.class, "ACS_Frameworks_AddButton_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddActionPerformed
@@ -240,7 +235,9 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
 		    gridBagConstraints.weightx = 1.0;
 		    gridBagConstraints.weighty = 1.0;
 
-		    jPanelConfig.add(framework.getConfigurationPanel(wm).getComponent(), gridBagConstraints);
+                    FrameworkConfigurationPanel frameworkConfigurationPanel = framework.getConfigurationPanel(wm);
+                    frameworkConfigurationPanel.addChangeListener(new FrameworkConfigurationPanelListener(frameworkConfigurationPanel));
+		    jPanelConfig.add(frameworkConfigurationPanel.getComponent(), gridBagConstraints);
 		    jPanelConfig.revalidate();
 		} else {
 		    hideConfigPanel();
@@ -248,7 +245,36 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
 	} else
 	    hideConfigPanel();
     }
+    
+    // #109426
+    private final class FrameworkConfigurationPanelListener implements ChangeListener {
+        private final FrameworkConfigurationPanel frameworkConfigurationPanel;
+        private final WizardDescriptor wizardDescriptor;
 
+        public FrameworkConfigurationPanelListener(FrameworkConfigurationPanel frameworkConfigurationPanel) {
+            this.frameworkConfigurationPanel = frameworkConfigurationPanel;
+            
+            // ugly, i know...
+            WizardDescriptor.Panel<Void>[] wizardPanels = null;
+            wizardDescriptor = new WizardDescriptor(wizardPanels, null);
+            frameworkConfigurationPanel.readSettings(wizardDescriptor);
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", null); // NOI18N
+            if (frameworkConfigurationPanel.isValid()) {
+                if (!category.isValid()) {
+                    category.setValid(true);
+                    category.setErrorMessage(null);
+                }
+            } else {
+                String errorMessage = (String) wizardDescriptor.getProperty("WizardPanel_errorMessage"); // NOI18N
+                category.setValid(false);
+                category.setErrorMessage(errorMessage);
+            }
+        }
+    }
+    
     private void hideConfigPanel() {
 	jLabelConfig.setText(""); //NOI18N
 	jPanelConfig.removeAll();
