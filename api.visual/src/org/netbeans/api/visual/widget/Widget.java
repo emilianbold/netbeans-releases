@@ -28,6 +28,7 @@ import org.netbeans.modules.visual.util.GeomUtil;
 import org.openide.util.Lookup;
 
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.Accessible;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.util.*;
@@ -57,10 +58,12 @@ import java.util.List;
  * notifyStateChanged is called to notify about it. The state is automatically updated by high-level scenes
  * and actions. Yherefore you can define your own look and feel directly in the that method.
  *
+ * Since version 2.6 Widget class implements Accessible interface.
+ *
  * @author David Kaspar
  */
 // TODO - Should Widget be an abstract class?
-public class Widget {
+public class Widget implements Accessible {
 
     static final String MESSAGE_NULL_BOUNDS = "Scene.validate was not called after last change. Widget is not validated. See first Q/A at http://graph.netbeans.org/faq.html page.";
 
