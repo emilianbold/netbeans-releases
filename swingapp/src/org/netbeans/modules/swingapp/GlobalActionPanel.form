@@ -21,7 +21,7 @@
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="classCombo" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="322" max="32767" attributes="0"/>
+              <EmptySpace pref="349" max="32767" attributes="0"/>
               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="filterTextfield" min="-2" pref="80" max="-2" attributes="0"/>
@@ -34,7 +34,7 @@
               <Component id="viewSourceButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="deleteActionButton" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="285" max="32767" attributes="0"/>
+              <EmptySpace pref="313" max="32767" attributes="0"/>
           </Group>
           <Component id="jPanel3" alignment="0" max="32767" attributes="1"/>
       </Group>
@@ -261,7 +261,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jScrollPane1" pref="121" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" pref="119" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

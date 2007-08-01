@@ -77,7 +77,7 @@ import org.openide.windows.WindowManager;
  * @author  joshua.marinacci@sun.com
  */
 public class GlobalActionPanel extends javax.swing.JPanel {
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private ActionManager actionManager;
     
     private ActionManager.ActionChangedListener actChangeListener = new ActionManager.ActionChangedListener() {
@@ -217,9 +217,11 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         deleteAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("DELETE")); //NOI18N
         
         // do the first table load
-        reloadTable();
-        reloadClassesCombo();
         attachTopComponentsListener();
+        //force a reload for the first time
+        reloadProjectsCombo();
+        reloadClassesCombo();
+        reloadTable();
     }
     
     private final static String SHOW_ALL_CLASSES = getLocalizedString("classesFilter.allClasses");
@@ -290,6 +292,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 projectCombo.setSelectedItem(firstProject);
                 actionManager = ActionManager.getActionManager(firstProject);
             }
+            actionManager.rescan();
             projectCombo.setEnabled(true);
             newActionButton.setEnabled(true);
             classCombo.setEnabled(true);
