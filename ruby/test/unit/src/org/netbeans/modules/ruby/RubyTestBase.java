@@ -38,6 +38,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  *
@@ -198,7 +199,15 @@ public abstract class RubyTestBase extends NbTestCase {
 //             assertNotNull(ec);
 //
 //             return (BaseDocument)ec.openDocument();
-            return getDocument(readFile(fo));
+            BaseDocument doc = getDocument(readFile(fo));
+            try {
+                DataObject dobj = DataObject.find(fo);
+                doc.putProperty(Document.StreamDescriptionProperty, dobj);
+            } catch (DataObjectNotFoundException dnfe) {
+                fail(dnfe.toString());
+            }
+
+            return doc;
         }
         catch (Exception ex){
             fail(ex.toString());
