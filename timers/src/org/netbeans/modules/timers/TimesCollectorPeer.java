@@ -33,6 +33,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 
 /**
  *
@@ -89,6 +92,21 @@ public final class TimesCollectorPeer {
             files.add(new CleanableWeakReference<Object>(fo));
             fo2Key2Desc.put(fo, result = Collections.synchronizedMap(new LinkedHashMap<String, Description>()));
             pcs.firePropertyChange("fos", null, fo);
+            
+            if (fo instanceof FileObject) {
+                ((FileObject)fo).addFileChangeListener(new FileChangeAdapter() {
+                    public void fileDeleted(FileEvent ev) {
+                        for (Reference<Object> r : files) {
+                            if (r.get() == fo) {
+                                files.remove(r);
+                                break;
+                            }
+                        }
+                        fo2Key2Desc.remove(fo);
+                        pcs.firePropertyChange("fos", null, null);
+                    }
+                });
+            }
         }
         
          return result;
