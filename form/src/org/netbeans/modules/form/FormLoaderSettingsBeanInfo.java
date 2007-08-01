@@ -143,7 +143,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 new PropertyDescriptor(FormLoaderSettings.PROP_AUTO_RESOURCING,
                                        FormLoaderSettings.class,
                                        "getI18nAutoMode", // NOI18N
-                                       "setI18nAutoMode") // NOI18N
+                                       "setI18nAutoMode"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_AUTO_SET_COMPONENT_NAME,
+                                       FormLoaderSettings.class,
+                                       "getAutoSetComponentName", // NOI18N
+                                       "setAutoSetComponentName") // NOI18N
             };
 
             ResourceBundle bundle = FormUtils.getBundle();
@@ -236,6 +240,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[++i].setDisplayName(bundle.getString("PROP_AUTO_RESOURCE")); // NOI18N
             desc[i].setShortDescription(bundle.getString("HINT_AUTO_RESOURCE_GLOBAL")); // NOI18N
             desc[i].setPropertyEditorClass(ResourceModeEditor.class);
+            desc[i].setPreferred(true);
+
+            desc[++i].setDisplayName(bundle.getString("PROP_AUTO_SET_COMPONENT_NAME")); // NOI18N
+            desc[i].setShortDescription(bundle.getString("HINT_AUTO_SET_COMPONENT_NAME")); // NOI18N
+            desc[i].setPropertyEditorClass(AutoNamingEditor.class);
             desc[i].setPreferred(true);
 
             return desc;
@@ -341,4 +350,19 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    public final static class AutoNamingEditor extends org.netbeans.modules.form.editors.EnumEditor {
+        public AutoNamingEditor() {
+            super(new Object[] {
+                FormUtils.getBundleString("CTL_AUTO_NAMING_DEFAULT"), // NOI18N
+                new Integer(FormLoaderSettings.AUTO_NAMING_DEFAULT),
+                "", // NOI18N
+                FormUtils.getBundleString("CTL_AUTO_NAMING_ON"), // NOI18N
+                new Integer(FormLoaderSettings.AUTO_NAMING_ON),
+                "", // NOI18N
+                FormUtils.getBundleString("CTL_AUTO_NAMING_OFF"), // NOI18N
+                new Integer(FormLoaderSettings.AUTO_NAMING_OFF),
+                "" // NOI18N
+            });
+        }
+    }
 }

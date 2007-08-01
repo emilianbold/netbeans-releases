@@ -67,6 +67,8 @@ public class ResourceSupport {
     private static final String EXCLUSION_DETERMINED = "already consulted with exclusion filters"; // NOI18N
     private static final String[] PROPERTY_ATTRS = { EXCLUSION_DETERMINED, EXCLUDE_FROM_RESOURCING };
 
+    static final String PROP_AUTO_SET_COMPONENT_NAME = "autoSetComponentName"; // NOI18N
+
     static final String PROP_AUTO_RESOURCING = "autoResourcing"; // NOI18N
     static final int AUTO_OFF = 0;
     static final int AUTO_I18N = 1;
@@ -130,6 +132,9 @@ public class ResourceSupport {
             return;
         }
         switchFormToResources(); // templates don't contain internationalized texts or resources
+        if (isAutoName()) {
+            setupNameProperty(true);
+        }
     }
 
     /**
@@ -179,11 +184,11 @@ public class ResourceSupport {
             ExternalValue eValue = (ExternalValue) value;
             if (eValue.getKey() == ExternalValue.COMPUTE_AUTO_KEY) {
                 if (value instanceof I18nValue && getI18nService() != null) {
-                    String key = getDefaultKey(property, AUTO_I18N);
+                    String key = getDefaultKey0(property, AUTO_I18N);
                     eValue = i18nService.changeKey((I18nValue)value, key);
                 }
                 else if (value instanceof ResourceValue && getResourceService() != null) {
-                    String key = getDefaultKey(property, AUTO_RESOURCING);
+                    String key = getDefaultKey0(property, AUTO_RESOURCING);
                     eValue = resourceService.changeKey((ResourceValue)value, key);
                 }
                 return eValue;
@@ -220,7 +225,7 @@ public class ResourceSupport {
             if (value instanceof String) {
                 I18nValue i18nValue = searchDroppedI18nValue(property, value.toString());
                 if (i18nValue == null) {
-                    i18nValue = i18nService.create(getDefaultKey(property, AUTO_I18N),
+                    i18nValue = i18nService.create(getDefaultKey0(property, AUTO_I18N),
                                                    value.toString(),
                                                    getSrcDataObject());
                 }
@@ -237,7 +242,7 @@ public class ResourceSupport {
 
             ResourceValue resValue = searchDroppedResourceValue(property, value);
             if (resValue == null) {
-                resValue = resourceService.create(getDefaultKey(property, AUTO_RESOURCING),
+                resValue = resourceService.create(getDefaultKey0(property, AUTO_RESOURCING),
                                                   property.getValueType(),
                                                   value,
                                                   getStringValue(property, value),
@@ -251,7 +256,7 @@ public class ResourceSupport {
 
     private I18nValue searchDroppedI18nValue(FormProperty property, String expectedValue) {
         if (droppedValues != null) {
-            String dropKey = property.getPropertyContext().getContextPath() + "." + property.getName(); // NOI18N
+            String dropKey = getPropertyPath(property, null);
             Object value = droppedValues.get(dropKey);
             if (value instanceof I18nValue) {
                 I18nValue i18nValue = (I18nValue) value;
@@ -264,7 +269,7 @@ public class ResourceSupport {
 
     private ResourceValue searchDroppedResourceValue(FormProperty property, Object expectedValue) {
         if (droppedValues != null) {
-            String dropKey = property.getPropertyContext().getContextPath() + "." + property.getName(); // NOI18N
+            String dropKey = getPropertyPath(property, null);
             Object value = droppedValues.get(dropKey);
             if (value instanceof ResourceValue) {
                 ResourceValue resValue = (ResourceValue) value;
@@ -312,9 +317,6 @@ public class ResourceSupport {
             }
             prop.setChangeFiring(fire);
         }
-
-        if (getAutoName() && metacomp != formModel.getTopRADComponent())
-            setupNameProperty(metacomp, true, recursive);
     }
 
     private static void setupNameProperty(RADComponent metacomp, boolean set, boolean recursive) {
@@ -328,9 +330,6 @@ public class ResourceSupport {
                          && metacomp.getName().equals(nameProp.getValue()))
                 {   // property value corresponds to the component name
                     nameProp.restoreDefaultValue();
-                    // [maybe resetting the name property is too aggressive - somebody
-                    //  might have set it themselves and want keep it; perhaps
-                    //  there should be a separate option for turning the names on/off]
                 }
             }
             catch (Exception ex) { // getValue, setValue, restoreValue - should not fail here
@@ -344,6 +343,12 @@ public class ResourceSupport {
         }
     }
 
+    private void setupNameProperty(boolean set) {
+        for (RADComponent metacomp : formModel.getAllComponents()) {
+            setupNameProperty(metacomp, set, false);
+        }
+    }
+
     private static FormProperty getNameProperty(RADComponent metacomp) {
         if (metacomp.getBeanInstance() instanceof Component) {
             return (FormProperty) metacomp.getPropertyByName("name"); // NOI18N
@@ -351,7 +356,7 @@ public class ResourceSupport {
         return null;
     }
 
-    void switchFormToResources() {
+    private void switchFormToResources() {
         for (RADComponent metacomp : formModel.getAllComponents()) {
             switchComponentToResources(metacomp, true, false);
         }
@@ -360,7 +365,7 @@ public class ResourceSupport {
             droppedValues.clear();
     }
 
-    private void switchFormToPlainValues(boolean cancelInjection, String originalBundleName) {
+    private void switchFormToPlainValues(String originalBundleName) {
         for (RADComponent metacomp : formModel.getAllComponents()) {
             for (FormProperty prop : getComponentResourceProperties(metacomp, VALID_RESOURCE_VALUE, false)) {
                 Object value = getAutoValue(prop);
@@ -400,8 +405,6 @@ public class ResourceSupport {
                     prop.setChangeFiring(fire);
                 }
             }
-            if (cancelInjection && metacomp != formModel.getTopRADComponent())
-                setupNameProperty(metacomp, false, false);
         }
     }
 
@@ -409,33 +412,30 @@ public class ResourceSupport {
         if (droppedValues == null) {
             droppedValues = new HashMap();
         }
-        String dropKey = property.getPropertyContext().getContextPath() + "." + property.getName(); // NOI18N
-        droppedValues.put(dropKey, value);
+        droppedValues.put(getPropertyPath(property, null), value);
     }
 
     /**
      * Reacts on component's variable renaming. All automatically created keys
      * that use the name of the component will be changed to the new name.
-     * (Note: This method must be called while the component still has the old
-     * name so the update method finds the current keys matching the component
-     * name and adjusts them to the new name.)
+     * Also the 'name' property of visual components is updated.
      */
-    public static void componentRenamed(RADComponent metacomp, String newName) {
+    public static void componentRenamed(RADComponent metacomp, String oldName, String newName) {
         ResourceSupport support = getResourceSupport(metacomp);
         if (support.isAutoMode()) {
-            support.renameDefaultKeysForComponent(metacomp, null, newName);
+            support.renameDefaultKeysForComponent(metacomp, null, null, oldName, newName);
         }
 
-        // hack: "name" property needs special treatment
+        // hack: 'name' property needs special treatment
         FormProperty nameProp = getNameProperty(metacomp);
         if (nameProp != null && nameProp.isChanged()) {
 //                boolean fire = nameProp.isChangeFiring();
 //                nameProp.setChangeFiring(false); // don't want to record this change for undo/redo
             try {
                 Object name = nameProp.getValue();
-                String oldName = metacomp.getName();
-                if (oldName.equals(name))
+                if (oldName.equals(name) && !name.equals(newName)) {
                     nameProp.setValue(newName);
+                }
             }
             catch (Exception ex) { // should not happen
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -453,24 +453,25 @@ public class ResourceSupport {
 
     private void renameDefaultKeys(String oldFormName) {
         for (RADComponent metacomp : formModel.getAllComponents()) {
-            renameDefaultKeysForComponent(metacomp, oldFormName, null);
+            renameDefaultKeysForComponent(metacomp, oldFormName, getSrcDataObject().getName(), null, null);
         }
     }
 
-    private void renameDefaultKeysForComponent(RADComponent metacomp, String oldFormName, String newCompName) {
-        // renaming is a bit special:
-        // - if the whole form is renamed, we are notified afterwards, so the actual
-        //   form has already the new name (thus we have the 'oldFormName' param)
-        // - if a component is renamed, we are notified in advance, so the
-        //   component still has its original name (thus 'newCompName' param)
-        String newFormName = getSrcDataObject().getName();
+    private void renameDefaultKeysForComponent(RADComponent metacomp,
+            String oldFormName, String newFormName,
+            String oldCompName, String newCompName)
+    {
         if (oldFormName == null) {
-            oldFormName = newFormName;
+            oldFormName = getSrcDataObject().getName();
+            newFormName = oldFormName;
+        } else {
+            assert newFormName != null;
         }
-        String oldCompName = (metacomp != metacomp.getFormModel().getTopRADComponent())
-                             ? metacomp.getName() : null;
-        if (newCompName == null) {
+        if (oldCompName == null) {
+            oldCompName = getComponentName(metacomp);
             newCompName = oldCompName;
+        } else {
+            assert newCompName != null;
         }
 
         for (FormProperty prop : getComponentResourceProperties(metacomp, VALID_RESOURCE_VALUE, false)) {
@@ -478,7 +479,6 @@ public class ResourceSupport {
             I18nValue i18nValue = null;
             ResourceValue resValue = null;
             // check if the value uses a default key
-            String oldPath = prop.getPropertyContext().getContextPath(); // incl. oldCompName
             String oldKey = null;
             try {
                 ExternalValue eValue = (ExternalValue) prop.getValue();
@@ -494,23 +494,15 @@ public class ResourceSupport {
             catch (Exception ex) { // should not happen
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
-            String oldDefaultKey = getDefaultKey(oldFormName, oldPath, prop.getName(), type);
+            String oldDefaultKey = getDefaultKey(oldFormName, getPropertyPath(prop, oldCompName), type);
             if (!isAutoKey(oldKey, oldDefaultKey)) {
                 continue;
             }
 
             // derive the new key
-            String newPath;
-            if (oldCompName != null) {
-                int idx = oldPath.indexOf(oldCompName);
-                newPath = oldPath.substring(0, idx) + newCompName
-                          + oldPath.substring(idx+oldCompName.length());
-            } else { // root component has no name
-                newPath = oldPath;
-            }
             String suffix = oldKey.length() > oldDefaultKey.length() ?
                             oldKey.substring(oldDefaultKey.length()) : ""; // NOI18N
-            String newKey = getDefaultKey(newFormName, newPath, prop.getName(), type) + suffix;
+            String newKey = getDefaultKey(newFormName, getPropertyPath(prop, newCompName), type) + suffix;
             if (newKey.equals(oldKey)) {
                 continue;
             }
@@ -553,7 +545,7 @@ public class ResourceSupport {
         String newPkg = getPkgResourceName(getSourceFile());
         String newBundle = getI18nBundleName();
         String oldBundle = oldPkg + newBundle.substring(newPkg.length());
-        switchFormToPlainValues(false, oldBundle);
+        switchFormToPlainValues(oldBundle);
         switchFormToResources();
         // TODO: probably should also copy the manually set values (not just
         // move as in case of auto-i18n) - definitely if moving between projects
@@ -561,7 +553,7 @@ public class ResourceSupport {
 
     public static void loadInjectedResources(RADComponent metacomp) {
         ResourceSupport support = getResourceSupport(metacomp);
-        if (support != null && support.getAutoName())
+        if (support != null && support.getAutoMode() == AUTO_INJECTION)
             support.loadInjectedResources0(metacomp);
     }
 
@@ -569,11 +561,12 @@ public class ResourceSupport {
         if (getResourceService() == null)
             return;
 
-        String keyEx = metacomp.getName() + "\\.\\w+"; // NOI18N
+        String compName = getComponentName(metacomp);
+        String keyEx = compName + "\\.\\w+"; // NOI18N
         Collection<String> compResources = resourceService.findKeys(keyEx, getSourceFile());
         if (compResources.size() > 0) {
             String[] propNames = new String[compResources.size()];
-            int compPrefixLength = metacomp.getName().length() + 1;
+            int compPrefixLength = compName.length() + 1;
             int i = 0;
             for (String key : compResources) {
                 propNames[i++] = key.substring(compPrefixLength);
@@ -602,30 +595,49 @@ public class ResourceSupport {
      * so it must scan the value for nested properties.)
      */
     public static void updateStoredValue(Object oldValue, Object newValue, FormProperty property) {
-        if (!isResourceableProperty(property))
-            return;
+        if (isResourceableProperty(property)) {
+            ResourceSupport support = getResourceSupport(property);
+            if (support != null) {
+                support.updateStoredValue0(oldValue, newValue, property);
+            }
+        }
+    }
 
-        ResourceSupport support = getResourceSupport(property);
+    private void updateStoredValue0(Object oldValue, Object newValue, FormProperty property) {
+        // hack: This method is called whenever a property value changes, so besides
+        // updating resource values we can also react on changing the "name" property
+        // which we use to determine the name of automatic resource key.
+        if (property.getName().equals("name") && property instanceof RADProperty
+                && property.getValueType() == String.class) {
+            RADComponent metacomp = ((RADProperty)property).getRADComponent();
+            if (!(oldValue instanceof String)) {
+                oldValue = metacomp.getName();
+            }
+            if (!property.isChanged() || !(newValue instanceof String)) {
+                newValue = metacomp.getName();
+            }
+            if (!newValue.equals(oldValue)) {
+                componentRenamed(metacomp, (String)oldValue, (String)newValue);
+            }
+            return;
+        }
 
         if (isResourceType(property.getValueType())) {
-            support.updateStoredValue0(oldValue, newValue, property);
+            updateStoredValue1(oldValue, newValue, property);
         }
         else {
-            Collection<FormProperty> colOld = support.getNestedResourceProperties(
+            Collection<FormProperty> colOld = getNestedResourceProperties(
                     oldValue, property, VALID_RESOURCE_VALUE);
-            Collection<FormProperty> colNew = support.getNestedResourceProperties(
+            Collection<FormProperty> colNew = getNestedResourceProperties(
                     newValue, property, VALID_RESOURCE_VALUE);
 
             for (FormProperty oProp : colOld) {
                 boolean foundInNew = false;
                 for (Iterator<FormProperty> it=colNew.iterator(); it.hasNext(); ) {
                     FormProperty nProp = it.next();
-                    if (oProp.getName().equals(nProp.getName())
-                        && oProp.getPropertyContext().getContextPath().equals(
-                                nProp.getPropertyContext().getContextPath()))
-                    {   // same property
+                    if (getPropertyPath(oProp, null).equals(getPropertyPath(nProp, null))) { // same property
                         try {
-                            support.updateStoredValue0(oProp.getValue(), nProp.getValue(), nProp);
+                            updateStoredValue1(oProp.getValue(), nProp.getValue(), nProp);
                         }
                         catch (Exception ex) { // getValue should not fail
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -637,7 +649,7 @@ public class ResourceSupport {
                 }
                 if (!foundInNew) { // removed resource/i18n value
                     try {
-                        support.updateStoredValue0(oProp.getValue(), null, oProp);
+                        updateStoredValue1(oProp.getValue(), null, oProp);
                     }
                     catch (Exception ex) { // getValue() should not fail
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -647,7 +659,7 @@ public class ResourceSupport {
             // colNew now contains newly added resources/i18n values
             for (FormProperty nProp : colNew) {
                 try {
-                    support.updateStoredValue0(null, nProp.getValue(), nProp);
+                    updateStoredValue1(null, nProp.getValue(), nProp);
                 }
                 catch (Exception ex) { // getValue should not fail
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -656,7 +668,7 @@ public class ResourceSupport {
         }
     }
 
-    private void updateStoredValue0(Object oldValue, Object newValue, FormProperty property) {
+    private void updateStoredValue1(Object oldValue, Object newValue, FormProperty property) {
         // updateI18nValue and updateResourceValue can each be called once or
         // not at all, but not twice
         if (oldValue instanceof I18nValue) {
@@ -683,7 +695,7 @@ public class ResourceSupport {
             try {
                 i18nService.update(oldVal, newVal,
                                    getSrcDataObject(), getI18nBundleName(), designLocale,
-                                   isAutoValue(oldVal, getDefaultKey(property, AUTO_I18N)));
+                                   isAutoValue(oldVal, getDefaultKey0(property, AUTO_I18N)));
             }
             catch (IOException ex) {
                 // [can't store to properties bundle - should do something?]
@@ -766,8 +778,19 @@ public class ResourceSupport {
                 return false;
 
             prop.setValue(EXCLUSION_DETERMINED, true);
-            boolean excl = resourceService.isExcludedProperty(
-                    prop.getPropertyContext().getParentObjectType(), prop.getName());
+            Object propOwner = prop.getPropertyContext().getOwner();
+            Class type = null;
+            if (propOwner instanceof RADComponent) {
+                type = ((RADComponent)propOwner).getBeanClass();
+            } else if (propOwner instanceof FormProperty) {
+                type = ((FormProperty)propOwner).getValueType();
+            }
+            boolean excl;
+            if (type != null) {
+                excl = resourceService.isExcludedProperty(type, prop.getName());
+            } else {
+                excl = false;
+            }
             prop.setValue(EXCLUDE_FROM_RESOURCING, excl);
             return excl;
         }
@@ -789,7 +812,7 @@ public class ResourceSupport {
     }
 
     private String getInjectionCode0(RADComponent metacomp, String compGenName) {
-        return getAutoName() && getResourceService() != null ?
+        return getAutoMode() == AUTO_INJECTION && getResourceService() != null ?
             resourceService.getInjectionCode(
                     metacomp.getBeanInstance(), compGenName, getSourceFile()) :
             null;
@@ -798,13 +821,13 @@ public class ResourceSupport {
     public static boolean isInjectedProperty(FormProperty prop) {
         if (isResourceableProperty(prop)) {
             ResourceSupport support = getResourceSupport(prop);
-            if (support.getAutoName()) {
+            if (support.getAutoMode() == AUTO_INJECTION) {
                 Object value;
                 try {
                     value = prop.getValue();
                     if (value instanceof ResourceValue) {
                         String key = ((ResourceValue)value).getKey();
-                        if (key != null && support.getDefaultKey(prop, AUTO_INJECTION).equals(key)) {
+                        if (key != null && support.getDefaultKey0(prop, AUTO_INJECTION).equals(key)) {
                             return true;
                         }
                     }
@@ -839,7 +862,7 @@ public class ResourceSupport {
     }
 
     private void bundleChanged(String oldBundle) {
-        switchFormToPlainValues(false, oldBundle);
+        switchFormToPlainValues(oldBundle);
         String oldLocale = designLocale;
         setDesignLocale(""); // NOI18N
         FormEditor.getFormEditor(formModel).getFormRootNode()
@@ -992,8 +1015,10 @@ public class ResourceSupport {
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                             }
                         }
-                        if (getAutoMode() == AUTO_INJECTION && addedComp != formModel.getTopRADComponent())
+                        if (isAutoName() && addedComp != formModel.getTopRADComponent()
+                                && formModel.isUndoRedoRecording()) { // (don't set name to components during undo/redo)
                             setupNameProperty(addedComp, true, true);
+                        }
                     }
                     break;
 
@@ -1159,32 +1184,94 @@ public class ResourceSupport {
 
     // -----
 
-    private String getDefaultKey(FormProperty prop, int type) {
-        return getDefaultKey(getSrcDataObject().getName(), prop.getPropertyContext().getContextPath(), prop.getName(), type);
+    private String getComponentName(RADComponent metacomp) {
+        String name = null;
+        boolean rootName = false;
+        if (isResourceAutoMode()) {
+            FormProperty nameProp = getNameProperty(metacomp);
+            // if 'name' property is set, we use its value as the name of the component
+            if (nameProp != null && nameProp.isChanged()) {
+                try {
+                    name = (String) nameProp.getValue();
+                } catch (Exception ex) { // should not fail, ignore non-strings
+                }
+            }
+            rootName = true;
+        }
+        if ((metacomp != formModel.getTopRADComponent() || rootName)
+            && (name == null || name.trim().length() == 0)) { // TBD some check for usable name
+            // by default use the name of the variable
+            name = metacomp.getName();
+        }
+        return name;
     }
 
-    static String getDefaultKey(String formName, String propPath, String propName, int type) {
+    private String getPropertyPath(FormProperty property, String compName) {
+        String propertyName = property.getName();
+        List parents = new ArrayList();
+        do {
+            FormPropertyContext propContext = property.getPropertyContext();
+            Object parent = propContext.getOwner();
+            if (parent instanceof FormProperty) {
+                parents.add(parent);
+                property = (FormProperty) parent;
+            } else {
+                if (parent instanceof RADComponent) {
+                    parents.add(parent);
+                }
+                property = null;
+            }
+        } while (property != null);
+
+        StringBuilder buf = new StringBuilder();
+        for (Object obj : parents) {
+            String append;
+            if (obj instanceof RADComponent) {
+                append = compName != null ? compName : getComponentName((RADComponent)obj);
+            } else {
+                append = ((FormProperty)obj).getName();
+            }
+            if (append != null) {
+                if (buf.length() > 0) {
+                    buf.append("."); // NOI18N
+                }
+                buf.append(append);
+            }
+        }
+        if (buf.length() > 0) {
+            buf.append("."); // NOI18N
+        }
+        buf.append(propertyName);
+        return buf.toString();
+    }
+
+    private String getDefaultKey0(FormProperty prop, int type) {
+        return getDefaultKey(getSrcDataObject().getName(), getPropertyPath(prop, null)/*prop.getPropertyContext().getContextPath(), prop.getName()*/, type);
+    }
+
+    static String getDefaultKey(FormProperty prop, int type) {
+        return getResourceSupport(prop).getDefaultKey0(prop, type);
+    }
+
+    private String getDefaultKey(String formName, String propPath/*, String propName*/, int type) {
         if (type != AUTO_I18N) {
             // TBD consult the I18nService for the default key...
             // TBD consult the ResourceService for the default key...
             formName = null;
         }
         StringBuilder buf = new StringBuilder();
-        if (formName != null && !formName.equals("")) { // NOI18N
+        if (formName != null) {
             buf.append(formName).append("."); // NOI18N
         }
-        if (propPath != null && !propPath.equals("")) { // NOI18N
-            buf.append(propPath).append("."); // NOI18N
-        }
-        buf.append(propName);
+        buf.append(propPath);
         return buf.toString();
     }
 
     private String getDefaultKey(FormProperty prop, ExternalValue eValue) {
         if (eValue instanceof I18nValue) {
-            return getDefaultKey(prop, AUTO_I18N);
+            return getDefaultKey0(prop, AUTO_I18N);
         } else if (eValue instanceof ResourceValue) {
-            return getDefaultKey(prop, AUTO_RESOURCING);
+            return getDefaultKey0(prop, AUTO_RESOURCING);
         } else {
             return null;
         }
@@ -1218,8 +1305,8 @@ public class ResourceSupport {
                && formModel.getSettings().getResourceAutoMode() == AUTO_I18N;
     }
 
-    private boolean getAutoName() {
-        return getAutoMode() == AUTO_INJECTION;
+    private boolean isAutoName() {
+        return formModel.getSettings().getAutoSetComponentName(); // || getAutoMode() == AUTO_INJECTION;
     }
 
     private String getI18nBundleName() {
@@ -1310,44 +1397,125 @@ public class ResourceSupport {
     // -----
 
     Node.Property[] createFormProperties() {
-        Node.Property autoModeProp = new PropertySupport.ReadWrite(
-            PROP_AUTO_RESOURCING,
-            Integer.TYPE,
-            FormUtils.getBundleString("PROP_AUTO_RESOURCE"), // NOI18N
-            FormUtils.getBundleString("HINT_AUTO_RESOURCE_LOCAL")) // NOI18N
+        Node.Property autoNamingProp = new PropertySupport.ReadWrite(
+            FormLoaderSettings.PROP_AUTO_SET_COMPONENT_NAME,
+            Boolean.TYPE,
+            FormUtils.getBundleString("PROP_AUTO_SET_COMPONENT_NAME"), // NOI18N
+            FormUtils.getBundleString("HINT_AUTO_SET_COMPONENT_NAME")) // NOI18N
         {
             public void setValue(Object value) {
-                Integer oldValue = new Integer(getAutoMode());
+                Object oldValue = getValue();
                 if (!oldValue.equals(value)) {
-                    int autoMode = ((Integer)value).intValue();
-                    boolean wasInjection = getAutoMode() == AUTO_INJECTION;
-                    formModel.getSettings().setResourceAutoMode(autoMode);
+                    boolean autoName = ((Boolean)value).booleanValue();
+                    formModel.getSettings().setAutoSetComponentName(autoName);
 
-                    if (autoMode == AUTO_OFF)
-                        switchFormToPlainValues(wasInjection, null);
-                    else
-                        switchFormToResources();
+                    setupNameProperty(autoName);
 
                     formModel.fireSyntheticPropertyChanged(
-                            null, PROP_AUTO_RESOURCING, oldValue, value);
+                            null, PROP_AUTO_SET_COMPONENT_NAME, oldValue, value);
                     FormEditor.getFormEditor(formModel).getFormRootNode()
-                        .firePropertyChangeHelper(PROP_AUTO_RESOURCING, oldValue, value);
+                        .firePropertyChangeHelper(PROP_AUTO_SET_COMPONENT_NAME, oldValue, value);
                 }
             }
 
             public Object getValue() {
-                return getAutoMode();
-            }
-
-            public PropertyEditor getPropertyEditor() {
-                return new org.netbeans.modules.form.editors.EnumEditor(new Object[] {
-                    FormUtils.getBundleString("CTL_AUTO_OFF"), AUTO_OFF, "", // NOI18N
-                    FormUtils.getBundleString("CTL_AUTO_I18N"), AUTO_I18N, "", // NOI18N
-                    FormUtils.getBundleString("CTL_AUTO_RESOURCING"), AUTO_RESOURCING, "", // NOI18N
-                    FormUtils.getBundleString("CTL_AUTO_INJECTION"), AUTO_INJECTION, "" // NOI18N
-                });
+                return Boolean.valueOf(formModel.getSettings().getAutoSetComponentName());
             }
         };
+
+        Node.Property autoModeProp;
+        int mode = getAutoMode();
+        if (projectUsesResources() || mode == AUTO_RESOURCING || mode == AUTO_INJECTION) {
+            autoModeProp = new PropertySupport.ReadWrite(
+                PROP_AUTO_RESOURCING,
+                Integer.TYPE,
+                FormUtils.getBundleString("PROP_AUTO_RESOURCE"), // NOI18N
+                FormUtils.getBundleString("HINT_AUTO_RESOURCE_LOCAL")) // NOI18N
+            {
+                public void setValue(Object value) {
+                    int oldMode = getAutoMode();
+                    Integer oldValue = new Integer(oldMode);
+                    if (!oldValue.equals(value)) {
+                        int newMode = ((Integer)value).intValue();
+                        FormSettings settings = formModel.getSettings();
+                        // set the setting itself so it is "on" during processing the
+                        // resource values (to correctly determine names of components
+                        // for default keys)
+                        if (newMode == AUTO_OFF) {
+                            switchFormToPlainValues(null);
+                            settings.setResourceAutoMode(newMode);
+                        } else {
+                            if (oldMode == AUTO_I18N || newMode == AUTO_I18N) {
+                                switchFormToPlainValues(null);
+                                settings.setResourceAutoMode(newMode);
+                                switchFormToResources();
+                            } else { // only chaning between resources and resources with injection
+                                settings.setResourceAutoMode(newMode);
+                            }
+                            if (newMode == AUTO_INJECTION && !isAutoName()) {
+                                formModel.getSettings().setAutoSetComponentName(true);
+                                setupNameProperty(true);
+                                FormEditor.getFormEditor(formModel).getFormRootNode()
+                                    .firePropertyChangeHelper(PROP_AUTO_SET_COMPONENT_NAME, oldValue, value);
+                            }
+                        }
+
+                        formModel.fireSyntheticPropertyChanged(
+                                null, PROP_AUTO_RESOURCING, oldValue, value);
+                        FormEditor.getFormEditor(formModel).getFormRootNode()
+                            .firePropertyChangeHelper(PROP_AUTO_RESOURCING, oldValue, value);
+                    }
+                }
+
+                public Object getValue() {
+                    return getAutoMode();
+                }
+
+                public PropertyEditor getPropertyEditor() {
+                    return new org.netbeans.modules.form.editors.EnumEditor(new Object[] {
+                        FormUtils.getBundleString("CTL_AUTO_OFF"), AUTO_OFF, "", // NOI18N
+                        FormUtils.getBundleString("CTL_AUTO_I18N"), AUTO_I18N, "", // NOI18N
+                        FormUtils.getBundleString("CTL_AUTO_RESOURCING"), AUTO_RESOURCING, "", // NOI18N
+                        FormUtils.getBundleString("CTL_AUTO_INJECTION"), AUTO_INJECTION, "" // NOI18N
+                    });
+                }
+            };
+        } else { // only offer automatic internationalization
+            autoModeProp = new PropertySupport.ReadWrite(
+                PROP_AUTO_RESOURCING,
+                Boolean.TYPE,
+                FormUtils.getBundleString("PROP_AUTO_I18N"), // NOI18N
+                FormUtils.getBundleString("HINT_AUTO_I18N")) // NOI18N
+            {
+                public void setValue(Object value) {
+                    boolean oldAutoI18n = getAutoMode() == AUTO_I18N;
+                    Boolean oldValue = Boolean.valueOf(oldAutoI18n);
+                    if (!oldValue.equals(value)) {
+                        boolean newAutoI18n = ((Boolean)value).booleanValue();
+                        FormSettings settings = formModel.getSettings();
+                        // set the setting itself so it is "on" during processing the
+                        // resource values (to correctly determine names of components
+                        // for default keys)
+                        if (newAutoI18n) {
+                            settings.setResourceAutoMode(AUTO_I18N);
+                            switchFormToResources();
+                        } else {
+                            switchFormToPlainValues(null);
+                            settings.setResourceAutoMode(AUTO_OFF);
+                        }
+
+                        formModel.fireSyntheticPropertyChanged(
+                                null, PROP_AUTO_RESOURCING, oldValue, value);
+                        FormEditor.getFormEditor(formModel).getFormRootNode()
+                            .firePropertyChangeHelper(PROP_AUTO_RESOURCING, oldValue, value);
+                    }
+                }
+
+                public Object getValue() {
+                    return getAutoMode() == AUTO_I18N;
+                }
+            };
+        }
 
         Node.Property formBundleProp = new PropertySupport.ReadWrite(
             PROP_FORM_BUNDLE,
@@ -1405,8 +1573,8 @@ public class ResourceSupport {
 
         int autoMode = getAutoMode();
         return autoMode == AUTO_OFF || autoMode == AUTO_I18N ?
-            new Node.Property[] { autoModeProp, formBundleProp, localeProp } :
-            new Node.Property[] { autoModeProp, localeProp };
+            new Node.Property[] { autoNamingProp, autoModeProp, formBundleProp, localeProp } :
+            new Node.Property[] { autoNamingProp, autoModeProp, localeProp };
     }
 
     private class BundleFilePropertyEditor extends PropertyEditorSupport {

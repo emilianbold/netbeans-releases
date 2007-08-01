@@ -158,9 +158,7 @@ public class ResourceWrapperEditor implements ExPropertyEditor, FormAwareEditor,
                 enable = true;
             }
             else {
-                key = ResourceSupport.getDefaultKey(null,
-                        property.getPropertyContext().getContextPath(),
-                        property.getName(), ResourceSupport.AUTO_RESOURCING);
+                key = ResourceSupport.getDefaultKey(property, ResourceSupport.AUTO_RESOURCING);
                 enable = ResourceSupport.isPropertyForResourcing(property);
             }
             resourcePanel.init(key, enable);

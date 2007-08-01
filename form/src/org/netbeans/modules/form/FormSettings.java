@@ -74,6 +74,34 @@ public class FormSettings {
         settings.put(FormLoaderSettings.PROP_VARIABLES_LOCAL, Boolean.valueOf(value));
     }
     
+    public boolean getAutoSetComponentName() {
+        Boolean setting = (Boolean) settings.get(FormLoaderSettings.PROP_AUTO_SET_COMPONENT_NAME);
+        boolean autoName;
+        if (setting != null) {
+            autoName = setting.booleanValue();
+        } else {
+            autoName = getDefaultAutoSetComponentName();
+            setAutoSetComponentName(autoName);
+        }
+        return autoName;
+    }
+
+    public void setAutoSetComponentName(boolean setName) {
+        settings.put(FormLoaderSettings.PROP_AUTO_SET_COMPONENT_NAME, Boolean.valueOf(setName));
+    }
+
+    boolean getDefaultAutoSetComponentName() {
+        int globalNaming = FormLoaderSettings.getInstance().getAutoSetComponentName();
+        boolean autoName = globalNaming == FormLoaderSettings.AUTO_NAMING_ON;
+        if (globalNaming == FormLoaderSettings.AUTO_NAMING_DEFAULT) {
+            ResourceSupport resourceSupport = FormEditor.getResourceSupport(formModel);
+            if (resourceSupport.projectUsesResources()) {
+                autoName = true;
+            }
+        }
+        return autoName;
+    }
+
     public boolean getGenerateMnemonicsCode() {
         Boolean generateMnemonicsCode = (Boolean)settings.get(FormLoaderSettings.PROP_GENERATE_MNEMONICS);
         return generateMnemonicsCode.booleanValue();

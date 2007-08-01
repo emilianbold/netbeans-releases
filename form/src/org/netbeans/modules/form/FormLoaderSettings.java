@@ -75,6 +75,12 @@ public class FormLoaderSettings  {
     /** Property name of the variablesLocal property */
     public static final String PROP_VARIABLES_LOCAL = "variablesLocal"; // NOI18N
 
+    /** Property name of the autoSetComponentName property */
+    public static final String PROP_AUTO_SET_COMPONENT_NAME = "autoSetComponentName"; // NOI18N
+    static final int AUTO_NAMING_DEFAULT = 0;
+    static final int AUTO_NAMING_ON = 1;
+    static final int AUTO_NAMING_OFF = 2;
+
     /** Property name of the generateMnemonicsCode property */
     public static final String PROP_GENERATE_MNEMONICS = "generateMnemonicsCode"; // NOI18N
     /** Property name of the showMnemonicsDialog property */
@@ -318,6 +324,14 @@ public class FormLoaderSettings  {
                 varType |= CodeVariable.EXPLICIT_DECLARATION;
         }
         else varType = CodeVariable.FIELD | value;
+    }
+
+    public int getAutoSetComponentName() {
+        return getPreferences().getInt(PROP_AUTO_SET_COMPONENT_NAME, AUTO_NAMING_DEFAULT);
+    }
+
+    public void setAutoSetComponentName(int value) {
+        getPreferences().putInt(PROP_AUTO_SET_COMPONENT_NAME, value);
     }
 
     /** Getter for the generateMnemonicsCode option */

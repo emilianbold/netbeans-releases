@@ -422,11 +422,11 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
             return;
         }
 
-        resourceComponentRename(name); // do before the component has new name
-
         String oldName = componentCodeExpression.getVariable().getName();
 
         formModel.getCodeStructure().renameVariable(oldName, name);
+
+        resourceComponentRename(oldName, name);
 
         renameDefaultEventHandlers(oldName, name);
         // [possibility of renaming default event handlers should be probably
@@ -1493,9 +1493,9 @@ public class RADComponent /*implements FormDesignValue, java.io.Serializable*/ {
         return value; // do nothing
     }
 
-    void resourceComponentRename(String newName) {
+    void resourceComponentRename(String oldName, String newName) {
         if (isInModel()) {
-            ResourceSupport.componentRenamed(this, newName);
+            ResourceSupport.componentRenamed(this, oldName, newName);
         }
     }
 

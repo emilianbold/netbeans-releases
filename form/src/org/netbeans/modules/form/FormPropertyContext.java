@@ -54,21 +54,11 @@ public interface FormPropertyContext {
     public FormModel getFormModel();
 
     /**
-     * Returns relative path of the property within the form. Together with the
-     * name of the property (which is not included) the path can be used to
-     * identify the property. E.g. all bean properties of a component has the
-     * component name as their context path. Nested properties also have the
-     * parent property name in the path.
-     * @return String relative path of the property within the form
+     * Returns the property owner (the object it is a property of). Typically
+     * a RADComponent or another property (nested properties).
+     * @return Object the owner object of the property
      */
-    public String getContextPath();
-
-    /**
-     * Returns the type of the object the property belongs to (which it is
-     * a property of).
-     * @return type of the parent object of the property
-     */
-    public Class getParentObjectType();
+    public Object getOwner();
 
     /**
      * Implementation of FormPropertyContext for component properties.
@@ -93,13 +83,8 @@ public interface FormPropertyContext {
             return component.getFormModel();
         }
 
-        public String getContextPath() {
-            return component != getFormModel().getTopRADComponent() ?
-                   component.getName() : ""; // NOI18N
-        }
-
-        public Class getParentObjectType() {
-            return component.getBeanClass();
+        public RADComponent getOwner() {
+            return component;
         }
     }
 
@@ -126,15 +111,8 @@ public interface FormPropertyContext {
             return parentProperty.getPropertyContext().getFormModel();
         }
 
-        public String getContextPath() {
-            String parentPath = parentProperty.getPropertyContext().getContextPath();
-            return parentPath != null && !parentPath.equals("") ? // NOI18N
-                   parentPath + "." + parentProperty.getName() : // NOI18N
-                   parentProperty.getName();
-        }
-
-        public Class getParentObjectType() {
-            return parentProperty.getValueType();
+        public Object getOwner() {
+            return parentProperty;
         }
     }
 
@@ -155,12 +133,8 @@ public interface FormPropertyContext {
             return null;
         }
 
-        public String getContextPath() {
-            return ""; // NOI18N
-        }
-
-        public Class getParentObjectType() {
-            return Object.class;
+        public Object getOwner() {
+            return null;
         }
 
         // ------
