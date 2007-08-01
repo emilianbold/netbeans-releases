@@ -286,7 +286,8 @@ public class SharedUtils {
          Referenceable ref = request.getRefactoringSource().lookup(Referenceable.class);
          Model mod = SharedUtils.getModel(ref);
          FileObject ofo = mod.getModelSource().getLookup().lookup(FileObject.class);
-         sb.append("/");
+         if(!sb.toString().endsWith("/"))
+             sb.append("/");
          sb.append(ofo.getNameExt());
          return sb.toString();
      }
@@ -411,6 +412,18 @@ public class SharedUtils {
       
       public static void showFileRenameRefactoringUI(Model target) {
           org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new FileRenameRefactoringUI(target);
+          TopComponent activetc = TopComponent.getRegistry().getActivated();
+          if (activetc instanceof CloneableEditorSupport.Pane) {
+              //new RefactoringPanel(ui, activetc);
+              UI.openRefactoringUI(ui, activetc);
+          } else {
+              // new RefactoringPanel(ui);
+              UI.openRefactoringUI(ui);
+          }
+    }
+
+    public static void showFileRenameRefactoringUI(Model target, String newName) {
+          org.netbeans.modules.refactoring.spi.ui.RefactoringUI ui  = new FileRenameRefactoringUI(target, newName);
           TopComponent activetc = TopComponent.getRegistry().getActivated();
           if (activetc instanceof CloneableEditorSupport.Pane) {
               //new RefactoringPanel(ui, activetc);
@@ -699,7 +712,8 @@ public class SharedUtils {
                 
             FileObject folder = getSourceFolder(targetProject,target);
             if (folder == null) {
-                throw new IllegalArgumentException(target.getPath()+" is not in target project source"); //NOI18N
+                folder = target;
+                //throw new IllegalArgumentException(target.getPath()+" is not in target project source"); //NOI18N
             }
             String relPathFromTgtGroup = getRelativePath(folder,target);
             return new URI(relPathToSrcGroupWithSlash.concat(

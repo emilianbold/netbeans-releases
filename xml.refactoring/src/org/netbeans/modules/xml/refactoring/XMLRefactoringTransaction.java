@@ -30,6 +30,8 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -447,6 +449,7 @@ public class XMLRefactoringTransaction implements Transaction {
         //   Map<Model, Set<RefactoringElementImplementation>> modelsInRefactoring = SharedUtils.getModelMap(elements);
            if(modelsInRefactoring == null) 
                 modelsInRefactoring = getModels();
+           boolean addedEntry = false;
            Set<Model> models = modelsInRefactoring.keySet();
            for (Model ug : models) {
             FileObject referencingFO = ug.getModelSource().getLookup().lookup(FileObject.class);
@@ -457,8 +460,20 @@ public class XMLRefactoringTransaction implements Transaction {
                 String reference = getModelReference(uc);
                 if (reference == null) continue;
                 try {
-                    if (pcs != null && pcs.removeCatalogEntry(new URI(reference))) {
-                        pcs.createCatalogEntry(referencingFO, referencedFO);
+                     if (pcs != null && pcs.removeCatalogEntry(new URI(reference))) {
+                            pcs.createCatalogEntry(referencingFO, referencedFO);
+                            addedEntry = true;
+                        }
+                   //special case for move/copy refactoring when a referencedFO is being moved to a subproject
+                   //in this case, there is no catalogEntry and a new one needs to be created
+                    if(request instanceof MoveRefactoring || request instanceof SingleCopyRefactoring) {
+                        if(pcs != null && !addedEntry){
+                            Project targetProject = FileOwnerQuery.getOwner(referencedFO);
+                            Project project = FileOwnerQuery.getOwner(referencingFO);
+                           if( SharedUtils.getProjectReferences(project).contains(targetProject) ){
+                               pcs.createCatalogEntry(referencingFO, referencedFO);
+                           }
+                        }
                     }
                 } catch(Exception ex) {
                     Logger.getLogger(SharedUtils.class.getName()).log(Level.FINE, ex.getMessage());

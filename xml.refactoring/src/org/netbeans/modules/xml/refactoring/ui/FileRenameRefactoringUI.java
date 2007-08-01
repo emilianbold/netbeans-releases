@@ -67,20 +67,37 @@ public class FileRenameRefactoringUI implements org.netbeans.modules.refactoring
     private RenamePanel panel;
     String newName;
     private Model target;
-    String oldFileName;
+    String oldFileName, displayName;
 
     private RenameRefactoring refactoring;
     
       
-    public FileRenameRefactoringUI(Model target){
+    public FileRenameRefactoringUI(Model target, String newName){
         this.target = target;
         refactoring = new RenameRefactoring(Lookups.singleton(target));
         oldFileName =( target.getModelSource().getLookup().lookup(FileObject.class)).getName();
+        if(newName != null)
+            displayName = newName;
+        else 
+            displayName = oldFileName;
         XMLRefactoringTransaction transaction = new XMLRefactoringTransaction((Referenceable)target, refactoring);
         refactoring.getContext().add(transaction);
         //TEMP solution :: ask jbecika if renameRefactoring can have a getOldName()
         //have filed issue#98842 on Refactoring API..till then use context obj
         refactoring.getContext().add(oldFileName);
+        
+    }
+
+     public FileRenameRefactoringUI(Model target){
+         this.target = target;
+         refactoring = new RenameRefactoring(Lookups.singleton(target));
+         oldFileName =( target.getModelSource().getLookup().lookup(FileObject.class)).getName();
+         displayName = oldFileName;
+         XMLRefactoringTransaction transaction = new XMLRefactoringTransaction((Referenceable)target, refactoring);
+         refactoring.getContext().add(transaction);
+         //TEMP solution :: ask jbecika if renameRefactoring can have a getOldName()
+         //have filed issue#98842 on Refactoring API..till then use context obj
+         refactoring.getContext().add(oldFileName); 
         
     }
     
@@ -102,7 +119,7 @@ public class FileRenameRefactoringUI implements org.netbeans.modules.refactoring
      */
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
          if (panel == null) {
-            panel = new RenamePanel(oldFileName, 
+            panel = new RenamePanel(displayName, 
                     parent, NbBundle.getMessage(RenamePanel.class, "LBL_FileRename"), 
                     true, 
                     false);

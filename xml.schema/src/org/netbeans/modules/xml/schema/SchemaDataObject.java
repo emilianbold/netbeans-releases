@@ -128,7 +128,7 @@ public final class SchemaDataObject extends MultiDataObject {
             //    RefactoringManager.getInstance().execute(request, true);
                 SharedUtils.silentFileRefactor(model, name, true);
             } catch(CannotRefactorException ex) {
-                SharedUtils.showFileRenameRefactoringUI(model);
+                SharedUtils.showFileRenameRefactoringUI(model, name);
             } catch(IOException ex) {
                 String msg = NbBundle.getMessage(SchemaDataObject.class, "MSG_UnableToRename", ex.getMessage());
                 NotifyDescriptor nd = new NotifyDescriptor.Message(
