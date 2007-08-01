@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.FileProxy;
 import org.netbeans.installer.utils.ErrorManager;
@@ -127,7 +128,8 @@ public class JavaUtils {
         try {
             location = javaHome.getCanonicalFile();
         } catch (IOException e) {
-            ErrorManager.notifyDebug("Cannot canonize " + javaHome, e);
+            ErrorManager.notifyDebug(ResourceUtils.getString(
+                    JavaUtils.class, ERROR_CANNOT_CANONIZE_KEY, javaHome), e);
         }
         
         if (knownJdks.get(location) != null) {
@@ -144,7 +146,8 @@ public class JavaUtils {
         try {
             testJdk = FileProxy.getInstance().getFile(TEST_JDK_URI);
         } catch (DownloadException e) {
-            ErrorManager.notifyError("Cannot download TestJDK.class" , e);
+            ErrorManager.notifyError(ResourceUtils.getString(
+                    JavaUtils.class, ERROR_CANNOT_DOWNLOAD_TESTJDK_KEY, TEST_JDK_URI), e);
             return null;
         }
         
@@ -162,11 +165,13 @@ public class JavaUtils {
                 knownJdks.put(location, jdkInfo);
             }
         } catch (IOException e) {
-            ErrorManager.notifyError("Failed to execute the jdk verification procedure", e);
+            ErrorManager.notifyError(ResourceUtils.getString(
+                    JavaUtils.class, ERROR_VERIFICATION_KEY), e);
         }
         
         if (!testJdk.delete()) {
-            ErrorManager.notifyError("Cannot delete " + testJdk.getAbsolutePath());
+            ErrorManager.notifyError(ResourceUtils.getString(
+                    JavaUtils.class,  ERROR_CANNOT_DELETE_KEY, testJdk.getAbsolutePath()));
         }
         
         return jdkInfo;
@@ -439,4 +444,13 @@ public class JavaUtils {
     public static final String NON_FINAL_JVM_PATTERN = 
             "-(ea|rc[0-9]*|beta[0-9]*|preview[0-9]*|" + // NOI18N
             "dp[0-9]*|alpha[0-9]*|fcs)"; // NOI18N
+    
+    public static final String ERROR_VERIFICATION_KEY = 
+            "JU.error.verification";//NOI18N
+    public static final String ERROR_CANNOT_DELETE_KEY = 
+            "JU.error.cannot.delete";//NOI18N
+    public static final String ERROR_CANNOT_DOWNLOAD_TESTJDK_KEY = 
+            "JU.error.cannot.download.testjdk";//NOI18N
+    public static final String ERROR_CANNOT_CANONIZE_KEY=
+            "JU.error.cannot.canonize";//NOI18N
 }
