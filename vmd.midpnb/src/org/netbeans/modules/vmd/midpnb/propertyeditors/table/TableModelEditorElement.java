@@ -66,9 +66,9 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     }
 
     public List<String> getPropertyValueNames() {
-        return Arrays.asList(new String[] {SimpleTableModelCD.PROP_COLUMN_NAMES, SimpleTableModelCD.PROP_VALUES});
+        return Arrays.asList(new String[]{SimpleTableModelCD.PROP_COLUMN_NAMES, SimpleTableModelCD.PROP_VALUES});
     }
-    
+
     @Override
     public String getResourceNameSuggestion() {
         return "tableModel"; // NOI18N
@@ -131,7 +131,11 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         if (isShowing() && !doNotFireEvent) {
             Vector dataVector = tableModel.getDataVector();
             boolean useHeader = tableModel.hasHeader();
-            List<PropertyValue> propertyValueColumn = new ArrayList<PropertyValue>(dataVector.size() - (useHeader ? 1 : 0));
+            int pvcSize = dataVector.size();
+            if (pvcSize > 0 && useHeader) {
+                pvcSize--;
+            }
+            List<PropertyValue> propertyValueColumn = new ArrayList<PropertyValue>(pvcSize);
             for (int i = useHeader ? 1 : 0; i < dataVector.size(); i++) {
                 Vector row = (Vector) dataVector.elementAt(i);
                 List<PropertyValue> propertyValueRow = new ArrayList<PropertyValue>(row.size());
@@ -148,10 +152,12 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
             PropertyValue headers;
             if (useHeader) {
                 List<PropertyValue> propertyValueHeader = new ArrayList<PropertyValue>(tableModel.getColumnCount());
-                Vector headerRow = (Vector) dataVector.elementAt(0);
-                for (int j = 0; j < tableModel.getColumnCount(); j++) {
-                    String str = (String) headerRow.elementAt(j);
-                    propertyValueHeader.add(MidpTypes.createStringValue(str != null ? str : "")); // NOI18N
+                if (dataVector.size() > 0) {
+                    Vector headerRow = (Vector) dataVector.elementAt(0);
+                    for (int j = 0; j < tableModel.getColumnCount(); j++) {
+                        String str = (String) headerRow.elementAt(j);
+                        propertyValueHeader.add(MidpTypes.createStringValue(str != null ? str : "")); // NOI18N
+                    }
                 }
                 headers = PropertyValue.createArray(MidpTypes.TYPEID_JAVA_LANG_STRING, propertyValueHeader);
             } else {

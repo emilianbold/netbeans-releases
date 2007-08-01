@@ -47,7 +47,12 @@ class CustomEditorTableModel extends DefaultTableModel {
 
     @Override
     public void removeRow(int row) {
-        super.removeRow(row - (hasHeader ? 1 : 0));
+        if (dataVector.size() > 0) {
+            if (row > 0 && hasHeader) {
+                row--;
+            }
+            super.removeRow(row);
+        }
     }
 
     @Override
@@ -108,11 +113,14 @@ class CustomEditorTableModel extends DefaultTableModel {
                 header.addElement((String) columnArray[i]);
             }
         }
-        super.dataVector = convertToVector(dataArrays);
-        super.columnIdentifiers = convertToVector(columnArray);
+        super.dataVector = nonNullVector(convertToVector(dataArrays));
+        super.columnIdentifiers = nonNullVector(convertToVector(columnArray));
         fireTableStructureChanged();
     }
 
+    private static Vector nonNullVector(Vector v) { 
+	return (v != null) ? v : new Vector(); 
+    } 
 
     public void clear() {
         header.clear();

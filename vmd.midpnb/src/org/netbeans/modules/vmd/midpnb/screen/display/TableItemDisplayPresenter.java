@@ -30,7 +30,6 @@ import org.netbeans.modules.vmd.midp.screen.display.ScreenSupport;
 import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEditor;
 import org.netbeans.modules.vmd.midpnb.components.items.TableItemCD;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -44,23 +43,23 @@ import org.openide.util.NbBundle;
  * @version 1.0
  */
 public class TableItemDisplayPresenter extends ItemDisplayPresenter {
-    
+
     private static final int BORDER_LINE_WIDTH = 1;
     private static final int CELL_INSETS = 2;
     private static final int DOUBLE_CELL_INSETS = CELL_INSETS * 2;
-    
-    private static final Stroke BORDER_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE,
-            BasicStroke.JOIN_ROUND, 0f,  new float[] {3f ,3f}, 0f);
-    
+
+    private static final Stroke BORDER_STROKE = new BasicStroke(1, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 0f, new float[]{3f, 3f}, 0f);
+
     private JPanel panel;
     private static JLabel label;
     private boolean hasModel;
     private String[] columnNames;
     private String[][] values;
-    
+
     public TableItemDisplayPresenter() {
-        label = new JLabel();      
+        label = new JLabel();
         panel = new JPanel() {
+
             @Override
             public void paint(Graphics g) {
                 super.paint(g);
@@ -71,28 +70,28 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         panel.setPreferredSize(new Dimension(200, 40)); // TODO compute it from fontSize
         setContentComponent(panel);
     }
-    
+
     private void paintTable(Graphics g) {
         Font headersFont = label.getFont().deriveFont(Font.BOLD);
         Font valuesFont = label.getFont();
         int cummulativeY = 0;
-        
+
         if (!hasModel) {
             cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
             g.drawString(NbBundle.getMessage(TableItemDisplayPresenter.class, "DISP_no_table_model_specified"), CELL_INSETS, cummulativeY); // NOI18N
-        } else if  (values == null) {
+        } else if (values == null || values.length < 1) {
             cummulativeY += ScreenSupport.getFontHeight(g, valuesFont);
             g.drawString(NbBundle.getMessage(TableItemDisplayPresenter.class, "DISP_empty_table_model"), CELL_INSETS, cummulativeY); // NOI18N
         } else {
-            Graphics2D g2D = (Graphics2D)g;
+            Graphics2D g2D = (Graphics2D) g;
             Dimension oldSize = panel.getSize();
             final int width = oldSize.width;
             final int height = oldSize.height;
-            
+
             int headersY = 0;
-            
+
             int[] colWidths = getColWidths(g, values, columnNames, headersFont, valuesFont);
-            
+
             if (columnNames != null) {
                 g.setFont(headersFont);
                 headersY = cummulativeY;
@@ -104,13 +103,14 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
                     if (name != null) {
                         g.drawString(name, cummulativeX, cummulativeY);
                     }
-                    cummulativeX += colWidths[i];
-                    
+                    if (colWidths != null) {
+                        cummulativeX += colWidths[i];
+                    }
                 }
-                cummulativeY +=  DOUBLE_CELL_INSETS + BORDER_LINE_WIDTH;
+                cummulativeY += DOUBLE_CELL_INSETS + BORDER_LINE_WIDTH;
             }
-            
-            if (values != null) {
+
+            if (values != null && values.length > 0) {
                 g.setFont(valuesFont);
                 for (int i = 0; (i < values.length) && (cummulativeY < height); i++) {
                     String[] row = values[i];
@@ -121,12 +121,14 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
                         if (cell != null) {
                             g.drawString(cell, cummulativeX, cummulativeY);
                         }
-                        cummulativeX += colWidths[j];
+                        if (colWidths != null) {
+                            cummulativeX += colWidths[j];
+                        }
                     }
                     cummulativeY += DOUBLE_CELL_INSETS + BORDER_LINE_WIDTH;
                 }
             }
-            
+
             // draw borders
             g2D.setStroke(BORDER_STROKE);
             g.drawRect(0, 0, width - 1, height - 1);
@@ -137,14 +139,14 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
                 g.drawLine(0, borderY, width, borderY);
                 borderY++;
             }
-            if (values != null) {
+            if (values != null && values.length > 0) {
                 // horizontal lines
                 for (int i = 0; (i < values.length) && (borderY < height); i++) {
                     borderY += ScreenSupport.getFontHeight(g, valuesFont) + DOUBLE_CELL_INSETS;
                     g.drawLine(0, borderY, width, borderY);
                     borderY++;
                 }
-                
+
                 // vertical lines
                 int borderX = 0;
                 int rows = values[0].length;
@@ -155,13 +157,13 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             }
         }
     }
-    
+
     @Override
     public void reload(ScreenDeviceInfo deviceInfo) {
         super.reload(deviceInfo);
         DesignComponent tableModelComponent = getComponent().readProperty(TableItemCD.PROP_MODEL).getComponent();
         hasModel = tableModelComponent != null;
-        
+
         if (hasModel) {
             PropertyValue columnsProperty = tableModelComponent.readProperty(SimpleTableModelCD.PROP_COLUMN_NAMES);
             List<PropertyValue> list = columnsProperty.getArray();
@@ -173,7 +175,7 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
             } else {
                 columnNames = null;
             }
-            
+
             PropertyValue valuesProperty = tableModelComponent.readProperty(SimpleTableModelCD.PROP_VALUES);
             list = valuesProperty.getArray();
             if (list != null) {
@@ -186,28 +188,28 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
                 values = null;
             }
         }
-        
+
         panel.setPreferredSize(calculatePrefferedSize());
         panel.repaint();
     }
-    
+
     // TODO compute 14 from fontSize
     private Dimension calculatePrefferedSize() {
         final Dimension oldSize = panel.getPreferredSize();
         if (!hasModel || values == null) {
             return oldSize;
         }
-        
+
         int height = 0;
         if (columnNames != null) {
             height += CELL_INSETS + 14 + BORDER_LINE_WIDTH;
         }
         if (values != null) {
             height += (DOUBLE_CELL_INSETS + 14 + BORDER_LINE_WIDTH) * values.length;
-        } 
+        }
         return new Dimension(oldSize.width, height);
     }
-    
+
     // TODO make parameter generic and move to ArraySupport class (gatherPrimitiveValues)
     private static List<String> gatherStringValues(List<PropertyValue> propertyValues) {
         List<String> list = new ArrayList<String>(propertyValues.size());
@@ -216,34 +218,33 @@ public class TableItemDisplayPresenter extends ItemDisplayPresenter {
         }
         return list;
     }
-    
+
     private int[] getColWidths(Graphics g, String[][] values, String[] headers, Font headersFont, Font valuesFont) {
-        if (values == null) {
-            return new int[0];
+        if (values == null || values.length == 0) {
+            return null;
         }
-        
+
         final int tableCols = values[0].length;
-        
+
         final int[] colWidths = new int[tableCols];
         for (int i = 0; i < tableCols; i++) {
             colWidths[i] = panel.getSize().width / tableCols;
         }
-        
+
         return colWidths;
     }
-    
+
     @Override
-     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors () {
-        List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());  
+    public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
+        List<ScreenPropertyDescriptor> descriptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
         DesignComponent tableModel = getComponent().readProperty(TableItemCD.PROP_MODEL).getComponent();
         ScreenPropertyEditor tableModelDescriptor = null;
-        if (tableModel == null)
-            tableModelDescriptor =  new ResourcePropertyEditor(TableItemCD.PROP_MODEL, getComponent());
-        else
+        if (tableModel == null) {
+            tableModelDescriptor = new ResourcePropertyEditor(TableItemCD.PROP_MODEL, getComponent());
+        } else {
             tableModelDescriptor = new ResourcePropertyEditor(SimpleTableModelCD.PROP_VALUES, tableModel);
+        }
         descriptors.add(new ScreenPropertyDescriptor(getComponent(), panel, tableModelDescriptor));
         return descriptors;
-        
     }
-     
 }
