@@ -117,17 +117,25 @@ public class JavaResourceHolder extends ResourceHolder {
      * Gets all data (values, comments) for given key across all locales.
      */
     public Object getAllData(String key) {
-        BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
-        return bundleStructure != null ? bundleStructure.getAllData(key) : null;
+        if (resource instanceof PropertiesDataObject) {
+            BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
+            if (bundleStructure != null) {
+                return bundleStructure.getAllData(key);
+            }
+        }
+        return null;
     }
 
     /**
      * Restores data for given key (obtained sooner from getAllData method).
      */
     public void setAllData(String key, Object data) {
-        BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
-        if (bundleStructure != null)
-            bundleStructure.setAllData(key, (String[])data);
+        if (resource instanceof PropertiesDataObject) {
+            BundleStructure bundleStructure = ((PropertiesDataObject)resource).getBundleStructure();
+            if (bundleStructure != null) {
+                bundleStructure.setAllData(key, (String[])data);
+            }
+        }
     }
 
     /** Implements superclass abstract method. Adds new property (key-valkue pair) to resource object. 
