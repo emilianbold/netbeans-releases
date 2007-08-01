@@ -121,6 +121,9 @@ import org.openide.util.NbBundle;
  * @todo Check that the new name doesn't conflict with an existing name
  * @todo Check unknown files!
  * @todo More prechecks
+ * @todo When invoking refactoring on a file object, I also rename the file. I should (a) list the
+ *   name it's going to change the file to, and (b) definitely "filenamize" it - e.g. for class FooBar the
+ *   filename should be foo_bar.
  *
  * @todo Complete this. Most of the prechecks are not implemented - and the refactorings themselves need a lot of work.
  */
@@ -324,6 +327,12 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
             );
             fastCheckProblem = createProblem(fastCheckProblem, true, msg);
             return fastCheckProblem;
+        }
+        
+        
+        String msg = RubyUtils.getIdentifierWarning(newName, 0);
+        if (msg != null) {
+            fastCheckProblem = createProblem(fastCheckProblem, false, msg);
         }
         
         // TODO

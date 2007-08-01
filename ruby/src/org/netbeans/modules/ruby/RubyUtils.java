@@ -20,6 +20,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -74,6 +75,46 @@ public class RubyUtils {
             lastWasUnderline = (c == '_');
         }
         return sb.toString();
+    }
+    
+    /**
+     * Ruby identifiers should consist of [a-zA-Z0-9_]
+     * http://www.headius.com/rubyspec/index.php/Variables
+     * <p>
+     * This method also accepts the field/global chars
+     * since it's unlikely 
+     */
+    public static boolean isSafeIdentifierName(String name, int fromIndex) {
+        int i = fromIndex;
+        for (; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (!(c == '$' || c == '@' || c == ':')) {
+                break;
+            }
+        }
+        for (; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (!((c >= 'a' && c <= 'z') ||
+                    (c >= 'A' && c <= 'Z') ||
+                    (c >= '0' && c <= '9') ||
+                   (c == '_'))) { 
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /** 
+     * Return null if the given identifier name is valid, otherwise a localized
+     * error message explaining the problem.
+     */
+    public static String getIdentifierWarning(String name, int fromIndex) {
+       if (isSafeIdentifierName(name, fromIndex)) {
+           return null;
+       } else {
+           return NbBundle.getMessage(RubyUtils.class, "UnsafeIdentifierName");
+       }
     }
 
     /** Camelize the given word -- see Rails activesupport's camelize method */

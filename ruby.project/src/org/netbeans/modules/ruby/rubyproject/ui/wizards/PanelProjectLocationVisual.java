@@ -26,6 +26,7 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.rubyproject.ui.FoldersListSettings;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -236,6 +237,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderExists"));
             return false;
         }                
+
+        String msg = RubyUtils.getIdentifierWarning(projectNameTextField.getText(), 0);
+        if (msg != null) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+                    msg);
+            // warning only, don't return false
+        }
+        
         return true;
     }
     

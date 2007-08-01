@@ -103,6 +103,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
            setErrorMessage( null );
            return false;
         }        
+        setLocalizedErrorMessage(null);
         
         if (type == NewRubyFileWizardIterator.TYPE_CLASS || type == NewRubyFileWizardIterator.TYPE_MODULE ||
             type == NewRubyFileWizardIterator.TYPE_TEST) {
@@ -110,6 +111,10 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
                 if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
                     setErrorMessage("ERR_RubyTargetChooser_InvalidClass"); // NOI18N
                     return false;
+                }
+                String msg = RubyUtils.getIdentifierWarning(gui.getClassName(), 0);
+                if (msg != null) {
+                    setLocalizedErrorMessage(msg); // warning only, don't return false
                 }
                 String superclass = gui.getExtends();
                 if (superclass != null && superclass.length() > 0) {
@@ -119,6 +124,10 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
                             setErrorMessage("ERR_RubyTargetChooser_InvalidSuperclass"); // NOI18N
                             return false;
                         }
+                        msg = RubyUtils.getIdentifierWarning(mod, 0);
+                        if (msg != null) {
+                            setLocalizedErrorMessage(msg); // warning only, don't return false
+                        }
                     }
                 }
             }
@@ -126,6 +135,10 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
                 if (gui.getClassName() == null || !RubyUtils.isValidRubyClassName(gui.getClassName())) {
                     setErrorMessage("ERR_RubyTargetChooser_InvalidModule"); // NOI18N
                     return false;
+                }
+                String msg = RubyUtils.getIdentifierWarning(gui.getClassName(), 0);
+                if (msg != null) {
+                    setLocalizedErrorMessage(msg); // warning only, don't return false
                 }
             }
             String in = gui.getModuleName();
@@ -135,6 +148,10 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
                     if (!RubyUtils.isValidRubyClassName(mod)) {
                         setErrorMessage("ERR_RubyTargetChooser_InvalidInModule"); // NOI18N
                         return false;
+                    }
+                    String msg = RubyUtils.getIdentifierWarning(mod, 0);
+                    if (msg != null) {
+                        setLocalizedErrorMessage(msg); // warning only, don't return false
                     }
                 }
             }
@@ -179,7 +196,7 @@ public final class RubyTargetChooserPanel implements WizardDescriptor.Panel, Cha
         //    specVersion = sl != null? new SpecificationVersion(sl): null;
         //}
         String errorMessage = canUseFileName (rootFolder, gui.getPackageFileName(), gui.getTargetName(), template.getExt ());        
-        if (gui != null) {
+        if (gui != null && errorMessage != null) {
             setLocalizedErrorMessage (errorMessage);
         }
         if (errorMessage!=null) {
