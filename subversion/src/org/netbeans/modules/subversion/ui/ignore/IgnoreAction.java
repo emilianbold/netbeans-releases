@@ -29,7 +29,6 @@ import org.openide.nodes.Node;
 import java.io.File;
 import java.lang.String;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
