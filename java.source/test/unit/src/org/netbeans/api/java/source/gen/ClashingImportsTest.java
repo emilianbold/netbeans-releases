@@ -26,7 +26,11 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.java.source.transform.Transformer;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileStateInvalidException;
 
@@ -46,73 +50,78 @@ public class ClashingImportsTest extends GeneratorTest {
         return suite;
     }
     
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
     public void testAddImport() throws IOException {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ClashingImports.java");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    if ("<init>".contentEquals(node.getName())) {
-                        BlockTree body = node.getBody();
-                        List<StatementTree> stats = new ArrayList<StatementTree>();
-                        for(StatementTree st : body.getStatements())
-                            stats.add(st);
-                        TypeElement e = env.getElements().getTypeElement("java.awt.List");
-                        ExpressionTree type = make.QualIdent(e);
-                        stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "awtList", type, null));
-                        changes.rewrite(body, make.Block(stats, false));
-                    }
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree node = (MethodTree) clazz.getMembers().get(0);
+                BlockTree body = node.getBody();
+                List<StatementTree> stats = new ArrayList<StatementTree>();
+                for(StatementTree st : body.getStatements())
+                    stats.add(st);
+                TypeElement e = workingCopy.getElements().getTypeElement("java.awt.List");
+                ExpressionTree type = make.QualIdent(e);
+                stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "awtList", type, null));
+                workingCopy.rewrite(body, make.Block(stats, false));
             }
-        );
+        };
+        src.runModificationTask(task).commit();
         assertFiles("testAddImport_ClashingImports.pass");
     }
 
     public void testAddClashingImport() throws IOException {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ClashingImports2.java");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    if ("<init>".contentEquals(node.getName())) {
-                        BlockTree body = node.getBody();
-                        List<StatementTree> stats = new ArrayList<StatementTree>();
-                        for(StatementTree st : body.getStatements())
-                            stats.add(st);
-                        TypeElement e = env.getElements().getTypeElement("java.util.List");
-                        ExpressionTree type = make.QualIdent(e);
-                        stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "list", type, null));
-                        changes.rewrite(body, make.Block(stats, false));
-                    }
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree node = (MethodTree) clazz.getMembers().get(0);
+                BlockTree body = node.getBody();
+                List<StatementTree> stats = new ArrayList<StatementTree>();
+                for(StatementTree st : body.getStatements())
+                    stats.add(st);
+                TypeElement e = workingCopy.getElements().getTypeElement("java.util.List");
+                ExpressionTree type = make.QualIdent(e);
+                stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "list", type, null));
+                workingCopy.rewrite(body, make.Block(stats, false));
             }
-        );
+        };
+        src.runModificationTask(task).commit();
         assertFiles("testAddClashingImport_ClashingImports.pass");
     }
 
     public void testAddClashingImport2() throws IOException {
         testFile = getFile(getSourceDir(), getSourcePckg() + "ClashingImports3.java");
-        process(
-            new Transformer<Void, Object>() {
-                public Void visitMethod(MethodTree node, Object p) {
-                    if ("<init>".contentEquals(node.getName())) {
-                        BlockTree body = node.getBody();
-                        List<StatementTree> stats = new ArrayList<StatementTree>();
-                        for(StatementTree st : body.getStatements())
-                            stats.add(st);
-                        TypeElement e = env.getElements().getTypeElement("java.awt.List");
-                        ExpressionTree type = make.QualIdent(e);
-                        stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "awtList", type, null));
-                        changes.rewrite(body, make.Block(stats, false));
-                    }
-                    return null;
-                }
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree node = (MethodTree) clazz.getMembers().get(0);
+                BlockTree body = node.getBody();
+                List<StatementTree> stats = new ArrayList<StatementTree>();
+                for(StatementTree st : body.getStatements())
+                    stats.add(st);
+                TypeElement e = workingCopy.getElements().getTypeElement("java.awt.List");
+                ExpressionTree type = make.QualIdent(e);
+                stats.add(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), "awtList", type, null));
+                workingCopy.rewrite(body, make.Block(stats, false));
             }
-        );
+        };
+        src.runModificationTask(task).commit();
         assertFiles("testAddClashingImport2.pass");
     }
     
@@ -124,6 +133,7 @@ public class ClashingImportsTest extends GeneratorTest {
         return "org/netbeans/jmi/javamodel/codegen/ClashingImportsTest/";
     }
 
+    @Override
     void assertFiles(final String aGoldenFile) throws IOException, FileStateInvalidException {
         assertFile("File is not correctly generated.",
                 getTestFile(),
