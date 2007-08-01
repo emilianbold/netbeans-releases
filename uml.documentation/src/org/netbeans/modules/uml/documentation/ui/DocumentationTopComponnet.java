@@ -40,7 +40,7 @@ import org.openide.util.WeakListeners;
  */
 public class DocumentationTopComponnet extends TopComponent implements PropertyChangeListener
 {
-    private PropertyChangeListener mActivatedNodeListener = null;;
+    private PropertyChangeListener listener = null;;
     /**
      *  Serialization ID used by NetBeans. Note that this is faked, not
      * generated.
@@ -67,10 +67,11 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
         String desc = NbBundle.getMessage(DocumentationTopComponnet.class, "ACDS_DOCUMENTATION");
         getAccessibleContext().setAccessibleDescription(desc);
         
-        mActivatedNodeListener = this;
+        listener = this;
         TopComponent.getRegistry().addPropertyChangeListener(
-                WeakListeners.propertyChange(mActivatedNodeListener, TopComponent.getRegistry()));
-        pane.addPropertyChangeListener(this);
+                WeakListeners.propertyChange(listener, TopComponent.getRegistry()));
+        pane.addPropertyChangeListener(
+                WeakListeners.propertyChange(listener, pane));
         processActivatedNodes();
     }
     
@@ -232,16 +233,17 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
     public void propertyChange(PropertyChangeEvent evt)
     {
         // save element doc before switching to another component, 79828
-        saveDocumentation();
         
         if (evt.getPropertyName().equals( TopComponent.Registry.PROP_ACTIVATED_NODES ))
         {
+            saveDocumentation();
             processActivatedNodes();
         }
         else if (evt.getPropertyName().equals(DocumentationPane.PROP_DIRTY))
         {
             if (current != null)
             {
+                saveDocumentation();
                 current.getProject().setDirty(true);
             }
         }

@@ -84,7 +84,6 @@ public class DocumentationPane extends JPanel
     private RedoAction redoAction;
     private SaveAction saveAction;
     
-    private final PropertyChangeSupport pcs =new PropertyChangeSupport(this);
     public static final String PROP_DIRTY = "dirty_state";
     
     
@@ -454,18 +453,6 @@ public class DocumentationPane extends JPanel
     }
     
     
-    // add/remove property change listener
-    public void addPropertyChangeListener(PropertyChangeListener listener)
-    {
-        pcs.addPropertyChangeListener(listener);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener)
-    {
-        pcs.removePropertyChangeListener(listener);
-    }
-    
-    
     /* Inner Classes --------------------------------------------- */
     // they are not currently included in toolbar UI
     
@@ -570,7 +557,7 @@ public class DocumentationPane extends JPanel
     {
         public void actionPerformed(ActionEvent e)
         {
-            pcs.firePropertyChange(PROP_DIRTY, true, false);
+            DocumentationPane.this.firePropertyChange(PROP_DIRTY, true, false);
             saveAction.setEnabled(false);
             purgeUndos();
         }
