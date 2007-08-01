@@ -188,7 +188,7 @@ public class ${service.getClassName()} {
                         <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>
                         return ${serializer.toObject( type, typeFromStream )};
                     <#else>
-                        ${serializer.fromStream( mapping, type, "in", "result" )};
+                        ${serializer.fromStream( mapping, type, "in", "result" )}
                         return result;
                     </#if>
             </#if>
@@ -213,6 +213,7 @@ public class ${service.getClassName()} {
                     </#if>
                 </#list>
                 }
+                break;
         </#if>
             case -1: /* NULL */
                 return null;

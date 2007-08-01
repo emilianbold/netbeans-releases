@@ -248,6 +248,7 @@ public class BeanTypeSerializer implements JavonSerializer {
                     }
                 }
             }
+            deserialization += ( object == null ? "" :  object + " = " + beanInstanceName + ";\n" );
             return deserialization;
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
