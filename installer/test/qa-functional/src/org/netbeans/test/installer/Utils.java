@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.logging.Level;
@@ -42,7 +44,7 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Mikahil Vaysman
+ * @author Mikhail Vaysman
  */
 public class Utils {
 
@@ -61,8 +63,11 @@ public class Utils {
 
         try {
             URL sourceBandeleURL = new URL(data.getInstallerURL(data.getInstallerType()));
+            Proxy proxy = null;
 
-            in = sourceBandeleURL.openStream();
+            proxy = data.getProxy();
+
+            in = sourceBandeleURL.openConnection(proxy).getInputStream();
             out = new FileOutputStream(destBundle);
 
             byte[] buffer = new byte[10240];
@@ -168,7 +173,7 @@ public class Utils {
 
             data.setClassLoader(new URLClassLoader(new URL[]{data.getBundleFile().toURI().toURL()}, data.getClass().getClassLoader()));
             data.setInstallerMainClass(Class.forName(data.getInstallerMainClassName(), true, data.getClassLoader()));
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             data.getLogger().log(Level.SEVERE, null, ex);
             return toString(ex);
         }
@@ -181,7 +186,6 @@ public class Utils {
 //        } catch (MalformedURLException ex) {
 //            data.getLogger().log(Level.SEVERE, null, ex);
 //        }
-
         return OK;
     }
 
@@ -259,7 +263,6 @@ public class Utils {
 //            data.getLogger().log(Level.SEVERE, "-4", ex);
 //            return -4;
 //        }
-
         return OK;
     }
 
@@ -294,7 +297,7 @@ public class Utils {
         featureList.pressKey(KeyEvent.VK_SPACE);
         new JButtonOperator(customizeInstallation, "OK").push();
     }
-    
+
     public static void stepInstall(TestData data) {
         JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
 
@@ -315,7 +318,7 @@ public class Utils {
             NbTestCase.fail("Installation timeout");
         }
     }
-    
+
     public static void stepUninstall() {
         new JButtonOperator(new JFrameOperator("Netbeans IDE"), "Uninstall").push();
     }
@@ -332,7 +335,7 @@ public class Utils {
         }
 
         data.setInstallerType(installerType);
-        
+
         System.setProperty("nbi.dont.use.system.exit", "true");
         System.setProperty("nbi.utils.log.to.console", "false");
         System.setProperty("user.home", data.getWorkDirCanonicalPath());
@@ -342,21 +345,21 @@ public class Utils {
         NbTestCase.assertEquals("Load class", Utils.OK, Utils.loadClasses(data));
         NbTestCase.assertEquals("Run main method", Utils.OK, Utils.runInstaller(data));
     }
-    
+
     public static void phaseFour(TestData data) {
         //Installation
         Utils.stepInstall(data);
-        
+
         //finish
         Utils.stepFinish();
-        
+
         Utils.wait(data, 5);
-        
+
         NbTestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
-        
+
         NbTestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
         NbTestCase.assertEquals("Run uninstaller main class", OK, Utils.runUninstaller(data));
-        
+
         Utils.stepUninstall();
 
         Utils.stepFinish();
@@ -365,18 +368,18 @@ public class Utils {
 
         NbTestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
     }
-    
+
     public static void phaseTwo(TestData data) {
         //welcome
         stepWelcome();
 
         //license
         stepLicense();
-        
+
         //Choose dir
         stepSetDir(data, "Install NetBeans IDE", "NetBeans");
     }
-    
+
     public static void phaseThree(TestData data) {
         //Choose GF dir
         Utils.stepSetDir(data, "Install GlassFish", "GlassFish");
@@ -384,7 +387,7 @@ public class Utils {
         //Choose Tomcat dir
         Utils.stepSetDir(data, "Installation location", "Tomcat");
     }
-    
+
     public static void wait(TestData data, int sec) {
         try {
             java.lang.Thread.sleep(1000 * sec);
@@ -392,8 +395,9 @@ public class Utils {
             data.getLogger().log(Level.SEVERE, "Interrupted");
         }
     }
-    
+
     private static String toString(Exception ex) {
         return ex.getClass().getName() + "=>" + ex.getMessage();
     }
+
 }

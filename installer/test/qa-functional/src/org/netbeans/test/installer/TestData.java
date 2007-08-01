@@ -23,6 +23,8 @@ package org.netbeans.test.installer;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -210,5 +212,25 @@ public class TestData implements Serializable {
 
     public void setInstallerType(String installerType) {
         this.installerType = installerType;
+    }
+    
+    public Proxy getProxy() {
+        Proxy proxy = null;
+        
+        String proxyHost = System.getProperty("installer.proxy.host", null);
+        String proxyPort = System.getProperty("installer.proxy.port", null);
+        
+        if(proxyHost != null && proxyPort != null) {
+            proxy = new Proxy(
+                    Proxy.Type.HTTP, 
+                    new InetSocketAddress(
+                        proxyHost, 
+                        Integer.valueOf(proxyPort)
+                        ));
+        } else {
+            proxy = Proxy.NO_PROXY;
+        }
+        
+        return proxy;
     }
 }
