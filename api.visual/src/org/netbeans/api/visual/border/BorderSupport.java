@@ -19,6 +19,7 @@
 package org.netbeans.api.visual.border;
 
 import org.netbeans.modules.visual.border.ResizeBorder;
+import org.netbeans.modules.visual.border.SwingBorder;
 
 /**
  * This class contains support method for working with borders.
@@ -37,6 +38,16 @@ public final class BorderSupport {
      */
     public static boolean isOuterResizeBorder (Border border) {
         return border instanceof ResizeBorder  &&  ((ResizeBorder) border).isOuter ();
+    }
+    
+    /**
+     * Returns a swing border of a border created using BorderFactory.createSwingBorder or Widget.setBorder(javax.swing.border.Border).
+     * @param border the widget border
+     * @return Swing border if possible; otherwise null
+     * @since 2.6
+     */
+    public static javax.swing.border.Border getSwingBorder (Border border) {
+        return border instanceof SwingBorder ? ((SwingBorder) border).getSwingBorder () : null;
     }
 
 }

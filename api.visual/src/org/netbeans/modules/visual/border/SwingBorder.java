@@ -49,5 +49,9 @@ public final class SwingBorder implements Border {
     public boolean isOpaque () {
         return false;
     }
+    
+    public javax.swing.border.Border getSwingBorder () {
+        return swingBorder;
+    }
 
 }
