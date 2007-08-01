@@ -240,9 +240,8 @@ public class ClientOptionsPanelGUI extends javax.swing.JPanel implements Documen
         setPreferredSize(new java.awt.Dimension(560, 350));
         setLayout(new java.awt.GridBagLayout());
 
-        clientNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "MNM_ClientName").charAt(0));
         clientNameLabel.setLabelFor(clientNameTextField);
-        clientNameLabel.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_ClientName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(clientNameLabel, org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_ClientName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -259,9 +258,8 @@ public class ClientOptionsPanelGUI extends javax.swing.JPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(clientNameTextField, gridBagConstraints);
 
-        projectLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "MNM_Client_Project").charAt(0));
         projectLabel.setLabelFor(projectTextField);
-        projectLabel.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_Client_Project")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_Client_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -280,9 +278,8 @@ public class ClientOptionsPanelGUI extends javax.swing.JPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(projectTextField, gridBagConstraints);
 
-        packageLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "MNM_Client_Package").charAt(0));
         packageLabel.setLabelFor(packageComboBox);
-        packageLabel.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_Client_Package")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(packageLabel, org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_Client_Package")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -301,9 +298,8 @@ public class ClientOptionsPanelGUI extends javax.swing.JPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(packageComboBox, gridBagConstraints);
 
-        createdFileLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "MNM_Client_Created_File").charAt(0));
         createdFileLabel.setLabelFor(createdFileTextField);
-        createdFileLabel.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_Client_Created_File")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createdFileLabel, org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_Client_Created_File")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -332,9 +328,8 @@ public class ClientOptionsPanelGUI extends javax.swing.JPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jSeparator1, gridBagConstraints);
 
-        generateStubsCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "MNM_Generate_Stubs").charAt(0));
         generateStubsCheckBox.setSelected(true);
-        generateStubsCheckBox.setText(org.openide.util.NbBundle.getBundle(ClientOptionsPanelGUI.class).getString("LBL_Generate_Stubs")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generateStubsCheckBox, org.openide.util.NbBundle.getBundle(ClientOptionsPanelGUI.class).getString("LBL_Generate_Stubs")); // NOI18N
         generateStubsCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         generateStubsCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         generateStubsCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -352,9 +347,8 @@ public class ClientOptionsPanelGUI extends javax.swing.JPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(generateStubsCheckBox, gridBagConstraints);
 
-        floatingPointCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "MNM_Floating_point").charAt(0));
         floatingPointCheckBox.setSelected(true);
-        floatingPointCheckBox.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_Floating_Point")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(floatingPointCheckBox, org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_Floating_Point")); // NOI18N
         floatingPointCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         floatingPointCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -376,8 +370,7 @@ public class ClientOptionsPanelGUI extends javax.swing.JPanel implements Documen
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jSeparator2, gridBagConstraints);
 
-        createDataBindingCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "MNM_Sample_MIDlet").charAt(0));
-        createDataBindingCheckBox.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_Create_Sample_MIDlet")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createDataBindingCheckBox, org.openide.util.NbBundle.getMessage(ClientOptionsPanelGUI.class, "LBL_Create_Sample_MIDlet")); // NOI18N
         createDataBindingCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         createDataBindingCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();

@@ -629,8 +629,7 @@ public class ServicesPanel extends SectionInnerPanel implements ExplorerManager.
         setPreferredSize(new java.awt.Dimension(500, 350));
         setLayout(new java.awt.GridBagLayout());
 
-        generateButton.setMnemonic(org.openide.util.NbBundle.getBundle(ServicesPanel.class).getString("MNM_Generate").charAt(0));
-        generateButton.setText(org.openide.util.NbBundle.getBundle(ServicesPanel.class).getString("LBL_Generate")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(generateButton, org.openide.util.NbBundle.getBundle(ServicesPanel.class).getString("LBL_Generate")); // NOI18N
         generateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateButtonActionPerformed(evt);

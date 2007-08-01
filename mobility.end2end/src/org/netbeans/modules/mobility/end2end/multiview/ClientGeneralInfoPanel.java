@@ -108,9 +108,8 @@ public class ClientGeneralInfoPanel extends SectionInnerPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClientGeneralInfoPanel.class, "MNM_ClientPackage").charAt(0));
         jLabel1.setLabelFor(textPackage);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ClientGeneralInfoPanel.class, "LABEL_Package"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ClientGeneralInfoPanel.class, "LABEL_Package")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
@@ -124,9 +123,8 @@ public class ClientGeneralInfoPanel extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 10);
         add(textPackage, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClientGeneralInfoPanel.class, "MNM_Client_Name").charAt(0));
         jLabel2.setLabelFor(textClientName);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(ClientGeneralInfoPanel.class, "LABEL_Client_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ClientGeneralInfoPanel.class, "LABEL_Client_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -144,9 +142,8 @@ public class ClientGeneralInfoPanel extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 10);
         add(textClientName, gridBagConstraints);
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ClientGeneralInfoPanel.class, "MNM_ClientProject").charAt(0));
         jLabel3.setLabelFor(textProject);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(ClientGeneralInfoPanel.class, "LABEL_Project"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ClientGeneralInfoPanel.class, "LABEL_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -163,9 +160,7 @@ public class ClientGeneralInfoPanel extends SectionInnerPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 5, 10);
         add(textProject, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

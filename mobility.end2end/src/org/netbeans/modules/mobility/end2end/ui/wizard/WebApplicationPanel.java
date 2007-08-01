@@ -276,7 +276,7 @@ final public class WebApplicationPanel extends JPanel
         setLayout(new java.awt.GridBagLayout());
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/end2end/ui/wizard/Bundle"); // NOI18N
-        jLabel7.setText(bundle.getString("LBL_Title")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, bundle.getString("LBL_Title")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -285,9 +285,8 @@ final public class WebApplicationPanel extends JPanel
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(jLabel7, gridBagConstraints);
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_Web_Application").charAt(0));
         jLabel1.setLabelFor(enterpriseProjectsComboBox);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Web_Application")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Web_Application")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -303,9 +302,8 @@ final public class WebApplicationPanel extends JPanel
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(enterpriseProjectsComboBox, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_Servlet_Name").charAt(0));
         jLabel2.setLabelFor(documentNameTextField);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Servlet_Name")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Servlet_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -321,9 +319,8 @@ final public class WebApplicationPanel extends JPanel
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
         add(documentNameTextField, gridBagConstraints);
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_Location").charAt(0));
         jLabel3.setLabelFor(rootComboBox);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Location")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Location")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -339,9 +336,8 @@ final public class WebApplicationPanel extends JPanel
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
         add(rootComboBox, gridBagConstraints);
 
-        jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_Server_Package").charAt(0));
         jLabel4.setLabelFor(packageComboBox);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Server_Package")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Server_Package")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -358,9 +354,8 @@ final public class WebApplicationPanel extends JPanel
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 0);
         add(packageComboBox, gridBagConstraints);
 
-        jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_Server_Created_File").charAt(0));
         jLabel5.setLabelFor(fileTextField);
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Server_Created_File")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_Server_Created_File")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -391,7 +386,7 @@ final public class WebApplicationPanel extends JPanel
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_ServiceTypeSelection")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_ServiceTypeSelection")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -403,9 +398,8 @@ final public class WebApplicationPanel extends JPanel
         jPanel1.add(jLabel6, gridBagConstraints);
 
         clientTypeButtonGroup.add(clientToWebAppRadio);
-        clientToWebAppRadio.setMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_ClassClientType").charAt(0));
         clientToWebAppRadio.setSelected(true);
-        clientToWebAppRadio.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_ClassClientType")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(clientToWebAppRadio, org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_ClassClientType")); // NOI18N
         clientToWebAppRadio.setActionCommand("class");
         clientToWebAppRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         clientToWebAppRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -419,8 +413,7 @@ final public class WebApplicationPanel extends JPanel
         jPanel1.add(clientToWebAppRadio, gridBagConstraints);
 
         clientTypeButtonGroup.add(clientToWebServiceRadio);
-        clientToWebServiceRadio.setMnemonic(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "MNM_WebServiceClientType").charAt(0));
-        clientToWebServiceRadio.setText(org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_WebServiceClientType")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(clientToWebServiceRadio, org.openide.util.NbBundle.getMessage(WebApplicationPanel.class, "LBL_WebServiceClientType")); // NOI18N
         clientToWebServiceRadio.setActionCommand("wsdlClient");
         clientToWebServiceRadio.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         clientToWebServiceRadio.setMargin(new java.awt.Insets(0, 0, 0, 0));

@@ -120,9 +120,8 @@ public class ServerGeneralInfoPanel extends SectionInnerPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "MNM_ServerPackage").charAt(0));
         jLabel2.setLabelFor(textPackage);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "LABEL_Server_Package"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "LABEL_Server_Package")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -139,9 +138,8 @@ public class ServerGeneralInfoPanel extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 10);
         add(textPackage, gridBagConstraints);
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "MNM_Servlet_Name").charAt(0));
         jLabel3.setLabelFor(textServletName);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "LABEL_Servlet_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "LABEL_Servlet_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -158,9 +156,8 @@ public class ServerGeneralInfoPanel extends SectionInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 0, 10);
         add(textServletName, gridBagConstraints);
 
-        jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "MNM_ServerProject").charAt(0));
         jLabel4.setLabelFor(textProject);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "LABEL_Server_Project"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "LABEL_Server_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -178,17 +175,14 @@ public class ServerGeneralInfoPanel extends SectionInnerPanel {
         add(textProject, gridBagConstraints);
 
         serverTrace.setBackground(java.awt.Color.white);
-        serverTrace.setMnemonic(org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "MNM_Server_Tracking").charAt(0));
-        serverTrace.setText(org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "LABEL_Server_Tracking"));
-        serverTrace.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0)));
+        org.openide.awt.Mnemonics.setLocalizedText(serverTrace, org.openide.util.NbBundle.getMessage(ServerGeneralInfoPanel.class, "LABEL_Server_Tracking")); // NOI18N
+        serverTrace.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         serverTrace.setMargin(new java.awt.Insets(0, 0, 0, 0));
         serverTrace.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 serverTraceActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -196,9 +190,7 @@ public class ServerGeneralInfoPanel extends SectionInnerPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
         add(serverTrace, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void serverTraceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverTraceActionPerformed
         dataObject.setModified( true );

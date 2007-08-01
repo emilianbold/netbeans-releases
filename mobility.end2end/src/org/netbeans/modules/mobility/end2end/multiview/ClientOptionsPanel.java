@@ -155,8 +155,7 @@ public class ClientOptionsPanel extends SectionInnerPanel {
         setLayout(new java.awt.GridBagLayout());
 
         clientCreateStubs.setBackground(new java.awt.Color(255, 255, 255));
-        clientCreateStubs.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "MNM_Generate_Stubs").charAt(0));
-        clientCreateStubs.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LBL_Generate_Stubs")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(clientCreateStubs, org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LBL_Generate_Stubs")); // NOI18N
         clientCreateStubs.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         clientCreateStubs.setMargin(new java.awt.Insets(0, 0, 0, 0));
         clientCreateStubs.addActionListener(new java.awt.event.ActionListener() {
@@ -173,8 +172,7 @@ public class ClientOptionsPanel extends SectionInnerPanel {
         add(clientCreateStubs, gridBagConstraints);
 
         clientFloatingPoint.setBackground(new java.awt.Color(255, 255, 255));
-        clientFloatingPoint.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "MNM_Floating_point").charAt(0));
-        clientFloatingPoint.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LABEL_Floating_Point")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(clientFloatingPoint, org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LABEL_Floating_Point")); // NOI18N
         clientFloatingPoint.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         clientFloatingPoint.setMargin(new java.awt.Insets(0, 0, 0, 0));
         clientFloatingPoint.addActionListener(new java.awt.event.ActionListener() {
@@ -191,8 +189,7 @@ public class ClientOptionsPanel extends SectionInnerPanel {
         add(clientFloatingPoint, gridBagConstraints);
 
         clientDataBinding.setBackground(new java.awt.Color(255, 255, 255));
-        clientDataBinding.setMnemonic(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "MNM_Tracing_Code").charAt(0));
-        clientDataBinding.setText(org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LABEL_Client_DataBinding")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(clientDataBinding, org.openide.util.NbBundle.getMessage(ClientOptionsPanel.class, "LABEL_Client_DataBinding")); // NOI18N
         clientDataBinding.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         clientDataBinding.setMargin(new java.awt.Insets(0, 0, 0, 0));
         clientDataBinding.addActionListener(new java.awt.event.ActionListener() {

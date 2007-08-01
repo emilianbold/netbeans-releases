@@ -134,7 +134,7 @@ public class JSR172ServicePanel extends SectionInnerPanel implements PropertyCha
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(JSR172ServicePanel.class, "WSDL_URL_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(JSR172ServicePanel.class, "WSDL_URL_Label")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
@@ -148,28 +148,23 @@ public class JSR172ServicePanel extends SectionInnerPanel implements PropertyCha
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 10);
         add(textUrl, gridBagConstraints);
 
-        refreshButton.setText(org.openide.util.NbBundle.getMessage(JSR172ServicePanel.class, "Label_Refresh_WSDL"));
+        org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(JSR172ServicePanel.class, "Label_Refresh_WSDL")); // NOI18N
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         add(refreshButton, gridBagConstraints);
 
-        buttonGenerate.setMnemonic(org.openide.util.NbBundle.getMessage(JSR172ServicePanel.class, "MNM_Generate").charAt(0));
-        buttonGenerate.setText(org.openide.util.NbBundle.getMessage(JSR172ServicePanel.class, "LBL_Generate"));
+        org.openide.awt.Mnemonics.setLocalizedText(buttonGenerate, org.openide.util.NbBundle.getMessage(JSR172ServicePanel.class, "LBL_Generate")); // NOI18N
         buttonGenerate.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonGenerateActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -177,9 +172,7 @@ public class JSR172ServicePanel extends SectionInnerPanel implements PropertyCha
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         add(buttonGenerate, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void buttonGenerateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonGenerateActionPerformed
         buttonGenerate.setEnabled(false);

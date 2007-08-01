@@ -1,0 +1,143 @@
+Parsing form: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\multiview\ClientGeneralInfoPanel.form
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_ClientPackage
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LABEL_Package
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LABEL_Package mnemonicsKey: MNM_ClientPackage
+Parsing bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties
+Replacing text: LABEL_Package=Package\: with: LABEL_Package=Pac&kage\:
+Removing mnemonics: MNM_ClientPackage=k
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_Client_Name
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LABEL_Client_Name
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LABEL_Client_Name mnemonicsKey: MNM_Client_Name
+Replacing text: LABEL_Client_Name=Client name\: with: LABEL_Client_Name=&Client name\:
+Removing mnemonics: MNM_Client_Name=C
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_ClientProject
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LABEL_Project
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LABEL_Project mnemonicsKey: MNM_ClientProject
+Replacing text: LABEL_Project=Project\: with: LABEL_Project=&Project\:
+Removing mnemonics: MNM_ClientProject=p
+!!!Writing file: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\multiview\ClientGeneralInfoPanel.form
+Parsing form: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\multiview\ClientOptionsPanel.form
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_Generate_Stubs
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LBL_Generate_Stubs
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LBL_Generate_Stubs mnemonicsKey: MNM_Generate_Stubs
+Replacing text: LBL_Generate_Stubs=Generate stubs with: LBL_Generate_Stubs=Ge&nerate stubs
+Removing mnemonics: MNM_Generate_Stubs=n
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_Floating_point
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LABEL_Floating_Point
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LABEL_Floating_Point mnemonicsKey: MNM_Floating_point
+Replacing text: LABEL_Floating_Point=Allow floating point with: LABEL_Floating_Point=Allow &floating point
+Removing mnemonics: MNM_Floating_point=f
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_Tracing_Code
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LABEL_Client_DataBinding
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LABEL_Client_DataBinding mnemonicsKey: MNM_Tracing_Code
+Replacing text: LABEL_Client_DataBinding=Generate DataBinding Structures with: LABEL_Client_DataBinding=Genera&te DataBinding Structures
+Removing mnemonics: MNM_Tracing_Code=T
+!!!Writing file: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\multiview\ClientOptionsPanel.form
+Parsing form: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\multiview\ServerGeneralInfoPanel.form
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_ServerPackage
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LABEL_Server_Package
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LABEL_Server_Package mnemonicsKey: MNM_ServerPackage
+Replacing text: LABEL_Server_Package=Package\: with: LABEL_Server_Package=Pac&kage\:
+Removing mnemonics: MNM_ServerPackage=k
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_Servlet_Name
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LABEL_Servlet_Name
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LABEL_Servlet_Name mnemonicsKey: MNM_Servlet_Name
+Replacing text: LABEL_Servlet_Name=Servlet name\: with: LABEL_Servlet_Name=&Servlet name\:
+Removing mnemonics: MNM_Servlet_Name=S
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_ServerProject
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LABEL_Server_Project
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LABEL_Server_Project mnemonicsKey: MNM_ServerProject
+Replacing text: LABEL_Server_Project=Project\: with: LABEL_Server_Project=&Project\:
+Removing mnemonics: MNM_ServerProject=p
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_Server_Tracking
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LABEL_Server_Tracking
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LABEL_Server_Tracking mnemonicsKey: MNM_Server_Tracking
+Replacing text: LABEL_Server_Tracking=Generate tracing code with: LABEL_Server_Tracking=&Generate tracing code
+Removing mnemonics: MNM_Server_Tracking=G
+!!!Writing file: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\multiview\ServerGeneralInfoPanel.form
+Parsing form: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\multiview\ServicesPanel.form
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties mnemonics key: MNM_Generate
+Found bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties text key: LBL_Generate
+Replacing in bundle: org/netbeans/modules/mobility/end2end/multiview/Bundle.properties textKey: LBL_Generate mnemonicsKey: MNM_Generate
+Replacing text: LBL_Generate=Generate Stubs with: LBL_Generate=&Generate Stubs
+Removing mnemonics: MNM_Generate=G
+!!!Writing file: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\multiview\ServicesPanel.form
+Parsing form: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\ui\wizard\ClientOptionsPanelGUI.form
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_ClientName
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_ClientName
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_ClientName mnemonicsKey: MNM_ClientName
+Parsing bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties
+Replacing text: LBL_ClientName=Client name\: with: LBL_ClientName=&Client name\:
+Removing mnemonics: MNM_ClientName=C
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Client_Project
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Client_Project
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Client_Project mnemonicsKey: MNM_Client_Project
+Replacing text: LBL_Client_Project=Project\: with: LBL_Client_Project=Pro&ject\:
+Removing mnemonics: MNM_Client_Project=j
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Client_Package
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Client_Package
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Client_Package mnemonicsKey: MNM_Client_Package
+Replacing text: LBL_Client_Package=Package\: with: LBL_Client_Package=&Package\:
+Removing mnemonics: MNM_Client_Package=P
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Client_Created_File
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Client_Created_File
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Client_Created_File mnemonicsKey: MNM_Client_Created_File
+Replacing text: LBL_Client_Created_File=Created File\: with: LBL_Client_Created_File=C&reated File\:
+Removing mnemonics: MNM_Client_Created_File=R
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Generate_Stubs
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Generate_Stubs
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Generate_Stubs mnemonicsKey: MNM_Generate_Stubs
+Replacing text: LBL_Generate_Stubs=Generate stubs with: LBL_Generate_Stubs=&Generate stubs
+Removing mnemonics: MNM_Generate_Stubs=G
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Floating_point
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Floating_Point
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Floating_Point mnemonicsKey: MNM_Floating_point
+Replacing text: LBL_Floating_Point=Allow floating point with: LBL_Floating_Point=A&llow floating point
+Removing mnemonics: MNM_Floating_point=L
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Sample_MIDlet
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Create_Sample_MIDlet
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Create_Sample_MIDlet mnemonicsKey: MNM_Sample_MIDlet
+Replacing text: LBL_Create_Sample_MIDlet=Create DataBinding structures with: LBL_Create_Sample_MIDlet=Create &DataBinding structures
+Removing mnemonics: MNM_Sample_MIDlet=D
+!!!Writing file: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\ui\wizard\ClientOptionsPanelGUI.form
+Parsing form: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\ui\wizard\WebApplicationPanel.form
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Title
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Web_Application
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Web_Application
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Web_Application mnemonicsKey: MNM_Web_Application
+Replacing text: LBL_Web_Application=Web Application\: with: LBL_Web_Application=&Web Application\:
+Removing mnemonics: MNM_Web_Application=W
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Servlet_Name
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Servlet_Name
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Servlet_Name mnemonicsKey: MNM_Servlet_Name
+Replacing text: LBL_Servlet_Name=Servlet Name\: with: LBL_Servlet_Name=&Servlet Name\:
+Removing mnemonics: MNM_Servlet_Name=S
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Location
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Location
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Location mnemonicsKey: MNM_Location
+Replacing text: LBL_Location=Location\: with: LBL_Location=&Location\:
+Removing mnemonics: MNM_Location=L
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Server_Package
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Server_Package
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Server_Package mnemonicsKey: MNM_Server_Package
+Replacing text: LBL_Server_Package=Package\: with: LBL_Server_Package=&Package\:
+Removing mnemonics: MNM_Server_Package=P
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_Server_Created_File
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_Server_Created_File
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_Server_Created_File mnemonicsKey: MNM_Server_Created_File
+Replacing text: LBL_Server_Created_File=Created File\: with: LBL_Server_Created_File=Created &File\:
+Removing mnemonics: MNM_Server_Created_File=F
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_ServiceTypeSelection
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_ClassClientType
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_ClassClientType
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_ClassClientType mnemonicsKey: MNM_ClassClientType
+Replacing text: LBL_ClassClientType=Methods in Web Application with: LBL_ClassClientType=Methods in Web &Application
+Removing mnemonics: MNM_ClassClientType=A
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties mnemonics key: MNM_WebServiceClientType
+Found bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties text key: LBL_WebServiceClientType
+Replacing in bundle: org/netbeans/modules/mobility/end2end/ui/wizard/Bundle.properties textKey: LBL_WebServiceClientType mnemonicsKey: MNM_WebServiceClientType
+Replacing text: LBL_WebServiceClientType=Web Service Client in Web Application\: with: LBL_WebServiceClientType=Web Service Clie&nt in Web Application\:
+Removing mnemonics: MNM_WebServiceClientType=n
+!!!Writing file: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\ui\wizard\WebApplicationPanel.form
+!!!Writing file: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\multiview\Bundle.properties
+!!!Writing file: c:\cvs\trunk\mobility\end2end\src\org\netbeans\modules\mobility\end2end\ui\wizard\Bundle.properties
