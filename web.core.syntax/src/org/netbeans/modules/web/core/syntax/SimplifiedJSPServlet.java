@@ -244,28 +244,11 @@ public class SimplifiedJSPServlet {
 
                 FileObject jspFile = NbEditorUtilities.getFileObject(doc);
                 ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
-
-                final JavaSource source = JavaSource.create(cpInfo, fileDummyJava);
-
-                doc.putProperty(JavaSource.class, new WeakReference<JavaSource>(null) {
-
-                    public JavaSource get() {
-                        return source;
-                    }
-                });
-
+                JavaSource source = JavaSource.create(cpInfo, fileDummyJava);
                 process(fileDummyJava, source);
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, ex.getMessage(), ex);
-            } /* finally{
-            if (fileDummyJava != null){
-            try{
-            fileDummyJava.delete();
-            } catch (IOException e){
-            logger.log(Level.SEVERE, e.getMessage(), e);
-            }
-            }
-            }*/
+            } 
         }
 
         protected abstract void process(FileObject fileObject, JavaSource javaSource);

@@ -157,8 +157,9 @@ public class AttrSupports extends Object {
             delegate.create(component.getDocument(), fakedClassBody);
             List<? extends CompletionItem> items =  delegate.getCompletionItems();
             
-            JspCompletionResult result = new JspCompletionResult(component, null, items, offset, valuePart.length(), -1);
-            //TODO: put the results here
+            JspCompletionResult result = new JspCompletionResult(component, null, items,
+                    offset + (valuePart.lastIndexOf('.') + 1), valuePart.length(), -1);
+            
             return result;
         }
         
