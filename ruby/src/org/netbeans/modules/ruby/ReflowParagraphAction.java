@@ -40,7 +40,7 @@ import org.openide.util.Exceptions;
  * Reflow paragraphs (currently, rdoc comments and =begin/=end documentatio sections.)
  * Take RDoc conventions into consideration such that preformatted rdoc text is left alone,
  * bulleted lists get properly aligned, etc.
- *
+ * 
  * @author Tor Norbye
  */
 public class ReflowParagraphAction extends AbstractAction {
@@ -368,13 +368,27 @@ public class ReflowParagraphAction extends AbstractAction {
                 }
             }
 
-            if (text.length() == 0) {
+            boolean isBlankLine = text.length() == 0;
+            int caretIndex = text.indexOf(CARET_MARKER);
+            if (caretIndex != -1) {
+                if (text.substring(0, caretIndex).trim().length() == 0 &&
+                        text.substring(caretIndex+1).trim().length() == 0) {
+                    isBlankLine = true;
+                }
+            }
+
+            if (isBlankLine) {
                 flush();
                 finishSection();
                 // Insert a blank line
                 startComment();
                 // Don't chomp spaces here - lots of comments in the Ruby libraries have "# " on empty lines
                 //chompSpaces();
+                
+                if (caretIndex != -1) {
+                    sb.append(CARET_MARKER);
+                }
+                
                 sb.append("\n");
 
                 return;
