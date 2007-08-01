@@ -23,7 +23,9 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.dom4j.Document;
@@ -50,6 +52,7 @@ public class LanguageLibrary implements ILanguageLibrary
     {
         IREClass cl = null;
         String fullName = name;
+        String shortName = name ;
         // NOTE: I am making the assumption that we are using the Java RT library.
         // In java there are no JDK classes that are not in a package.  Also, since
         // classes in the java.lang package do not have to have an import statement
@@ -60,10 +63,29 @@ public class LanguageLibrary implements ILanguageLibrary
         // This is very Java specific and I should create a new JavaRT index file that 
         // will take this into account.  Basically the index file must also take into
         // account all global scope packages.
-        if (name.indexOf("::") == -1 && name.indexOf(".") == -1)
-            fullName = "java::lang::" + name;
+        String id = null;
         
-        String id = m_Index.get(fullName);
+        //check for <*> appended to name
+        int index = -1;
+        if ((index=name.indexOf("<")) > 0) {
+            shortName = name.substring(0,index);
+        }
+        
+        if (shortName.indexOf("::") == -1 && shortName.indexOf(".") == -1) {
+            //try java.util.*
+            fullName = "java::util::" + shortName;
+
+            if ((id = m_Index.get(fullName)) == null) {
+                fullName = "java::lang::" + shortName;
+
+                if ((id = m_Index.get(fullName)) == null) {
+                    fullName = resolveFullyQualifiedName(shortName);
+                }
+            }
+        }
+            
+        if (id == null)
+        id = m_Index.get(fullName);
         if (m_LookupDocument != null && id != null)
         {
             //String query = "//*[@xmi.id=\"" + id + "\"]";            
@@ -151,5 +173,22 @@ public class LanguageLibrary implements ILanguageLibrary
         }
         bufr.close();
         fr.close();
+    }
+
+    private String resolveFullyQualifiedName(String name) {
+        String result = null ;
+        String query = "::"+name;
+        Iterator<String> iter = m_Index.keySet().iterator() ;
+        
+        while (iter.hasNext()) {
+            String key = iter.next() ;
+            if (key.endsWith(query)) {
+                result = key ;
+                break ;
+            }
+            
+        }
+        
+        return result ;
     }
 }
