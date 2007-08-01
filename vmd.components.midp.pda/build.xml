@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${cluster}/modules/ext"/>
         <mkdir dir="${cluster}/docs"/>
         <mkdir dir="${cluster}/sources"/>
+        <echo message="${cluster}/modules/ext"/>
         <copy file="../netbeans_midp_components_pda/dist/netbeans_midp_components_pda.jar" todir="${cluster}/modules/ext"/>
         <copy file="../netbeans_midp_components_pda/dist/netbeans_midp_components_pda-api.zip" todir="${cluster}/docs"/>    
         <copy file="../netbeans_midp_components_pda/dist/netbeans_midp_components_pda-src.zip" todir="${cluster}/sources"/> 
