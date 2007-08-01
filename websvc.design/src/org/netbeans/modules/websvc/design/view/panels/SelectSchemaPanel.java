@@ -143,7 +143,7 @@ public class SelectSchemaPanel extends JPanel implements ExplorerManager.Provide
         
         @Override
         protected void removeNotify() {
-            setKeys(Collections.EMPTY_SET);
+            setKeys(Collections.<String>emptySet());
             super.removeNotify();
         }
         
