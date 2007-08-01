@@ -58,16 +58,21 @@ public class HttpMethodNode extends AbstractNode{
     }
     
     public String getDisplayName() {
-        if (consumeMime.length() > 0 || produceMime.length() > 0) {
-            return methodName + "() : " + Utils.stripPackageName(returnType) +
-                    " [" + consumeMime + " -> " + produceMime + "]";
-        } else {
-            return methodName + "() : " + Utils.stripPackageName(returnType);
-        }
+        return methodName + "() : " + Utils.stripPackageName(returnType);
     }
     
-    public String getShortDescription() {
-        return "";
+    public String getShortDescription() {       
+        String desc = "";       //NOI18N
+        
+        if (consumeMime.length() > 0) {
+            desc += "@ConsumeMime(\"" + consumeMime + "\") ";        //NOI18N
+        }
+        
+        if (produceMime.length() > 0) {
+            desc += "@ProduceMime(\"" + produceMime + "\") ";        //NOI18N
+        }
+        
+        return desc;
     }
     
     private static final java.awt.Image METHOD_BADGE =
