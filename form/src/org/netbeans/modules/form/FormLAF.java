@@ -45,7 +45,7 @@ public class FormLAF {
     /** User UIDefaults of the IDE. */
     private static Map netbeansDefaults = new HashMap();
     /** User UIDefaults of components */
-    private static Map userDefaults = new HashMap();
+    private static Map userDefaults = new HashMap(UIManager.getDefaults());
     /** Maps LAF class to its theme. */
     private static Map<Class, MetalTheme> lafToTheme = new HashMap<Class, MetalTheme>();
     /** Determines whether the IDE LAF is subclass of MetalLookAndFeel. */
@@ -474,6 +474,11 @@ public class FormLAF {
         @Override
         protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
             Logger.getLogger(getClass().getName()).log(Level.INFO, "FormLAF.firePropertyChange called, but not implemented."); // NOI18N
+        }
+
+        @Override
+        public synchronized Enumeration<Object> keys() {
+            return getCurrentDefaults().keys();
         }
 
     }
