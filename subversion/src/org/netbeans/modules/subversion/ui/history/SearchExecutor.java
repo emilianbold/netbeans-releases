@@ -76,6 +76,14 @@ class SearchExecutor implements Runnable {
                 workFiles = new HashMap<SVNUrl, Set<File>>();
                 for (File file : master.getRoots()) {
                     populatePathToRoot(file);
+                    
+                    SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
+                    Set<File> set = workFiles.get(rootUrl);
+                    if (set == null) {
+                        set = new HashSet<File>(2);
+                        workFiles.put(rootUrl, set);
+                    }
+                    set.add(file);                    
                 }
             }                
         } catch (SVNClientException ex) {
@@ -91,13 +99,6 @@ class SearchExecutor implements Runnable {
         int commonPathLength = getCommonPostfixLength(rootPath, fileAbsPath);
         pathToRoot.put(rootPath.substring(0, rootPath.length() - commonPathLength),
                        new File(fileAbsPath.substring(0, fileAbsPath.length() - commonPathLength)));
-        SVNUrl rootUrl = SvnUtils.getRepositoryRootUrl(file);
-        Set<File> set = workFiles.get(rootUrl);
-        if (set == null) {
-            set = new HashSet<File>(2);
-            workFiles.put(rootUrl, set);
-        }
-        set.add(file);
         
         File[] files = file.listFiles();
         if(files == null || files.length == 0) {
@@ -193,10 +194,10 @@ class SearchExecutor implements Runnable {
         } else {
             String [] paths = new String[files.size()];
             int idx = 0;
-            try {            
+            try {       
                 for (File file : files) {
                     paths[idx++] = SvnUtils.getRelativePath(rootUrl, file);
-                }
+                }                
                 ISVNLogMessage [] messages = client.getLogMessages(rootUrl, paths, fromRevision, toRevision, false, true);
                 appendResults(rootUrl, messages);
             } catch (SVNClientException e) {                
@@ -209,8 +210,8 @@ class SearchExecutor implements Runnable {
                             ISVNLogMessage [] messages = client.getLogMessages(rootUrl.appendPath(path), null, fromRevision, toRevision, false, true, 0);
                             appendResults(rootUrl, messages);
                         }
-                    }  
-                    return;
+                        return;
+                    }                      
                 } catch (SVNClientException ex) {                    
                     if(!SvnClientExceptionHandler.handleLogException(rootUrl, toRevision, e)) {
                         progressSupport.annotate(ex);
