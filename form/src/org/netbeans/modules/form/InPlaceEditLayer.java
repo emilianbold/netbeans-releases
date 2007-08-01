@@ -44,6 +44,8 @@ public class InPlaceEditLayer extends JPanel
 
     private String editedText;
     private String oldText;
+    private boolean enabled;
+    private boolean madeEditable;
 
     private Component editedComp;
     private Container superContainer;
@@ -102,6 +104,14 @@ public class InPlaceEditLayer extends JPanel
 
             // enable focus on component in component layer
             editingTextComp.setFocusable(true);
+            if (!editingTextComp.isEnabled()) {
+                editingTextComp.setEnabled(true);
+                enabled = true;
+            }
+            if (!editingTextComp.isEditable()) {
+                editingTextComp.setEditable(true);
+                madeEditable = true;
+            }
         }
         else throw new IllegalArgumentException();
 
@@ -151,6 +161,16 @@ public class InPlaceEditLayer extends JPanel
         editingTextComp.removeFocusListener(compFocusListener);
         if (editingTextComp instanceof JTextField)
             ((JTextField)editingTextComp).removeActionListener(compActionListener);
+        if (editingTextComp == editedComp) {
+            if (enabled) {
+                editingTextComp.setEnabled(false);
+                enabled = false;
+            }
+            if (madeEditable) {
+                editingTextComp.setEditable(false);
+                madeEditable = false;
+            }
+        }
         editingTextComp = null;
 
         changeDone = applyChanges;
