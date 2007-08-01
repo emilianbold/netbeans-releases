@@ -2209,9 +2209,9 @@ public class ModuleManagerTest extends SetupHid {
                 public void propertyChange (java.beans.PropertyChangeEvent event) {
                     if (m1.PROP_ENABLED.equals (event.getPropertyName ())) {
                         try {
-                            this.l = get ();
-                        } catch (IllegalStateException ex) {
-                            this.ex = ex;
+                            l = get();
+                        } catch (IllegalStateException x) {
+                            ex = x;
                         }
                     }
                 }
