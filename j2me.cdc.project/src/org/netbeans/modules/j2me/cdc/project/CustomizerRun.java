@@ -120,6 +120,7 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jCheckBox1, gridBagConstraints);
 
+        jLabelMainClass.setLabelFor(jTextFieldMainClass);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -127,6 +128,8 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabelMainClass, gridBagConstraints);
+        jLabelMainClass.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ASCN_MAINCLASS"));
+        jLabelMainClass.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ASCD_MAINCLASS"));
 
         jTextFieldMainClass.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -136,6 +139,8 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(jTextFieldMainClass, gridBagConstraints);
+        jTextFieldMainClass.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ASCN_MAINCLASS"));
+        jTextFieldMainClass.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ASCD_MAINCLASS"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -145,7 +150,10 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(jButtonMainClass, gridBagConstraints);
+        jButtonMainClass.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ASCN_BROWSE"));
+        jButtonMainClass.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ASCD_BROWSE"));
 
+        jLabelArgs.setLabelFor(jTextFieldArgs);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelArgs, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -153,6 +161,8 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabelArgs, gridBagConstraints);
+        jLabelArgs.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ASCN_ARGUMENTS"));
+        jLabelArgs.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ASCD_ARGUMENTS"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -162,7 +172,10 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(jTextFieldArgs, gridBagConstraints);
+        jTextFieldArgs.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ASCN_ARGUMENTS"));
+        jTextFieldArgs.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ASCD_ARGUMENTS"));
 
+        jLabelVMOptions.setLabelFor(jTextVMOptions);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptions, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -170,6 +183,8 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(jLabelVMOptions, gridBagConstraints);
+        jLabelVMOptions.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ACSN_VMOPTIONS"));
+        jLabelVMOptions.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ASCD_VMOPTIONS"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -178,6 +193,8 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(jTextVMOptions, gridBagConstraints);
+        jTextVMOptions.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ACSN_VMOPTIONS"));
+        jTextVMOptions.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ASCD_VMOPTIONS"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptionsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options_Example"));
         gridBagConstraints = new java.awt.GridBagConstraints();
