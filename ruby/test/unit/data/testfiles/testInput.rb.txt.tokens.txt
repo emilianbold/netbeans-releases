@@ -9,6 +9,11 @@ GSF_LINE_COMMENT  "# Rdoc *bold* and #method\n", st=0
 GSF_LINE_COMMENT  "# :nodoc:", la=1, st=0
 ----- EOF -----
 
+.t.e.s.t. Documentation
+GSF_DOCUMENTATION  "=begin\nComments\nRdoc *bold* and #method\n:nodoc:\n=en", la=1, st=0
+GSF_IDENTIFIER  "d", la=1, st=0
+----- EOF -----
+
 .t.e.s.t. Identifiers
 GSF_IDENTIFIER  "a", la=2, st=3
 GSF_WHITESPACE  " ", la=1, st=RubyLexerState[spaceseen,null,EXPR_CMDARG,null,null]

@@ -159,6 +159,8 @@ public class RubyTokenId extends GsfTokenId {
 
                         //} else if (id == REGEXP_LITERAL) {
                         //    return LanguageEmbedding.create(RubyRegexpTokenId.language(), 0, 0);
+                    } else if (id == DOCUMENTATION) {
+                        return LanguageEmbedding.create(RubyCommentTokenId.language(), 0, 0);
                     } else if (id == EMBEDDED_RUBY) {
                         return LanguageEmbedding.create(RubyTokenId.language(), 0, 0);
                     }

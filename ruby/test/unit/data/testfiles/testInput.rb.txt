@@ -7,6 +7,14 @@ code()#More comments
 # :nodoc:
 .e.o.f.
 
+.t.e.s.t. Documentation
+=begin
+Comments
+Rdoc *bold* and #method
+:nodoc:
+=end
+.e.o.f.
+
 .t.e.s.t. Identifiers
 a ab aB2 2a x
 yZ
