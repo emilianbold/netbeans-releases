@@ -125,7 +125,11 @@ public class SourceGroupSupport {
         SourceGroup[] sources = ProjectUtils.getSources(project).getSourceGroups(
                 JavaProjectConstants.SOURCES_TYPE_JAVA);
         SourceGroup sg = findSourceGroupForFile(sources, folder);
-        return getPackageForFolder(sg, folder);
+        if (sg != null) {
+            return getPackageForFolder(sg, folder);
+        } else {
+            return "";          //NOI18N
+        }
     }
 
     public static FileObject getFolderForPackage(SourceGroup sourceGroup, String pgkName) throws IOException {

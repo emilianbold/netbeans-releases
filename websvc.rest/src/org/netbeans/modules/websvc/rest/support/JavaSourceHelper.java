@@ -942,8 +942,6 @@ public class JavaSourceHelper {
                         long pos = trees.getSourcePositions().getStartPosition(tree, elementTree);
                         position[0] = tree.getLineMap().getLineNumber(pos) - 1;
                         position[1] = tree.getLineMap().getColumnNumber(pos) - 1;
-                        
-                        System.out.println("lineNumber = " + position[0] + " column = " + position[1]);
                     }
                 }
             }, true);

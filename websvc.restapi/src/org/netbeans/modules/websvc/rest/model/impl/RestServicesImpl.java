@@ -37,7 +37,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.Element;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.Icon;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
@@ -47,7 +46,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.ObjectProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.TypeAnnotationHandler;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.openide.filesystems.FileObject;
@@ -135,14 +133,13 @@ public class RestServicesImpl implements RestServices {
     private final class RestServiceProvider implements ObjectProvider<RestServiceDescriptionImpl> {
         
         public List<RestServiceDescriptionImpl> createInitialObjects() throws InterruptedException {
-            System.out.println("createInitialObjects()");
-            //(new Exception()).printStackTrace();
+            //System.out.println("createInitialObjects()");
             final Map<TypeElement, RestServiceDescriptionImpl> result =
                     new HashMap<TypeElement, RestServiceDescriptionImpl>();
             
-            helper.getAnnotationScanner().findAnnotations("javax.ws.rs.UriTemplate",
+            helper.getAnnotationScanner().findAnnotations("javax.ws.rs.UriTemplate",   // NOI18N
                     (Set<ElementKind>) EnumSet.of(ElementKind.CLASS),
-                    new AnnotationHandler() { // NOI18N
+                    new AnnotationHandler() {
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
                     //System.out.println("ElementKind.CLASS type = " + type + " element = " + element +
                     //         " annotation = " + annotation);
@@ -153,15 +150,15 @@ public class RestServicesImpl implements RestServices {
                 }
             });
             
-            helper.getAnnotationScanner().findAnnotations("javax.ws.rs.HttpMethod",
+            helper.getAnnotationScanner().findAnnotations("javax.ws.rs.HttpMethod",    // NOI18N
                     (Set<ElementKind>) EnumSet.of(ElementKind.METHOD),
-                    new AnnotationHandler() { // NOI18N
+                    new AnnotationHandler() { 
                 public void handleAnnotation(TypeElement type, Element element, AnnotationMirror annotation) {
                     //System.out.println("ElementKind.METHOD type = " + type +
                     //        " element = " + element +
                     //        " annotation = " + annotation);
                     if (!result.containsKey(type)) {
-                        System.out.println("adding RestServiceDescImpl for " + type.getQualifiedName().toString());
+                        //System.out.println("adding RestServiceDescImpl for " + type.getQualifiedName().toString());
                         result.put(type, new RestServiceDescriptionImpl(helper, type));
                     }
                 }
@@ -190,7 +187,7 @@ public class RestServicesImpl implements RestServices {
                 }
                 
                 if (isRest) {
-                    System.out.println("creating RestServiceDescImpl for " + type.getQualifiedName().toString());
+                    //System.out.println("creating RestServiceDescImpl for " + type.getQualifiedName().toString());
                     return Collections.singletonList(new RestServiceDescriptionImpl(helper, type));
                 }
             }
@@ -198,14 +195,14 @@ public class RestServicesImpl implements RestServices {
         }
         
         public boolean modifyObjects(TypeElement type, List<RestServiceDescriptionImpl> objects) {
-            System.out.println("modifyObject type = " + type);
+            //System.out.println("modifyObject type = " + type);
             assert objects.size() == 1;
             RestServiceDescriptionImpl restService = objects.get(0);
             Status status = restService.refresh(type);
             
             switch (status) {
             case REMOVED:
-                System.out.println("removing RestServiceDescImpl for " + type.getQualifiedName().toString());
+                //System.out.println("removing RestServiceDescImpl for " + type.getQualifiedName().toString());
                 objects.remove(0);
                 return true;
             case MODIFIED:

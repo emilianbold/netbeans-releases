@@ -49,7 +49,6 @@ public class RestServicesNodeFactory implements NodeFactory {
     }
     
     public NodeList createNodes(Project p) {
-        System.out.println("RestServicesNodeFactory.createNodes() called");
         assert p != null;
         return new RestNodeList(p);
     }
@@ -78,7 +77,6 @@ public class RestServicesNodeFactory implements NodeFactory {
                         RestServices root = metadata.getRoot();
                    
                         if (root.sizeRestServiceDescription() > 0) {
-                            System.out.println("adding " + KEY_SERVICES);
                             result.add(KEY_SERVICES);
                         }
                         
@@ -120,12 +118,8 @@ public class RestServicesNodeFactory implements NodeFactory {
         }
         
         public void addNotify() {
-            //JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
-            //if (jaxWsModel!=null) jaxWsModel.addPropertyChangeListener(jaxWsListener);
-            System.out.println("addNotified() called");
-            
             try {
-                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
                         metadata.getRoot().addPropertyChangeListener(restServicesListener);
     
@@ -138,9 +132,6 @@ public class RestServicesNodeFactory implements NodeFactory {
         }
         
         public void removeNotify() {
-            //JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
-            //if (jaxWsModel!=null) jaxWsModel.removePropertyChangeListener(jaxWsListener);
-            System.out.println("removeNotified() called");
             try {
                 model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
