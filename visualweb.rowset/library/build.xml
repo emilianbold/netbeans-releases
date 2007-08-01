@@ -43,43 +43,6 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="MANIFEST.MF"/>
     </target>
     
-    <target name="-pre-init">
-        <available property="have-jdbc-40" 
-            classname="java.sql.RowIdLifetime" 
-            classpath="${nbjdk.bootclasspath}" 
-            ignoresystemclasses="${nbjdk.bootclasspath.available}"
-        />
-    </target>
-    
-    <target name="-pre-compile" depends="fake-jdbc-40"/>
-    
-    <!-- Fake support for JDBC 4.0 to enable compilation in Java 1.5 and 1.6 -->
-    <target name="fake-jdbc-40" unless="have-jdbc-40">
-        <property name="fake-jdbc-40" value="build/fake-jdbc-40"/>
-        <property name="fake-jdbc-40.src" value="${fake-jdbc-40}/src"/>
-        <property name="fake-jdbc-40.build" value="${fake-jdbc-40}/build"/>
-        <mkdir dir="${fake-jdbc-40.src}/java/sql"/>
-        <echo file="${fake-jdbc-40.src}/java/sql/SQLClientInfoException.java">
-          package java.sql;
-           public class SQLClientInfoException extends Exception {}
-        </echo>
-        <echo file="${fake-jdbc-40.src}/java/sql/SQLXML.java">
-          package java.sql;
-          public interface SQLXML {}
-        </echo>
-        <echo file="${fake-jdbc-40.src}/java/sql/NClob.java">
-          package java.sql;
-          public interface NClob extends Clob {}
-        </echo>
-        <echo file="${fake-jdbc-40.src}/java/sql/RowId.java">
-            package java.sql;
-            public interface RowId{};
-        </echo>
-        <mkdir dir="${fake-jdbc-40.build}"/>
-        <javac srcdir="${fake-jdbc-40.src}" destdir="${fake-jdbc-40.build}"/>
-    </target>
-
-
     <!-- Zip the javadoc -->   
     <target name="javadoc-zip" depends="compile,javadoc">
         <zip basedir="${dist.javadoc.dir}" destfile="${dist.javadoc.zip}" />

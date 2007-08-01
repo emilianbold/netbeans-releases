@@ -4806,10 +4806,5 @@ public class SyncResolverXImpl extends CachedRowSetXImpl implements SyncResolver
     public boolean previousPage() throws SQLException {
         throw new UnsupportedOperationException();
     }
-
-    public <T> T unwrap(Class<T> arg0) throws SQLException {
-        return null;
-    }
-    
 } //end class
 
