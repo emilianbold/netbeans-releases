@@ -1,5 +1,5 @@
 ${licenseFirst}
-${licensePrefix}${name}.java
+${licensePrefix}${nameAndExt}
 ${licensePrefix}
 ${licensePrefix}Created on ${date}, ${time}
 ${licensePrefix}
