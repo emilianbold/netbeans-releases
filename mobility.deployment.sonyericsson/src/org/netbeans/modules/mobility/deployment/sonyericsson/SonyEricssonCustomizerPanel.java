@@ -75,7 +75,7 @@ public class SonyEricssonCustomizerPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         lError.setForeground(new java.awt.Color(89, 79, 191));
-        lError.setText(NbBundle.getMessage(SonyEricssonCustomizerPanel.class, "ERR_MissingSDK"));
+        org.openide.awt.Mnemonics.setLocalizedText(lError, NbBundle.getMessage(SonyEricssonCustomizerPanel.class, "ERR_MissingSDK")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -83,21 +83,16 @@ public class SonyEricssonCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         add(lError, gridBagConstraints);
 
-        jButton1.setMnemonic(NbBundle.getMessage(SonyEricssonCustomizerPanel.class, "MNM_ManageEmulators").charAt(0));
-        jButton1.setText(NbBundle.getMessage(SonyEricssonCustomizerPanel.class, "LBL_ManageEmulators"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, NbBundle.getMessage(SonyEricssonCustomizerPanel.class, "LBL_ManageEmulators")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(jButton1, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         PlatformsCustomizer.showCustomizer(null);

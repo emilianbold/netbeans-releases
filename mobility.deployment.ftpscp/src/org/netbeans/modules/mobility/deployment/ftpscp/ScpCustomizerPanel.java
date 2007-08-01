@@ -101,9 +101,8 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabelServer.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Server").charAt(0));
         jLabelServer.setLabelFor(jTextFieldServer);
-        jLabelServer.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Server")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelServer, NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Server")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabelServer, gridBagConstraints);
@@ -118,9 +117,8 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         add(jTextFieldServer, gridBagConstraints);
         jTextFieldServer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Server")); // NOI18N
 
-        jLabelPort.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Port").charAt(0));
         jLabelPort.setLabelFor(jSpinnerPort);
-        jLabelPort.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Port")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelPort, NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Port")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -136,9 +134,8 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jSpinnerPort, gridBagConstraints);
 
-        jLabelUser.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_User").charAt(0));
         jLabelUser.setLabelFor(jTextFieldUser);
-        jLabelUser.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_User")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelUser, NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_User")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -157,8 +154,7 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         jTextFieldUser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_user")); // NOI18N
 
         buttonGroup1.add(jRadioButtonPassword);
-        jRadioButtonPassword.setMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_UsePassword").charAt(0));
-        jRadioButtonPassword.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_UsePassword")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonPassword, NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_UsePassword")); // NOI18N
         jRadioButtonPassword.setActionCommand("no");
         jRadioButtonPassword.setName(ScpDeploymentPlugin.PROP_USE_KEYFILE);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -170,9 +166,8 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jRadioButtonPassword, gridBagConstraints);
 
-        jLabelPassword.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Password").charAt(0));
         jLabelPassword.setLabelFor(jPasswordFieldPassword);
-        jLabelPassword.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Password")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelPassword, NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Password")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -192,8 +187,7 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         jPasswordFieldPassword.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Password")); // NOI18N
 
         buttonGroup1.add(jRadioButtonKey);
-        jRadioButtonKey.setMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_UseKey").charAt(0));
-        jRadioButtonKey.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_UseKeyfile")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButtonKey, NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_UseKeyfile")); // NOI18N
         jRadioButtonKey.setActionCommand("yes");
         jRadioButtonKey.setName(ScpDeploymentPlugin.PROP_USE_KEYFILE);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -205,9 +199,8 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jRadioButtonKey, gridBagConstraints);
 
-        jLabelKeyfile.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_KeyFile").charAt(0));
         jLabelKeyfile.setLabelFor(jTextFieldKeyfile);
-        jLabelKeyfile.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Keyfile")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelKeyfile, NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Keyfile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -225,8 +218,7 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         add(jTextFieldKeyfile, gridBagConstraints);
         jTextFieldKeyfile.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Keyfile")); // NOI18N
 
-        jButtonBrowse.setMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Browse").charAt(0));
-        jButtonBrowse.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonBrowse, NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Browse")); // NOI18N
         jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBrowseActionPerformed(evt);
@@ -241,9 +233,8 @@ public class ScpCustomizerPanel extends javax.swing.JPanel implements ActionList
         add(jButtonBrowse, gridBagConstraints);
         jButtonBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ScpCustomizerPanel.class, "ACSD_Scp_Browse")); // NOI18N
 
-        jLabelPassphrase.setDisplayedMnemonic(NbBundle.getMessage(ScpCustomizerPanel.class, "MNM_Scp_Passphrase").charAt(0));
         jLabelPassphrase.setLabelFor(jPasswordFieldPassphrase);
-        jLabelPassphrase.setText(NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Passphrase")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelPassphrase, NbBundle.getMessage(ScpCustomizerPanel.class, "LBL_Scp_Passphrase")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;

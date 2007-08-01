@@ -62,9 +62,8 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(NbBundle.getMessage(WebDAVCustomizerPanel.class, "MNM_WebDAV_Server").charAt(0));
         jLabel1.setLabelFor(jTextFieldServer);
-        jLabel1.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Server")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Server")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
@@ -77,9 +76,8 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
         add(jTextFieldServer, gridBagConstraints);
         jTextFieldServer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_Server")); // NOI18N
 
-        jLabel2.setDisplayedMnemonic(NbBundle.getMessage(WebDAVCustomizerPanel.class, "MNM_WebDAV_Port").charAt(0));
         jLabel2.setLabelFor(jSpinnerPort);
-        jLabel2.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Port")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Port")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
@@ -93,9 +91,8 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jSpinnerPort, gridBagConstraints);
 
-        jLabel3.setDisplayedMnemonic(NbBundle.getMessage(WebDAVCustomizerPanel.class, "MNM_WebDAV_User").charAt(0));
         jLabel3.setLabelFor(jTextFieldUser);
-        jLabel3.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_User")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_User")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -113,9 +110,8 @@ public class WebDAVCustomizerPanel extends javax.swing.JPanel {
         add(jTextFieldUser, gridBagConstraints);
         jTextFieldUser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WebDAVCustomizerPanel.class, "ACSD_WebDAV_User")); // NOI18N
 
-        jLabel4.setDisplayedMnemonic(NbBundle.getMessage(WebDAVCustomizerPanel.class, "MNM_WebDAV_Password").charAt(0));
         jLabel4.setLabelFor(jPasswordField);
-        jLabel4.setText(NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Password")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, NbBundle.getMessage(WebDAVCustomizerPanel.class, "LBL_WebDAV_Password")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

@@ -65,9 +65,8 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Server").charAt(0));
         jLabel1.setLabelFor(jTextFieldServer);
-        jLabel1.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Server")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Server")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
@@ -80,9 +79,8 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
         add(jTextFieldServer, gridBagConstraints);
         jTextFieldServer.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Server")); // NOI18N
 
-        jLabel6.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Separator").charAt(0));
         jLabel6.setLabelFor(jComboBoxSeparator);
-        jLabel6.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Separator")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Separator")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -102,9 +100,8 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
             add(jComboBoxSeparator, gridBagConstraints);
             jComboBoxSeparator.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Separator")); // NOI18N
 
-            jLabel2.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Port").charAt(0));
             jLabel2.setLabelFor(jSpinnerPort);
-            jLabel2.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Port")); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Port")); // NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
             gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
@@ -118,9 +115,8 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
             gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
             add(jSpinnerPort, gridBagConstraints);
 
-            jLabel3.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_User").charAt(0));
             jLabel3.setLabelFor(jTextFieldUser);
-            jLabel3.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_User")); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(jLabel3, NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_User")); // NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 1;
@@ -138,9 +134,8 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
             add(jTextFieldUser, gridBagConstraints);
             jTextFieldUser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_user")); // NOI18N
 
-            jLabel4.setDisplayedMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Password").charAt(0));
             jLabel4.setLabelFor(jPasswordField);
-            jLabel4.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Password")); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(jLabel4, NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Password")); // NOI18N
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 2;
@@ -159,8 +154,7 @@ public class FtpCustomizerPanel extends javax.swing.JPanel {
             add(jPasswordField, gridBagConstraints);
             jPasswordField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FtpCustomizerPanel.class, "ACSD_Ftp_Password")); // NOI18N
 
-            jCheckBoxPassive.setMnemonic(NbBundle.getMessage(FtpCustomizerPanel.class, "MNM_Ftp_Passive").charAt(0));
-            jCheckBoxPassive.setText(NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Passive")); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxPassive, NbBundle.getMessage(FtpCustomizerPanel.class, "LBL_Ftp_Passive")); // NOI18N
             jCheckBoxPassive.setName(FtpDeploymentPlugin.PROP_PASSIVE);
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 0;
