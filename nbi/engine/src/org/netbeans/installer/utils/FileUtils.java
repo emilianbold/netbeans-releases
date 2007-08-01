@@ -1722,5 +1722,5 @@ public final class FileUtils {
             "FU.message.delete.file");//NOI18N
     public static final String MESSAGE_DELETE_DIR =
             ResourceUtils.getString(FileUtils.class, 
-            "FU.message.delete.DIR");//NOI18N
+            "FU.message.delete.dir");//NOI18N
 }
