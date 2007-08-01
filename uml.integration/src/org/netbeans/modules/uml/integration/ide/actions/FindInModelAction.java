@@ -22,7 +22,6 @@ package org.netbeans.modules.uml.integration.ide.actions;
 import org.netbeans.modules.uml.integration.finddialog.FindControllerDialog;
 import org.netbeans.modules.uml.project.ProjectUtil;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.NbBundle;
 
 public final class FindInModelAction extends AbstractUMLToolbarAction
@@ -38,11 +37,11 @@ public final class FindInModelAction extends AbstractUMLToolbarAction
         return NbBundle.getMessage(FindInModelAction.class, "CTL_FindInModelAction"); // NOI18N
     }
     
-    
-    protected String iconResource()
-    {
-        return ImageUtil.IMAGE_FOLDER + "find-in-model.png"; // NOI18N
-    }
+    // Commented out this method to fix issue #111506
+//    protected String iconResource()
+//    {
+//        return ImageUtil.IMAGE_FOLDER + "find-in-model.png"; // NOI18N
+//    }
     
     public void performAction()
     {
