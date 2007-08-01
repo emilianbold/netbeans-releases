@@ -27,6 +27,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.midp.actions.MidpActionsSupport;
+import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
 import org.netbeans.modules.vmd.midp.codegen.MidpCodeSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
@@ -35,6 +36,7 @@ import org.netbeans.modules.vmd.midp.components.sources.IfTrueEventSourceCD;
 import org.netbeans.modules.vmd.midp.flow.FlowIfPointPinOrderPresenter;
 import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorJavaString;
+import org.netbeans.api.editor.guards.GuardedSection;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -88,11 +90,14 @@ public class IfPointCD extends ComponentDescriptor {
     protected java.util.List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // flow
-            
-            // flow
             new FlowIfPointPinOrderPresenter (),
             // general
             InfoPresenter.create (PointSupport.createInfoResolver (Utilities.loadImage (ICON_PATH), MethodPointCD.PROP_METHOD_NAME, NbBundle.getMessage(IfPointCD.class, "TYPE_IfPoint"))),
+            new GoToSourcePresenter() {
+                protected boolean matches (GuardedSection section) {
+                    return MultiGuardedSection.matches(section, getComponent ().getComponentID () + "-if", 1); // NOI18N
+                }
+            },
             // properties
             createPropertiesPresenter (),
             // code
