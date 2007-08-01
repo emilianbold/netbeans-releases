@@ -22,11 +22,9 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position.Bias;
-import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.java.source.transform.ChangeSet;
 import org.netbeans.modules.java.source.query.QueryException;
@@ -84,7 +81,6 @@ public class WorkingCopy extends CompilationController {
             model.setRoot(TreeFactory.instance(context).Root(units));
         }
         
-        JavacTaskImpl task = this.delegate.getJavacTask();
         treeMaker = new TreeMaker(this, TreeFactory.instance(getContext()));
         changes = new ChangeSet("<no-description>");
         changes.attach(getContext());
@@ -196,7 +192,7 @@ public class WorkingCopy extends CompilationController {
                 ASTService.instance(getContext()).setRoot(newRoot);
             }
             
-            Commit save = new Commit(this, wcc.getSourceRewriter(null));
+            Commit save = new Commit(this, wcc.getSourceRewriter());
             save.init();
             save.attach(getContext());
             save.commit();
@@ -204,10 +200,10 @@ public class WorkingCopy extends CompilationController {
             save.destroy();
             return wcc.diffs;
         } catch (QueryException qe) {
-            Logger.getLogger("global").log(Level.WARNING, qe.getMessage(), qe);
+            Logger.getLogger(WorkingCopy.class.getName()).log(Level.WARNING, qe.getMessage(), qe);
             return null;
         } catch (ReattributionException qe) {
-            Logger.getLogger("global").log(Level.WARNING, qe.getMessage(), qe);
+            Logger.getLogger(WorkingCopy.class.getName()).log(Level.WARNING, qe.getMessage(), qe);
             return null;
         }
     }
@@ -241,15 +237,6 @@ public class WorkingCopy extends CompilationController {
         
         private ArrayList<Difference> diffs = new ArrayList<Difference>();
 
-        public PrintWriter getOutputWriter(String title) {
-            // Sink any log output so it isn't displayed.
-            return new PrintWriter(new Writer() {
-                public void write(char[] cbuf, int off, int len) throws IOException {}
-                public void flush() throws IOException {}
-                public void close() throws IOException {}
-            }, true);
-        }
-
         private Map<Integer, String> userInfo = Collections.<Integer, String>emptyMap();
        
         @SuppressWarnings("unchecked")
@@ -259,18 +246,10 @@ public class WorkingCopy extends CompilationController {
             }
         }
 
-        public SourceRewriter getSourceRewriter(JavaFileObject sourcefile) throws IOException {
+        public SourceRewriter getSourceRewriter() throws IOException {
             return new Rewriter();
         }
-    
-        public void setStatusMessage(String message) {
-            System.out.println(message);
-        }
-
-        public void setErrorMessage(String message, String title) {
-            setStatusMessage(title + ": " + message);
-        }
-
+        
         private class Rewriter implements SourceRewriter {
             
             private int offset = 0;
