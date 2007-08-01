@@ -59,7 +59,7 @@
         <write-jar-content-list 
             dir="${build.classes.dir}" 
             output="${build.classes.dir}/${jar.contents.list}"
-            mask="(^native/.*|^org/.*|^data/|^data/engine\.properties)"/>
+            mask="(^native/.*|^org/.*|^com/apple/.*|^data/|^data/engine\.properties)"/>
     </target>
     
     <target name="copy-unix-launcher">
