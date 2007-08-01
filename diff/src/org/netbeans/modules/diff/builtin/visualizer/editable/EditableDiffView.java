@@ -146,6 +146,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         diffMarkprovider = new EditableDiffMarkProvider();        
                         
         initComponents ();
+
+        jEditorPane2.getEditorPane().putClientProperty(DiffMarkProviderCreator.MARK_PROVIDER_KEY, diffMarkprovider);
         jSplitPane1.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title")); // NOI18N
         spui = new DiffSplitPaneUI(jSplitPane1);
         jSplitPane1.setUI(spui);
@@ -229,7 +231,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
             return;
         }
         
-        jEditorPane2.getEditorPane().putClientProperty(DiffMarkProviderCreator.MARK_PROVIDER_KEY, diffMarkprovider);
         jSplitPane1.addAncestorListener(this);
         
         refreshDiffTask.run();
