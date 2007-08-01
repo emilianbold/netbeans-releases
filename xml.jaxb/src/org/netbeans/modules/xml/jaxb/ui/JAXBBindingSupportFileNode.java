@@ -139,7 +139,7 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
             return this.nodeDelegate.getIcon(type);
         }
         return Utilities.loadImage( 
-                "org/netbeans/modules/xml/jaxb/resources/xmlObject.gif" );//NOI18N
+                "org/netbeans/modules/xml/jaxb/resources/XML_file.png" );//NOI18N
     }
     
     public Image getOpenedIcon(int type) {
@@ -148,6 +148,6 @@ public class JAXBBindingSupportFileNode extends AbstractNode {
         }
         
         return Utilities.loadImage( 
-                "org/netbeans/modules/xml/jaxb/resources/xmlObject.gif" );//NOI18N  
+                "org/netbeans/modules/xml/jaxb/resources/XML_file.png" );//NOI18N  
     }
  }

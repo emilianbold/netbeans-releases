@@ -64,7 +64,7 @@ Microsystems, Inc. All Rights Reserved.
                  <attr name="templateCategory" stringvalue="java-classes"/>
                  <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/jaxb/resources/JAXBWiz.html"/>
                  <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.jaxb.Bundle"/>
-                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/jaxb/resources/xmlObject.gif"/> 
+                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/jaxb/resources/XML_file.png"/> 
              </file>                
         </folder>
     </folder>
