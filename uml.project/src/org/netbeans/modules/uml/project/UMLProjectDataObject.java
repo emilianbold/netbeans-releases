@@ -20,6 +20,7 @@
 package org.netbeans.modules.uml.project;
 
 import java.io.IOException;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.uml.documentation.ui.DocumentationTopComponnet;
@@ -212,22 +213,28 @@ public class UMLProjectDataObject extends MultiDataObject
     {
         public void save() throws IOException
         {
-            //custom logic to save uml project files
-            Project currentProj = FileOwnerQuery.getOwner(getFileObject());
-            UMLProjectHelper helper = (UMLProjectHelper)currentProj.getLookup().
-                    lookup(UMLProjectHelper.class);
-            if (helper!=null)
+            SwingUtilities.invokeLater(new Runnable()
             {
-                // save modified documentation in the edit pane
-                DocumentationTopComponnet.getInstance().saveDocumentation();
-                 
-                helper.saveProject();
-                SaveCookie save = (SaveCookie) UMLProjectDataObject.this.
-                                        getCookie(SaveCookie.class);
-                if (save!=null)
-                    UMLProjectDataObject.this.removeSaveCookie(save);
-                setModified(false);
-            }
+                public void run()
+                {
+                    //custom logic to save uml project files
+                    Project currentProj = FileOwnerQuery.getOwner(getFileObject());
+                    UMLProjectHelper helper = (UMLProjectHelper)currentProj.getLookup().
+                            lookup(UMLProjectHelper.class);
+                    if (helper!=null)
+                    {
+                        // save modified documentation in the edit pane
+                        DocumentationTopComponnet.getInstance().saveDocumentation();
+                        
+                        helper.saveProject();
+                        SaveCookie save = (SaveCookie) UMLProjectDataObject.this.
+                                getCookie(SaveCookie.class);
+                        if (save!=null)
+                            UMLProjectDataObject.this.removeSaveCookie(save);
+                        setModified(false);
+                    }
+                }
+            });
         }
     }
     
