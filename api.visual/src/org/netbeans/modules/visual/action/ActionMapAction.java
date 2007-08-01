@@ -19,12 +19,9 @@
 package org.netbeans.modules.visual.action;
 
 import org.netbeans.api.visual.action.WidgetAction;
-import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.openide.util.Utilities;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -67,37 +64,6 @@ public class ActionMapAction extends WidgetAction.Adapter {
         if (action != null) {
             action.actionPerformed (new ActionEvent (widget, (int) event.getEventID (), null, event.getWhen (), event.getModifiers ())); // TODO - action-event command
             return State.CONSUMED;
-        }
-        return State.REJECTED;
-    }
-
-    public State mousePressed (Widget widget, WidgetMouseEvent event) {
-        return handleMouseEvent (widget, event);
-    }
-
-    public State mouseReleased (Widget widget, WidgetMouseEvent event) {
-        return handleMouseEvent (widget, event);
-    }
-
-    private State handleMouseEvent (Widget widget, WidgetMouseEvent event) {
-        if (event.isPopupTrigger ()) {
-            JComponent view = widget.getScene ().getView ();
-            if (view != null) {
-                ActionMap map = actionMap != null ? actionMap : view.getActionMap ();
-                Object[] objects = map.allKeys (); // HINT - the popup menu items order is defined by result of ActionMap.allKeys method
-                if (objects != null  &&  objects.length > 0) {
-                    Action[] actions = new Action[objects.length];
-                    for (int i = 0; i < objects.length; i ++)
-                        actions[i] = map.get (objects[i]);
-                    JPopupMenu popupMenu = Utilities.actionsToPopup (actions, view);
-                    if (popupMenu != null) {
-                        Scene scene = widget.getScene ();
-                        Point point = scene.convertSceneToView (widget.convertLocalToScene (event.getPoint ()));
-                        popupMenu.show (scene.getView (), point.x, point.y);
-                        return State.CONSUMED;
-                    }
-                }
-            }
         }
         return State.REJECTED;
     }
