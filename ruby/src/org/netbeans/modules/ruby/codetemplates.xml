@@ -47,7 +47,7 @@ end
 
 <!-- The following templates were imported from TextMate -->
 
-  <codetemplate abbreviation=":" descriptionId="ct_:">
+  <codetemplate abbreviation=":" descriptionId="ct_colon">
     <code>
 <![CDATA[:${1 default="key"} => "${2 default="value"}"${4 default=", "}]]>
     </code>
