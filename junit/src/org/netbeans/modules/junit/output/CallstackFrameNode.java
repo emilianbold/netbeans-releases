@@ -13,32 +13,14 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.junit.output;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.io.IOException;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.junit.wizards.Utils;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.text.Line;
 
 /**
  *
@@ -76,6 +58,7 @@ final class CallstackFrameNode extends AbstractNode {
     
     /**
      */
+    @Override
     public Action getPreferredAction() {
         return new JumpAction(this, frameInfo);
     }
