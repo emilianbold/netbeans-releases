@@ -30,9 +30,7 @@ import org.openide.util.Lookup;
 import javax.accessibility.AccessibleContext;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -462,6 +460,15 @@ public class Widget {
         if (dependencies == null)
             return;
         dependencies.remove (dependency);
+    }
+
+    /**
+     * Returns a collection of registered dependencies.
+     * @return the unmodifiable collection of dependencies
+     * @since 2.5
+     */
+    public final Collection<Dependency> getDependencies () {
+        return dependencies != null ? Collections.unmodifiableCollection (dependencies) : Collections.<Dependency>emptyList ();
     }
 
     /**
