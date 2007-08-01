@@ -88,6 +88,11 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         return new java.awt.Dimension (Math.max (sup.width, DEFAULT_WIDTH), sup.height);
     }
 
+    public void addNotify() {
+        super.addNotify();
+        itemField.requestFocusInWindow();
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -308,7 +313,8 @@ private void itemFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         itemsVector.addElement (itemField.getText ());
         itemList.setListData (itemsVector);
         itemList.setSelectedIndex (-1);
-        itemField.setText("");
+        itemField.setSelectionStart(0);
+        itemField.setSelectionEnd(itemField.getText().length());
         itemList.repaint ();
         updateValue ();
     }//GEN-LAST:event_addButtonActionPerformed
