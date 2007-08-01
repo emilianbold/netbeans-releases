@@ -1,9 +1,26 @@
 /*
- * Utils.java
+ * The contents of this file are subject to the terms of the Common Development and
+ * Distribution License (the License). You may not use this file except in compliance
+ * with the License.
+ *
+ * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
+ * http://www.netbeans.org/cddl.txt.
+ *
+ * When distributing Covered Code, include this CDDL Header Notice in each file and
+ * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
+ * the following below the CDDL Header, with the fields enclosed by brackets []
+ * replaced by your own identifying information:
+ *
+ *     "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original Software
+ * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
+ * Rights Reserved.
  */
 
 package org.netbeans.test.installer;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -16,8 +33,10 @@ import java.util.logging.Level;
 import javax.swing.JTextField;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 public class Utils {
@@ -108,14 +127,6 @@ public class Utils {
             String pathToExtract = data.getTestWorkDir() + java.io.File.separator + "bundle";
 
             builder = new java.lang.ProcessBuilder(command, "--silent", "--userdir", data.getTestWorkDir().getCanonicalPath(), "--extract", pathToExtract, "--output", "inst.log");
-
-
-/*            for (Iterator it = builder.command().iterator(); it.hasNext();) {
-            String str = (String)it.next();
-            data.getLogger().log(Level.SEVERE, "Command " + str);
-            }*/
-
-
             process = builder.start();
 
             long runningTime;
@@ -233,27 +244,39 @@ public class Utils {
     
     public static void stepWelcome() {
         JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
-        JButtonOperator nextButton = new JButtonOperator(installerMain, "Next >");
         
-        nextButton.push();
+        new JButtonOperator(installerMain, "Next >").push();
     }
     
     public static void stepLicense() {
         JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
-        JButtonOperator nextButton = new JButtonOperator(installerMain, "Next >");
-        JCheckBoxOperator licenseChkBox = new JCheckBoxOperator(installerMain, "I accept");
         
-        licenseChkBox.push();
-        nextButton.push();
+        new JCheckBoxOperator(installerMain, "I accept").push();
+        new JButtonOperator(installerMain, "Next >").push();
     }
     
     public static void stepSetDir(TestData data, String label, String dir) {
         JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
-        JButtonOperator nextButton = new JButtonOperator(installerMain, "Next >");
         
-        JTextFieldOperator destTextFiled = new JTextFieldOperator((JTextField) (new JLabelOperator(installerMain, label).getLabelFor()));
-        destTextFiled.setText(data.getWorkDirCanonicalPath() + File.separator + dir);
+        new JTextFieldOperator( 
+                (JTextField) (new JLabelOperator(installerMain, label)
+                    .getLabelFor()
+                    )
+                )
+            .setText(data.getWorkDirCanonicalPath() + File.separator + dir);
         
-        nextButton.push();
+        new JButtonOperator(installerMain, "Next >").push();
+    }
+    
+    public static void stepChooseComponet(String name) {
+        JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
+        
+        new JButtonOperator(installerMain, "Customize...").push();
+        JDialogOperator customizeInstallation = 
+                new JDialogOperator("Customize Installation");
+        JListOperator featureList = new JListOperator(customizeInstallation);
+        featureList.selectItem(name);
+        featureList.pressKey(KeyEvent.VK_SPACE);
+        new JButtonOperator(customizeInstallation, "OK").push();        
     }
 }
