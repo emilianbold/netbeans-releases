@@ -151,7 +151,7 @@ public class WebProjectGeneratorTest extends NbTestCase {
 //        assertEquals("correct document base", webModule, webModule2);
     }
     
-    public void testCompilationUnitUpgrades() throws Exception {
+    public void testWebDataUpgrades() throws Exception {
         AntProjectHelper helper = createEmptyProject("proj", "proj");
         FileObject base = helper.getProjectDirectory();
         Project p = ProjectManager.getDefault().findProject(base);
