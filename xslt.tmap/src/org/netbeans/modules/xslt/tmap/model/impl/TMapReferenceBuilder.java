@@ -26,7 +26,7 @@ import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.MappedReference;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
@@ -252,11 +252,11 @@ class VariableReferenceFactory extends AbstractTMapVarReferenceFactory {
             return operation;
         }
         
-        List<Invokes> invokess = operation.getInvokess();
-        if (invokess != null && invokess.size() > 0) {
-            for (Invokes invokes : invokess) {
-                if (isVariableDeclarator(invokes, varName)) {
-                    return invokes;
+        List<Invoke> invokes = operation.getInvokes();
+        if (invokes != null && invokes.size() > 0) {
+            for (Invoke invoke : invokes) {
+                if (isVariableDeclarator(invoke, varName)) {
+                    return invoke;
                 }
             }
         }

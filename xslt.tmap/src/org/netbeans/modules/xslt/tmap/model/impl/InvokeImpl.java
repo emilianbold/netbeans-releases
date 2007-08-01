@@ -18,18 +18,16 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
 import org.netbeans.modules.xslt.tmap.model.api.Invoke;
-import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;
 import org.netbeans.modules.xslt.tmap.model.api.TMapVisitor;
-import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.TransformerDescriptor;
 import org.netbeans.modules.xslt.tmap.model.api.Variable;
-import org.netbeans.modules.xslt.tmap.model.api.VariableDeclarator;
 import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.w3c.dom.Element;
 
@@ -38,15 +36,15 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class OperationImpl extends TMapComponentAbstract 
-    implements Operation 
+public class InvokeImpl  extends TMapComponentAbstract 
+    implements Invoke 
 {
 
-    public OperationImpl(TMapModelImpl model) {
-        this(model, createNewElement(TMapComponents.OPERATION, model));
+    public InvokeImpl(TMapModelImpl model) {
+        this(model, createNewElement(TMapComponents.INVOKE, model));
     }
 
-    public OperationImpl(TMapModelImpl model, Element element) {
+    public InvokeImpl(TMapModelImpl model, Element element) {
         super(model, element);
     }
 
@@ -54,17 +52,32 @@ public class OperationImpl extends TMapComponentAbstract
         visitor.visit(this);
     }
 
-    public Reference<org.netbeans.modules.xml.wsdl.model.Operation> getOperation() {
-        return getWSDLReference(TMapAttributes.OPERATION_NAME, 
-                org.netbeans.modules.xml.wsdl.model.Operation.class);
+    public WSDLReference<PartnerLinkType> getPartnerLinkType() {
+        return getWSDLReference(TMapAttributes.PARTNER_LINK_TYPE, PartnerLinkType.class);
     }
 
-    public void setOperation(WSDLReference<org.netbeans.modules.xml.wsdl.model.Operation> opRef) {
-        setWSDLReference( TMapAttributes.OPERATION_NAME, opRef);
+    public void setPartnerLinkType(WSDLReference<PartnerLinkType> pltRef) {
+        setWSDLReference( TMapAttributes.PARTNER_LINK_TYPE, pltRef);
+    }
+
+    public WSDLReference<Role> getRole() {
+        return getWSDLReference(TMapAttributes.ROLE_NAME, Role.class);
+    }
+
+    public void setRole(WSDLReference<Role> roleRef) {
+        setWSDLReference( TMapAttributes.ROLE_NAME, roleRef);
     }
 
     public Reference[] getReferences() {
-        return new Reference[] {getOperation()};
+        return new Reference[] {getPartnerLinkType(), getRole(), getOperation()};
+    }
+
+    public Reference<Operation> getOperation() {
+        return getWSDLReference(TMapAttributes.OPERATION_NAME, Operation.class);
+    }
+
+    public void setOperation(WSDLReference<Operation> opRef) {
+        setWSDLReference( TMapAttributes.OPERATION_NAME, opRef);
     }
 
     public String getFile() {
@@ -83,42 +96,8 @@ public class OperationImpl extends TMapComponentAbstract
         setAttribute(TransformerDescriptor.TRANSFORM_JBI, TMapAttributes.TRANSFORM_JBI, boolVal);
     }
 
-    public Class<Operation> getComponentType() {
-        return Operation.class;
-    }
-
-    public List<Invoke> getInvokes() {
-        return getChildren(Invoke.class);
-    }
-
-    public void removeInvoke(Invoke invoke) {
-        removeChild(TYPE.getTagName(), invoke);
-    }
-
-    public void addInvoke(Invoke invoke) {
-        addAfter(TYPE.getTagName(), invoke, TYPE.getChildTypes());
-    }
-
-    public int getSizeOfInvokes() {
-        List<Invoke> invokes = getInvokes();
-        return invokes == null ? 0 : invokes.size();
-    }
-
-    public List<Transform> getTransforms() {
-        return getChildren(Transform.class);
-    }
-
-    public void removeTransforms(Transform transform) {
-        removeChild(TYPE.getTagName(), transform);
-    }
-
-    public void addTransform(Transform transform) {
-        addAfter(TYPE.getTagName(), transform, TYPE.getChildTypes());
-    }
-
-    public int getSizeOfTransform() {
-        List<Transform> transforms = getTransforms();
-        return transforms == null ? 0 : transforms.size();
+    public Class<Invoke> getComponentType() {
+        return Invoke.class;
     }
 
     public Variable getInputVariable() {
@@ -144,35 +123,4 @@ public class OperationImpl extends TMapComponentAbstract
     public void setOutputVariableName(String outputVariable) {
         setAttribute(OUTPUT_VARIABLE, TMapAttributes.OUTPUT_VARIABLE, outputVariable);
     }
-
-    public List<Variable> getVariables() {
-        List<Variable> opVars = new ArrayList<Variable>();
-        collectVariables(opVars, this);
-        
-        List<Invoke> invokes = getInvokes();
-        if (invokes != null && invokes.size() > 0) {
-            for (Invoke invoke : invokes) {
-                collectVariables(opVars, invoke);
-            }
-        }
-
-        return opVars;
-    }
-    
-    private void collectVariables(List<Variable> vars, VariableDeclarator varContainer) {
-        if (varContainer == null || vars == null) {
-            return;
-        }
-
-        Variable tmpVar = varContainer.getInputVariable();
-        if (tmpVar != null) {
-            vars.add(tmpVar);
-        }
-        
-        tmpVar = varContainer.getOutputVariable();
-        if (tmpVar != null) {
-            vars.add(tmpVar);
-        }
-    }
-
 }

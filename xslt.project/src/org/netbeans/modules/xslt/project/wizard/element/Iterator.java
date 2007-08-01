@@ -44,7 +44,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponentFactory;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
@@ -310,20 +310,20 @@ private static class TransformationUseCasesFactory {
                       (String)wizard.getProperty(Panel.INPUT_FILE), tMapOp);
             }
 
-            Invokes invokes = null;
+            Invoke invoke = null;
             if (tMapOp != null) {
-                invokes = createInvokes(tMapOp, wizard, componentFactory);
+                invoke = createInvoke(tMapOp, wizard, componentFactory);
             }
             
 
             if (foTransform != null) {
                 tMapOp.addTransform(foTransform);
             }
-            if (invokes != null) {
-                tMapOp.addInvokes(invokes);
+            if (invoke != null) {
+                tMapOp.addInvoke(invoke);
             }
             if (foTransform != null) {
-                String result = getTMapVarRef(invokes.getInputVariable());
+                String result = getTMapVarRef(invoke.getInputVariable());
                 if (result != null) {
                     foTransform.setResult(result);
                 }
@@ -349,10 +349,10 @@ private static class TransformationUseCasesFactory {
                 return;
             }
 // TODO m            
-            Invokes invokes = null;
-            String inputInvokesVar = getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
+            Invoke invoke = null;
+            String inputInvokeVar = getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
                 getVariableNumber(tMapOp, INPUT_INVOKE_VARIABLE_PREFIX, 1));
-            String outputInvokesVar = getVariableName(OUTPUT_INVOKE_VARIABLE_PREFIX, 
+            String outputInvokeVar = getVariableName(OUTPUT_INVOKE_VARIABLE_PREFIX, 
                 getVariableNumber(tMapOp, OUTPUT_INVOKE_VARIABLE_PREFIX, 1));
 
 
@@ -361,7 +361,7 @@ private static class TransformationUseCasesFactory {
                     (String)wizard.getProperty(Panel.INPUT_FILE), 
                     tMapOp);
 
-            invokes = createInvokes(tMapOp, inputInvokesVar, outputInvokesVar,
+            invoke = createInvoke(tMapOp, inputInvokeVar, outputInvokeVar,
                       wizard, componentFactory);
 
             Transform outTransform = null;
@@ -372,19 +372,19 @@ private static class TransformationUseCasesFactory {
             if (inTransform != null) {
                 tMapOp.addTransform(inTransform);
             }
-            if (invokes != null) {
-                tMapOp.addInvokes(invokes);
+            if (invoke != null) {
+                tMapOp.addInvoke(invoke);
             }
             if (outTransform != null) {
                 tMapOp.addTransform(outTransform);
-                String source = getTMapVarRef(invokes.getOutputVariable());
+                String source = getTMapVarRef(invoke.getOutputVariable());
                 if (source != null) {
                     outTransform.setSource(source);
                 }
             }
             
             if (inTransform != null) {
-                String result = getTMapVarRef(invokes.getInputVariable());
+                String result = getTMapVarRef(invoke.getInputVariable());
                 if (result != null) {
                     inTransform.setResult(result);
                 }
@@ -671,22 +671,22 @@ private static class TransformationUseCasesFactory {
         return getFirstPartName(opParam.getMessage());
     }
 
-    private Invokes createInvokes(
+    private Invoke createInvoke(
           org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp, 
           TemplateWizard wizard, TMapComponentFactory componentFactory) 
     {
-        return createInvokes(tMapOp, null, null, wizard, componentFactory);
+        return createInvoke(tMapOp, null, null, wizard, componentFactory);
 
     }
 
-    private Invokes createInvokes(
+    private Invoke createInvoke(
           org.netbeans.modules.xslt.tmap.model.api.Operation tMapOp, 
-          String inputInvokesVar,
-          String outputInvokesVar,
+          String inputInvokeVar,
+          String outputInvokeVar,
           TemplateWizard wizard, TMapComponentFactory componentFactory) 
     {
         assert tMapOp != null && wizard != null && componentFactory != null;
-        Invokes invokes = null;
+        Invoke invoke = null;
 
         Operation wizardOutputOperation = 
                 (Operation) wizard.getProperty(Panel.OUTPUT_OPERATION);
@@ -702,28 +702,28 @@ private static class TransformationUseCasesFactory {
                 && wizardOutRole != null 
                 && wizardOutputOperation != null) 
         {
-          invokes = componentFactory.createInvokes();
-          invokes.setPartnerLinkType(
-                  invokes.createWSDLReference(wizardOutPlt, PartnerLinkType.class));
-          invokes.setRole(
-                  invokes.createWSDLReference(wizardOutRole, Role.class));
-          invokes.setOperation(
-                  invokes.createWSDLReference(wizardOutputOperation, Operation.class));
+          invoke = componentFactory.createInvoke();
+          invoke.setPartnerLinkType(
+                  invoke.createWSDLReference(wizardOutPlt, PartnerLinkType.class));
+          invoke.setRole(
+                  invoke.createWSDLReference(wizardOutRole, Role.class));
+          invoke.setOperation(
+                  invoke.createWSDLReference(wizardOutputOperation, Operation.class));
 
           // TODO m
-          if (inputInvokesVar == null || "".equals(inputInvokesVar)) {
-              inputInvokesVar = getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
+          if (inputInvokeVar == null || "".equals(inputInvokeVar)) {
+              inputInvokeVar = getVariableName(INPUT_INVOKE_VARIABLE_PREFIX, 
                   getVariableNumber(tMapOp, INPUT_INVOKE_VARIABLE_PREFIX, 1));
           }
-          if (outputInvokesVar == null || "".equals(outputInvokesVar)) {
-              outputInvokesVar = getVariableName(OUTPUT_INVOKE_VARIABLE_PREFIX, 
+          if (outputInvokeVar == null || "".equals(outputInvokeVar)) {
+              outputInvokeVar = getVariableName(OUTPUT_INVOKE_VARIABLE_PREFIX, 
                   getVariableNumber(tMapOp, OUTPUT_INVOKE_VARIABLE_PREFIX, 1));
           }
-          invokes.setInputVariableName(inputInvokesVar);
-          invokes.setOutputVariableName(outputInvokesVar);
+          invoke.setInputVariableName(inputInvokeVar);
+          invoke.setOutputVariableName(outputInvokeVar);
         }
 
-        return invokes;
+        return invoke;
     }
 
 }

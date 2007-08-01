@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
@@ -55,8 +55,8 @@ public class TMapComponentFactoryImpl implements TMapComponentFactory {
         return new OperationImpl(getModel());
     }
 
-    public Invokes createInvokes() {
-        return new InvokesImpl(getModel());
+    public Invoke createInvoke() {
+        return new InvokeImpl(getModel());
     }
 
     public Transform createTransform() {

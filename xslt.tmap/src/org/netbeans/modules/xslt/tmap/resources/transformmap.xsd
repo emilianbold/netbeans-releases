@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="http://xml.netbeans.org/schema/transformmap"
             xmlns:tns="http://xml.netbeans.org/schema/transformmap"
@@ -14,8 +13,7 @@
                             <xsd:element name="operation" type="tns:operationType"
                                          maxOccurs="unbounded"/>
                         </xsd:sequence>
-                                        <xsd:attribute name="partnerLinkType" type="xsd:QName" use="required"/>
-                                        <xsd:attribute name="roleName" type="xsd:NCName" use="required"/>
+				        <xsd:attributeGroup ref="tns:partnerLinkGroup"/>
                     </xsd:complexType>
                 </xsd:element>
             </xsd:sequence>
@@ -24,25 +22,16 @@
     
     <xsd:complexType name="operationType">
         <xsd:choice maxOccurs="unbounded">
-            <xsd:element name="invokes" type="tns:invokesType"/>
+            <xsd:element name="invoke" type="tns:invokeType"/>
             <xsd:element name="transform" type="tns:transformType"/>
         </xsd:choice>
-        <xsd:attribute name="opName" type="xsd:NCName" use="required"/>
-        <xsd:attribute name="inputVariable" type="xsd:string" use="required"/>
-        <xsd:attribute name="outputVariable" type="xsd:string" use="required"/>
-        <!-- for backwards compatability, 'file' means implicit transform -->
-        <xsd:attribute name="file" type="xsd:string"/>
-        <xsd:attribute name="transformJBI" type="xsd:boolean" default="false"/>
+        <xsd:attributeGroup ref="tns:opDefGroup"/>
+        <xsd:attributeGroup ref="tns:implicitTransformGroup"/>
     </xsd:complexType>
-    <xsd:complexType name="invokesType" >
-        <xsd:attribute name="partnerLinkType" type="xsd:QName" use="required"/>
-        <xsd:attribute name="roleName" type="xsd:NCName" use="required"/>
-        <xsd:attribute name="opName" type="xsd:NCName" use="required"/>
-        <xsd:attribute name="inputVariable" type="xsd:string" use="required"/>
-        <xsd:attribute name="outputVariable" type="xsd:string" use="required"/>
-        <!-- for backwards compatability, 'file' means implicit transform -->
-        <xsd:attribute name="file" type="xsd:string"/>
-        <xsd:attribute name="transformJBI" type="xsd:boolean" default="false"/>
+    <xsd:complexType name="invokeType" >
+    	<xsd:attributeGroup ref="tns:partnerLinkGroup"/>
+        <xsd:attributeGroup ref="tns:opDefGroup"/>
+        <xsd:attributeGroup ref="tns:implicitTransformGroup"/>
     </xsd:complexType>
     <xsd:complexType name="transformType">
         <xsd:sequence>
@@ -62,10 +51,24 @@
         <xsd:attribute name="value" type="xsd:string"/>
     </xsd:complexType>
     <xsd:simpleType name="typeEnum">
-        <xsd:restriction base="xsd:string">
-                <xsd:enumeration value="part"/>
-                <xsd:enumeration value="uri"/>
-                <xsd:enumeration value="literal"/>
-        </xsd:restriction>
+    	<xsd:restriction base="xsd:string">
+    		<xsd:enumeration value="part"/>
+    		<xsd:enumeration value="uri"/>
+    		<xsd:enumeration value="literal"/>
+    	</xsd:restriction>
     </xsd:simpleType>
+    <xsd:attributeGroup name="partnerLinkGroup">
+    	<xsd:attribute name="partnerLinkType" type="xsd:QName" use="required"/>
+		<xsd:attribute name="roleName" type="xsd:NCName" use="required"/>
+	</xsd:attributeGroup>
+    <xsd:attributeGroup name="opDefGroup">
+    	<xsd:attribute name="opName" type="xsd:string" use="required"/>
+        <xsd:attribute name="inputVariable" type="xsd:string"/>
+        <xsd:attribute name="outputVariable" type="xsd:string"/>
+	</xsd:attributeGroup>
+    <xsd:attributeGroup name="implicitTransformGroup">
+        <!-- for backwards compatability, 'file' means implicit transform -->
+        <xsd:attribute name="file" type="xsd:string"/>
+        <xsd:attribute name="transformJBI" type="xsd:boolean" default="false"/>
+	</xsd:attributeGroup>
 </xsd:schema>

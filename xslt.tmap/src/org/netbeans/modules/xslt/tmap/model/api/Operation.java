@@ -33,11 +33,11 @@ public interface Operation extends TMapComponent, VariableDeclarator,
     
     List<Variable> getVariables();
     
-    List<Invokes> getInvokess();
+    List<Invoke> getInvokes();
     
-    void removeInvokes(Invokes invokes);
+    void removeInvoke(Invoke invoke);
     
-    void addInvokes(Invokes invokes);
+    void addInvoke(Invoke invoke);
     
     int getSizeOfInvokes();
     

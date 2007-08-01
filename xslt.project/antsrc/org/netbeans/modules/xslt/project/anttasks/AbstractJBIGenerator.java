@@ -44,7 +44,7 @@ import org.netbeans.modules.xml.wsdl.model.ReferenceableWSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.PartnerLinkTypeReference;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
@@ -331,14 +331,16 @@ public abstract class AbstractJBIGenerator {
                 continue;
             }
             for (Operation operation : operations) {
-                List<Invokes> invokess = operation.getInvokess();
-                if (invokess == null) {
+                List<Invoke> invokes = operation.getInvokes();
+                System.out.println("invokes: "+invokes);
+                if (invokes == null) {
                     continue;
                 }
-                
-                for (Invokes invokes : invokess) {
-                    if (invokes != null) {
-                        consumer = createServiceEntry(invokes);
+                System.out.println("invokes.size(): "+invokes.size());
+                for (Invoke invoke : invokes) {
+                    if (invoke != null) {
+                        consumer = createServiceEntry(invoke);
+                        System.out.println("created consumer "+consumer+" for invoke: "+invoke);
                         if (consumer != null && !mConsumers.contains(consumer)) {
                             mConsumers.add(consumer);
                         }                    
@@ -392,7 +394,8 @@ public abstract class AbstractJBIGenerator {
                     sb.append("        <consumes interface-name=\"" + getColonedQName(tmpService.getPortNameQname(), mNameSpacePrefix));
                     sb.append("\" service-name=\"" + getColonedQName(tmpService.getPartnerLinkNameQname(), mNameSpacePrefix));
                     sb.append("\" endpoint-name=\"" + tmpService.getRoleName());
-                    sb.append("\" link-type=\"standard\"/>\n");
+//                    sb.append("\" link-type=\"standard\"/>\n");
+                    sb.append("\" />\n");
                 }
             }
 

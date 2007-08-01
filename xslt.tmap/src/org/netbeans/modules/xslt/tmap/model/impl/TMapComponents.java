@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Transform;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
@@ -37,7 +37,7 @@ public enum TMapComponents {
     TRANSFORM_MAP("transformmap", ChildrenTypes.TRANSFORM_MAP_CHILDREN), // NOI18N
     SERVICE("service", ChildrenTypes.SERVICE_CHILDREN), // NOI18N
     OPERATION("operation", ChildrenTypes.OPERATION_CHILDREN), // NOI18N
-    INVOKES("invokes", ChildrenTypes.INVOKES_CHILDREN),// NOI18N
+    INVOKE("invoke", ChildrenTypes.INVOKE_CHILDREN),// NOI18N
     TRANSFORM("transform", ChildrenTypes.TRANSFORM_CHILDREN),// NOI18N
     PARAM("param", ChildrenTypes.PARAM_CHILDREN);// NOI18N
 
@@ -61,7 +61,7 @@ public enum TMapComponents {
         TRANSFORM_MAP_CHILDREN(createTransformMap()),
         SERVICE_CHILDREN(createService()),
         OPERATION_CHILDREN(createOperation()),
-        INVOKES_CHILDREN(createInvokes()),
+        INVOKE_CHILDREN(createInvoke()),
         TRANSFORM_CHILDREN(createTransform()),
         PARAM_CHILDREN(createParam());
         
@@ -89,12 +89,12 @@ public enum TMapComponents {
 
         private static Collection<Class<? extends TMapComponent>> createOperation() {
             Collection<Class<? extends TMapComponent>> children  = new ArrayList<Class<? extends TMapComponent>>(2);
-            children.add(Invokes.class);
+            children.add(Invoke.class);
             children.add(Transform.class);
             return children;
         }
 
-        private static Collection<Class<? extends TMapComponent>> createInvokes() {
+        private static Collection<Class<? extends TMapComponent>> createInvoke() {
             Collection<Class<? extends TMapComponent>> children  = Collections.emptyList();
             return children;
         }

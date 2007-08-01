@@ -23,7 +23,7 @@ import java.awt.Image;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
@@ -43,7 +43,7 @@ public enum NodeType {
     TRANSFORMMAP(TransformMap.class),
     SERVICE(Service.class),
     OPERATION(Operation.class),
-    INVOKES(Invokes.class),
+    INVOKE(Invoke.class),
     TRANSFORM(Transform.class),
     PARAM(Param.class);
 

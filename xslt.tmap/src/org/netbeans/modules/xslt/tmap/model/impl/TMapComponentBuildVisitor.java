@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.xslt.tmap.model.impl;
 
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
@@ -81,14 +81,14 @@ public class TMapComponentBuildVisitor implements TMapVisitor {
     }
 
     public void visit(Operation operation) {
-        if (isAcceptable(TMapComponents.INVOKES)) {
-            setResult(new InvokesImpl(getModel(), getElement()));
+        if (isAcceptable(TMapComponents.INVOKE)) {
+            setResult(new InvokeImpl(getModel(), getElement()));
         } else if (isAcceptable(TMapComponents.TRANSFORM)) {
             setResult(new TransformImpl(getModel(), getElement()));
         }
     }
 
-    public void visit(Invokes invokes) {
+    public void visit(Invoke invoke) {
         
     }
 

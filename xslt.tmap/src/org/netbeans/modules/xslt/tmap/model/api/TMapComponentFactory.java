@@ -43,7 +43,7 @@ public interface TMapComponentFactory extends ComponentFactory<TMapComponent> {
  *                &lt;/transform&gt;
  *            &lt;/operation&gt;
  *            &lt;operation opName="operation1"&gt;
- *                &lt;invokes  roleName="role2" partnerLinkType="ns0:plt2" inputVariable=""  outputVariable=""/&gt;
+ *                &lt;invoke  roleName="role2" partnerLinkType="ns0:plt2" inputVariable=""  outputVariable=""/&gt;
  *            &lt;/operation&gt;
  *        &lt;/service&gt;
  * 
@@ -57,7 +57,7 @@ public interface TMapComponentFactory extends ComponentFactory<TMapComponent> {
     
     Operation createOperation();
     
-    Invokes createInvokes();
+    Invoke createInvoke();
 
     Transform createTransform();
 

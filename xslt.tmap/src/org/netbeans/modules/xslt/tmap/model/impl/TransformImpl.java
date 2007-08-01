@@ -23,7 +23,7 @@ import java.util.List;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xslt.tmap.model.api.BooleanType;
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.TMapAttributes;

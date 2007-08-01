@@ -243,26 +243,26 @@ public class OldProjectTransformer {
             if (uniqueService.getRoleName().equals(service.getRoleName())
                     && uniqueService.getPartnerLinkNameQname().equals(service.getPartnerLinkNameQname())) 
             {
-                    TMapServiceEntry invokes = getInvokes(service);
+                    TMapServiceEntry invoke = getInvoke(service);
                     
-                    StringBuffer invokesSb = new StringBuffer();
-                    if (invokes != null) {
-                        invokesSb.append("            <invokes partnerLinkType=\"").
-                                append(getColonedQName(invokes.getPartnerLinkNameQname(), mNameSpacePrefix));
-                        invokesSb.append(" opName=\"").
-                                append(invokes.getOperation()).
+                    StringBuffer invokeSb = new StringBuffer();
+                    if (invoke != null) {
+                        invokeSb.append("            <invoke partnerLinkType=\"").
+                                append(getColonedQName(invoke.getPartnerLinkNameQname(), mNameSpacePrefix));
+                        invokeSb.append(" opName=\"").
+                                append(invoke.getOperation()).
                                 append("\" ");
-                        invokesSb.append(" roleName=\"").
-                                append(invokes.getRoleName()).
+                        invokeSb.append(" roleName=\"").
+                                append(invoke.getRoleName()).
                                 append("\" ");
-                        invokesSb.append(" file=\"").
-                                append(invokes.getFile()).
+                        invokeSb.append(" file=\"").
+                                append(invoke.getFile()).
                                 append("\" ");
-                        invokesSb.append(" transformJBI=\"").
-                                append(invokes.getTransformJBI()).
+                        invokeSb.append(" transformJBI=\"").
+                                append(invoke.getTransformJBI()).
                                 append("\" ");
                     } else {
-                        invokesSb.append("/>\n");
+                        invokeSb.append("/>\n");
                     }
                     
                     StringBuffer sbOperation = new StringBuffer();
@@ -276,7 +276,7 @@ public class OldProjectTransformer {
                     sbOperation.append(" transformJBI=\"").
                             append(service.getTransformJBI()).
                                 append("\" ");
-                    sbOperation.append(invokesSb);         
+                    sbOperation.append(invokeSb);         
                     
                     serviceOperations.append(sbOperation);
             }
@@ -285,14 +285,14 @@ public class OldProjectTransformer {
         return serviceOperations.toString();
     }
     
-    private TMapServiceEntry getInvokes(TMapServiceEntry input) {
+    private TMapServiceEntry getInvoke(TMapServiceEntry input) {
         if (mConsumers == null || mConsumers.size() == 0 
                 || input == null || input.getNode() == null) 
         {
             return null;
         }
         
-        TMapServiceEntry invokes = null;
+        TMapServiceEntry invoke = null;
         
         for (TMapServiceEntry consumer : mConsumers) {
             Node tmpNode = consumer.getNode();
@@ -304,12 +304,12 @@ public class OldProjectTransformer {
             }
 
             if (tmpNode.equals(input.getNode().getParentNode())) {
-                invokes = consumer;
+                invoke = consumer;
                 break;
             }
         }
 
-        return invokes;
+        return invoke;
     }
     
     private File getXsltMapFile() throws BuildException {

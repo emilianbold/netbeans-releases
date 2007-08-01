@@ -35,7 +35,7 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Reference;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Operation;
 import org.netbeans.modules.xslt.tmap.model.api.Service;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
@@ -422,9 +422,9 @@ public class MapperContextFactory {
         } else if (varName.equals(((Operation)operation).getOutputVariable())) {
             message = getMessage((Operation)operation, false);
         } else {
-            List<Invokes> invokess = ((Operation)operation).getInvokess();
-            if (invokess != null && invokess.size() > 0) {
-                for (Invokes elem : invokess) {
+            List<Invoke> invokes = ((Operation)operation).getInvokes();
+            if (invokes != null && invokes.size() > 0) {
+                for (Invoke elem : invokes) {
                     org.netbeans.modules.xml.wsdl.model.Operation tmpOp = null;
                     if (elem != null) {
                         if (varName.equals(elem.getInputVariable())) {

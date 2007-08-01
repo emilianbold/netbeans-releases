@@ -11,7 +11,7 @@
                </transform>
            </operation>
            <operation opName="operation1">
-               <invokes  roleName="role2" partnerLinkType="ns0:plt2" inputVariable=""  outputVariable=""/>
+               <invoke roleName="role2" partnerLinkType="ns0:plt2" inputVariable=""  outputVariable=""/>
            </operation>
        </service>
 

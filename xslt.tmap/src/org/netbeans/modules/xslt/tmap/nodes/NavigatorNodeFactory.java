@@ -19,7 +19,7 @@
 package org.netbeans.modules.xslt.tmap.nodes;
 
 import org.netbeans.modules.soa.ui.nodes.ReflectionNodeFactory;
-import org.netbeans.modules.xslt.tmap.model.api.Invokes;
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
 import org.netbeans.modules.xslt.tmap.model.api.Param;
 import org.netbeans.modules.xslt.tmap.model.api.TMapComponent;
 import org.netbeans.modules.xslt.tmap.model.api.TMapModel;
@@ -46,7 +46,7 @@ public class NavigatorNodeFactory extends ReflectionNodeFactory<NodeType> {
         key2Class.put(NodeType.TRANSFORMMAP, TransformMapNode.class);
         key2Class.put(NodeType.SERVICE, ServiceNode.class);
         key2Class.put(NodeType.OPERATION, OperationNode.class);
-        key2Class.put(NodeType.INVOKES, InvokesNode.class);
+        key2Class.put(NodeType.INVOKE, InvokeNode.class);
         key2Class.put(NodeType.TRANSFORM, TransformNode.class);
         key2Class.put(NodeType.PARAM, ParamNode.class);
     }
@@ -106,9 +106,9 @@ public class NavigatorNodeFactory extends ReflectionNodeFactory<NodeType> {
                         : "reference should be Param type to create Param type Node"; // NOI18N
                 node = super.createNode(nodeType, ref, Children.LEAF, lookup);
                 break;
-            case INVOKES:
-                assert ref instanceof Invokes 
-                        : "reference should be Invokes type to create Invokes type Node"; // NOI18N
+            case INVOKE:
+                assert ref instanceof Invoke 
+                        : "reference should be Invoke type to create Invoke type Node"; // NOI18N
                 node = super.createNode(nodeType, ref, Children.LEAF, lookup);
                 break;
         }

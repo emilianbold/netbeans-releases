@@ -16,40 +16,25 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.xslt.tmap.model.api;
+
+package org.netbeans.modules.xslt.tmap.nodes;
+
+import org.netbeans.modules.xslt.tmap.model.api.Invoke;
+import org.openide.nodes.Children;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Vitaly Bychkov
  * @version 1.0
  */
-public class TMapVisitorAdapter implements TMapVisitor {
+public class InvokeNode extends  TMapComponentNode<DecoratedInvoke> {
 
-    public void visit(TransformMap transformMap) {
-        visit((TMapComponent)transformMap);
+    public InvokeNode(Invoke ref, Lookup lookup) {
+        this(ref, Children.LEAF, lookup);
     }
 
-    public void visit(Service service) {
-        visit((TMapComponent)service);
+    public InvokeNode(Invoke ref, Children children, Lookup lookup) {
+        super(new DecoratedInvoke(ref), children, lookup);
     }
-
-    public void visit(Operation operation) {
-        visit((TMapComponent)operation);
-    }
-
-    public void visit(Invoke invoke) {
-        visit((TMapComponent)invoke);
-    }
-
-    public void visit(Transform transform) {
-        visit((TMapComponent)transform);
-    }
-
-    public void visit(Param param) {
-        visit((TMapComponent)param);
-    }
-
-    private void visit(TMapComponent component) {
-    }
-
 }
