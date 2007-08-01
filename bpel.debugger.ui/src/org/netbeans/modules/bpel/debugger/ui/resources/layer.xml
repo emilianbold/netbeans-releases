@@ -30,6 +30,9 @@
                 </folder>
             </folder>
         </folder>
+        <folder name="Debug">
+            <file name="org-netbeans-modules-bpel-debugger-ui-action-BreakpointEnableAction.instance"/>
+        </folder>
     </folder>
 
     <folder name="Menu">
@@ -112,14 +115,22 @@
                 </folder>
             </folder>
         </folder>
-<!--  Don't need activity annotations for source editor (they are used on diagram only
         <folder name="AnnotationTypes">
+            <!--
+            Hide this action for now - see issue 108002
+            <folder name="BreakpointActions">
+                <file name="org-netbeans-modules-bpel-debugger-ui-action-BreakpointEnableAction.instance">
+                    <attr name="position" intvalue="100"/>
+                </file>
+            </folder>
+            -->
+<!--  Don't need activity annotations for source editor (they are used on diagram only
             <file name="NeverExecutedElement.xml" url="NeverExecutedElement.xml"/>
             <file name="StartedElement.xml" url="StartedElement.xml"/>
             <file name="CompletedElement.xml" url="CompletedElement.xml"/>
             <file name="FaultedElement.xml" url="FaultedElement.xml"/>
-        </folder>
 -->    
+        </folder>
     </folder>
     
 </filesystem>

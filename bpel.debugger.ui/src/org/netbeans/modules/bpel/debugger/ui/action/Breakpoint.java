@@ -57,7 +57,7 @@ import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2005.10.19
+ * @author Alexander Zgursky
  */
 public class Breakpoint extends ActionsProviderSupport {
     
@@ -87,7 +87,7 @@ public class Breakpoint extends ActionsProviderSupport {
             return;
         }
         
-        DataObject dataObject = getDataObject(node);
+        DataObject dataObject = node.getLookup().lookup(DataObject.class);
         if (dataObject == null) {
             return;
         }
@@ -105,14 +105,10 @@ public class Breakpoint extends ActionsProviderSupport {
         if ((node instanceof InstanceRef) && !isInSourceEditor()) {
             Object modelReference = ((InstanceRef)node).getReference();
             
-            if (modelReference == null) {
+            if (modelReference == null || !(modelReference instanceof Activity)) {
                 return;
             }
 
-            if (!(modelReference instanceof Activity)) {
-                return;
-            }
-            
             Activity activity = (Activity)modelReference;
             bpelEntityId = activity.getUID();
         } else {
@@ -142,7 +138,7 @@ public class Breakpoint extends ActionsProviderSupport {
         }
         
         DebuggerManager debuggerManager = DebuggerManager.getDebuggerManager();
-        LineBreakpoint breakpoint =
+        LineBreakpoint breakpoint = getBreakpointAnnotationListener().
                 findBreakpoint(url, xpath);
         if (breakpoint != null) {
             // Breakpoint already exists
@@ -151,13 +147,8 @@ public class Breakpoint extends ActionsProviderSupport {
         }
         
         // No breakpoint exists - add the breakpoint.
-        LineBreakpoint newBreakpoint =
-                LineBreakpoint.create(url, xpath);
+        LineBreakpoint newBreakpoint = LineBreakpoint.create(url, xpath);
         debuggerManager.addBreakpoint(newBreakpoint);
-    }
-    
-    private LineBreakpoint findBreakpoint(String url, String xpath) {
-        return getBreakpointAnnotationListener().findBreakpoint(url, xpath);
     }
     
     /**{@inheritDoc}*/
@@ -168,16 +159,7 @@ public class Breakpoint extends ActionsProviderSupport {
     private Node getCurrentNode() {
         Node [] nodes = WindowManager.getDefault().getRegistry().getCurrentNodes();
         
-        if (nodes == null) {
-            Log.out("Current nodes are null"); // NOI18N
-            return null;
-        }
-        if (nodes.length == 0) {
-            Log.out("There is no current node"); // NOI18N
-            return null;
-        }
-        if (nodes.length != 1) {
-            Log.out("There are too many current nodes"); // NOI18N
+        if (nodes == null || nodes.length != 1 ) {
             return null;
         }
         return nodes [0];
@@ -202,55 +184,38 @@ public class Breakpoint extends ActionsProviderSupport {
         if (dataObject == null) {
             return null;
         }
-        FileObject fileObject = dataObject.getPrimaryFile();
         
+        FileObject fileObject = dataObject.getPrimaryFile();
         if (fileObject == null) {
-            Log.out("fileObject is null"); // NOI18N
             return null;
         }
+        
         return fileObject.getExt();
     }
     
-    private DataObject getDataObject(Node node) {
-        if (node == null) {
-            return null;
-        }
-        return (DataObject)node.getLookup().lookup(DataObject.class);
-    }
-    
     private int getCurrentLineNumber(Node node) {
-        EditorCookie editorCookie =
-            (EditorCookie) node.getLookup().lookup(EditorCookie.class);
-        
+        EditorCookie editorCookie = node.getLookup().lookup(EditorCookie.class);
         if (editorCookie == null) {
-            Log.out("Editor cookie is null"); // NOI18N
-            return -1;
-        }
-        StyledDocument document = editorCookie.getDocument();
-        
-        if (document == null) {
-            Log.out("Document is null"); // NOI18N
             return -1;
         }
         
         JEditorPane[] editorPanes = editorCookie.getOpenedPanes();
-
-        if (editorPanes == null) {
-            Log.out("Editor panes are null"); // NOI18N
+        if (editorPanes == null || editorPanes.length == 0) {
             return -1;
         }
-        if (editorPanes.length == 0) {
-            Log.out("There is no editor pane"); // NOI18N
-            return -1;
-        }
-        Caret caret = editorPanes [0].getCaret();
-
+        
+        Caret caret = editorPanes[0].getCaret();
         if (caret == null) {
-            Log.out("Caret is null"); // NOI18N
             return -1;
         }
+        
         int offset = caret.getDot();
-
+        
+        StyledDocument document = editorCookie.getDocument();
+        if (document == null) {
+            return -1;
+        }
+        
         return NbDocument.findLineNumber(document, offset) + 1;
     }
     
