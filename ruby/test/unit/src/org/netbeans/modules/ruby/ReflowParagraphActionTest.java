@@ -34,12 +34,13 @@ public class ReflowParagraphActionTest extends RubyTestBase {
         caretLine = caretLine.substring(0, caretDelta) + caretLine.substring(caretDelta + 1);
         int lineOffset = before.indexOf(caretLine);
         assertTrue(lineOffset != -1);
+        int caretOffset = lineOffset+caretDelta;
 
         
         ReflowParagraphAction action = new ReflowParagraphAction();
         JTextArea ta = new JTextArea(doc);
         Caret caret = ta.getCaret();
-        caret.setDot(lineOffset);
+        caret.setDot(caretOffset);
         action.actionPerformed(ta);
         
         String after = doc.getText(0, doc.getLength());
@@ -53,7 +54,12 @@ public class ReflowParagraphActionTest extends RubyTestBase {
     public void testHttpHeaderFormatting() throws Exception {
         formatParagraph("testfiles/http-header.comment", " under the sa^me terms of ruby");
     }
+
     public void testHttpFormatting() throws Exception {
         formatParagraph("testfiles/http.comment", "This lib^rary provides your program functions");
+    }
+    
+    public void testHttpFormatting2() throws Exception {
+        formatParagraph("testfiles/http.comment", "#^ Example #4: More generic GET+prin");
     }
 }

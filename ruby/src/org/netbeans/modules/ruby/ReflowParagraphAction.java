@@ -360,6 +360,8 @@ public class ReflowParagraphAction extends AbstractAction {
             if (!documentation) {
                 if (text.startsWith("# ")) {
                     text = text.substring(2);
+                } else if (text.startsWith("#"+CARET_MARKER + " ")) {
+                    text = CARET_MARKER + text.substring(3);
                 } else if (text.equals("#")) {
                     // Empty comment line
                     text = "";
@@ -537,7 +539,7 @@ public class ReflowParagraphAction extends AbstractAction {
                 LexUtilities.indent(sb, listIndentation);
             }
             column += sb.length() - oldOffset;
-            boolean skipWhitespace = true;
+            int maxWidth = rightMargin;
 
             // Skip spaces at the beginning of the line
             while (offset < buffer.length()) {
@@ -554,10 +556,9 @@ public class ReflowParagraphAction extends AbstractAction {
                 int end = findWordEnd(buffer, start);
 
                 int wordLength = end - start;
-                if (column + wordLength > rightMargin && (wordLength < rightMargin - indent)) {
-                    if (skipWhitespace) {
-                        chompSpaces();
-                    }
+                // TODO - if the line contains the caret, reduce the right margin
+                if (column + wordLength > maxWidth && (wordLength < maxWidth - indent)) {
+                    chompSpaces();
                     sb.append("\n"); // NOI18N
                     oldOffset = sb.length();
                     startComment();
@@ -570,9 +571,9 @@ public class ReflowParagraphAction extends AbstractAction {
 
                 for (int i = start; i < end; i++) {
                     char c = buffer.charAt(i);
-                    //if (c == CARET_MARKER) {
-                    //    skipWhitespace = false;
-                    //}
+                    if (c == CARET_MARKER) {
+                        maxWidth = rightMargin+1;
+                    }
                     sb.append(c);
                     column++;
                 }
@@ -588,12 +589,6 @@ public class ReflowParagraphAction extends AbstractAction {
                         if (column < rightMargin) {
                             sb.append(c);
                             column++;
-                        } else if (!skipWhitespace) {
-                            // Ignore whitespace at the end of a line
-                            // unless it's the line containing the caret
-                            // (we may be editing here)
-                            sb.append(c);
-                            column++;
                         }
                         offset++;
                     } else {
@@ -603,9 +598,7 @@ public class ReflowParagraphAction extends AbstractAction {
             }
 
             // Chomp trailing extra space
-            if (skipWhitespace) {
-                chompSpaces();
-            }
+            chompSpaces();
             
             sb.append("\n");
             buffer.setLength(0);
