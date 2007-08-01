@@ -89,6 +89,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         resultsList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SummaryView.class, "ACSD_SummaryView_List")); // NOI18N
         scrollPane = new JScrollPane(resultsList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         master.addComponentListener(this);
+        resultsList.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
+                KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
+        resultsList.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                onPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(resultsList));
+            }
+        });        
     }
 
     public void componentResized(ComponentEvent e) {
@@ -203,9 +210,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     private void onPopup(MouseEvent e) {
+        onPopup(e.getPoint());
+    }
+    
+    private void onPopup(Point p) {
         int [] sel = resultsList.getSelectedIndices();
         if (sel.length == 0) {
-            int idx = resultsList.locationToIndex(e.getPoint());
+            int idx = resultsList.locationToIndex(p);
             if (idx == -1) return;
             resultsList.setSelectedIndex(idx);
             sel = new int [] { idx };
@@ -279,7 +290,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }));
         }
 
-        menu.show(e.getComponent(), e.getX(), e.getY());
+        menu.show(resultsList, p.x, p.y);
     }
 
     /**

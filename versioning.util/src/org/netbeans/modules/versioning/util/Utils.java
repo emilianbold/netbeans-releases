@@ -427,6 +427,20 @@ public final class Utils {
     }
 
     /**
+     * For popups invoked by keyboard determines best location for it. 
+     * 
+     * @param list source of popup event
+     * @return Point best location for menu popup
+     */
+    public static Point getPositionForPopup(JList list) {
+        int idx = list.getSelectedIndex();
+        if (idx == -1) idx = 0;
+        Rectangle rect = list.getCellBounds(idx, idx);
+        rect.x += 10; rect.y += rect.height;
+        return rect.getLocation();
+    }
+    
+    /**
      * Creates a menu item from an action.
      * 
      * @param action an action
