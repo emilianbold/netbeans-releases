@@ -24,6 +24,7 @@ package org.netbeans.core.windows.actions;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
+import org.netbeans.core.windows.WindowManagerImpl;
 
 
 /**
@@ -76,6 +77,11 @@ public class CloseAllDocumentsAction extends AbstractAction {
         } else {
             return super.getValue(key);
         }
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return WindowManagerImpl.getInstance().getEditorTopComponents().length > 0;
     }
     
 }
