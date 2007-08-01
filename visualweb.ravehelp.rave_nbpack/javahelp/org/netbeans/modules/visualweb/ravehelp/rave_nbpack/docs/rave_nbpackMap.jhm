@@ -218,7 +218,6 @@
 	<mapID target="projrave_multiple_forms_multiform_process" url="multiple_forms/multiform_process.html"/>
 	<mapID target="projrave_no_topic" url="no_topic.html"/>
 	<mapID target="projrave_projects_about_lib_refs" url="projects/about_lib_refs.html"/>
-	<mapID target="projrave_projects_aboutprojects" url="projects/aboutprojects.html"/>
 	<mapID target="projrave_projects_howtoprojects_aboutregularexpn" url="projects/howtoprojects/aboutregularexpn.html"/>
 	<mapID target="projrave_projects_howtoprojects_add_css_file" url="projects/howtoprojects/add_css_file.html"/>
 	<mapID target="projrave_projects_howtoprojects_add_image" url="projects/howtoprojects/add_image.html"/>
@@ -252,8 +251,6 @@
 	<mapID target="projrave_ui_elements_dialogs_config_virtual_forms_db" url="ui_elements/dialogs/config_virtual_forms_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_currencycodepopup" url="ui_elements/dialogs/currencycodepopup.html"/>
 	<mapID target="projrave_ui_elements_dialogs_data_table_layout_db" url="ui_elements/dialogs/data_table_layout_db.html"/>
-	<mapID target="projrave_ui_elements_dialogs_delete_component_lib_db" url="ui_elements/dialogs/delete_component_lib_db.html"/>
-	<mapID target="projrave_ui_elements_dialogs_edit_database_types_db" url="ui_elements/dialogs/edit_database_svr_types_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_findinfiles" url="ui_elements/dialogs/findinfiles.html"/>
 	<mapID target="projrave_ui_elements_dialogs_import_components_db" url="ui_elements/dialogs/import_components_db.html"/>
 	<mapID target="projrave_ui_elements_dialogs_new_database_connection_db" url="ui_elements/dialogs/new_database_connection_db.html"/>

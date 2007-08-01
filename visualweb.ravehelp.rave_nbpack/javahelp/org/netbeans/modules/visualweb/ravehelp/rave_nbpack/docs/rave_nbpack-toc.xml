@@ -494,8 +494,6 @@
 				<tocitem text="Add Component Library" target="projrave_ui_elements_dialogs_add_complib" />
 				<tocitem text="Component Library Manager" target="projrave_ui_elements_dialogs_component_library_manager" />
 				<tocitem text="Configure Virtual Forms" target="projrave_ui_elements_dialogs_config_virtual_forms_db" />
-				<tocitem text="Delete Component Library Dialog Box" target="projrave_ui_elements_dialogs_delete_component_lib_db" />
-				<tocitem text="Edit Database Types" target="projrave_ui_elements_dialogs_edit_database_types_db" />
 				<tocitem text="Find" target="projrave_ui_elements_dialogs_findinfiles" />
 				<tocitem text="Import Components" target="projrave_ui_elements_dialogs_import_components_db" />
 				<tocitem text="New Database Connection" target="projrave_ui_elements_dialogs_new_database_connection_db" />
