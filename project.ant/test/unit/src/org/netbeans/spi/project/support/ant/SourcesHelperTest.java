@@ -452,10 +452,10 @@ public final class SourcesHelperTest extends NbTestCase {
         sh.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         FileObject projdir2 = maindir.createFolder("proj-dir2");
         ProjectGenerator.createProject(projdir2, "test");
-        Project project2 = ProjectManager.getDefault().findProject(projdir2);
+        Project prj2 = ProjectManager.getDefault().findProject(projdir2);
         FileObject docfiles = src2dir.getFileObject("javax/swing/doc-files");
         assertNotNull(docfiles);
-        FileOwnerQuery.markExternalOwner(docfiles, project2, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        FileOwnerQuery.markExternalOwner(docfiles, prj2, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
         assertOwner(null, g2, "java/lang/Class.java");
         assertOwner(project, g2, "javax/swing/JComponent.java");
         assertOwner(project, g2, "javax/swing");
@@ -468,8 +468,8 @@ public final class SourcesHelperTest extends NbTestCase {
         assertOwner(null, g2, "com/sun");
         assertOwner(null, g2, "com");
         assertOwner(null, g2, "org/omg/CORBA/Any.java");
-        assertOwner(project2, g2, "javax/swing/doc-files/groupLayout.1.gif");
-        assertOwner(project2, g2, "javax/swing/doc-files");
+        assertOwner(prj2, g2, "javax/swing/doc-files/groupLayout.1.gif");
+        assertOwner(prj2, g2, "javax/swing/doc-files");
         assertOwner(project, g2, "com/sun/java/swing");
         assertOwner(project, g2, "docs/html/index.html");
         assertOwner(project, g2, "docs/html");
