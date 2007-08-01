@@ -764,9 +764,7 @@ public final class ModuleManager {
                 bogus.removeAll(testing);
                 throw new IllegalArgumentException("Not all requested modules can be enabled: " + bogus); // NOI18N
             }
-            Iterator it = testing.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m : testing) {
                 if (!modules.contains(m) && !m.isAutoload() && !m.isEager()) {
                     throw new IllegalArgumentException("Would also need to enable " + m); // NOI18N
                 }
@@ -866,9 +864,7 @@ public final class ModuleManager {
                 firer.change(new ChangeFirer.Change(bad, Module.PROP_PROBLEMS, Collections.EMPTY_SET, Collections.singleton("something"))); // NOI18N
                 // Rollback changes made so far before rethrowing.
                 Util.err.fine("enable: will roll back from: " + ie);
-                Iterator fbIt = fallback.iterator();
-                while (fbIt.hasNext()) {
-                    Module m = (Module)fbIt.next();
+                for (Module m : fallback) {
                     if (m.isFixed()) {
                         // cannot disable fixed modules
                         continue;
@@ -891,19 +887,18 @@ public final class ModuleManager {
             if (classLoader != null) {
                 Util.err.fine("enable: adding to system classloader");
                 List<ClassLoader> nueclassloaders = new ArrayList<ClassLoader>(toEnable.size());
-                Iterator<Module> teIt = toEnable.iterator();
                 if (moduleFactory.removeBaseClassLoader()) {
                     ClassLoader base = ModuleManager.class.getClassLoader();
                     nueclassloaders.add(moduleFactory.getClasspathDelegateClassLoader(this, base));
-                    while (teIt.hasNext()) {
-                        ClassLoader c1 = teIt.next().getClassLoader();
+                    for (Module m : toEnable) {
+                        ClassLoader c1 = m.getClassLoader();
                         if (c1 != base) {
                             nueclassloaders.add(c1);
                         }
                     }
                 } else {
-                    while (teIt.hasNext()) {
-                        nueclassloaders.add(teIt.next().getClassLoader());
+                    for (Module m : toEnable) {
+                        nueclassloaders.add(m.getClassLoader());
                     }
                 }
                 classLoader.append((nueclassloaders.toArray(new ClassLoader[nueclassloaders.size()])), toEnable);
@@ -918,9 +913,7 @@ public final class ModuleManager {
             Util.err.fine("enable: firing changes");
             firer.change(new ChangeFirer.Change(this, PROP_ENABLED_MODULES, null, null));
             // The class loader does not actually change as a result of this.
-            Iterator it = toEnable.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m : toEnable) {
                 firer.change(new ChangeFirer.Change(m, ModuleInfo.PROP_ENABLED, Boolean.FALSE, Boolean.TRUE));
                 if (! m.isFixed()) {
                     firer.change(new ChangeFirer.Change(m, Module.PROP_CLASS_LOADER, null, null));
@@ -959,9 +952,7 @@ public final class ModuleManager {
         {
             // Actually turn off all modules.
             installer.unload(toDisable);
-            Iterator it = toDisable.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m : toDisable) {
                 installer.dispose(m);
                 m.setEnabled(false);
                 m.classLoaderDown();
@@ -969,9 +960,7 @@ public final class ModuleManager {
             System.gc(); // hope OneModuleClassLoader.finalize() is called...
             System.runFinalization();
             // but probably it won't be. See #4405807.
-            it = toDisable.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m : toDisable) {
                 m.cleanup();
             }
         }
@@ -981,9 +970,7 @@ public final class ModuleManager {
             firer.change(new ChangeFirer.Change(this, PROP_ENABLED_MODULES, null, null));
             // Class loader will change as a result.
             invalidateClassLoader();
-            Iterator it = toDisable.iterator();
-            while (it.hasNext()) {
-                Module m = (Module)it.next();
+            for (Module m : toDisable) {
                 firer.change(new ChangeFirer.Change(m, ModuleInfo.PROP_ENABLED, Boolean.TRUE, Boolean.FALSE));
                 firer.change(new ChangeFirer.Change(m, Module.PROP_CLASS_LOADER, null, null));
             }
@@ -1220,9 +1207,7 @@ public final class ModuleManager {
         // XXX also optimize for modules.size == 1
         // Probably not a very efficient algorithm. But it probably does not need to be.
         Set<Module> willDisable = new HashSet<Module>(20);
-        Iterator it = modules.iterator();
-        while (it.hasNext()) {
-            Module m = (Module)it.next();
+        for (Module m : modules) {
             if (m.isAutoload()) throw new IllegalArgumentException("Cannot disable autoload: " + m); // NOI18N
             if (m.isEager()) throw new IllegalArgumentException("Cannot disable eager module: " + m); // NOI18N
             if (m.isFixed()) throw new IllegalArgumentException("Cannot disable fixed module: " + m); // NOI18N
