@@ -2,7 +2,10 @@
 
 <Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -17,7 +20,7 @@
                   <Component id="jButton1" min="-2" max="-2" attributes="0"/>
                   <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace pref="143" max="32767" attributes="0"/>
+              <EmptySpace pref="13" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -37,14 +40,14 @@
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/platform/platformdefinition/Bundle.properties" key="LBL_SDKConfigLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/platform/semc/Bundle.properties" key="LBL_SDKConfigLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="jButton1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/j2me/cdc/platform/platformdefinition/Bundle.properties" key="LBL_SDKConfigLauncher" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/j2me/cdc/platform/semc/Bundle.properties" key="LBL_SDKConfigLauncher" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>

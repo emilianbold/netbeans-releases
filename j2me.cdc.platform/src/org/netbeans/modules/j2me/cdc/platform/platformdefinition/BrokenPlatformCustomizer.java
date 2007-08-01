@@ -62,9 +62,9 @@ public class BrokenPlatformCustomizer extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/cdc/platform/platformdefinition/Bundle").getString("MNE_PlatformName").charAt(0));
         jLabel1.setLabelFor(platformName);
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/cdc/platform/platformdefinition/Bundle").getString("CTL_PlatformName"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/cdc/platform/platformdefinition/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("CTL_PlatformName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
@@ -79,9 +79,8 @@ public class BrokenPlatformCustomizer extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(platformName, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/cdc/platform/platformdefinition/Bundle").getString("MNE_PlatformHome").charAt(0));
         jLabel2.setLabelFor(platformHome);
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2me/cdc/platform/platformdefinition/Bundle").getString("CTL_PlatformHome"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("CTL_PlatformHome")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 6);
@@ -107,7 +106,6 @@ public class BrokenPlatformCustomizer extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 12);
         add(jTextPane1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
    
     

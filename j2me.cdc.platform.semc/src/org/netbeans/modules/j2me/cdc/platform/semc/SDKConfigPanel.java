@@ -60,12 +60,13 @@ public class SDKConfigPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(SDKConfigPanel.class, "LBL_SDKConfigLabel"));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(SDKConfigPanel.class, "LBL_SDKConfigLabel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(SDKConfigPanel.class, "LBL_SDKConfigLauncher"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(SDKConfigPanel.class, "LBL_SDKConfigLauncher")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -81,7 +82,7 @@ public class SDKConfigPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jButton1)
                     .add(jLabel1))
-                .addContainerGap(143, Short.MAX_VALUE))
+                .addContainerGap(13, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
