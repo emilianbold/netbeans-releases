@@ -584,7 +584,7 @@ public class BracketCompleterTest extends RubyTestBase {
             insertBreak("   #\t^", "   #\t\n   ^");
         }
     }
-    
+
     public void testContComment4() throws Exception {
         insertBreak("# foo\n^", "# foo\n\n^");
     }
@@ -598,6 +598,18 @@ public class BracketCompleterTest extends RubyTestBase {
         }
     }
     
+    public void testContComment6() throws Exception {
+        insertBreak("   # foo^bar", "   # foo\n   # ^bar");
+    }
+    
+    public void testContComment7() throws Exception {
+        insertBreak("   # foo^\n   # bar", "   # foo\n   # ^\n   # bar");
+    }
+    
+    public void testContComment8() throws Exception {
+        insertBreak("   # foo^bar", "   # foo\n   # ^bar");
+    }
+
     public void testNoContComment() throws Exception {
         // No auto-# on new lines
         insertBreak("foo # ^", "foo # \n^");
@@ -606,6 +618,11 @@ public class BracketCompleterTest extends RubyTestBase {
     public void testDeleteContComment() throws Exception {
         deleteChar("# ^", "^");
         deleteChar("\n# ^", "\n^");
+    }
+    
+    public void testDeleteContComment2() throws Exception {
+        deleteChar("# ^  ", "^  ");
+        deleteChar("\n# ^  ", "\n^  ");
     }
     
     public void testNoDeleteContComment() throws Exception {

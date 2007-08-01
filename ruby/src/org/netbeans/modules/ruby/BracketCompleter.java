@@ -93,12 +93,17 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion {
+    /** When true, automatically reflows comments that are being edited according to the rdoc
+     * conventions as well as the right hand side margin
+     */
+    private static final boolean REFLOW_COMMENTS = Boolean.getBoolean("ruby.autowrap.comments"); // NOI18N
+
     /** When true, continue comments if you press return in a line comment (that does not
      * also have code on the same line 
      */
     //static final boolean CONTINUE_COMMENTS = !Boolean.getBoolean("ruby.no.cont.comment"); // NOI18N
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("ruby.cont.comment"); // NOI18N
-    
+
     /** Tokens which indicate that we're within a literal string */
     private final static TokenId[] STRING_TOKENS = // XXX What about RubyTokenId.STRING_BEGIN or QUOTED_STRING_BEGIN?
         {
@@ -307,12 +312,46 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             caret.setDot(insertOffset);
         }
         
-        if (CONTINUE_COMMENTS && id == RubyTokenId.LINE_COMMENT) {
-            // Only do this if the line only contains comments
-            int begin = Utilities.getRowFirstNonWhite(doc, offset);
-            token = LexUtilities.getToken(doc, begin);
+        if (id == RubyTokenId.LINE_COMMENT) {
+            // Only do this if the line only contains comments OR if there is content to the right on this line,
+            // or if the next line is a comment!
 
-            if (token.id() == RubyTokenId.LINE_COMMENT) {
+            boolean continueComment = false;
+            int begin = Utilities.getRowFirstNonWhite(doc, offset);
+            
+            // See if we have more input on this comment line (to the right
+            // of the inserted newline); if so it's a "split" operation on
+            // the comment
+            if (ts.offset()+token.length() > offset+1) {
+                // See if the remaining text is just whitespace
+                String trailing = doc.getText(offset,Utilities.getRowEnd(doc, offset)-offset);
+                if (trailing.trim().length() != 0) {
+                    continueComment = true;
+                }
+            } else if (CONTINUE_COMMENTS) {
+                // See if the "continue comments" options is turned on, and this is a line that
+                // contains only a comment (after leading whitespace)
+                Token<? extends GsfTokenId> firstToken = LexUtilities.getToken(doc, begin);
+                if (firstToken.id() == RubyTokenId.LINE_COMMENT) {
+                    continueComment = true;
+                }
+            }
+            if (!continueComment) {
+                // See if the next line is a comment; if so we want to continue
+                // comments editing the middle of the comment
+                int nextLine = Utilities.getRowEnd(doc, offset)+1;
+                if (nextLine < doc.getLength()) {
+                    int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
+                    if (nextLineFirst != -1) {
+                        Token<? extends GsfTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
+                        if (firstToken != null && firstToken.id() == RubyTokenId.LINE_COMMENT) {
+                            continueComment = true;
+                        }
+                    }
+                }
+            }
+                
+            if (continueComment) {
                 // Line comments should continue
                 int indent = LexUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
@@ -670,6 +709,16 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         Caret caret = target.getCaret();
         BaseDocument doc = (BaseDocument)document;
 
+        if (REFLOW_COMMENTS) {
+            Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
+            if (token != null) {
+                TokenId id = token.id();
+                if (id == RubyTokenId.LINE_COMMENT || id == RubyTokenId.DOCUMENTATION) {
+                    new ReflowParagraphAction().reflowEditedComment(target);
+                }
+            }
+        }
+        
         // See if our automatic adjustment of indentation when typing (for example) "end" was
         // premature - if you were typing a longer word beginning with one of my adjustment
         // prefixes, such as "endian", then put the indentation back.
@@ -966,12 +1015,12 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
         BaseDocument doc = (BaseDocument)document;
         
         // Backspacing over "# " ? Delete the "#" too!
-        if (/*CONTINUE_COMMENTS && */ ch == ' ') {
-            Token token = LexUtilities.getToken(doc, dotPos);
+        if (ch == ' ') {
             TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, dotPos);
             ts.move(dotPos);
-            if (ts.movePrevious() && ts.offset() == dotPos-1 && ts.token().id() == RubyTokenId.LINE_COMMENT) {
+            if ((ts.moveNext() || ts.movePrevious()) && (ts.offset() == dotPos-1 && ts.token().id() == RubyTokenId.LINE_COMMENT)) {
                 doc.remove(dotPos-1, 1);
+                target.getCaret().setDot(dotPos-1);
                 
                 return true;
             }
