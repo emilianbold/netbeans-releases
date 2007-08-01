@@ -146,9 +146,9 @@ public class MonitorSupport {
         // getting Tomcat4.0 Directory
         File instDir = tm.getTomcatProperties().getCatalinaHome();
         if (instDir==null) return;
-        String libFolder = tm.libFolder();
-        copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar"  , instDir, libFolder + "/org-netbeans-modules-web-httpmonitor.jar");  // NOI18N
-        copyFromIDEInstToDir("modules/org-netbeans-modules-schema2beans.jar" , instDir, libFolder + "/org-netbeans-modules-schema2beans.jar"); // NOI18N
+        File libFolder = tm.getTomcatProperties().getMonitorLibFolder();
+        copyFromIDEInstToDir("modules/ext/org-netbeans-modules-web-httpmonitor.jar", new File(libFolder, "org-netbeans-modules-web-httpmonitor.jar"));  // NOI18N
+        copyFromIDEInstToDir("modules/org-netbeans-modules-schema2beans.jar", new File(libFolder, "org-netbeans-modules-schema2beans.jar")); // NOI18N
         
         //copyFromIDEInstToDir("modules/ext/monitor-valve.jar", instDir, "server/lib/monitor-valve.jar"); // NOI18N
     }
@@ -243,8 +243,7 @@ public class MonitorSupport {
         return InstalledFileLocator.getDefault().locate(instRelPath, null, false);
     }
     
-    private static void copyFromIDEInstToDir(String sourceRelPath, File copyTo, String targetRelPath) throws IOException {
-        File targetFile = findFileUnderBase(copyTo, targetRelPath);
+    private static void copyFromIDEInstToDir(String sourceRelPath, File targetFile) throws IOException {
         File sourceFile = findInstallationFile(sourceRelPath);
         if (sourceFile != null && sourceFile.exists()) {
             if (!targetFile.exists() 
@@ -261,14 +260,6 @@ public class MonitorSupport {
         while((b=bis.read())!=-1)bos.write(b);
         bis.close();
         bos.close();
-    }
-    
-    private static File findFileUnderBase(File base, String fileRelPath) {
-        if (fileRelPath.startsWith("/")) { // NOI18N
-            fileRelPath = fileRelPath.substring(1);
-        }
-        fileRelPath = fileRelPath.replace('/', File.separatorChar);
-        return new File(base, fileRelPath);
     }
     
     /** Inserts or and updates in the Monitor Filter element the parameter

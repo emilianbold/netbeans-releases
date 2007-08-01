@@ -44,6 +44,7 @@ import org.w3c.dom.Document;
 import org.apache.xml.serialize.*;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -297,6 +298,73 @@ public class TomcatInstallUtil {
             Logger.getLogger("global").log(Level.INFO, null, e);
         } catch (RuntimeException e) {
             Logger.getLogger("global").log(Level.INFO, null, e);
+        }
+    }
+    
+    /**
+     * Patches catalina.properties file in a way that the Common class loader 
+     * sees all the jar files in the ${catalina.base}/nblib folder.
+     * <p/>
+     * HTTP Monitor jars will be placed to this folder.
+     * 
+     * @param catalinaProperties catalina properties file.
+     * 
+     * @throws IOException if something goes wrong
+     */
+    public static void patchCatalinaProperties(File catalinaProperties) throws IOException {
+        EditableProperties props = new EditableProperties();
+        InputStream is = new BufferedInputStream(new FileInputStream(catalinaProperties));
+        try {
+            props.load(is);
+            String COMMON_LOADER = "common.loader"; // NOI18N
+            String commonLoader = props.getProperty(COMMON_LOADER);
+            if (commonLoader != null) {
+                commonLoader = commonLoader.trim();
+                String NB_LIB = "${catalina.base}/nblib/*.jar"; // NOI18N
+                if (commonLoader.contains(NB_LIB)) {
+                    return;
+                }
+                StringBuilder commonLoaderValue = new StringBuilder(commonLoader);
+                if (!commonLoader.endsWith(",")) { // NOI18N
+                    commonLoaderValue.append(","); // NOI18N
+                }
+                commonLoaderValue.append(NB_LIB);
+                props.setProperty(COMMON_LOADER, commonLoaderValue.toString());
+            }
+        } finally {
+            is.close();
+        }
+        // store changes
+        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(catalinaProperties));
+        try {
+            props.store(out);
+        } finally {
+            out.close();
+        }
+    }
+    
+    /**
+     * Creates CATALINA_BASE/nblib directory along with a CATALINA_BASE/nblib/README
+     * file.
+     * <p/>
+     * HTTP Monitor jars will be placed to this folder.
+     * 
+     * @param catalinaBase CATALINA_BASE directory
+     * 
+     * @throws IOException if something goes wrong
+     */
+    public static void createNBLibDirectory(File catalinaBase) throws IOException {
+        // create a README file
+        new File(catalinaBase, "nblib").mkdir(); // NOI18N
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File(catalinaBase, "nblib/README"))); // NOI18N
+        try {
+            for (String line : NbBundle.getMessage(TomcatInstallUtil.class, "MSG_NBLibReadmeContent").split("\n")) { // NOI18N
+                // fix the new line sequence
+                writer.write(line);
+                writer.newLine();
+            }
+        } finally {
+            writer.close();
         }
     }
     

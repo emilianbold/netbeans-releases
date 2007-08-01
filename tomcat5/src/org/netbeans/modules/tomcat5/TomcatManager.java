@@ -842,6 +842,13 @@ public class TomcatManager implements DeploymentManager {
                 writeToFile(new File(baseDir, "conf/Catalina/localhost/manager.xml"), // NOI18N
                      "<Context docBase=\"${catalina.home}/webapps/manager\" antiResourceLocking=\"false\" privileged=\"true\"/>\n"); // NOI18N
             }
+
+            if (isBundledTomcat()) {
+                // create a special directory for the HTTP Monitor libs under the CATALINA_BASE
+                // directory, since the user might not have write access to CATALINA_HOME
+                TomcatInstallUtil.patchCatalinaProperties(new File(baseDir, "conf/catalina.properties")); // NOI18N
+                TomcatInstallUtil.createNBLibDirectory(baseDir);
+            }
         } catch (java.io.IOException ioe) {
             Logger.getLogger("global").log(Level.INFO, null, ioe);
             return null;

@@ -327,6 +327,15 @@ public class TomcatProperties {
         return new File(getCatalinaHome(), libsDir);
     }
     
+    /** Returns the folder where the HTTP Monitor jar files should be placed */
+    public File getMonitorLibFolder() {
+        if (tm.isBundledTomcat()) {
+            return new File(baseDir, "nblib"); // NOI18N
+        }
+        return tm.isTomcat60() ? new File(homeDir, "lib") // NOI18N
+                               : new File(homeDir, "common/lib"); // NOI18N
+    }
+    
     /**
      * Return the default Tomcat Java endorsed directory.
      */
