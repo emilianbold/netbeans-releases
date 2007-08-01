@@ -30,6 +30,7 @@ import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockChangeListener;
+import org.openide.util.test.MockLookup;
 import org.openide.util.test.MockPropertyChangeListener;
 
 /**
@@ -62,9 +63,7 @@ public final class SourcesHelperTest extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        TestUtil.setLookup(new Object[] {
-            AntBasedTestUtil.testAntBasedProjectType(),
-        });
+        MockLookup.setInstances(AntBasedTestUtil.testAntBasedProjectType());
         scratch = TestUtil.makeScratchDir(this);
         scratch.createData("otherfile");
         maindir = scratch.createFolder("dir");
