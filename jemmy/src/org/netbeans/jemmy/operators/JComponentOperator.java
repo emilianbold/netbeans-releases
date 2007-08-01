@@ -338,8 +338,8 @@ public class JComponentOperator extends ContainerOperator
 
     public Hashtable getDump() {
 	Hashtable result = super.getDump();
-	if(((JComponent)getSource()).getToolTipText() != null) {
-	    result.put(TOOLTIP_TEXT_DPROP, ((JComponent)getSource()).getToolTipText());
+	if(getToolTipText() != null) {
+	    result.put(TOOLTIP_TEXT_DPROP, getToolTipText());
 	}
         //System.out.println("Dump a11y = " + System.getProperty("jemmy.dump.a11y"));
         if(System.getProperty("jemmy.dump.a11y") != null &&
