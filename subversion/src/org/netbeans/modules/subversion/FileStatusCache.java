@@ -163,7 +163,7 @@ public class FileStatusCache implements ISVNNotifyListener {
                     if (SvnUtils.isParentOrEqual(root, file)) {
                         set.add(file);
                         break;
-                    }
+                    }   
                 }
             }
         }
@@ -244,7 +244,7 @@ public class FileStatusCache implements ISVNNotifyListener {
     }
 
     /**
-     * Looks up cached file status.
+     * Looks up cacnehed file status.
      * 
      * @param file file to check
      * @return give file's status or null if the file's status is not in cache
@@ -294,6 +294,17 @@ public class FileStatusCache implements ISVNNotifyListener {
             return fi;
         }
 
+        File [] content = null;                
+        if (fi.getStatus() == FileInformation.STATUS_UNKNOWN && 
+           current != null && current.isDirectory() && ( current.getStatus() == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || 
+                                                         current.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY )) 
+        {
+            // if the file was deleted then all it's children have to be refreshed
+            content = listFiles(new File[] {file}, ~0);
+        } else if (file.isDirectory() && needRecursiveRefresh(fi, current)) {
+            content = listFiles(file);
+        }
+        
         file = FileUtil.normalizeFile(file);
         dir = FileUtil.normalizeFile(dir);
         Map<File, FileInformation> newFiles = new HashMap<File, FileInformation>(files);
@@ -308,13 +319,13 @@ public class FileStatusCache implements ISVNNotifyListener {
         }
         assert newFiles.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
-
-        if (file.isDirectory() && needRecursiveRefresh(fi, current)) {
-            File [] content = listFiles(file);
+                      
+        if ( content != null ) {            
             for (int i = 0; i < content.length; i++) {
                 refresh(content[i], REPOSITORY_STATUS_UNKNOWN);
             }
         }
+        
         fireFileStatusChanged(file, current, fi);
         return fi;
     }
