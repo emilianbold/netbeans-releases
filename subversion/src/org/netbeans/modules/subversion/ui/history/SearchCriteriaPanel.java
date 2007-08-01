@@ -326,45 +326,51 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
             browserMode = Browser.BROWSER_SHOW_FILES;                        
         }        
         browser = new Browser(title, browserMode, repoFile, null, null);        
-        RepositoryFile[] repositoryFiles = browser.getRepositoryFiles();
+        final RepositoryFile[] repositoryFiles = browser.getRepositoryFiles();
         if(repositoryFiles == null || repositoryFiles.length == 0) {
             return;
         }
         
-        final SVNUrl tagURL = repositoryFiles[0].getFileUrl();
-        destination.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_PleaseWait")); // NOI18N
+//        final SVNUrl tagURL = repositoryFiles[0].getFileUrl();
+//        destination.setText(NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_PleaseWait")); // NOI18N
 
-        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
-        SvnProgressSupport support = new SvnProgressSupport() {
-            public void perform() {                    
-                processTagSelection(destination, repositoryUrl, tagURL, this);
-            }
-        };
-        support.start(rp, repositoryUrl, NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_ResolvingTagProgress")); // NOI18N
-    }
-
-    private void processTagSelection(final JTextField destination, SVNUrl repositoryURL, final SVNUrl tagURL, SvnProgressSupport progress) {
-        SvnClient client;
-        try {
-            client = Subversion.getInstance().getClient(repositoryURL, progress);
-        } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(ex, true, true);
-            return;
-        }
-        ISVNLogMessage[] log = new org.tigris.subversion.svnclientadapter.ISVNLogMessage[0];
-        try {
-            log = client.getLogMessages(tagURL, null, new SVNRevision.Number(1), SVNRevision.HEAD, true, false, 1);
-        } catch (SVNClientException e) {
-            SvnClientExceptionHandler.notifyException(e, true, true);
-            return;
-        }
-        final SVNRevision.Number revision = log[0].getRevision();
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                destination.setText(Long.toString(revision.getNumber()));
+                destination.setText(repositoryFiles[0].getRevision().toString());
             }
         });
+        
+//        RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
+//        SvnProgressSupport support = new SvnProgressSupport() {
+//            public void perform() {                    
+//                processTagSelection(destination, repositoryUrl, tagURL, this);
+//            }
+//        };
+//        support.start(rp, repositoryUrl, NbBundle.getMessage(SearchCriteriaPanel.class, "MSG_Search_ResolvingTagProgress")); // NOI18N
     }
+//
+//    private void processTagSelection(final JTextField destination, SVNUrl repositoryURL, final SVNUrl tagURL, SvnProgressSupport progress) {
+//        SvnClient client;
+//        try {
+//            client = Subversion.getInstance().getClient(repositoryURL, progress);
+//        } catch (SVNClientException ex) {
+//            SvnClientExceptionHandler.notifyException(ex, true, true);
+//            return;
+//        }
+//        ISVNLogMessage[] log = new org.tigris.subversion.svnclientadapter.ISVNLogMessage[0];
+//        try {
+//            log = client.getLogMessages(tagURL, null, new SVNRevision.Number(1), SVNRevision.HEAD, true, false, 1);
+//        } catch (SVNClientException e) {
+//            SvnClientExceptionHandler.notifyException(e, true, true);
+//            return;
+//        }
+//        final SVNRevision.Number revision = log[0].getRevision();
+//        SwingUtilities.invokeLater(new Runnable() {
+//            public void run() {
+//                destination.setText(Long.toString(revision.getNumber()));
+//            }
+//        });
+//    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bBrowseFrom;

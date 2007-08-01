@@ -278,10 +278,13 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
                     (dirEntry.getNodeKind()==SVNNodeKind.FILE &&                // (file and show_files_allowed) 
                      ((mode & BROWSER_SHOW_FILES) == BROWSER_SHOW_FILES)) ) 
                 {
-                    RepositoryFile repositoryFile = entry.getRepositoryFile();
+                    RepositoryFile repositoryFile = new RepositoryFile(
+                                                            entry.getRepositoryFile().getRepositoryUrl(), 
+                                                            entry.getRepositoryFile().getFileUrl().appendPath(dirEntry.getPath()), 
+                                                            dirEntry.getLastChangedRevision());
                     RepositoryPathNode.RepositoryPathEntry e = 
                             new RepositoryPathNode.RepositoryPathEntry(
-                            repositoryFile.appendPath(dirEntry.getPath()), 
+                            repositoryFile, 
                             dirEntry.getNodeKind(),
                             dirEntry.getLastChangedRevision(),
                             dirEntry.getLastChangedDate(),
