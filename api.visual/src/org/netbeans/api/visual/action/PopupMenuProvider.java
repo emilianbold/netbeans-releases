@@ -36,7 +36,7 @@ public interface PopupMenuProvider {
      * no popup menu will be displayed if this PopupMenuAction gets
      * a valid popup trigger on the given Widget.
      * @param widget the widget
-     * @param localLocation the local location where the popup menu was invoked
+     * @param localLocation the local location where the popup menu was invoked; if null, then popup menu is invoked by a keyboard
      * @return The JPopupMenu to display for the given Widget.
      *         May be <code>null</code>.
      */

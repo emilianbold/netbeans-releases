@@ -25,6 +25,8 @@ import org.netbeans.api.visual.action.PopupMenuProvider;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.InputEvent;
 
 /**
  * @author William Headrick, David Kaspar
@@ -91,6 +93,21 @@ public final class PopupMenuAction extends WidgetAction.Adapter {
                 Scene scene = widget.getScene ();
                 Point point = scene.convertSceneToView (widget.convertLocalToScene (event.getPoint ()));
                 popupMenu.show (scene.getView (), point.x, point.y);
+            }
+            return State.CONSUMED;
+        }
+        return State.REJECTED;
+    }
+
+    public State keyPressed (Widget widget, WidgetKeyEvent event) {
+        if ((event.getModifiers () & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK  &&  event.getKeyCode () == KeyEvent.VK_F10) {
+            JPopupMenu popupMenu = provider.getPopupMenu (widget, null);
+            if (popupMenu != null) {
+                JComponent view = widget.getScene ().getView ();
+                if (view != null) {
+                    Rectangle visibleRect = view.getVisibleRect ();
+                    popupMenu.show (view, visibleRect.x + 10, visibleRect.y + 10);
+                }
             }
             return State.CONSUMED;
         }
