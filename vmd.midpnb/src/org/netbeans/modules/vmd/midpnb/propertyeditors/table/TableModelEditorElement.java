@@ -31,6 +31,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
@@ -131,12 +132,14 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         if (isShowing() && !doNotFireEvent) {
             Vector dataVector = tableModel.getDataVector();
             boolean useHeader = tableModel.hasHeader();
-            int pvcSize = dataVector.size();
-            if (pvcSize > 0 && useHeader) {
-                pvcSize--;
+            
+            if (useHeader && dataVector.size() > 0 && ((Vector) dataVector.get(0)).size() != tableModel.getHeader().size()) {
+                // TODO debug only
+                Debug.illegalState("Headers size must be qual to column count!"); // NOI18N
             }
-            List<PropertyValue> propertyValueColumn = new ArrayList<PropertyValue>(pvcSize);
-            for (int i = useHeader ? 1 : 0; i < dataVector.size(); i++) {
+            
+            List<PropertyValue> propertyValueColumn = new ArrayList<PropertyValue>(dataVector.size());
+            for (int i = 0; i < dataVector.size(); i++) {
                 Vector row = (Vector) dataVector.elementAt(i);
                 List<PropertyValue> propertyValueRow = new ArrayList<PropertyValue>(row.size());
                 for (int j = 0; j < row.size(); j++) {
@@ -152,12 +155,10 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
             PropertyValue headers;
             if (useHeader) {
                 List<PropertyValue> propertyValueHeader = new ArrayList<PropertyValue>(tableModel.getColumnCount());
-                if (dataVector.size() > 0) {
-                    Vector headerRow = (Vector) dataVector.elementAt(0);
-                    for (int j = 0; j < tableModel.getColumnCount(); j++) {
-                        String str = (String) headerRow.elementAt(j);
-                        propertyValueHeader.add(MidpTypes.createStringValue(str != null ? str : "")); // NOI18N
-                    }
+                Vector<String> header = tableModel.getHeader();
+                for (int j = 0; j < header.size(); j++) {
+                    String str = header.elementAt(j);
+                    propertyValueHeader.add(MidpTypes.createStringValue(str != null ? str : "")); // NOI18N
                 }
                 headers = PropertyValue.createArray(MidpTypes.TYPEID_JAVA_LANG_STRING, propertyValueHeader);
             } else {
@@ -176,23 +177,23 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
 
     private synchronized void setTableValues(PropertyValue columns, PropertyValue values) {
         doNotFireEvent = true;
+
+        boolean useHeader = (columns != null) && (columns.getArray() != null);
+        String[] header = null;
+        String[][] arrays = null;
+        
+        if (useHeader) {
+            List<PropertyValue> list = columns.getArray();
+            header = new String[list.size()];
+            for (int i = 0; i < list.size(); i++) {
+                header[i] = MidpTypes.getString(list.get(i));
+            }
+        }
+
         if (values == null) {
             tableModel.clear();
         } else {
-            boolean useHeader = (columns != null) && (columns.getArray() != null);
-            String[] header = null;
-            if (columns != null) {
-                List<PropertyValue> list = columns.getArray();
-                if (list != null) {
-                    header = new String[list.size()];
-                    for (int i = 0; i < list.size(); i++) {
-                        header[i] = MidpTypes.getString(list.get(i));
-                    }
-                }
-            }
-
             List<PropertyValue> rows = values.getArray();
-            String[][] arrays = null;
             if (rows != null && rows.size() > 0) {
                 List<PropertyValue> cols = rows.get(0).getArray();
                 int rowCount = rows.size();
@@ -206,11 +207,12 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
                     }
                 }
             }
-
-            tableModel.setUseHeader(useHeader);
-            headerCheckBox.setSelected(useHeader);
-            tableModel.setDataVector(arrays, header);
         }
+
+        tableModel.setUseHeader(useHeader);
+        headerCheckBox.setSelected(useHeader);
+        tableModel.setDataVector(arrays, header);
+
         doNotFireEvent = false;
     }
 
@@ -263,8 +265,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
 
         table.setModel(tableModel);
         table.setEnabled(false);
-        table.getTableHeader().setResizingAllowed(false);
-        table.getTableHeader().setReorderingAllowed(false);
+        table.setTableHeader(null);
         jScrollPane1.setViewportView(table);
 
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);

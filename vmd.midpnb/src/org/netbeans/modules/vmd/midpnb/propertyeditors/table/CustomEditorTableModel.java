@@ -35,7 +35,6 @@ class CustomEditorTableModel extends DefaultTableModel {
 
         int columnCount = getColumnCount();
         if (columnCount > 0) {
-            columnIdentifiers.remove(columnCount - 1);
             int size = dataVector.size();
             for (int i = 0; i < size; i++) {
                 Vector row = (Vector) dataVector.elementAt(i);
@@ -63,7 +62,6 @@ class CustomEditorTableModel extends DefaultTableModel {
 
     public void addColumn(String columnName) {
         header.addElement(columnName);
-        columnIdentifiers.addElement(columnName);
         for (int i = 0; i < dataVector.size(); i++) {
             Vector row = (Vector) dataVector.elementAt(i);
             row.addElement(columnName);
@@ -75,6 +73,14 @@ class CustomEditorTableModel extends DefaultTableModel {
     @Override
     public int getRowCount() {
         return dataVector.size() + (hasHeader ? 1 : 0);
+    }
+
+    @Override
+    public int getColumnCount() {
+        if (dataVector.size() > 0) {
+            return ((Vector) dataVector.get(0)).size();
+        }
+        return 0;
     }
 
     @Override
@@ -97,6 +103,7 @@ class CustomEditorTableModel extends DefaultTableModel {
         if (hasHeader) {
             if (row == 0) {
                 header.setElementAt((String) aValue, column);
+                fireTableStructureChanged();
             } else {
                 super.setValueAt(aValue, row - 1, column);
             }
@@ -114,7 +121,6 @@ class CustomEditorTableModel extends DefaultTableModel {
             }
         }
         super.dataVector = nonNullVector(convertToVector(dataArrays));
-        super.columnIdentifiers = nonNullVector(convertToVector(columnArray));
         fireTableStructureChanged();
     }
 
@@ -123,18 +129,27 @@ class CustomEditorTableModel extends DefaultTableModel {
     } 
 
     public void clear() {
-        header.clear();
-        columnIdentifiers.clear();
         dataVector.clear();
         fireTableStructureChanged();
     }
 
     public void setUseHeader(boolean useHeader) {
         this.hasHeader = useHeader;
+        if (hasHeader && header.size() != getColumnCount()) {
+            header.clear();
+            for (int i = 0; i < getColumnCount(); i++) {
+                header.addElement(""); // NOI18N
+            }
+        }
         fireTableStructureChanged();
     }
 
     public boolean hasHeader() {
         return hasHeader;
     }
+
+    public Vector<String> getHeader() {
+        return header;
+    }
+    
 }
