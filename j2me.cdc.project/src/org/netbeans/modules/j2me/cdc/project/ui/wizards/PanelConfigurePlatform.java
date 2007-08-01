@@ -103,6 +103,10 @@ final public class PanelConfigurePlatform implements WizardDescriptor.Panel, Wiz
             it.next().stateChanged(ev);
         }
     }
+    
+    public boolean isFinishPanel() {
+        return true;
+    }
 
     public void validate() {
     }

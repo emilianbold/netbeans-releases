@@ -101,12 +101,14 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
         int i = getNumberOfCdcPlatforms();
         return i != 0 ?
             new WizardDescriptor.Panel[] {
+                new PanelConfigureProject( this.type ),
                 new PanelConfigurePlatform(),
-                new PanelConfigureProject( this.type )} :
+                } :
             new WizardDescriptor.Panel[] {
                 new PlatformInstallPanel.WizardPanel(CDCPlatform.PLATFORM_CDC),
+                new PanelConfigureProject( this.type ),
                 new PanelConfigurePlatform(),
-                new PanelConfigureProject( this.type )
+                
             };
     }
     
@@ -114,12 +116,13 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
         int i = getNumberOfCdcPlatforms();
         return i != 0 ?
             new String[] {
+                NbBundle.getMessage(NewCDCProjectWizardIterator.class,"LAB_ConfigureProject"),
                 NbBundle.getMessage(NewCDCProjectWizardIterator.class,"LAB_SelectPlatform"),
-                NbBundle.getMessage(NewCDCProjectWizardIterator.class,"LAB_ConfigureProject") }:
+                 }:
             new String[] {
                 NbBundle.getMessage(NewCDCProjectWizardIterator.class,"LAB_Step_AddPlatform"), //NOI18N
+                NbBundle.getMessage(NewCDCProjectWizardIterator.class,"LAB_ConfigureProject"),
                 NbBundle.getMessage(NewCDCProjectWizardIterator.class,"LAB_SelectPlatform"),
-                NbBundle.getMessage(NewCDCProjectWizardIterator.class,"LAB_ConfigureProject")
             };
     }
     

@@ -51,8 +51,6 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
     //private ProjectTypeProvider provider;
     private PropertyChangeListener pcl;
-        
-    private String PROP_PLATFROM_RESOLVED = "platfromResolved";
     
     /** Creates new form PanelOptionsVisual */
     public PanelOptionsVisual( final PanelConfigureProject panel, int type ) {
@@ -211,16 +209,11 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     
     void read (WizardDescriptor d) {
  
-        String s = (String)d.getProperty("activePlatform");
-        assert s != null;
-        JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms (s, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
+        JavaPlatform platforms[]=JavaPlatformManager.getDefault().getPlatforms (null, new Specification(CDCPlatform.PLATFORM_CDC,null));    //NOI18N
         if (platforms.length!=0 && platforms[0] instanceof CDCPlatform)
         {
             CDCPlatform platform=(CDCPlatform)platforms[0];
             assert platform != null;
-
-            Properties p = (Properties) d.getProperty("additionalProperties");
-            p.put(PROP_PLATFROM_RESOLVED, platform);
         }
     }
     

@@ -119,7 +119,7 @@ final public class PanelConfigureProject implements WizardDescriptor.Panel, Wiza
     }
 
     public boolean isFinishPanel() {
-        return true;
+        return false;
     }
     
     public void validate () throws WizardValidationException {
