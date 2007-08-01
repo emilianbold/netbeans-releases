@@ -358,7 +358,7 @@ public final class GeneratorUtilities {
                 }
             }
         };
-        translator.attach(JavaSourceAccessor.INSTANCE.getCommandEnvironment(copy));
+        translator.attach(JavaSourceAccessor.INSTANCE.getCommandEnvironment(copy).getContext());
         Tree rewritten = translator.translate(original);
         translator.release();
         return rewritten;

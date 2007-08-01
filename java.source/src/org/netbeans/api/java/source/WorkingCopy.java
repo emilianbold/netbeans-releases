@@ -92,7 +92,7 @@ public class WorkingCopy extends CompilationController {
                 task, getCompilationUnit(), Source.instance(task.getContext()).name, wcc);
         treeMaker = new TreeMaker(this, ce.getTreeMaker());
         changes = new ChangeSet("<no-description>");
-        changes.attach(ce);
+        changes.attach(getContext());
     }
     
     private Context getContext() {
@@ -132,7 +132,7 @@ public class WorkingCopy extends CompilationController {
         if (afterCommit)
             throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
         t.init();
-        t.attach(ce);
+        t.attach(getContext());
         t.apply();
         t.release();
         t.destroy();
@@ -142,7 +142,7 @@ public class WorkingCopy extends CompilationController {
         if (afterCommit)
             throw new IllegalStateException ("The run method can't be called on a WorkingCopy instance after the commit");   //NOI18N
         t.init();
-        t.attach(ce);
+        t.attach(getContext());
         t.apply(tree);
         t.release();
         t.destroy();
@@ -198,12 +198,12 @@ public class WorkingCopy extends CompilationController {
             RootTree newRoot = changes.commit(ce.getRootNode());
             
             if (changes.hasChanges()) {
-                getCommandEnvironment().getModel().setRoot(newRoot);
+                ASTService.instance(getContext()).setRoot(newRoot);
             }
             
-            Commit save = new Commit(this);
+            Commit save = new Commit(this, wcc.getSourceRewriter(null));
             save.init();
-            save.attach(ce);
+            save.attach(getContext());
             save.commit();
             save.release();
             save.destroy();

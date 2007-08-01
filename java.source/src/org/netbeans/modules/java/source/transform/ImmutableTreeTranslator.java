@@ -25,12 +25,13 @@ import org.netbeans.modules.java.source.query.Query;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.util.Context;
 import javax.lang.model.element.Element;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.java.source.builder.ASTService;
-import org.netbeans.modules.java.source.builder.DefaultEnvironment;
+import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.QualIdentTree;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
@@ -60,24 +61,22 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     protected TreeFactory make;
     protected CommentHandler comments;
     protected ASTService model;
-    protected DefaultEnvironment env;
     private CompilationUnitTree topLevel;
     private ImportAnalysis2 importAnalysis;
 
-    public void attach(DefaultEnvironment env) {
-	make = env.getTreeMaker();
-	comments = env.getCommentHandler();
-        this.model = env.getModel();
-        this.env = env;
-        importAnalysis = new ImportAnalysis2(env);
+    public void attach(Context context) {
+        make = TreeFactory.instance(context);
+        comments = CommentHandlerService.instance(context);
+        model = ASTService.instance(context);
+        importAnalysis = new ImportAnalysis2(context);
     }
     
     public void release() {
         make = null;
         comments = null;
         model = null;
-        env = null;
         topLevel = null;
+        importAnalysis = null;
     }
 
     /** Visitor method: Translate a single node.
