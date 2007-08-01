@@ -82,7 +82,7 @@ public class WorkingCopy extends CompilationController {
         }
         
         treeMaker = new TreeMaker(this, TreeFactory.instance(getContext()));
-        changes = new ChangeSet("<no-description>");
+        changes = new ChangeSet();
         changes.attach(getContext());
     }
     
@@ -193,11 +193,9 @@ public class WorkingCopy extends CompilationController {
             }
             
             Commit save = new Commit(this, wcc.getSourceRewriter());
-            save.init();
             save.attach(getContext());
             save.commit();
             save.release();
-            save.destroy();
             return wcc.diffs;
         } catch (QueryException qe) {
             Logger.getLogger(WorkingCopy.class.getName()).log(Level.WARNING, qe.getMessage(), qe);
