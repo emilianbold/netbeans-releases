@@ -116,12 +116,11 @@ public class AddAbilityPanel extends javax.swing.JPanel implements ActionListene
         tValue = new javax.swing.JTextField();
         errorPanel = new org.netbeans.modules.mobility.project.ui.customizer.ErrorPanel();
 
+        setPreferredSize(new java.awt.Dimension(500, 110));
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(500, 110));
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddAbilityPanel.class).getString("MNM_AddAbility_Name").charAt(0));
         jLabel1.setLabelFor(cKey);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(AddAbilityPanel.class, "LBL_AddAbility_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AddAbilityPanel.class, "LBL_AddAbility_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 5);
@@ -136,9 +135,8 @@ public class AddAbilityPanel extends javax.swing.JPanel implements ActionListene
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(cKey, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddAbilityPanel.class).getString("MNM_AddAbility_Value").charAt(0));
         jLabel2.setLabelFor(tValue);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(AddAbilityPanel.class, "LBL_AddAbility_Value"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(AddAbilityPanel.class, "LBL_AddAbility_Value")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -155,7 +153,6 @@ public class AddAbilityPanel extends javax.swing.JPanel implements ActionListene
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(tValue, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -165,9 +162,7 @@ public class AddAbilityPanel extends javax.swing.JPanel implements ActionListene
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(errorPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddAbilityPanel.class, "ACSN_AddAbility"));

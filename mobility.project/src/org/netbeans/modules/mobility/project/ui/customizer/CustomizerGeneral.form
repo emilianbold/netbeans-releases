@@ -2,8 +2,9 @@
 
 <Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -14,9 +15,6 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustomizeGeneral_DisplayName_JLabel" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jTextFieldDisplayName"/>
         </Property>
@@ -47,9 +45,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustomizeGeneral_ProjectFolder" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jTextFieldProjectFolder"/>
         </Property>
@@ -80,9 +75,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel4">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustomizeGeneral_SrcDir" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jTextFieldSrcRoot"/>
         </Property>
@@ -113,9 +105,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel5">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustMain_AppVersion" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jTextFieldAppVersion"/>
         </Property>
@@ -138,9 +127,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel6">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustMain_AppCounter" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jSpinnerCounter"/>
         </Property>
@@ -168,9 +154,6 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="jCheckBoxAutoIncrement">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustMain_AutoIncrement" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="LBL_CustMain_AutoIncrement" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -191,9 +174,6 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="jCheckBoxUsePreprocessor">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustomizeGeneral_UsePreprocessor" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_UsePreprocessor" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -214,9 +194,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustGeneral_RequiredProjects" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="projectList"/>
         </Property>
@@ -250,9 +227,6 @@
     </Container>
     <Component class="javax.swing.JCheckBox" name="rebuildCheckBox">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustGeneral_RebuildProjects" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="LBL_CustGeneral_RebuildProjects" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

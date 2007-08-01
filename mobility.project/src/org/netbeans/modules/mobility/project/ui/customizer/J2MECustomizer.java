@@ -149,15 +149,14 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         categoryPanel = new javax.swing.JPanel();
         customizerPanel = new javax.swing.JPanel();
 
-        setLayout(new java.awt.GridBagLayout());
-
         setMinimumSize(new java.awt.Dimension(760, 500));
         setPreferredSize(new java.awt.Dimension(760, 530));
+        setLayout(new java.awt.GridBagLayout());
+
         configurationPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabelConfig.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(J2MECustomizer.class).getString("MNM_Customizer_Configuration").charAt(0));
         jLabelConfig.setLabelFor(configurationCombo);
-        jLabelConfig.setText(NbBundle.getMessage(J2MECustomizer.class, "LBL_Customizer_Configuration"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelConfig, NbBundle.getMessage(J2MECustomizer.class, "LBL_Customizer_Configuration")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -172,7 +171,6 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
                 configurationComboActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -181,16 +179,14 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 6, 0, 0);
         configurationPanel.add(configurationCombo, gridBagConstraints);
-        configurationCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2MECustomizer.class, "ACSD_Customizer_Configuration"));
+        configurationCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2MECustomizer.class, "ACSD_Customizer_Configuration")); // NOI18N
 
-        jButtonEdit.setMnemonic(org.openide.util.NbBundle.getBundle(J2MECustomizer.class).getString("MNM_Customizer_Edit").charAt(0));
-        jButtonEdit.setText(NbBundle.getMessage(J2MECustomizer.class, "LBL_Customizer_Edit"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonEdit, NbBundle.getMessage(J2MECustomizer.class, "LBL_Customizer_Edit")); // NOI18N
         jButtonEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonEditActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -199,7 +195,7 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 5, 0, 8);
         configurationPanel.add(jButtonEdit, gridBagConstraints);
-        jButtonEdit.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2MECustomizer.class, "ACSD_Customizer_ManageCfgButton"));
+        jButtonEdit.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2MECustomizer.class, "ACSD_Customizer_ManageCfgButton")); // NOI18N
 
         jSeparator2.setMinimumSize(new java.awt.Dimension(0, 5));
         jSeparator2.setPreferredSize(new java.awt.Dimension(0, 5));
@@ -219,19 +215,17 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         add(configurationPanel, gridBagConstraints);
 
-        jLabelCategory.setDisplayedMnemonic(NbBundle.getMessage(J2MECustomizer.class, "MNM_Customizer_Category").charAt(0));
-        jLabelCategory.setText(NbBundle.getMessage(J2MECustomizer.class, "LBL_Customizer_Category"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelCategory, NbBundle.getMessage(J2MECustomizer.class, "LBL_Customizer_Category")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
         add(jLabelCategory, gridBagConstraints);
-        jLabelCategory.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2MECustomizer.class, "ACSD_Customizer_Category"));
-
-        categoryPanel.setLayout(new java.awt.BorderLayout());
+        jLabelCategory.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(J2MECustomizer.class, "ACSD_Customizer_Category")); // NOI18N
 
         categoryPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         categoryPanel.setMinimumSize(new java.awt.Dimension(220, 24));
         categoryPanel.setPreferredSize(new java.awt.Dimension(220, 24));
+        categoryPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -241,10 +235,9 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         gridBagConstraints.insets = new java.awt.Insets(5, 8, 8, 8);
         add(categoryPanel, gridBagConstraints);
 
-        customizerPanel.setLayout(new java.awt.BorderLayout());
-
         customizerPanel.setMinimumSize(new java.awt.Dimension(530, 10));
         customizerPanel.setPreferredSize(new java.awt.Dimension(530, 10));
+        customizerPanel.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -254,7 +247,6 @@ public class J2MECustomizer extends JPanel implements Runnable, HelpCtxCallback 
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(customizerPanel, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {

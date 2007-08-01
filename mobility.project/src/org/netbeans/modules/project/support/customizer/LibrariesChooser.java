@@ -72,9 +72,8 @@ public class LibrariesChooser extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(LibrariesChooser.class).getString("MNM_LIbCh_InstalledLibraries").charAt(0));
         jLabel1.setLabelFor(jList1);
-        jLabel1.setText(NbBundle.getMessage(LibrariesChooser.class, "LAB_LIbCh_InstalledLibraries")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(LibrariesChooser.class, "LAB_LIbCh_InstalledLibraries")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -98,14 +97,12 @@ public class LibrariesChooser extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 12);
         add(jScrollPane1, gridBagConstraints);
 
-        edit.setMnemonic(org.openide.util.NbBundle.getBundle(LibrariesChooser.class).getString("MNM_LibCh_Edit").charAt(0));
-        edit.setText(NbBundle.getMessage(LibrariesChooser.class, "LBL_LibCh_Edit")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(edit, NbBundle.getMessage(LibrariesChooser.class, "LBL_LibCh_Edit")); // NOI18N
         edit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editLibraries(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -114,7 +111,6 @@ public class LibrariesChooser extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 12);
         add(edit, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {

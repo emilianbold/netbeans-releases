@@ -91,8 +91,7 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
 
         setLayout(new java.awt.GridBagLayout());
 
-        defaultCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_Use_Default").charAt(0));
-        defaultCheck.setText(NbBundle.getMessage(CustomizerJavadoc.class, "LBL_Use_Default"));
+        org.openide.awt.Mnemonics.setLocalizedText(defaultCheck, NbBundle.getMessage(CustomizerJavadoc.class, "LBL_Use_Default")); // NOI18N
         defaultCheck.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -102,10 +101,9 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(defaultCheck, gridBagConstraints);
-        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_UseDefault"));
+        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_UseDefault")); // NOI18N
 
-        jCheckBoxPrivate.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_Private_JCheckBox").charAt(0));
-        jCheckBoxPrivate.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Private_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxPrivate, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Private_JCheckBox")); // NOI18N
         jCheckBoxPrivate.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -115,9 +113,9 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jCheckBoxPrivate, gridBagConstraints);
-        jCheckBoxPrivate.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Private"));
+        jCheckBoxPrivate.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Private")); // NOI18N
 
-        jLabelGenerate.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Generate_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelGenerate, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Generate_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -127,8 +125,7 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 6, 0);
         add(jLabelGenerate, gridBagConstraints);
 
-        jCheckBoxTree.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_Tree_JCheckBox").charAt(0));
-        jCheckBoxTree.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Tree_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxTree, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Tree_JCheckBox")); // NOI18N
         jCheckBoxTree.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -138,10 +135,9 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jCheckBoxTree, gridBagConstraints);
-        jCheckBoxTree.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Tree"));
+        jCheckBoxTree.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Tree")); // NOI18N
 
-        jCheckBoxUsages.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_Usages_JCheckBox").charAt(0));
-        jCheckBoxUsages.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Usages_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxUsages, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Usages_JCheckBox")); // NOI18N
         jCheckBoxUsages.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -151,10 +147,9 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jCheckBoxUsages, gridBagConstraints);
-        jCheckBoxUsages.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Usages"));
+        jCheckBoxUsages.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Usages")); // NOI18N
 
-        jCheckBoxNavigation.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_Navigation_JCheckBox").charAt(0));
-        jCheckBoxNavigation.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Navigation_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxNavigation, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Navigation_JCheckBox")); // NOI18N
         jCheckBoxNavigation.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -164,18 +159,15 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jCheckBoxNavigation, gridBagConstraints);
-        jCheckBoxNavigation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Navigation"));
+        jCheckBoxNavigation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Navigation")); // NOI18N
 
-        jCheckBoxIndex.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_Index_JCheckBox").charAt(0));
-        jCheckBoxIndex.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Index_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxIndex, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Index_JCheckBox")); // NOI18N
         jCheckBoxIndex.setMargin(new java.awt.Insets(0, 0, 0, 2));
         jCheckBoxIndex.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reenableSplitIndex(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -184,10 +176,9 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jCheckBoxIndex, gridBagConstraints);
-        jCheckBoxIndex.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Index"));
+        jCheckBoxIndex.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Index")); // NOI18N
 
-        jCheckBoxSplitIndex.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_SplitIndex_JCheckBox").charAt(0));
-        jCheckBoxSplitIndex.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_SplitIndex_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxSplitIndex, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_SplitIndex_JCheckBox")); // NOI18N
         jCheckBoxSplitIndex.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -197,9 +188,9 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 28, 0, 0);
         add(jCheckBoxSplitIndex, gridBagConstraints);
-        jCheckBoxSplitIndex.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_SplitIndex"));
+        jCheckBoxSplitIndex.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_SplitIndex")); // NOI18N
 
-        jLabelTags.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Tags_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelTags, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Tags_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -209,8 +200,7 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 6, 0);
         add(jLabelTags, gridBagConstraints);
 
-        jCheckBoxAuthor.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_Author_JCheckBox").charAt(0));
-        jCheckBoxAuthor.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Author_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxAuthor, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Author_JCheckBox")); // NOI18N
         jCheckBoxAuthor.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -220,10 +210,9 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jCheckBoxAuthor, gridBagConstraints);
-        jCheckBoxAuthor.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Author"));
+        jCheckBoxAuthor.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Author")); // NOI18N
 
-        jCheckBoxVersion.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_Version_JCheckBox").charAt(0));
-        jCheckBoxVersion.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Version_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxVersion, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Version_JCheckBox")); // NOI18N
         jCheckBoxVersion.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -233,29 +222,26 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(jCheckBoxVersion, gridBagConstraints);
-        jCheckBoxVersion.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Version"));
+        jCheckBoxVersion.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Version")); // NOI18N
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabelWinTitle.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_WinTitle_JLabel").charAt(0));
         jLabelWinTitle.setLabelFor(jTextFieldWinTitle);
-        jLabelWinTitle.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_WinTitle_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelWinTitle, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_WinTitle_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
         jPanel1.add(jLabelWinTitle, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         jPanel1.add(jTextFieldWinTitle, gridBagConstraints);
-        jTextFieldWinTitle.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_WinTitle"));
+        jTextFieldWinTitle.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_WinTitle")); // NOI18N
 
-        jLabelEncoding.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_Encoding_JLabel").charAt(0));
         jLabelEncoding.setLabelFor(jTextFieldEncoding);
-        jLabelEncoding.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Encoding_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelEncoding, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Encoding_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 6);
@@ -269,7 +255,7 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         jPanel1.add(jTextFieldEncoding, gridBagConstraints);
-        jTextFieldEncoding.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Encoding"));
+        jTextFieldEncoding.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Encoding")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -279,8 +265,7 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         add(jPanel1, gridBagConstraints);
 
-        jCheckBoxPreview.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJavadoc.class).getString("MNM_CustomizeJavadoc_Preview_JCheckBox").charAt(0));
-        jCheckBoxPreview.setText(org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Preview_JCheckBox"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxPreview, org.openide.util.NbBundle.getMessage(CustomizerJavadoc.class, "LBL_CustomizeJavadoc_Preview_JCheckBox")); // NOI18N
         jCheckBoxPreview.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -291,10 +276,8 @@ public class CustomizerJavadoc extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(jCheckBoxPreview, gridBagConstraints);
-        jCheckBoxPreview.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Preview"));
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+        jCheckBoxPreview.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJavadoc.class, "ACSD_CustJavadoc_Preview")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerJavadoc.class, "ACSN_CustomizeJavadoc"));

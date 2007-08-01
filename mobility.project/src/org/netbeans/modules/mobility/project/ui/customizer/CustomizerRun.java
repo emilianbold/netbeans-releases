@@ -79,8 +79,7 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
 
         setLayout(new java.awt.GridBagLayout());
 
-        defaultCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("MNM_Use_Default").charAt(0));
-        defaultCheck.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_Use_Default"));
+        org.openide.awt.Mnemonics.setLocalizedText(defaultCheck, NbBundle.getMessage(CustomizerRun.class, "LBL_Use_Default")); // NOI18N
         defaultCheck.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -89,18 +88,16 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(defaultCheck, gridBagConstraints);
-        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_UseDefault"));
+        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_UseDefault")); // NOI18N
 
-        jLabel1.setDisplayedMnemonic(NbBundle.getMessage(CustomizerRun.class, "MNM_CustRun_CmdOptions").charAt(0));
         jLabel1.setLabelFor(cmdOptionsText);
-        jLabel1.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_CmdOptions"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_CmdOptions")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 5);
         add(jLabel1, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -110,11 +107,10 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(cmdOptionsText, gridBagConstraints);
-        cmdOptionsText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_CmdOptions"));
+        cmdOptionsText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_CmdOptions")); // NOI18N
 
         runMethodGroup.add(standardRadio);
-        standardRadio.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("MNM_CustRun_RegularExecution").charAt(0));
-        standardRadio.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_RegularExecution"));
+        org.openide.awt.Mnemonics.setLocalizedText(standardRadio, NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_RegularExecution")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -122,18 +118,17 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(standardRadio, gridBagConstraints);
-        standardRadio.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_Standard"));
+        standardRadio.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_Standard")); // NOI18N
 
-        jCheckBoxUseSecurity.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("MNM_CustRun_SecurityDomain").charAt(0));
-        jCheckBoxUseSecurity.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_SecurityDomain"));
-        jCheckBoxUseSecurity.setActionCommand(NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_SecurityDomain"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxUseSecurity, NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_SecurityDomain")); // NOI18N
+        jCheckBoxUseSecurity.setActionCommand(NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_SecurityDomain")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jCheckBoxUseSecurity, gridBagConstraints);
-        jCheckBoxUseSecurity.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_UseSecurity"));
+        jCheckBoxUseSecurity.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_UseSecurity")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -144,12 +139,11 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(domainsCombo, gridBagConstraints);
-        domainsCombo.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ACSN_CustRun_Domain"));
-        domainsCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_Domain"));
+        domainsCombo.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ACSN_CustRun_Domain")); // NOI18N
+        domainsCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_Domain")); // NOI18N
 
         runMethodGroup.add(OTARadio);
-        OTARadio.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerRun.class).getString("MNM_CustRun_OTA").charAt(0));
-        OTARadio.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_OTA"));
+        org.openide.awt.Mnemonics.setLocalizedText(OTARadio, NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_OTA")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -159,16 +153,15 @@ public class CustomizerRun extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(OTARadio, gridBagConstraints);
-        OTARadio.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_OTA"));
+        OTARadio.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACSD_CustRun_OTA")); // NOI18N
 
-        jLabel2.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_CmdHint"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(CustomizerRun.class, "LBL_CustRun_CmdHint")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(jLabel2, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {

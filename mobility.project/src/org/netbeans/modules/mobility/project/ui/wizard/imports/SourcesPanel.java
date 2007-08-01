@@ -176,10 +176,10 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         bBrowseJad = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
 
+        setName(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "TITLE_Sources")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
-        setName(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "TITLE_Sources"));
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "LBL_Sources_Info"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "LBL_Sources_Info")); // NOI18N
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         jLabel1.setPreferredSize(new java.awt.Dimension(400, 54));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -188,9 +188,8 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(SourcesPanel.class).getString("MNM_Sources_Location").charAt(0));
         jLabel2.setLabelFor(tLocation);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "LBL_Sources_Location"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "LBL_Sources_Location")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -198,7 +197,6 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 6);
         add(jLabel2, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -206,28 +204,24 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 5, 6);
         add(tLocation, gridBagConstraints);
-        tLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourcesPanel.class, "ACSD_Sources_Location"));
+        tLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourcesPanel.class, "ACSD_Sources_Location")); // NOI18N
 
-        bBrowse.setMnemonic(org.openide.util.NbBundle.getBundle(SourcesPanel.class).getString("MNM_Sources_Browse").charAt(0));
-        bBrowse.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "LBL_Sources_Browse"));
+        org.openide.awt.Mnemonics.setLocalizedText(bBrowse, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "LBL_Sources_Browse")); // NOI18N
         bBrowse.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bBrowseActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 5, 0);
         add(bBrowse, gridBagConstraints);
-        bBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourcesPanel.class, "ACSD_Sources_Browse1"));
+        bBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourcesPanel.class, "ACSD_Sources_Browse1")); // NOI18N
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(SourcesPanel.class).getString("MNM_Sources_Jad").charAt(0));
         jLabel3.setLabelFor(tJad);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "LBL_Sources_Jad"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "LBL_Sources_Jad")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -235,7 +229,6 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 6);
         add(jLabel3, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -243,17 +236,14 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 5, 6);
         add(tJad, gridBagConstraints);
-        tJad.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourcesPanel.class, "ACSD_Sources_JAD"));
+        tJad.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourcesPanel.class, "ACSD_Sources_JAD")); // NOI18N
 
-        bBrowseJad.setMnemonic(org.openide.util.NbBundle.getBundle(SourcesPanel.class).getString("MNM_Sources_BrowseJad").charAt(0));
-        bBrowseJad.setText(org.openide.util.NbBundle.getMessage(SourcesPanel.class, "LBL_Sources_BrowseJad"));
+        org.openide.awt.Mnemonics.setLocalizedText(bBrowseJad, org.openide.util.NbBundle.getMessage(SourcesPanel.class, "LBL_Sources_BrowseJad")); // NOI18N
         bBrowseJad.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bBrowseJadActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -261,7 +251,7 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 5, 0);
         add(bBrowseJad, gridBagConstraints);
-        bBrowseJad.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourcesPanel.class, "ACSD_Sources_Browse2"));
+        bBrowseJad.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SourcesPanel.class, "ACSD_Sources_Browse2")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -273,9 +263,7 @@ public class SourcesPanel extends javax.swing.JPanel implements DocumentListener
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(jPanel2, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SourcesPanel.class, "ACSN_Sources"));

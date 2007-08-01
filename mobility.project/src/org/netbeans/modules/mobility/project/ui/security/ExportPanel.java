@@ -142,14 +142,13 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         bDelete = new javax.swing.JButton();
         pError = new org.netbeans.modules.mobility.project.ui.customizer.ErrorPanel();
 
-        setLayout(new java.awt.GridBagLayout());
-
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setMinimumSize(new java.awt.Dimension(500, 250));
         setPreferredSize(new java.awt.Dimension(500, 250));
-        lKeystore.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(ExportPanel.class).getString("MNM_Export_File").charAt(0));
+        setLayout(new java.awt.GridBagLayout());
+
         lKeystore.setLabelFor(tKeystore);
-        lKeystore.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_File"));
+        org.openide.awt.Mnemonics.setLocalizedText(lKeystore, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_File")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -166,11 +165,10 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(tKeystore, gridBagConstraints);
-        tKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Keystore"));
+        tKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Keystore")); // NOI18N
 
-        lAlias.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(ExportPanel.class).getString("MNM_Export_Alias").charAt(0));
         lAlias.setLabelFor(tAlias);
-        lAlias.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Alias"));
+        org.openide.awt.Mnemonics.setLocalizedText(lAlias, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Alias")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -187,13 +185,13 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(tAlias, gridBagConstraints);
-        tAlias.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Alias"));
+        tAlias.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Alias")); // NOI18N
 
-        pDetails.setLayout(new java.awt.GridBagLayout());
-
-        pDetails.setBorder(new javax.swing.border.TitledBorder(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Details")));
+        pDetails.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Details"))); // NOI18N
         pDetails.setPreferredSize(new java.awt.Dimension(300, 100));
         pDetails.setEnabled(false);
+        pDetails.setLayout(new java.awt.GridBagLayout());
+
         lDetails.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -211,16 +209,14 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(pDetails, gridBagConstraints);
 
-        lPlatform.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(ExportPanel.class).getString("MNM_Export_Platform").charAt(0));
         lPlatform.setLabelFor(cPlatform);
-        lPlatform.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Platform"));
+        org.openide.awt.Mnemonics.setLocalizedText(lPlatform, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Platform")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(lPlatform, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -228,18 +224,16 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(cPlatform, gridBagConstraints);
-        cPlatform.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Platform"));
+        cPlatform.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Platform")); // NOI18N
 
-        lDomain.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(ExportPanel.class).getString("MNM_Export_Domain").charAt(0));
         lDomain.setLabelFor(cDomain);
-        lDomain.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Domain"));
+        org.openide.awt.Mnemonics.setLocalizedText(lDomain, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Domain")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(lDomain, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -247,11 +241,10 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(cDomain, gridBagConstraints);
-        cDomain.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Domain"));
+        cDomain.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Domain")); // NOI18N
 
-        lKeys.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(ExportPanel.class).getString("MNM_Export_Keys").charAt(0));
         lKeys.setLabelFor(list);
-        lKeys.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Keys"));
+        org.openide.awt.Mnemonics.setLocalizedText(lKeys, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_Keys")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -261,7 +254,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
 
         list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(list);
-        list.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Keys"));
+        list.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_Keys")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -273,22 +266,19 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         gridBagConstraints.weighty = 3.0;
         add(jScrollPane1, gridBagConstraints);
 
-        bDelete.setMnemonic(org.openide.util.NbBundle.getBundle(ExportPanel.class).getString("MNM_Export_DeleteKey").charAt(0));
-        bDelete.setText(org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_DeleteKey"));
+        org.openide.awt.Mnemonics.setLocalizedText(bDelete, org.openide.util.NbBundle.getMessage(ExportPanel.class, "LBL_Export_DeleteKey")); // NOI18N
         bDelete.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bDeleteActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(bDelete, gridBagConstraints);
-        bDelete.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_DeleteKey"));
+        bDelete.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ExportPanel.class, "ACSD_Export_DeleteKey")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -299,9 +289,7 @@ public class ExportPanel extends javax.swing.JPanel implements ItemListener, Lis
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(pError, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(ExportPanel.class, "ACSN_Export"));

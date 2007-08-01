@@ -54,9 +54,8 @@ public class CopyCustomizerPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabelTarget.setDisplayedMnemonic(NbBundle.getMessage(CopyCustomizerPanel.class, "MNM_Copy_Target").charAt(0));
         jLabelTarget.setLabelFor(jTextFieldTarget);
-        jLabelTarget.setText(NbBundle.getMessage(CopyCustomizerPanel.class, "LBL_Copy_Target")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelTarget, NbBundle.getMessage(CopyCustomizerPanel.class, "LBL_Copy_Target")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabelTarget, gridBagConstraints);
@@ -70,14 +69,12 @@ public class CopyCustomizerPanel extends javax.swing.JPanel {
         add(jTextFieldTarget, gridBagConstraints);
         jTextFieldTarget.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyCustomizerPanel.class, "ACSD_Copy_Target")); // NOI18N
 
-        jButtonBrowse.setMnemonic(NbBundle.getMessage(CopyCustomizerPanel.class, "MNM_Copy_Browse").charAt(0));
-        jButtonBrowse.setText(NbBundle.getMessage(CopyCustomizerPanel.class, "LBL_Copy_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonBrowse, NbBundle.getMessage(CopyCustomizerPanel.class, "LBL_Copy_Browse")); // NOI18N
         jButtonBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonBrowseActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -92,7 +89,6 @@ public class CopyCustomizerPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void jButtonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonBrowseActionPerformed

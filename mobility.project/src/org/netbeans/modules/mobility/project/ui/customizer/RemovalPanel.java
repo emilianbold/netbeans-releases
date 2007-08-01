@@ -85,7 +85,6 @@ public class RemovalPanel extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jPanelProfile.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -95,8 +94,7 @@ public class RemovalPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
         jPanel1.add(jPanelProfile, gridBagConstraints);
 
-        jLabelOptional.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(RemovalPanel.class).getString("MNM_RemovePanel_RemoveQuestion").charAt(0));
-        jLabelOptional.setText(NbBundle.getMessage(RemovalPanel.class, "LBL_RemovePanel_RemoveQuestion"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelOptional, NbBundle.getMessage(RemovalPanel.class, "LBL_RemovePanel_RemoveQuestion")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -109,7 +107,6 @@ public class RemovalPanel extends javax.swing.JPanel {
         jPanel2.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
         jPanelOptional.setLayout(new java.awt.GridLayout(0, 1));
-
         jPanel2.add(jPanelOptional);
 
         jScrollPane1.setViewportView(jPanel2);
@@ -125,9 +122,7 @@ public class RemovalPanel extends javax.swing.JPanel {
         jPanel1.add(jScrollPane1, gridBagConstraints);
 
         add(jPanel1, java.awt.BorderLayout.CENTER);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -10,8 +10,9 @@
     </Property>
   </Properties>
   <AuxValues>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -22,9 +23,6 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="configsLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustConfigs_Configurations" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="jListConfigs"/>
         </Property>
@@ -58,9 +56,6 @@
     </Container>
     <Component class="javax.swing.JButton" name="jButtonAddConfig">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustConfigs_Add" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="LBL_CustConfigs_Add" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -78,9 +73,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="jButtonAddMore">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustConfigs_AddMore" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="LBL_CustConfigs_AddMore" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -93,9 +85,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="jButtonDuplicate">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustConfigs_Duplicate" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="LBL_CustConfigs_Duplicate" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -113,9 +102,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="jButtonRename">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustConfigs_Rename" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="LBL_CustConfigs_Rename" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -128,9 +114,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="jButtonRemoveConfig">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustConfigs_Remove" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="LBL_CustConfigs_Remove" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -148,9 +131,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="jButtonSave">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="MNM_CustConfig_SaveAs" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/customizer/Bundle.properties" key="LBL_CustConfig_SaveAs" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

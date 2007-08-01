@@ -96,32 +96,29 @@ public class AddKeystorePanel extends javax.swing.JPanel implements ActionListen
         bBrowseFile = new javax.swing.JButton();
         pError = new org.netbeans.modules.mobility.project.ui.customizer.ErrorPanel();
 
-        setLayout(new java.awt.GridBagLayout());
-
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setMinimumSize(new java.awt.Dimension(350, 200));
         setPreferredSize(new java.awt.Dimension(450, 200));
+        setLayout(new java.awt.GridBagLayout());
+
         buttonGroup.add(rNew);
-        rNew.setMnemonic(org.openide.util.NbBundle.getBundle(AddKeystorePanel.class).getString("MNM_AddKeystore_CreateNew").charAt(0));
         rNew.setSelected(true);
-        rNew.setText(org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_CreateNew"));
+        org.openide.awt.Mnemonics.setLocalizedText(rNew, org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_CreateNew")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(rNew, gridBagConstraints);
-        rNew.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_New"));
+        rNew.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_New")); // NOI18N
 
-        lName.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddKeystorePanel.class).getString("MNM_AddKeystore_Name").charAt(0));
         lName.setLabelFor(tName);
-        lName.setText(org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(lName, org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 12, 5);
         add(lName, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -129,53 +126,46 @@ public class AddKeystorePanel extends javax.swing.JPanel implements ActionListen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(tName, gridBagConstraints);
-        tName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Name"));
+        tName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Name")); // NOI18N
 
-        lLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddKeystorePanel.class).getString("MNM_AddKeystore_Folder").charAt(0));
         lLocation.setLabelFor(tLocation);
-        lLocation.setText(org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_Folder"));
+        org.openide.awt.Mnemonics.setLocalizedText(lLocation, org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_Folder")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 5);
         add(lLocation, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(tLocation, gridBagConstraints);
-        tLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Folder"));
+        tLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Folder")); // NOI18N
 
-        bBrowseLocation.setMnemonic(org.openide.util.NbBundle.getBundle(AddKeystorePanel.class).getString("MNM_AddKeystore_BrowseFolder").charAt(0));
-        bBrowseLocation.setText(org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_BrowseFolder"));
+        org.openide.awt.Mnemonics.setLocalizedText(bBrowseLocation, org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_BrowseFolder")); // NOI18N
         bBrowseLocation.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bBrowseLocationActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(bBrowseLocation, gridBagConstraints);
-        bBrowseLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Browse1"));
+        bBrowseLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Browse1")); // NOI18N
 
-        lPassword.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddKeystorePanel.class).getString("MNM_AddKeystore_Password").charAt(0));
         lPassword.setLabelFor(tPassword);
-        lPassword.setText(org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_Password"));
+        org.openide.awt.Mnemonics.setLocalizedText(lPassword, org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_Password")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 16, 12, 5);
         add(lPassword, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -183,29 +173,26 @@ public class AddKeystorePanel extends javax.swing.JPanel implements ActionListen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 12, 0);
         add(tPassword, gridBagConstraints);
-        tPassword.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Password"));
+        tPassword.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Password")); // NOI18N
 
-        lPasswordConfirm.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddKeystorePanel.class).getString("MNM_AddKeystore_ConfirmPassword").charAt(0));
         lPasswordConfirm.setLabelFor(tPasswordConfirm);
-        lPasswordConfirm.setText(org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_ConfirmPassword"));
+        org.openide.awt.Mnemonics.setLocalizedText(lPasswordConfirm, org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_ConfirmPassword")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 5);
         add(lPasswordConfirm, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(tPasswordConfirm, gridBagConstraints);
-        tPasswordConfirm.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Password2"));
+        tPasswordConfirm.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Password2")); // NOI18N
 
         buttonGroup.add(rExisting);
-        rExisting.setMnemonic(org.openide.util.NbBundle.getBundle(AddKeystorePanel.class).getString("MNM_AddKeystore_AddExisting").charAt(0));
-        rExisting.setText(org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_AddExisting"));
+        org.openide.awt.Mnemonics.setLocalizedText(rExisting, org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_AddExisting")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -213,37 +200,32 @@ public class AddKeystorePanel extends javax.swing.JPanel implements ActionListen
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(18, 0, 12, 0);
         add(rExisting, gridBagConstraints);
-        rExisting.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Existing"));
+        rExisting.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Existing")); // NOI18N
 
-        lFile.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddKeystorePanel.class).getString("MNM_AddKeystore_File").charAt(0));
         lFile.setLabelFor(tFile);
-        lFile.setText(org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_File"));
+        org.openide.awt.Mnemonics.setLocalizedText(lFile, org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_File")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 5);
         add(lFile, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(tFile, gridBagConstraints);
-        tFile.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Keystore"));
+        tFile.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Keystore")); // NOI18N
 
-        bBrowseFile.setMnemonic(org.openide.util.NbBundle.getBundle(AddKeystorePanel.class).getString("MNM_AddKeystore_BrowseFile").charAt(0));
-        bBrowseFile.setText(org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_BrowseFile"));
+        org.openide.awt.Mnemonics.setLocalizedText(bBrowseFile, org.openide.util.NbBundle.getMessage(AddKeystorePanel.class, "LBL_AddKeystore_BrowseFile")); // NOI18N
         bBrowseFile.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bBrowseFileActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(bBrowseFile, gridBagConstraints);
-        bBrowseFile.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Browse2"));
+        bBrowseFile.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddKeystorePanel.class, "ACSD_AddKeystore_Browse2")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -255,9 +237,7 @@ public class AddKeystorePanel extends javax.swing.JPanel implements ActionListen
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(pError, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddKeystorePanel.class, "ACSN_AddKeystore"));

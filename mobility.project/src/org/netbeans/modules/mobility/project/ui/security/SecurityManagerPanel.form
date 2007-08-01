@@ -15,7 +15,10 @@
     </Property>
   </Properties>
   <AuxValues>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -26,9 +29,6 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabelKestores">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_Manager_Keystores" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="lKeystores"/>
         </Property>
@@ -65,9 +65,6 @@
     </Container>
     <Component class="javax.swing.JButton" name="bAddKeystore">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_Manager_Add" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="LBL_Manager_Add" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -85,9 +82,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="bRemoveKeystore">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_Manager_Remove" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="LBL_Manager_Remove" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -139,9 +133,6 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="lKeystoreFile2">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_KeystoreFile" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="tKeystoreFile"/>
                 </Property>
@@ -172,9 +163,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bUnlockKeystore">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_UnlockKeystore" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="LBL_Manager_UnlockKeystore" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -215,9 +203,6 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="lKeystoreFile">
                   <Properties>
-                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                      <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_Manager_KeystoreFile" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="tKeystoreFile"/>
                     </Property>
@@ -250,9 +235,6 @@
             </Container>
             <Component class="javax.swing.JLabel" name="lKeys2">
               <Properties>
-                <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_Manager_Keys" replaceFormat="NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-                </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="lKeys"/>
                 </Property>
@@ -289,9 +271,6 @@
             </Container>
             <Component class="javax.swing.JButton" name="bCreateKey">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_Manager_NewKey" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="LBL_Manager_NewKey" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -309,9 +288,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bExportKey">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_Manager_ExportKey" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="LBL_Manager_ExportKey" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -329,9 +305,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bDeleteKey">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_Manager_DeleteKey" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="LBL_Manager_DeleteKey" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -349,9 +322,6 @@
             </Component>
             <Component class="javax.swing.JButton" name="bUnlockKey">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_Manager_UnlockKey" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="LBL_Manager_UnlockKey" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -369,9 +339,6 @@
             </Component>
             <Component class="javax.swing.JCheckBox" name="cDetails">
               <Properties>
-                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-                  <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_Manager_ShowDetails" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="LBL_Manager_ShowDetails" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>

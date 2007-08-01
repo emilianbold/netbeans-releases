@@ -263,18 +263,17 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         jLabelProfile = new javax.swing.JLabel();
         jPanelProfile = new javax.swing.JPanel();
 
+        setName(org.openide.util.NbBundle.getMessage(PlatformSelectionPanelGUI.class, "TITLE_PlatformSelection")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
-        setName(org.openide.util.NbBundle.getMessage(PlatformSelectionPanelGUI.class, "TITLE_PlatformSelection"));
-        jLabelTarget.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(PlatformSelectionPanelGUI.class).getString("MNM_PlatformSelection_TargetPlatform").charAt(0));
         jLabelTarget.setLabelFor(jComboBoxTarget);
-        jLabelTarget.setText(NbBundle.getMessage(PlatformSelectionPanelGUI.class, "LBL_PlatformSelection_TargetPlatform"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelTarget, NbBundle.getMessage(PlatformSelectionPanelGUI.class, "LBL_PlatformSelection_TargetPlatform")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(jLabelTarget, gridBagConstraints);
-        jLabelTarget.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PlatformSelectionPanelGUI.class, "ACSD_PlatSel_Platform"));
+        jLabelTarget.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PlatformSelectionPanelGUI.class, "ACSD_PlatSel_Platform")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -285,7 +284,6 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(jComboBoxTarget, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -296,16 +294,15 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jSeparator1, gridBagConstraints);
 
-        jLabelDevice.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(PlatformSelectionPanelGUI.class).getString("MNM_PlatformSelection_Device").charAt(0));
         jLabelDevice.setLabelFor(jComboDevice);
-        jLabelDevice.setText(NbBundle.getMessage(PlatformSelectionPanelGUI.class, "LBL_PlatformSelection_Device"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelDevice, NbBundle.getMessage(PlatformSelectionPanelGUI.class, "LBL_PlatformSelection_Device")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabelDevice, gridBagConstraints);
-        jLabelDevice.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PlatformSelectionPanelGUI.class, "ACSD_PlatSel_Device"));
+        jLabelDevice.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PlatformSelectionPanelGUI.class, "ACSD_PlatSel_Device")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -317,8 +314,7 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 0);
         add(jComboDevice, gridBagConstraints);
 
-        jLabelConfig.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(PlatformSelectionPanelGUI.class).getString("MNM_PlatformSelection_DeviceConfiguration").charAt(0));
-        jLabelConfig.setText(NbBundle.getMessage(PlatformSelectionPanelGUI.class, "LBL_PlatformSelection_DeviceConfiguration"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelConfig, NbBundle.getMessage(PlatformSelectionPanelGUI.class, "LBL_PlatformSelection_DeviceConfiguration")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -327,7 +323,6 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         add(jLabelConfig, gridBagConstraints);
 
         jPanelConfig.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -337,8 +332,7 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 0);
         add(jPanelConfig, gridBagConstraints);
 
-        jLabelProfile.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(PlatformSelectionPanelGUI.class).getString("MNM_PlatformSelection_DeviceProfile").charAt(0));
-        jLabelProfile.setText(NbBundle.getMessage(PlatformSelectionPanelGUI.class, "LBL_PlatformSelection_DeviceProfile"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelProfile, NbBundle.getMessage(PlatformSelectionPanelGUI.class, "LBL_PlatformSelection_DeviceProfile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -349,7 +343,6 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         add(jLabelProfile, gridBagConstraints);
 
         jPanelProfile.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -360,9 +353,7 @@ public class PlatformSelectionPanelGUI extends JPanel implements ActionListener 
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 12, 0);
         add(jPanelProfile, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(PlatformSelectionPanelGUI.class, "ACSN_PlatformSelection"));

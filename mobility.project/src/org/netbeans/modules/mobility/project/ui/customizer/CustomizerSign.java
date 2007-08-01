@@ -95,8 +95,7 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
 
         setLayout(new java.awt.GridBagLayout());
 
-        cDefault.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Use_Default").charAt(0));
-        cDefault.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Use_Default")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cDefault, org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Use_Default")); // NOI18N
         cDefault.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -109,8 +108,7 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        cEnabled.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_Enabled").charAt(0));
-        cEnabled.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Enabled")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cEnabled, org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Enabled")); // NOI18N
         cEnabled.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -120,8 +118,7 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         jPanel1.add(cEnabled, gridBagConstraints);
         cEnabled.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Sign")); // NOI18N
 
-        bOpenSecurityManager.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_OpenSecurityManager").charAt(0));
-        bOpenSecurityManager.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_OpenSecurityManager")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bOpenSecurityManager, org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_OpenSecurityManager")); // NOI18N
         bOpenSecurityManager.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bOpenSecurityManagerActionPerformed(evt);
@@ -143,9 +140,8 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jPanel1, gridBagConstraints);
 
-        lKeystore.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_Keystore").charAt(0));
         lKeystore.setLabelFor(cKeystore);
-        lKeystore.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Keystore")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lKeystore, org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Keystore")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -161,8 +157,7 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         add(cKeystore, gridBagConstraints);
         cKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Keystore")); // NOI18N
 
-        bKeyStoreUnlock.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_UnlockKeyStore").charAt(0));
-        bKeyStoreUnlock.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_UnlockKeyStore")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bKeyStoreUnlock, org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_UnlockKeyStore")); // NOI18N
         bKeyStoreUnlock.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bKeyStoreUnlockActionPerformed(evt);
@@ -176,9 +171,8 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         add(bKeyStoreUnlock, gridBagConstraints);
         bKeyStoreUnlock.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_UnlockKeystore")); // NOI18N
 
-        lAlias.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_Alias").charAt(0));
         lAlias.setLabelFor(cAlias);
-        lAlias.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Alias")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lAlias, org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Alias")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -194,8 +188,7 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         add(cAlias, gridBagConstraints);
         cAlias.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSign.class, "ACSD_CustSign_Alias")); // NOI18N
 
-        bAliasUnlock.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_UnlockAlias").charAt(0));
-        bAliasUnlock.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_UnlockAlias")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bAliasUnlock, org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_UnlockAlias")); // NOI18N
         bAliasUnlock.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bAliasUnlockActionPerformed(evt);
@@ -219,8 +212,7 @@ final public class CustomizerSign extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.weighty = 1.0;
         pDetails.add(lDetails, gridBagConstraints);
 
-        bExport.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerSign.class).getString("MNM_Sign_Export").charAt(0));
-        bExport.setText(org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Export")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bExport, org.openide.util.NbBundle.getMessage(CustomizerSign.class, "LBL_Sign_Export")); // NOI18N
         bExport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bExportActionPerformed(evt);

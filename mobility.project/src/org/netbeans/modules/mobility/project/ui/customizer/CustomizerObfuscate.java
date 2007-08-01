@@ -83,8 +83,7 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
 
         setLayout(new java.awt.GridBagLayout());
 
-        defaultCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerObfuscate.class).getString("MNM_Use_Default").charAt(0));
-        defaultCheck.setText(NbBundle.getMessage(CustomizerObfuscate.class, "LBL_Use_Default"));
+        org.openide.awt.Mnemonics.setLocalizedText(defaultCheck, NbBundle.getMessage(CustomizerObfuscate.class, "LBL_Use_Default")); // NOI18N
         defaultCheck.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -93,11 +92,10 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(defaultCheck, gridBagConstraints);
-        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerObfuscate.class, "ACSD_CustObfusc_UseDefault"));
+        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerObfuscate.class, "ACSD_CustObfusc_UseDefault")); // NOI18N
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerObfuscate.class).getString("MNM_CustomizerObfuscate_Level").charAt(0));
         jLabel2.setLabelFor(levelSlider);
-        jLabel2.setText(NbBundle.getMessage(CustomizerObfuscate.class, "LBL_CustomizerObfuscate_Level"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(CustomizerObfuscate.class, "LBL_CustomizerObfuscate_Level")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -118,11 +116,10 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 11);
         add(levelSlider, gridBagConstraints);
-        levelSlider.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerObfuscate.class, "ACSD_CustObfusc_Level"));
+        levelSlider.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerObfuscate.class, "ACSD_CustObfusc_Level")); // NOI18N
 
-        browserLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerObfuscate.class).getString("MNM_CustomizerObfuscate_LevelDescription").charAt(0));
         browserLabel.setLabelFor(descriptionArea);
-        browserLabel.setText(NbBundle.getMessage(CustomizerObfuscate.class, "LBL_CustomizerObfuscate_LevelDescription"));
+        org.openide.awt.Mnemonics.setLocalizedText(browserLabel, NbBundle.getMessage(CustomizerObfuscate.class, "LBL_CustomizerObfuscate_LevelDescription")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -135,7 +132,7 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
         descriptionArea.setBackground(javax.swing.UIManager.getDefaults().getColor("TextField.inactiveBackground"));
         descriptionArea.setEditable(false);
         jScrollPane2.setViewportView(descriptionArea);
-        descriptionArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerObfuscate.class, "ACSD_CustObfusc_Description"));
+        descriptionArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerObfuscate.class, "ACSD_CustObfusc_Description")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -146,9 +143,8 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 11);
         add(jScrollPane2, gridBagConstraints);
 
-        jLabel1.setDisplayedMnemonic(NbBundle.getMessage(CustomizerObfuscate.class, "MNM_CustomizerObfuscate_CustomScript").charAt(0));
         jLabel1.setLabelFor(customArea);
-        jLabel1.setText(NbBundle.getMessage(CustomizerObfuscate.class, "LBL_CustomizerObfuscate_CustomScript"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CustomizerObfuscate.class, "LBL_CustomizerObfuscate_CustomScript")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -158,7 +154,7 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
         add(jLabel1, gridBagConstraints);
 
         jScrollPane1.setViewportView(customArea);
-        customArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerObfuscate.class, "ACSD_CustObfusc_Additional"));
+        customArea.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerObfuscate.class, "ACSD_CustObfusc_Additional")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -169,9 +165,7 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 11);
         add(jScrollPane1, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerObfuscate.class, "ACSN_CustomizerObfuscate"));

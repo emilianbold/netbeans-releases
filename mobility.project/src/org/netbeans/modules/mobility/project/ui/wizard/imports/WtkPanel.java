@@ -230,10 +230,10 @@ public class WtkPanel extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         lApps = new javax.swing.JList();
 
+        setName(org.openide.util.NbBundle.getMessage(WtkPanel.class, "TITLE_Wtk")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
-        setName(org.openide.util.NbBundle.getMessage(WtkPanel.class, "TITLE_Wtk"));
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(WtkPanel.class, "LBL_Wtk_Info"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(WtkPanel.class, "LBL_Wtk_Info")); // NOI18N
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         jLabel1.setPreferredSize(new java.awt.Dimension(400, 72));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -241,9 +241,8 @@ public class WtkPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(jLabel1, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(WtkPanel.class).getString("MNM_Wtk_Location").charAt(0));
         jLabel2.setLabelFor(tLocation);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(WtkPanel.class, "LBL_Wtk_Location"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(WtkPanel.class, "LBL_Wtk_Location")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -251,7 +250,6 @@ public class WtkPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 6);
         add(jLabel2, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -259,28 +257,24 @@ public class WtkPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 5, 6);
         add(tLocation, gridBagConstraints);
-        tLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WtkPanel.class, "ACSD_WTK_Location"));
+        tLocation.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WtkPanel.class, "ACSD_WTK_Location")); // NOI18N
 
-        bBrowse.setMnemonic(org.openide.util.NbBundle.getBundle(WtkPanel.class).getString("MNM_Wtk_Browse").charAt(0));
-        bBrowse.setText(org.openide.util.NbBundle.getMessage(WtkPanel.class, "LBL_Wtk_Browse"));
+        org.openide.awt.Mnemonics.setLocalizedText(bBrowse, org.openide.util.NbBundle.getMessage(WtkPanel.class, "LBL_Wtk_Browse")); // NOI18N
         bBrowse.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bBrowseActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(5, 6, 5, 0);
         add(bBrowse, gridBagConstraints);
-        bBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WtkPanel.class, "ACSD_WTK_Browse"));
+        bBrowse.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WtkPanel.class, "ACSD_WTK_Browse")); // NOI18N
 
-        jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(WtkPanel.class).getString("MNM_Wtk_DetectedApps").charAt(0));
         jLabel4.setLabelFor(lApps);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(WtkPanel.class, "LBL_Wtk_DetectedApps"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(WtkPanel.class, "LBL_Wtk_DetectedApps")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -291,7 +285,7 @@ public class WtkPanel extends javax.swing.JPanel {
 
         lApps.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(lApps);
-        lApps.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WtkPanel.class, "ACSD_WTK_Apps"));
+        lApps.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(WtkPanel.class, "ACSD_WTK_Apps")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -303,9 +297,7 @@ public class WtkPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(WtkPanel.class, "ACSN_Wtk"));

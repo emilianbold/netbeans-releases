@@ -108,8 +108,7 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
 
         setLayout(new java.awt.GridBagLayout());
 
-        cDefault.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJad.class).getString("MNM_Use_Default").charAt(0));
-        cDefault.setText(org.openide.util.NbBundle.getMessage(CustomizerJad.class, "LBL_Use_Default")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(cDefault, org.openide.util.NbBundle.getMessage(CustomizerJad.class, "LBL_Use_Default")); // NOI18N
         cDefault.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -120,9 +119,8 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(cDefault, gridBagConstraints);
 
-        lTable.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJad.class).getString("MNM_Jad_Table").charAt(0));
         lTable.setLabelFor(lTable);
-        lTable.setText(org.openide.util.NbBundle.getMessage(CustomizerJad.class, "LBL_Jad_Table")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lTable, org.openide.util.NbBundle.getMessage(CustomizerJad.class, "LBL_Jad_Table")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -141,8 +139,7 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(scrollPane, gridBagConstraints);
 
-        bAdd.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJad.class).getString("MNM_Jad_Add").charAt(0));
-        bAdd.setText(org.openide.util.NbBundle.getMessage(CustomizerJad.class, "LBL_Jad_Add")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bAdd, org.openide.util.NbBundle.getMessage(CustomizerJad.class, "LBL_Jad_Add")); // NOI18N
         bAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bAddActionPerformed(evt);
@@ -155,8 +152,7 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 11, 0);
         add(bAdd, gridBagConstraints);
 
-        bEdit.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJad.class).getString("MNM_Jad_Edit").charAt(0));
-        bEdit.setText(org.openide.util.NbBundle.getMessage(CustomizerJad.class, "LBL_Jad_Edit")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bEdit, org.openide.util.NbBundle.getMessage(CustomizerJad.class, "LBL_Jad_Edit")); // NOI18N
         bEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bEditActionPerformed(evt);
@@ -169,8 +165,7 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(bEdit, gridBagConstraints);
 
-        bRemove.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJad.class).getString("MNM_Jad_Remove").charAt(0));
-        bRemove.setText(org.openide.util.NbBundle.getMessage(CustomizerJad.class, "LBL_Jad_Remove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bRemove, org.openide.util.NbBundle.getMessage(CustomizerJad.class, "LBL_Jad_Remove")); // NOI18N
         bRemove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bRemoveActionPerformed(evt);
@@ -184,7 +179,7 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(bRemove, gridBagConstraints);
 
-        jCheckBoxOverride.setText(NbBundle.getMessage(CustomizerJad.class, "LBL_CustDeploy_OverrideURL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxOverride, NbBundle.getMessage(CustomizerJad.class, "LBL_CustDeploy_OverrideURL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -200,7 +195,7 @@ public class CustomizerJad extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
         add(jTextFieldURL, gridBagConstraints);
 
-        jLabelExpl.setText(NbBundle.getMessage(CustomizerJad.class, "LBL_CustDeploy_URLExpl")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelExpl, NbBundle.getMessage(CustomizerJad.class, "LBL_CustDeploy_URLExpl")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;

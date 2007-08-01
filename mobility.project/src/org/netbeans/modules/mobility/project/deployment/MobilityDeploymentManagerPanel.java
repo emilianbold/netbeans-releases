@@ -118,9 +118,8 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MNM_DeployementInstances").charAt(0));
         jLabel1.setLabelFor(btw);
-        jLabel1.setText(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -142,8 +141,7 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 0);
         add(jPanel1, gridBagConstraints);
 
-        jButton1.setMnemonic(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MNM_AddInstance").charAt(0));
-        jButton1.setText(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jButton1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jButton1.text")); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createInstance(evt);
@@ -156,8 +154,7 @@ public class MobilityDeploymentManagerPanel extends JPanel implements ExplorerMa
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
         add(jButton1, gridBagConstraints);
 
-        jButton2.setMnemonic(org.openide.util.NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MNM_RemoveInstance").charAt(0));
-        jButton2.setText(NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jButton2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButton2, NbBundle.getMessage(MobilityDeploymentManagerPanel.class, "MobilityDeploymentManager.jButton2.text")); // NOI18N
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeInstance(evt);

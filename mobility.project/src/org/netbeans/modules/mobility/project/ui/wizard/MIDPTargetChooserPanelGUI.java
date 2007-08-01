@@ -317,14 +317,13 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         jPanel3 = new javax.swing.JPanel();
         lNote = new javax.swing.JLabel();
 
+        setName(org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "TITLE_File")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
-        setName(org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "TITLE_File"));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        lName.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(MIDPTargetChooserPanelGUI.class).getString("MNM_File_Name").charAt(0));
         lName.setLabelFor(tName);
-        lName.setText(org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(lName, org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -332,7 +331,6 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 4);
         jPanel1.add(lName, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -341,9 +339,8 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(3, 4, 3, 4);
         jPanel1.add(tName, gridBagConstraints);
 
-        lClassName.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(MIDPTargetChooserPanelGUI.class).getString("MNM_File_MIDletClassName").charAt(0));
         lClassName.setLabelFor(tClassName);
-        lClassName.setText(org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_MIDletClassName"));
+        org.openide.awt.Mnemonics.setLocalizedText(lClassName, org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_MIDletClassName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -351,7 +348,6 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 4);
         jPanel1.add(lClassName, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -360,9 +356,8 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(3, 4, 3, 4);
         jPanel1.add(tClassName, gridBagConstraints);
 
-        lIcon.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(MIDPTargetChooserPanelGUI.class).getString("MNM_File_Icon").charAt(0));
         lIcon.setLabelFor(cIcon);
-        lIcon.setText(org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_Icon"));
+        org.openide.awt.Mnemonics.setLocalizedText(lIcon, org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_Icon")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -387,9 +382,8 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         add(jPanel1, gridBagConstraints);
 
-        jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(MIDPTargetChooserPanelGUI.class).getString("MNM_File_Project").charAt(0));
         jLabel5.setLabelFor(projectTextField);
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_Project"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_Project")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -407,9 +401,8 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(MIDPTargetChooserPanelGUI.class).getString("MNM_File_Package").charAt(0));
         jLabel2.setLabelFor(packageComboBox);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_Package"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_Package")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -427,9 +420,8 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(packageComboBox, gridBagConstraints);
 
-        jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(MIDPTargetChooserPanelGUI.class).getString("MNM_File_Created").charAt(0));
         jLabel4.setLabelFor(fileTextField);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_Created"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_File_Created")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -446,14 +438,12 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(fileTextField, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jSeparator1, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -463,7 +453,7 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.weighty = 1.0;
         add(jPanel3, gridBagConstraints);
 
-        lNote.setText(NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_MIDPTarget_Note"));
+        org.openide.awt.Mnemonics.setLocalizedText(lNote, NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "LBL_MIDPTarget_Note")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -473,9 +463,7 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         add(lNote, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, "ACSN_File"));

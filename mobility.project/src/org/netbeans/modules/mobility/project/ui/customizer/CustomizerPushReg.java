@@ -124,8 +124,7 @@ public class CustomizerPushReg extends JPanel implements CustomizerPanel, Visual
 
         setLayout(new java.awt.GridBagLayout());
 
-        cDefault.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerPushReg.class).getString("MNM_Use_Default").charAt(0));
-        cDefault.setText(org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Use_Default"));
+        org.openide.awt.Mnemonics.setLocalizedText(cDefault, org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Use_Default")); // NOI18N
         cDefault.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -135,9 +134,8 @@ public class CustomizerPushReg extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weightx = 1.0;
         add(cDefault, gridBagConstraints);
 
-        lTable.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerPushReg.class).getString("MNM_Push_Table").charAt(0));
         lTable.setLabelFor(lTable);
-        lTable.setText(org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_Table"));
+        org.openide.awt.Mnemonics.setLocalizedText(lTable, org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_Table")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -145,7 +143,6 @@ public class CustomizerPushReg extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(lTable, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -156,15 +153,12 @@ public class CustomizerPushReg extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(scrollPane, gridBagConstraints);
 
-        bAdd.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerPushReg.class).getString("MNM_Push_Add").charAt(0));
-        bAdd.setText(org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_Add"));
+        org.openide.awt.Mnemonics.setLocalizedText(bAdd, org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_Add")); // NOI18N
         bAdd.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bAddActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -173,15 +167,12 @@ public class CustomizerPushReg extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(bAdd, gridBagConstraints);
 
-        bEdit.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerPushReg.class).getString("MNM_Push_Edit").charAt(0));
-        bEdit.setText(org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_Edit"));
+        org.openide.awt.Mnemonics.setLocalizedText(bEdit, org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_Edit")); // NOI18N
         bEdit.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bEditActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -190,15 +181,12 @@ public class CustomizerPushReg extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(bEdit, gridBagConstraints);
 
-        bRemove.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerPushReg.class).getString("MNM_Push_Remove").charAt(0));
-        bRemove.setText(org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(bRemove, org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_Remove")); // NOI18N
         bRemove.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bRemoveActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -207,15 +195,12 @@ public class CustomizerPushReg extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(bRemove, gridBagConstraints);
 
-        bMoveUp.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerPushReg.class).getString("MNM_Push_MoveUp").charAt(0));
-        bMoveUp.setText(org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_MoveUp"));
+        org.openide.awt.Mnemonics.setLocalizedText(bMoveUp, org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_MoveUp")); // NOI18N
         bMoveUp.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bMoveUpActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -224,15 +209,12 @@ public class CustomizerPushReg extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(bMoveUp, gridBagConstraints);
 
-        bMoveDown.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerPushReg.class).getString("MNM_Push_MoveDown").charAt(0));
-        bMoveDown.setText(org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_MoveDown"));
+        org.openide.awt.Mnemonics.setLocalizedText(bMoveDown, org.openide.util.NbBundle.getMessage(CustomizerPushReg.class, "LBL_Push_MoveDown")); // NOI18N
         bMoveDown.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bMoveDownActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -241,7 +223,6 @@ public class CustomizerPushReg extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(bMoveDown, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -249,9 +230,7 @@ public class CustomizerPushReg extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(errorPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPushReg.class, "ACSN_Push"));

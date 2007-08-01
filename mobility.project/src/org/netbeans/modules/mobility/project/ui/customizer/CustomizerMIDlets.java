@@ -112,8 +112,7 @@ public class CustomizerMIDlets extends JPanel implements CustomizerPanel, Visual
 
         setLayout(new java.awt.GridBagLayout());
 
-        defaultCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDlets.class).getString("MNM_Use_Default").charAt(0));
-        defaultCheck.setText(org.openide.util.NbBundle.getMessage(CustomizerMIDlets.class, "LBL_Use_Default"));
+        org.openide.awt.Mnemonics.setLocalizedText(defaultCheck, org.openide.util.NbBundle.getMessage(CustomizerMIDlets.class, "LBL_Use_Default")); // NOI18N
         defaultCheck.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -122,11 +121,10 @@ public class CustomizerMIDlets extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         add(defaultCheck, gridBagConstraints);
-        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_UseDefault"));
+        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_UseDefault")); // NOI18N
 
-        tableLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDlets.class).getString("MNM_CustMIDlets_MIDlets").charAt(0));
         tableLabel.setLabelFor(midletsTable);
-        tableLabel.setText(NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_MIDlets"));
+        org.openide.awt.Mnemonics.setLocalizedText(tableLabel, NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_MIDlets")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -138,7 +136,7 @@ public class CustomizerMIDlets extends JPanel implements CustomizerPanel, Visual
 
         midletsTable.setModel(model);
         scrollPane.setViewportView(midletsTable);
-        midletsTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_MIDlets"));
+        midletsTable.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_MIDlets")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -150,15 +148,12 @@ public class CustomizerMIDlets extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(scrollPane, gridBagConstraints);
 
-        addButton.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDlets.class).getString("MNM_CustMIDlets_Add").charAt(0));
-        addButton.setText(NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_Add"));
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_Add")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -167,17 +162,14 @@ public class CustomizerMIDlets extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 0);
         add(addButton, gridBagConstraints);
-        addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_Add"));
+        addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_Add")); // NOI18N
 
-        editButton.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDlets.class).getString("MNM_CustMIDlets_Edit").charAt(0));
-        editButton.setText(NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_Edit"));
+        org.openide.awt.Mnemonics.setLocalizedText(editButton, NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_Edit")); // NOI18N
         editButton.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -186,17 +178,14 @@ public class CustomizerMIDlets extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(editButton, gridBagConstraints);
-        editButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_Edit"));
+        editButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_Edit")); // NOI18N
 
-        removeButton.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDlets.class).getString("MNM_CustMIDlets_Remove").charAt(0));
-        removeButton.setText(NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_Remove")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -205,17 +194,14 @@ public class CustomizerMIDlets extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(removeButton, gridBagConstraints);
-        removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_Remove"));
+        removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_Remove")); // NOI18N
 
-        upButton.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDlets.class).getString("MNM_CustMIDlets_MoveUp").charAt(0));
-        upButton.setText(org.openide.util.NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_MoveUp"));
+        org.openide.awt.Mnemonics.setLocalizedText(upButton, org.openide.util.NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_MoveUp")); // NOI18N
         upButton.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 upButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -224,17 +210,14 @@ public class CustomizerMIDlets extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(upButton, gridBagConstraints);
-        upButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_MoveUp"));
+        upButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_MoveUp")); // NOI18N
 
-        downButton.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDlets.class).getString("MNM_CustMIDlets_MoveDown").charAt(0));
-        downButton.setText(org.openide.util.NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_MoveDown"));
+        org.openide.awt.Mnemonics.setLocalizedText(downButton, org.openide.util.NbBundle.getMessage(CustomizerMIDlets.class, "LBL_CustMIDlets_MoveDown")); // NOI18N
         downButton.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 downButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -244,7 +227,7 @@ public class CustomizerMIDlets extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 12, 0);
         add(downButton, gridBagConstraints);
-        downButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_MoveDown"));
+        downButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDlets.class, "ACSD_CustMIDlets_MoveDown")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -253,9 +236,7 @@ public class CustomizerMIDlets extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(errorPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerMIDlets.class, "ACSN_CustMIDlets"));

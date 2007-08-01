@@ -202,14 +202,13 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         bUnlockKey = new javax.swing.JButton();
         cDetails = new javax.swing.JCheckBox();
 
-        setLayout(new java.awt.GridBagLayout());
-
-        setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setMinimumSize(new java.awt.Dimension(700, 400));
         setPreferredSize(new java.awt.Dimension(700, 400));
-        jLabelKestores.setDisplayedMnemonic(NbBundle.getMessage(SecurityManagerPanel.class, "MNM_Manager_Keystores").charAt(0));
+        setLayout(new java.awt.GridBagLayout());
+
         jLabelKestores.setLabelFor(lKeystores);
-        jLabelKestores.setText(NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_Keystores"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelKestores, NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_Keystores")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -220,7 +219,7 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
 
         lKeystores.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(lKeystores);
-        lKeystores.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_Keystores"));
+        lKeystores.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_Keystores")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -230,8 +229,7 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints);
 
-        bAddKeystore.setMnemonic(org.openide.util.NbBundle.getBundle(SecurityManagerPanel.class).getString("MNM_Manager_Add").charAt(0));
-        bAddKeystore.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_Add"));
+        org.openide.awt.Mnemonics.setLocalizedText(bAddKeystore, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_Add")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -240,10 +238,9 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(bAddKeystore, gridBagConstraints);
-        bAddKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_AddKeystore"));
+        bAddKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_AddKeystore")); // NOI18N
 
-        bRemoveKeystore.setMnemonic(org.openide.util.NbBundle.getBundle(SecurityManagerPanel.class).getString("MNM_Manager_Remove").charAt(0));
-        bRemoveKeystore.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_Remove"));
+        org.openide.awt.Mnemonics.setLocalizedText(bRemoveKeystore, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_Remove")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -252,18 +249,16 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(bRemoveKeystore, gridBagConstraints);
-        bRemoveKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_RemoveKeystore"));
+        bRemoveKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_RemoveKeystore")); // NOI18N
 
+        pRight.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 12, 0, 12));
         pRight.setLayout(new java.awt.CardLayout());
-
-        pRight.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 12, 0, 12)));
         pRight.add(pEmpty, "empty");
 
         pUnlock.setLayout(new java.awt.GridBagLayout());
 
-        lKeystoreFile2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(SecurityManagerPanel.class).getString("MNM_KeystoreFile").charAt(0));
         lKeystoreFile2.setLabelFor(tKeystoreFile);
-        lKeystoreFile2.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_KeystoreFile"));
+        org.openide.awt.Mnemonics.setLocalizedText(lKeystoreFile2, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_KeystoreFile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -280,17 +275,14 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         pUnlock.add(tKeystoreFile2, gridBagConstraints);
-        tKeystoreFile2.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_KeystoreFile"));
+        tKeystoreFile2.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_KeystoreFile")); // NOI18N
 
-        bUnlockKeystore.setMnemonic(org.openide.util.NbBundle.getBundle(SecurityManagerPanel.class).getString("MNM_UnlockKeystore").charAt(0));
-        bUnlockKeystore.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_UnlockKeystore"));
+        org.openide.awt.Mnemonics.setLocalizedText(bUnlockKeystore, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_UnlockKeystore")); // NOI18N
         bUnlockKeystore.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bUnlockKeystoreActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -299,7 +291,7 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         pUnlock.add(bUnlockKeystore, gridBagConstraints);
-        bUnlockKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_UnlockKeystore"));
+        bUnlockKeystore.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_UnlockKeystore")); // NOI18N
 
         pRight.add(pUnlock, "unlock");
 
@@ -307,9 +299,8 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        lKeystoreFile.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(SecurityManagerPanel.class).getString("MNM_Manager_KeystoreFile").charAt(0));
         lKeystoreFile.setLabelFor(tKeystoreFile);
-        lKeystoreFile.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_KeystoreFile"));
+        org.openide.awt.Mnemonics.setLocalizedText(lKeystoreFile, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_KeystoreFile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -322,16 +313,15 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         jPanel2.add(tKeystoreFile, gridBagConstraints);
-        tKeystoreFile.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_KeystoreFile2"));
+        tKeystoreFile.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_KeystoreFile2")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         pKeys.add(jPanel2, gridBagConstraints);
 
-        lKeys2.setDisplayedMnemonic(NbBundle.getMessage(SecurityManagerPanel.class, "MNM_Manager_Keys").charAt(0));
         lKeys2.setLabelFor(lKeys);
-        lKeys2.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_Keys"));
+        org.openide.awt.Mnemonics.setLocalizedText(lKeys2, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_Keys")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -342,7 +332,7 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
 
         lKeys.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane2.setViewportView(lKeys);
-        lKeys.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_Keys"));
+        lKeys.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_Keys")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -354,8 +344,7 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         pKeys.add(jScrollPane2, gridBagConstraints);
 
-        bCreateKey.setMnemonic(org.openide.util.NbBundle.getBundle(SecurityManagerPanel.class).getString("MNM_Manager_NewKey").charAt(0));
-        bCreateKey.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_NewKey"));
+        org.openide.awt.Mnemonics.setLocalizedText(bCreateKey, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_NewKey")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -363,10 +352,9 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 18, 0);
         pKeys.add(bCreateKey, gridBagConstraints);
-        bCreateKey.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_New"));
+        bCreateKey.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_New")); // NOI18N
 
-        bExportKey.setMnemonic(org.openide.util.NbBundle.getBundle(SecurityManagerPanel.class).getString("MNM_Manager_ExportKey").charAt(0));
-        bExportKey.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_ExportKey"));
+        org.openide.awt.Mnemonics.setLocalizedText(bExportKey, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_ExportKey")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -374,10 +362,9 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         pKeys.add(bExportKey, gridBagConstraints);
-        bExportKey.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_Export"));
+        bExportKey.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_Export")); // NOI18N
 
-        bDeleteKey.setMnemonic(org.openide.util.NbBundle.getBundle(SecurityManagerPanel.class).getString("MNM_Manager_DeleteKey").charAt(0));
-        bDeleteKey.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_DeleteKey"));
+        org.openide.awt.Mnemonics.setLocalizedText(bDeleteKey, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_DeleteKey")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -386,10 +373,9 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         pKeys.add(bDeleteKey, gridBagConstraints);
-        bDeleteKey.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_Delete"));
+        bDeleteKey.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_Delete")); // NOI18N
 
-        bUnlockKey.setMnemonic(org.openide.util.NbBundle.getBundle(SecurityManagerPanel.class).getString("MNM_Manager_UnlockKey").charAt(0));
-        bUnlockKey.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_UnlockKey"));
+        org.openide.awt.Mnemonics.setLocalizedText(bUnlockKey, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_UnlockKey")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -397,10 +383,9 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         pKeys.add(bUnlockKey, gridBagConstraints);
-        bUnlockKey.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_UnlockKeystore2"));
+        bUnlockKey.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_UnlockKeystore2")); // NOI18N
 
-        cDetails.setMnemonic(org.openide.util.NbBundle.getBundle(SecurityManagerPanel.class).getString("MNM_Manager_ShowDetails").charAt(0));
-        cDetails.setText(org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_ShowDetails"));
+        org.openide.awt.Mnemonics.setLocalizedText(cDetails, org.openide.util.NbBundle.getMessage(SecurityManagerPanel.class, "LBL_Manager_ShowDetails")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -408,7 +393,7 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
         pKeys.add(cDetails, gridBagConstraints);
-        cDetails.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_Details"));
+        cDetails.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SecurityManagerPanel.class, "ACSD_Manager_Details")); // NOI18N
 
         pRight.add(pKeys, "keys");
 
@@ -420,9 +405,7 @@ public class SecurityManagerPanel extends JPanel implements ListSelectionListene
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(pRight, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SecurityManagerPanel.class, "ACSN_Manager"));

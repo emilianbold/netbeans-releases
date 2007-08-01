@@ -95,23 +95,22 @@ public class QuickRunPanel extends JPanel implements ActionListener {
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(QuickRunPanel.class, "LBL_QuickRun_Warning"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(QuickRunPanel.class, "LBL_QuickRun_Warning")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         add(jLabel1, gridBagConstraints);
 
-        jLabelPlatform.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(QuickRunPanel.class).getString("MNM_QuickRun_Platform").charAt(0));
         jLabelPlatform.setLabelFor(jComboBoxPlatform);
-        jLabelPlatform.setText(org.openide.util.NbBundle.getBundle(QuickRunPanel.class).getString("LBL_QuickRun_Platform"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelPlatform, org.openide.util.NbBundle.getBundle(QuickRunPanel.class).getString("LBL_QuickRun_Platform")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 0);
         add(jLabelPlatform, gridBagConstraints);
-        jLabelPlatform.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(QuickRunPanel.class, "ACSD_QuicRun_Platform"));
+        jLabelPlatform.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(QuickRunPanel.class, "ACSD_QuicRun_Platform")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -122,9 +121,8 @@ public class QuickRunPanel extends JPanel implements ActionListener {
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 11);
         add(jComboBoxPlatform, gridBagConstraints);
 
-        jLabelDevice.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(QuickRunPanel.class).getString("MNM_QuickRun_Device").charAt(0));
         jLabelDevice.setLabelFor(jComboBoxDevice);
-        jLabelDevice.setText(org.openide.util.NbBundle.getBundle(QuickRunPanel.class).getString("LBL_QuickRun_Device"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelDevice, org.openide.util.NbBundle.getBundle(QuickRunPanel.class).getString("LBL_QuickRun_Device")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -132,7 +130,7 @@ public class QuickRunPanel extends JPanel implements ActionListener {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
         add(jLabelDevice, gridBagConstraints);
-        jLabelDevice.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(QuickRunPanel.class, "ACSD_QuicRun_Device"));
+        jLabelDevice.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(QuickRunPanel.class, "ACSD_QuicRun_Device")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -143,9 +141,7 @@ public class QuickRunPanel extends JPanel implements ActionListener {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 11, 11);
         add(jComboBoxDevice, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(QuickRunPanel.class).getString("ACSN_QuickRun"));

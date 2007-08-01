@@ -2,7 +2,10 @@
 
 <Form version="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -13,9 +16,6 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_CreateKey_Alias" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="tAlias"/>
         </Property>
@@ -61,9 +61,6 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="jLabel2">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_CreateKey_CommonName" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tCommon"/>
             </Property>
@@ -91,9 +88,6 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel3">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_CreateKey_OrgUnit" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tOrgUnit"/>
             </Property>
@@ -121,9 +115,6 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel4">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_CreateKey_OrgName" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tOrg"/>
             </Property>
@@ -151,9 +142,6 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel5">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_CreateKey_Locality" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tLocality"/>
             </Property>
@@ -181,9 +169,6 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel6">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_CreateKey_State" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tState"/>
             </Property>
@@ -211,9 +196,6 @@
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel7">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_CreateKey_Country" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="tCountry"/>
             </Property>
@@ -243,9 +225,6 @@
     </Container>
     <Component class="javax.swing.JLabel" name="jLabel8">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_CreateKey_Password" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="tPassword"/>
         </Property>
@@ -273,9 +252,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel9">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/security/Bundle.properties" key="MNM_CreateKey_ConfirmPassword" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="tPasswordConfirm"/>
         </Property>

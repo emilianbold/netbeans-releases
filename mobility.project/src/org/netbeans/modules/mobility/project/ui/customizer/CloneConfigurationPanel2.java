@@ -123,7 +123,7 @@ public class CloneConfigurationPanel2 extends JPanel implements DocumentListener
 
         jLabel1.setDisplayedMnemonic(NbBundle.getMessage(CloneConfigurationPanel2.class, "MNM_NewConfigPanel_ConfigurationPrefix").charAt(0));
         jLabel1.setLabelFor(jTextFieldName);
-        jLabel1.setText(NbBundle.getMessage(CloneConfigurationPanel2.class, "LBL_NewConfigPanel_ConfigurationPrefix")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CloneConfigurationPanel2.class, "LBL_NewConfigPanel_ConfigurationPrefix")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
@@ -136,9 +136,8 @@ public class CloneConfigurationPanel2 extends JPanel implements DocumentListener
         add(jTextFieldName, gridBagConstraints);
         jTextFieldName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CloneConfigurationPanel2.class, "ACSD_CloneCfg_CfgName")); // NOI18N
 
-        jLabel2.setDisplayedMnemonic(NbBundle.getMessage(CloneConfigurationPanel2.class, "MNM_NewConfigPanel_ConfigurationSuffix").charAt(0));
         jLabel2.setLabelFor(jTextField1);
-        jLabel2.setText(NbBundle.getMessage(CloneConfigurationPanel2.class, "LBL_NewConfigPanel_ConfigurationSuffix")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(CloneConfigurationPanel2.class, "LBL_NewConfigPanel_ConfigurationSuffix")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabel2, gridBagConstraints);

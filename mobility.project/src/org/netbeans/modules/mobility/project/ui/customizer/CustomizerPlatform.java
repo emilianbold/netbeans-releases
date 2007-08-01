@@ -96,7 +96,7 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
 
         setLayout(new java.awt.GridBagLayout());
 
-        defaultCheckBox.setText(NbBundle.getMessage(CustomizerPlatform.class, "LBL_Use_Default")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(defaultCheckBox, NbBundle.getMessage(CustomizerPlatform.class, "LBL_Use_Default")); // NOI18N
         defaultCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -105,7 +105,7 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(defaultCheckBox, gridBagConstraints);
 
-        jLabel1.setText(NbBundle.getMessage(CustomizerPlatform.class, "CustomizerPlatform.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CustomizerPlatform.class, "CustomizerPlatform.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -121,7 +121,7 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
 
         jPanel1.setLayout(new java.awt.CardLayout());
 
-        jLabel2.setText(NbBundle.getMessage(CustomizerPlatform.class, "LBL_CustPlatform_NoCustomizer")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(CustomizerPlatform.class, "LBL_CustPlatform_NoCustomizer")); // NOI18N
         jPanel1.add(jLabel2, "none");
 
         gridBagConstraints = new java.awt.GridBagConstraints();

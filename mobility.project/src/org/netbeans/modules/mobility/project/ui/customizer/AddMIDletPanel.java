@@ -154,14 +154,12 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabelName.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddMIDletPanel.class).getString("MNM_AddMIDlet_Name").charAt(0));
         jLabelName.setLabelFor(jTextFieldName);
-        jLabelName.setText(NbBundle.getMessage(AddMIDletPanel.class, "LBL_AddMIDlet_Name"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelName, NbBundle.getMessage(AddMIDletPanel.class, "LBL_AddMIDlet_Name")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabelName, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -169,11 +167,10 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
         add(jTextFieldName, gridBagConstraints);
-        jTextFieldName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddMIDletPanel.class, "ACSD_AddMIDlet_Name"));
+        jTextFieldName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddMIDletPanel.class, "ACSD_AddMIDlet_Name")); // NOI18N
 
-        jLabelClass.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddMIDletPanel.class).getString("MNM_AddMIDlet_Class").charAt(0));
         jLabelClass.setLabelFor(jComboBoxClass);
-        jLabelClass.setText(NbBundle.getMessage(AddMIDletPanel.class, "LBL_AddMIDlet_Class"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelClass, NbBundle.getMessage(AddMIDletPanel.class, "LBL_AddMIDlet_Class")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -192,11 +189,10 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
         add(jComboBoxClass, gridBagConstraints);
-        jComboBoxClass.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddMIDletPanel.class, "ACSD_AddMIDlet_Class"));
+        jComboBoxClass.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddMIDletPanel.class, "ACSD_AddMIDlet_Class")); // NOI18N
 
-        jLabelIcon.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddMIDletPanel.class).getString("MNM_AddMIDlet_Icon").charAt(0));
         jLabelIcon.setLabelFor(jComboBoxIcon);
-        jLabelIcon.setText(NbBundle.getMessage(AddMIDletPanel.class, "LBL_AddMIDlet_Icon"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelIcon, NbBundle.getMessage(AddMIDletPanel.class, "LBL_AddMIDlet_Icon")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -215,7 +211,7 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
         add(jComboBoxIcon, gridBagConstraints);
-        jComboBoxIcon.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddMIDletPanel.class, "ACSD_AddMIDlet_Icon"));
+        jComboBoxIcon.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddMIDletPanel.class, "ACSD_AddMIDlet_Icon")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -224,9 +220,7 @@ public class AddMIDletPanel extends JPanel implements DocumentListener, ActionLi
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(errorPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddMIDletPanel.class, "ACSN_AddMIDlet"));

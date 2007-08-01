@@ -94,8 +94,7 @@ public class CustomizerCompile extends JPanel implements CustomizerPanel, Visual
 
         setLayout(new java.awt.GridBagLayout());
 
-        defaultCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("MNM_Use_Default").charAt(0));
-        defaultCheck.setText(NbBundle.getMessage(CustomizerCompile.class, "LBL_Use_Default")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(defaultCheck, NbBundle.getMessage(CustomizerCompile.class, "LBL_Use_Default")); // NOI18N
         defaultCheck.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -106,7 +105,7 @@ public class CustomizerCompile extends JPanel implements CustomizerPanel, Visual
         add(defaultCheck, gridBagConstraints);
         defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustCompile_UseDefault")); // NOI18N
 
-        javacLabel.setText(NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_JavacOptions")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(javacLabel, NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_JavacOptions")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -116,8 +115,7 @@ public class CustomizerCompile extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(javacLabel, gridBagConstraints);
 
-        debugCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("MNM_CustCompile_DebuggingInfo").charAt(0));
-        debugCheck.setText(NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_DebuggingInfo")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(debugCheck, NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_DebuggingInfo")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -128,8 +126,7 @@ public class CustomizerCompile extends JPanel implements CustomizerPanel, Visual
         add(debugCheck, gridBagConstraints);
         debugCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustCompile_GenDebug")); // NOI18N
 
-        optimizeCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("MNM_CustCompile_Optimization").charAt(0));
-        optimizeCheck.setText(NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_Optimization")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(optimizeCheck, NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_Optimization")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -140,8 +137,7 @@ public class CustomizerCompile extends JPanel implements CustomizerPanel, Visual
         add(optimizeCheck, gridBagConstraints);
         optimizeCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustCompile_Optimalization")); // NOI18N
 
-        deprecateCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerCompile.class).getString("MNM_CustCompile_ReportDeprecated").charAt(0));
-        deprecateCheck.setText(NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_ReportDeprecated")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(deprecateCheck, NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_ReportDeprecated")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -152,9 +148,8 @@ public class CustomizerCompile extends JPanel implements CustomizerPanel, Visual
         add(deprecateCheck, gridBagConstraints);
         deprecateCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerCompile.class, "ACSD_CustCompile_Deprecated")); // NOI18N
 
-        jLabelEncoding.setDisplayedMnemonic(NbBundle.getMessage(CustomizerCompile.class, "MNM_CustCompile_Encoding").charAt(0));
         jLabelEncoding.setLabelFor(jComboBoxEncoding);
-        jLabelEncoding.setText(NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_Encoding")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelEncoding, NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_Encoding")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
@@ -168,9 +163,8 @@ public class CustomizerCompile extends JPanel implements CustomizerPanel, Visual
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
         add(jComboBoxEncoding, gridBagConstraints);
 
-        jLabelDebugLevel.setDisplayedMnemonic(NbBundle.getMessage(CustomizerCompile.class, "MNM_CustCompile_DebugLevel").charAt(0));
         jLabelDebugLevel.setLabelFor(jComboDebugLevel);
-        jLabelDebugLevel.setText(NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_DebugLevel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelDebugLevel, NbBundle.getMessage(CustomizerCompile.class, "LBL_CustCompile_DebugLevel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);

@@ -106,18 +106,16 @@ public class SaveConfigurationPanel extends JPanel implements DocumentListener {
         jTextFieldName = new javax.swing.JTextField();
         errorPanel = new org.netbeans.modules.mobility.project.ui.customizer.ErrorPanel();
 
+        setPreferredSize(new java.awt.Dimension(400, 100));
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(400, 100));
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(SaveConfigurationPanel.class).getString("MNM_SaveConfigPanel_TemplateName").charAt(0));
         jLabel1.setLabelFor(jTextFieldName);
-        jLabel1.setText(NbBundle.getMessage(SaveConfigurationPanel.class, "LBL_SaveConfigPanel_TemplateName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(SaveConfigurationPanel.class, "LBL_SaveConfigPanel_TemplateName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -126,16 +124,14 @@ public class SaveConfigurationPanel extends JPanel implements DocumentListener {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
         add(jTextFieldName, gridBagConstraints);
-        jTextFieldName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SaveConfigurationPanel.class, "ADSC_SaveConfigPanel_Name"));
+        jTextFieldName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SaveConfigurationPanel.class, "ADSC_SaveConfigPanel_Name")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(errorPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConfigurationPanel.class, "ACSN_SaveConfigPanel"));

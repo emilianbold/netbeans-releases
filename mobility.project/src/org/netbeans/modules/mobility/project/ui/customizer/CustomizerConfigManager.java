@@ -82,9 +82,8 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(450, 300));
         setLayout(new java.awt.GridBagLayout());
 
-        configsLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerConfigManager.class).getString("MNM_CustConfigs_Configurations").charAt(0));
         configsLabel.setLabelFor(jListConfigs);
-        configsLabel.setText(NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Configurations")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(configsLabel, NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Configurations")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -103,8 +102,7 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 0);
         add(jScrollPane1, gridBagConstraints);
 
-        jButtonAddConfig.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerConfigManager.class).getString("MNM_CustConfigs_Add").charAt(0));
-        jButtonAddConfig.setText(NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Add")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddConfig, NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Add")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -113,8 +111,7 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
         add(jButtonAddConfig, gridBagConstraints);
         jButtonAddConfig.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerConfigManager.class, "ACSD_CfgManager_Add")); // NOI18N
 
-        jButtonAddMore.setMnemonic(NbBundle.getMessage(CustomizerConfigManager.class, "MNM_CustConfigs_AddMore").charAt(0));
-        jButtonAddMore.setText(NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_AddMore")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddMore, NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_AddMore")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -122,8 +119,7 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 12);
         add(jButtonAddMore, gridBagConstraints);
 
-        jButtonDuplicate.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerConfigManager.class).getString("MNM_CustConfigs_Duplicate").charAt(0));
-        jButtonDuplicate.setText(NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Duplicate")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonDuplicate, NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Duplicate")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -132,8 +128,7 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
         add(jButtonDuplicate, gridBagConstraints);
         jButtonDuplicate.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerConfigManager.class, "ACSD_CfgManager_Duplicate")); // NOI18N
 
-        jButtonRename.setMnemonic(NbBundle.getMessage(CustomizerConfigManager.class, "MNM_CustConfigs_Rename").charAt(0));
-        jButtonRename.setText(NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Rename")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonRename, NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Rename")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -141,8 +136,7 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 12);
         add(jButtonRename, gridBagConstraints);
 
-        jButtonRemoveConfig.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerConfigManager.class).getString("MNM_CustConfigs_Remove").charAt(0));
-        jButtonRemoveConfig.setText(NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Remove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonRemoveConfig, NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfigs_Remove")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -151,8 +145,7 @@ public class CustomizerConfigManager extends javax.swing.JPanel {
         add(jButtonRemoveConfig, gridBagConstraints);
         jButtonRemoveConfig.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerConfigManager.class, "ACSD_CfgManager_Remove")); // NOI18N
 
-        jButtonSave.setMnemonic(NbBundle.getMessage(CustomizerConfigManager.class, "MNM_CustConfig_SaveAs").charAt(0));
-        jButtonSave.setText(NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfig_SaveAs")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonSave, NbBundle.getMessage(CustomizerConfigManager.class, "LBL_CustConfig_SaveAs")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;

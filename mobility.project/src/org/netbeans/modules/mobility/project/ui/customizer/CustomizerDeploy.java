@@ -106,8 +106,7 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
 
         setLayout(new java.awt.GridBagLayout());
 
-        defaultCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerDeploy.class).getString("MNM_Use_Default").charAt(0));
-        defaultCheck.setText(NbBundle.getMessage(CustomizerDeploy.class, "LBL_Use_Default")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(defaultCheck, NbBundle.getMessage(CustomizerDeploy.class, "LBL_Use_Default")); // NOI18N
         defaultCheck.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -117,9 +116,8 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         gridBagConstraints.weightx = 1.0;
         add(defaultCheck, gridBagConstraints);
 
-        jLabelMethod.setDisplayedMnemonic(NbBundle.getMessage(CustomizerDeploy.class, "MNM_CustDeploy_Method").charAt(0));
         jLabelMethod.setLabelFor(jComboBoxMethod);
-        jLabelMethod.setText(NbBundle.getMessage(CustomizerDeploy.class, "LBL_CustDeploy_Method")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelMethod, NbBundle.getMessage(CustomizerDeploy.class, "LBL_CustDeploy_Method")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -136,9 +134,8 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         add(jComboBoxMethod, gridBagConstraints);
         jComboBoxMethod.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerDeploy.class, "ACSD_Deployment_Method")); // NOI18N
 
-        jLabelInstance.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/project/ui/customizer/Bundle").getString("MNM_CustDeploy_Instance").charAt(0));
         jLabelInstance.setLabelFor(jComboBoxInstance);
-        jLabelInstance.setText(NbBundle.getMessage(CustomizerDeploy.class, "LBL_CustDeploy_DeploymentInstance")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelInstance, NbBundle.getMessage(CustomizerDeploy.class, "LBL_CustDeploy_DeploymentInstance")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
@@ -149,8 +146,7 @@ public class CustomizerDeploy extends JPanel implements CustomizerPanel, VisualP
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
         add(jComboBoxInstance, gridBagConstraints);
 
-        jButtonManager.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/project/ui/customizer/Bundle").getString("MNM_CustDeploy_Manage").charAt(0));
-        jButtonManager.setText(NbBundle.getMessage(CustomizerDeploy.class, "LBL_CustDeploy_Manage")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonManager, NbBundle.getMessage(CustomizerDeploy.class, "LBL_CustDeploy_Manage")); // NOI18N
         jButtonManager.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 manageDeployments(evt);

@@ -106,8 +106,7 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
 
         setLayout(new java.awt.GridBagLayout());
 
-        cDefault.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerAbilities.class).getString("MNM_Use_Default").charAt(0));
-        cDefault.setText(org.openide.util.NbBundle.getMessage(CustomizerAbilities.class, "LBL_Use_Default"));
+        org.openide.awt.Mnemonics.setLocalizedText(cDefault, org.openide.util.NbBundle.getMessage(CustomizerAbilities.class, "LBL_Use_Default")); // NOI18N
         cDefault.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -118,9 +117,8 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(cDefault, gridBagConstraints);
 
-        lTable.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerAbilities.class).getString("MNM_CustAbility_Abilities").charAt(0));
         lTable.setLabelFor(lTable);
-        lTable.setText(org.openide.util.NbBundle.getMessage(CustomizerAbilities.class, "LBL_Abilities_Abilities"));
+        org.openide.awt.Mnemonics.setLocalizedText(lTable, org.openide.util.NbBundle.getMessage(CustomizerAbilities.class, "LBL_Abilities_Abilities")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -128,7 +126,6 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 4);
         add(lTable, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -139,15 +136,12 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(scrollPane, gridBagConstraints);
 
-        bAdd.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerAbilities.class).getString("MNM_CustAbility_Add").charAt(0));
-        bAdd.setText(org.openide.util.NbBundle.getMessage(CustomizerAbilities.class, "LBL_Abilities_AddAbility"));
+        org.openide.awt.Mnemonics.setLocalizedText(bAdd, org.openide.util.NbBundle.getMessage(CustomizerAbilities.class, "LBL_Abilities_AddAbility")); // NOI18N
         bAdd.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bAddActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -155,15 +149,12 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 11, 0);
         add(bAdd, gridBagConstraints);
 
-        bEdit.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerAbilities.class).getString("MNM_CustAbility_Edit").charAt(0));
-        bEdit.setText(org.openide.util.NbBundle.getMessage(CustomizerAbilities.class, "LBL_Abilities_EditAbility"));
+        org.openide.awt.Mnemonics.setLocalizedText(bEdit, org.openide.util.NbBundle.getMessage(CustomizerAbilities.class, "LBL_Abilities_EditAbility")); // NOI18N
         bEdit.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bEditActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -171,15 +162,12 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(bEdit, gridBagConstraints);
 
-        bRemove.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerAbilities.class).getString("MNM_CustAbility_Remove").charAt(0));
-        bRemove.setText(org.openide.util.NbBundle.getMessage(CustomizerAbilities.class, "LBL_Abilities_RemoveAbility"));
+        org.openide.awt.Mnemonics.setLocalizedText(bRemove, org.openide.util.NbBundle.getMessage(CustomizerAbilities.class, "LBL_Abilities_RemoveAbility")); // NOI18N
         bRemove.addActionListener(new java.awt.event.ActionListener() {
-            @SuppressWarnings("synthetic-access")
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bRemoveActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -187,9 +175,7 @@ public class CustomizerAbilities extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(bRemove, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerAbilities.class, "ACSN_CustAbilities"));

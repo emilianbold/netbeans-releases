@@ -474,15 +474,13 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabelTarget.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDP.class).getString("MNM_CustMIDP_TargetPlatform").charAt(0));
         jLabelTarget.setLabelFor(jComboBoxTarget);
-        jLabelTarget.setText(NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_TargetPlatform")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelTarget, NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_TargetPlatform")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabelTarget, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -493,14 +491,12 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         add(jComboBoxTarget, gridBagConstraints);
         jComboBoxTarget.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDP.class, "ACSD_CustMIDP_Platform")); // NOI18N
 
-        jButtonEdit.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDP.class).getString("MNM_CustMIDP_Edit").charAt(0));
-        jButtonEdit.setText(NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Edit")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonEdit, NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Edit")); // NOI18N
         jButtonEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonEditActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -518,16 +514,14 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jSeparator1, gridBagConstraints);
 
-        jLabelDevice.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDP.class).getString("MNM_CustMIDP_Device").charAt(0));
         jLabelDevice.setLabelFor(jComboDevice);
-        jLabelDevice.setText(NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Device")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelDevice, NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Device")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabelDevice, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -538,8 +532,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         add(jComboDevice, gridBagConstraints);
         jComboDevice.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerMIDP.class, "ACSD_CustMIDP_Device")); // NOI18N
 
-        jLabelConfig.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDP.class).getString("MNM_CustMIDP_Configuration").charAt(0));
-        jLabelConfig.setText(NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Configuration")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelConfig, NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Configuration")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -548,7 +541,6 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         add(jLabelConfig, gridBagConstraints);
 
         jPanelConfig.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -558,8 +550,7 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.insets = new java.awt.Insets(11, 5, 0, 0);
         add(jPanelConfig, gridBagConstraints);
 
-        jLabelProfile.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDP.class).getString("MNM_CustMIDP_Profile").charAt(0));
-        jLabelProfile.setText(NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Profile")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelProfile, NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Profile")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -568,7 +559,6 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         add(jLabelProfile, gridBagConstraints);
 
         jPanelProfile.setLayout(new java.awt.GridLayout(1, 0, 5, 0));
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -578,9 +568,8 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 0);
         add(jPanelProfile, gridBagConstraints);
 
-        jLabelOptional.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerMIDP.class).getString("MNM_CustMIDP_Optional").charAt(0));
         jLabelOptional.setLabelFor(jPanelOptional);
-        jLabelOptional.setText(NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Optional")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelOptional, NbBundle.getMessage(CustomizerMIDP.class, "LBL_CustMIDP_Optional")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -591,7 +580,6 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         add(jLabelOptional, gridBagConstraints);
 
         jPanelOptional.setLayout(new java.awt.GridBagLayout());
-
         jScrollPane1.setViewportView(jPanelOptional);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -603,7 +591,6 @@ final public class CustomizerMIDP extends JPanel implements CustomizerPanel, Vis
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {

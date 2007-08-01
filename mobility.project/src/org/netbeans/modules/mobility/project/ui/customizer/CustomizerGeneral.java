@@ -183,9 +183,8 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerGeneral.class).getString("MNM_CustomizeGeneral_DisplayName_JLabel").charAt(0));
         jLabel1.setLabelFor(jTextFieldDisplayName);
-        jLabel1.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_ProjectName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_ProjectName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
@@ -201,9 +200,8 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         add(jTextFieldDisplayName, gridBagConstraints);
         jTextFieldDisplayName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_PrjName")); // NOI18N
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerGeneral.class).getString("MNM_CustomizeGeneral_ProjectFolder").charAt(0));
         jLabel3.setLabelFor(jTextFieldProjectFolder);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ProjectFolder")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ProjectFolder")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -221,9 +219,8 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         add(jTextFieldProjectFolder, gridBagConstraints);
         jTextFieldProjectFolder.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_PrjFolder")); // NOI18N
 
-        jLabel4.setDisplayedMnemonic(NbBundle.getMessage(CustomizerGeneral.class, "MNM_CustomizeGeneral_SrcDir").charAt(0));
         jLabel4.setLabelFor(jTextFieldSrcRoot);
-        jLabel4.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_SrcDir")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_SrcDir")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 12);
@@ -238,9 +235,8 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         add(jTextFieldSrcRoot, gridBagConstraints);
         jTextFieldSrcRoot.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerGeneral.class, "ACSD_CustGeneral_PrjSources")); // NOI18N
 
-        jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "MNM_CustMain_AppVersion").charAt(0));
         jLabel5.setLabelFor(jTextFieldAppVersion);
-        jLabel5.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AppVersion")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AppVersion")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -256,9 +252,8 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jTextFieldAppVersion, gridBagConstraints);
 
-        jLabel6.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "MNM_CustMain_AppCounter").charAt(0));
         jLabel6.setLabelFor(jSpinnerCounter);
-        jLabel6.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AppCounter")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AppCounter")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -273,8 +268,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jSpinnerCounter, gridBagConstraints);
 
-        jCheckBoxAutoIncrement.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "MNM_CustMain_AutoIncrement").charAt(0));
-        jCheckBoxAutoIncrement.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AutoIncrement")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxAutoIncrement, NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustMain_AutoIncrement")); // NOI18N
         jCheckBoxAutoIncrement.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBoxAutoIncrement.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -286,8 +280,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jCheckBoxAutoIncrement, gridBagConstraints);
 
-        jCheckBoxUsePreprocessor.setMnemonic(NbBundle.getMessage(CustomizerGeneral.class, "MNM_CustomizeGeneral_UsePreprocessor").charAt(0));
-        jCheckBoxUsePreprocessor.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_UsePreprocessor")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxUsePreprocessor, NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_UsePreprocessor")); // NOI18N
         jCheckBoxUsePreprocessor.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jCheckBoxUsePreprocessor.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -298,9 +291,8 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jCheckBoxUsePreprocessor, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerGeneral.class).getString("MNM_CustGeneral_RequiredProjects").charAt(0));
         jLabel2.setLabelFor(projectList);
-        jLabel2.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_RequiredProjects")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_RequiredProjects")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -323,8 +315,7 @@ public class CustomizerGeneral extends JPanel implements CustomizerPanel, Action
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
-        rebuildCheckBox.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerGeneral.class).getString("MNM_CustGeneral_RebuildProjects").charAt(0));
-        rebuildCheckBox.setText(NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_RebuildProjects")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rebuildCheckBox, NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustGeneral_RebuildProjects")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;

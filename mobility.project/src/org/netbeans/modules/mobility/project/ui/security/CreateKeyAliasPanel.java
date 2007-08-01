@@ -97,14 +97,12 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateKeyAliasPanel.class).getString("MNM_CreateKey_Alias").charAt(0));
         jLabel1.setLabelFor(tAlias);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_Alias"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_Alias")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(jLabel1, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -112,21 +110,19 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(tAlias, gridBagConstraints);
-        tAlias.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Alias"));
+        tAlias.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Alias")); // NOI18N
 
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_Details"))); // NOI18N
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBorder(new javax.swing.border.TitledBorder(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_Details")));
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateKeyAliasPanel.class).getString("MNM_CreateKey_CommonName").charAt(0));
         jLabel2.setLabelFor(tCommon);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_CommonName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_CommonName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(jLabel2, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -134,18 +130,16 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(tCommon, gridBagConstraints);
-        tCommon.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Common"));
+        tCommon.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Common")); // NOI18N
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateKeyAliasPanel.class).getString("MNM_CreateKey_OrgUnit").charAt(0));
         jLabel3.setLabelFor(tOrgUnit);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_OrgUnit"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_OrgUnit")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(jLabel3, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -153,18 +147,16 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(tOrgUnit, gridBagConstraints);
-        tOrgUnit.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_OrgUnit"));
+        tOrgUnit.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_OrgUnit")); // NOI18N
 
-        jLabel4.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateKeyAliasPanel.class).getString("MNM_CreateKey_OrgName").charAt(0));
         jLabel4.setLabelFor(tOrg);
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_OrgName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_OrgName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(jLabel4, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -172,18 +164,16 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(tOrg, gridBagConstraints);
-        tOrg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Org"));
+        tOrg.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Org")); // NOI18N
 
-        jLabel5.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateKeyAliasPanel.class).getString("MNM_CreateKey_Locality").charAt(0));
         jLabel5.setLabelFor(tLocality);
-        jLabel5.setText(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_Locality"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_Locality")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(jLabel5, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -191,18 +181,16 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(tLocality, gridBagConstraints);
-        tLocality.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Locality"));
+        tLocality.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Locality")); // NOI18N
 
-        jLabel6.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateKeyAliasPanel.class).getString("MNM_CreateKey_State").charAt(0));
         jLabel6.setLabelFor(tState);
-        jLabel6.setText(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_State"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_State")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(jLabel6, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -210,18 +198,16 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(tState, gridBagConstraints);
-        tState.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_State"));
+        tState.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_State")); // NOI18N
 
-        jLabel7.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateKeyAliasPanel.class).getString("MNM_CreateKey_Country").charAt(0));
         jLabel7.setLabelFor(tCountry);
-        jLabel7.setText(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_Country"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_Country")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(jLabel7, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -229,7 +215,7 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         jPanel1.add(tCountry, gridBagConstraints);
-        tCountry.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Country"));
+        tCountry.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Country")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -240,33 +226,29 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(jPanel1, gridBagConstraints);
 
-        jLabel8.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateKeyAliasPanel.class).getString("MNM_CreateKey_Password").charAt(0));
         jLabel8.setLabelFor(tPassword);
-        jLabel8.setText(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_Password"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_Password")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(jLabel8, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(tPassword, gridBagConstraints);
-        tPassword.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Password"));
+        tPassword.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Password")); // NOI18N
 
-        jLabel9.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CreateKeyAliasPanel.class).getString("MNM_CreateKey_ConfirmPassword").charAt(0));
         jLabel9.setLabelFor(tPasswordConfirm);
-        jLabel9.setText(org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_ConfirmPassword"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel9, org.openide.util.NbBundle.getMessage(CreateKeyAliasPanel.class, "LBL_CreateKey_ConfirmPassword")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(jLabel9, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -274,7 +256,7 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(tPasswordConfirm, gridBagConstraints);
-        tPasswordConfirm.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Password2"));
+        tPasswordConfirm.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSD_CreateKey_Password2")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -285,7 +267,7 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weighty = 1.0;
         add(jPanel2, gridBagConstraints);
 
-        lError.setText(" ");
+        org.openide.awt.Mnemonics.setLocalizedText(lError, " ");
         lError.setForeground(new java.awt.Color(89, 79, 191));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -296,9 +278,7 @@ public class CreateKeyAliasPanel extends javax.swing.JPanel implements DocumentL
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
         add(lError, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CreateKeyAliasPanel.class, "ACSN_CreateKey"));

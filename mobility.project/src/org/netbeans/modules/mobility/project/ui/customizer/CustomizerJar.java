@@ -81,8 +81,7 @@ public class CustomizerJar extends JPanel implements CustomizerPanel, VisualProp
 
         setLayout(new java.awt.GridBagLayout());
 
-        defaultCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("MNM_Use_Default").charAt(0));
-        defaultCheck.setText(NbBundle.getMessage(CustomizerJar.class, "LBL_Use_Default"));
+        org.openide.awt.Mnemonics.setLocalizedText(defaultCheck, NbBundle.getMessage(CustomizerJar.class, "LBL_Use_Default")); // NOI18N
         defaultCheck.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -91,18 +90,16 @@ public class CustomizerJar extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         add(defaultCheck, gridBagConstraints);
-        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJar.class, "ACSD_CustJar_UseDefault"));
+        defaultCheck.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJar.class, "ACSD_CustJar_UseDefault")); // NOI18N
 
-        jadLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("MNM_CustJar_JADName").charAt(0));
         jadLabel.setLabelFor(jadField);
-        jadLabel.setText(NbBundle.getMessage(CustomizerJar.class, "LBL_CustJar_JADName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jadLabel, NbBundle.getMessage(CustomizerJar.class, "LBL_CustJar_JADName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 6);
         add(jadLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -111,18 +108,16 @@ public class CustomizerJar extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jadField, gridBagConstraints);
-        jadField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJar.class, "ACSD_CustJar_JadName"));
+        jadField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJar.class, "ACSD_CustJar_JadName")); // NOI18N
 
-        jarLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("MNM_CustJar_JARName").charAt(0));
         jarLabel.setLabelFor(jarField);
-        jarLabel.setText(NbBundle.getMessage(CustomizerJar.class, "LBL_CustJar_JARName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jarLabel, NbBundle.getMessage(CustomizerJar.class, "LBL_CustJar_JARName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 6);
         add(jarLabel, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -132,10 +127,9 @@ public class CustomizerJar extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jarField, gridBagConstraints);
-        jarField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJar.class, "ACSD_CustJar_JarName"));
+        jarField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJar.class, "ACSD_CustJar_JarName")); // NOI18N
 
-        jCheckBoxCommpress.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerJar.class).getString("MNM_CustJar_Compress").charAt(0));
-        jCheckBoxCommpress.setText(NbBundle.getMessage(CustomizerJar.class, "LBL_CustJar_Compress"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCommpress, NbBundle.getMessage(CustomizerJar.class, "LBL_CustJar_Compress")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -145,10 +139,8 @@ public class CustomizerJar extends JPanel implements CustomizerPanel, VisualProp
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(jCheckBoxCommpress, gridBagConstraints);
-        jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJar.class, "ACSD_CustJar_Compress"));
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+        jCheckBoxCommpress.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerJar.class, "ACSD_CustJar_Compress")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerJar.class, "ACSN_CustJar"));

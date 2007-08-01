@@ -109,17 +109,15 @@ public class CloneConfigurationPanel extends JPanel implements DocumentListener 
         jTextFieldName = new javax.swing.JTextField();
         errorPanel = new org.netbeans.modules.mobility.project.ui.customizer.ErrorPanel();
 
+        setPreferredSize(new java.awt.Dimension(400, 100));
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(400, 100));
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CloneConfigurationPanel.class).getString("MNM_NewConfigPanel_ConfigurationName").charAt(0));
         jLabel1.setLabelFor(jTextFieldName);
-        jLabel1.setText(NbBundle.getMessage(CloneConfigurationPanel.class, "LBL_NewConfigPanel_ConfigurationName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CloneConfigurationPanel.class, "LBL_NewConfigPanel_ConfigurationName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jLabel1, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -127,7 +125,7 @@ public class CloneConfigurationPanel extends JPanel implements DocumentListener 
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
         add(jTextFieldName, gridBagConstraints);
-        jTextFieldName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CloneConfigurationPanel.class, "ACSD_CloneCfg_CfgName"));
+        jTextFieldName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CloneConfigurationPanel.class, "ACSD_CloneCfg_CfgName")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -136,9 +134,7 @@ public class CloneConfigurationPanel extends JPanel implements DocumentListener 
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(errorPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConfigurationPanel.class, "ACSN_CloneConfigPanel"));

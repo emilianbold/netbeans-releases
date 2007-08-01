@@ -117,14 +117,13 @@ public class AddPushRegistryPanel extends javax.swing.JPanel implements ActionLi
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddPushRegistryPanel.class).getString("MNM_AddPush_Class").charAt(0));
         jLabel1.setLabelFor(cClass);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(AddPushRegistryPanel.class, "LBL_AddPush_Class"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AddPushRegistryPanel.class, "LBL_AddPush_Class")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 5);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddPushRegistryPanel.class, "ACSD_AddRegistry_Class"));
+        jLabel1.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddPushRegistryPanel.class, "ACSD_AddRegistry_Class")); // NOI18N
 
         cClass.setEditable(true);
         cClass.setPreferredSize(new java.awt.Dimension(250, 24));
@@ -135,16 +134,15 @@ public class AddPushRegistryPanel extends javax.swing.JPanel implements ActionLi
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(cClass, gridBagConstraints);
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddPushRegistryPanel.class).getString("MNM_AddPush_Sender").charAt(0));
         jLabel2.setLabelFor(tSender);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(AddPushRegistryPanel.class, "LBL_AddPush_Sender"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(AddPushRegistryPanel.class, "LBL_AddPush_Sender")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 5);
         add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddPushRegistryPanel.class, "ACSD_AddRegistry_Sender"));
+        jLabel2.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddPushRegistryPanel.class, "ACSD_AddRegistry_Sender")); // NOI18N
 
         tSender.setText("*");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -156,16 +154,15 @@ public class AddPushRegistryPanel extends javax.swing.JPanel implements ActionLi
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(tSender, gridBagConstraints);
 
-        jLabel3.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddPushRegistryPanel.class).getString("MNM_AddPush_String").charAt(0));
         jLabel3.setLabelFor(tString);
-        jLabel3.setText(org.openide.util.NbBundle.getMessage(AddPushRegistryPanel.class, "LBL_AddPush_String"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(AddPushRegistryPanel.class, "LBL_AddPush_String")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 5);
         add(jLabel3, gridBagConstraints);
-        jLabel3.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddPushRegistryPanel.class, "ACSD_AddRegistry_String"));
+        jLabel3.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddPushRegistryPanel.class, "ACSD_AddRegistry_String")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -175,7 +172,6 @@ public class AddPushRegistryPanel extends javax.swing.JPanel implements ActionLi
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(tString, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -183,9 +179,7 @@ public class AddPushRegistryPanel extends javax.swing.JPanel implements ActionLi
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(errorPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddPushRegistryPanel.class, "ACSN_AddPush"));

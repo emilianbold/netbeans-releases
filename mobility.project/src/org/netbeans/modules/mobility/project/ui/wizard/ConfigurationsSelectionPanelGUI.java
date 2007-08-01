@@ -196,9 +196,8 @@ public class ConfigurationsSelectionPanelGUI extends JPanel implements ExplorerM
         setPreferredSize(new java.awt.Dimension(560, 350));
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "MNM_ConfigurationsSelection").charAt(0));
         jLabel1.setLabelFor(templatesPanel);
-        jLabel1.setText(NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_ConfigurationsSelection")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(ConfigurationsSelectionPanelGUI.class, "LBL_ConfigurationsSelection")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;

@@ -195,9 +195,8 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
 
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(AddAPIPanel.class).getString("MNM_AddAPI_API").charAt(0));
         jLabel1.setLabelFor(combo);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(AddAPIPanel.class, "LBL_AddAPI_API"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(AddAPIPanel.class, "LBL_AddAPI_API")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 5);
@@ -212,7 +211,6 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(combo, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -222,9 +220,7 @@ public class AddAPIPanel extends javax.swing.JPanel implements ActionListener, D
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(errorPanel, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void initAccessibility() {
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddAPIPanel.class, "ACSN_AddAPI"));

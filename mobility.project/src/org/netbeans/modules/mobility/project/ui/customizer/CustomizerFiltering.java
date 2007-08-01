@@ -111,8 +111,7 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
 
         setLayout(new java.awt.GridBagLayout());
 
-        defaultCheck.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerFiltering.class).getString("MNM_Use_Default").charAt(0));
-        defaultCheck.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_Use_Default")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(defaultCheck, NbBundle.getMessage(CustomizerFiltering.class, "LBL_Use_Default")); // NOI18N
         defaultCheck.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -121,8 +120,7 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         add(defaultCheck, gridBagConstraints);
 
-        jCheckBoxCVS.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerFiltering.class).getString("MNM_CustFilter_DefaultExcludes").charAt(0));
-        jCheckBoxCVS.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_DefaultExcludes")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxCVS, NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_DefaultExcludes")); // NOI18N
         jCheckBoxCVS.setToolTipText(NbBundle.getMessage(CustomizerFiltering.class, "TTT_CustFilter_DefaultExcludes")); // NOI18N
         jCheckBoxCVS.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -133,8 +131,7 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jCheckBoxCVS, gridBagConstraints);
 
-        jCheckBoxTests.setMnemonic(org.openide.util.NbBundle.getBundle(CustomizerFiltering.class).getString("MNM_CustFilter_ExcludeTests").charAt(0));
-        jCheckBoxTests.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_ExcludeTests")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxTests, NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_ExcludeTests")); // NOI18N
         jCheckBoxTests.setToolTipText(NbBundle.getMessage(CustomizerFiltering.class, "TTT_CustFilter_ExcludeTests")); // NOI18N
         jCheckBoxTests.setMargin(new java.awt.Insets(0, 0, 0, 2));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -145,9 +142,8 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jCheckBoxTests, gridBagConstraints);
 
-        jLabelTree.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(CustomizerFiltering.class).getString("MNM_CustFilter_SelectFiles").charAt(0));
         jLabelTree.setLabelFor(sourceExplorer);
-        jLabelTree.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_SelectFiles")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelTree, NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_SelectFiles")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -167,9 +163,8 @@ public class CustomizerFiltering extends JPanel implements CustomizerPanel, Visu
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jPanelTree, gridBagConstraints);
 
-        jLabelExcludes.setDisplayedMnemonic(NbBundle.getMessage(CustomizerFiltering.class, "MNM_CustFilter_Excludes").charAt(0));
         jLabelExcludes.setLabelFor(jTextFieldExcludes);
-        jLabelExcludes.setText(NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_Excludes")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelExcludes, NbBundle.getMessage(CustomizerFiltering.class, "LBL_CustFilter_Excludes")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabelExcludes, gridBagConstraints);

@@ -13,7 +13,10 @@
     </Property>
   </Properties>
   <AuxValues>
-    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -33,9 +36,6 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="clsLabel">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/mobility/project/ui/wizard/i18n/Bundle.properties" key="MNM_File_MIDPClassName" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="clsTextField"/>
             </Property>
@@ -58,9 +58,6 @@
         </Component>
         <Component class="javax.swing.JLabel" name="rnLabel">
           <Properties>
-            <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-              <ResourceString bundle="org/netbeans/modules/mobility/project/ui/wizard/i18n/Bundle.properties" key="MNM_Resource_FileName" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-            </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
               <ComponentRef name="rnTextField"/>
             </Property>
@@ -90,9 +87,6 @@
     </Container>
     <Component class="javax.swing.JLabel" name="prjLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/wizard/i18n/Bundle.properties" key="MNM_File_Project" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="prjTextField"/>
         </Property>
@@ -118,9 +112,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="pkgLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/wizard/i18n/Bundle.properties" key="MNM_File_Package" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="pkgComboBox"/>
         </Property>
@@ -149,9 +140,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="cClassLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/wizard/i18n/Bundle.properties" key="MNM_File_Created_Class" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="cClassTextField"/>
         </Property>
@@ -177,9 +165,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="cResourceLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/wizard/i18n/Bundle.properties" key="MNM_File_Created_Resource" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="cResourceTextField"/>
         </Property>
@@ -212,9 +197,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="dsLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/wizard/i18n/Bundle.properties" key="MNM_DefValue_DefaultString" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="dsTextField"/>
         </Property>
@@ -242,9 +224,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="emLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/mobility/project/ui/wizard/i18n/Bundle.properties" key="MNM_DefValue_ErrorMessage" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="emTextField"/>
         </Property>
