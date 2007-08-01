@@ -39,6 +39,10 @@ import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
+/**
+ *
+ * @author Mikahil Vaysman
+ */
 public class Utils {
 
     public static final long MAX_EXECUTION_TIME = 60000000;
@@ -218,7 +222,7 @@ public class Utils {
         }).run();
         return 0;
     }
-    
+
     public static int loadEngineClasses(TestData data) {
         try {
             String jarFileName = data.getWorkDirCanonicalPath() + File.separator + ".nbi" + File.separator + "nbi-engine.jar";
@@ -241,42 +245,48 @@ public class Utils {
 
         return 0;
     }
-    
+
     public static void stepWelcome() {
-        JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
-        
-        new JButtonOperator(installerMain, "Next >").push();
+        new JButtonOperator(new JFrameOperator("Netbeans IDE"), "Next >").push();
     }
-    
+
     public static void stepLicense() {
         JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
-        
+
         new JCheckBoxOperator(installerMain, "I accept").push();
         new JButtonOperator(installerMain, "Next >").push();
     }
-    
+
     public static void stepSetDir(TestData data, String label, String dir) {
         JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
-        
-        new JTextFieldOperator( 
-                (JTextField) (new JLabelOperator(installerMain, label)
+
+        new JTextFieldOperator((JTextField) (new JLabelOperator(installerMain, label)
                     .getLabelFor()
-                    )
-                )
-            .setText(data.getWorkDirCanonicalPath() + File.separator + dir);
-        
+                    )).setText(data.getWorkDirCanonicalPath() + File.separator + dir);
+
         new JButtonOperator(installerMain, "Next >").push();
     }
-    
+
     public static void stepChooseComponet(String name) {
         JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
-        
+
         new JButtonOperator(installerMain, "Customize...").push();
-        JDialogOperator customizeInstallation = 
-                new JDialogOperator("Customize Installation");
+        JDialogOperator customizeInstallation = new JDialogOperator("Customize Installation");
         JListOperator featureList = new JListOperator(customizeInstallation);
         featureList.selectItem(name);
         featureList.pressKey(KeyEvent.VK_SPACE);
-        new JButtonOperator(customizeInstallation, "OK").push();        
+        new JButtonOperator(customizeInstallation, "OK").push();
+    }
+
+    public static void stepFinish() {
+        new JButtonOperator(new JFrameOperator("Netbeans IDE"), "Finish").push();
+    }
+    
+    public static void wait(TestData data, int sec) {
+        try {
+            java.lang.Thread.sleep(1000 * sec);
+        } catch (InterruptedException ex) {
+            data.getLogger().log(Level.SEVERE, "Interrupted");
+        }
     }
 }
