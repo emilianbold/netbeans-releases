@@ -13,6 +13,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.logging.Level;
+import javax.swing.JTextField;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JFrameOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 public class Utils {
 
@@ -225,4 +231,29 @@ public class Utils {
         return 0;
     }
     
+    public static void stepWelcome() {
+        JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
+        JButtonOperator nextButton = new JButtonOperator(installerMain, "Next >");
+        
+        nextButton.push();
+    }
+    
+    public static void stepLicense() {
+        JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
+        JButtonOperator nextButton = new JButtonOperator(installerMain, "Next >");
+        JCheckBoxOperator licenseChkBox = new JCheckBoxOperator(installerMain, "I accept");
+        
+        licenseChkBox.push();
+        nextButton.push();
+    }
+    
+    public static void stepSetDir(TestData data, String label, String dir) {
+        JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
+        JButtonOperator nextButton = new JButtonOperator(installerMain, "Next >");
+        
+        JTextFieldOperator destTextFiled = new JTextFieldOperator((JTextField) (new JLabelOperator(installerMain, label).getLabelFor()));
+        destTextFiled.setText(data.getWorkDirCanonicalPath() + File.separator + dir);
+        
+        nextButton.push();
+    }
 }
