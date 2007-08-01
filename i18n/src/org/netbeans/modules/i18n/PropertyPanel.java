@@ -180,8 +180,9 @@ public class PropertyPanel extends JPanel {
         keyBundleCombo.setActionCommand(DUMMY_ACTION);
 
         internalTextChange++;
-        keyBundleCombo.setModel(
-                new DefaultComboBoxModel(i18nString.getSupport().getResourceHolder().getAllKeys()));
+        String[] keys = i18nString.getSupport().getResourceHolder().getAllKeys();
+        Arrays.sort(keys);
+        keyBundleCombo.setModel(new DefaultComboBoxModel(keys));
         internalTextChange--;
         
         keyBundleCombo.setActionCommand(oldActionCommand);
