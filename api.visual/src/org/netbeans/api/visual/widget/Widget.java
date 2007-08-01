@@ -25,6 +25,7 @@ import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.modules.visual.util.GeomUtil;
+import org.netbeans.modules.visual.widget.WidgetAccessibleContext;
 import org.openide.util.Lookup;
 
 import javax.accessibility.AccessibleContext;
@@ -228,6 +229,8 @@ public class Widget implements Accessible {
         setChildConstraint (child, constraint);
         child.revalidate ();
         revalidate ();
+        if (accessibleContext != null  &&  accessibleContext instanceof WidgetAccessibleContext)
+            ((WidgetAccessibleContext) accessibleContext).notifyChildAdded (this, child);
         scene.dispatchNotifyAdded (child);
     }
 
@@ -242,6 +245,8 @@ public class Widget implements Accessible {
         children.remove (child);
         child.revalidate ();
         revalidate ();
+        if (accessibleContext != null  &&  accessibleContext instanceof WidgetAccessibleContext)
+            ((WidgetAccessibleContext) accessibleContext).notifyChildRemoved (this, child);
         scene.dispatchNotifyRemoved (child);
     }
 
@@ -809,6 +814,8 @@ public class Widget implements Accessible {
      * @return the accessible context
      */
     public final AccessibleContext getAccessibleContext () {
+        if (accessibleContext == null)
+            accessibleContext = new WidgetAccessibleContext (this);
         return accessibleContext;
     }
 
@@ -818,6 +825,7 @@ public class Widget implements Accessible {
      */
     public final void setAccessibleContext (AccessibleContext accessibleContext) {
         this.accessibleContext = accessibleContext;
+        customAccessibleContext = true;
     }
 
     /**

@@ -22,6 +22,7 @@ import org.netbeans.api.visual.action.WidgetAction;
 
 import javax.swing.*;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.Accessible;
 import java.awt.*;
 import java.awt.dnd.*;
 import java.awt.event.*;
@@ -32,13 +33,13 @@ import java.util.Map;
 /**
  * @author David Kaspar
  */
-final class SceneComponent extends JComponent implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener,FocusListener, DropTargetListener {
+final class SceneComponent extends JComponent implements Accessible, MouseListener, MouseMotionListener, KeyListener, MouseWheelListener,FocusListener, DropTargetListener {
 
     private Scene scene;
     private Widget lockedWidget;
     private WidgetAction lockedAction;
     private long eventIDcounter = 0;
-    private AccessibleContext accessibleContext;
+    private AccessibleJComponent accessible = new AccessibleSceneComponent ();
 
     public SceneComponent (Scene scene) {
         this.scene = scene;
@@ -70,11 +71,7 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
     }
 
     public AccessibleContext getAccessibleContext () {
-        return accessibleContext;
-    }
-
-    private void setAccessibleContext (AccessibleContext accessibleContext) {
-        this.accessibleContext = accessibleContext;
+        return accessible;
     }
 
     public void setBounds (int x, int y, int width, int height) {
@@ -611,24 +608,32 @@ final class SceneComponent extends JComponent implements MouseListener, MouseMot
 
         private String toolTipText;
         private Cursor cursor;
-        private AccessibleContext accessibleContext;
+//        private AccessibleContext accessibleContext;
 
         public boolean update (Widget widget, Point localLocation) {
             if (cursor == null)
                 cursor = widget.getCursorAt (localLocation);
             if (toolTipText == null)
                 toolTipText = widget.getToolTipText ();
-            if (accessibleContext == null)
-                accessibleContext = widget.getAccessibleContext ();
-            return cursor == null  ||  toolTipText == null  ||  accessibleContext == null;
+            return cursor == null  ||  toolTipText == null;//  ||  accessibleContext == null;
         }
 
         public void commit (SceneComponent component) {
             component.setToolTipText (toolTipText);
             component.setCursor (cursor);
-            component.setAccessibleContext (accessibleContext);
         }
 
+    }
+
+    private class AccessibleSceneComponent extends AccessibleJComponent {
+
+        public int getAccessibleChildrenCount () {
+            return 1;
+        }
+
+        public Accessible getAccessibleChild (int i) {
+            return i == 0 ? scene : null;
+        }
     }
 
 }
