@@ -60,7 +60,7 @@ public class HttpMethodNode extends AbstractNode{
     public String getDisplayName() {
         if (consumeMime.length() > 0 || produceMime.length() > 0) {
             return methodName + "() : " + Utils.stripPackageName(returnType) +
-                    " [\"" + consumeMime + "\" \"" + produceMime + "\"]";
+                    " [" + consumeMime + " -> " + produceMime + "]";
         } else {
             return methodName + "() : " + Utils.stripPackageName(returnType);
         }

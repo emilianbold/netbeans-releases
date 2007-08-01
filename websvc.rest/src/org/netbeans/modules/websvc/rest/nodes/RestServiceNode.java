@@ -65,7 +65,7 @@ public class RestServiceNode extends AbstractNode{
     
     public String getDisplayName() {
         if (uriTemplate.length() > 0) {
-            return serviceName + " [\"" + uriTemplate + "\"]";
+            return serviceName + " [" + uriTemplate + "]";
         } else {
             return serviceName;
         }
