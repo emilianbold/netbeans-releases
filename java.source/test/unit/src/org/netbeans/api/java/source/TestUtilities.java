@@ -27,16 +27,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.util.zip.GZIPInputStream;
-import org.netbeans.modules.java.source.query.ResultTableModel;
-import org.netbeans.modules.java.source.transform.Transformer;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
 /**
  * Utilities to aid unit testing Jackpot rule files, Query and Transformer classes.
