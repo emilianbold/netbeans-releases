@@ -47,4 +47,5 @@ public interface Component extends IEPComponent {
     
     void removeProperty(Property property);
     
+    Property getProperty(String name);
 }

@@ -70,6 +70,14 @@ public class I18nException
      */
     private Object[] mObjList = null;
 
+    public I18nException(String message) {
+		super(message);
+	}
+    
+    public I18nException(String message, Exception ex) {
+		super(message, ex);
+	}
+    
     /**
      * Constructor for the I18nException object
      *

@@ -17,6 +17,7 @@
 package org.netbeans.modules.iep.model.impl;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
@@ -111,5 +112,20 @@ public class ComponentImpl extends IEPComponentBase implements Component {
         removeChild(PROPERTY_CHILD, property);
     }
 
+    public Property getProperty(String name) {
+    	Property prop = null;
+    	
+    	List<Property> properties = getProperties();
+    	Iterator<Property> it = properties.iterator(); 
+    	while(it.hasNext()) {
+    		Property p = it.next();
+    		String propName = p.getName();
+    		if(propName.equals(name)) {
+    			prop = p;
+    		}
+    	}
+    	
+    	return prop;
+    }
     
 }

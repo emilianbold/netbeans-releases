@@ -28,6 +28,14 @@ package org.netbeans.modules.iep.model.lib;
 public class ParseXmlException
     extends I18nException {
 
+	public ParseXmlException(String message) {
+		super(message);
+	}
+	
+	public ParseXmlException(String message, Exception ex) {
+		super(message, ex);
+	}
+	
     /**
      * Constructor for the ParseXmlException object
      *

@@ -17,14 +17,32 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.iep.model.lib;
 
-import java.sql.Types;
-import java.text.SimpleDateFormat;
+/**
+ * TcgComponentValidationMsg.java
+ *
+ * Created on September 12, 2005, 3:03 PM
+ *
+ * @author Bing Lu
+ */
+public class TcgComponentValidationMsg {
+    private String mType; // VALIDATION_OK_KEY, VALIDATION_ERROR_KEY, VALIDATION_WARNING_KEY
 
-// Must match library.xml
-public interface SharedConstants {
-
-    public static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ");
-}
+    private String mText;
     
+    /** Creates a new instance of TcgComponentValidationMsg */
+    public TcgComponentValidationMsg(String type, String text) {
+        mType = type;
+        mText = text;
+    }
+    
+    public String getType() {
+        return mType;
+    }
+    
+    public String getText() {
+        return mText;
+    }
+}

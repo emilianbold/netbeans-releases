@@ -88,14 +88,7 @@ public interface TcgComponentType extends Serializable {
      * @return the TcgComponentType list of the object
      */
     public List getComponentTypeList();
-
-    /**
-     * Gets the iconName attribute of the TcgComponentType object
-     *
-     * @return The iconName value
-     */
-    public String getIconName();
-    
+  
     public ImageIcon getIcon();
 
     /**
@@ -190,7 +183,7 @@ public interface TcgComponentType extends Serializable {
      * @return DOCUMENT ME!
      */
     public TcgComponentType duplicate(String name, String path, String title, String description, 
-        String iconName, boolean allowsChildren, boolean visible, 
+        ImageIcon icon, boolean allowsChildren, boolean visible, 
         List xtraTcgCodeTypeList, List xtraPropTypeList, List xtraChildTypeList,
         TcgComponentValidator validator);
 
@@ -213,5 +206,7 @@ public interface TcgComponentType extends Serializable {
     public TcgComponent newTcgComponent(String componentName,
                                         String componentTitle);
 
+    public TcgComponent newShallowComponent( String compName, String componentType);
+    
     public TcgComponentValidator getValidator();
 }

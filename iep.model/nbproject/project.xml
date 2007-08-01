@@ -50,7 +50,14 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.iep.editor</friend>
+                <friend>org.netbeans.modules.iep.project</friend>
+                <package>org.netbeans.modules.iep.model</package>
+                <package>org.netbeans.modules.iep.model.lib</package>
+                <package>org.netbeans.modules.iep.model.spi</package>
+                <package>org.netbeans.modules.iep.model.util</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

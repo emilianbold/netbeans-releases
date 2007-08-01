@@ -63,11 +63,7 @@ class TcgComponentTypeImpl
      */
     private transient ListMapTreeNode mTreeNode = null;
     
-    /**
-     * Description of the Field
-     */
-    private String mIconName = null;
-    
+  
     private ImageIcon mIcon = null;
     
     /**
@@ -122,7 +118,7 @@ class TcgComponentTypeImpl
      * @param childTypeList Description of the Parameter
      */
     TcgComponentTypeImpl(String name, String path, String title, String description,
-            String iconName, boolean allowsChildren,
+            ImageIcon icon, boolean allowsChildren,
             boolean visible, TcgCodeType[] codeTypeList,
             TcgPropertyType[] propTypeList,
             TcgComponentType[] childTypeList,
@@ -132,7 +128,7 @@ class TcgComponentTypeImpl
         mPath = path;
         mTitle = title;
         mDescription = description;
-        mIconName = iconName;
+        mIcon = icon;
         mAllowsChildren = allowsChildren;
         mVisible = visible;
         
@@ -157,13 +153,17 @@ class TcgComponentTypeImpl
         
         mTreeNode = new CTTreeNode();
         
+        if(mIcon == null) {
+        	mIcon = TcgModelConstants.UNKNOWN_ICON;
+        }
+        /*
         if (mIconName != null && !mIconName.equals("")) {
             mIcon = ImageUtil.getImageIcon(mIconName);
         } else {
             mIconName = TcgModelConstants.UNKNOWN_ICON_NAME;
             mIcon = TcgModelConstants.UNKNOWN_ICON;
         }
-        
+        */
         mValidator = validator;
     }
     
@@ -234,14 +234,6 @@ class TcgComponentTypeImpl
         return mChildTypes.getValueList();
     }
     
-    /**
-     * Gets the iconName attribute of the TcgComponentType object
-     *
-     * @return The iconName value
-     */
-    public String getIconName() {
-        return mIconName;
-    }
     
     public ImageIcon getIcon() {
         return mIcon;
@@ -402,7 +394,7 @@ class TcgComponentTypeImpl
      * @return DOCUMENT ME!
      */
     public TcgComponentType duplicate(String name, String path, String title, String description, 
-            String iconName, boolean allowsChildren, boolean visible,
+            ImageIcon icon, boolean allowsChildren, boolean visible,
             List xtraTcgCodeTypeList, List xtraPropTypeList, List xtraChildTypeList,
             TcgComponentValidator validator) {
         
@@ -433,7 +425,7 @@ class TcgComponentTypeImpl
                     path + "|" + pct.getName(),
                     pct.getTitle(),
                     pct.getDescription(),
-                    pct.getIconName(),
+                    pct.getIcon(),
                     pct.getAllowsChildren(),
                     pct.isVisible(),
                     null,
@@ -446,7 +438,7 @@ class TcgComponentTypeImpl
         }
         
         TcgComponentType dup = new TcgComponentTypeImpl(name, path, title, description, 
-                iconName, allowsChildren,
+        		icon, allowsChildren,
                 visible, codeTypes, propTypes, childTypes,
                 validator);
         
@@ -460,7 +452,7 @@ class TcgComponentTypeImpl
      * @return DOCUMENT ME!
      */
     public TcgComponentType duplicate() {
-        return duplicate(mName, mPath, mTitle, mDescription, mIconName, mAllowsChildren, mVisible, null, null, null, mValidator);
+        return duplicate(mName, mPath, mTitle, mDescription, mIcon, mAllowsChildren, mVisible, null, null, null, mValidator);
     }
     
     /**
@@ -501,7 +493,7 @@ class TcgComponentTypeImpl
      *
      * @return Newly created TcgComponent object
      */
-    TcgComponent newShallowComponent(String componentName,
+    public TcgComponent newShallowComponent(String componentName,
             String componentTitle) {
         
         return new TcgComponentImpl(componentName, componentTitle, this);

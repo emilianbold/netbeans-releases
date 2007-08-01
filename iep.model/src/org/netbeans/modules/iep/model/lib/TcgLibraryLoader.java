@@ -30,12 +30,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.swing.ImageIcon;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.netbeans.modules.iep.model.LibraryProviderFactory;
+import org.netbeans.modules.iep.model.spi.LibraryProvider;
 import org.openide.util.NbBundle;
 
 public class TcgLibraryLoader {
@@ -46,13 +50,7 @@ public class TcgLibraryLoader {
     public static final String ICON_NAME = "";
 
     public static TcgComponentTypeGroup loadLibraries() {
-        List libraryXMLList = new ArrayList();
-        String tcgLibPath = Configuration.getVarByName("tcglib.path");
-        StringTokenizer st = new StringTokenizer(tcgLibPath, ";");
-        while (st.hasMoreTokens()) {
-            libraryXMLList.add(st.nextToken());
-        }
-        return loadLibraries(libraryXMLList);
+        return loadLibraryProviders();
     }
 
     /**
@@ -60,7 +58,7 @@ public class TcgLibraryLoader {
      *
      * @return the root component_type_group: '/' with the tree rooted at it
      */
-    public static TcgComponentTypeGroup loadLibraries(List libraryXMLList) {
+    public static TcgComponentTypeGroup loadLibraryProviders() {
         //mLog.debug("loadLibraries libraryXMLList: " + libraryXMLList);
         TcgComponentTypeGroup libRoot =
             new TcgComponentTypeGroupImpl(TITLE, TITLE, TITLE, ICON_NAME);
@@ -70,9 +68,11 @@ public class TcgLibraryLoader {
             // 1. populate the tree rooted at libRoot with component_type_group
             // 2. get the denpency among all the component_types, and that among property_groups
             Map topLevelItemMap = new HashMap();
-            for (int i = 0; i < libraryXMLList.size(); i++) {
-                String libraryPath = (String) libraryXMLList.get(i);
-                loadComponentTypeLibrary(libraryPath, libRoot, topLevelItemMap);
+            List<LibraryProvider> providers = LibraryProviderFactory.getDefault().getAlLibraryProvider();
+            
+            for (int i = 0; i < providers.size(); i++) {
+            	LibraryProvider provider = providers.get(i);
+                loadComponentTypeLibrary(provider, libRoot, topLevelItemMap);
             }
 
             //mLog.debug("Pass 2");
@@ -104,28 +104,27 @@ public class TcgLibraryLoader {
      * @exception ParseXmlException Description of the Exception
      */
     private static void loadComponentTypeLibrary(
-        String libraryPath,
+    	LibraryProvider provider,
         TcgComponentTypeGroup libRoot, Map topLevelItemMap)
         throws ParseXmlException {
         //mLog.debug("loadComponentTypeLibrary libraryPath: " + libraryPath);
         try {
-            Document doc = parseXML(libraryPath);
+            Document doc = parseXML(provider);
             Element root =
                 (Element) doc.getDocumentElement();
             TcgComponentTypeGroup ctg =
-                loadComponentTypeGroup(root, "/", topLevelItemMap);
+                loadComponentTypeGroup(provider, root, "/", topLevelItemMap);
 
             if (ctg == null) {
-                throw new ParseXmlException("TcgModelManager.BAD_COMPONENT_ERROR",
-                                            "org.netbeans.modules.iep.editor.tcg.model.Bundle",
-                                            new Object[] {libraryPath});
+            	String message = NbBundle.getMessage(TcgLibraryLoader.class, "TcgModelManager.BAD_COMPONENT_ERROR", new Object[] {provider});
+            	
+                throw new ParseXmlException(message);
             }
             libRoot.addComponentTypeGroup(ctg);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ParseXmlException("TcgModelManager.PARSE_XML_FAILED",
-                                        "org.netbeans.modules.iep.editor.tcg.model.Bundle",
-                                        new Object[] {libraryPath}, e);
+            String message = NbBundle.getMessage(TcgLibraryLoader.class, "TcgModelManager.PARSE_XML_FAILED", new Object[] {provider});
+            throw new ParseXmlException(message, e);
         }
     }
 
@@ -142,6 +141,7 @@ public class TcgLibraryLoader {
      * @return the component_type_group and its sub-tree
      */
     private static TcgComponentTypeGroup loadComponentTypeGroup(
+        LibraryProvider provider,	
         Element root, 
         String componentTypePath, Map topLevelItemMap)
         throws ParseXmlException {
@@ -153,9 +153,8 @@ public class TcgLibraryLoader {
         if ((name == null) || (title == null)
             || name.equals("") || title.equals("")
             || (icon == null)) {
-            throw new ParseXmlException("TcgLibraryLoader.ATTRIBUTES_NOT_FOUND",
-                                        "org.netbeans.modules.iep.editor.tcg.model.Bundle",
-                                        new Object[] {root});
+        	String message = NbBundle.getMessage(TcgLibraryLoader.class, "TcgLibraryLoader.ATTRIBUTES_NOT_FOUND", new Object[] {root});
+            throw new ParseXmlException(message);
         }
 
         TcgComponentTypeGroup ctg = new TcgComponentTypeGroupImpl(name, title, description, icon);
@@ -171,12 +170,12 @@ public class TcgLibraryLoader {
                 if (childName.equals("component_type_group")) {
                     ctg.addComponentTypeGroup(
                         loadComponentTypeGroup(
-                            (Element) child, componentTypePath, topLevelItemMap));
+                            provider, (Element) child, componentTypePath, topLevelItemMap));
                 } else if (childName.equals("component_type")) {
-                    registerTopLevelComponentType(
+                    registerTopLevelComponentType(provider,
                         (Element) child, componentTypePath, topLevelItemMap);
                 } else if (childName.equals("property_group")) {
-                    registerTopLevelPropertyGroup(
+                    registerTopLevelPropertyGroup( provider,
                         (Element) child, componentTypePath, topLevelItemMap);
                 }
             }
@@ -194,6 +193,7 @@ public class TcgLibraryLoader {
      *        definitions, and top-level component_type definitions
      */
     private static void registerTopLevelPropertyGroup(
+    	LibraryProvider provider,	
         Element root,
         String topLevelPath, Map topLevelItemMap) {
         NamedNodeMap attrs = root.getAttributes();
@@ -201,7 +201,7 @@ public class TcgLibraryLoader {
             Node node = attrs.getNamedItem("name");
             String name = node.getNodeValue();
             TopLevelItem item = new TopLevelItem(
-                topLevelPath, name, root, TopLevelItem.PG);
+                topLevelPath, name, provider, root, TopLevelItem.PG);
             NodeList props = root.getChildNodes();
             for (int i = 0; i < props.getLength(); i++) {
                 Node prop = props.item(i);
@@ -232,7 +232,7 @@ public class TcgLibraryLoader {
      * @param topLevelItemMap symbol table containing all the component_type_groups, property_group 
      *        definitions, and top-level component_type definitions
      */
-    private static void registerTopLevelComponentType(
+    private static void registerTopLevelComponentType(LibraryProvider provider,
         Element root,
         String topLevelPath, Map topLevelItemMap) {
         NamedNodeMap attrs = root.getAttributes();
@@ -240,7 +240,7 @@ public class TcgLibraryLoader {
             Node node = attrs.getNamedItem("name");
             String name = node.getNodeValue();
             TopLevelItem item = new TopLevelItem(
-                topLevelPath, name, root, TopLevelItem.CT);
+                topLevelPath, name, provider, root, TopLevelItem.CT);
             findTcgComponentTypeDependency(root, topLevelPath, item.mDependencySet);
             topLevelItemMap.put(topLevelPath + name, item);
             //mLog.debug("registerTopLevelComponentType adding key: " + topLevelPath + name + " item: " + item);
@@ -296,18 +296,19 @@ public class TcgLibraryLoader {
      *
      * @exception ParseXmlException Description of the Exception
      */
-    private static Document parseXML(String libraryPath)
+    private static Document parseXML(LibraryProvider provider)
         throws ParseXmlException {
         //mLog.debug("libraryPath: " + libraryPath);
         Document doc = null;
         try {
-            InputStream is = IOUtil.getResourceAsStream(libraryPath);
-            doc = DOMUtil.createDocument(
-                true, new InputSource(is));
+            InputStream is = provider.getLibraryXml();
+            if(is != null) {
+	            doc = DOMUtil.createDocument(
+	                true, new InputSource(is));
+            }
         } catch (Exception e) {
-            throw new ParseXmlException("TcgLibraryLoader.XML_LOAD_ERROR", 
-                                        "org.netbeans.modules.iep.editor.tcg.model.Bundle",
-                                        new Object[] {libraryPath}, e);
+        	String message = NbBundle.getMessage(TcgLibraryLoader.class, "TcgLibraryLoader.XML_LOAD_ERROR", new Object[] {provider} );
+            throw new ParseXmlException(message, e);
         }
         return doc;
     }
@@ -426,7 +427,7 @@ public class TcgLibraryLoader {
         }
         // Load the item adding to the component type group
         TcgComponentType compType =
-            loadComponentType(
+            loadComponentType(item.getLibraryProvider(),
                 item.mElement, item.mPkg, item.mPkg, topLevelItemMap);
         topLevelItemMap.put(item.mPkg + item.mName, compType);
         //mLog.debug("loadTopLevelComponentType  adding key: " + item.mPkg + item.mName + " compType: " + compType);
@@ -450,7 +451,7 @@ public class TcgLibraryLoader {
      * @return Returns a TcgComponentType object based on the root Element
      *         passed in
      */
-    private static TcgComponentType loadComponentType(
+    private static TcgComponentType loadComponentType(LibraryProvider provider,
         Element root, String componentTypePath, String topLevelPath, Map topLevelItemMap) 
         throws ComponentTypeLoadException {
         //mLog.info("loadComponentType componentTypePath: " + componentTypePath + " topLevelPath: " + topLevelPath);
@@ -462,7 +463,7 @@ public class TcgLibraryLoader {
         String name = null;
         String title = null;
         String description = null;
-        String icon = null;
+        ImageIcon icon = null;
         TcgComponentValidator validator = null;
         boolean allowsChildren = false;
         boolean visible = false;
@@ -493,7 +494,9 @@ public class TcgLibraryLoader {
             description = node == null ? superType.getDescription() : node.getNodeValue();
 
             node = attrs.getNamedItem("icon");
-            icon = node == null ? superType.getIconName(): node.getNodeValue();
+            icon = node == null ? superType.getIcon() : provider.resolveIcon(node.getNodeValue());
+            
+            //riticon = node == null ? superType.getIcon(): node.getNodeValue();
 
             node = attrs.getNamedItem("allowsChildren");
             allowsChildren = node == null ? superType.getAllowsChildren() :
@@ -505,7 +508,7 @@ public class TcgLibraryLoader {
 
             node = attrs.getNamedItem("validator");
             validator = node == null ? superType.getValidator(): 
-                (TcgComponentValidator)Class.forName(node.getNodeValue()).newInstance();
+                (TcgComponentValidator)provider.newInstance(node.getNodeValue());
         } catch (Throwable e) {
             mLog.warning(e.getMessage());
             e.printStackTrace();
@@ -521,7 +524,7 @@ public class TcgLibraryLoader {
             if (Node.ELEMENT_NODE == child.getNodeType()) {
                 if (childName.equals("component_type")) {
                     compList.add(
-                        loadComponentType(
+                        loadComponentType(provider,
                             (Element) child, componentTypePath + name + "|", 
                             topLevelPath, topLevelItemMap));
                 } else if (childName.equals("property")) {
@@ -775,9 +778,16 @@ public class TcgLibraryLoader {
         public Element mElement;
         public String mType;
         public Set mDependencySet;
-        public TopLevelItem(String pkg, String name, Element element, String type) {
+        public LibraryProvider mProvider;
+        
+        public TopLevelItem(String pkg, 
+        					String name,
+        					LibraryProvider provider,
+        					Element element, 
+        					String type) {
             mPkg = pkg;
             mName = name;
+            this.mProvider = provider;
             mElement = element;
             mType = type;
             mDependencySet = new HashSet();
@@ -785,6 +795,10 @@ public class TcgLibraryLoader {
 
         public String toString() {
             return "TopLevelItem[type: " + mType + " package: " + mPkg + " name: " + mName + " element: " + mElement + " dependencySet: " + mDependencySet + "]";
+        }
+        
+        public LibraryProvider getLibraryProvider() {
+        	return this.mProvider;
         }
     }
 }
