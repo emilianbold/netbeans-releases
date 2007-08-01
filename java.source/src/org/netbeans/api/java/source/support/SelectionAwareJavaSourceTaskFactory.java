@@ -50,6 +50,7 @@ public abstract class SelectionAwareJavaSourceTaskFactory extends JavaSourceTask
     private static final RequestProcessor WORKER = new RequestProcessor("SelectionAwareJavaSourceTaskFactory worker");
     
     private int timeout;
+    private String[] supportedMimeTypes;
     
     /**Construct the SelectionAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
      *
@@ -57,15 +58,27 @@ public abstract class SelectionAwareJavaSourceTaskFactory extends JavaSourceTask
      * @param priority priority to use for tasks created by {@link #createTask}
      */
     public SelectionAwareJavaSourceTaskFactory(Phase phase, Priority priority) {
+        this(phase, priority, (String []) null);
+    }
+    
+    /**Construct the SelectionAwareJavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
+     *
+     * @param phase phase to use for tasks created by {@link #createTask}
+     * @param priority priority to use for tasks created by {@link #createTask}
+     * @param supportedMimeTypes a list of mime types on which the tasks created by this factory should be run
+     * @since 0.22
+     */
+    public SelectionAwareJavaSourceTaskFactory(Phase phase, Priority priority, String... supportedMimeTypes) {
         super(phase, priority);
         //XXX: weak, or something like this:
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
         this.timeout = DEFAULT_RESCHEDULE_TIMEOUT;
+        this.supportedMimeTypes = supportedMimeTypes != null ? supportedMimeTypes.clone() : null;
     }
     
     /**@inheritDoc*/
     public List<FileObject> getFileObjects() {
-        List<FileObject> files = new ArrayList<FileObject>(OpenedEditors.getDefault().getVisibleEditorsFiles());
+        List<FileObject> files = OpenedEditors.filterSupportedMIMETypes(OpenedEditors.getDefault().getVisibleEditorsFiles(), supportedMimeTypes);
 
         return files;
     }
