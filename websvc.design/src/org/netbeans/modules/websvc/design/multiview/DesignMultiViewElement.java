@@ -32,7 +32,9 @@ import org.netbeans.modules.websvc.design.navigator.WSDesignNavigatorHint;
 import org.netbeans.modules.websvc.design.view.DesignView;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -46,6 +48,7 @@ public class DesignMultiViewElement extends TopComponent
     private transient JToolBar toolbar;
     private transient DesignView designView;
     private transient DataObject dataObject;
+    private transient Lookup myLookup;
 
     /**
      * 
@@ -57,7 +60,7 @@ public class DesignMultiViewElement extends TopComponent
     }
     
     private void initialize() {
-        associateLookup(Lookups.fixed(dataObject, new WSDesignNavigatorHint()));
+        myLookup = Lookups.fixed(new WSDesignNavigatorHint());
     }
     
     public int getPersistenceType() {
@@ -92,33 +95,38 @@ public class DesignMultiViewElement extends TopComponent
     }
     
     
+    @Override
     public void componentActivated() {
         super.componentActivated();
-        setActivatedNodes(new Node[] {});
-        setActivatedNodes(new Node[] {dataObject.getNodeDelegate()});
     }
     
+    @Override
     public void componentDeactivated() {
         super.componentDeactivated();
-        setActivatedNodes(new Node[] {});
     }
     
+    @Override
     public void componentOpened() {
         super.componentOpened();
         // create UI, this will be moved to componentShowing for refresh/sync
         initUI();
     }
     
+    @Override
     public void componentClosed() {
         super.componentClosed();
     }
     
+    @Override
     public void componentShowing() {
         super.componentShowing();
+        setActivatedNodes(new Node[] {dataObject.getNodeDelegate()});
     }
     
+    @Override
     public void componentHidden() {
         super.componentHidden();
+        setActivatedNodes(new Node[] {});
     }
     
     public JComponent getToolbarRepresentation() {
@@ -131,6 +139,7 @@ public class DesignMultiViewElement extends TopComponent
         return toolbar;
     }
     
+    @Override
     public UndoRedo getUndoRedo() {
         return super.getUndoRedo();
     }
@@ -138,5 +147,11 @@ public class DesignMultiViewElement extends TopComponent
     public JComponent getVisualRepresentation() {
         return this;
     }
+    
+    @Override
+    public Lookup getLookup() {
+        return new ProxyLookup(super.getLookup(), myLookup);
+     }
+
     
 }

@@ -75,12 +75,6 @@ public class WSDesignNavigatorPanel implements NavigatorPanel, LookupListener{
         selection = context.lookup(new Lookup.Template<DataObject>(DataObject.class));
         selection.addLookupListener(this);
         resultChanged(null);
-        // hack to init selection if any
-        navigator.propertyChange(new PropertyChangeEvent(this,
-                TopComponent.getRegistry().PROP_ACTIVATED_NODES,false,true));
-        
-        //temporarily display root node
-        navigator.navigate(null);
     }
     
     public void panelDeactivated() {
