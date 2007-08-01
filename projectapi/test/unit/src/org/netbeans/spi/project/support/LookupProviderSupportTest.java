@@ -70,7 +70,7 @@ public class LookupProviderSupportTest extends NbTestCase {
         pro1.ic.add(new JTextField());
         pro2.ic.add(new JTextArea());
         
-        LookupProviderSupport.DelegatingLookupImpl del = new LookupProviderSupport.DelegatingLookupImpl(base, providers);
+        LookupProviderSupport.DelegatingLookupImpl del = new LookupProviderSupport.DelegatingLookupImpl(base, providers, "<irrelevant>");
         
         assertNotNull(del.lookup(JTextArea.class));
         assertNotNull(del.lookup(JComboBox.class));
@@ -133,7 +133,7 @@ public class LookupProviderSupportTest extends NbTestCase {
         pro2.ic.add(impl2);
         pro3.ic.add(impl3);
         
-        LookupProviderSupport.DelegatingLookupImpl del = new LookupProviderSupport.DelegatingLookupImpl(base, providers);
+        LookupProviderSupport.DelegatingLookupImpl del = new LookupProviderSupport.DelegatingLookupImpl(base, providers, "<irrelevant>");
         
         Sources srcs = del.lookup(Sources.class); 
         assertNotNull(srcs);
