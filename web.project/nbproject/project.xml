@@ -444,6 +444,8 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.j2ee.archive</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsfproject</friend>
+                <friend>org.netbeans.modules.web.frameworks.facelets</friend>
+                <friend>org.netbeans.modules.portalpack.portlets.genericportlets</friend>
                 <package>org.netbeans.modules.web.project.api</package>
                 <package>org.netbeans.modules.web.project.spi</package>
             </friend-packages>
