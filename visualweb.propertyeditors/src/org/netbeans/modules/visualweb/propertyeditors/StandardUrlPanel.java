@@ -499,8 +499,8 @@ public class StandardUrlPanel extends JPanel implements PropertyChangeListener, 
             httpLabel.setText(bundle.getString("enterUrlHttp")); //NOI18N
             httpLabel.setAlignmentX(JLabel.LEFT_ALIGNMENT);
             this.add(httpLabel);
-           // textField.setMaximumSize(new Dimension(Integer.MAX_VALUE,
-             //   textField.getPreferredSize().height));
+            textField.setMaximumSize(new Dimension(Integer.MAX_VALUE,
+              textField.getPreferredSize().height));
             textField.setAlignmentX(JTextField.LEFT_ALIGNMENT);
             textField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "URL_TEXTFIELD_ACCESS_NAME"));
             textField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StandardUrlPanel.class, "URL_TEXTFIELD_ACCESS_DESC"));
