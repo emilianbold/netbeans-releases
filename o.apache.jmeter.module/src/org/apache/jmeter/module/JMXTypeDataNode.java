@@ -125,7 +125,7 @@ public class JMXTypeDataNode extends DataNode {
         expert.put(new MapBasedProperty(vars, NB_SERVER, String.class, "Target server", "Sets the target server"));
         expert.put(new MapBasedProperty(vars, NB_PORT, Integer.class, "Target server port", "Sets the target server port"));
         expert.put(new MapBasedProperty(vars, NB_USERS, Integer.class, "Number of users", "The number of simulated users"));
-        expert.put(new MapBasedProperty(vars, NB_RAMPUP, Integer.class, "Rampup time", "The interval between two simulated users (in seconds)"));
+        expert.put(new MapBasedProperty(vars, NB_RAMPUP, Integer.class, "Rampup time", "The time between starting the first and the last simulated user (in seconds)"));
         
         expert.addPropertyChangeListener(new PropertyChangeListener() {
           public void propertyChange(PropertyChangeEvent evt) {
