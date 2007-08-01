@@ -31,6 +31,7 @@ public abstract class EditorOptions {
     public abstract boolean getExpandTabs();
     public abstract int getSpacesPerTab();
     public abstract boolean getMatchBrackets();
+    public abstract int getRightMargin();
     
     public static EditorOptions get(String mimeType) {
         EditorOptionsFactory factory = Lookup.getDefault().lookup(EditorOptionsFactory.class);

@@ -81,5 +81,15 @@ public class GsfEditorOptionsFactory implements EditorOptionsFactory {
             }
             return true;
         }
+
+        public int getRightMargin() {
+            if (options != null) {
+                Object o = options.getSettingValue(SettingsNames.TEXT_LIMIT_WIDTH);
+                if (o instanceof Integer) {
+                    return ((Integer)o).intValue();
+                }
+            }
+            return 80;
+        }
     }
 }
