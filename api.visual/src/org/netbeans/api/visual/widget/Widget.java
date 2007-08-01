@@ -473,7 +473,7 @@ public class Widget implements Accessible {
     /**
      * Returns a collection of registered dependencies.
      * @return the unmodifiable collection of dependencies
-     * @since 2.5
+     * @since 2.6
      */
     public final Collection<Dependency> getDependencies () {
         return dependencies != null ? Collections.unmodifiableCollection (dependencies) : Collections.<Dependency>emptyList ();
