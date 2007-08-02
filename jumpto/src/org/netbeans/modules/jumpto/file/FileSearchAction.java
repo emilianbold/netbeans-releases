@@ -35,6 +35,7 @@ import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -60,6 +61,13 @@ public class FileSearchAction extends AbstractAction {
         putValue("PopupMenuText", NbBundle.getBundle(FileSearchAction.class).getString("editor-popup-CTL_FileSearchAction")); // NOI18N
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
+
+    @Override
+    public boolean isEnabled() {
+        return OpenProjects.getDefault().getOpenProjects().length > 0;
+    }
+    
+    
     
     public void actionPerformed(ActionEvent arg0) {
     
