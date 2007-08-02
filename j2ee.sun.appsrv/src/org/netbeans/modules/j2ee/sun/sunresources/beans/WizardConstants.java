@@ -157,6 +157,7 @@ public interface WizardConstants {
     
     public static final String __PortNumber = "portNumber";
     public static final String __SID = "SID";
+    public static final String __DriverClass = "driverClass";
     
     public static final String[] VendorsExtraProps = {"sun_db2", "sun_oracle", "sun_msftsql",
         "sun_sybase", "db2", "microsoft_sql", "post-gre-sql", "mysql", "datadirect_sql",
@@ -165,18 +166,16 @@ public interface WizardConstants {
     
     
     public static final String[] VendorsDBNameProp = {"sun_db2", "sun_oracle", "sun_msftsql",
-        "db2", "post-gre-sql", "mysql", "datadirect_sql", 
+        "db2", "microsoft_sql", "post-gre-sql", "mysql", "datadirect_sql", 
         "datadirect_db2", "datadirect_informix", "datadirect_sybase", "datadirect_oracle",
         "jtds_sql", "jtds_sybase", "informix"};
     
     
     public static final String[] Reqd_DBName = {"sun_db2", "sun_msftsql", "datadirect_sql", 
-        "datadirect_db2", "datadirect_informix", "datadirect_sybase"};
+        "microsoft_sql", "datadirect_db2", "datadirect_informix", "datadirect_sybase"};
     
     //Suffixes to create Resource File Names (for Zero Config)
     public static final String __ConnPoolSuffix = "Pool"; 
-    
-    public static final String __DriverClassName = "driverClassName"; 
     
     public static final String __QUEUE = "javax.jms.Queue"; // NOI18N
     public static final String __TOPIC = "javax.jms.Topic"; // NOI18N

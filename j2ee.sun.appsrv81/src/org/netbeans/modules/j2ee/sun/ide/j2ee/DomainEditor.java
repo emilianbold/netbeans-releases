@@ -78,6 +78,7 @@ public class DomainEditor {
     private static String CONST_PORT_NUMBER = "PortNumber"; // NOI18N
     private static String CONST_SID = "SID"; // NOI18N
     private static String CONST_SERVER_NAME = "serverName"; // NOI18N
+    private static String CONST_DRIVER_CLASS = "driverClass"; // NOI18N
     static private String CONST_NAME = "name"; // NOI18N
     static private String CONST_JVM_OPTIONS = "jvm-options"; // NOI18N
 
@@ -461,6 +462,7 @@ public class DomainEditor {
             pValues.put(CONST_LOWER_PORT_NUMBER, (String)map.get(CONST_LOWER_PORT_NUMBER));
             pValues.put(CONST_DATABASE_NAME, (String)map.get(CONST_DATABASE_NAME));
             pValues.put(CONST_SID, (String)map.get(CONST_SID));
+            pValues.put(CONST_DRIVER_CLASS, (String)map.get(CONST_DRIVER_CLASS));
             pValues.put("dsClassName", dsClassName);
             
             dSources.put(jndiName, pValues);
@@ -507,6 +509,7 @@ public class DomainEditor {
             pValues.put(CONST_LOWER_PORT_NUMBER, (String)map.get(CONST_LOWER_PORT_NUMBER));
             pValues.put(CONST_DATABASE_NAME, (String)map.get(CONST_DATABASE_NAME));
             pValues.put(CONST_SID, (String)map.get(CONST_SID));
+            pValues.put(CONST_DRIVER_CLASS, (String)map.get(CONST_DRIVER_CLASS));
             pValues.put("dsClassName", dsClassName);
             
             pools.put(name, pValues);

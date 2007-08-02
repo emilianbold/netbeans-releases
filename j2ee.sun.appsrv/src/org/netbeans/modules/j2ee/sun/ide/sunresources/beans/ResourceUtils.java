@@ -1007,7 +1007,7 @@ public class ResourceUtils implements WizardConstants{
                             String username = (String)poolValues.get(WizardConstants.__User);
                             String password = (String)poolValues.get(WizardConstants.__Password);
                             String url = (String)poolValues.get(WizardConstants.__Url);
-                            String driverClassName = (String)poolValues.get(WizardConstants.__DriverClassName);
+                            String driverClassName = (String)poolValues.get(WizardConstants.__DriverClass);
                             
                             SunDatasource ds = new SunDatasource(dsJndiName, url, username, password, driverClassName);
                             datasources.add(ds);
@@ -1068,7 +1068,7 @@ public class ResourceUtils implements WizardConstants{
         ServerInterface mejb = (ServerInterface)eightDM.getManagement();
         //Get Values from JDBC Connection Pool : driver
         ObjectName connPoolObj = getConnectionPoolByName(mejb, configObjName, poolName);
-        String driverClassName = (String)mejb.getAttribute(connPoolObj, "datasource-classname"); //NOI18N
+        String dsClassName = (String)mejb.getAttribute(connPoolObj, "datasource-classname"); //NOI18N
         String url = ""; //NOI18N
         String username = ""; //NOI18N
         String password = ""; //NOI18N
@@ -1076,6 +1076,7 @@ public class ResourceUtils implements WizardConstants{
         String portNo = ""; //NOI18N
         String dbName = ""; //NOI18N
         String sid = ""; //NOI18N
+        String driverClass = ""; //NOI18N
         
         AttributeList attrList = (AttributeList)mejb.invoke(connPoolObj, WizardConstants.__GetProperties, null, null);
         HashMap attrs = getObjMap(attrList);
@@ -1083,7 +1084,7 @@ public class ResourceUtils implements WizardConstants{
         for(int i=0; i<keys.length; i++){
             String keyName = (String)keys[i];
             if(keyName.equalsIgnoreCase(WizardConstants.__DatabaseName)){
-                if(driverClassName.indexOf("pointbase") != -1){ //NOI18N
+                if(dsClassName.indexOf("pointbase") != -1){ //NOI18N
                     url = getStringVal(attrs.get(keyName));
                 }else{
                     dbName = getStringVal(attrs.get(keyName));
@@ -1100,38 +1101,41 @@ public class ResourceUtils implements WizardConstants{
                 portNo = getStringVal(attrs.get(keyName));
             }else if(keyName.equalsIgnoreCase(WizardConstants.__SID)) {
                 sid = getStringVal(attrs.get(keyName));
-            }
-        }
-        
-        if(driverClassName.indexOf("derby") != -1){ //NOI18N
-            url = "jdbc:derby://"; //NOI18N
-            if(serverName != null){
-                url = url + serverName;
-                if(portNo != null && portNo.length() > 0) {
-                    url = url + ":" + portNo; //NOI18N
-                }    
-                url = url + "/" + dbName ; //NOI8N
-            }
-        }else if(url.equals("")) { //NOI18N
-            String urlPrefix = DatabaseUtils.getUrlPrefix(driverClassName);
-            String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null); 
-            if(serverName != null){
-                if(vName.equals("sybase2")){ //NOI18N
-                    url = urlPrefix + serverName; 
-                } else{
-                    url = urlPrefix + "//" + serverName; //NOI18N
-                }
-                if(portNo != null && portNo.length() > 0) {
-                    url = url + ":" + portNo; //NOI18N
-                }    
-            }
-            if(vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
-                url = url + ";SID=" + sid; //NOI18N
-            }else if(Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
-                url = url + ";databaseName=" + dbName; //NOI18N
-            }else if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
-                url = url + "/" + dbName ; //NOI8N
+            }else if(keyName.equalsIgnoreCase(WizardConstants.__DriverClass)) {
+                driverClass = getStringVal(attrs.get(keyName));
             }    
+        }
+        if (url == null || url.equals("")) {
+            if (dsClassName.indexOf("derby") != -1) { //NOI18N
+                url = "jdbc:derby://"; //NOI18N
+                if (serverName != null) {
+                    url = url + serverName;
+                    if (portNo != null && portNo.length() > 0) {
+                        url = url + ":" + portNo; //NOI18N
+                    }
+                    url = url + "/" + dbName; //NOI8N
+                }
+            } else if (url.equals("")) { //NOI18N
+                String urlPrefix = DatabaseUtils.getUrlPrefix(dsClassName);
+                String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
+                if (serverName != null) {
+                    if (vName.equals("sybase2")) { //NOI18N
+                        url = urlPrefix + serverName;
+                    } else {
+                        url = urlPrefix + "//" + serverName; //NOI18N
+                    }
+                    if (portNo != null && portNo.length() > 0) {
+                        url = url + ":" + portNo; //NOI18N
+                    }
+                }
+                if (vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
+                    url = url + ";SID=" + sid; //NOI18N
+                } else if (Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
+                    url = url + ";databaseName=" + dbName; //NOI18N
+                } else if (Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
+                    url = url + "/" + dbName; //NOI8N
+                }
+            }
         }
         
         if((! eightDM.isLocal()) && (url.indexOf("localhost") != -1)){ //NOI18N
@@ -1139,20 +1143,21 @@ public class ResourceUtils implements WizardConstants{
             url = url.replaceFirst("localhost", hostName); //NOI18N
         }
         DatabaseConnection databaseConnection = getDatabaseConnection(url);
-        if(databaseConnection != null){
-            driverClassName = databaseConnection.getDriverClass();
-        }else{
-            //Fix Issue 78212 - NB required driver classname
-            String drivername = DatabaseUtils.getDriverName(url);
-            if(drivername != null) {
-                driverClassName = drivername;
-            }    
-        }    
-        
+        if (driverClass == null || driverClass.equals("")) {
+            if (databaseConnection != null) {
+                driverClass = databaseConnection.getDriverClass();
+            } else {
+                //Fix Issue 78212 - NB required driver classname
+                String drivername = DatabaseUtils.getDriverName(url);
+                if (drivername != null) {
+                    driverClass = drivername;
+                }
+            }
+        }
         connPoolAttrs.put(__User, username);
         connPoolAttrs.put(__Password, password);
         connPoolAttrs.put(__Url, url);
-        connPoolAttrs.put(__DriverClassName, driverClassName);
+        connPoolAttrs.put(__DriverClass, driverClass);
         return connPoolAttrs;
     }
     
@@ -1266,7 +1271,7 @@ public class ResourceUtils implements WizardConstants{
             String url = getStringVal(poolValues.get(__Url));
             String username = getStringVal(poolValues.get(__User));
             String password = getStringVal(poolValues.get(__Password));
-            String driverClassName = getStringVal(poolValues.get(__DriverClassName)); //NOI18N
+            String driverClassName = getStringVal(poolValues.get(__DriverClass)); //NOI18N
             if((url != null) && (! url.equals (""))) { //NOI18N
                 SunDatasource ds = new SunDatasource (jndiName, url, username, password, driverClassName);
                 datasources.add (ds);
@@ -1278,7 +1283,6 @@ public class ResourceUtils implements WizardConstants{
     
     private static HashMap formatPoolMap(HashMap poolValues){
         String driverClassName = getStringVal(poolValues.get("dsClassName")); //NOI18N
-        
         String url = ""; //NOI18N
         String serverName = getStringVal(poolValues.get(__ServerName));
         String portNo     = getStringVal(poolValues.get(__DerbyPortNumber));
@@ -1286,57 +1290,64 @@ public class ResourceUtils implements WizardConstants{
         String dbVal     = getStringVal(poolValues.get(__DatabaseName));
         String portVal     = getStringVal(poolValues.get(__PortNumber));
         String sid     = getStringVal(poolValues.get(__SID));
+        String urlValue     = getStringVal(poolValues.get(__Url));
+        String driverClass     = getStringVal(poolValues.get(__DriverClass));
+        
         if(driverClassName.indexOf("pointbase") != -1){
             url = getStringVal(poolValues.get(__DatabaseName));
-        }else if(driverClassName.indexOf("derby") != -1){
-            if(serverName != null){
-                url = "jdbc:derby://" + serverName;
-                if(portNo != null && portNo.length() > 0) {
-                    url = url + ":" + portNo; //NOI18N
-                }
-                url = url + "/" + dbName ; //NOI8N
-            }
-        }else{
-            String in_url = getStringVal(poolValues.get(__Url));
-            if(in_url != null) {
-                url = in_url;
-            }    
-            if(url.equals("")) { //NOI18N
-                String urlPrefix = DatabaseUtils.getUrlPrefix(driverClassName);
-                String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null); 
-                if(serverName != null){
-                    if(vName.equals("sybase2")){ //NOI18N
-                        url = urlPrefix + serverName; 
-                    }else{
-                         url = urlPrefix + "//" + serverName; //NOI18N
-                    } 
-                    if(portVal != null && portVal.length() > 0) {
-                        url = url + ":" + portVal; //NOI18N
+        }
+        if (urlValue == null || urlValue.equals("")) { //NOI18N
+            if (driverClassName.indexOf("derby") != -1) {
+                if (serverName != null) {
+                    url = "jdbc:derby://" + serverName;
+                    if (portNo != null && portNo.length() > 0) {
+                        url = url + ":" + portNo; //NOI18N
                     }    
                 }
-                if(vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
-                    url = url + ";SID=" + sid; //NOI18N
-                }else if(Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
-                    url = url + ";databaseName=" + dbVal; //NOI18N
-                }else if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
-                    url = url + "/" + dbVal ; //NOI8N
-                }    
-            }   
-        }    
-        
-        DatabaseConnection databaseConnection = getDatabaseConnection(url);
-        if(databaseConnection != null) {
-            driverClassName = databaseConnection.getDriverClass();
+            } else {
+                String in_url = getStringVal(poolValues.get(__Url));
+                if (in_url != null) {
+                    url = in_url;
+                }
+                if (url.equals("")) {  //NOI18N
+                    String urlPrefix = DatabaseUtils.getUrlPrefix(driverClassName);
+                    String vName = ResourceConfigurator.getDatabaseVendorName(urlPrefix, null);
+                    if (serverName != null) {
+                        if (vName.equals("sun_oracle")) {    //NOI18N
+                            url = urlPrefix + serverName;
+                        } else {
+                            url = urlPrefix + "//" + serverName; //NOI18N
+                        }
+                        if (portVal != null && portVal.length() > 0) {
+                            url = url + ":" + portVal; //NOI18N
+                        }
+                    }
+                    if (vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) {  //NOI18N
+                        url = url + ";SID=" + sid; //NOI18N
+                    } else if (Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
+                        url = url + ";databaseName=" + dbVal; //NOI18N
+                    } else if (Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
+                        url = url + "/" + dbVal; //NOI8N
+                    }
+                }
+            }
         }else{
-            //Fix Issue 78212 - NB required driver classname
-            String drivername = DatabaseUtils.getDriverName(url);
-            if(drivername != null) {
-                driverClassName = drivername;
-            }    
+            url = urlValue;
         }
-        
+        if(driverClass == null || driverClass.equals("")) { //NOI18N
+            DatabaseConnection databaseConnection = getDatabaseConnection(url);
+            if (databaseConnection != null) {
+                driverClass = databaseConnection.getDriverClass();
+            } else {
+                //Fix Issue 78212 - NB required driver classname
+                String drivername = DatabaseUtils.getDriverName(url);
+                if (drivername != null) {
+                    driverClass = drivername;
+                }
+            }
+        }
         poolValues.put(__Url, url);
-        poolValues.put(__DriverClassName, driverClassName);
+        poolValues.put(__DriverClass, driverClass);
         
         return poolValues;
     }

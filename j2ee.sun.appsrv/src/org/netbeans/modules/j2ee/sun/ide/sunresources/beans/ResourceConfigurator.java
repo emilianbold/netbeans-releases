@@ -422,7 +422,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         PropertyElement portno = jdbcConnectionPool.newPropertyElement();
         portno.setName(WizardConstants.__PortNumber);
         portno.setValue(portNumber);
-        
         if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vendorName)) {  //NOI18N
             PropertyElement dbName = jdbcConnectionPool.newPropertyElement();
             String databaseName = "";
@@ -584,7 +583,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                     hostName = pl[i].getValue();
                 }else if(prop.equals(WizardConstants.__PortNumber)){
                     portNumber = pl[i].getValue();
-                }else if(prop.equals(WizardConstants.__DatabaseName)){
+                }else if(prop.equalsIgnoreCase(WizardConstants.__DatabaseName)){
                     databaseName = pl[i].getValue();
                 }else if(prop.equals(WizardConstants.__SID)){
                     sid = pl[i].getValue();
@@ -598,25 +597,23 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             if (null != portNumber && portNumber.length() > 0) {
                 serverPort += ":" + portNumber; //NOI18N
             }
-            if((databaseUrl.indexOf(serverPort) != -1 ) &&
-                    ((databaseUrl.indexOf(databaseName) != -1) || (databaseUrl.indexOf(sid) != -1))){
-                if((username != null && user.equals(username)) && (password != null && pwd.equals(password))){
-                    poolJndiName = connPool.getName();
+            if ((databaseUrl.indexOf(serverPort) != -1) 
+                    && ((databaseUrl.indexOf(databaseName) != -1) 
+                    || (databaseUrl.indexOf(sid) != -1))) {
+                if ((username != null && user.equals(username)) 
+                        && (password != null && pwd.equals(password))) {
+                    for (int i = 0; i < pl.length; i++) {
+                        String prop = pl[i].getName();
+                        if (prop.equals("URL") || prop.equals("databaseName")) { // NOI18N
+                            String urlValue = pl[i].getValue();
+                            if (urlValue.equals(databaseUrl)) {
+                                poolJndiName = connPool.getName();
+                                break;
+                            }
+                        }
+                    } //for
                 }
             }
-            
-            for(int i=0; i<pl.length; i++) {
-                String prop = pl[i].getName();
-                if(prop.equals("URL") || prop.equals("databaseName")) { // NOI18N
-                    String urlValue = pl[i].getValue();
-                    if(urlValue.equals(databaseUrl)) {
-                        if((username != null && user.equals(username)) && (password != null && pwd.equals(password))){
-                            poolJndiName = connPool.getName();
-                            break;
-                        }
-                    }
-                }
-            } //for
         }
         return poolJndiName;
     }
@@ -742,7 +739,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      */
     private String getUrlDatabaseName(String url){
         String databaseName = ""; //NOI18N
-        int dbIndex = url.indexOf(";databaseName="); //NOI18N
+        int dbIndex = url.toLowerCase().indexOf(";databasename="); //NOI18N
         if(dbIndex != -1){
             int eqIndex = url.indexOf("=", dbIndex); //NOI18N
             int lenIndex = url.indexOf(";", eqIndex); //NOI18N
@@ -838,7 +835,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 String sid = "";
                 if(connectionPoolBean != null){
                     PropertyElement[] props = connectionPoolBean.getPropertyElement();
-                    driverClass = connectionPoolBean.getDatasourceClassname();
+                    String dsClass = connectionPoolBean.getDatasourceClassname();
                     HashMap properties = new HashMap();
                     for (int j = 0; j < props.length; j++) {
                         Object val = props[j].getValue();
@@ -848,9 +845,9 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                         }    
                         String propName = props[j].getName();
                         if(propName.equalsIgnoreCase(WizardConstants.__DatabaseName)){
-                            if(driverClass.indexOf("pointbase") != -1) { //NOI18N
+                            if(dsClass.indexOf("pointbase") != -1) { //NOI18N
                                 url = propValue;
-                            } else if(driverClass.indexOf("derby") != -1) { //NOI18N
+                            } else if(dsClass.indexOf("derby") != -1) { //NOI18N
                                 dbName = propValue;
                             } else {
                                 dbName = propValue;
@@ -867,51 +864,58 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                             portNo = propValue;
                         }else if(propName.equalsIgnoreCase(WizardConstants.__SID)){
                             sid = propValue;
+                        }else if(propName.equalsIgnoreCase(WizardConstants.__Url)){
+                            url = propValue;
+                        }else if(propName.equalsIgnoreCase(WizardConstants.__DriverClass)){
+                            driverClass = propValue;
                         }
                     }
                     
-                    if(driverClass.indexOf("derby") != -1){ //NOI18N
-                        url = "jdbc:derby://";
-                        if(serverName != null){
-                            url = url + serverName;
-                            if(portNo != null  && portNo.length() > 0) {
-                                url = url + ":" + portNo; //NOI18N
-                            }    
-                            url = url + "/" + dbName ; //NOI8N
-                        }
-                    }else if(url.equals("")) { //NOI18N
-                        String urlPrefix = DatabaseUtils.getUrlPrefix(driverClass);
-                        String vName = getDatabaseVendorName(urlPrefix, null);
-                        if(serverName != null){
-                            if(vName.equals("sybase2")){ //NOI18N
-                                url = urlPrefix + serverName; 
-                            } else {
-                                url = urlPrefix + "//" + serverName; //NOI18N
+                    if(url == null || url.equals("")){ //NOI18N
+                        if(dsClass.indexOf("derby") != -1){ //NOI18N
+                            url = "jdbc:derby://";
+                            if(serverName != null){
+                                url = url + serverName;
+                                if(portNo != null  && portNo.length() > 0) {
+                                    url = url + ":" + portNo; //NOI18N
+                                }    
+                                url = url + "/" + dbName ; //NOI8N
                             }
-                            if(portNo != null  && portNo.length() > 0) {
-                                url = url + ":" + portNo; //NOI18N
+                        }else if(url.equals("")) { //NOI18N
+                            String urlPrefix = DatabaseUtils.getUrlPrefix(dsClass);
+                            String vName = getDatabaseVendorName(urlPrefix, null);
+                            if(serverName != null){
+                                if(vName.equals("sybase2")){ //NOI18N
+                                    url = urlPrefix + serverName; 
+                                } else {
+                                    url = urlPrefix + "//" + serverName; //NOI18N
+                                }
+                                if(portNo != null  && portNo.length() > 0) {
+                                    url = url + ":" + portNo; //NOI18N
+                                }    
+                            }
+                            if(vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
+                                url = url + ";SID=" + sid; //NOI18N
+                            }else if(Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
+                                url = url + ";databaseName=" + dbName; //NOI18N
+                            }else if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
+                                url = url + "/" + dbName ; //NOI8N
                             }    
-                        }
-                        if(vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
-                            url = url + ";SID=" + sid; //NOI18N
-                        }else if(Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
-                            url = url + ";databaseName=" + dbName; //NOI18N
-                        }else if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
-                            url = url + "/" + dbName ; //NOI8N
-                        }    
-                    }    
-                    
-                    DatabaseConnection databaseConnection = ResourceUtils.getDatabaseConnection(url);
-                    if(databaseConnection != null) {
-                        driverClass = databaseConnection.getDriverClass();
-                    }else{
-                        //Fix Issue 78212 - NB required driver classname
-                        String drivername = DatabaseUtils.getDriverName(url);
-                        if(drivername != null) {
-                            driverClass = drivername;
                         }    
                     }
                     
+                    if(driverClass == null || driverClass.equals("")){ //NOI18N
+                        DatabaseConnection databaseConnection = ResourceUtils.getDatabaseConnection(url);
+                        if(databaseConnection != null) {
+                            driverClass = databaseConnection.getDriverClass();
+                        }else{
+                            //Fix Issue 78212 - NB required driver classname
+                            String drivername = DatabaseUtils.getDriverName(url);
+                            if(drivername != null) {
+                                driverClass = drivername;
+                            }    
+                        }
+                    }
                     SunDatasource sunResource = new SunDatasource(datasourceBean.getJndiName(), url, username, password, driverClass);
                     sunResource.setResourceDir(resourceDir);
                     dsources.add(sunResource);
@@ -922,7 +926,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                         username = (String)poolValues.get(WizardConstants.__User);
                         password = (String)poolValues.get(WizardConstants.__Password);
                         url = (String)poolValues.get(WizardConstants.__Url);
-                        driverClass = (String)poolValues.get(WizardConstants.__DriverClassName);
+                        driverClass = (String)poolValues.get(WizardConstants.__DriverClass);
                         if((url != null) && (! url.equals (""))) { //NOI18N
                             SunDatasource sunResource = new SunDatasource (datasourceBean.getJndiName (), url, username, password, driverClass);
                             sunResource.setResourceDir (resourceDir);
@@ -1015,6 +1019,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         if(datasourceClassName != null) {
             jdbcConnectionPool.setDatasourceClassname(datasourceClassName);
         }
+        
         PropertyElement user = jdbcConnectionPool.newPropertyElement();
         user.setName(WizardConstants.__User); // NOI18N
         PropertyElement passElement = jdbcConnectionPool.newPropertyElement();
@@ -1036,9 +1041,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 PropertyElement databaseOrUrl = jdbcConnectionPool.newPropertyElement();
                 if(vendorName.equals("pointbase")) { // NOI18N
                     databaseOrUrl.setName(WizardConstants.__DatabaseName); // NOI18N
-                } else {
-                    databaseOrUrl.setName(WizardConstants.__Url); // NOI18N
                 }
+//                else {
+//                    databaseOrUrl.setName(WizardConstants.__Url); // NOI18N
+//                }
                 databaseOrUrl.setValue(databaseUrl);
                 jdbcConnectionPool.addPropertyElement(databaseOrUrl);
             }
@@ -1047,6 +1053,14 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         jdbcConnectionPool.addPropertyElement(user);
         passElement.setValue(dbPassword);
         jdbcConnectionPool.addPropertyElement(passElement);
+        PropertyElement url = jdbcConnectionPool.newPropertyElement();
+        url.setName(WizardConstants.__Url); // NOI18N
+        url.setValue(databaseUrl);
+        jdbcConnectionPool.addPropertyElement(url);
+        PropertyElement driverClass = jdbcConnectionPool.newPropertyElement();
+        driverClass.setName(WizardConstants.__DriverClass); // NOI18N
+        driverClass.setValue(driver);
+        jdbcConnectionPool.addPropertyElement(driverClass);
         resources.addJdbcConnectionPool(jdbcConnectionPool);
         
         ResourceUtils.createFile(location, resources);
@@ -1161,6 +1175,8 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 //poolJndiName will be null if the connection does not exist
                 if (poolJndiName == null) {
                     poolName = ResourceUtils.getUniqueResourceName(poolName, pools);
+                }else{
+                    createResource = false;
                 }
             } else {
                 for (Iterator itr = pools.values().iterator(); itr.hasNext();) {
