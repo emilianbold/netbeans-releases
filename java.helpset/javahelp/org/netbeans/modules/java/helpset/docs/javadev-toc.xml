@@ -38,39 +38,44 @@
         <tocitem text="Editing the project.xml File" target="proj_free_projectxml" />
         </tocitem>    
     </tocitem>
-
+    
     <tocitem text="Editing Source Files" >
+    <tocitem text="About Editing Source Files" target="editing.about"/>
+    <tocitem text="Source Editor General Tasks: Quick Reference" target="editor.quickref" />
+    <tocitem text="Code Navigation: Quick Reference" target="editor.navigation"/>
+    <tocitem text="Finding and Replacing Text" target="editing.find"/>
+    <tocitem text="Regular Expressions For Finding and Replacing Text" target="editing.find_regexp"/>
     <tocitem text="Internationalizing Source Code">
-      <tocitem text="About" target="internation.internation"/>
-      <tocitem text="Internationalizing a Single File" target="internation.singlefile" />
-      <tocitem text="Internationalizing a Set of Files With the Internationalization Wizard" target="internation.wizard" />
-      <tocitem text="Inserting an Internationalized String Into Source Code" target="internation.maninsert" />
-      <tocitem text="Internationalizing a String With the GUI Builder" target="internation.formed" />
-      <tocitem text="Testing a  Bundle for Internationalized Strings" target="internation.testing" />
-      <tocitem text="Code Formats for Internationalized Strings" target="internation.replformat" />
-      <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
-      <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
-    </tocitem>
+    <tocitem text="About" target="internation.internation"/>
+    <tocitem text="Internationalizing a Single File" target="internation.singlefile" />
+    <tocitem text="Internationalizing a Set of Files With the Internationalization Wizard" target="internation.wizard" />
+    <tocitem text="Inserting an Internationalized String Into Source Code" target="internation.maninsert" />
+    <tocitem text="Internationalizing a String With the GUI Builder" target="internation.formed" />
+    <tocitem text="Testing a  Bundle for Internationalized Strings" target="internation.testing" />
+    <tocitem text="Code Formats for Internationalized Strings" target="internation.replformat" />
+    <tocitem text="Adding Arguments for Message Formats" target="internation.addparams" />
+        <tocitem text="Configuring Internationalization Settings" target="internation.settings" />
+        </tocitem>
     </tocitem>
     <tocitem text="Refactoring Java Source">
-        <tocitem text="About Refactoring Java Source" target="refactor.aboutRefactoring" /> 
-        <tocitem text="Undoing Refactoring Changes" target="refactor.Undo" />   
-        <tocitem text="Finding Class, Method, and Field Usages" target="refactor.findClass" /> 
-        <tocitem text="Renaming a Class or Interface" target="refactor.renameClass" />
-        <tocitem text="Renaming a Field or Method" target="refactor.renameField"/>       
-        <tocitem text="Moving a Java Object to Another Package" target="refactor.moveClass" />
-        <tocitem text="Moving an Inner Class One Level Up" target="refactor.moveInner"/>
-        <tocitem text="Moving a Class Member to a Superclass" target="refactor.pullUp"/>
-        <tocitem text="Moving a Class Member to a Subclass" target="refactor.pushDown"/>
-        <tocitem text="Encapsulating a Field" target="refactor.encapsulateField" /> 
-        <tocitem text="Changing a Method's Signature" target="refactor.changeParameters"/>
-        <tocitem text="Extracting a Method" target="refactor.extractMethod"/>
-        <tocitem text="Extracting a Superclass" target="refactor.extractSuperclass"/>
-        <tocitem text="Extracting an Interface" target="refactor.extractInterface"/>
-        <tocitem text="Using a Supertype Where Possible" target="refactor.useSupertype"/>   
-        <tocitem text="Safely Deleting Java Code" target="refactor.safeDelete"/>    
+    <tocitem text="About Refactoring Java Source" target="refactor.aboutRefactoring" /> 
+    <tocitem text="Undoing Refactoring Changes" target="refactor.Undo" />   
+    <tocitem text="Finding Class, Method, and Field Usages" target="refactor.findClass" /> 
+    <tocitem text="Renaming a Class or Interface" target="refactor.renameClass" />
+    <tocitem text="Renaming a Field or Method" target="refactor.renameField"/>       
+    <tocitem text="Moving a Java Object to Another Package" target="refactor.moveClass" />
+    <tocitem text="Moving an Inner Class One Level Up" target="refactor.moveInner"/>
+    <tocitem text="Moving a Class Member to a Superclass" target="refactor.pullUp"/>
+    <tocitem text="Moving a Class Member to a Subclass" target="refactor.pushDown"/>
+    <tocitem text="Encapsulating a Field" target="refactor.encapsulateField" /> 
+    <tocitem text="Changing a Method's Signature" target="refactor.changeParameters"/>
+    <tocitem text="Extracting a Method" target="refactor.extractMethod"/>
+    <tocitem text="Extracting a Superclass" target="refactor.extractSuperclass"/>
+    <tocitem text="Extracting an Interface" target="refactor.extractInterface"/>
+    <tocitem text="Using a Supertype Where Possible" target="refactor.useSupertype"/>   
+    <tocitem text="Safely Deleting Java Code" target="refactor.safeDelete"/>    
     </tocitem>    
- 
+    
     <tocitem text="Building Java Applications" >
     <tocitem text="About Building Java Applications" target="comp_about" />
     <tocitem text="Working with Builds" target="comp_process" />
@@ -81,9 +86,9 @@
     <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
     <tocitem text="Building a JAR File" target="comp_jar" />
     <tocitem text="Preparing a JAR File for Deployment Outside the IDE" target="jar.deploy" />
-        <tocitem text="Output Window" target="output.window"/>
-        </tocitem> 
-          <tocitem text="Running Java Applications" >
+    <tocitem text="Output Window" target="output.window"/>
+    </tocitem> 
+    <tocitem text="Running Java Applications" >
     <tocitem text="About Running Java Applications" target="run_about" />
     <tocitem text="Working with Project Execution" target="run_process" />
     <tocitem text="Running Tasks: Quick Reference" target="run_quickref" />
@@ -92,7 +97,7 @@
     <tocitem text="Setting the Runtime Classpath" target="run_classpath" />
     <tocitem text="Setting the Main Class and Arguments" target="run_args" />
     <tocitem text="Setting JVM Arguments" target="run_jvm_args" />
-  </tocitem>
+    </tocitem>
     <tocitem text="Debugging Applications">
     <tocitem text="About Debugging Applications" target="debug.about"/>
     <tocitem text="About Debugging Free-Form Projects" target="proj_free_debug_about" />
@@ -104,66 +109,66 @@
     <tocitem text="Creating a Debug Target for a Free-Form Java Project" target="proj_free_debug" />
     <tocitem text="Creating a Debug Target for a Free-Form Web Project" target="proj_webfree_debug" />
     <tocitem text="Setting Breakpoints">
-      <tocitem text="Breakpoints in the IDE" target="breakpoint.about"/>
-      <tocitem text="Setting a Java Breakpoint" target="breakpoint.setting"/>
-      <tocitem text="Setting a Conditional Breakpoint" target="breakpoint.conditional"/>
-      <tocitem text="Organizing Breakpoints Into a Group" target="breakpoint.group"/>
+    <tocitem text="Breakpoints in the IDE" target="breakpoint.about"/>
+    <tocitem text="Setting a Java Breakpoint" target="breakpoint.setting"/>
+    <tocitem text="Setting a Conditional Breakpoint" target="breakpoint.conditional"/>
+    <tocitem text="Organizing Breakpoints Into a Group" target="breakpoint.group"/>
     </tocitem>
     <tocitem text="Debugging Sessions">
-      <tocitem text="Starting a Local Debugging Session" target="debug.local"/>
-      <tocitem text="Starting a Remote Debugging Session" target="debug.remote" />
-      <tocitem text="Stepping Through Your Program" target="debug.step" />
-      <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
-      <tocitem text="Finishing a Session" target="debug.finish" />
+    <tocitem text="Starting a Local Debugging Session" target="debug.local"/>
+    <tocitem text="Starting a Remote Debugging Session" target="debug.remote" />
+    <tocitem text="Stepping Through Your Program" target="debug.step" />
+    <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
+    <tocitem text="Finishing a Session" target="debug.finish" />
     </tocitem>
     <tocitem text="Viewing Program Information">
-      <tocitem text="Variables and Expressions in the IDE" target="debug.variables" />
-      <tocitem text="Creating a Watch" target="debug.new.watch"/>
-      <tocitem text="Creating a Fixed Watch" target="debug.fix.watch"/>
-      <tocitem text="Debugging Threads in the IDE" target="debug.threads"/>
-      <tocitem text="Using the Call Stack" target="debug.callstack"/>
-      <tocitem text="Popping a Call From the Call Stack" target="debug.pop"/>
-      <tocitem text="Evaluating an Expression" target="debug.expression"/>
+    <tocitem text="Variables and Expressions in the IDE" target="debug.variables" />
+    <tocitem text="Creating a Watch" target="debug.new.watch"/>
+    <tocitem text="Creating a Fixed Watch" target="debug.fix.watch"/>
+    <tocitem text="Debugging Threads in the IDE" target="debug.threads"/>
+    <tocitem text="Using the Call Stack" target="debug.callstack"/>
+    <tocitem text="Popping a Call From the Call Stack" target="debug.pop"/>
+        <tocitem text="Evaluating an Expression" target="debug.expression"/>
+        </tocitem>
     </tocitem>
-  </tocitem>
-  <tocitem text="Profiling Java Applications">
-      <tocitem text="About Profiling Java Applications" target="profiling_javaapp"/>
-  </tocitem>
-  <tocitem text="Building Java GUIs">
+    <tocitem text="Profiling Java Applications">
+    <tocitem text="About Profiling Java Applications" target="profiling_javaapp"/>
+    </tocitem>
+    <tocitem text="Building Java GUIs">
     <tocitem text="About Java GUIs" target="gui.about"/>
     <tocitem text="Working with the GUI Builder" target="gui.overview"/>
     <tocitem text="GUI Builder Tasks: Quick Reference" target="gui.quickref"/>
     <tocitem text="Designing Java GUIs">      
-      <tocitem text="Designing Java GUIs with the GUI Builder" target="gui.designing" />            
-      <tocitem text="Creating a New Form" target="gui.creatingforms" />
-      <tocitem text="Working with Containers" target="gui.containers.designing" />
-      <tocitem text="Adding a Component to a Form" target="gui.components.adding" />
-      <tocitem text="Selecting Components in a Form" target="gui.components.selecting" />
-      <tocitem text="Aligning Components" target="gui.components.aligning" />
-      <tocitem text="Sizing Components" target="gui.components.sizing" />     
-      <tocitem text="Editing Component Properties" target="gui.components.editing" />
-      <tocitem text="Setting Events With the Connection Wizard" target="gui.connectionwizard" />
-      <tocitem text="Managing Component Events" target="gui.events.managing" />
-      <tocitem text="Modifying GUI Source Code" target="gui.source.modifying"/>
-      <tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />
-      <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
-      <tocitem text="Previewing a Form" target="gui.testing" />    
-      <tocitem text="Deploying GUI Applications" target="gui.deploying" /> 
-
-
+    <tocitem text="Designing Java GUIs with the GUI Builder" target="gui.designing" />            
+    <tocitem text="Creating a New Form" target="gui.creatingforms" />
+    <tocitem text="Working with Containers" target="gui.containers.designing" />
+    <tocitem text="Adding a Component to a Form" target="gui.components.adding" />
+    <tocitem text="Selecting Components in a Form" target="gui.components.selecting" />
+    <tocitem text="Aligning Components" target="gui.components.aligning" />
+    <tocitem text="Sizing Components" target="gui.components.sizing" />     
+    <tocitem text="Editing Component Properties" target="gui.components.editing" />
+    <tocitem text="Setting Events With the Connection Wizard" target="gui.connectionwizard" />
+    <tocitem text="Managing Component Events" target="gui.events.managing" />
+    <tocitem text="Modifying GUI Source Code" target="gui.source.modifying"/>
+    <tocitem text="Creating a Multiple Document Interface (MDI) Application" target="gui.mdi" />
+    <tocitem text="Creating Accessible Forms" target="gui.accessibleform" />
+    <tocitem text="Previewing a Form" target="gui.testing" />    
+    <tocitem text="Deploying GUI Applications" target="gui.deploying" /> 
+        
+        
     </tocitem>    
     <tocitem text="Working with Layout Managers">    
-      <tocitem text="About Layout Managers" target="gui.layouts.about" />
-      <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
-      <tocitem text="Using the GridBag Customizer" target="gui.layouts.gbcustomizer" />
-      <tocitem text="Using a Custom Layout Manager" target="gui.layouts.custom_mgr" />
-      <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
+    <tocitem text="About Layout Managers" target="gui.layouts.about" />
+    <tocitem text="Setting the Layout Manager" target="gui.layouts.setting" />
+    <tocitem text="Using the GridBag Customizer" target="gui.layouts.gbcustomizer" />
+    <tocitem text="Using a Custom Layout Manager" target="gui.layouts.custom_mgr" />
+    <tocitem text="Setting Layout Properties" target="gui.layouts.props" />
     </tocitem>    
-      <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
+    <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
     <tocitem text="Configuring the GUI Builder" target="gui.config" />
-  </tocitem>
-
-  
+    </tocitem>
+    
+    
     <tocitem text="Working with Ant">
     <tocitem text="About Working with Ant" target="ant_intro" />
     <tocitem text="Editing an Ant Script" target="ant_editing" />
@@ -174,34 +179,34 @@
     <tocitem text="Switching Ant Versions" target="ant_version" />
     <tocitem text="Ant Classpath and Custom Tasks" target="ant_tasks-classpath" />     
     <tocitem text="Installing Ant Documentation" target="ant_docs" />
-  </tocitem>
-  
-  <tocitem text="Working With Javadoc Documentation">
+    </tocitem>
+    
+    <tocitem text="Working With Javadoc Documentation">
     <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
     <tocitem text="Adding the JDK Javadoc to the IDE" target="javadoc.jdk"/>
     <tocitem text="Viewing Javadoc Documentation" target="javadoc.source_editor"/>
     <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
     <tocitem text="Entering Javadoc Comments in Source Code" target="javadoc.accuracy"/>
-  </tocitem>
-
-  <tocitem text="Testing with JUnit">
-    <tocitem text="About JUnit" target="junit_about"></tocitem>
-    <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
-    <tocitem text="JUnit Tasks: Quick Reference" target="junit_quickref"></tocitem>
-    <tocitem text="Creating a JUnit Test" target="junit_creatingtests"></tocitem>
-    <tocitem text="Running a JUnit Test" target="junit_runningtests"></tocitem>
-    <tocitem text="Debugging a JUnit Test" target="junit_debuggingtests"></tocitem>
-    <tocitem text="Configuring JUnit" target="junit_configuring"></tocitem>
-  </tocitem>
-  
-      <tocitem text="Resource Bundles">
-      <tocitem text="About Resource Bundles" target="propfiles.intro"/>
-      <tocitem text="Creating and Deleting a Resource Bundle" target="propfiles.creating" />
-      <tocitem text="Editing a Resource Bundle" target="propfiles.modifying" />
-      <tocitem text="Adding and Removing a Property" target="propfiles.adding" />
-      <tocitem text="Adding and Removing a Locale" target="propfiles.addlocale" />
-      <tocitem text="Editing a Locale" target="propfiles.editlocale" />
     </tocitem>
+    
+    <tocitem text="Testing with JUnit">
+        <tocitem text="About JUnit" target="junit_about"></tocitem>
+        <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
+        <tocitem text="JUnit Tasks: Quick Reference" target="junit_quickref"></tocitem>
+        <tocitem text="Creating a JUnit Test" target="junit_creatingtests"></tocitem>
+        <tocitem text="Running a JUnit Test" target="junit_runningtests"></tocitem>
+        <tocitem text="Debugging a JUnit Test" target="junit_debuggingtests"></tocitem>
+        <tocitem text="Configuring JUnit" target="junit_configuring"></tocitem>
+    </tocitem>
+    
+    <tocitem text="Resource Bundles">
+    <tocitem text="About Resource Bundles" target="propfiles.intro"/>
+    <tocitem text="Creating and Deleting a Resource Bundle" target="propfiles.creating" />
+    <tocitem text="Editing a Resource Bundle" target="propfiles.modifying" />
+    <tocitem text="Adding and Removing a Property" target="propfiles.adding" />
+    <tocitem text="Adding and Removing a Locale" target="propfiles.addlocale" />
+        <tocitem text="Editing a Locale" target="propfiles.editlocale" />
+        </tocitem>
     </tocitem>
     
 </toc>

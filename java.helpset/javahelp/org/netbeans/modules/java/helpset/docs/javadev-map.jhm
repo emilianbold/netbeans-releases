@@ -160,6 +160,11 @@
 <mapID target="junit_configuring" url="junit/junit_configuring.html" />
 <mapID target="junit_debuggingtests" url="junit/junit_debuggingtests.html" />
 
+<mapID target="editing.about" url="editing/editing_about.html" />
+<mapID target="editing.find" url="editing/find.html" />
+<mapID target="editing.find_regexp" url="editing/find_regexp.html" />
+<mapID target="editor.quickref" url="editing/editor_quickref.html" />
+<mapID target="editor.navigation" url="editing/editor_navigation.html" />
 
 <mapID target="internation.internation" url="internationalize/international.html" />
 <mapID target="internation.maninsert" url="internationalize/manualinsert.html" />
