@@ -34,6 +34,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.HandleLayer;
 import org.netbeans.modules.form.MetaComponentCreator;
@@ -165,6 +166,7 @@ class DragOperation {
             //josh: use the invalid drop target cursor instead
             //menuEditLayer.glassLayer.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             menuEditLayer.showMenubarWarning = true;
+            FormEditor.getAssistantModel(menuEditLayer.formDesigner.getFormModel()).setContext("missingMenubar"); // NOI18N
             menuEditLayer.repaint();
             return;
         }

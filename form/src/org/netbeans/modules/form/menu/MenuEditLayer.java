@@ -60,6 +60,7 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.PopupMenuUI;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.actions.PropertyAction;
+import org.netbeans.modules.form.assistant.AssistantMessages;
 import org.netbeans.modules.form.editors.IconEditor.NbImageIcon;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.palette.PaletteUtils;
@@ -156,8 +157,19 @@ public class MenuEditLayer extends JPanel {
         glassLayer.addMouseListener(mia);
         glassLayer.addMouseMotionListener(mia);
         configureSelectionListener();
+        
+        if (!assistantInitialized) {
+            initAssistant();
+        }
     }
     
+    private boolean assistantInitialized = false;
+    private void initAssistant() {
+        String missingMenubarMsg = "You cannot add a menu component to a form without a menubar";
+        AssistantMessages messages = AssistantMessages.getDefault();
+        messages.setMessages("missingMenubar", missingMenubarMsg); // NOI18N
+        assistantInitialized = true;
+    }
     
     public static boolean isMenuRelatedRADComponent(RADComponent comp) {
         if(comp == null) return false;
@@ -226,9 +238,11 @@ public class MenuEditLayer extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g2.setColor(Color.BLACK);
+        /* Using the assistant now instead of text ontop of the glasspane.
+         * josh: I need to delete all of the previous code related to the showMenubarWarning boolean
         if(showMenubarWarning) {
             g2.drawString("You cannot add a menu component to a form without a menubar.", 5, getHeight()-30);
-        }
+        }*/
         g2.dispose();
     }
     
