@@ -223,6 +223,9 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     }
     
     private void openInAWT() {
+        if (!formDataObject.isValid()) {
+            return;
+        }
         elementToOpen = JAVA_ELEMENT_INDEX;
         super.open();
         
@@ -645,6 +648,9 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     // window system & multiview
     
     protected CloneableEditorSupport.Pane createPane() {
+        if (!formDataObject.isValid()) {
+            return super.createPane(); // Issue 110249
+        } 
         MultiViewDescription[] descs = new MultiViewDescription[] {
             new JavaDesc(formDataObject), new FormDesc(formDataObject) };
         
