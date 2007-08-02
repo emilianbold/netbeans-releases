@@ -69,14 +69,14 @@ class EmptyTestStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
         chkCodeHints = chkBoxes[0];
 
         JComponent box = new SelfResizingPanel();
-        box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
+        box.setLayout(new BoxLayout(box, BoxLayout.X_AXIS));
         box.add(optCode);
-        box.add(Box.createVerticalStrut(11));
+        box.add(Box.createHorizontalStrut(18));
         box.add(optComments);
 
         /* tune layout of the components within the box: */
-        optCode.setAlignmentX(0.0f);
-        optComments.setAlignmentX(0.0f);
+        optCode.setAlignmentY(0.0f);
+        optComments.setAlignmentY(0.0f);
 
         return box;
     }

@@ -498,29 +498,18 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
         targetPanel.add(lblFile, gbcLeft);
         targetPanel.add(tfCreatedFile, gbcRight);
         
-        //
-        
-        JComponent accessLevelsBox = new SizeRestrictedPanel(true, false);
-        accessLevelsBox.setLayout(
-                new BoxLayout(accessLevelsBox, BoxLayout.Y_AXIS));
-        accessLevelsBox.add(accessLevels);
-        accessLevelsBox.add(Box.createVerticalGlue());
-        
-        JComponent optionalCodeBox = new SizeRestrictedPanel(true, false);
-        optionalCodeBox.setLayout(
-                new BoxLayout(optionalCodeBox, BoxLayout.Y_AXIS));
-        optionalCodeBox.add(optCode);
-        optionalCodeBox.add(Box.createVerticalStrut(11));
-        optionalCodeBox.add(optComments);
-        optionalCodeBox.add(Box.createVerticalGlue());
-        
         JComponent optionsBox = new SizeRestrictedPanel(false, true);
         optionsBox.setLayout(
                 new BoxLayout(optionsBox, BoxLayout.X_AXIS));
-        optionsBox.add(accessLevelsBox);
+        optionsBox.add(accessLevels);
         optionsBox.add(Box.createHorizontalStrut(18));
-        optionsBox.add(optionalCodeBox);
-        optionsBox.add(Box.createHorizontalGlue());
+        optionsBox.add(optCode);
+        optionsBox.add(Box.createHorizontalStrut(18));
+        optionsBox.add(optComments);
+        //align groups of the checkboxes vertically to the top:
+        accessLevels.setAlignmentY(0.0f);
+        optCode.setAlignmentY(0.0f);
+        optComments.setAlignmentY(0.0f);
         
         final Box result = Box.createVerticalBox();
         result.add(targetPanel);

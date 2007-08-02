@@ -77,16 +77,16 @@ class TestSuiteStepLocation implements WizardDescriptor.Panel<WizardDescriptor> 
         bottomPanel.setLayout(new BorderLayout(0, 24));
         bottomPanel.add(infoLabel, BorderLayout.NORTH);
         JComponent box = new JPanel();
-        box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
+        box.setLayout(new BoxLayout(box, BoxLayout.X_AXIS));
         box.add(optCode);
-        box.add(Box.createVerticalStrut(11));
+        box.add(Box.createHorizontalStrut(18));
         box.add(optComments);
         bottomPanel.add(box, BorderLayout.CENTER);
         
         /* tune layout of the components within the box: */
         infoLabel.setAlignmentX(0.0f);
-        optCode.setAlignmentX(0.0f);
-        optComments.setAlignmentX(0.0f);
+        optCode.setAlignmentY(0.0f);
+        optComments.setAlignmentY(0.0f);
      
         return bottomPanel;
     }
