@@ -43,7 +43,7 @@
     <tocitem text="About Editing Source Files" target="editing.about"/>
     <tocitem text="Source Editor General Tasks: Quick Reference" target="editor.quickref" />
     <tocitem text="Code Navigation: Quick Reference" target="editor.navigation"/>
-    <tocitem text="Finding and Replacing Text" target="editing.find"/>
+    <tocitem text="Finding and Replacing Text" target="org.netbeans.modules.search.SearchPanel"/>
     <tocitem text="Regular Expressions For Finding and Replacing Text" target="editing.find_regexp"/>
     <tocitem text="Internationalizing Source Code">
     <tocitem text="About" target="internation.internation"/>
