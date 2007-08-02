@@ -1601,6 +1601,23 @@ public class ResourceUtils implements WizardConstants{
         }
     }
     
+    /****************************************Utilities *********************************************/
+    /**
+     * 
+     * @param name Resource Name
+     * @param resources Map of objects to check Resource Name for duplicate
+     * @return Returns unique resource name
+     *    
+     */
+    public static String getUniqueResourceName(String name, HashMap resources){
+        for (int i = 1;; i++) {
+            String resourceName = name + "_" + i; // NOI18N
+            if (! resources.containsKey(resourceName)) {
+                return resourceName;
+            }
+        }
+    }
+    
     private final static char BLANK = ' ';
     private final static char DOT   = '.';
     private final static char REPLACEMENT_CHAR = '_';

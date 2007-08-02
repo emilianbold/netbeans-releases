@@ -970,19 +970,12 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                     }
                 }
                 ensureFolderExists(dir);
-                // Is connection pool already defined
-                String poolName = vendorName + WizardConstants.__ConnPoolSuffix;
-                boolean poolExists = requiredPoolExists(dir, url, username, password);
-                if(poolExists) {
-                    boolean jdbcExists = requiredResourceExists(jndiName, dir, JDBC_RESOURCE);
-                    if(jdbcExists) {
-                        ds = null;
-                    } else {
-                        createJDBCResource(jndiName, poolName, dir);
-                        ds = new SunDatasource(jndiName, url, username, password, driver);
-                    }    
+                // Is connection pool already defined, if not create
+                String poolName = createCheckForConnectionPool(vendorName, url, username, password, driver, dir);
+                boolean jdbcExists = requiredResourceExists(jndiName, dir, JDBC_RESOURCE);
+                if (jdbcExists) {
+                    ds = null;
                 } else {
-                    createCPPoolResource(poolName, url, username, password, driver, dir);
                     createJDBCResource(jndiName, poolName, dir);
                     ds = new SunDatasource(jndiName, url, username, password, driver);
                 }
@@ -1146,27 +1139,51 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     /**
      * 
-     * @param dir Resource Directory
-     * @param url Database URL
-     * @return Returns null if Connection Pool already exists for this database else return 
+     * @param vendorName Database vendor name
+     * @param url Database url
+     * @param username Username for Databse
+     * @param password Password for Databse
+     * @param driver Driver Class Name of Database
+     * @param dir File object of the setup folder where resources are placed
+     * @return Returns null if Connection Pool already exists for this database else returns 
      * unique Connection PoolName.
      *    
      */
-    private boolean requiredPoolExists(File dir, String url, String username, String password){
-        boolean connectionExists = false;
+    private String createCheckForConnectionPool(String vendorName, String url, String username, String password, String driver, File dir){
+        boolean createResource = true;
+        String poolName = vendorName + WizardConstants.__ConnPoolSuffix;
         File resourceFile = getServerResourceFiles(dir);
         if(resourceFile != null){
             HashMap pools = getConnectionPools(resourceFile);
-            for(Iterator itr=pools.values().iterator(); itr.hasNext();){
-                JdbcConnectionPool pool = (JdbcConnectionPool)itr.next();
+            if (pools.containsKey(poolName)) {
+                JdbcConnectionPool pool = (JdbcConnectionPool) pools.get(poolName);
                 String poolJndiName = isSameDatabaseConnection(pool, url, username, password);
-                if(poolJndiName != null){
-                    connectionExists = true;
-                    break;
+                //poolJndiName will be null if the connection does not exist
+                if (poolJndiName == null) {
+                    poolName = ResourceUtils.getUniqueResourceName(poolName, pools);
+                }
+            } else {
+                for (Iterator itr = pools.values().iterator(); itr.hasNext();) {
+                    JdbcConnectionPool pool = (JdbcConnectionPool) itr.next();
+                    String poolJndiName = isSameDatabaseConnection(pool, url, username, password);
+                    if (poolJndiName != null) {
+                        poolName = poolJndiName;
+                        createResource = false;
+                        break;
+                    }
                 }
             }
+        }else{
+            createResource = true;
         }
-        return connectionExists;
+        if (createResource) {
+            try {
+                createCPPoolResource(poolName, url, username, password, driver, dir);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+        }
+        return poolName;
     }
     
     /**
