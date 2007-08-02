@@ -250,11 +250,11 @@ public class FileStatusCache implements ISVNNotifyListener {
      * @return give file's status or null if the file's status is not in cache
      */ 
     FileInformation getCachedStatus(File file) {
-        file = file.getParentFile();
-        if (file == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
-        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(file, FILE_STATUS_MAP);
+        File parent = file.getParentFile();
+        if (parent == null) return FILE_INFORMATION_NOTMANAGED_DIRECTORY;
+        Map<File, FileInformation> files = (Map<File, FileInformation>) turbo.readEntry(parent, FILE_STATUS_MAP);
         return files != null ? files.get(file) : null;
-    }    
+    }
 
     private FileInformation refresh(File file, ISVNStatus repositoryStatus, boolean forceChangeEvent) {
         File dir = file.getParentFile();
@@ -300,10 +300,10 @@ public class FileStatusCache implements ISVNNotifyListener {
                                                          current.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY )) 
         {
             // - if the file was deleted then all it's children have to be refreshed.
-            // - we have to list the children before the turbo.writeEntry() call
+            // - we have to list the children before the turbo.writeEntry() call 
             //   as that unfortunatelly tends to purge them from the cache 
             content = listFiles(new File[] {file}, ~0);
-        }
+        } 
         
         file = FileUtil.normalizeFile(file);
         dir = FileUtil.normalizeFile(dir);
@@ -319,11 +319,11 @@ public class FileStatusCache implements ISVNNotifyListener {
         }
         assert newFiles.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
-                      
+          
         if(content == null && file.isDirectory() && needRecursiveRefresh(fi, current)) {
             content = listFiles(file);
         }
-        if ( content != null ) {            
+        if ( content != null ) {
             for (int i = 0; i < content.length; i++) {
                 refresh(content[i], REPOSITORY_STATUS_UNKNOWN);
             }
@@ -810,7 +810,7 @@ public class FileStatusCache implements ISVNNotifyListener {
         // invalidate cached status
         // force event: an updated file changes status from uptodate to uptodate but its entry changes
         refresh(path, REPOSITORY_STATUS_UNKNOWN, true);
-
+        
         // collect the filesystems to notify them in SvnClientInvocationHandler about the external change
         for (;;) {
             FileObject fo = FileUtil.toFileObject(path);
@@ -830,7 +830,7 @@ public class FileStatusCache implements ISVNNotifyListener {
             }
         }
     }
-        
+                
     public void refreshDirtyFileSystems() {
         if(refreshFilesystemsTask == null) {
            RequestProcessor rp = new RequestProcessor();
