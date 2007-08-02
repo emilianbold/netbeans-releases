@@ -6,38 +6,40 @@
         *     Use is subject to license terms.
         *
         -->
-        <title>About Local File History</title>
+        <title>Local History: Revert To Dialog Box</title>
         <link rel="StyleSheet" type="text/css"
             href="nbdocs:/org/netbeans/modules/usersguide/ide.css">
     </head>
     
     <body>
-        <h2>About Local File History</h2>
+        <h2>Local History: Revert To Dialog Box</h2>
         
         <p><small><a href="#seealso">See Also</a></small></p>
         
-        <p>The IDE's built-in local file history tools provide basic versioning support for files 
-            in your local working directory. Similar to conventional versioning systems, the IDE
-            maintains an internal history of recent changes to project resources. Whenever you 
-            save a file, this is registered as a 'commit' of a new version of the file in the local 
-            history. You can inspect all revisions in the local history and diff them against the 
-            current files.</p>
-            
-        <h3>The IDE's Local History Tools</h3>
+        <p>The Local History Revert To dialog box enables you to revert a current version of a file
+            to a previous version, as maintained in the IDE's local history repository.</p>
         
-        <p>The IDE provides the following versioning tools for local files:</p>
+        <p>You access this dialog box by right-clicking a file or folder in the Projects, Files, or Favorites
+            window and choosing Local History &gt; Revert to.</p>
+        
+        <p>The dialog box is displays a two-column table presenting all previous versions of the selected file, 
+            listed in chronological order.</p>
             
         <ul>
-            <li><strong>Graphical Diff Viewer</strong>. Enables you to compare differences in file
-                revisions graphically.</li>
-            <li><strong>Revert Dialog</strong>. Provides an interface allowing you to select a 
-                revision to revert changes to.</li>
+            <li><strong>Version</strong>. Versions are arranged by date and named accordingly.</li>
+            <li><strong>Label</strong>. Labels can be added to specific versions. To add a label to a version,
+                click in the label text area for the corresponding version and type in a label.</li>
         </ul>
-
+        
+        <h4>To revert to a previous file version:</h4>
+        
+        <ul>
+            <li>Select a version by clickin on the table row that it corresponds to. Click Revert.</li>
+        </ul>
+            
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="hist_working_with.html">Working with Local File History</a></dd>
-            <dd><a href="hist_settings.html">Adjusting Local History Settings</a></dd>            
         </dl>
         <hr> <small><a href="../credits.html">Legal Notices</a></small>
         <br><br><br>
