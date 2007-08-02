@@ -32,6 +32,7 @@ import org.netbeans.api.gsf.Formatter;
 import org.netbeans.api.gsf.Indexer;
 import org.netbeans.api.gsf.StructureScanner;
 //import org.netbeans.spi.palette.PaletteController;
+import org.netbeans.modules.retouche.editor.semantic.ColoringManager;
 
 
 /**
@@ -161,4 +162,10 @@ public interface Language {
      */
     @CheckForNull
     StructureScanner getStructure();
+    
+    /**
+     * Return the coloring manager for this language
+     */
+    @NonNull
+    ColoringManager getColoringManager();
 }

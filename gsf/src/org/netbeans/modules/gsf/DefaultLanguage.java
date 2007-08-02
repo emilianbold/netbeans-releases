@@ -35,6 +35,7 @@ import org.netbeans.api.gsf.GsfLanguage;
 import org.netbeans.api.gsf.HintsProvider;
 import org.netbeans.api.gsf.StructureScanner;
 //import org.netbeans.spi.palette.PaletteController;
+import org.netbeans.modules.retouche.editor.semantic.ColoringManager;
 import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -73,6 +74,7 @@ public class DefaultLanguage implements Language {
     private FileObject structureFile;
     private FileObject hintsProviderFile;
     private FileObject paletteFile;
+    private ColoringManager coloringManager;
     
     /** Creates a new instance of DefaultLanguage */
     public DefaultLanguage(String mime) {
@@ -362,5 +364,13 @@ public class DefaultLanguage implements Language {
 
     public void setPaletteFile(FileObject paletteFile) {
         this.paletteFile = paletteFile;
+    }
+
+    public ColoringManager getColoringManager() {
+        if (coloringManager == null) {
+            coloringManager = new ColoringManager(mime);
+        }
+
+        return coloringManager;
     }
 }
