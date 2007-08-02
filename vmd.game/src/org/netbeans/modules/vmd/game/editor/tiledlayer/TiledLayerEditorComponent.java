@@ -25,6 +25,7 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -44,6 +45,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -134,7 +136,20 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 		//create custom cursors
 		URL cursorUrl = TiledLayerEditorComponent.class.getResource("res/drawing_mode_mouse_16.png"); // NOI18N
 		ImageIcon cursorIcon = new ImageIcon(cursorUrl);
-		paintCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursorIcon.getImage(), new Point(7, 7), PAINT_CURSOR_NAME);
+		Image cursor;
+		Dimension d = Toolkit.getDefaultToolkit().getBestCursorSize(cursorIcon.getIconWidth(), cursorIcon.getIconHeight());
+		System.out.println("Best Cursor Size: " + d);
+		System.out.println("Our Cursor Size: " + cursorIcon.getIconWidth() + " x " + cursorIcon.getIconHeight());
+		//if required cursor size is larger than the image we have then create a new buffimg of the required size and
+		//draw our smaller cursor in the top-left corner to avoid auto-scaling
+		if (d.width > cursorIcon.getIconWidth() && d.height >  cursorIcon.getIconHeight()) {
+			cursor = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
+			cursor.getGraphics().drawImage(cursorIcon.getImage(), 0, 0, null);
+		}
+		else {
+			cursor = cursorIcon.getImage();
+		}
+		paintCursor = Toolkit.getDefaultToolkit().createCustomCursor(cursor, new Point(7, 7), PAINT_CURSOR_NAME);
 		
 		cursorUrl = TiledLayerEditorComponent.class.getResource("res/select_mode_mouse_16.png"); // NOI18N
 		cursorIcon = new ImageIcon(cursorUrl);
@@ -463,6 +478,10 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	}
 		
 	private void handleMousePressed(MouseEvent e) {
+		if (!SwingUtilities.isLeftMouseButton(e)) {
+			return;
+		}
+		
 		Position cell = this.getCellAtCoordinates(e.getX(), e.getY());
 		this.firstDraggedCell = cell;
 		this.lastDraggedCell = cell;

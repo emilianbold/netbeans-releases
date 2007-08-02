@@ -50,6 +50,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import org.netbeans.modules.vmd.game.dialog.NewSceneDialog;
@@ -804,6 +805,10 @@ public class ScenePanel extends JPanel implements SceneListener,
     		return;
     	}
     	
+		//only left mouse button manipulates the scene
+		if (!SwingUtilities.isLeftMouseButton(e)) {
+			return;
+		}
 		Point p = this.adjustToOriginShift(e.getPoint());
 		List<Layer> layers = this.scene.getLayersAtPoint(p);
 
@@ -825,10 +830,15 @@ public class ScenePanel extends JPanel implements SceneListener,
 		}
 				
 		Layer layer = layers.get(0);
-		if (!this.selectedLayers.contains(layer)) { 
+		if (!this.selectedLayers.contains(layer)) {
 			this.addSelectedLayer(layer, false);
 			this.lastAddedLayerByMousePress = layer;
 	    	this.repaintLayerDecorations(layer);
+		}
+		else {
+			if (isMultiSelect(e)) {
+				this.addSelectedLayer(layer, true);
+			}
 		}
     	//System.out.println("selected layer: " + layer);
     }
