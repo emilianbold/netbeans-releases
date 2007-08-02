@@ -130,4 +130,14 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="x-java">
+                <file name="Reformatter.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.save.Reformatter$Factory"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+                
 </filesystem>

@@ -20,7 +20,6 @@
 package org.netbeans.modules.editor.java;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -33,9 +32,6 @@ import org.netbeans.editor.ext.java.*;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.PrefixMakerAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
@@ -129,10 +125,6 @@ public class JavaKit extends NbEditorKit {
     
     /* package */ static final String deleteNextCamelCasePosition = "delete-next-camel-case-position"; //NOI18N
     
-    /* package */ static final String COMPILATION_CONTROLLER = "compilation-controller"; //NOI18N
-
-    /* package */ static final String REFORMAT_SHIFT = "reformat-shift"; //NOI18N
-    
     static final long serialVersionUID =-5445829962533684922L;
     
 
@@ -177,7 +169,7 @@ public class JavaKit extends NbEditorKit {
 
     /** Create the formatter appropriate for this kit */
     public Formatter createFormatter() {
-        return new NbJavaFormatter(this.getClass());
+        return new JavaFormatter(this.getClass());
     }
 
     protected void initDocument(BaseDocument doc) {
@@ -221,7 +213,6 @@ public class JavaKit extends NbEditorKit {
                                    new JavaGenerateGoToPopupAction(),
 				   new JavaInsertBreakAction(),
 				   new JavaDeleteCharAction(deletePrevCharAction, false),
-                                   new JavaFormatAction(),
                                    new ExpandAllJavadocFolds(),
                                    new CollapseAllJavadocFolds(),
                                    new ExpandAllCodeBlockFolds(),
@@ -513,35 +504,6 @@ public class JavaKit extends NbEditorKit {
         throws BadLocationException {
             BracketCompletion.charBackspaced(doc, dotPos, caret, ch);
         }
-    }
-    
-    public static class JavaFormatAction extends ActionFactory.FormatAction {
-
-        @Override
-        public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
-            try {
-                final Document doc = target.getDocument();
-                JavaSource js = JavaSource.forDocument(doc);
-                if (js != null) {
-                    js.runUserActionTask(new Task<CompilationController>() {
-
-                        public void run(CompilationController controller) throws Exception {
-                            doc.putProperty(COMPILATION_CONTROLLER, controller);
-                            doc.putProperty(REFORMAT_SHIFT, 0);
-                            try {
-                                JavaFormatAction.super.actionPerformed(evt, target);
-                            } finally {
-                                doc.putProperty(COMPILATION_CONTROLLER, null);
-                                doc.putProperty(REFORMAT_SHIFT, null);
-                            }
-                        }
-                    }, false);
-                }                
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
-        }
-
     }
     
     public static class ExpandAllJavadocFolds extends BaseAction{

@@ -21,6 +21,7 @@ package org.netbeans.modules.editor.java;
 
 import java.io.*;
 import org.netbeans.editor.ext.ExtFormatter;
+import org.netbeans.editor.ext.java.JavaFormatter;
 import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.editor.ext.java.JavaSettingsDefaults;
 import org.netbeans.modules.editor.FormatterIndentEngine;
@@ -52,7 +53,7 @@ public class JavaIndentEngine extends FormatterIndentEngine {
     }
 
     protected ExtFormatter createFormatter() {
-        return new NbJavaFormatter(JavaKit.class);
+        return new JavaFormatter(JavaKit.class);
     }
 
 

@@ -35,46 +35,51 @@ import javax.swing.text.Position;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
+import org.netbeans.spi.editor.indent.Context;
+import org.netbeans.spi.editor.indent.ExtraLock;
+import org.netbeans.spi.editor.indent.ReformatTask;
 
 /**
  *
  * @author Dusan Balek
  */
-public class Reformatter {
+public class Reformatter implements ReformatTask {
     
+    private JavaSource javaSource;
+    private Context context;
     private CompilationController controller;
     private Document doc;
     private int startOffset;
     private int endOffset;
     private int shift;
 
-    public Reformatter(CompilationController controller, Document doc, int startOffset, int endOffset, int shift) {
-        this.controller = controller;
-        this.doc = doc;
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
-        this.shift = shift;
+    public Reformatter(JavaSource javaSource, Context context) {
+        this.javaSource = javaSource;
+        this.context = context;
+        this.doc = context.document();
     }
-    
-    public boolean reformat() throws BadLocationException {
-        try {
-            controller.toPhase(Phase.PARSED);            
-        } catch (IOException ioe) {
-            return false;
-        }
+
+    public void reformat() throws BadLocationException {
+        if (controller == null)
+            return;
+        this.startOffset = context.startOffset() - shift;
+        this.endOffset = context.endOffset() - shift;
         TreePath path = getCommonPath();
         if (path == null)
-            return false;
+            return;
         Tree tree = path.getLeaf();
         int indent = getIndent(path);
         if (indent < 0)
-            return false;
+            return;
         String sourceText = controller.getText();
         int start = 0;
         if (tree.getKind() != Tree.Kind.COMPILATION_UNIT) {
@@ -82,20 +87,25 @@ public class Reformatter {
             start = (int)sp.getStartPosition(controller.getCompilationUnit(), tree);
             int end = (int)sp.getEndPosition(controller.getCompilationUnit(), tree);
             if (start < 0 || end < 0)
-                return false;
+                return;
             sourceText = sourceText.substring(start, end);
         }
         VeryPretty pretty = new VeryPretty(controller);
         String text = pretty.reformat((JCTree)tree, startOffset, endOffset, indent);
         if (text == null)
-            return false;
+            return;
+        int endPos = context.endOffset();
         for (Diff diff : getDiffs(sourceText, text, start)) {
             int offset = diff.start.getOffset();
             doc.remove(offset, diff.end.getOffset() - offset);
             if (diff.text != null)
                 doc.insertString(offset, diff.text, null);
         }
-        return true;
+        shift += context.endOffset() - endPos;
+    }
+    
+    public ExtraLock reformatLock() {
+        return new Lock();
     }
     
     private TreePath getCommonPath() {
@@ -372,6 +382,28 @@ public class Reformatter {
         return lines;
     }
     
+    private class Lock implements ExtraLock {
+
+        public void lock() {
+            JavaSourceAccessor.INSTANCE.lockJavaCompiler();
+            try {
+                javaSource.runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController controller) throws Exception {
+                        controller.toPhase(Phase.PARSED);
+                        Reformatter.this.controller = controller;
+                    }
+                }, true);            
+            } catch (IOException ioe) {
+                JavaSourceAccessor.INSTANCE.unlockJavaCompiler();
+            }
+        }
+
+        public void unlock() {
+            controller = null;
+            JavaSourceAccessor.INSTANCE.unlockJavaCompiler();
+        }        
+    }
+    
     private static class Diff {
         private Position start;
         private Position end;
@@ -419,4 +451,13 @@ public class Reformatter {
             return token1.text().toString().compareTo(token2.text().toString());
         }        
     }
+
+    public static class Factory implements ReformatTask.Factory {
+
+        public ReformatTask createTask(Context context) {
+            JavaSource js = JavaSource.forDocument(context.document());
+            return js != null ? new Reformatter(js, context) : null;
+        }        
+    }
 }
+

@@ -35,33 +35,23 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
-import javax.tools.JavaFileObject.Kind;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
-import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
-import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.Check;
-import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Name;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -76,7 +66,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
@@ -84,10 +73,8 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
-import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -139,11 +126,6 @@ public class SourceUtils {
         return bound != null ? bound.bound : null;
     }
     
-    public static boolean reformat(CompilationController controller, Document doc, int startOffset, int endOffset, int shift) throws BadLocationException {
-        Reformatter r = new Reformatter(controller, doc, startOffset, endOffset, shift);
-        return r.reformat();
-    }
-
     /**
      * Returns the type element within which this member or constructor
      * is declared. Does not accept pakages
