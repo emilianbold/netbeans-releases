@@ -688,7 +688,9 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 }
             }
             
-            if (!isCharForSearch(evt)) {
+            if (isCharForSearch(evt)) {
+                evt.consume();
+            } else {
                 resetBuffer();
             }
 
@@ -742,7 +744,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
             if ((int)ch == 8) {
                 return false;
             }
-            return Character.isJavaIdentifierPart(ch) || Character.isSpaceChar(ch);
+            // #110975: refuse modifiers
+            if (evt.getModifiers() != 0) {
+                return false;
+            }
+            return (Character.isJavaIdentifierPart(ch) && !Character.isIdentifierIgnorable(ch)) 
+                    || Character.isSpaceChar(ch);
         }
         
         private void resetBuffer () {
