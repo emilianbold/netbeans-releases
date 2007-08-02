@@ -16,6 +16,7 @@
  */
 package org.netbeans.modules.iep.model.impl;
 
+import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPQNames;
@@ -61,4 +62,7 @@ public class PropertyImpl extends IEPComponentBase implements Property {
         setAttribute(VALUE_PROPERTY, ATTR_VALUE, value);
     }
 
+    public Component getParentComponent() {
+    	return (Component) getParent();
+    }
 }

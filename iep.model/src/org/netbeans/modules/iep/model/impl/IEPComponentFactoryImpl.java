@@ -24,7 +24,11 @@ import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.LinkComponent;
+import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.SchemaAttribute;
+import org.netbeans.modules.iep.model.SchemaComponent;
 
 import org.w3c.dom.Element;
 
@@ -62,9 +66,26 @@ public class IEPComponentFactoryImpl implements IEPComponentFactory {
         return new ComponentImpl(model);
     }
 
+    public OperatorComponent createOperator(IEPModel model) {
+    	return new OperatorComponentImpl(model);
+    }
+    
+    public LinkComponent createLink(IEPModel model) {
+    	// TODO Auto-generated method stub
+    	return null;
+    }
+    
     public Property createProperty(IEPModel model) {
         return new PropertyImpl(model);
     }
+
+	public SchemaComponent createSchema(IEPModel model) {
+		return new SchemaComponentImpl(model);
+	}
+
+	public SchemaAttribute createSchemaAttribute(IEPModel model) {
+		return new SchemaAttributeImpl(model);
+	}
 
 	
 }

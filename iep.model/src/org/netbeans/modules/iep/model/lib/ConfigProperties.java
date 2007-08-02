@@ -210,7 +210,7 @@ public class ConfigProperties extends java.util.Properties {
      */
     public static void main(String[] args) throws Exception {
         ConfigProperties p = new ConfigProperties();
-
+        
         p.setProperty("netbeans_home", p.getBegPattern() + "NETBEANS_HOME" +
             p.getEndPattern() + p.getEndPattern());
 

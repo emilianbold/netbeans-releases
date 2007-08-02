@@ -22,4 +22,5 @@ public interface Property extends IEPComponent {
 	
 	void setValue(String value);
 	
+	Component getParentComponent();
 }
