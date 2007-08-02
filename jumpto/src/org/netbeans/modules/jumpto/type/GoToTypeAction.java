@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.jumpto.type;
 
-import java.beans.PropertyChangeEvent;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
@@ -34,7 +33,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.ArrayList;
@@ -72,7 +70,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /** XXX Icons
@@ -92,18 +89,12 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private Dialog dialog;
     private JButton okButton;
     private Collection<? extends TypeProvider> typeProviders;
-    private final OpenProjects openProjects;
-    private final PropertyChangeListener openProjectsListener;
 
     
     /** Creates a new instance of OpenTypeAction */
     public GoToTypeAction() {
         super( NbBundle.getMessage( GoToTypeAction.class,"TXT_GoToType") );
         putValue("PopupMenuText", NbBundle.getBundle(GoToTypeAction.class).getString("editor-popup-TXT_GoToType")); // NOI18N
-        this.openProjects = OpenProjects.getDefault();
-        this.openProjectsListener = new OpenProjectsListener ();
-        this.openProjects.addPropertyChangeListener(WeakListeners.propertyChange(this.openProjectsListener, this.openProjects));
-        updateEnabled ();
     }
     
     public void actionPerformed( ActionEvent e ) {
@@ -138,8 +129,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
     }
     
-    private void updateEnabled () {
-        setEnabled(openProjects.getOpenProjects().length>0);
+    @Override
+    public boolean isEnabled () {
+        return OpenProjects.getDefault().getOpenProjects().length>0;
     }
     
     
@@ -305,12 +297,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     }
     
     // Private classes ---------------------------------------------------------
-    
-    private class OpenProjectsListener implements PropertyChangeListener {
-        public void propertyChange(PropertyChangeEvent evt) {
-            updateEnabled();
-        }        
-    }
+       
     
     
     private class Worker implements Runnable {
