@@ -722,6 +722,14 @@ public class FormUtils
         editor.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-java")); // NOI18N
         DialogBinding.bindComponentToFile(srcFile, ccPosition, 0, editor);
 
+        // do not highlight current row
+        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editor);
+        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
+
+        setupTextUndoRedo(editor);
+    }
+
+    public static void setupTextUndoRedo(javax.swing.text.JTextComponent editor) {
         // don't use global undo/redo actions, register basic ones
         KeyStroke[] undoKeys = new KeyStroke[] { KeyStroke.getKeyStroke(KeyEvent.VK_UNDO, 0),
                                                  KeyStroke.getKeyStroke(KeyEvent.VK_Z, 130) };
@@ -738,13 +746,13 @@ public class FormUtils
             keymap.removeKeyStrokeBinding(k);
             keymap.addActionForKeyStroke(k, redoAction);
         }
+        Object currentUM = editor.getDocument().getProperty(BaseDocument.UNDO_MANAGER_PROP);
+        if (currentUM instanceof UndoManager) {
+            editor.getDocument().removeUndoableEditListener((UndoManager)currentUM);
+        }
         UndoManager um = new UndoManager();
         editor.getDocument().addUndoableEditListener(um);
         editor.getDocument().putProperty(BaseDocument.UNDO_MANAGER_PROP, um);
-
-        // do not highlight current row
-        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editor);
-        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
     }
 
     // ---------

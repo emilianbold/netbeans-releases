@@ -115,6 +115,10 @@ public class InPlaceEditLayer extends JPanel
         }
         else throw new IllegalArgumentException();
 
+        if (editingTextComp != null) {
+            FormUtils.setupTextUndoRedo(editingTextComp);
+        }
+
         attachListeners();
     }
 
