@@ -293,7 +293,7 @@ public final class AddToRepositoryAction extends NodeAction implements ChangeLis
     }
 
     private WizardDescriptor.Iterator panelIterator(String root, String module, String folder) {
-        repositoryStep = new RepositoryStep();
+        repositoryStep = new RepositoryStep(RepositoryStep.IMPORT_HELP_ID);
         repositoryStep.initPreferedCvsRoot(root);
         repositoryStep.addChangeListener(this);
         importStep = new ImportStep(module, folder);

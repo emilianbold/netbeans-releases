@@ -61,7 +61,7 @@ public final class RootWizard implements ActionListener, DocumentListener {
      * @return RootWizard
      */
     public static RootWizard configureRoot(String root) {
-        RepositoryStep step = new RepositoryStep(root);
+        RepositoryStep step = new RepositoryStep(root, RepositoryStep.ROOT_CONF_HELP_ID);
         step.applyStandaloneLayout();
 
         return new RootWizard(step);

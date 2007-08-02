@@ -138,7 +138,7 @@ public final class CheckoutWizard implements ChangeListener{
     }
 
     private WizardDescriptor.Iterator panelIterator() {
-        repositoryStep = new RepositoryStep(initialCvsRoot);
+        repositoryStep = new RepositoryStep(initialCvsRoot, RepositoryStep.CHECKOUT_HELP_ID);
         repositoryStep.addChangeListener(this);
         WizardDescriptor.Panel modulePanel = new ModuleStep();
         modulePanel.addChangeListener(this);

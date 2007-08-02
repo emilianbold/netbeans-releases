@@ -58,6 +58,10 @@ import java.lang.reflect.InvocationTargetException;
  */
 public final class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, ActionListener, DocumentListener {
 
+    public static final String IMPORT_HELP_ID = "org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.import";
+    public static final String CHECKOUT_HELP_ID = "org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.checkout";
+    public static final String ROOT_CONF_HELP_ID = "org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.rootConf";
+
     private static final String USE_INTERNAL_SSH = "repositoryStep.useInternalSSH";
     private static final String EXT_COMMAND = "repositoryStep.extCommand";
     private static final String RECENT_ROOTS = "repositoryStep.recentRoots";
@@ -76,23 +80,26 @@ public final class RepositoryStep extends AbstractStep implements WizardDescript
     private final String initialCvsRoot;
     private String preferedCvsRoot;
 
-
+    private final String helpID;
+    
     /**
      * Creates multiple roots customizer. 
      */
-    public RepositoryStep() {
+    public RepositoryStep(String helpID) {
         initialCvsRoot = null;
+        this.helpID = helpID;
     }
 
     /**
      * Creates single root customizer
      */
-    public RepositoryStep(String root) {
+    public RepositoryStep(String root, String helpID) {
         initialCvsRoot = root;
+        this.helpID = helpID;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(RepositoryStep.class);
+        return new HelpCtx(helpID);
     }
     
     /**
