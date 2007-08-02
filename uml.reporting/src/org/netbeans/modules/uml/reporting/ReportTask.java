@@ -253,7 +253,7 @@ public class ReportTask extends Thread implements Cancellable
     private void initialize()
     {
         opened.clear();
-        copyImages();
+//        copyImages();
         for (int i=0; i<files.length; i++)
         {
             copyFiles(files[i]);
@@ -1012,7 +1012,7 @@ public class ReportTask extends Thread implements Cancellable
     
     public void launchReport()
     {
-        
+        copyImages();
         String rptDir = getReportDir();
         String fileLaunch = rptDir + File.separator + "index.html"; // NOI18N
         
