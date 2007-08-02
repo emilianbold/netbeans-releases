@@ -269,7 +269,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             this.deps.put(root, newDeps);
                         }
                     }
-                    scheduleCompilation(root,root, true);                    
+                    submit(Work.filterChange(Collections.singletonList(root), false));
                 }                
             }
             return ;
@@ -937,11 +937,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             try {
                                 final MultiRootsWork mw = (MultiRootsWork) work;
                                 final List<URL> roots = mw.getRoots();
-                                final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();                                
-                                for (URL root: roots) {
-                                    findDependencies (root, new Stack<URL>(), depGraph, null, false);
+                                if (roots.size() > 1) {
+                                    final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();                                
+                                    for (URL root: roots) {
+                                        findDependencies (root, new Stack<URL>(), depGraph, null, false);
+                                    }
+                                    state = Utilities.topologicalSort(roots, depGraph);
+                                } else {
+                                    //if only one root is to be updated, no need to compute the dependencies:
+                                    state = new LinkedList<URL>(roots);
                                 }
-                                state = Utilities.topologicalSort(roots, depGraph);                                                                             
                                 for (java.util.ListIterator<URL> it = state.listIterator(state.size()); it.hasPrevious(); ) {                
                                     if (closed.get()) {
                                         return null;
@@ -2247,8 +2252,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 } catch (Throwable t) {
                                     if (finalActive.toUri().getPath().contains("org/openide/loaders/OpenSupport.java")) {
                                         Exceptions.printStackTrace(t);
-                                    }
                                 }
+                            }
                             }
                         };
                         f.run(jc.todo, types);
