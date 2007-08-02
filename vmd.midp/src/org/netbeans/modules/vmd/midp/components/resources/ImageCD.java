@@ -63,7 +63,7 @@ public final class ImageCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty(NbBundle.getMessage(ImageCD.class, "DISP_Image_Resource_Path"), new PropertyEditorImage(), PROP_RESOURCE_PATH); // NOI18N
+                    .addProperty(NbBundle.getMessage(ImageCD.class, "DISP_Image_Resource_Path"), PropertyEditorImage.createInstance(), PROP_RESOURCE_PATH); // NOI18N
     }
 
     private static Presenter createSetterPresenter () {

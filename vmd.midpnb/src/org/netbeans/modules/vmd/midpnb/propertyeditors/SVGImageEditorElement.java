@@ -142,7 +142,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         doNotFireEvent = false;
     }
 
-    private void setAllEnabled(boolean isEnabled) {
+    void setAllEnabled(boolean isEnabled) {
         pathLabel.setEnabled(isEnabled);
         pathTextComboBox.setEnabled(isEnabled);
         previewLabel.setEnabled(isEnabled);
@@ -178,7 +178,9 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         SVGImage svgImage = null;
         try {
             FileObject svgFileObject = FileUtil.toFileObject(new File(path));
-            svgImage = Util.createSVGImage(svgFileObject, true);
+            if (svgFileObject != null) {
+                svgImage = Util.createSVGImage(svgFileObject, true);
+            }
         } catch (IOException e) {
         }
 
