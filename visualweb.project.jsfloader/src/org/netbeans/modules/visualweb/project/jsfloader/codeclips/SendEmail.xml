@@ -34,79 +34,75 @@ Microsystems, Inc. All Rights Reserved.
         String to = "@~Param_To_Address~@";     // ~SendEmail8~
         String from = "@~Param_From_Address~@"; // ~SendEmail9~
         String subject = "@~Param_Subject~@";   // ~SendEmail10~
-        String message = null;
-        String mailhost = "@~Param_SMTP_mail_server_name~@"; // ~SendEmail11~
-        String user = "@~Param_User_name~@";                 // ~SendEmail12~
-        String password = "@~Param_Password~@";              // ~SendEmail13~
+        String message = null;                  // ~SendEmail11~
+        String mailhost = "@~Param_SMTP_mail_server_name~@"; // ~SendEmail12~
+        String user = "@~Param_User_name~@";                 // ~SendEmail13~
+        String password = "@~Param_Password~@";              // ~SendEmail14~
 		// ~SendEmail14~
         boolean auth = true;
         boolean ssl = false;
         Properties props = System.getProperties();
         
-        if (mailhost != null)
+        if (mailhost != null) {
             props.put("mail.smtp.host", mailhost);
-        if (auth)
+        }
+        if (auth) {
             props.put("mail.smtp.auth", "true");
-        
-        // Get a Session object
+        }
+        // ~SendEmail15~
         javax.mail.Session session = javax.mail.Session.getInstance(props, null);
    
-        // construct the message
+        // ~SendEmail16~
         javax.mail.Message msg = new MimeMessage(session);
         
         try {
-            //  Set message details
+            // ~SendEmail17~
             msg.setFrom(new InternetAddress(from));
             msg.setRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress(to));
             msg.setSubject(subject);
             msg.setSentDate(new Date());
             msg.setText(message);
-                    
-            // send the thing off
-            SMTPTransport t =
-                    (SMTPTransport)session.getTransport(ssl ? "smtps" : "smtp");
+            
+            // ~SendEmail18~
+            SMTPTransport t = (SMTPTransport)session.getTransport(ssl ? "smtps" : "smtp");
             try {
-                if (auth)
+                if (auth) {
                     t.connect(mailhost, user, password);
-                else
+                } else {
                     t.connect();
+                }
                 t.sendMessage(msg, msg.getAllRecipients());
             } finally {
                 t.close();
             }
             log("~Log_Success~");
-            
         } catch (Exception e) {
             if (e instanceof SendFailedException) {
                 MessagingException sfe = (MessagingException)e;
                 if (sfe instanceof SMTPSendFailedException) {
-                    SMTPSendFailedException ssfe =
-                            (SMTPSendFailedException)sfe;
-                    log("SMTP SEND FAILED:");
+                    SMTPSendFailedException ssfe = (SMTPSendFailedException)sfe;
+                    log("Smtp_Send_Failed:");
                 }
                 Exception ne;
-				while ((ne = sfe.getNextException()) != null &&
-					ne instanceof MessagingException) 	{
-		    sfe = (MessagingException)ne;
-		    if (sfe instanceof SMTPAddressFailedException) {
-			SMTPAddressFailedException ssfe =
-					(SMTPAddressFailedException)sfe;
-			log("ADDRESS FAILED:");
-			log(ssfe.toString());
-			log("  Address: " + ssfe.getAddress());
-			log("  Command: " + ssfe.getCommand());
-			log("  RetCode: " + ssfe.getReturnCode());
-			log("  Response: " + ssfe.getMessage());
-		    } else if (sfe instanceof SMTPAddressSucceededException) {
-			log("ADDRESS SUCCEEDED:");
-			SMTPAddressSucceededException ssfe =
-					(SMTPAddressSucceededException)sfe;
-		    }
+				while ((ne = sfe.getNextException()) != null && ne instanceof MessagingException) {
+                    sfe = (MessagingException)ne;
+                    if (sfe instanceof SMTPAddressFailedException) {
+                        SMTPAddressFailedException ssfe = (SMTPAddressFailedException)sfe;
+                        log("~Address_Failed~:");
+                        log(ssfe.toString());
+                        log("  ~Address~: " + ssfe.getAddress());
+                        log("  ~Command~: " + ssfe.getCommand());
+                        log("  ~Return_Code~: " + ssfe.getReturnCode());
+                        log("  ~Response~: " + ssfe.getMessage());
+                    } else if (sfe instanceof SMTPAddressSucceededException) {
+                        log("~Address_Succeeded~:");
+                        SMTPAddressSucceededException ssfe = (SMTPAddressSucceededException)sfe;
+                    }
 				}
 	    } else {
 			log("~Log_Exception~: " + e);	   
-          }
         }
+    }
       ]]>
     </body>
     

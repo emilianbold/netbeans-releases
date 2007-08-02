@@ -7,32 +7,26 @@
     
     <target name="-init" >
         <!-- properties -->
-        <property name="release.dir"   location="release/samples" />
-        <property name="webapps.dest"  location="${build.classes.dir}/org/netbeans/modules/visualweb/samples/bundled" />
-        <property name="webapps.repos" location="../webapps" />
-        <property name="complibs.dest" location="${release.dir}/complibs/" />
+        <property name="webapps.dest"       location="${build.classes.dir}/org/netbeans/modules/visualweb/samples/bundled" />
+        <property name="webapps.desc.dest"  location="${webapps.dest}/descriptions" />
+        <property name="webapps.repos"      location="../webapps" />
+        <property name="webapps.desc"       location="${webapps.repos}/descriptions" />
+        <property name="complibs.dest"      location="${cluster}/samples/complibs" />
     </target>
 
     <target name="gather-samples" depends="-init">
         <echo message="Zipping up and copying sample web app projects." />
         <!-- sample webapps -->
         <!--
-        <mkdir dir="${webapps.dest}" />
-        <zip basedir="${webapps.repos}/ExampleOne" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/ExampleOne.zip" />  
+        <mkdir dir="${webapps.desc.dest}" />
+        <copy file="${webapps.desc}/ExampleOne.html" todir="${webapps.desc.dest}" />
+        <zip basedir="${webapps.repos}/ExampleOne" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/ExampleOne.zip" />   
         -->
-        <!-- sample complibs -->
     </target>
     
     <target name="netbeans-extra" depends="-init">
-        <echo message="Preparing release dir and copying sample complibs." />
+        <echo message="Copying sample complibs." />
         <!-- sample complibs -->
         <mkdir dir="${complibs.dest}" /> <!-- Create the dir because complibs mgr looks there for complibs. -->
     </target>
-
-    <target name="clean" depends="projectized-common.clean,reldir-clean" />
-
-    <!-- Clean out the release directory. -->
-    <target name="reldir-clean">
-        <delete dir="${release.dir}"/>
-    </target>    
 </project>
