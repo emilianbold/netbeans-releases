@@ -29,7 +29,7 @@ public class OperatorComponentContainerImpl extends ComponentImpl implements Ope
             if (localName.equals(COMPONENT_CHILD)) {
             		child = new OperatorComponentImpl(getModel(), childEl);
             } else {
-            	super.createChild(childEl);
+            	child = super.createChild(childEl);
             }
         }
         

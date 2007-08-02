@@ -31,6 +31,7 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 	}
 
 	public List<OperatorComponent> getFromColumnList() {
+		
 		return null;
 	}
 

@@ -38,10 +38,12 @@ public class PlanComponentImpl extends ComponentImpl implements PlanComponent {
             				child = new LinkComponentContainerImpl(getModel(), childEl);
             			} else if(name.equals(ModelConstants.COMPONENT_SCHEMAS)) {
             				child = new SchemaComponentContainerImpl(getModel(), childEl);
-            			} 
+            			} else {
+            				child = super.createChild(childEl);
+            			}
             		}
             } else {
-            	super.createChild(childEl);
+            	child = super.createChild(childEl);
             }
         }
         

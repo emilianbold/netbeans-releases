@@ -41,12 +41,14 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
 		return null;
 	}
 
-	public boolean hasSameSchemaAttribute(List columns) throws Exception {
+	public boolean hasSameSchemaAttribute(List<SchemaAttribute> columns) throws Exception {
 		return false;
 	}
 
-	public void setSchemaAttributes(List columns) throws Exception {
+	public void setSchemaAttributes(List<SchemaAttribute> columns) throws Exception {
 		
 	}
+
+	
 
 }

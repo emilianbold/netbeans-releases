@@ -29,7 +29,7 @@ public class SchemaComponentContainerImpl extends ComponentImpl implements Schem
             if (localName.equals(COMPONENT_CHILD)) {
             		child = new SchemaComponentImpl(getModel(), childEl);
             } else {
-            	super.createChild(childEl);
+            	child = super.createChild(childEl);
             }
         }
         

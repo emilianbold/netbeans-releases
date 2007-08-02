@@ -30,7 +30,7 @@ public class LinkComponentContainerImpl extends ComponentImpl implements LinkCom
             if (localName.equals(COMPONENT_CHILD)) {
             		child = new LinkComponentImpl(getModel(), childEl);
             } else {
-            	super.createChild(childEl);
+            	child = super.createChild(childEl);
             }
         }
         
