@@ -32,7 +32,8 @@ import org.openide.filesystems.FileObject;
  * @author Martin Adamek
  */
 public final class PersistenceMetadata {
-    private static final PersistenceMetadata instance = new PersistenceMetadata();
+    
+    private static final PersistenceMetadata DEFAULT = new PersistenceMetadata();
     private Map ddMap;
     
     private PersistenceMetadata() {
@@ -45,7 +46,7 @@ public final class PersistenceMetadata {
      * @return singleton instance
      */
     public static PersistenceMetadata getDefault() {
-        return instance;
+        return DEFAULT;
     }
     
     /**
@@ -58,7 +59,7 @@ public final class PersistenceMetadata {
      * persistence.xml deployment descriptor
      * @see PersistenceProvider
      */
-    public synchronized Persistence getRoot(FileObject fo) throws java.io.IOException {
+    public Persistence getRoot(FileObject fo) throws java.io.IOException {
         if (fo == null) {
             return null;
         }
