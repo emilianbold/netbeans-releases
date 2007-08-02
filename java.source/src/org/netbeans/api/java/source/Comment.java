@@ -19,7 +19,7 @@
 
 package org.netbeans.api.java.source;
 
-import org.netbeans.modules.java.source.query.Query;
+import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 /**
  * An individual comment, consisting of a style, begin and end source
@@ -64,7 +64,7 @@ public final class Comment {
      * have source file positions.
      */
     public static Comment create(String s) {
-        return new Comment(Style.BLOCK, Query.NOPOS, Query.NOPOS, Query.NOPOS, s);
+        return new Comment(Style.BLOCK, NOPOS, NOPOS, NOPOS, s);
     }
     
     public static Comment create(Style style, int pos, int endPos, int indent, String text) {
@@ -87,7 +87,7 @@ public final class Comment {
     }
 
     /**
-     * The start position in the source file, or Query.NOPOS if the
+     * The start position in the source file, or NOPOS if the
      * comment was added by a translation operation.
      */
     public int pos() {
@@ -95,7 +95,7 @@ public final class Comment {
     }
 
     /**
-     * The end position in the source file, or Query.NOPOS if the
+     * The end position in the source file, or NOPOS if the
      * comment was added by a translation operation.
      */
     public int endPos() {
@@ -103,7 +103,7 @@ public final class Comment {
     }
 
     /**
-     * Returns the line indention for this comment, or Query.NOPOS if the
+     * Returns the line indention for this comment, or NOPOS if the
      * comment was added by a translation operation.
      */
     public int indent() {
@@ -123,7 +123,7 @@ public final class Comment {
     }
     
     public boolean isNew() {
-        return pos == Query.NOPOS;
+        return pos == NOPOS;
     }
     
     public String toString() {

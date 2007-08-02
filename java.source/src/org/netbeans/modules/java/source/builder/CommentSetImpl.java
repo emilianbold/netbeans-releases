@@ -20,10 +20,10 @@ package org.netbeans.modules.java.source.builder;
 
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.modules.java.source.query.CommentSet;
-import org.netbeans.modules.java.source.query.Query;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.List;
+import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 /**
  * Class that associates the before and after comments to a tree.
@@ -90,12 +90,10 @@ public class CommentSetImpl implements Cloneable, CommentSet {
     /** 
      * Returns the first character position, which is either the initial
      * position of the first preceding comment, or NOPOS if there are no comments.
-     *
-     * @see org.netbeans.modules.java.source.query.Query#NOPOS
      */
     public int pos() {
         return precedingComments.size() > 0 ? 
-            precedingComments.get(0).pos() : Query.NOPOS;
+            precedingComments.get(0).pos() : NOPOS;
     }
         
     void setTree(Tree newTree) {

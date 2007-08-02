@@ -49,7 +49,6 @@ import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.java.source.query.Query;
 
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
@@ -1650,7 +1649,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 tokens.move(startPos);
                 if (moveToSrcRelevant(tokens, Direction.BACKWARD) == null)
                     tokens.moveStart();
-                int indent = Query.NOPOS;
+                int indent = NOPOS;
                 while (tokens.moveNext() && nonRelevant.contains(tokens.token().id())) {
                     if (tokens.index() > lastReadCommentIdx) {
                         switch (tokens.token().id()) {
@@ -1660,15 +1659,15 @@ public final class VeryPretty extends JCTree.Visitor {
                                 break;
                             case BLOCK_COMMENT:
                                 comments.add(Comment.create(Style.BLOCK, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = Query.NOPOS;
+                                indent = NOPOS;
                                 break;
                             case JAVADOC_COMMENT:
                                 comments.add(Comment.create(Style.JAVADOC, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = Query.NOPOS;
+                                indent = NOPOS;
                                 break;
                             case WHITESPACE:
                                 String tokenText = tokens.token().toString();
-                                comments.add(Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, tokenText));
+                                comments.add(Comment.create(Style.WHITESPACE, NOPOS, NOPOS, NOPOS, tokenText));
                                 int newLinePos = tokenText.lastIndexOf('\n');
                                 if (newLinePos < 0) {
                                     if (indent >= 0)
@@ -1704,7 +1703,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 tokens.move(pos);
                 boolean afterNewline = false;
                 boolean afterEmptyline = false;
-                int indent = Query.NOPOS;
+                int indent = NOPOS;
                 outer:
                 while (tokens.moveNext() && (nonRelevant.contains(tokens.token().id()) || isSeparator(tokens.token().id()))) {
                     if (tokens.index() > lastReadCommentIdx) {
@@ -1720,15 +1719,15 @@ public final class VeryPretty extends JCTree.Visitor {
                                 break;
                             case BLOCK_COMMENT:
                                 pendingComments.add(Comment.create(Style.BLOCK, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = Query.NOPOS;
+                                indent = NOPOS;
                                 break;
                             case JAVADOC_COMMENT:
                                 pendingComments.add(Comment.create(Style.JAVADOC, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = Query.NOPOS;
+                                indent = NOPOS;
                                 break;
                             case WHITESPACE:
                                 String tokenText = tokens.token().toString();
-                                pendingComments.add(Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, tokenText));
+                                pendingComments.add(Comment.create(Style.WHITESPACE, NOPOS, NOPOS, NOPOS, tokenText));
                                 int newLinePos = tokenText.lastIndexOf('\n');
                                 if (newLinePos >= 0) {
                                     if (indent == 0) {
@@ -1755,7 +1754,7 @@ public final class VeryPretty extends JCTree.Visitor {
                             case SEMICOLON:
                                 comments.addAll(pendingComments);
                                 pendingComments = null;
-                                indent = Query.NOPOS;
+                                indent = NOPOS;
                                 break outer;
                         }
                         lastReadCommentIdx = tokens.index();
@@ -1775,7 +1774,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 TokenSequence<JavaTokenId> tokens = cInfo.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                 tokens.move(pos);
                 moveToSrcRelevant(tokens, Direction.BACKWARD);
-                int indent = Query.NOPOS;
+                int indent = NOPOS;
                 while (tokens.moveNext() && nonRelevant.contains(tokens.token().id())) {
                     if (tokens.index() > lastReadCommentIdx) {
                         switch (tokens.token().id()) {
@@ -1785,15 +1784,15 @@ public final class VeryPretty extends JCTree.Visitor {
                                 break;
                             case BLOCK_COMMENT:
                                 comments.add(Comment.create(Style.BLOCK, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = Query.NOPOS;
+                                indent = NOPOS;
                                 break;
                             case JAVADOC_COMMENT:
                                 comments.add(Comment.create(Style.JAVADOC, tokens.offset(), tokens.offset() + tokens.token().length(), indent, tokens.token().toString()));
-                                indent = Query.NOPOS;
+                                indent = NOPOS;
                                 break;
                             case WHITESPACE:
                                 String tokenText = tokens.token().toString();
-                                comments.add(Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, tokenText));
+                                comments.add(Comment.create(Style.WHITESPACE, NOPOS, NOPOS, NOPOS, tokenText));
                                 int newLinePos = tokenText.lastIndexOf('\n');
                                 if (newLinePos < 0) {
                                     if (indent >= 0)

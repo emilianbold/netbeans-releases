@@ -21,7 +21,6 @@ package org.netbeans.modules.java.source.transform;
 
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.engine.RootTree;
-import org.netbeans.modules.java.source.query.Query;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
@@ -35,6 +34,8 @@ import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.QualIdentTree;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
+
+import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 /** A subclass of Tree.Visitor, this class defines
  *  a general tree translator pattern. Translation proceeds recursively in
@@ -579,7 +580,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 		 */
                 if (topLevel == null)
                     topLevel = model.getTopLevel(tree);
-                model.setPos(topLevel, Query.NOPOS);
+                model.setPos(topLevel, NOPOS);
             } else
                 copyPosTo(tree,n);
 	    tree = n;
@@ -629,7 +630,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    copyCommentTo(tree,n);
             if (tree.getInitializer().size() != init.size() || 
                 tree.getUpdate().size() != step.size())
-                model.setPos(tree, Query.NOPOS);
+                model.setPos(tree, NOPOS);
             else
                 copyPosTo(tree,n);
 	    tree = n;
@@ -837,7 +838,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    tree = n;
             if (size(tree.getTypeArguments()) != size(typeargs) && 
                     size(tree.getArguments()) != size(args))
-                model.setPos(tree, Query.NOPOS);
+                model.setPos(tree, NOPOS);
             else
                 copyPosTo(tree,n);
 	}
@@ -865,7 +866,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
             if ((size(tree.getTypeArguments()) != size(typeargs) && 
                     size(tree.getArguments()) != size(args)) ||
                     def != tree.getClassBody())
-                model.setPos(n, Query.NOPOS);
+                model.setPos(n, NOPOS);
             else
                 copyPosTo(tree,n);
 	    tree = n;
@@ -889,7 +890,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    tree = n;
             if (size(tree.getDimensions()) != size(dims) || 
                     size(tree.getInitializers()) != size(elems))
-                model.setPos(tree, Query.NOPOS);
+                model.setPos(tree, NOPOS);
             else
                 copyPosTo(tree,n);
 	}
@@ -1047,7 +1048,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    copyCommentTo(tree,n);
 	    tree = n;
             if (tree.getTypeArguments().size() != arguments.size())
-                model.setPos(tree, Query.NOPOS);
+                model.setPos(tree, NOPOS);
             else
                 copyPosTo(tree,n);
 	}
@@ -1064,7 +1065,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    copyCommentTo(tree,n);
 	    tree = n;
             if (tree.getBounds().size() != bounds.size())
-                model.setPos(tree, Query.NOPOS);
+                model.setPos(tree, NOPOS);
             else
                 copyPosTo(tree,n);
 	}
@@ -1094,7 +1095,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
 	    copyCommentTo(tree,n);
 	    tree = n;
             if (tree.getArguments().size() != args.size())
-                model.setPos(tree, Query.NOPOS);
+                model.setPos(tree, NOPOS);
             else
                 copyPosTo(tree,n);
 	}

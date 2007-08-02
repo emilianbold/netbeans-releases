@@ -25,13 +25,12 @@ import java.util.EnumSet;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.java.source.query.Query;
 import static org.netbeans.api.java.source.JavaSource.*;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
-
 /**
  *
  * @author Pavel Flaska
@@ -203,8 +202,8 @@ public class CommentsTest extends GeneratorTest {
                 );
                 make.addComment(method, Comment.create(
                         Comment.Style.JAVADOC, 
-                        Query.NOPOS, 
-                        Query.NOPOS, 
+                        NOPOS, 
+                        NOPOS, 
                         1, // to ensure indentation
                         "Comentario"), 
                         true
@@ -251,8 +250,8 @@ public class CommentsTest extends GeneratorTest {
                 );
                 make.addComment(copy, Comment.create(
                         Comment.Style.JAVADOC, 
-                        Query.NOPOS, 
-                        Query.NOPOS, 
+                        NOPOS, 
+                        NOPOS, 
                         1, // to ensure indentation
                         "/** Comentario \n*/"),
                         true

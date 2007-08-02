@@ -22,7 +22,6 @@ package org.netbeans.modules.java.source.builder;
 import com.sun.tools.javac.model.JavacElements;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.java.source.query.Query;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.BoundKind;
@@ -48,6 +47,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.util.Types;
+import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import static com.sun.tools.javac.code.Flags.*;
 import static com.sun.tools.javac.code.Kinds.*;
 import static com.sun.tools.javac.code.TypeTags.*;
@@ -82,7 +82,7 @@ public class TreeFactory {
         make = com.sun.tools.javac.tree.TreeMaker.instance(context);
         elements = JavacElements.instance(context);
         types = JavacTypes.instance(context);
-        make.at(Query.NOPOS);
+        make.at(NOPOS); // TODO: is this really neeeded?
         make.toplevel = null;
     }
     

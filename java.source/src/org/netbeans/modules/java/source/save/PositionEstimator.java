@@ -47,6 +47,12 @@ import org.netbeans.modules.java.source.save.CasualDiff.LineInsertionType;
  */
 public abstract class PositionEstimator {
     
+    /**
+     * For JCTree instances that have no associated source position.
+     */
+    public static final int NOPOS = -2;
+    
+    
     final List<? extends Tree> oldL;
     final List<? extends Tree> newL;
     final WorkingCopy copy;

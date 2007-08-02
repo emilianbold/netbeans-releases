@@ -43,7 +43,6 @@ import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.modules.java.source.query.CommentHandler;
-import org.netbeans.modules.java.source.query.Query;
 
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.TreeFactory;
@@ -2500,24 +2499,24 @@ public final class TreeMaker {
         for (StatementTree statement : trees) {
             seq.move((int) pos.getStartPosition(null, statement));
             PositionEstimator.moveToSrcRelevant(seq, Direction.BACKWARD);
-            int indent = Query.NOPOS;
+            int indent = NOPOS;
             while (seq.moveNext() && nonRelevant.contains(seq.token().id())) {
                 switch (seq.token().id()) {
                     case LINE_COMMENT:
-                        comments.addComment(statement, Comment.create(Style.LINE, Query.NOPOS, Query.NOPOS, indent, seq.token().toString()));
+                        comments.addComment(statement, Comment.create(Style.LINE, NOPOS, NOPOS, indent, seq.token().toString()));
                         indent = 0;
                         break;
                     case BLOCK_COMMENT:
-                        comments.addComment(statement, Comment.create(Style.BLOCK, Query.NOPOS, Query.NOPOS, indent, seq.token().toString()));
-                        indent = Query.NOPOS;
+                        comments.addComment(statement, Comment.create(Style.BLOCK, NOPOS, NOPOS, indent, seq.token().toString()));
+                        indent = NOPOS;
                         break;
                     case JAVADOC_COMMENT:
-                        comments.addComment(statement, Comment.create(Style.JAVADOC, Query.NOPOS, Query.NOPOS, indent, seq.token().toString()));
-                        indent = Query.NOPOS;
+                        comments.addComment(statement, Comment.create(Style.JAVADOC, NOPOS, NOPOS, indent, seq.token().toString()));
+                        indent = NOPOS;
                         break;
                     case WHITESPACE:
                         String tokenText = seq.token().toString();
-                        comments.addComment(statement, Comment.create(Style.WHITESPACE, Query.NOPOS, Query.NOPOS, Query.NOPOS, tokenText));
+                        comments.addComment(statement, Comment.create(Style.WHITESPACE, NOPOS, NOPOS, NOPOS, tokenText));
                         int newLinePos = tokenText.lastIndexOf('\n');
                         if (newLinePos < 0) {
                             if (indent >= 0)
