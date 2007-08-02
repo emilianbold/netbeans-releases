@@ -451,13 +451,6 @@ ACTION:run_script: {
     explorer:"false";
 }
 
-#ACTION:goto_declaration: {
-#    name:"LBL_GoToDeclaration";
-#    performer:org.netbeans.modules.languages.javascript.JavaScript.performGoToDeclaration;
-#    enabled:org.netbeans.modules.languages.javascript.JavaScript.enabledGoToDeclaration;
-#    explorer:"false";
-#}
-
 IMPORT:js_string: {
     mimeType:"text/x-string";
     startSkipLength:"1";
