@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -81,6 +81,7 @@ final class TestMethodNode extends AbstractNode {
     
     /**
      */
+    @Override
     public String getHtmlDisplayName() {
         final int status = (testcase.trouble == null)
                            ? 0
@@ -111,6 +112,7 @@ final class TestMethodNode extends AbstractNode {
     
     /**
      */
+    @Override
     public Action getPreferredAction() {
         Report.Trouble trouble = testcase.trouble;
         String callstackFrameInfo =
