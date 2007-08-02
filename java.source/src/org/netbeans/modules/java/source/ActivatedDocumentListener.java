@@ -85,13 +85,14 @@ public class ActivatedDocumentListener implements PropertyChangeListener {
                 ClassPath cp = ClassPath.getClassPath(lastValidFile, ClassPath.SOURCE);
                 if (cp != null) {
                     FileObject owner = cp.findOwnerRoot(lastValidFile);
-                    assert owner != null;
-                    try {
-                        if ("file".equals(lastValidFile.getURL().getProtocol())) {  //NOI18N
-                            RepositoryUpdater.getDefault().scheduleCompilation(lastValidFile, owner);
+                    if (owner != null) {
+                        try {
+                            if ("file".equals(lastValidFile.getURL().getProtocol())) {  //NOI18N
+                                RepositoryUpdater.getDefault().scheduleCompilation(lastValidFile, owner);
+                            }
+                        } catch (IOException ioe) {
+                            Exceptions.printStackTrace(ioe);
                         }
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
                     }
                 }
             }
