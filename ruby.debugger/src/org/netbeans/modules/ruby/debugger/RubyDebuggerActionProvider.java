@@ -177,8 +177,8 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             return;
         }
         rubySession.finish(this, terminate);
-        engineProvider.getDestructor().killEngine();
         EditorUtil.unmarkCurrent();
+        engineProvider.getDestructor().killEngine();
         terminated = true;
     }
     
