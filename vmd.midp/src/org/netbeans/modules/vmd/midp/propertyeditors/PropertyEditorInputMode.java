@@ -83,6 +83,7 @@ public class PropertyEditorInputMode  extends PropertyEditorUserCode {
     
     @Override
     public void customEditorOKButtonPressed() {
+        super.customEditorOKButtonPressed();
         for (PropertyEditorElement element : elements) {
             if (element.getRadioButton().isSelected()) {
                 saveValue(element.getTextForPropertyValue ());

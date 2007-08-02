@@ -173,9 +173,10 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
     @Override
     public void customEditorOKButtonPressed() {
+        super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
-            if (customEditor.getText().equals("true")) {
+            if (customEditor.getText().equals("true")) { // NOI18N
                 updateInplaceEditorComponent(true);
             } else {
                 updateInplaceEditorComponent(false);

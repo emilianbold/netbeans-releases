@@ -160,6 +160,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     
     @Override
     public void customEditorOKButtonPressed() {
+        super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }

@@ -83,6 +83,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         customEditor = new CustomEditor();
     }
     
+    @Override
     public void init(DesignComponent component) {
         super.init(component);
         this.componentID = component.getComponentID();
@@ -104,6 +105,7 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         return false;
     }
     
+    @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
@@ -138,7 +140,9 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         }
     }
     
+    @Override
     public void customEditorOKButtonPressed() {
+        super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }

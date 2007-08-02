@@ -172,6 +172,7 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
 
     @Override
     public void customEditorOKButtonPressed() {
+        super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue(customEditorElement.getColor().getRGB());
         }

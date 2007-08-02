@@ -216,7 +216,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         doNotFireEvent = false;
     }
 
-    private void setAllEnabled(boolean isEnabled) {
+    void setAllEnabled(boolean isEnabled) {
         addColButton.setEnabled(isEnabled);
         addRowButton.setEnabled(isEnabled);
         removeColButton.setEnabled(isEnabled);

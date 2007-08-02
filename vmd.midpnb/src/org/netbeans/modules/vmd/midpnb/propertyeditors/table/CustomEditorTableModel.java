@@ -47,18 +47,21 @@ class CustomEditorTableModel extends DefaultTableModel {
     @Override
     public void removeRow(int row) {
         if (dataVector.size() > 0) {
+            if (row > 0 && hasHeader) {
+                row--;
+            }
             super.removeRow(row);
         }
     }
 
     @Override
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // NOI18N
     public void addRow(Object[] rowData) {
         dataVector.addElement(convertToVector(rowData));
         fireTableStructureChanged();
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("unchecked") // NOI18N
     public void addColumn(String columnName) {
         if (hasHeader) {
             header.addElement(columnName);

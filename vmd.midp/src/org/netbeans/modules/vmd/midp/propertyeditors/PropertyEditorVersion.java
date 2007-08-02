@@ -95,6 +95,7 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
     
     @Override
     public void customEditorOKButtonPressed() {
+        super.customEditorOKButtonPressed();
         saveValue(customEditor.getText());
     }
     

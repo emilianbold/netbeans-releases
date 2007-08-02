@@ -121,6 +121,7 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
     
     @Override
     public void customEditorOKButtonPressed() {
+        super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue();
         }

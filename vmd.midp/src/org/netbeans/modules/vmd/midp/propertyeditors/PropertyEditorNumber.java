@@ -414,6 +414,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     
     @Override
     public void customEditorOKButtonPressed() {
+        super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }

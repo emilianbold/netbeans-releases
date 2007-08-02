@@ -233,9 +233,10 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
 
     @Override
     public void customEditorOKButtonPressed() {
+        super.customEditorOKButtonPressed();
         executeInsideWriteTransactionUsed = true;
         if (radioButton.isSelected()) {
-            if (customEditor.getText().equals("true")) {
+            if (customEditor.getText().equals("true")) { // NOI18N
                 valueState = true;
             } else {
                 valueState = false;
