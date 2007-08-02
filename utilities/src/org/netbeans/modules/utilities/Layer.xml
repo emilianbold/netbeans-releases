@@ -246,27 +246,15 @@ Microsystems, Inc. All Rights Reserved.
         </folder> <!-- Window -->
 
         <folder name="Help">
-            <file name="shortcuts.xml" url="nbresloc:/org/netbeans/modules/utilities/shortcuts.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="position" intvalue="700"/>
-            </file>
-            <file name="utilities-sep-2.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	        <attr name="position" intvalue="800"/>
-            </file>
             <file name="netbeans-kb.url" url="nbresloc:/org/netbeans/modules/utilities/netbeans-kb.url">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="position" intvalue="900"/>
+                <attr name="position" intvalue="300"/>
             </file>         
-            <file name="utilities-sep-3.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	        <attr name="position" intvalue="1000"/>
+            <file name="shortcuts.xml" url="nbresloc:/org/netbeans/modules/utilities/shortcuts.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
+                <attr name="position" intvalue="400"/>
             </file>
-            <file name="utilities-sep-5.instance">
-	        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	        <attr name="position" intvalue="400"/>
-            </file>
-            </folder> <!-- Help -->
+        </folder> <!-- Help -->
     </folder> <!-- Menu -->
 
     <folder name="Shortcuts">
