@@ -56,6 +56,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -74,23 +75,23 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
         
         String uncheckedKey = "unchecked";
         
-        map.put("compiler.warn.prob.found.req", uncheckedKey);
-        map.put("compiler.warn.unchecked.cast.to.type", uncheckedKey);
-        map.put("compiler.warn.unchecked.assign", uncheckedKey);
-        map.put("compiler.warn.unchecked.assign.to.var", uncheckedKey);
-        map.put("compiler.warn.unchecked.call.mbr.of.raw.type", uncheckedKey);
-        map.put("compiler.warn.unchecked.meth.invocation.applied", uncheckedKey);
-        map.put("compiler.warn.unchecked.generic.array.creation", uncheckedKey);
+        map.put("compiler.warn.prob.found.req", uncheckedKey); // NOI18N
+        map.put("compiler.warn.unchecked.cast.to.type", uncheckedKey);  // NOI18N
+        map.put("compiler.warn.unchecked.assign", uncheckedKey);  // NOI18N
+        map.put("compiler.warn.unchecked.assign.to.var", uncheckedKey);  // NOI18N
+        map.put("compiler.warn.unchecked.call.mbr.of.raw.type", uncheckedKey);  // NOI18N
+        map.put("compiler.warn.unchecked.meth.invocation.applied", uncheckedKey);  // NOI18N
+        map.put("compiler.warn.unchecked.generic.array.creation", uncheckedKey);  // NOI18N
         
-        String fallThroughKey = "fallthrough";
+        String fallThroughKey = "fallthrough"; // NOI18N
         
-        map.put("compiler.warn.possible.fall-through.into.case", fallThroughKey);
+        map.put("compiler.warn.possible.fall-through.into.case", fallThroughKey);  // NOI18N
         
-        String deprecationKey = "deprecation";
+        String deprecationKey = "deprecation";  // NOI18N
         
-        map.put("compiler.warn.has.been.deprecated", deprecationKey);
+        map.put("compiler.warn.has.been.deprecated", deprecationKey);  // NOI18N
         
-        KEY2SUPRESS_KEY = Collections.unmodifiableMap(map);
+        KEY2SUPRESS_KEY = Collections.unmodifiableMap(map); 
     }
     
     public Set<String> getCodes() {
@@ -113,15 +114,15 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
     }
 
     public String getId() {
-        return "SuppressWarningsFixer";
+        return "SuppressWarningsFixer";  // NOI18N
     }
 
     public String getDisplayName() {
-        return "Suppress Warnings Fix";
+        return NbBundle.getMessage(SuppressWarningsFixer.class, "LBL_Suppress_Waning");  // NOI18N
     }
 
     public String getDescription() {
-        return "Suppress Warnings Fix";
+        return NbBundle.getMessage(SuppressWarningsFixer.class, "LBL_Suppress_Waning");  // NOI18N
     }
 
     private static final class FixImpl implements Fix {
@@ -137,7 +138,7 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
         }
     
         public String getText() {
-            return "Suppress Warning " + key;
+            return NbBundle.getMessage(SuppressWarningsFixer.class, "LBL_FIX_Suppress_Waning",  key );  // NOI18N
         }
         
         private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
@@ -173,14 +174,14 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
                             case VARIABLE:
                                 modifiers = ((VariableTree) top).getModifiers();
                                 break;
-                            default: assert false : "Unhandled Tree.Kind";
+                            default: assert false : "Unhandled Tree.Kind";  // NOI18N
                         }
                         
                         if (modifiers == null) {
                             return ;
                         }
                         
-                        TypeElement el = copy.getElements().getTypeElement("java.lang.SuppressWarnings");
+                        TypeElement el = copy.getElements().getTypeElement("java.lang.SuppressWarnings");  // NOI18N
                         
                         if (el == null) {
                             return ;
@@ -196,14 +197,14 @@ public class SuppressWarningsFixer implements ErrorRule<Void> {
                                 List<? extends ExpressionTree> arguments = at.getArguments();
                                 
                                 if (arguments.isEmpty() || arguments.size() > 1) {
-                                    Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation has incorrect number of arguments - {0}.", arguments.size());
+                                    Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation has incorrect number of arguments - {0}.", arguments.size());  // NOI18N
                                     return ;
                                 }
                                 
                                 ExpressionTree et = at.getArguments().get(0);
                                 
                                 if (et.getKind() != Kind.ASSIGNMENT) {
-                                    Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation's argument is not an assignment - {0}.", et.getKind());
+                                    Logger.getLogger(SuppressWarningsFixer.class.getName()).log(Level.INFO, "SupressWarnings annotation's argument is not an assignment - {0}.", et.getKind());  // NOI18N
                                     return ;
                                 }
                                 

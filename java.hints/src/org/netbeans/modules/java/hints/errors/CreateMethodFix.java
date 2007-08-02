@@ -52,6 +52,7 @@ import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -79,7 +80,7 @@ public final class CreateMethodFix implements Fix {
         this.targetFile = SourceUtils.getFile(target, cpInfo);
         this.target = ElementHandle.create(target);
         if (returnType != null && returnType.getKind() == TypeKind.NULL) {
-            returnType = info.getElements().getTypeElement("java.lang.Object").asType();
+            returnType = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
         }
         this.returnType = returnType != null ? TypeMirrorHandle.create(returnType) : null;
         this.argumentTypes = new ArrayList<TypeMirrorHandle>();
@@ -104,21 +105,21 @@ public final class CreateMethodFix implements Fix {
         
         for (TypeMirror tm : argumentTypes) {
             if (!first)
-                methodDisplayName.append(',');
+                methodDisplayName.append(','); // NOI18N
             first = false;
             methodDisplayName.append(org.netbeans.modules.editor.java.Utilities.getTypeName(tm, true));
         }
         
-        methodDisplayName.append(')');
+        methodDisplayName.append(')'); // NOI18N
         
         this.methodDisplayName = methodDisplayName.toString();
     }
     
     public String getText() {
         if (returnType != null) {
-            return "Create method " + methodDisplayName + " in " + inFQN;
+            return NbBundle.getMessage(CreateMethodFix.class, "LBL_FIX_Create_Method", methodDisplayName, inFQN );
         } else {
-            return "Create constructor " + methodDisplayName + " in " + inFQN;
+            return NbBundle.getMessage(CreateMethodFix.class, "LBL_FIX_Create_Constructor", methodDisplayName, inFQN );
         }
     }
     
@@ -133,14 +134,14 @@ public final class CreateMethodFix implements Fix {
                 TypeElement targetType = target.resolve(working);
                 
                 if (targetType == null) {
-                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target.");
+                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target."); // NOI18N
                     return;
                 }
                 
                 TreePath targetTree = working.getTrees().getPath(targetType);
                 
                 if (targetTree == null) {
-                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + ".");
+                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + "."); // NOI18N
                     return;
                 }
                 
@@ -148,7 +149,7 @@ public final class CreateMethodFix implements Fix {
                 TypeMirror returnType = returnTypeHandle != null ? returnTypeHandle.resolve(working) : null;
                 
                 if (returnTypeHandle != null && returnType == null) {
-                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type.");
+                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type."); // NOI18N
                     return;
                 }
                 
@@ -177,7 +178,7 @@ public final class CreateMethodFix implements Fix {
     }
     
     private void addArguments(CompilationInfo info, StringBuilder value) {
-        value.append("(");
+        value.append("("); // NOI18N
         
         Iterator<TypeMirrorHandle> typeIt = CreateMethodFix.this.argumentTypes.iterator();
         Iterator<String>           nameIt = CreateMethodFix.this.argumentNames.iterator();
@@ -193,28 +194,28 @@ public final class CreateMethodFix implements Fix {
             String           argName = nameIt.next();
             
             value.append(org.netbeans.modules.editor.java.Utilities.getTypeName(tmh.resolve(info), true));
-            value.append(' ');
+            value.append(' '); // NOI18N
             value.append(argName);
         }
         
-        value.append(")");
+        value.append(")"); // NOI18N
     }
     
     public String toDebugString(CompilationInfo info) {
         StringBuilder value = new StringBuilder();
         
         if (returnType != null) {
-            value.append("CreateMethodFix:");
+            value.append("CreateMethodFix:"); // NOI18N
             value.append(name);
             addArguments(info, value);
             value.append(org.netbeans.modules.editor.java.Utilities.getTypeName(returnType.resolve(info), true));
         } else {
-            value.append("CreateConstructorFix:");
+            value.append("CreateConstructorFix:"); // NOI18N
             addArguments(info, value);
         }
         
-        value.append(':');
-        value.append(inFQN);
+        value.append(':'); // NOI18N
+        value.append(inFQN); // NOI18N
         
         return value.toString();
     }
@@ -223,7 +224,7 @@ public final class CreateMethodFix implements Fix {
     private static BlockTree createDefaultMethodBody(WorkingCopy wc, TypeMirror returnType) {
         TreeMaker make = wc.getTreeMaker();
         List<StatementTree> blockStatements = new ArrayList<StatementTree>();
-        TypeElement uoe = wc.getElements().getTypeElement("java.lang.UnsupportedOperationException");
+        TypeElement uoe = wc.getElements().getTypeElement("java.lang.UnsupportedOperationException"); // NOI18N
         if (uoe != null) {
             NewClassTree nue = make.NewClass(null, Collections.<ExpressionTree>emptyList(), make.QualIdent(uoe), Collections.singletonList(make.Literal("Not yet implemented")), null);
             blockStatements.add(make.Throw(nue));

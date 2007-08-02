@@ -59,6 +59,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.errors.CreateElementUtilities.*;
 
@@ -73,7 +74,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
     
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve"));
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.apply.symbol", "compiler.err.cant.resolve")); // NOI18N
     }
     
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
@@ -218,9 +219,9 @@ public final class CreateElement implements ErrorRule<Void> {
         
         if (target == null) {
             if (ErrorHintsProvider.ERR.isLoggable(ErrorManager.INFORMATIONAL)) {
-                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "target=null");
-                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "offset=" + offset);
-                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "errorTree=" + errorPath.getLeaf());
+                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "target=null"); // NOI18N
+                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "offset=" + offset); // NOI18N
+                ErrorHintsProvider.ERR.log(ErrorManager.INFORMATIONAL, "errorTree=" + errorPath.getLeaf()); // NOI18N
             }
             
             return Collections.<Fix>emptyList();
@@ -356,7 +357,7 @@ public final class CreateElement implements ErrorRule<Void> {
             }
             
             if (tm.getKind() == TypeKind.NULL) {
-                tm = info.getElements().getTypeElement("java.lang.Object").asType();
+                tm = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
             }
             
             argumentTypes.add(tm);
@@ -368,7 +369,7 @@ public final class CreateElement implements ErrorRule<Void> {
             }
             
             if (proposedName == null) {
-                proposedName = "arg";
+                proposedName = "arg"; // NOI18N
             }
             
             if (usedArgumentNames.contains(proposedName)) {
@@ -436,11 +437,11 @@ public final class CreateElement implements ErrorRule<Void> {
     }
     
     public String getDisplayName() {
-        return "Create Field Fix";
+        return NbBundle.getMessage(CreateElement.class, "LBL_Create_Field");
     }
     
     public String getDescription() {
-        return "Create Field Fix";
+        return NbBundle.getMessage(CreateElement.class, "DSC_Create_Field");
     }
     
     //XXX: currently we cannot fix:

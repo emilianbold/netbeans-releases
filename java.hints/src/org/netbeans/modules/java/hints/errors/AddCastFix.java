@@ -32,6 +32,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -78,7 +79,7 @@ final class AddCastFix implements Fix {
     }
     
     public String getText() {
-        return "Cast " + treeName + " to " + type;
+        return NbBundle.getMessage(AddCastFix.class, "LBL_FIX_Add_Cast", treeName, type); // NOI18N
     }
 
 }

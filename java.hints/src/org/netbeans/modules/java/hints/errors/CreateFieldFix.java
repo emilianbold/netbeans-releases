@@ -39,6 +39,7 @@ import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,13 +64,13 @@ public final class CreateFieldFix implements Fix {
         this.targetFile = SourceUtils.getFile(target, cpInfo);
         this.target = ElementHandle.create(target);
         if (proposedType.getKind() == TypeKind.NULL) {
-            proposedType = info.getElements().getTypeElement("java.lang.Object").asType();
+            proposedType = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
         }
         this.proposedType = TypeMirrorHandle.create(proposedType);
     }
     
     public String getText() {
-        return "Create field " + name + " in " + inFQN;
+        return NbBundle.getMessage(CreateFieldFix.class, "LBL_FIX_Create_Field", name, inFQN);        
     }
     
     public ChangeInfo implement() throws IOException {
@@ -83,21 +84,21 @@ public final class CreateFieldFix implements Fix {
                 TypeElement targetType = target.resolve(working);
                 
                 if (targetType == null) {
-                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target.");
+                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target."); // NOI18N
                     return;
                 }
                 
                 ClassTree targetTree = working.getTrees().getTree(targetType);
                 
                 if (targetTree == null) {
-                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + ".");
+                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target tree: " + targetType.getQualifiedName() + "."); // NOI18N
                     return;
                 }
                 
                 TypeMirror proposedType = CreateFieldFix.this.proposedType.resolve(working);
                 
                 if (proposedType == null) {
-                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type.");
+                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type."); // NOI18N
                     return;
                 }
                 
@@ -123,6 +124,6 @@ public final class CreateFieldFix implements Fix {
     }
     
     String toDebugString(CompilationInfo info) {
-        return "CreateFieldFix:" + name + ":" + target.getQualifiedName() + ":" + proposedType.resolve(info).toString() + ":" + modifiers;
+        return "CreateFieldFix:" + name + ":" + target.getQualifiedName() + ":" + proposedType.resolve(info).toString() + ":" + modifiers; // NOI18N
     }
 }

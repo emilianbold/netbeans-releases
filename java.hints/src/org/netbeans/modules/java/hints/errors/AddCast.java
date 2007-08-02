@@ -44,6 +44,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -110,7 +111,7 @@ public final class AddCast implements ErrorRule<Void> {
     }
     
     public Set<String> getCodes() {
-        return Collections.singleton("compiler.err.prob.found.req");
+        return Collections.singleton("compiler.err.prob.found.req"); // NOI18N
     }
     
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
@@ -139,11 +140,11 @@ public final class AddCast implements ErrorRule<Void> {
     }
     
     public String getDisplayName() {
-        return "Add Cast Fix";
+        return NbBundle.getMessage(AddCast.class, "LBL_Add_Cast");
     }
     
     public String getDescription() {
-        return "Add Cast Fix";
+        return NbBundle.getMessage(AddCast.class, "DSC_Add_Cast");
     }
     
     private static class HintDisplayNameVisitor extends TreeScanner<String, Void> {
@@ -155,15 +156,15 @@ public final class AddCast implements ErrorRule<Void> {
         public @Override String visitMethodInvocation(MethodInvocationTree tree, Void v) {
             ExpressionTree methodSelect = tree.getMethodSelect();
             
-            return "..." + simpleName(methodSelect) + "(...)";
+            return "..." + simpleName(methodSelect) + "(...)"; // NOI18N
         }
 
         public @Override String visitArrayAccess(ArrayAccessTree node, Void p) {
-            return "..." + simpleName(node.getExpression()) + "[]";
+            return "..." + simpleName(node.getExpression()) + "[]"; // NOI18N
         }
         
         public @Override String visitNewClass(NewClassTree nct, Void p) {
-            return "...new " + simpleName(nct.getIdentifier()) + "(...)";
+            return "...new " + simpleName(nct.getIdentifier()) + "(...)"; // NOI18N
         }
         
         private String simpleName(Tree t) {
@@ -180,10 +181,10 @@ public final class AddCast implements ErrorRule<Void> {
             }
             
             if (t.getKind() == Kind.PARAMETERIZED_TYPE) {
-                return simpleName(((ParameterizedTypeTree) t).getType()) + "<...>";
+                return simpleName(((ParameterizedTypeTree) t).getType()) + "<...>"; // NOI18N
             }
             
-            throw new IllegalStateException("Currently unsupported kind of tree: " + t.getKind());
+            throw new IllegalStateException("Currently unsupported kind of tree: " + t.getKind()); // NOI18N
         }
     }
 

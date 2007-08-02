@@ -46,6 +46,7 @@ import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -59,9 +60,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
 
     public Set<String> getCodes() {
         return new HashSet<String>(Arrays.asList(
-                "compiler.err.abstract.cant.be.instantiated",
-                "compiler.err.does.not.override.abstract",
-                "compiler.err.abstract.cant.be.instantiated"));
+                "compiler.err.abstract.cant.be.instantiated", // NOI18N
+                "compiler.err.does.not.override.abstract", // NOI18N
+                "compiler.err.abstract.cant.be.instantiated")); // NOI18N
     }
     
     public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Void> data) {
@@ -88,11 +89,11 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
     }
     
     public String getDisplayName() {
-        return "Implement All Abstract Methods Fix";
+        return NbBundle.getMessage(ImplementAllAbstractMethods.class, "LBL_Impl_Abstract_Methods"); // NOI18N
     }
     
     public String getDescription() {
-        return "Implement All Abstract Methods Fix";
+        return NbBundle.getMessage(ImplementAllAbstractMethods.class, "DSC_Impl_Abstract_Methods"); // NOI18N
     }
     
     private static interface Performer {
@@ -153,7 +154,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
         }
         
         public String getText() {
-            return makeClassAbstractName == null ? "Implement all abstract methods" : "Make class " + makeClassAbstractName + " abstract";
+            return makeClassAbstractName == null ? 
+                NbBundle.getMessage(ImplementAllAbstractMethods.class, "LBL_FIX_Impl_Abstract_Methods") : // MOI18N 
+                NbBundle.getMessage(ImplementAllAbstractMethods.class, "LBL_FIX_Make_Class_Abstract", makeClassAbstractName); // MOI18N 
         }
 
         public ChangeInfo implement() {

@@ -35,6 +35,7 @@ import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -46,7 +47,7 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
     }
     
     public Set<String> getCodes() {
-        return Collections.singleton("compiler.warn.redundant.cast");
+        return Collections.singleton("compiler.warn.redundant.cast"); // NOI18N
     }
     
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
@@ -70,11 +71,11 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
     }
     
     public String getDisplayName() {
-        return "Remove Useless Cast Fix";
+        return NbBundle.getMessage(RemoveUselessCast.class, "LBL_Remove_Useless_Cast_Fix");
     }
     
     public String getDescription() {
-        return "Remove Useless Cast Fix";
+        return NbBundle.getMessage(RemoveUselessCast.class, "DSC_Remove_Useless_Cast_Fix");
     }
 
     private static final class FixImpl implements Fix {
@@ -88,7 +89,7 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
         }
 
         public String getText() {
-            return "Remove redundant cast";
+            return NbBundle.getMessage(RemoveUselessCast.class, "LBL_FIX_Remove_redundant_cast");
         }
         
         public ChangeInfo implement() {

@@ -53,6 +53,7 @@ import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -74,7 +75,7 @@ public class AddParameterOrLocalFix implements Fix {
                                   int /*!!!Position*/ unresolvedVariable) {
         this.file = info.getFileObject();
         if (type.getKind() == TypeKind.NULL) {
-            type = info.getElements().getTypeElement("java.lang.Object").asType();
+            type = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
         }
         this.type = TypeMirrorHandle.create(type);
         this.name = name;
@@ -83,7 +84,9 @@ public class AddParameterOrLocalFix implements Fix {
     }
 
     public String getText() {
-        return parameter ? "Create parameter " + name : "Create local variable " + name;
+        return parameter ? 
+            NbBundle.getMessage(AddParameterOrLocalFix.class, "LBL_FIX_Create_Parameter", name) : // NOI18N
+            NbBundle.getMessage(AddParameterOrLocalFix.class, "LBL_FIX_Create_Local_Variable", name); // NOI18N
     }
 
     public ChangeInfo implement() {
@@ -99,7 +102,7 @@ public class AddParameterOrLocalFix implements Fix {
                     TypeMirror proposedType = type.resolve(working);
                     
                     if (proposedType == null) {
-                        ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type.");
+                        ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve proposed type."); // NOI18N
                         return;
                     }
                     
@@ -112,7 +115,7 @@ public class AddParameterOrLocalFix implements Fix {
                     
                     if (parameter) {
                         if (targetTree == null) {
-                            Logger.getLogger("global").log(Level.WARNING, "Add parameter - cannot find the method.");
+                            Logger.getLogger("global").log(Level.WARNING, "Add parameter - cannot find the method."); // NOI18N
                         }
                         
                         MethodTree result = make.addMethodParameter(targetTree, make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), null));
@@ -194,7 +197,7 @@ public class AddParameterOrLocalFix implements Fix {
         TreePath firstUse = firstUsage.scan(method, null);
         
         if (firstUse == null || !isStatement(firstUse.getLeaf())) {
-            Logger.getLogger("global").log(Level.WARNING, "Add local variable - cannot find a statement.");
+            Logger.getLogger("global").log(Level.WARNING, "Add local variable - cannot find a statement."); // NOI18N
             return;
         }
         
@@ -264,6 +267,6 @@ public class AddParameterOrLocalFix implements Fix {
     }
     
     String toDebugString(CompilationInfo info) {
-        return "AddParameterOrLocalFix:" + name + ":" + type.resolve(info).toString() + ":" + parameter;
+        return "AddParameterOrLocalFix:" + name + ":" + type.resolve(info).toString() + ":" + parameter; // NOI18N
     }
 }
