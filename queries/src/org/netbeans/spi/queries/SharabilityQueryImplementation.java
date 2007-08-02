@@ -53,7 +53,7 @@ public interface SharabilityQueryImplementation {
      * If it is, it ought to be committed to a VCS if the user is using one.
      * If it is not, it is either a disposable build product, or a per-user
      * private file which is important but should not be shared.
-     * @param file a file to check for sharability (may or may not yet exist)
+     * @param file a {@link org.openide.filesystems.FileUtil#normalizeFile normalized} file to check for sharability (may or may not yet exist)
      * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
     int getSharability(File file);
