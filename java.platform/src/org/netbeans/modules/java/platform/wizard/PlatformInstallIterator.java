@@ -67,7 +67,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
         return this.panelIndex;
     }
     
-    void updatePanelsList (JComponent[] where) {
+    void updatePanelsList (final JComponent[] where, final WizardDescriptor.InstantiatingIterator<WizardDescriptor> it) {
         Collection<String> c = new LinkedList<String>();
         if (this.hasSelectorPanel) {
             c.add (bundle.getString("TXT_SelectPlatformTypeTitle"));
@@ -76,9 +76,9 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             (this.panelIndex == 0 && this.selectorPanel.getInstallerIterator()==null)) {
             c.add(bundle.getString("TXT_PlatformFolderTitle")); // NOI18N
         }
-        if (typeIterator != null) {
+        if (it != null) {
             // try to suck stuff out of the iterator's first panel :-(
-            WizardDescriptor.Panel p = typeIterator.current();
+            WizardDescriptor.Panel p = it.current();
             if (p != null) {
                 javax.swing.JComponent pc = (javax.swing.JComponent)p.getComponent();
                 String[] steps = (String[])pc.getClientProperty("WizardPanel_contentData"); // NOI18N
@@ -117,14 +117,17 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
      */
     public boolean hasNext() {        
         if (panelIndex == 0) {
-            WizardDescriptor.InstantiatingIterator typeIt = this.selectorPanel.getInstallerIterator();
-            // need to decide
-            if (typeIt == null) {
-                return true;
+            GeneralPlatformInstall installer = this.selectorPanel.getInstaller();
+            if (installer instanceof CustomPlatformInstall) {
+                WizardDescriptor.InstantiatingIterator<WizardDescriptor> it = ((CustomPlatformInstall)installer).createIterator();                
+                if (it != typeIterator) {
+                    updateIterator(it);                    
+                }
+                return this.typeIterator == null ? false : this.typeIterator.current() != null;
             }
             else {
-                return typeIt.current() != null;
-            }
+                return true;
+            }            
         }
         else if (panelIndex == 1) {
             WizardDescriptor.InstantiatingIterator typeIt = locationPanel.getInstallerIterator();
@@ -164,7 +167,7 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
                 this.locationPanel.setPlatformInstall((PlatformInstall) installers.get(0));
             }
         }            
-        updatePanelsList(new JComponent[]{((JComponent)current().getComponent())});
+        updatePanelsList(new JComponent[]{((JComponent)current().getComponent())}, this.typeIterator);
         this.wizard.setTitle(NbBundle.getMessage(PlatformInstallIterator.class,"TXT_AddPlatformTitle"));
         panelNumber = 0;
         wizard.putProperty("WizardPanel_contentSelectedIndex", // NOI18N
@@ -256,25 +259,30 @@ public class PlatformInstallIterator implements WizardDescriptor.InstantiatingIt
             return;
         }        
         if (it != typeIterator) {
-            if (this.typeIterator != null) {
-                this.typeIterator.uninitialize (this.wizard);
-            }
-            typeIterator = it;
-            if (this.typeIterator != null) {
-                typeIterator.initialize (this.wizard);
-                updatePanelsList(new JComponent[]{
-                    (JComponent)selectorPanel.getComponent(),
-                    (JComponent)locationPanel.getComponent(),
-                    (JComponent)typeIterator.current().getComponent(),
-                });
-            }
-            else {
-                updatePanelsList(new JComponent[]{
-                    (JComponent)selectorPanel.getComponent(),
-                    (JComponent)locationPanel.getComponent()
-                });
-            }
-            wizard.putProperty("WizardPanel_contentSelectedIndex", new Integer(panelNumber)); // NOI18N
+            updateIterator(it);
         }
     }
+    
+    private void updateIterator (final WizardDescriptor.InstantiatingIterator<WizardDescriptor> it) {
+        if (this.typeIterator != null) {
+            this.typeIterator.uninitialize (this.wizard);
+        }        
+        if (it != null) {
+            it.initialize (this.wizard);
+            updatePanelsList(new JComponent[]{
+                (JComponent)selectorPanel.getComponent(),
+                (JComponent)locationPanel.getComponent(),
+                (JComponent)it.current().getComponent(),
+            }, it);
+        }
+        else {
+            updatePanelsList(new JComponent[]{
+                (JComponent)selectorPanel.getComponent(),
+                (JComponent)locationPanel.getComponent()
+            }, null);
+        }
+        typeIterator = it;
+        wizard.putProperty("WizardPanel_contentSelectedIndex", new Integer(panelNumber)); // NOI18N
+    }                
+                
 }
