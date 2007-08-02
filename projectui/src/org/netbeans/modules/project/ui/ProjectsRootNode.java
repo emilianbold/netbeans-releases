@@ -42,6 +42,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.ErrorManager;
@@ -314,7 +315,7 @@ public class ProjectsRootNode extends AbstractNode {
         private volatile boolean nameChange;
 
         public BadgingNode(Node n, boolean addSearchInfo) {
-            super(n, null, addSearchInfo ? new ProxyLookup(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfoBySubnodes(n)))) : n.getLookup());
+            super(n, null, addSearchInfo ? new ProxyLookup(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(n.getLookup().lookup(Project.class)))) : n.getLookup());
             OpenProjectList.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(this, OpenProjectList.getDefault()));
             DataObject fold = getOriginal().getLookup().lookup(DataObject.class);
             if (fold != null) {
@@ -421,16 +422,21 @@ public class ProjectsRootNode extends AbstractNode {
      * Produce a {@link SearchInfo} variant that is always searchable, for speed.
      * @see "#48685"
      */
-    static SearchInfo alwaysSearchableSearchInfo(SearchInfo i) {
-        return new AlwaysSearchableSearchInfo(i);
+    static SearchInfo alwaysSearchableSearchInfo(Project p) {
+        return new AlwaysSearchableSearchInfo(p);
     }
     
     private static final class AlwaysSearchableSearchInfo implements SearchInfo {
         
         private final SearchInfo delegate;
         
-        public AlwaysSearchableSearchInfo(SearchInfo delegate) {
-            this.delegate = delegate;
+        public AlwaysSearchableSearchInfo(Project prj) {
+            SourceGroup groups[] = ProjectUtils.getSources(prj).getSourceGroups(Sources.TYPE_GENERIC);
+            FileObject folders[] = new FileObject[groups.length];
+            for (int i = 0; i < groups.length; i++) {
+                folders[i] = groups[i].getRootFolder();
+            }
+            delegate = SearchInfoFactory.createSearchInfo(folders, true, null);
         }
 
         public boolean canSearch() {
