@@ -49,7 +49,9 @@ public final class AntNavigatorPanel implements NavigatorPanel {
         public void resultChanged(LookupEvent ev) {
             Mutex.EVENT.readAccess(new Runnable() { // #69355: safest to run in EQ
                 public void run() {
-                    display(selection.allInstances());
+                    if (selection != null) { // #111772
+                        display(selection.allInstances());
+                    }
                 }
             });
         }
