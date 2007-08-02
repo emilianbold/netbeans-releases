@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -46,6 +48,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /** Asorted information about the JavaSource.
  *
@@ -250,15 +253,26 @@ public class CompilationInfo {
         return binding;
     }
     
+    //XXX cleanup: IOException is no longer required
     public Document getDocument() throws IOException {
         if (this.binding == null || this.binding.getFileObject() == null) {
             return null;
         }
-        DataObject od = DataObject.find(this.binding.getFileObject());            
-        EditorCookie ec = od.getCookie(EditorCookie.class);
-        if (ec != null) {
-            return  ec.getDocument();
-        } else {
+        if (!this.binding.getFileObject().isValid()) {
+            return null;
+        }
+        try {
+            DataObject od = DataObject.find(this.binding.getFileObject());            
+            EditorCookie ec = od.getCookie(EditorCookie.class);
+            if (ec != null) {
+                return  ec.getDocument();
+            } else {
+                return null;
+            }
+        } catch (DataObjectNotFoundException e) {
+            //may happen when the underlying FileObject has just been deleted
+            //should be safe to ignore
+            Logger.getLogger(CompilationInfo.class.getName()).log(Level.FINE, null, e);
             return null;
         }
     }
