@@ -341,7 +341,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
 
                 @Override
                 public String getDisplayName() {
-                    return method.getOperationName();
+                    return method.getOperationName()+": "+getClassName(method.getReturnType()); //NOI18N
                 } 
             };
             StringBuffer buf = new StringBuffer();
@@ -361,6 +361,15 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
     
     private JAXWSSupport getJAXWSSupport() {
         return JAXWSSupport.getJAXWSSupport(srcRoot);
+    }
+    
+    private String getClassName(String fullClassName) {
+        StringTokenizer tok = new StringTokenizer(fullClassName,"."); //NOI18N
+        String token = "";
+        while (tok.hasMoreTokens()) {
+            token = tok.nextToken();
+        }
+        return token;
     }
     
     private void setBindings(JAXWSSupport support, WsdlModeler wsdlModeler, Service service) {
