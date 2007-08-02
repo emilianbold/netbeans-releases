@@ -21,6 +21,7 @@ package org.netbeans.modules.editor;
 
 import java.io.*;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.editor.SettingsDefaults;
@@ -51,6 +52,10 @@ public abstract class FormatterIndentEngine extends IndentEngine {
     public ExtFormatter getFormatter() {
         if (formatter == null) {
             formatter = createFormatter();
+            // Fallback if no formatter is registered (can happen with new formatting api)
+            if (formatter == null) {
+                formatter = new ExtFormatter(BaseKit.class);
+            }
         }
         return formatter;
     }

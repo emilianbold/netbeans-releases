@@ -144,14 +144,18 @@ public final class TaskHandler {
     }
 
     void lock() {
-        for (MimeItem item : items) {
-            item.lock();
+        if (items != null) {
+            for (MimeItem item : items) {
+                item.lock();
+            }
         }
     }
 
     void unlock() {
-        for (MimeItem item : items) {
-            item.unlock();
+        if (items != null) {
+            for (MimeItem item : items) {
+                item.unlock();
+            }
         }
     }
 

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.editor.indent;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -27,6 +28,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.indent.Indent;
 import org.netbeans.api.editor.indent.Reformat;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Formatter;
 import org.netbeans.spi.editor.indent.Context;
 
 /**
@@ -87,6 +89,9 @@ public final class IndentImpl {
     }
     
     public synchronized void indentLock() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("indentLock() on " + this);
+        }
         if (indentHandler != null)
             throw new IllegalStateException("Already locked");
         indentHandler = new TaskHandler(true, doc);
@@ -96,6 +101,9 @@ public final class IndentImpl {
     }
     
     public synchronized void indentUnlock() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("indentUnlock() on " + this);
+        }
         if (indentHandler == null)
             throw new IllegalStateException("Already unlocked");
         indentHandler.unlock();
@@ -107,6 +115,9 @@ public final class IndentImpl {
     }
     
     public synchronized void reformatLock() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("reformatLock() on " + this);
+        }
         if (reformatHandler != null)
             throw new IllegalStateException("Already locked");
         reformatHandler = new TaskHandler(false, doc);
@@ -116,6 +127,9 @@ public final class IndentImpl {
     }
     
     public synchronized void reformatUnlock() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("reformatUnlock() on " + this);
+        }
         if (reformatHandler == null)
             throw new IllegalStateException("Already unlocked");
         reformatHandler.unlock();
@@ -161,12 +175,19 @@ public final class IndentImpl {
         }
 
         // Fallback to Formatter
-        if (!done && doc instanceof BaseDocument) {
+        Formatter formatter;
+        if (!done && doc instanceof BaseDocument
+                && !((formatter = ((BaseDocument)doc).getFormatter()) instanceof FormatterImpl)
+        ) {
             // Original formatter does not have reindentation of multiple lines
             // so reformat start line and continue for each line.
             do {
-                ((BaseDocument)doc).getFormatter().indentLine(doc, startOffset);
-                startOffset = lineElem.getEndOffset(); // Move to next line
+                startOffset = ((BaseDocument)doc).getFormatter().indentLine(doc, startOffset);
+                startLineIndex = lineRootElem.getElementIndex(startOffset) + 1;
+                if (startLineIndex >= lineRootElem.getElementCount())
+                    break;
+                lineElem = lineRootElem.getElement(startLineIndex);
+                startOffset = lineElem.getStartOffset(); // Move to next line
             } while (startOffset < endOffset);
 
         }
