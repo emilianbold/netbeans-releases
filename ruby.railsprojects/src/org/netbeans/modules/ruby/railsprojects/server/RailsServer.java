@@ -153,7 +153,8 @@ public class RailsServer {
         desc.debug(debug);
         desc.fastDebugRequired(debug);
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(dir)));
-        desc.showProgress(false);
+        //desc.showProgress(false); // http://ruby.netbeans.org/issues/show_bug.cgi?id=109261
+        desc.showSuspended(true);
         String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
         new RubyExecution(desc, charsetName).run();
     }
