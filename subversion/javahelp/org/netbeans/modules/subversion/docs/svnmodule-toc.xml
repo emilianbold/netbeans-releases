@@ -23,8 +23,6 @@
         <tocitem text="Committing Local Changes to a Remote Repository" target="svn_commit" /> 
         <tocitem text="Reverting Subversion Modifications" target="svn_revert" />       
         <tocitem text="Placing Project Metadata Into Subversion" target="svn_projects" />
-<!--            <tocitem text="Working with Tags" target="svn_tagging" />  -->
-<!--            <tocitem text="Working with Branches" target="svn_branches" />  -->
         <tocitem text="Merging File Revisions in Subversion" target="svn_merge" /> 
         <tocitem text="Resolving Merge Conflicts" target="svn_mergeresolve" /> 
         <tocitem text="Creating and Applying a Patch" target="svn_patch" />
