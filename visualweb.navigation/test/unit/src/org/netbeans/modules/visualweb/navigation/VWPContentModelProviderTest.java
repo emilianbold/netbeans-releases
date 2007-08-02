@@ -53,10 +53,12 @@ public class VWPContentModelProviderTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
-        ClassLoader l = this.getClass().getClassLoader();
-        //MockServices.setServices(VWPContentModelProvider.class, MockOpenProjectsTrampoline.class, J2EE15CommonClassloaderProvider.class);
+        //ClassLoader l = this.getClass().getClassLoader();
+        MockServices.setServices(VWPContentModelProvider.class, MockOpenProjectsTrampoline.class, J2EE15CommonClassloaderProvider.class);
         //Lookup defaultLookup = Lookup.getDefault();
-        MockLookup.setLookup(Lookups.fixed(l), Lookups.metaInfServices(l));
+        //MockLookup.setLookup(Lookups.fixed(l), Lookups.metaInfServices(l));
+        
+
         openProject();
     }
 
@@ -85,11 +87,14 @@ public class VWPContentModelProviderTest extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {
+        System.out.println("Tearing Down The Project");
         destroyProject();
     }
 
     public void destroyProject() throws IOException {
+        System.out.println("Deleting Project");
         project.getProjectDirectory().delete();
+        System.out.println("Clearing Work Directory");
         clearWorkDir();
     }
 
