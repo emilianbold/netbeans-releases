@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.ruby.debugger.ui;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.modules.ruby.debugger.DebuggerAnnotation;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
@@ -53,13 +56,15 @@ public final class CallStackAnnotation {
             if (taskRemove == null) {
                 taskRemove = rp.create(new Runnable() {
                     public void run() {
-                        for (DebuggerAnnotation[] ann : stackAnnotations.values()) {
-                            EditorUtil.removeAnnotation(ann);
+                        Collection<DebuggerAnnotation[]> ansToRemove = Collections.emptySet();
+                        synchronized (rp) {
+                            if (stackAnnotations != null) {
+                                ansToRemove = new HashSet<DebuggerAnnotation[]>(stackAnnotations.values());
+                                stackAnnotations.clear();
+                                stackAnnotations = null;
+                            }
                         }
-                        synchronized(rp) {
-                            stackAnnotations.clear();
-                            stackAnnotations = null;
-                        }
+                        CallStackAnnotation.removeAnnotations(ansToRemove);
                     }
                 });
             }
@@ -76,38 +81,43 @@ public final class CallStackAnnotation {
             if (taskAnnotate == null) {
                 taskAnnotate = rp.post(new Runnable() {
                     public void run() {
-                        CallSite[] callSites;
+                        Collection <DebuggerAnnotation[]> annsToRemove = Collections.emptySet();
                         synchronized (rp) {
-                            callSites = CallStackAnnotation.callSites;
+                            Map<CallSite, DebuggerAnnotation[]> newAnnotations = new HashMap<CallSite, DebuggerAnnotation[]>();
+                            CallSite[] callSites = CallStackAnnotation.callSites;
                             if (stackAnnotations == null) {
                                 stackAnnotations = new HashMap<CallSite, DebuggerAnnotation[]>();
                             }
-                        }
-                        Map<CallSite, DebuggerAnnotation[]> newAnnotations = new HashMap<CallSite, DebuggerAnnotation[]>();
-                        for (int i = 0; i < callSites.length; i++) {
-                            CallSite site = callSites[i];
-                            if (newAnnotations.containsKey(site)) {
-                                continue;
+                            for (int i = 0; i < callSites.length; i++) {
+                                CallSite site = callSites[i];
+                                if (newAnnotations.containsKey(site)) {
+                                    continue;
+                                }
+                                DebuggerAnnotation[] annotation = stackAnnotations.remove(site);
+                                if (annotation == null) {
+                                    // line has not been annotated -> annotate
+                                    annotation = annotateCallSite(site);
+                                }
+                                if (annotation != null) {
+                                    newAnnotations.put(site, annotation);
+                                }
                             }
-                            DebuggerAnnotation[] annotation = stackAnnotations.remove(site);
-                            if (annotation == null) {
-                                // line has not been annotated -> annotate
-                                annotation = annotateCallSite(site);
-                            }
-                            if (annotation != null) {
-                                newAnnotations.put(site, annotation);
-                            }
+                            annsToRemove = new HashSet<DebuggerAnnotation[]>(stackAnnotations.values());
+                            stackAnnotations = newAnnotations;
                         }
                         // delete old anotations
-                        for (DebuggerAnnotation[] ann : stackAnnotations.values()) {
-                            EditorUtil.removeAnnotation(ann);
-                        }
-                        stackAnnotations = newAnnotations;
+                        removeAnnotations(annsToRemove);
                     }
                 });
             }
         }
         taskAnnotate.schedule(500);
     }
-
+    
+    private static void removeAnnotations(Collection<DebuggerAnnotation[]> annsToRemove) {
+        for (DebuggerAnnotation[] ann : annsToRemove) {
+            EditorUtil.removeAnnotation(ann);
+        }
+    }
+    
 }
