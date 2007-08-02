@@ -367,7 +367,8 @@
 
 <!--TODO - add mappings for debug dialog topics-->
 
-
+<!-- Profiling topic -->
+    <mapID target="profiling_javaapp" url="profiling/profile_about.html" />
 
 <!--CSH for the Javadoc Index Search window:-->
       <mapID target="javadoc.search.window" url="javadoc/search_window.html" />

@@ -127,7 +127,7 @@
     </tocitem>
   </tocitem>
   <tocitem text="Profiling Java Applications">
-      <tocitem text="About Profiling Java Applications" target="debug.expression"/>
+      <tocitem text="About Profiling Java Applications" target="profiling_javaapp"/>
   </tocitem>
   <tocitem text="Building Java GUIs">
     <tocitem text="About Java GUIs" target="gui.about"/>
