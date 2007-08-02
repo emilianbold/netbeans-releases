@@ -197,8 +197,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
                 serverTypeChanged();
             }
         });
+       
         
-        domainLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain")); //NOI18N
         domainPathLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_DomainPath"));//NOI18N
         domainPathField = new JTextField();
         domainPathField.setColumns(20);
@@ -209,6 +209,7 @@ public class AddServerPropertiesVisualPanel extends JPanel {
         panel1 = new JPanel();
         
         //Domain combobox
+        domainLabel = new JLabel();
         String serverLocation = JBPluginProperties.getInstance().getInstallLocation();
         domainField = new JComboBox(new DomainComboModel(JBPluginUtils.getRegisteredDomains(serverLocation)));
         domainField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain"));
@@ -220,7 +221,8 @@ public class AddServerPropertiesVisualPanel extends JPanel {
             }
         });
         
-        
+        domainLabel.setLabelFor(domainField);
+        org.openide.awt.Mnemonics.setLocalizedText(domainLabel, org.openide.util.NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Domain")); // NOI18N
         
         hostLabel = new JLabel(NbBundle.getMessage(AddServerPropertiesVisualPanel.class, "LBL_Host"));//NOI18N
         hostField = new JTextField();
