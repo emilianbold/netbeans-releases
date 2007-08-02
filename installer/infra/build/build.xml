@@ -1110,7 +1110,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
+            <!--<component uid="nb-uml" version="6.0.0.0.${build.number}"/>-->
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
@@ -1126,7 +1126,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase" version="6.0.0.0.${build.number}"/>
             <component uid="nb-javaee" version="6.0.0.0.${build.number}"/>
             <component uid="nb-soa" version="6.0.0.0.${build.number}"/>
-            <component uid="nb-uml" version="6.0.0.0.${build.number}"/>
+            <!--<component uid="nb-uml" version="6.0.0.0.${build.number}"/>-->
             <component uid="nb-ruby" version="6.0.0.0.${build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.13.0.0"/>
