@@ -62,7 +62,7 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
             set.setName(SHEETNAME_TEXT_PROPERTIES);
             set.setDisplayName(NbBundle.getBundle(HtmlDataNode.class).getString("PROP_textfileSetName")); // NOI18N
             set.setShortDescription(NbBundle.getBundle(HtmlDataNode.class).getString("HINT_textfileSetName")); // NOI18N
-            set.put(new PropertySupport.ReadWrite(
+            set.put(new PropertySupport.ReadOnly(
                     PROP_FILE_ENCODING,
                     String.class,
                     NbBundle.getBundle(HtmlDataNode.class).getString("PROP_fileEncoding"), //NOI18N
@@ -70,15 +70,6 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
                     ) {
                 public Object getValue() {
                     return ((HtmlDataObject)getDataObject()).getFileEncoding();
-                }
-                public void setValue(Object val) {
-                    String oldVal = (String) getValue();
-                    if (!(val instanceof String)) {
-                        throw new IllegalArgumentException();
-                    }
-                    String enc = ((String) val).trim();
-                    HtmlEditorSupport editor = (HtmlEditorSupport)getDataObject().getCookie(HtmlEditorSupport.class);
-                    editor.setEncodingProperty(oldVal, enc);
                 }
             });
             sheet.put(set);

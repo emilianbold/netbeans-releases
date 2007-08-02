@@ -19,21 +19,28 @@
 
 
 package org.netbeans.modules.html;
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInput;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.html.palette.HTMLPaletteFactory;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -60,14 +67,14 @@ import org.openide.windows.CloneableOpenSupport;
  * Editor support for HTML data objects.
  *
  * @author Radim Kubacki
+ * @author Marek Fukala
+ * 
  * @see org.openide.text.DataEditorSupportH
  */
 public final class HtmlEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie {
     
-    //constants used when finding html document content type
-    private static final String CHARSET_DECL = "CHARSET="; //NOI18N
-    private static final String HEAD_END_TAG_NAME = "</HEAD>"; //NOI18N
-    
+    private static final String DOCUMENT_SAVE_ENCODING = "Document_Save_Encoding";
+    private static final String UTF_8_ENCODING = "UTF-8";
     
     /** SaveCookie for this support instance. The cookie is adding/removing
      * data object's cookie set depending on if modification flag was set/unset.
@@ -76,18 +83,52 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
      * */
     
     private final SaveCookie saveCookie = new SaveCookie() {
+
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws IOException {
-            String encoding = ((HtmlDataObject)HtmlEditorSupport.this.getDataObject()).getFileEncoding();
-            
-            if (canUseEncoding(encoding)) {
-                
-                HtmlEditorSupport.this.saveDocument();
-                HtmlEditorSupport.this.getDataObject().setModified(false);
+            //try to find encoding specification in the editor content
+            String documentContent = getDocumentText();
+            String encoding = HtmlDataObject.findEncoding(documentContent);
+            String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
+            String finalEncoding = null;
+            if (encoding != null) {
+                //found encoding specified in the file content by meta tag
+                if (!isSupportedEncoding(encoding) || !canEncode(documentContent, encoding)) {
+                    //test if the file can be saved by the original encoding or if it needs to be saved using utf-8
+                    finalEncoding = canEncode(documentContent, feqEncoding) ? feqEncoding : UTF_8_ENCODING;
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(HtmlEditorSupport.class, "MSG_unsupportedEncodingSave", new Object[]{getDataObject().getPrimaryFile().getNameExt(), encoding, finalEncoding, finalEncoding.equals(UTF_8_ENCODING) ? "" : " the original"}), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+                    nd.setValue(NotifyDescriptor.NO_OPTION);
+                    DialogDisplayer.getDefault().notify(nd);
+                    if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                        return;
+                    }
+                } else {
+                    finalEncoding = encoding;
+                }
+            } else {
+                //no encoding specified in the file, use FEQ value
+                if (!canEncode(documentContent, feqEncoding)) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(HtmlEditorSupport.class, "MSG_badCharConversionSave", new Object[]{getDataObject().getPrimaryFile().getNameExt(), feqEncoding}), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+                    nd.setValue(NotifyDescriptor.NO_OPTION);
+                    DialogDisplayer.getDefault().notify(nd);
+                    if (nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                        return;
+                    } else {
+                        finalEncoding = UTF_8_ENCODING;
+                    }
+                } else {
+                    finalEncoding = feqEncoding;
+                }
             }
+
+            //FEQ cannot be run in saveFromKitToStream since document is locked for writing,
+            //so setting the FEQ result to document property
+            getDocument().putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
+
+            HtmlEditorSupport.this.saveDocument();
+            HtmlEditorSupport.this.getDataObject().setModified(false);
         }
     };
-    
     
     /** Constructor. */
     HtmlEditorSupport(HtmlDataObject obj) {
@@ -96,15 +137,46 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         setMIMEType("text/html"); // NOI18N
     }
     
+    @Override
+    public void open() {
+        String encoding = ((HtmlDataObject)getDataObject()).getFileEncoding();
+        String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
+        if (encoding != null && !isSupportedEncoding(encoding)) {
+//            if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
+//                feqEncoding = UTF_8_ENCODING;
+//            }
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
+                NbBundle.getMessage (HtmlEditorSupport.class, "MSG_unsupportedEncodingLoad", //NOI18N
+                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
+                                    encoding,
+                                    feqEncoding} ), 
+                NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+            if(nd.getValue() != NotifyDescriptor.YES_OPTION) {
+                return; // do not open the file
+            }
+        }
+        
+//        if(!canDecodeFile(getDataObject().getPrimaryFile(), feqEncoding)) {
+//            feqEncoding = UTF_8_ENCODING;
+//        }
+        
+        super.open();
+    }
+    
     /**
-     * Adds notification to the data object to allow it to retrieve the correct encoding information
+     * @inheritDoc
      */
     @Override
-    protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
-        HtmlDataObject hdo = (HtmlDataObject)getDataObject();
-        hdo.useEncodingFromFile();
-        super.loadFromStreamToKit(doc, stream, kit);
-        hdo.useEncodingFromEditor();
+    protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
+        final Charset c = Charset.forName((String)doc.getProperty(DOCUMENT_SAVE_ENCODING));
+        final Writer w = new OutputStreamWriter (stream, c);
+        try {
+            kit.write(w, doc, 0, doc.getLength());
+        } finally {
+            w.close();
+        }
     }
     
     /**
@@ -165,60 +237,31 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
         return text;
     }
     
-    String getHtmlEncoding() {
-        String docText = getDocumentText();
-        return HtmlEditorSupport.findEncoding(docText);
+    private boolean canDecodeFile(FileObject fo, String encoding) {
+        CharsetDecoder decoder = Charset.forName(encoding).newDecoder().onUnmappableCharacter(CodingErrorAction.REPORT).onMalformedInput(CodingErrorAction.REPORT);
+        try {
+            BufferedInputStream bis = new BufferedInputStream(fo.getInputStream());
+            //I probably have to create such big buffer since I am not sure
+            //how to cut the file to smaller byte arrays so it cannot happen
+            //that an encoded character is divided by the arrays border.
+            //In such case it might happen that the method woult return
+            //incorrect value.
+            byte[] buffer = new byte[(int) fo.getSize()];
+            bis.read(buffer);
+            bis.close();
+            decoder.decode(ByteBuffer.wrap(buffer));
+            return true;
+        } catch (CharacterCodingException ex) {
+            //return false
+        } catch (IOException ioe) {
+            Logger.getLogger("global").log(Level.WARNING, "Error during charset verification", ioe);
+        }
+        return false;
     }
     
-    void setEncodingProperty(String oldEncoding, String encoding) {
-        boolean storeEncoding = true;
-        // epmty property value means "use the encoding from the owning project"
-        if (encoding == null || encoding.length()==0) {
-            String defaultEnc = ((HtmlDataObject) getDataObject()).getDefaultFileEncoding();
-            storeEncoding = canUseEncoding(defaultEnc);
-            encoding = null;
-        } else {
-            storeEncoding = canUseEncoding(encoding);
-        }
-        if (storeEncoding) { // encoding conversion is either safe or the user decided to go for unsafe conversion
-            // only if the encoding has been actually changed
-            if (((encoding == null && oldEncoding != null) ||  
-                    (encoding != null && oldEncoding == null)) || 
-                    !encoding.equals(oldEncoding)) {
-                ((HtmlDataObject) getDataObject()).setFileEncoding(encoding);
-                try {
-                    // do litle magic here to force the new encoding to take effect
-                    notifyModified();
-                    saveDocument();
-                    reloadDocument();
-                } catch (IOException e) {
-                    // in case of exception revert the encoding
-                    notifyUnmodified();
-                    ((HtmlDataObject) getDataObject()).setFileEncoding(oldEncoding);
-                }
-            }
-        }
-    }
-    
-    boolean canUseEncoding(String encoding) {
-        return canUseEncoding(getDocumentText(), encoding);
-    }
-    
-    private boolean canUseEncoding(String docText, String encoding) {
-        if (!isSupportedEncoding(encoding)) return false;
-        java.nio.charset.CharsetEncoder coder = java.nio.charset.Charset.forName(encoding).newEncoder();
-        if (!coder.canEncode(docText)) {
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                    NbBundle.getMessage(HtmlEditorSupport.class, "MSG_BadCharConversion", //NOI18N
-                    new Object [] { getDataObject().getPrimaryFile().getNameExt(),
-                    encoding}),
-                    NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.WARNING_MESSAGE);
-            nd.setValue(NotifyDescriptor.NO_OPTION);
-            DialogDisplayer.getDefault().notify(nd);
-            if(nd.getValue() != NotifyDescriptor.YES_OPTION) return false;
-        }
-        return true;
+    private boolean canEncode(String docText, String encoding) {
+        CharsetEncoder encoder = Charset.forName(encoding).newEncoder();
+        return encoder.canEncode(docText);
     }
     
     private boolean isSupportedEncoding(String encoding){
@@ -229,68 +272,6 @@ public final class HtmlEditorSupport extends DataEditorSupport implements OpenCo
             supported = false;
         }
         return supported;
-    }
-    
-    /** Tries to guess the mime type from given input stream. Tries to find
-     *   <em>&lt;meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"&gt;</em>
-     * @param txt the string to search in (should be in upper case)
-     * @return the encoding or null if no has been found
-     */
-    static String findEncoding(String txt) {
-        int[] offsets = findEncodingOffsets(txt);
-        if (offsets.length == 3) {
-            String encoding = txt.substring(offsets[0] + offsets[1], offsets[0] + offsets[2]);
-            return encoding;
-        }
-        return null;
-    }
-    
-    private static int[] findEncodingOffsets(String txt) {
-        int[] rslt = new int[0];
-        int headEndOffset = txt.indexOf(HEAD_END_TAG_NAME); // NOI18N
-        headEndOffset = headEndOffset == -1 ? txt.indexOf(HEAD_END_TAG_NAME.toLowerCase()) : headEndOffset;
-        
-        if (headEndOffset == -1){
-            return rslt;
-        }
-        
-        TokenHierarchy hi = TokenHierarchy.create(txt, HTMLTokenId.language());
-        TokenSequence ts = hi.tokenSequence();
-        ts.moveStart();
-        while(ts.moveNext()) {
-            Token token = ts.token();
-            
-            //test we do not overlap </head>
-            if(token.offset(hi) >= headEndOffset) {
-                break;
-            }
-            
-            if(token.id() == HTMLTokenId.VALUE) {
-                String tokenImage = token.text().toString();
-                int charsetOffset = tokenImage.indexOf(CHARSET_DECL);
-                charsetOffset = charsetOffset == -1 ? tokenImage.indexOf(CHARSET_DECL.toLowerCase()) : charsetOffset;
-                
-                int charsetEndOffset = charsetOffset + CHARSET_DECL.length();
-                if (charsetOffset != -1){
-                    int endOffset = tokenImage.indexOf('"', charsetEndOffset);
-                    
-                    if (endOffset == -1){
-                        endOffset = tokenImage.indexOf('\'', charsetEndOffset);
-                    }
-                    
-                    if (endOffset == -1){
-                        endOffset = tokenImage.indexOf(';', charsetEndOffset);
-                    }
-                    
-                    if (endOffset == -1){
-                        return rslt;
-                    }
-                    
-                    rslt =  new int[]{token.offset(hi), charsetEndOffset, endOffset};
-                }
-            }
-        }
-        return rslt;
     }
     
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */

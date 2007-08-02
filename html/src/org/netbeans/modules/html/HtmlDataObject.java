@@ -27,6 +27,10 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -47,13 +51,17 @@ import org.openide.util.Lookup;
 /** Object that represents one html file.
  *
  * @author Ian Formanek
+ * @author Marek Fukala
  */
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
     public static final String PROP_ENCODING = "Content-Encoding"; // NOI18N
     public static final String DEFAULT_ENCODING = new InputStreamReader(System.in).getEncoding();
     static final long serialVersionUID =8354927561693097159L;
     
-    transient volatile private boolean useEditorForEncoding = true;
+    //constants used when finding html document content type
+    private static final String CHARSET_DECL = "CHARSET="; //NOI18N
+    private static final String HEAD_END_TAG_NAME = "</HEAD>"; //NOI18N
+    
     
     /** New instance.
      * @param pf primary file object for this data object
@@ -71,13 +79,17 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                 es.saveAs( folder, fileName );
             }
         });
-                
+
         FileEncodingQueryImplementation feq = new FileEncodingQueryImplementation() {
             public Charset getEncoding(FileObject file) {
                 assert file != null;
                 assert file.equals(getPrimaryFile());
                 
                 String charsetName = getFileEncoding();
+                if(charsetName == null) {
+                    return null; //nothing found in the document
+                }
+                
                 try {
                     return Charset.forName(charsetName);
                 } catch(IllegalCharsetNameException ichse) {
@@ -94,7 +106,6 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             }
         };
         set.assign(FileEncodingQueryImplementation.class, feq);
-        resolveFileEncoding();
     }
     
     @Override
@@ -125,67 +136,8 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         return getCookieSet();
     }
     
-    String getDefaultFileEncoding() {
-        Project owner = FileOwnerQuery.getOwner(getPrimaryFile());
-        if (owner != null) { // try to get encoding from the owning project
-            FileEncodingQueryImplementation feq = owner.getLookup().lookup(FileEncodingQueryImplementation.class);
-            if (feq != null) { // don't try retrieving encoding from a project not supporting FileEncodingQuery
-                Charset charset = feq.getEncoding(getPrimaryFile());
-                if (charset != null) {
-                    return charset.name();
-                }
-            }
-        }
-        return DEFAULT_ENCODING;
-    }
-    
+    /** Checks the file for UTF-16 marks and calls findEncoding with properly loaded document content then. */
     String getFileEncoding() {
-        
-        String encoding = null;
-        if (useEditorForEncoding) {
-            HtmlEditorSupport editor = (HtmlEditorSupport)getCookie(HtmlEditorSupport.class);
-            encoding = editor.getHtmlEncoding();
-        } else {
-            encoding = resolveFileEncoding();
-        }
-        if (encoding == null) { // no encoding specified inside the HTML code
-            encoding = (String)getPrimaryFile().getAttribute(PROP_ENCODING); // try to get the encoding from the file property
-        }
-        
-        if (encoding == null) { // no encoding in the encoding file property either
-            encoding = getDefaultFileEncoding(); // get the default encoding from the file's project
-        }
-        return encoding;
-    }
-    
-    void setFileEncoding(String encoding) {
-        try {
-            getPrimaryFile().setAttribute(PROP_ENCODING, encoding);
-        } catch(IOException e) {
-            Logger.getLogger("global").log(Level.WARNING, null, e);
-        }
-    }
-    
-    void useEncodingFromFile() {
-        useEditorForEncoding = false;
-    }
-    
-    void useEncodingFromEditor() {
-        useEditorForEncoding = true;
-    }
-    
-    private boolean isSupportedEncoding(String encoding){
-        boolean supported;
-        try{
-            supported = java.nio.charset.Charset.isSupported(encoding);
-        } catch (java.nio.charset.IllegalCharsetNameException e){
-            supported = false;
-        }
-        
-        return supported;
-    }
-    
-    private String resolveFileEncoding() {
         String encoding = null;
         //detect encoding from input stream
         InputStream is = null;
@@ -202,7 +154,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                 }
             }
             String txt = new String(arr, 0, len, encoding != null ? encoding : DEFAULT_ENCODING).toUpperCase();
-            encoding = HtmlEditorSupport.findEncoding(txt);
+            encoding = findEncoding(txt);
         } catch (IOException ex) {
             Logger.getLogger("global").log(Level.WARNING, null, ex);
         } finally {
@@ -218,6 +170,68 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             encoding.trim();
         }
         return encoding;
+    }
+    
+    /** Tries to guess the mime type from given input stream. Tries to find
+     *   <em>&lt;meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"&gt;</em>
+     * @param txt the string to search in (should be in upper case)
+     * @return the encoding or null if no has been found
+     */
+    static String findEncoding(String txt) {
+        int[] offsets = findEncodingOffsets(txt);
+        if (offsets.length == 3) {
+            String encoding = txt.substring(offsets[0] + offsets[1], offsets[0] + offsets[2]);
+            return encoding;
+        }
+        return null;
+    }
+    
+    private static int[] findEncodingOffsets(String txt) {
+        int[] rslt = new int[0];
+        int headEndOffset = txt.indexOf(HEAD_END_TAG_NAME); // NOI18N
+        headEndOffset = headEndOffset == -1 ? txt.indexOf(HEAD_END_TAG_NAME.toLowerCase()) : headEndOffset;
+        
+        if (headEndOffset == -1){
+            return rslt;
+        }
+        
+        TokenHierarchy hi = TokenHierarchy.create(txt, HTMLTokenId.language());
+        TokenSequence ts = hi.tokenSequence();
+        ts.moveStart();
+        while(ts.moveNext()) {
+            Token token = ts.token();
+            
+            //test we do not overlap </head>
+            if(token.offset(hi) >= headEndOffset) {
+                break;
+            }
+            
+            if(token.id() == HTMLTokenId.VALUE) {
+                String tokenImage = token.text().toString();
+                int charsetOffset = tokenImage.indexOf(CHARSET_DECL);
+                charsetOffset = charsetOffset == -1 ? tokenImage.indexOf(CHARSET_DECL.toLowerCase()) : charsetOffset;
+                
+                int charsetEndOffset = charsetOffset + CHARSET_DECL.length();
+                if (charsetOffset != -1){
+                    int endOffset = tokenImage.indexOf('"', charsetEndOffset);
+                    
+                    if (endOffset == -1){
+                        endOffset = tokenImage.indexOf('\'', charsetEndOffset);
+                    }
+                    
+                    if (endOffset == -1){
+                        endOffset = tokenImage.indexOf(';', charsetEndOffset);
+                    }
+                    
+                    if (endOffset == -1){
+                        return rslt;
+                    }
+                    
+                    rslt =  new int[]{token.offset(hi), charsetEndOffset, endOffset};
+                }
+            }
+        }
+        return rslt;
     }
     
     static final class ViewSupport implements ViewCookie {
