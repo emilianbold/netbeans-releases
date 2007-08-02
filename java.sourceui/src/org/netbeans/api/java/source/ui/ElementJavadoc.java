@@ -208,7 +208,7 @@ public class ElementJavadoc {
         StringBuilder sb = new StringBuilder();
         if (doc != null) {
             if (doc instanceof ProgramElementDoc) {
-                sb.append(getContainingClassOrPacakgeHeader(eu, (ProgramElementDoc)doc));
+                sb.append(getContainingClassOrPackageHeader(eu, (ProgramElementDoc)doc));
             }
             if (doc.isMethod() || doc.isConstructor() || doc.isAnnotationTypeElement()) {
                 sb.append(getMethodHeader(eu, (ExecutableMemberDoc)doc));
@@ -237,7 +237,7 @@ public class ElementJavadoc {
         return sb.toString();
     }
     
-    private CharSequence getContainingClassOrPacakgeHeader(ElementUtilities eu, ProgramElementDoc peDoc) {
+    private CharSequence getContainingClassOrPackageHeader(ElementUtilities eu, ProgramElementDoc peDoc) {
         StringBuilder sb = new StringBuilder();
         ClassDoc cls = peDoc.containingClass();
         if (cls != null) {
@@ -251,7 +251,7 @@ public class ElementJavadoc {
                     case PACKAGE:
                         if (cls.containingClass() != null || cls.containingPackage() != null) {
                             sb.append("<font size='+0'><b>"); //NOI18N
-                            createLink(sb, e, cls.qualifiedName());
+                            createLink(sb, e, makeNameLineBreakable(cls.qualifiedName()));
                             sb.append("</b></font>"); //NOI18N)
                         }
                 }
@@ -260,16 +260,19 @@ public class ElementJavadoc {
             PackageDoc pkg = peDoc.containingPackage();
             if (pkg != null) {
                 sb.append("<font size='+0'><b>"); //NOI18N
-                createLink(sb, eu.elementFor(pkg), pkg.name());
+                createLink(sb, eu.elementFor(pkg), makeNameLineBreakable(pkg.name()));
                 sb.append("</b></font>"); //NOI18N)
             }
         }
         return sb;
     }
+    private String makeNameLineBreakable(String name) {
+        return name.replace(".", /* ZERO WIDTH SPACE */".&#x200B;");
+    }
     
     private CharSequence getMethodHeader(ElementUtilities eu, ExecutableMemberDoc mdoc) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<pre>"); //NOI18N
+        sb.append("<p><tt>"); //NOI18N
         sb.append(getAnnotations(eu, mdoc));
         int len = sb.length();
         sb.append(Modifier.toString(mdoc.modifierSpecifier() &~ Modifier.NATIVE));
@@ -330,13 +333,13 @@ public class ElementJavadoc {
                     sb.append(", "); //NOI18N
             }
         }
-        sb.append("</pre>"); //NOI18N
+        sb.append("</tt></p>"); //NOI18N
         return sb;
     }
     
     private CharSequence getFieldHeader(ElementUtilities eu, FieldDoc fdoc) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<pre>"); //NOI18N
+        sb.append("<p><tt>"); //NOI18N
         sb.append(getAnnotations(eu, fdoc));
         int len = sb.length();
         sb.append(fdoc.modifiers());
@@ -345,13 +348,13 @@ public class ElementJavadoc {
             sb.append(' '); //NOI18N
         appendType(eu, sb, fdoc.type(), false, false);
         sb.append(" <b>").append(fdoc.name()).append("</b>"); //NOI18N
-        sb.append("</pre>"); //NOI18N
+        sb.append("</tt></p>"); //NOI18N
         return sb;
     }
     
     private CharSequence getClassHeader(ElementUtilities eu, ClassDoc cdoc) {
         StringBuilder sb = new StringBuilder();
-        sb.append("<pre>"); //NOI18N
+        sb.append("<p><tt>"); //NOI18N
         sb.append(getAnnotations(eu, cdoc));
         int mods = cdoc.modifierSpecifier() & ~Modifier.INTERFACE;
         if (cdoc.isEnum())
@@ -398,7 +401,7 @@ public class ElementJavadoc {
                 }
             }
         }
-        sb.append("</pre>"); //NOI18N
+        sb.append("</tt></p>"); //NOI18N
         return sb;
     }
     
