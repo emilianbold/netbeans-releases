@@ -37,6 +37,7 @@ import org.netbeans.modules.web.core.syntax.deprecated.ELTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspDirectiveTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspMultiTokenContext;
 import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
+import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
@@ -647,7 +648,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     public PageInfo.BeanData[] getBeanData() {
         JspParserAPI.ParseResult result = getParseResult();
         if (result != null) {
-            return result.getPageInfo().getBeans();
+            PageInfo pageInfo = result.getPageInfo();
+            //pageInfo can be null in some cases when the parser cannot parse
+            //the webmodule or the page itself
+            if(pageInfo != null) {
+                return pageInfo.getBeans();
+            }
         }
         /*TagLibParseSupport support = (dobj == null) ?
             null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
