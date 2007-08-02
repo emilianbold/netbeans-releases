@@ -20,11 +20,8 @@
 package org.netbeans.modules.j2ee.dd.impl.common;
 
 import java.io.IOException;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 import org.xml.sax.*;
 
 
@@ -43,52 +40,43 @@ public class ParseUtils {
      */
     public static String getVersion(java.io.InputStream is, org.xml.sax.helpers.DefaultHandler versionHandler,
         EntityResolver ddResolver) throws java.io.IOException, SAXException {
-        javax.xml.parsers.SAXParserFactory fact = javax.xml.parsers.SAXParserFactory.newInstance();
-        fact.setValidating(false);
+
+        XMLReader reader = XMLUtil.createXMLReader(false);
+        reader.setContentHandler(versionHandler);
+        reader.setEntityResolver(ddResolver);
         try {
-            javax.xml.parsers.SAXParser parser = fact.newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            reader.setContentHandler(versionHandler);
-            reader.setEntityResolver(ddResolver);
-            try {
-                reader.parse(new InputSource(is));
-            } catch (SAXException ex) {
-                is.close();
-                String message = ex.getMessage();
-                if (message!=null && message.startsWith(EXCEPTION_PREFIX))
-                    return message.substring(EXCEPTION_PREFIX.length());
-                else throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_cannotParse"),ex);
-            }
+            reader.parse(new InputSource(is));
+        } catch (SAXException ex) {
             is.close();
-            throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_cannotFindRoot"));
-        } catch(javax.xml.parsers.ParserConfigurationException ex) {
-            throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_parserProblem"),ex);
+            String message = ex.getMessage();
+            if (message != null && message.startsWith(EXCEPTION_PREFIX)) {
+                return message.substring(EXCEPTION_PREFIX.length());
+            } else {
+                throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_cannotParse"), ex);
+            }
         }
+        is.close();
+        throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_cannotFindRoot"));
     }
     
     /** Parsing just for detecting the version  SAX parser used
     */
-    public static String getVersion(InputSource is, org.xml.sax.helpers.DefaultHandler versionHandler,
-        EntityResolver ddResolver) throws IOException, SAXException {
-        javax.xml.parsers.SAXParserFactory fact = javax.xml.parsers.SAXParserFactory.newInstance();
-        fact.setValidating(false);
+    public static String getVersion(InputSource is, org.xml.sax.helpers.DefaultHandler versionHandler, 
+            EntityResolver ddResolver) throws IOException, SAXException {
+        XMLReader reader = XMLUtil.createXMLReader(false);
+        reader.setContentHandler(versionHandler);
+        reader.setEntityResolver(ddResolver);
         try {
-            javax.xml.parsers.SAXParser parser = fact.newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            reader.setContentHandler(versionHandler);
-            reader.setEntityResolver(ddResolver);
-            try {
-                reader.parse(is);
-            } catch (SAXException ex) {
-                String message = ex.getMessage();
-                if (message!=null && message.startsWith(EXCEPTION_PREFIX))
-                    return message.substring(EXCEPTION_PREFIX.length());
-                else throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_cannotParse"),ex);
+            reader.parse(is);
+        } catch (SAXException ex) {
+            String message = ex.getMessage();
+            if (message != null && message.startsWith(EXCEPTION_PREFIX)) {
+                return message.substring(EXCEPTION_PREFIX.length());
+            } else {
+                throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_cannotParse"), ex);
             }
-            throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_cannotFindRoot"));
-        } catch(javax.xml.parsers.ParserConfigurationException ex) {
-            throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_parserProblem"),ex);
         }
+        throw new SAXException(NbBundle.getMessage(ParseUtils.class, "MSG_cannotFindRoot"));
     }
     
     private static class ErrorHandler implements org.xml.sax.ErrorHandler {
@@ -126,8 +114,7 @@ public class ParseUtils {
             throws org.xml.sax.SAXException, java.io.IOException {
         ErrorHandler errorHandler = new ErrorHandler();
         try {
-            SAXParser parser = createSAXParserFactory().newSAXParser();
-            XMLReader reader = parser.getXMLReader();
+            XMLReader reader = XMLUtil.createXMLReader();
             reader.setErrorHandler(errorHandler);
             reader.setEntityResolver(ddResolver);
             reader.setFeature("http://apache.org/xml/features/validation/schema", true); // NOI18N
@@ -136,12 +123,6 @@ public class ParseUtils {
             reader.parse(is);
             SAXParseException error = errorHandler.getError();
             if (error!=null) return error;
-        } catch (ParserConfigurationException ex) {
-            SAXException sax = new SAXException(ex.getMessage(), ex);
-            sax.initCause(ex);
-            throw sax;
-        } catch (SAXException ex) {
-            throw ex;
         } catch (IllegalArgumentException ex) {
             // yes, this may happen, see issue #71738
             SAXException sax = new SAXException(ex.getMessage(), ex);
@@ -150,23 +131,5 @@ public class ParseUtils {
         }
         return null;
     }
-    
-    /** Method that retrieves SAXParserFactory to get the parser prepared to validate against XML schema
-     */
-    private static SAXParserFactory createSAXParserFactory() throws ParserConfigurationException {
-        try {
-            SAXParserFactory fact = SAXParserFactory.newInstance();
-            if (fact!=null) {
-                try {
-                    fact.getClass().getMethod("getSchema", new Class[]{}); //NOI18N
-                    return fact;
-                } catch (NoSuchMethodException ex) {}
-            }
-            return (SAXParserFactory) Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance(); // NOI18N
-        } catch (Exception ex) {
-            throw new ParserConfigurationException(ex.getMessage());
-        }
-    }
-    
   
 }
