@@ -268,7 +268,16 @@ implements DocumentListener, KeyListener {
         
         String completeInsertString = getInsertText();
 
-        if (doc instanceof BaseDocument) {
+        BaseDocument bdoc = (doc instanceof BaseDocument)
+                ? (BaseDocument)doc
+                : null;
+        // Need to lock formatter first because CT's multiline text will be reformatted
+        Formatter formatter = null;
+        if (bdoc != null) {
+             formatter = bdoc.getFormatter();
+            if (formatter != null) {
+                formatter.reformatLock();
+            }
             ((BaseDocument)doc).atomicLock();
         }
         try {
@@ -314,19 +323,18 @@ implements DocumentListener, KeyListener {
             }
             
             if (parametrizedText.indexOf('\n') != -1 && doc instanceof BaseDocument) {
-                BaseDocument bdoc = (BaseDocument)doc;
-                Formatter formatter = bdoc.getFormatter();
-                if (formatter != null) {
-                    formatter.reformat(bdoc, insertOffset,
-                            insertOffset + completeInsertString.length());
-                }
+                formatter.reformat(bdoc, insertOffset,
+                        insertOffset + completeInsertString.length());
             }
             
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         } finally {
-            if (doc instanceof BaseDocument) {
-                ((BaseDocument)doc).atomicUnlock();
+            if (bdoc != null) {
+                bdoc.atomicUnlock();
+                if (formatter != null) {
+                    formatter.reformatUnlock();
+                }
             }
             
             markInserted();
