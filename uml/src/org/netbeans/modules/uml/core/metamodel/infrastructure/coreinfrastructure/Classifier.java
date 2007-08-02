@@ -1273,7 +1273,25 @@ public class Classifier extends Namespace implements IClassifier,
 		{
 			ensureStereotype( "interface" );
 		}
+                // 86370, attributes and operations do not make sense to actor type
+                else if (typeName.equals("Actor"))
+                {
+                    deleteAttributesAndOperations();
+                }
 	}
+        
+        
+        private void deleteAttributesAndOperations()
+        {
+            for (IOperation op : getOperations())
+            {
+                op.delete();
+            }
+            for (IAttribute attr : getAttributes())
+            {
+                attr.delete();
+            }
+        }
 
 	/**
 	 *
