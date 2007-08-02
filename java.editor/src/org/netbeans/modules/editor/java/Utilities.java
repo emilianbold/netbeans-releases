@@ -135,6 +135,8 @@ public class Utilities {
             return false;        
         if (!ts.moveNext() && !ts.movePrevious())
             return true;
+        if (offset == ts.offset())
+            return true;
         switch(ts.token().id()) {
             case DOUBLE_LITERAL:
                 if (ts.token().text().charAt(0) == '.')
