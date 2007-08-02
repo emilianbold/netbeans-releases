@@ -60,8 +60,6 @@ import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFactory;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
-import org.netbeans.modules.websvc.rest.model.spi.RestServicesMetadataModelFactory;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 
 /** A web module implementation on top of project.
@@ -87,8 +85,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
     private MetadataModel<WebAppMetadata> webAppMetadataModel;
     private MetadataModel<WebAppMetadata> webAppAnnMetadataModel;
     private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
-    private MetadataModel<RestServicesMetadata> restServicesMetadataModel;
-    
+  
     private PropertyChangeSupport propertyChangeSupport;
     private boolean webAppPropChangeLInitialized;
     
@@ -415,19 +412,7 @@ public final class ProjectWebModule extends J2eeModuleProvider
         }
         return webservicesMetadataModel;
     }
-    
-      public synchronized MetadataModel<RestServicesMetadata> getRestServicesMetadataModel() {
-        if (restServicesMetadataModel == null) {
-            MetadataUnit metadataUnit = MetadataUnit.create(
-                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
-                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
-                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                null);
-            restServicesMetadataModel = RestServicesMetadataModelFactory.createMetadataModel(metadataUnit);
-        }
-        return restServicesMetadataModel;
-    }
-      
+   
     public void uncacheDescriptors() {
         // this.getConfigSupport().resetStorage();
         // reset timeout when closing the project
