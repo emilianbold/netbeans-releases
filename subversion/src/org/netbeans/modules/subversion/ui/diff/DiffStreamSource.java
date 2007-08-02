@@ -100,7 +100,7 @@ public class DiffStreamSource extends StreamSource {
         } else {
             if (revision == null || remoteFile == null) return null;
             if (!mimeType.startsWith("text/")) {
-                return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle())); // NOI18N
+                return null;
             } else {
                 return Utils.createReader(remoteFile);
             }

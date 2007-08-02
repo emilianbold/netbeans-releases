@@ -470,7 +470,7 @@ public class PatchAction extends NodeAction {
             FileObject backup= backups.get(targetFileObject);
 
             // delete files that become empty and they have a backup file
-            if (targetFileObject.getSize() == 0) {
+            if (targetFileObject != null && targetFileObject.getSize() == 0) {
                 if (backup != null && backup.isValid() && backup.getSize() > 0) {
                     try {
                         targetFileObject.delete();

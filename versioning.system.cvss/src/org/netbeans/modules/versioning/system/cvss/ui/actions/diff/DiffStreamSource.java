@@ -91,13 +91,9 @@ public class DiffStreamSource extends StreamSource {
 
     public synchronized Reader createReader() throws IOException {
         init(group);
-        if (revision == null || remoteFile == null) return null;
-        if (binary) {
-            return new StringReader(NbBundle.getMessage(DiffStreamSource.class, "BK5001", getTitle()));
-        } else {
-            FileObject remoteFo = FileUtil.toFileObject(remoteFile);
-            return Utils.createReader(remoteFo);
-        }
+        if (revision == null || remoteFile == null || binary) return null;
+        FileObject remoteFo = FileUtil.toFileObject(remoteFile);
+        return Utils.createReader(remoteFo);
     }
 
     public Writer createWriter(Difference[] conflicts) throws IOException {

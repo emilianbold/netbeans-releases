@@ -19,12 +19,14 @@
 
 package org.netbeans.modules.proxy;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * Bas64 encode utility class.
  *
  * @author Maros Sandor
  */
-class Base64Encoder {
+public class Base64Encoder {
 
     private static final char [] characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toCharArray();
 
@@ -32,11 +34,16 @@ class Base64Encoder {
     }
 
     public static String encode(byte [] data) {
+        return encode(data, false);
+    }
+    
+    public static String encode(byte [] data, boolean useNewlines) {
         int length = data.length;
         StringBuffer sb = new StringBuffer(data.length * 3 / 2);
 
         int end = length - 3;
         int i = 0;
+        int lineCount = 0;
 
         while (i <= end) {
             int d = ((((int) data[i]) & 0xFF) << 16) | ((((int) data[i + 1]) & 0xFF) << 8) | (((int) data[i + 2]) & 0xFF);
@@ -45,6 +52,11 @@ class Base64Encoder {
             sb.append(characters[(d >> 6) & 0x3F]);
             sb.append(characters[d & 0x3F]);
             i += 3;
+            
+            if (useNewlines && lineCount++ >= 14) {
+                lineCount = 0;
+                sb.append(System.getProperty("line.separator"));
+            }
         }
 
         if (i == length - 2) {
@@ -61,4 +73,5 @@ class Base64Encoder {
         }
         return sb.toString();
     }
+    
 }

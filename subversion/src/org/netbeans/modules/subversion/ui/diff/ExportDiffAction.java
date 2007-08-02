@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.awt.*;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.proxy.Base64Encoder;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
@@ -338,22 +339,28 @@ public class ExportDiffAction extends ContextAction {
         File file = setup.getBaseFile();
         String name = file.getAbsolutePath();
         try {
-            r1 = setup.getFirstSource().createReader();
-            if (r1 == null) r1 = new StringReader(""); // NOI18N
-            r2 = setup.getSecondSource().createReader();
-            if (r2 == null) r2 = new StringReader(""); // NOI18N
-            TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
-                name + " " + setup.getFirstSource().getTitle(), // NOI18N
-                name + " " + setup.getSecondSource().getTitle(),  // NOI18N
-                null,
-                null,
-                r1,
-                r2,
-                differences
-            );
-            info.setContextMode(true, 3);
-            String diffText = TextDiffVisualizer.differenceToUnifiedDiffText(info);
-            InputStream is = new ByteArrayInputStream(diffText.getBytes("utf8"));  // NOI18N                
+            InputStream is;
+            if (!Subversion.getInstance().getMimeType(file).startsWith("text/") && differences.length == 0) {
+                // assume the file is binary 
+                is = new ByteArrayInputStream(exportBinaryFile(file).getBytes("utf8"));  // NOI18N
+            } else {
+                r1 = setup.getFirstSource().createReader();
+                if (r1 == null) r1 = new StringReader(""); // NOI18N
+                r2 = setup.getSecondSource().createReader();
+                if (r2 == null) r2 = new StringReader(""); // NOI18N
+                TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
+                    name + " " + setup.getFirstSource().getTitle(), // NOI18N
+                    name + " " + setup.getSecondSource().getTitle(),  // NOI18N
+                    null,
+                    null,
+                    r1,
+                    r2,
+                    differences
+                );
+                info.setContextMode(true, 3);
+                String diffText = TextDiffVisualizer.differenceToUnifiedDiffText(info);
+                is = new ByteArrayInputStream(diffText.getBytes("utf8"));  // NOI18N
+            }
             while(true) {
                 int i = is.read();
                 if (i == -1) break;
@@ -393,4 +400,16 @@ public class ExportDiffAction extends ContextAction {
         return files.toArray(new File[files.size()]);
     }
         
+    private String exportBinaryFile(File file) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        StringBuilder sb = new StringBuilder((int) file.length());
+        if (file.canRead()) {
+            Utils.copyStreamsCloseAll(baos, new FileInputStream(file));
+        }
+        sb.append("MIME: application/octet-stream; encoding: Base64; length: " + (file.canRead() ? file.length() : -1)); // NOI18N
+        sb.append(System.getProperty("line.separator")); // NOI18N
+        sb.append(Base64Encoder.encode(baos.toByteArray(), true));
+        sb.append(System.getProperty("line.separator")); // NOI18N
+        return sb.toString();
+    }
 }

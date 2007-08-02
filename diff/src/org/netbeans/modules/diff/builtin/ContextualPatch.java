@@ -40,6 +40,7 @@ public final class ContextualPatch {
     private final Pattern normalChangeRangePattern = Pattern.compile("(\\d+),(\\d+)c(\\d+),(\\d+)");
     private final Pattern normalAddRangePattern = Pattern.compile("(\\d+)a(\\d+),(\\d+)");
     private final Pattern normalDeleteRangePattern = Pattern.compile("(\\d+),(\\d+)d(\\d+)");
+    private final Pattern binaryHeaderPattern = Pattern.compile("MIME: (.*?); encoding: (.*?); length: (-?\\d+?)"); 
     
     private final File patchFile;
     private final File context;
@@ -120,14 +121,16 @@ public final class ContextualPatch {
         lastPatchedLine = 1;
         List<String> target;
         patch.targetFile = computeTargetFile(patch, context);
-        if (patch.targetFile.exists()) {
+        if (patch.targetFile.exists() && !patch.binary) {
             target = readFile(patch.targetFile);
             if (patchCreatesNewFileThatAlreadyExists(patch, target)) return;
         } else {
             target = new ArrayList<String>();
         }
-        for (Hunk hunk : patch.hunks) {
-            applyHunk(target, hunk);
+        if (!patch.binary) {
+            for (Hunk hunk : patch.hunks) {
+                applyHunk(target, hunk);
+            }
         }
         if (!dryRun) {
             backup(patch.targetFile);
@@ -165,20 +168,29 @@ public final class ContextualPatch {
         reader.close();
     }
 
-    private void writeFile(SinglePatch patch, List<String> lines) throws FileNotFoundException, UnsupportedEncodingException {
+    private void writeFile(SinglePatch patch, List<String> lines) throws IOException {
         patch.targetFile.getParentFile().mkdirs();
-        PrintWriter w = new PrintWriter(patch.targetFile, getEncoding(patch.targetFile).name());
-        try {
-            if (lines.size() == 0) return;
-            for (String line : lines.subList(0, lines.size() - 1)) {
-                w.println(line);
+        if (patch.binary) {
+            if (patch.hunks.length == 0) {
+                patch.targetFile.delete();
+            } else {
+                byte [] content = Base64.decode(patch.hunks[0].lines);
+                copyStreamsCloseAll(new FileOutputStream(patch.targetFile), new ByteArrayInputStream(content));
             }
-            w.print(lines.get(lines.size() - 1));
-            if (!patch.noEndingNewline) {
-                w.println();
+        } else {
+            PrintWriter w = new PrintWriter(patch.targetFile, getEncoding(patch.targetFile).name());
+            try {
+                if (lines.size() == 0) return;
+                for (String line : lines.subList(0, lines.size() - 1)) {
+                    w.println(line);
+                }
+                w.print(lines.get(lines.size() - 1));
+                if (!patch.noEndingNewline) {
+                    w.println();
+                }
+            } finally {
+                w.close();
             }
-        } finally {
-            w.close();
         }
     }
 
@@ -286,6 +298,10 @@ public final class ContextualPatch {
             
             if (line.startsWith("Index:")) {
                 patch.targetPath = line.substring(6).trim();
+            } else if (line.startsWith("MIME: application/octet-stream;")) {
+                unreadPatchLine();
+                readBinaryPatchContent(patch);
+                break;
             } else if (line.startsWith("--- ")) {
                 unreadPatchLine();
                 readPatchContent(patch);
@@ -309,6 +325,33 @@ public final class ContextualPatch {
             || normalDeleteRangePattern.matcher(line).matches();
     }
 
+    /**
+     * Reads binary diff hunk.
+     */
+    private void readBinaryPatchContent(SinglePatch patch) throws PatchException, IOException {
+        List<Hunk> hunks = new ArrayList<Hunk>();
+        Hunk hunk = new Hunk();
+        for (;;) {
+            String line = readPatchLine();
+            if (line == null || line.startsWith("Index:") || line.length() == 0) {
+                unreadPatchLine();
+                break;
+            }
+            if (patch.binary) {
+                hunk.lines.add(line);
+            } else {
+                Matcher m = binaryHeaderPattern.matcher(line);
+                if (m.matches()) {
+                    patch.binary = true;
+                    int length = Integer.parseInt(m.group(3));
+                    if (length == -1) break;
+                    hunks.add(hunk);
+                }
+            }
+        }
+        patch.hunks = (Hunk[]) hunks.toArray(new Hunk[hunks.size()]);
+    }
+    
     /**
      * Reads normal diff hunks.
      */
@@ -571,6 +614,7 @@ public final class ContextualPatch {
         boolean     targetMustExist = true;     // == false if the patch contains one hunk with just additions ('+' lines)
         File        targetFile;                 // computed later
         boolean     noEndingNewline;            // resulting file should not end with a newline
+        boolean     binary;                  // binary patches contain one encoded Hunk
     }
 
     public static enum PatchStatus { Patched, Missing, Failure };

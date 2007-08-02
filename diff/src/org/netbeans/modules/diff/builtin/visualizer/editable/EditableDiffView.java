@@ -147,7 +147,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         
         initComponents ();
 
-        jEditorPane2.getEditorPane().putClientProperty(DiffMarkProviderCreator.MARK_PROVIDER_KEY, diffMarkprovider);
+        if (!binaryDiff) {
+            jEditorPane2.getEditorPane().putClientProperty(DiffMarkProviderCreator.MARK_PROVIDER_KEY, diffMarkprovider);
+        }
         jSplitPane1.setName(org.openide.util.NbBundle.getMessage(EditableDiffView.class, "DiffComponent.title")); // NOI18N
         spui = new DiffSplitPaneUI(jSplitPane1);
         jSplitPane1.setUI(spui);
