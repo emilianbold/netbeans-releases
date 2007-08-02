@@ -291,6 +291,7 @@ public final class JsfForm implements ActiveEditorDrop {
         boolean accessTypeDetected = false;
         TypeElement typeElement = clazz;
 //        while (typeElement != null) {
+        if (typeElement != null) {
             for (Element element : typeElement.getEnclosedElements()) {
                 if (isAnnotatedWith(element, "javax.persistence.Id") || isAnnotatedWith(element, "javax.persistence.EmbeddedId")) {
                     if (ElementKind.FIELD == element.getKind()) {
@@ -302,6 +303,7 @@ public final class JsfForm implements ActiveEditorDrop {
             if (!accessTypeDetected) {
                 Logger.getLogger("global").log(Level.WARNING, "Failed to detect correct access type for class:" + typeElement.getQualifiedName()); // NOI18N
             }
+        }
 //            typeElement = (TypeElement) typeElement.getEnclosingElement();
 //        }
         return fieldAccess;
