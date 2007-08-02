@@ -23,7 +23,6 @@ import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
-import org.openide.util.Mutex;
 
 import org.netbeans.core.NbSheet;
 
