@@ -109,7 +109,7 @@ public final class CheckoutWizard implements ChangeListener {
 
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
-            repositoryStep = new RepositoryStep(Repository.FLAG_ACCEPT_REVISION);
+            repositoryStep = new RepositoryStep(Repository.FLAG_ACCEPT_REVISION, RepositoryStep.CHECKOUT_HELP_ID);
             repositoryStep.addChangeListener(CheckoutWizard.this);
             checkoutStep = new CheckoutStep();            
             checkoutStep.addChangeListener(CheckoutWizard.this);

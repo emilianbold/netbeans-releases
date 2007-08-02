@@ -30,7 +30,6 @@ import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
@@ -52,6 +51,10 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, PropertyChangeListener {
+
+    public static final String IMPORT_HELP_ID = "RepositoryStep.import";
+    public static final String CHECKOUT_HELP_ID = "RepositoryStep.checkout";
+    public static final String URL_PATTERN_HELP_ID = "RepositoryStep.urlPattern";
     
     private Repository repository;        
     private RepositoryStepPanel panel;    
@@ -59,16 +62,21 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
     private int repositoryModeMask;
     private WizardStepProgressSupport support;
 
-    public RepositoryStep() {
+    private final String helpID;
+    
+    public RepositoryStep(String helpID) {
         this.repositoryModeMask = 0;
+        this.helpID = helpID;
     }
     
-    public RepositoryStep(int repositoryModeMask) {
+    public RepositoryStep(int repositoryModeMask, String helpID) {
         this.repositoryModeMask = repositoryModeMask;
+        this.helpID = helpID;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(RepositoryStep.class);
+        return new HelpCtx(helpID);
     }        
 
     protected JComponent createComponent() {
@@ -145,7 +153,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
             support.cancel();
         }
     }
-
+    
     private class RepositoryStepProgressSupport extends WizardStepProgressSupport {
 
         public RepositoryStepProgressSupport(JPanel panel) {

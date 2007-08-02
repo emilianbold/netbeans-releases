@@ -97,7 +97,7 @@ public final class URLPatternWizard implements ChangeListener {
         }
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[2];
-            repositoryStep = new RepositoryStep(Repository.FLAG_ACCEPT_REVISION);
+            repositoryStep = new RepositoryStep(Repository.FLAG_ACCEPT_REVISION, RepositoryStep.URL_PATTERN_HELP_ID);
             repositoryStep.addChangeListener(URLPatternWizard.this);            
             urlPatternStep = new URLPatternStep();            
             urlPatternStep.addChangeListener(URLPatternWizard.this);
