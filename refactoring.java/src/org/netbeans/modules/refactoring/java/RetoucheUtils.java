@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -298,8 +299,9 @@ public class RetoucheUtils {
     public static String getPackageName(URL url) {
         File f = null;
         try {
-            f = FileUtil.normalizeFile(new File(url.toURI()));
-        } catch (URISyntaxException uRISyntaxException) {
+            String path = URLDecoder.decode(url.getPath(), "utf-8");
+            f = FileUtil.normalizeFile(new File(path));
+        } catch (UnsupportedEncodingException u) {
             throw new IllegalArgumentException("Cannot create package name for url " + url);
         }
         String suffix = "";
@@ -315,7 +317,11 @@ public class RetoucheUtils {
             if (!"".equals(suffix)) {
                 suffix = "." + suffix;
             }
-            suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar)+1)) + suffix;
+            try {
+                suffix = URLDecoder.decode(f.getPath().substring(f.getPath().lastIndexOf(File.separatorChar) + 1), "utf-8") + suffix;
+            } catch (UnsupportedEncodingException u) {
+                throw new IllegalArgumentException("Cannot create package name for url " + url);
+            }
             f = f.getParentFile();
         } while (f!=null);
         throw new IllegalArgumentException("Cannot create package name for url " + url);

@@ -20,6 +20,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.awt.BorderLayout;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -49,6 +50,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
@@ -133,9 +135,11 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
             return null;
         URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
         try {
-            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + URLEncoder.encode(panel.getPackageName().replace('.','/')))));
+            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + URLEncoder.encode(panel.getPackageName().replace('.','/'), "utf-8"))));
+        } catch (UnsupportedEncodingException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (MalformedURLException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
         if (checkOnly) {
             return refactoring.fastCheckParameters();
