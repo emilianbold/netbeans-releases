@@ -42,6 +42,9 @@ import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.visual.vmd.VMDConnectionWidget;
 import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.vmd.VMDPinWidget;
@@ -228,21 +231,24 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
 
         public DefaultDataNode(DataObject dataObject) {
             this(dataObject.getNodeDelegate());
-            org.netbeans.api.project.Project p = org.netbeans.api.project.FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
-            org.openide.filesystems.FileObject projectDirectory = p.getProjectDirectory();
-            org.netbeans.api.project.Sources sources = org.netbeans.api.project.ProjectUtils.getSources(p);
-            org.netbeans.api.project.SourceGroup[] groups = sources.getSourceGroups(org.netbeans.api.project.Sources.TYPE_GENERIC);
-            org.openide.filesystems.FileObject srcFolder;
+            Project p = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+            /* Let's only worry about this if it is actually part of a project.*/
+            if( p != null ){
+                FileObject projectDirectory = p.getProjectDirectory();
+                Sources sources = ProjectUtils.getSources(p);
+                SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                FileObject srcFolder;
 
-            try {
-                if (groups != null && groups.length > 0) {
-                    srcFolder = groups[0].getRootFolder();
-                } else {
-                    srcFolder = dataObject.getFolder().getPrimaryFile();
+                try {
+                    if (groups != null && groups.length > 0) {
+                        srcFolder = groups[0].getRootFolder();
+                    } else {
+                        srcFolder = dataObject.getFolder().getPrimaryFile();
+                    }
+                    srcFolderNode = DataObject.find(srcFolder).getNodeDelegate();
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                srcFolderNode = org.openide.loaders.DataObject.find(srcFolder).getNodeDelegate();
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
 
@@ -732,6 +738,11 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
     public static final FileObject getStorageFile(FileObject configFile) {
         //        FileObject webFolder = getWebFolder(configFile);
         Project p = FileOwnerQuery.getOwner(configFile);
+        if( p == null ){
+            LOG.warning("File does not exist inside a project.  Can't solve getStorageFile().");
+            System.err.println("File does not exist inside a project.  Can't solve getStorageFile().");
+            return null;
+        }
         FileObject projectDirectory = p.getProjectDirectory();
         FileObject nbprojectFolder = projectDirectory.getFileObject("nbproject", null);
         if (nbprojectFolder == null) {
