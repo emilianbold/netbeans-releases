@@ -19,7 +19,6 @@
 package org.netbeans.qa.form.visualDevelopment;
 
 import java.util.Vector;
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.EditAction;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -78,7 +77,6 @@ public class AddComponents_AWT extends JellyTestCase {
     
     /** Run test.
      */
-    
     public void testAddAndCompile() {
         String categoryName = "AWT";
         
@@ -181,10 +179,7 @@ public class AddComponents_AWT extends JellyTestCase {
     public void closeDataProject(){
         ProjectSupport.closeProject(DATA_PROJECT_NAME);
         log("SampleProject closed.");
-        
     }
-    
-    
     
     static void sleep(int ms) {
         try {Thread.sleep(ms);} catch (Exception e) {}
@@ -196,7 +191,7 @@ public class AddComponents_AWT extends JellyTestCase {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new AddComponents_AWT("testAddAndCompile"));
-        suite.addTest(new AddComponents_AWT("testFormFile"));
+        //suite.addTest(new AddComponents_AWT("testFormFile"));
         suite.addTest(new AddComponents_AWT("testJavaFile"));
         //suite.addTest(new AddComponents_AWT("testCloseDataProject"));
         return suite;
