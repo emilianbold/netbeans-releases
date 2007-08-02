@@ -55,7 +55,7 @@ public class SubResourceLocatorNode extends AbstractNode{
     }
     
     public String getDisplayName() {
-        return uriTemplate;
+        return uriTemplate + " : " + Utils.stripPackageName(returnType);    //NOI18N
     }
     
     public String getShortDescription() {
