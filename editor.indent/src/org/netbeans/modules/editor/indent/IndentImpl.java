@@ -60,6 +60,8 @@ public final class IndentImpl {
     
     private TaskHandler reformatHandler;
     
+    private Formatter defaultFormatter;
+    
     public IndentImpl(Document doc) {
         this.doc = doc;
     }
@@ -86,6 +88,10 @@ public final class IndentImpl {
     
     public boolean hasIndentOrReformatFactories() {
         return new TaskHandler(true, doc).hasFactories();
+    }
+    
+    void setDefaultFormatter(Formatter defaultFormatter) {
+        this.defaultFormatter = defaultFormatter;
     }
     
     public synchronized void indentLock() {
@@ -141,8 +147,13 @@ public final class IndentImpl {
     }
 
     public void reindent(int startOffset, int endOffset) throws BadLocationException {
-        assert (indentHandler != null) : "Not locked. Use Indent.lock()"; // NOI18N
         assert (startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N
+        if (indentHandler == null) { // 
+            LOG.log(Level.SEVERE, "Not locked. Use Indent.lock().", new Exception()); // NOI18N
+            // Attempt to call the tasks unlocked since now it's too late to lock (doc's lock already taken).
+            indentHandler = new TaskHandler(true, doc);
+            indentHandler.collectTasks();
+        }
         // Find begining of line
         Element lineRootElem = lineRootElement(doc);
         // Correct the start offset to point to the begining of the start line
@@ -175,14 +186,11 @@ public final class IndentImpl {
         }
 
         // Fallback to Formatter
-        Formatter formatter;
-        if (!done && doc instanceof BaseDocument
-                && !((formatter = ((BaseDocument)doc).getFormatter()) instanceof FormatterImpl)
-        ) {
+        if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
             // Original formatter does not have reindentation of multiple lines
             // so reformat start line and continue for each line.
             do {
-                startOffset = ((BaseDocument)doc).getFormatter().indentLine(doc, startOffset);
+                startOffset = defaultFormatter.indentLine(doc, startOffset);
                 startLineIndex = lineRootElem.getElementIndex(startOffset) + 1;
                 if (startLineIndex >= lineRootElem.getElementCount())
                     break;
@@ -194,8 +202,13 @@ public final class IndentImpl {
     }
 
     public void reformat(int startOffset, int endOffset) throws BadLocationException {
-        assert (reformatHandler != null) : "Not locked. Use Reformat.lock()"; // NOI18N
         assert (startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N
+        if (reformatHandler == null) { // 
+            LOG.log(Level.SEVERE, "Not locked. Use Reformat.lock().", new Exception()); // NOI18N
+            // Attempt to call the tasks unlocked since now it's too late to lock (doc's lock already taken).
+            reformatHandler = new TaskHandler(false, doc);
+            reformatHandler.collectTasks();
+        }
         boolean done = false;
         if (reformatHandler.hasItems()) {
             reformatHandler.setGlobalBounds(
@@ -210,9 +223,9 @@ public final class IndentImpl {
         }
         
         // Fallback to Formatter
-        if (!done && doc instanceof BaseDocument) {
+        if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
             BaseDocument bdoc = (BaseDocument)doc;
-            bdoc.getFormatter().reformat(bdoc, startOffset, endOffset);
+            defaultFormatter.reformat(bdoc, startOffset, endOffset);
         }
     }
     

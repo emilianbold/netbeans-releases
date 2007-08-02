@@ -45,6 +45,9 @@ public final class FormatterImpl extends ExtFormatter {
     FormatterImpl(Formatter defaultFormatter, Document doc) {
         super(defaultFormatter.getKitClass());
         this.indentImpl = IndentImpl.get(doc);
+        this.defaultFormatter = defaultFormatter;
+        indentImpl.setDefaultFormatter(defaultFormatter);
+        
     }
     
     public int[] getReformatBlock(JTextComponent target, String typedText) {
@@ -117,7 +120,7 @@ public final class FormatterImpl extends ExtFormatter {
         indentImpl.reformat(startOffset, endOffset);
         TaskHandler handler = indentImpl.reformatHandler();
         return (handler != null)
-                ? handler.endPos().getOffset() - handler.startPos().getOffset()
+                ? Math.max(handler.endPos().getOffset() - startOffset, 0)
                 : endOffset - startOffset;
     }
 
