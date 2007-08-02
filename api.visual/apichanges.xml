@@ -347,20 +347,6 @@
 
         <change>
             <api name="general"/>
-            <summary>BorderSupport.getSwingBorder method introduced</summary>
-            <version major="2" minor="6"/>
-            <date day="1" month="8" year="2007"/>
-            <author login="dkaspar"/>
-            <compatibility addition="yes"/>
-            <description>
-                BorderSupport.getSwingBorder method introduced to acquired a Swing border from a library border.
-            </description>
-            <class package="org.netbeans.api.visual.border" name="BorderSupport" link="yes"/>
-            <issue number="103456"/>
-        </change>
-
-        <change>
-            <api name="general"/>
             <summary>Widget.getDependencies method added</summary>
             <version major="2" minor="6"/>
             <date day="1" month="8" year="2007"/>
