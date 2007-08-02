@@ -90,8 +90,8 @@ public final class EditorUtil {
             return;
         }
         currentLineDA = createDebuggerAnnotation(line,
-                DebuggerAnnotation.CURRENT_LINE_PART_ANNOTATION_TYPE,
-                DebuggerAnnotation.CURRENT_LINE_ANNOTATION_TYPE);
+                DebuggerAnnotation.CURRENT_LINE_ANNOTATION_TYPE,
+                DebuggerAnnotation.CURRENT_LINE_PART_ANNOTATION_TYPE);
         showLine(line);
     }
     
