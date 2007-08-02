@@ -23,9 +23,13 @@ package org.netbeans.modules.uml.ui.products.ad.drawengines;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
-
+import org.netbeans.modules.uml.common.generics.ETPairT;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.structure.IComment;
 import org.netbeans.modules.uml.ui.products.ad.application.IMenuManager;
 import org.netbeans.modules.uml.ui.products.ad.application.action.ContextMenuActionClass;
+import org.netbeans.modules.uml.ui.support.applicationmanager.IEdgePresentation;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.DrawEngineArrowheadKindEnum;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.DrawEngineLineKindEnum;
 import org.netbeans.modules.uml.ui.support.viewfactorysupport.IDrawInfo;
@@ -106,4 +110,50 @@ public class ETCommentEdgeDrawEngine extends ETEdgeDrawEngine {
 		this.setLineColor("commentedgecolor", Color.BLACK);
 		super.initResources();
 	}
+        
+       
+        // Fixed issue 104692.  Permanently deleting a comment link shoulkd not
+        // deleting the comment that goes with it.
+        /**
+         * When a presentation element is selected and VK_DELETE is selected, the user is
+         * asked if the data model should be affected as well.  For Comment link, we need to
+         * find the annotated element of this link and remove it from the annotated 
+         * list of the comment element.  The Comment element stays intact.
+         */
+        public void affectModelElementDeletion()
+        {
+            IComment commentEle = null;
+            IElement otherEndElem = null;
+            IEdgePresentation pThisEdgePresentation = getEdgePresentationElement();
+            
+            if (pThisEdgePresentation != null)
+            {
+                 //Get the ends of the link and break the namespace relationship
+                ETPairT<IElement, IElement> elements = 
+                        pThisEdgePresentation.getEdgeFromAndToElement(false);
+                IElement sourceModelElement = elements.getParamOne();
+                IElement targetModelElement = elements.getParamTwo();
+                
+                if (sourceModelElement instanceof IComment) 
+                {
+                    commentEle = (IComment) sourceModelElement;
+                    otherEndElem = targetModelElement;
+                }
+                else if (targetModelElement instanceof IComment)
+                {
+                    commentEle = (IComment) targetModelElement;
+                    otherEndElem = sourceModelElement;
+                }
+
+                if ( otherEndElem != null && otherEndElem instanceof INamedElement)
+                {
+                    boolean isAnnotated = commentEle.getIsAnnotatedElement(
+                            (INamedElement)otherEndElem );
+                    if (isAnnotated) 
+                    {
+                        commentEle.removeAnnotatedElement((INamedElement)otherEndElem);
+                    }
+                }
+            }
+        }
 }

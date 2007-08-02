@@ -27,7 +27,6 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.NamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
-import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 public class Comment extends NamedElement implements IComment 
@@ -50,7 +49,7 @@ public class Comment extends NamedElement implements IComment
 	{
 		boolean isAnnotated = false;
 		String annotatedElems = XMLManip.getAttributeValue(m_Node,
-														   "annotatedElement");
+                        "annotatedElement");
 		if (annotatedElems != null && annotatedElems.length() > 0)
 		{
 			String xmiID = element.getXMIID();
@@ -65,8 +64,9 @@ public class Comment extends NamedElement implements IComment
 	public ETList<INamedElement> getAnnotatedElements()
 	{
 		ElementCollector<INamedElement> collector = 
-									new ElementCollector<INamedElement>();
-		return collector.retrieveElementCollectionWithAttrIDs(this,"annotatedElement", INamedElement.class);
+                        new ElementCollector<INamedElement>();
+		return collector.retrieveElementCollectionWithAttrIDs(this,
+                        "annotatedElement", INamedElement.class);
 	}
 	
 	public void removeAnnotatedElement( INamedElement element )
