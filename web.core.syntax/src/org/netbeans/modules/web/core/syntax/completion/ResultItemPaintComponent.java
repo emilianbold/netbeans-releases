@@ -180,9 +180,9 @@ public class ResultItemPaintComponent extends JPanel {
             int w = getWidth() - getWidth(s) - drawX;
             int spaceWidth = getWidth(" "); // NOI18N
             if (w > spaceWidth * 2) {
-                drawX = getWidth() - 2 * spaceWidth - getWidth(s);
+                drawX += getWidth() - 2 * spaceWidth - getWidth(s);
             } else {
-                drawX = getWidth() - 2 * spaceWidth - getWidth(s) - getWidth("...   "); // NOI18N
+                drawX += getWidth() - 2 * spaceWidth - getWidth(s) - getWidth("...   "); // NOI18N
                 g.setColor(getBackground());
                 g.fillRect(drawX, 0, getWidth() - drawX, getHeight());
                 drawString(g, "...   ", c); // NOI18N
