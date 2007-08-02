@@ -23,8 +23,6 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -38,18 +36,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
-import org.netbeans.modules.j2ee.dd.api.ejb.Session;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.ejbcore.action.CallEjbGenerator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -57,15 +45,14 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 
 /**
- * Handling of CallEjbDialog used from CallEjbAction and
- * EjbReferenceTableModel from DDLoaders
+ * Handling of Call EJB dialog; used from CallEjbAction
  *
  * @author Martin Adamek
  */
 public class CallEjbDialog {
     
-    public boolean open(FileObject referencingFileObject, String referencingClassName, String title) throws IOException {
-        Project enterpriseProject = FileOwnerQuery.getOwner(referencingFileObject);
+    public boolean open(FileObject referencingFO, String referencingClassName, String title) throws IOException {
+        Project enterpriseProject = FileOwnerQuery.getOwner(referencingFO);
         
         Project[] allProjects = Utils.getCallableEjbProjects(enterpriseProject);
         List<Node> ejbProjectNodes = new LinkedList<Node>();
@@ -83,10 +70,9 @@ public class CallEjbDialog {
         children.add(ejbProjectNodes.toArray(new Node[ejbProjectNodes.size()]));
         Node root = new AbstractNode(children);
         root.setDisplayName(NbBundle.getMessage(CallEjbDialog.class, "LBL_EJBModules"));
-        EnterpriseReferenceContainer erc = (EnterpriseReferenceContainer)
-        enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
+        EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
         boolean isJavaEE5orHigher = Utils.isJavaEE5orHigher(enterpriseProject);
-        CallEjbPanel panel = new CallEjbPanel(referencingFileObject, root, isJavaEE5orHigher ? null : erc.getServiceLocatorName(), referencingClassName);
+        CallEjbPanel panel = new CallEjbPanel(referencingFO, root, isJavaEE5orHigher ? null : erc.getServiceLocatorName(), referencingClassName);
         if (isJavaEE5orHigher) {
             panel.disableServiceLocator();
         }
@@ -130,64 +116,22 @@ public class CallEjbDialog {
         Project nodeProject = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
         
         boolean remoteInterfaceSelected = panel.isRemoteInterfaceSelected();
+        boolean isDefaultRefName = panel.isDefaultRefName();
+        String referencedClassName = _RetoucheUtil.getJavaClassFromNode(ejbNode).getQualifiedName();
+
+        CallEjbGenerator generator = CallEjbGenerator.create(ref, referenceNameFromPanel, isDefaultRefName);
+        generator.addReference(
+                referencingFO, 
+                referencingClassName, 
+                dataObject.getPrimaryFile(), 
+                referencedClassName, 
+                panel.getServiceLocator(), 
+                remoteInterfaceSelected, 
+                throwExceptions, 
+                nodeProject
+                );
         
-        Utils.addReference(referencingFileObject, referencingClassName, ref, panel.getServiceLocator(), 
-                remoteInterfaceSelected, throwExceptions, referenceNameFromPanel, nodeProject);
-        
-        // generate the server-specific resources
-
-        if (remoteInterfaceSelected) {
-            String referencedEjbClassName = _RetoucheUtil.getJavaClassFromNode(ejbNode).getQualifiedName();
-            String referencedEjbName = getEjbName(dataObject.getPrimaryFile(), referencedEjbClassName);
-
-            J2eeModuleProvider j2eeModuleProvider = enterpriseProject.getLookup().lookup(J2eeModuleProvider.class);
-            try {
-                if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.WAR)) {
-                    j2eeModuleProvider.getConfigSupport().bindEjbReference(referenceNameFromPanel,referencedEjbName);
-                } else if (j2eeModuleProvider.getJ2eeModule().getModuleType().equals(J2eeModule.EJB)) {
-                    String ejbName = getEjbName(referencingFileObject, referencingClassName);
-                    String ejbType = getEjbType(referencingFileObject, referencingClassName);
-                    j2eeModuleProvider.getConfigSupport().bindEjbReferenceForEjb(
-                            ejbName, ejbType, referenceNameFromPanel, referencedEjbName);
-                }
-            } catch (ConfigurationException ce) {
-                Logger.getLogger("global").log(Level.WARNING, null, ce);
-            }
-        }
-
         return true;
-    }
-
-    private String getEjbName(FileObject fileObject,final String className) throws IOException {
-
-        MetadataModel<EjbJarMetadata> metadataModel = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getMetadataModel();
-        return metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
-            public String run(EjbJarMetadata metadata) throws Exception {
-                Ejb ejb = metadata.findByEjbClass(className);
-                return ejb.getEjbName();
-            }
-        });
-
-    }    
-
-    private String getEjbType(FileObject fileObject, final String className) throws IOException {
-        
-        MetadataModel<EjbJarMetadata> metadataModel = org.netbeans.modules.j2ee.api.ejbjar.EjbJar.getEjbJar(fileObject).getMetadataModel();
-        return metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, String>() {
-            public String run(EjbJarMetadata metadata) throws Exception {
-                String result = null;
-                Ejb ejb = metadata.findByEjbClass(className);
-                if (ejb instanceof Session) {
-                    result = EnterpriseBeans.SESSION;
-                } else if (ejb instanceof Entity) {
-                    result = EnterpriseBeans.ENTITY;
-                } else if (ejb instanceof MessageDriven) {
-                    result = EnterpriseBeans.MESSAGE_DRIVEN;
-                }
-                return result;
-            }
-        });
-        
     }
 
     private class EjbsNode extends AbstractNode {

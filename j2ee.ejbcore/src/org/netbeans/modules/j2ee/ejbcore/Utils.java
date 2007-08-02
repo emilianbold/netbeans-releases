@@ -131,10 +131,8 @@ public class Utils {
                 J2eeApplicationProvider j2eeApp = (J2eeApplicationProvider)j2eeAppProvider;
                 J2eeModuleProvider[] j2eeModules = j2eeApp.getChildModuleProviders();
                 if ((j2eeModules != null) && (j2eeModules.length > 0)) { // == there are some modules in the j2ee app
-                    J2eeModuleProvider affectedPrjProvider1 =
-                            (J2eeModuleProvider)project1.getLookup().lookup(J2eeModuleProvider.class);
-                    J2eeModuleProvider affectedPrjProvider2 =
-                            (J2eeModuleProvider)project2.getLookup().lookup(J2eeModuleProvider.class);
+                    J2eeModuleProvider affectedPrjProvider1 = project1.getLookup().lookup(J2eeModuleProvider.class);
+                    J2eeModuleProvider affectedPrjProvider2 = project2.getLookup().lookup(J2eeModuleProvider.class);
                     if (affectedPrjProvider1 != null && affectedPrjProvider2 != null) {
                         List childModules = Arrays.asList(j2eeModules);
                         if (childModules.contains(affectedPrjProvider1) &&
@@ -248,63 +246,7 @@ public class Utils {
         EjbMethodController ejbMethodController = EjbMethodController.createFromClass(ejbClassFO, ejbClassName[0]);
         ejbMethodController.createAndAddInterface(methodModel[0], false);
     }
-    
-    /**
-     * 
-     * 
-     * @param fileObject 
-     */
-    public static void addReference(FileObject referencingFileObject, String referencingClassName, EjbReference ejbReference, String serviceLocator, 
-            boolean remote, boolean throwExceptions, String ejbRefName, Project nodeProject) throws IOException {
-        // find the project containing the source file
-        Project enterpriseProject = FileOwnerQuery.getOwner(referencingFileObject);
-        EnterpriseReferenceContainer erc = enterpriseProject.getLookup().lookup(EnterpriseReferenceContainer.class);
 
-        boolean enterpriseProjectIsJavaEE5 = isJavaEE5orHigher(enterpriseProject);
-        boolean nodeProjectIsJavaEE5 = isJavaEE5orHigher(nodeProject);
-
-        CallEjbGenerator generator = CallEjbGenerator.create(ejbReference);
-        
-        if (remote) {
-            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFileObject, referencingClassName)) {
-                addProjectToClassPath(enterpriseProject, ejbReference);
-            } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                erc.addEjbReference(ejbReference, ejbRefName, referencingFileObject, referencingClassName);
-            }
-            if (serviceLocator == null) {
-                generator.generateReferenceCode(referencingFileObject, referencingClassName, false, throwExceptions);
-            } else {
-                generator.generateServiceLocatorLookup(referencingFileObject, referencingClassName, serviceLocator, false, throwExceptions);
-            }
-        } else {
-            if (enterpriseProjectIsJavaEE5 && InjectionTargetQuery.isInjectionTarget(referencingFileObject, referencingClassName)) {
-                addProjectToClassPath(enterpriseProject, ejbReference);
-            } else if (nodeProjectIsJavaEE5 == enterpriseProjectIsJavaEE5){ // see #75876
-                erc.addEjbLocalReference(ejbReference, ejbRefName, referencingFileObject, referencingClassName);
-            }
-            if (serviceLocator == null) {
-                generator.generateReferenceCode(referencingFileObject, referencingClassName, true, throwExceptions);
-            } else {
-                generator.generateServiceLocatorLookup(referencingFileObject, referencingClassName, serviceLocator, true, throwExceptions);
-            }
-        }
-        if (serviceLocator != null) {
-            erc.setServiceLocatorName(serviceLocator);
-        }
-    }
-    
-    private static void addProjectToClassPath(final Project enterpriseProject, final EjbReference ref) throws IOException {
-        
-        AntArtifact target = getAntArtifact(ref);
-        
-        boolean differentProject = target != null && !enterpriseProject.equals(target.getProject());
-        if (differentProject) {
-            ProjectClassPathExtender pcpe = enterpriseProject.getLookup().lookup(ProjectClassPathExtender.class);
-            assert pcpe != null;
-            pcpe.addAntArtifact(target, target.getArtifactLocations()[0]);
-        }
-    }
-    
     /** Returns list of all EJB projects that can be called from the caller project.
      *
      * @param enterpriseProject the caller enterprise project
@@ -337,7 +279,7 @@ public class Utils {
         if (project == null) {
             return false;
         }
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         if (j2eeModuleProvider != null) {
             J2eeModule j2eeModule = j2eeModuleProvider.getJ2eeModule();
             if (j2eeModule != null) {
@@ -358,7 +300,7 @@ public class Utils {
     }
     
     public static boolean isAppClient(Project project) {
-        J2eeModuleProvider module = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+        J2eeModuleProvider module = project.getLookup().lookup(J2eeModuleProvider.class);
         return  (module != null) ? module.getJ2eeModule().getModuleType().equals(J2eeModule.CLIENT) : false;
     }
     

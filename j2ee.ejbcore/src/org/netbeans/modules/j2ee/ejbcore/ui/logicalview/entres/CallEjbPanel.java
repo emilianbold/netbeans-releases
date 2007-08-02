@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -133,21 +134,24 @@ public class CallEjbPanel extends javax.swing.JPanel {
         displayPanel.add(nodeDisplayPanel);
         nodeDisplayPanel.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent pce) {
-                Node[] nodes = nodeDisplayPanel.getSelectedNodes();
                 
-                if (nodes.length == 0) {
-                    return;
-                }
-                EjbReference ejbReference = nodes[0].getLookup().lookup(EjbReference.class);
-                
-                if (ejbReference != null) {
-                    try {
-                        generateName(ejbReference, remoteRadioButton.isSelected(), nodes[0]);
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
+                if (ExplorerManager.PROP_NODE_CHANGE.equals(pce.getPropertyName())) {
+                    Node[] nodes = nodeDisplayPanel.getSelectedNodes();
+
+                    if (nodes.length == 0) {
+                        return;
                     }
+                    EjbReference ejbReference = nodes[0].getLookup().lookup(EjbReference.class);
+
+                    if (ejbReference != null) {
+                        try {
+                            setGeneratedName(ejbReference, remoteRadioButton.isSelected(), nodes[0]);
+                        } catch (IOException ioe) {
+                            Exceptions.printStackTrace(ioe);
+                        }
+                    }
+                    validateReferences();
                 }
-                validateReferences();
             }
         });
         referenceNameTextField.addKeyListener(new KeyAdapter() {
@@ -397,15 +401,29 @@ public class CallEjbPanel extends javax.swing.JPanel {
         return referenceNameTextField.getText();
     }
     
+    public boolean isDefaultRefName() {
+        Node[] nodes = nodeDisplayPanel.getSelectedNodes();
+        if (nodes.length > 0) {
+            EjbReference ejbReference = nodes[0].getLookup().lookup(EjbReference.class);
+            if (ejbReference != null) {
+                try {
+                    return getReferenceName().equals(generateName(ejbReference, remoteRadioButton.isSelected(), nodes[0]));
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+        }
+        return false;
+    }
+    
     public boolean isRemoteInterfaceSelected() {
         return remoteRadioButton.isSelected();
     }
     
-    private void generateName(EjbReference ejbReference, boolean remote, Node selectedNode) throws IOException {
+    private String generateName(EjbReference ejbReference, boolean remote, Node selectedNode) throws IOException {
         
         if (Utils.getAntArtifact(ejbReference) == null) {
-            referenceNameTextField.setText("");
-            return;
+            return "";
         }
 
         String name = "";
@@ -442,7 +460,11 @@ public class CallEjbPanel extends javax.swing.JPanel {
         while (refNameSet.contains(newName)) {
             newName = name + String.valueOf(uniquifier++);
         }
-        referenceNameTextField.setText(name);
+        return name;
+    }
+    
+    private void setGeneratedName(EjbReference ejbReference, boolean remote, Node selectedNode) throws IOException {
+        referenceNameTextField.setText(generateName(ejbReference, remote, selectedNode));
     }
     
     private class NodeAcceptorImpl implements  NodeAcceptor {

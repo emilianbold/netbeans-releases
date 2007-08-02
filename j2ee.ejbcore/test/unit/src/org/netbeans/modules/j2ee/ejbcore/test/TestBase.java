@@ -34,6 +34,9 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -51,9 +54,7 @@ import org.openide.util.test.MockLookup;
  * @author Andrei Badea
  * @author Martin Adamek
  */
-public class TestBase extends NbTestCase
-
-{
+public class TestBase extends NbTestCase {
 
     private EjbJarProviderImpl ejbJarProvider;
     private ClassPathProviderImpl classPathProvider;
@@ -76,7 +77,7 @@ public class TestBase extends NbTestCase
      * and returns TestModule wrapper for that
      */
     public TestModule createEjb21Module() throws IOException {
-        return createTestModule("EJBModule_1_4", "2.1");
+        return createTestModule("EJBModule_1_4", EjbProjectConstants.J2EE_14_LEVEL);
     }
 
     /**
@@ -84,14 +85,14 @@ public class TestBase extends NbTestCase
      * and returns TestModule wrapper for that
      */
     public TestModule createEjb30Module() throws IOException {
-        return createTestModule("EJBModule_5_0", "3.0");
+        return createTestModule("EJBModule_5_0", EjbProjectConstants.JAVA_EE_5_LEVEL);
     }
 
     /**
      * Creates new copy of project in test's working directory instead of using one froo data dir,
      * co it can be called multiple times on 'clean' project (without generated code)
      */
-    private TestModule createTestModule(String projectDirName, String ejbVersion) throws IOException {
+    public TestModule createTestModule(String projectDirName, String ejbVersion) throws IOException {
 
         File projectDir = new File(getDataDir(), projectDirName);
         File tempProjectDir = copyFolder(projectDir);
@@ -127,7 +128,7 @@ public class TestBase extends NbTestCase
 
     private void activate(TestModule testModule) {
         fileOwnerQuery.setProject(testModule.project);
-        ejbJarProvider.setEjbModule(testModule.ejbLevel, testModule.deploymentDescriptor, testModule.sources);
+        ejbJarProvider.setEjbModule(testModule.j2eePlatformVersion, testModule.deploymentDescriptor, testModule.sources);
         classPathProvider.setClassPath(testModule.sources);
         try {
             for (FileObject fileObject : testModule.sources) {
@@ -181,17 +182,19 @@ public class TestBase extends NbTestCase
     protected static class TestModule {
 
         private final FileObject projectDir;
-        private final String ejbLevel;
+        private final String j2eePlatformVersion;
         private final FileObject deploymentDescriptor;
         private final FileObject[] sources;
         private final ProjectImpl project;
+        private final EnterpriseReferenceContainerImpl erContainer;
 
         public TestModule(FileObject projectDir, String ejbLevel) {
             this.projectDir = projectDir;
-            this.ejbLevel = ejbLevel;
+            this.j2eePlatformVersion = ejbLevel;
             this.deploymentDescriptor = projectDir.getFileObject("src/conf/ejb-jar.xml");
             this.sources = new FileObject[]{projectDir.getFileObject("src/java")};
-            this.project = new ProjectImpl(ejbLevel);
+            this.erContainer = new EnterpriseReferenceContainerImpl();
+            this.project = new ProjectImpl(ejbLevel, erContainer);
             project.setProjectDirectory(projectDir);
         }
 
@@ -209,6 +212,14 @@ public class TestBase extends NbTestCase
 
         public FileObject getConfigFilesFolder() {
             return projectDir.getFileObject("src/conf");
+        }
+        
+        public EjbJar getEjbModule() {
+            return EjbJar.getEjbJars(project)[0];
+        }
+        
+        public EnterpriseReferenceContainerImpl getEnterpriseReferenceContainerImpl() {
+            return erContainer;
         }
     }
 
@@ -228,6 +239,15 @@ public class TestBase extends NbTestCase
         return false;
     }
 
+    protected static ExecutableElement getMethod(TypeElement typeElement, String methodName) {
+        for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+            if (executableElement.getSimpleName().contentEquals(methodName)) {
+                return executableElement;
+            }
+        }
+        return null;
+    }
+    
     protected static boolean containsType(CompilationController controller, List<? extends TypeMirror> typeMirrors, String typeFqn) {
         TypeElement typeElement = controller.getElements().getTypeElement(typeFqn);
         TypeMirror searchedTypeMirror = typeElement.asType();

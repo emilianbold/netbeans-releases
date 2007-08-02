@@ -29,11 +29,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.api.ejbjar.EjbReference;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.api.ejbjar.MessageDestinationReference;
-import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
-import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
@@ -55,11 +51,11 @@ public final class ProjectImpl implements Project {
     private final Lookup lookup;
     private FileObject projectDirectory;
     
-    public ProjectImpl(String moduleVersion) {
+    public ProjectImpl(String moduleVersion, EnterpriseReferenceContainer erContainer) {
         lookup = Lookups.fixed(
                 new J2eeModuleProviderImpl(moduleVersion),
                 new SourcesImpl(),
-                new EnterpriseReferenceContainerImpl(),
+                erContainer,
                 new EjbJarsInProjectImpl()
                 );
     }
@@ -213,35 +209,6 @@ public final class ProjectImpl implements Project {
 
         public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
             return null;
-        }
-        
-    }
-    
-    private static class EnterpriseReferenceContainerImpl implements EnterpriseReferenceContainer {
-        
-        public EnterpriseReferenceContainerImpl() {}
-        
-        public String addEjbReference(EjbReference ref, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-        public String addEjbLocalReference(EjbReference localRef, String ejbRefName, FileObject referencingFile, String referencingClass) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-        public String getServiceLocatorName() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-        public void setServiceLocatorName(String serviceLocator) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-        public String addDestinationRef(MessageDestinationReference ref, FileObject referencingFile, String referencingClass) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        
-        public String addResourceRef(ResourceReference ref, FileObject referencingFile, String referencingClass) throws IOException {
-            return "testJndiName";
         }
         
     }
