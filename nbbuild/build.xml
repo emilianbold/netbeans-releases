@@ -90,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
     </fail>
     <!-- OK, continue: -->
     <mkdir dir="build/antclasses"/>
-    <available property="have.javahelp" file="../apisupport/external" type="dir"/>
+    <available property="have.javahelp" file="../apisupport/harness/external" type="dir"/>
     <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
       <classpath refid="bootstrap-cp"/>
       <exclude name="**/CheckHelpSets.java" unless="have.javahelp"/>
@@ -533,7 +533,7 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="build-nozip" depends="clean-cluster-flags,build-clusters" description="Build the IDE but do not create a final ZIP file.">
+  <target name="build-nozip" depends="clean-cluster-flags,build-clusters,create-license-summary" description="Build the IDE but do not create a final ZIP file.">
     <loadproperties srcFile="${clusters.list.file}" />
      
     <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
@@ -1369,6 +1369,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
         For more information: http://www.netbeans.org/community/guidelines/commit.html
     </echo>
   </target>
+
+    <target name="verify-libs-and-licenses" depends="bootstrap" description="Verify the contents of third-party libraries and licenses.">
+        <taskdef name="verifylibsandlicenses" classname="org.netbeans.nbbuild.extlibs.VerifyLibsAndLicenses" classpath="nbantext.jar"/>
+        <mkdir dir="build"/>
+        <verifylibsandlicenses report="build/verifylibsandlicenses.xml" nball=".."/>
+    </target>
+
+    <target name="create-license-summary" depends="bootstrap" description="Create a summary of the licenses used by libraries in the build.">
+        <taskdef name="createlicensesummary" classname="org.netbeans.nbbuild.extlibs.CreateLicenseSummary" classpath="nbantext.jar"/>
+        <mkdir dir="build"/>
+        <createlicensesummary report="build/createlicensesummary.xml" nball=".." build="${netbeans.dest.dir}" summary="${netbeans.dest.dir}/THIRDPARTYLICENSE-generated.txt"/>
+    </target>
 
   <target name="sanity-build-from-source-pkg" depends="build-source">
     <available file="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip"

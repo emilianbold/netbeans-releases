@@ -53,7 +53,7 @@ import org.xml.sax.SAXException;
  * Utility class collecting library methods related to XML processing.
  * @author Petr Kuzel, Jesse Glick
  */
-final class XMLUtil extends Object {
+public final class XMLUtil extends Object {
 
     @SuppressWarnings("unchecked")
     private static final ThreadLocal<DocumentBuilder>[] builderTL = new ThreadLocal[4];

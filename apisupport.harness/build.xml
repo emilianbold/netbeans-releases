@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="init,nbantext,jar-jnlp-launcher">
         <copy file="${nb_all}/nbbuild/templates/common.xml" tofile="${cluster}/common.xml"/>
         <copy file="${nb_all}/nbbuild/jdk.xml" tofile="${cluster}/jdk.xml"/>
-        <copy file="../external/jsearch-2.0_04.jar" todir="${cluster}"/>
+        <copy file="external/jsearch-2.0_04.jar" todir="${cluster}"/>
     </target>
  
     <target name="compile-jnlp-launcher" depends="init,compile">
@@ -74,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
                 <text>For the main build harness:</text>
                 <file location="${license.file}"/>
                 <text>For the bundled JavaHelp search indexer library:</text>
-                <file location="../external/jsearch-2.0_04-license.txt"/>
+                <file location="external/jsearch-2.0_04-license.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>

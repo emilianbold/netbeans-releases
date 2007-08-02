@@ -35,19 +35,4 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="absolute-layout,projectized-common.compile"/>
 
-    <target name="release" depends="projectized-common.release">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="external">
-                <include name="*.jar"/>
-            </fileset>
-        </copy>
-        <mkdir dir="${cluster}/docs"/>
-        <copy todir="${cluster}/docs">
-            <fileset dir="external">
-                <include name="*doc.zip"/>
-            </fileset>
-        </copy>
-    </target>
-
 </project>

@@ -1,0 +1,11 @@
+# List of patterns (one per line) to skip over in VerifyLibsAndLicenses.testNoStrayThirdPartyBinaries.
+# Uses standard Ant pattern syntax, in ${nb_all} among modules included in cluster config.
+# Implicit includes is **/*.jar,**/*.zip.
+# Only files under CVS control will be checked, so no need to exclude build products.
+**/test/
+libs/external/
+j2ee/adventure/
+form/swingapp/
+#not 100% sure for this entry, but probably OK
+web/tlddoc/
+*/www/

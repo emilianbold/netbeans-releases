@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>
             
-            <zipfileset dir="${basedir}/../../external" prefix="ColorChooser/release/modules/ext/" >
+            <zipfileset dir="external" prefix="ColorChooser/release/modules/ext/" >
                 <include name="ColorChooser.jar" />
             </zipfileset>
         </zip>

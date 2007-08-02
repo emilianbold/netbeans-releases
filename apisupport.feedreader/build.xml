@@ -30,15 +30,15 @@ Microsystems, Inc. All Rights Reserved.
             <exclude name="**/dist/"/>
             <exclude name="**/nbproject/private/"/>
             
-            <zipfileset dir="${basedir}/../../external" prefix="rome/release/modules/ext/" >
+            <zipfileset dir="external" prefix="rome/release/modules/ext/" >
                 <include name="rome-0.6.jar" />
                 <include name="rome-0.6-license.txt" />
             </zipfileset>
-            <zipfileset dir="${basedir}/../../external" prefix="rome-fetcher/release/modules/ext/" >
+            <zipfileset dir="external" prefix="rome-fetcher/release/modules/ext/" >
                 <include name="rome-fetcher-0.6.jar" />
                 <include name="rome-fetcher-0.6-license.txt" />
             </zipfileset>
-            <zipfileset dir="${basedir}/../../external" prefix="jdom/release/modules/ext/" >
+            <zipfileset dir="external" prefix="jdom/release/modules/ext/" >
                 <include name="jdom.jar" />
                 <include name="jdom-license.txt" />
             </zipfileset>

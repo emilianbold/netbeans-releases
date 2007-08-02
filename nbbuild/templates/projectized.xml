@@ -122,6 +122,16 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="netbeans.zipped.sources.dir" value="build/sources"/>
     </target>
     
+    <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
+    <target name="-release.files" depends="projectized-common.-release.files">
+        <taskdef name="releasefilesextra" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesExtra" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <releasefilesextra property="release.files.extra"/>
+    </target>
+    <target name="release" depends="projectized-common.release">
+        <taskdef name="releasefilescopy" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesCopy" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <releasefilescopy cluster="${cluster}"/>
+    </target>
+
     <target name="test-lib-init" depends="init">
         <!-- xtest.home is set externally when run using XTest. -->
         <property name="xtest.home" location="${nb_all}/xtest"/>
@@ -212,7 +222,15 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <mkdir dir="${nbm.target.dir}"/> 
     </target>
 
-    <target name="nbm" depends="-create-dest-dir-nbm, projectized-common.nbm"/>
+    <target name="-create-license.file" depends="init">
+        <mkdir dir="build"/>
+        <property name="license.file.override" location="build/license"/>
+        <property name="extra.license.files" value=""/>
+        <taskdef name="releasefileslicense" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesLicense" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <releasefileslicense license="${license.file.override}" standardlicense="${nb_all}/nbbuild/standard-nbm-license.txt" extralicensefiles="${extra.license.files}" licenses="${nb_all}/nbbuild/licenses"/>
+    </target>
+
+    <target name="nbm" depends="-create-dest-dir-nbm,-create-license.file,projectized-common.nbm"/>
     
     <!-- apisupport/project could calls this for the debug action. -->
     <!-- You can also call it directly from the nbbuild/misc pseudoproject. -->
@@ -248,7 +266,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <jhindexer basedir="${build.javahelp.dir}/${javahelp.base}"
                    db="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}">
             <classpath>
-                <fileset dir="${nb_all}/apisupport/external">
+                <fileset dir="${nb_all}/apisupport/harness/external">
                     <include name="jsearch*.jar"/>
                 </fileset>
             </classpath>
