@@ -180,6 +180,7 @@ public class ObjectArrayDataProvider extends AbstractTableDataProvider
         } else {
             objectType = null;
         }
+        this.support = null;
         fireProviderChanged();
         
     }
