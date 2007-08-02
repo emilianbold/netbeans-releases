@@ -65,7 +65,7 @@ public class RicohDeploymentPlugin implements DeploymentPlugin
 
     public Map<String, Object> getGlobalPropertyDefaultValues()
     {
-        return RicohDeploymentProperties.getDefaultGlobalProperties();
+        return Collections.EMPTY_MAP;
     }
 
     public Component createProjectCustomizerPanel()
@@ -76,6 +76,6 @@ public class RicohDeploymentPlugin implements DeploymentPlugin
     public Component createGlobalCustomizerPanel()
     {
         
-        return new RicohDeploymentCustomizer();
+        return null;
     }    
 }

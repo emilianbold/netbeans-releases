@@ -78,6 +78,12 @@ public class DeploymentPanels extends javax.swing.JPanel
         jLabel16 = new javax.swing.JLabel();
         sdkjV1_4RadioButton = new javax.swing.JRadioButton();
         sdkjV2_0RadioButton = new javax.swing.JRadioButton();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        usernameTextField = new javax.swing.JTextField();
+        passwordField = new javax.swing.JPasswordField();
+        serverTextField = new javax.swing.JTextField();
         sdkGroup = new javax.swing.ButtonGroup();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel15, java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/deployment/ricoh/Bundle").getString("LBL_SDCardPath"));
@@ -133,27 +139,60 @@ public class DeploymentPanels extends javax.swing.JPanel
         sdkjV2_0RadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         sdkjV2_0RadioButton.setName(RicohDeploymentProperties.PROP_RICOH_DEPLOY_HTTP_PLATFORM);
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/deployment/ricoh/Bundle").getString("LBL_Username"));
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/deployment/ricoh/Bundle").getString("LBL_Password"));
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, java.util.ResourceBundle.getBundle("org/netbeans/modules/mobility/deployment/ricoh/Bundle").getString("LBL_TargetServer"));
+
+        usernameTextField.setName(RicohDeploymentProperties.PROP_RICOH_DEPLOY_HTTP_USERNAME);
+
+        passwordField.setName(RicohDeploymentProperties.PROP_RICOH_DEPLOY_HTTP_PASSWORD);
+
+        serverTextField.setName(RicohDeploymentProperties.PROP_RICOH_DEPLOY_HTTP_SERVER);
+
         org.jdesktop.layout.GroupLayout httpPostConfigPanelLayout = new org.jdesktop.layout.GroupLayout(httpPostConfigPanel);
         httpPostConfigPanel.setLayout(httpPostConfigPanelLayout);
         httpPostConfigPanelLayout.setHorizontalGroup(
             httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(httpPostConfigPanelLayout.createSequentialGroup()
                 .add(httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(httpPostConfigPanelLayout.createSequentialGroup()
-                        .add(jLabel30)
-                        .add(12, 12, 12)
-                        .add(httpServerPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(jLabel16)
                     .add(httpPostConfigPanelLayout.createSequentialGroup()
                         .add(sdkjV1_4RadioButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(sdkjV2_0RadioButton)))
-                .addContainerGap(192, Short.MAX_VALUE))
+                        .add(sdkjV2_0RadioButton))
+                    .add(httpPostConfigPanelLayout.createSequentialGroup()
+                        .add(httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel3)
+                            .add(jLabel5)
+                            .add(jLabel4)
+                            .add(jLabel30))
+                        .add(14, 14, 14)
+                        .add(httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, httpServerPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 31, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                .add(org.jdesktop.layout.GroupLayout.TRAILING, usernameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
+                                .add(org.jdesktop.layout.GroupLayout.TRAILING, passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)
+                                .add(serverTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE)))))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         httpPostConfigPanelLayout.setVerticalGroup(
             httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(httpPostConfigPanelLayout.createSequentialGroup()
                 .addContainerGap()
+                .add(httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel4)
+                    .add(usernameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(7, 7, 7)
+                .add(httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel5)
+                    .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 19, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel3)
+                    .add(serverTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel30)
                     .add(httpServerPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -163,7 +202,7 @@ public class DeploymentPanels extends javax.swing.JPanel
                 .add(httpPostConfigPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(sdkjV1_4RadioButton)
                     .add(sdkjV2_0RadioButton))
-                .add(0, 0, Short.MAX_VALUE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
 
         setLayout(new java.awt.CardLayout());
@@ -196,12 +235,18 @@ public class DeploymentPanels extends javax.swing.JPanel
     private javax.swing.JTextField httpServerPort;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel30;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    javax.swing.JPasswordField passwordField;
     private javax.swing.JPanel sdCardConfigPanel;
     private javax.swing.JButton sdPathBrowse;
     private javax.swing.JTextField sdPathField;
     private javax.swing.ButtonGroup sdkGroup;
     private javax.swing.JRadioButton sdkjV1_4RadioButton;
     private javax.swing.JRadioButton sdkjV2_0RadioButton;
+    javax.swing.JTextField serverTextField;
+    javax.swing.JTextField usernameTextField;
     // End of variables declaration//GEN-END:variables
 }

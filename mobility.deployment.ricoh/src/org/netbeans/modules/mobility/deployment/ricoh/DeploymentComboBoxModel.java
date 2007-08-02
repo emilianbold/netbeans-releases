@@ -36,16 +36,36 @@ class DeploymentComboBoxModel extends AbstractListModel implements MutableComboB
     
     static class DeployType
     {
+        private class MyString
+        {
+            final String str;
+            MyString(String s) 
+            {
+                str=s;
+            }
+            
+            public boolean equals(Object o)
+            {                
+                return str.equals(o.toString());
+                
+            }
+            
+            public String toString()
+            {
+                return str;
+            }
+        }
+        
         private String dispName;
-        private String antName;
+        private MyString antName;
         
         public DeployType(String d, String a)
         {
             dispName=d;
-            antName=a;
+            antName=new MyString(a);
         }
         
-        public String toString()    { return antName; }
+        public String toString()    { return antName.str; }
         public String getDispName() { return dispName; }
     }
     

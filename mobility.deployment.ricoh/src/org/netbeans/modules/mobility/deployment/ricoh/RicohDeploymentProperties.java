@@ -49,22 +49,16 @@ public class RicohDeploymentProperties
      static String PROP_RICOH_SIGN_KEYPASS        = "ricoh.deployment.keystore.password"; //NOI18N
      static String PROP_RICOH_SIGN_ALIAS          = "ricoh.deployment.keystore.alias"; //NOI18N
     
-    
-    /**
-     * global deployment properties
-     */
-    
-    //Login properties
-     static String PROP_RICOH_DEPLOY_SERVER   = "ricoh.deployment.server.name"; //NOI18N
-     static String PROP_RICOH_DEPLOY_USERNAME = "ricoh.deployment.server.user"; //NOI18N
-     static String PROP_RICOH_DEPLOY_PASSWORD = "ricoh.deployment.server.password"; //NOI18N
-    
     //SD card property
      static String PROP_RICOH_DEPLOY_SDCARD_PATH = "ricoh.deployment.sdcard.path"; //NOI18N    
 
     //HTTP POST property
      static String PROP_RICOH_DEPLOY_HTTP_PORT      = "ricoh.deployment.http.port"; //NOI18N
      static String PROP_RICOH_DEPLOY_HTTP_PLATFORM  = "ricoh.deployment.http.platform"; //NOI18N
+     //Login properties
+     static String PROP_RICOH_DEPLOY_HTTP_SERVER   = "ricoh.deployment.server.name"; //NOI18N
+     static String PROP_RICOH_DEPLOY_HTTP_USERNAME = "ricoh.deployment.server.user"; //NOI18N
+     static String PROP_RICOH_DEPLOY_HTTP_PASSWORD = "ricoh.deployment.server.password"; //NOI18N
      
     //Constants
     
@@ -85,24 +79,16 @@ public class RicohDeploymentProperties
         projectProp.put(PROP_RICOH_SIGN_KEYPASS,"");
         projectProp.put(PROP_RICOH_SIGN_ALIAS,"");
         projectProp.put(PROP_RICOH_DEPLOY_METHOD,DeploymentComboBoxModel.SD_CARD_DEPLOY);
-    }
-    
-    private static HashMap<String,Object> globalProp = new HashMap<String,Object>();
-    static
-    {
-        globalProp.put(PROP_RICOH_DEPLOY_SERVER,"");
-        globalProp.put(PROP_RICOH_DEPLOY_USERNAME,"");
-        globalProp.put(PROP_RICOH_DEPLOY_PASSWORD,"");
         
-        globalProp.put(PROP_RICOH_DEPLOY_SDCARD_PATH,"");
         
-        globalProp.put(PROP_RICOH_DEPLOY_HTTP_PORT,DEFAULT_OSGI_PORT);
-        globalProp.put(PROP_RICOH_DEPLOY_HTTP_PLATFORM,"SDK/J &2.0+");        
-    }
-    
-    public static Map<String,Object> getDefaultGlobalProperties()
-    {
-        return Collections.unmodifiableMap(globalProp);
+        
+        projectProp.put(PROP_RICOH_DEPLOY_SDCARD_PATH,"");
+        
+        projectProp.put(PROP_RICOH_DEPLOY_HTTP_SERVER,"");
+        projectProp.put(PROP_RICOH_DEPLOY_HTTP_USERNAME,"");
+        projectProp.put(PROP_RICOH_DEPLOY_HTTP_PASSWORD,"");
+        projectProp.put(PROP_RICOH_DEPLOY_HTTP_PORT,DEFAULT_OSGI_PORT);
+        projectProp.put(PROP_RICOH_DEPLOY_HTTP_PLATFORM,"SDK/J &2.0+");
     }
     
     public static Map<String,Object> getDefaultProjectProperties()

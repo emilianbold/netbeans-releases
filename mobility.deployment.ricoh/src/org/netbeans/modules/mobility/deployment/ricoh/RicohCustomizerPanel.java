@@ -59,7 +59,6 @@ public class RicohCustomizerPanel extends javax.swing.JPanel implements Customiz
         initComponents();
         ep = PropertyUtils.getGlobalProperties();
         DeploymentPanels panel=new DeploymentPanels();
-        panel.setEditable(false);
         mainConfigPanel.add(panel);            
         fieldListener = new ActionListener()
         {
@@ -69,23 +68,6 @@ public class RicohCustomizerPanel extends javax.swing.JPanel implements Customiz
             }
         };
         addTextFieldListeners();
-    }
-    
-    private void setPropValues(Component c, String prefix, Set propertyNames) {
-        String prop = c.getName();
-        if (prop != null && propertyNames.contains(prop)) {
-            prop = prefix + prop;
-            if (c instanceof JTextComponent) {
-                ((JTextComponent)c).setText( ep.getProperty(prop));
-            } 
-            else if (c instanceof JRadioButton) {
-                Object value=ep.getProperty(prop);
-                ((JRadioButton)c).setSelected(value != null && value.toString().equals(((JRadioButton)c).getActionCommand()));
-            }
-        }
-        if (c instanceof Container) {
-            for (Component sub : ((Container)c).getComponents()) setPropValues(sub, prefix, propertyNames);
-        }
     }
     
     private void updateTooltips()
@@ -131,8 +113,6 @@ public class RicohCustomizerPanel extends javax.swing.JPanel implements Customiz
         setPreferredSize(new java.awt.Dimension(600, 400));
         getAccessibleContext().setAccessibleDescription(null);
         mainConfigPanel.setLayout(new java.awt.BorderLayout());
-
-        mainConfigPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_MANAGEDEPTITLE")));
 
         jLabel28.setText(org.openide.util.NbBundle.getMessage(RicohCustomizerPanel.class, "LBL_SecurityCertification"));
         jLabel28.getAccessibleContext().setAccessibleName(null);
@@ -356,8 +336,6 @@ public class RicohCustomizerPanel extends javax.swing.JPanel implements Customiz
         actConfig=configuration;
         actProps =props;
         JPanel panel=(JPanel)mainConfigPanel.getComponent(0);        
-        if (actProps != null)
-            setPropValues(panel,DEPLOYMENT_PREFIX+RicohDeploymentPlugin.RicohDeployment+"."+actProps.get(DefaultPropertiesDescriptor.DEPLOYMENT_INSTANCE)+".",RicohDeploymentProperties.getDefaultGlobalProperties().keySet());
         updateDeployment();    
     }
     
