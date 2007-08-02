@@ -1269,9 +1269,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         
         
         ActionManager am = ActionManager.getActionManager(sourceFile);
-        System.out.println("checking for dupe: " + newMethodName);
         if(am.isExistingMethod(classname, newMethodName)) {
-            System.out.println("is dup");
             return true;
         }
         return false;
