@@ -24,7 +24,6 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.ruby.*;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -117,6 +116,7 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
     public Token<RubyCommentTokenId> nextToken() {
         inWord = false;
 
+    inputLoop:
         while (true) {
             int ch = input.read();
 
@@ -140,8 +140,38 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
 
             case '#': { // Linked method
 
-                if (inWord) {
-                    break;
+                // See if this is a method reference. It can be either "#method" or "Class#method".
+                // If the input is something like " #" we need to chop it off to start at "#"; if
+                // it's something like "foo Bar#baz" we need to chop it off at "Bar#baz", and
+                // if it's something impossible like " foo#bar" we can ignore it completely (the class
+                // must be uppercase).
+                CharSequence s = input.readText();
+                int classIndex = s.length()-1;
+                assert s.charAt(classIndex) == '#';
+                for (classIndex--; classIndex >= 0; classIndex--) {
+                    char c = s.charAt(classIndex);
+                    if (!Character.isJavaIdentifierPart(c) && c != '_') {
+                        // The next character needs to be "#" or an uppercase character
+                        assert classIndex < s.length()-1;
+                        char next = s.charAt(classIndex+1);
+                        if (!(next == '#' || Character.isUpperCase(next))) {
+                            // This "#" is not in an Upper# sequence
+                            // just continue processing input
+                            continue inputLoop;
+                        }
+                        break;
+                    }
+                }
+                // Make sure uppercase
+                if (classIndex == -1) {
+                    // It's the beginning of input - we're okay
+                    char next = s.charAt(0);
+                    if (!(next == '#' || Character.isUpperCase(next))) {
+                        break;
+                    }
+                } else {
+                    input.backup(input.readLength()-(classIndex+1));
+                    return token(RubyCommentTokenId.COMMENT_TEXT);
                 }
 
                 int originalLength = input.readLength();
@@ -160,13 +190,7 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
 
                 if (Character.isWhitespace(ch) || (ch == EOF) || (ch == '.') || (ch == ',') ||
                         (ch == ')') || (ch == '}')) {
-                    if (originalLength > 1) {
-                        input.backup(input.readLengthEOF() - originalLength + 1);
-
-                        return token(RubyCommentTokenId.COMMENT_TEXT);
-                    }
-
-                    if (input.readLength() > 2) {
+                    if (input.readLength() > 2 && input.readLength() > originalLength) {
                         return token(RubyCommentTokenId.COMMENT_LINK);
                     }
                 }
@@ -443,10 +467,10 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
             default: {
                 if (!inWord) {
                     // See if we have a match from here on for any of the markers
-                    String[] markers = getTodoMarkers();
+                    String[] todoMarkers = getTodoMarkers();
 
-                    for (int i = 0; i < markers.length; i++) {
-                        if (markers[i].charAt(0) == ch) {
+                    for (int i = 0; i < todoMarkers.length; i++) {
+                        if (todoMarkers[i].charAt(0) == ch) {
                             if (input.readLength() > 1) {
                                 input.backup(1);
 
@@ -457,7 +481,7 @@ public final class RubyCommentLexer implements Lexer<RubyCommentTokenId> {
                             // Read ahead while matching further characters, but if they
                             // stop matching, back up and try another
                             int backup = 0;
-                            String marker = markers[i];
+                            String marker = todoMarkers[i];
 
                             for (int c = 1, n = marker.length(); c < n; c++) {
                                 backup++;

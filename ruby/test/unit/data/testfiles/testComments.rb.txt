@@ -61,12 +61,20 @@ mailto:foo@bar.com
 http://www.netbeans.org
 ftp:foo@bar:80/pub/hello.txt
 #mymethod
+Class#mymethod
+MyClass123#my_method
+Scanf#foo,File#exists
 .e.o.f.
 
 .t.e.s.t. Not Links
 http\://netbeans.org
 \file:/tmp/foo.rb
 \#mymethod
+#
+# 
+Class#
+Class# 
+class#method
 .e.o.f.
 
 

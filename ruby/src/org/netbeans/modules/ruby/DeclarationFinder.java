@@ -324,7 +324,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             Node closest = path.leaf();
 
             // See if the hyperlink is over a method reference in an rdoc comment
-            DeclarationLocation rdoc = findRDocMethod(info, doc, lexOffset, root, path);
+            DeclarationLocation rdoc = findRDocMethod(info, doc, astOffset, lexOffset, root, path, closest, index);
 
             if (rdoc != DeclarationLocation.NONE) {
                 return fix(rdoc, info);
@@ -1023,7 +1023,8 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
         return new DeclarationLocation(null, LexUtilities.getLexerOffset(info, node.getPosition().getStartOffset()));
     }
 
-    private DeclarationLocation findRDocMethod(CompilationInfo info, Document doc, int lexOffset, Node root, AstPath path) {
+    private DeclarationLocation findRDocMethod(CompilationInfo info, Document doc, int astOffset, int lexOffset, 
+            Node root, AstPath path, Node closest, RubyIndex index) {
         TokenHierarchy<Document> th = TokenHierarchy.get(doc);
         TokenSequence<?extends TokenId> ts = LexUtilities.getRubyTokenSequence((BaseDocument)doc, lexOffset);
 
@@ -1080,6 +1081,15 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     // URL is from user source... don't complain with exception dialogs etc.
                     ;
                 }
+            }
+            
+            // Probably a Class#method
+            int methodIndex = method.indexOf("#");
+            if (methodIndex != -1 && methodIndex < method.length()-1) {
+                String clz = method.substring(0, methodIndex);
+                method = method.substring(methodIndex+1);
+
+                return findMethod(method, clz, null, info, astOffset, lexOffset, path, closest, index);
             }
         }
 
