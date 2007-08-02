@@ -32,6 +32,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -91,8 +92,18 @@ public class WebRestSupportLookupProvider implements LookupProvider {
             }
         };
         
+        PrivilegedTemplates templates = new PrivilegedTemplates() {
+            public String[] getPrivilegedTemplates() {
+                return new String[] {
+                    "Templates/WebServices/RESTServicesFromEntities", // NOI18N
+                    "Templates/WebServices/RESTServicesFromPatterns",  //NOI18N
+                    "Templates/WebServices/RESTClientStubs"    //NOI18N
+                };
+            }
+        };
+        
         //ProjectRestServiceNotifier servicesNotifier = new ProjectRestServiceNotifier(prj);
-        return Lookups.fixed(new Object[] {openhook});
+        return Lookups.fixed(new Object[] {openhook, templates});
     }
     
     private class RestServicesChangeListener implements PropertyChangeListener {
@@ -122,7 +133,7 @@ public class WebRestSupportLookupProvider implements LookupProvider {
                 wsModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                     public Void run(RestServicesMetadata metadata) throws IOException {
                         RestServices root = metadata.getRoot();
-                   
+                        
                         if (root.sizeRestServiceDescription() > 0) {
                             RestUtils.ensureRestDevelopmentReady(prj);
                         }
