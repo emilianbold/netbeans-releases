@@ -117,6 +117,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
         } else if (action == ActionsManager.ACTION_STEP_OVER) {
             rubySession.stepOver();
         }
+        contextProvider.getSessionsModel().fireChanges();
         backEndSemaphore.release();
     }
     
