@@ -59,7 +59,7 @@ public class SubResourceLocatorNode extends AbstractNode{
     }
     
     public String getShortDescription() {
-        return methodName + "() : " + Utils.stripPackageName(returnType);
+        return methodName + "() : " + Utils.stripPackageName(returnType);       //NOI18N
     }
     
     private static final java.awt.Image METHOD_BADGE =
