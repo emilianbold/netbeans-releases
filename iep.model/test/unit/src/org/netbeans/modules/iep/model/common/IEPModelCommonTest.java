@@ -70,13 +70,13 @@ public class IEPModelCommonTest extends TestCase {
         component.addProperty(p2);
         
         model.startTransaction();
-        model.getComponent().addChildComponent(component);
+        model.getPlanComponent().addChildComponent(component);
         model.endTransaction();
         
         //assert child components on the root component
-        assertEquals(5, model.getComponent().getChildComponents().size());
+        assertEquals(5, model.getPlanComponent().getChildComponents().size());
         
-        Component c = model.getComponent().getChildComponents().get(4);
+        Component c = model.getPlanComponent().getChildComponents().get(4);
         assertEquals(component, c);
         
     }
@@ -95,12 +95,12 @@ public class IEPModelCommonTest extends TestCase {
     	IEPComponent root = ((AbstractDocumentModel <IEPComponent>) model).createRootComponent(rootEl);
         
         //assert properites on the root component
-        assertEquals(1, model.getComponent().getProperties().size());
+        assertEquals(1, model.getPlanComponent().getProperties().size());
 
         //assert child components on the root component
-        assertEquals(4, model.getComponent().getChildComponents().size());
+        assertEquals(4, model.getPlanComponent().getChildComponents().size());
         
-        List<Component> childComponents = model.getComponent().getChildComponents();
+        List<Component> childComponents = model.getPlanComponent().getChildComponents();
         
         Component metadataComponent  = childComponents.get(0);
         assertEquals("Metadata", metadataComponent.getName());
