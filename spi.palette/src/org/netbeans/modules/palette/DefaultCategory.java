@@ -121,7 +121,7 @@ public class DefaultCategory implements Category, NodeListener {
     /** Fired when a set of new children is added.
     * @param ev event describing the action
     */
-    public void childrenAdded(NodeMemberEvent ev) {
+    public synchronized void childrenAdded(NodeMemberEvent ev) {
         items = null;
         notifyListeners();
     }
@@ -129,7 +129,7 @@ public class DefaultCategory implements Category, NodeListener {
     /** Fired when a set of children is removed.
     * @param ev event describing the action
     */
-    public void childrenRemoved(NodeMemberEvent ev) {
+    public synchronized void childrenRemoved(NodeMemberEvent ev) {
         items = null;
         notifyListeners();
     }
@@ -137,7 +137,7 @@ public class DefaultCategory implements Category, NodeListener {
     /** Fired when the order of children is changed.
     * @param ev event describing the change
     */
-    public void childrenReordered(NodeReorderEvent ev) {
+    public synchronized void childrenReordered(NodeReorderEvent ev) {
         items = null;
         notifyListeners();
     }
@@ -145,7 +145,7 @@ public class DefaultCategory implements Category, NodeListener {
     /** Fired when the node is deleted.
     * @param ev event describing the node
     */
-    public void nodeDestroyed(NodeEvent ev) {
+    public synchronized void nodeDestroyed(NodeEvent ev) {
         categoryNode.removeNodeListener( this );
     }
 
