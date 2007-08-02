@@ -133,10 +133,15 @@ public class CreationFactory {
         throws Exception
     {
         CreationDescriptor cd = getDescriptor(cls);
+        Object cl = UIManager.get("ClassLoader"); // NOI18N
+        ClassLoader systemCl = org.openide.util.Lookup.getDefault().lookup(ClassLoader.class);
+        if (cl == systemCl) { // System classloader doesn't help to load user classes like JXLoginPanel
+            UIManager.put("ClassLoader", null); // NOI18N
+        }
         Object instance = cd != null ?
                               cd.createDefaultInstance() :
                               cls.newInstance();
-
+        UIManager.put("ClassLoader", cl); // NOI18N
         initAfterCreation(instance);
         return instance;
     }
