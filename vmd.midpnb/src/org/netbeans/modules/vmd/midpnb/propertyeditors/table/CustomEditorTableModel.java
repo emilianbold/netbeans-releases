@@ -29,7 +29,7 @@ class CustomEditorTableModel extends DefaultTableModel {
     private boolean hasHeader;
 
     public void removeLastColumn() {
-        if (header.size() > 0) {
+        if (hasHeader && header.size() > 0) {
             header.remove(header.size() - 1);
         }
 
@@ -47,21 +47,22 @@ class CustomEditorTableModel extends DefaultTableModel {
     @Override
     public void removeRow(int row) {
         if (dataVector.size() > 0) {
-            if (row > 0 && hasHeader) {
-                row--;
-            }
             super.removeRow(row);
         }
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void addRow(Object[] rowData) {
         dataVector.addElement(convertToVector(rowData));
         fireTableStructureChanged();
     }
 
+    @SuppressWarnings("unchecked")
     public void addColumn(String columnName) {
-        header.addElement(columnName);
+        if (hasHeader) {
+            header.addElement(columnName);
+        }
         for (int i = 0; i < dataVector.size(); i++) {
             Vector row = (Vector) dataVector.elementAt(i);
             row.addElement(columnName);
