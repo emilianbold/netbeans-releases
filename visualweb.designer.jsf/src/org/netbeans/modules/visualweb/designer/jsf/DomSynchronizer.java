@@ -949,7 +949,8 @@ FacesDndSupport.UpdateSuspender {
         if (originalNodes.size() == 1 && newNodes.size() == 1) {
             Node originalNode = originalNodes.get(0);
             Node newNode = newNodes.get(0);
-            if (tryUpdateOriginalNode(originalNode, newNode, changedElements)) {
+            // XXX #110662 Doesn't work for inline editing (the newly created elements need to be used).
+            if (!jsfForm.isInlineEditing() && tryUpdateOriginalNode(originalNode, newNode, changedElements)) {
                 // XXX The original nodes are updated, do not mark the new as rendered, they are not used.
                 return true;
             } else {
