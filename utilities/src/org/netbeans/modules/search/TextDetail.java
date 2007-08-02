@@ -290,10 +290,12 @@ final class TextDetail {
         }
         
         /** */
+        @Override
         public String getName() {
             return txtDetail.getLineText() + "      [" + DetailNode.getName(txtDetail) + "]";  // NOI18N
         }
 
+        @Override
         public String getHtmlDisplayName() {
             String colored;
             if (txtDetail.getMarkLength() > 0 && txtDetail.getColumn() > 0) {
@@ -478,6 +480,7 @@ final class TextDetail {
         
         /**
          */
+        @Override
         protected boolean asynchronous() {
             return false;
         }
