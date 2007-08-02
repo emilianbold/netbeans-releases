@@ -299,10 +299,10 @@ public class FileStatusCache implements ISVNNotifyListener {
            current != null && current.isDirectory() && ( current.getStatus() == FileInformation.STATUS_VERSIONED_DELETEDLOCALLY || 
                                                          current.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY )) 
         {
-            // if the file was deleted then all it's children have to be refreshed
+            // - if the file was deleted then all it's children have to be refreshed.
+            // - we have to list the children before the turbo.writeEntry() call
+            //   as that unfortunatelly tends to purge them from the cache 
             content = listFiles(new File[] {file}, ~0);
-        } else if (file.isDirectory() && needRecursiveRefresh(fi, current)) {
-            content = listFiles(file);
         }
         
         file = FileUtil.normalizeFile(file);
@@ -320,6 +320,9 @@ public class FileStatusCache implements ISVNNotifyListener {
         assert newFiles.containsKey(dir) == false;
         turbo.writeEntry(dir, FILE_STATUS_MAP, newFiles.size() == 0 ? null : newFiles);
                       
+        if(content == null && file.isDirectory() && needRecursiveRefresh(fi, current)) {
+            content = listFiles(file);
+        }
         if ( content != null ) {            
             for (int i = 0; i < content.length; i++) {
                 refresh(content[i], REPOSITORY_STATUS_UNKNOWN);
