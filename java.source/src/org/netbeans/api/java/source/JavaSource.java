@@ -434,7 +434,7 @@ public final class JavaSource {
                     new Object[] {file, this});
                 if (!multipleSources) {
                     file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
-                    this.assignDocumentListener(file);
+                    this.assignDocumentListener(DataObject.find(file));
                     this.dataObjectListener = new DataObjectListener(file);                                        
                 }
                 if (!filterAssigned) {
@@ -1305,13 +1305,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
     }
     
-    private void assignDocumentListener(FileObject fo) throws IOException {
-        DataObject od = DataObject.find(fo);
+    private void assignDocumentListener(final DataObject od) throws IOException {
         EditorCookie.Observable ec = od.getCookie(EditorCookie.Observable.class);            
         if (ec != null) {
             this.listener = new DocListener (ec);
         } else {
-            LOGGER.log(Level.WARNING,String.format("File: %s has no EditorCookie.Observable", FileUtil.getFileDisplayName (fo)));      //NOI18N
+            LOGGER.log(Level.WARNING,String.format("File: %s has no EditorCookie.Observable", FileUtil.getFileDisplayName (od.getPrimaryFile())));      //NOI18N
         }
     }
     
@@ -1763,8 +1762,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                         dobj = dobjNew;
                         dobj.addPropertyChangeListener(wlistener);
                     }
-                    assignDocumentListener(fobj);
+                    assignDocumentListener(dobjNew);
                     resetState(true, true);
+                } catch (DataObjectNotFoundException e) {
+                    //Ignore - invalidated after fobj.isValid () was called
                 } catch (IOException ex) {
                     // should not occur
                     LOGGER.log(Level.SEVERE,ex.getMessage(),ex);
