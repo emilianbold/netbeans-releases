@@ -261,6 +261,7 @@ public class ExportDiffAction extends ContextAction {
             while (it.hasNext()) {
                 Setup setup = it.next();
                 File file = setup.getBaseFile();                
+                if (file.isDirectory()) continue;
                 try {            
                     progress.setRepositoryRoot(SvnUtils.getRepositoryRootUrl(file));
                 } catch (SVNClientException ex) {
