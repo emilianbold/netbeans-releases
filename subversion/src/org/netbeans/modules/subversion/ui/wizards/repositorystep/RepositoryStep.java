@@ -52,9 +52,9 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class RepositoryStep extends AbstractStep implements WizardDescriptor.AsynchronousValidatingPanel, PropertyChangeListener {
 
-    public static final String IMPORT_HELP_ID = "RepositoryStep.import";
-    public static final String CHECKOUT_HELP_ID = "RepositoryStep.checkout";
-    public static final String URL_PATTERN_HELP_ID = "RepositoryStep.urlPattern";
+    public static final String IMPORT_HELP_ID = "org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.import";
+    public static final String CHECKOUT_HELP_ID = "org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.checkout";
+    public static final String URL_PATTERN_HELP_ID = "org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.urlPattern";
     
     private Repository repository;        
     private RepositoryStepPanel panel;    
