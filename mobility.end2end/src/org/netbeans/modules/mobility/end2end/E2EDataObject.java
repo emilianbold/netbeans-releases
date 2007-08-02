@@ -388,22 +388,20 @@ public class E2EDataObject extends XmlMultiViewDataObject {
     
     public synchronized void generate(){
         generating = true;
-        firePropertyChange(PROP_GENERATING, Boolean.FALSE, Boolean.TRUE);
-        SwingUtilities.invokeLater(new Runnable() {
+        firePropertyChange( PROP_GENERATING, Boolean.FALSE, Boolean.TRUE );
+        SwingUtilities.invokeLater( new Runnable() {
             @SuppressWarnings("synthetic-access")
-			public void run() {
-//                if (JavaMetamodel.getManager().invokeAfterScanFinished(new Runnable() {
-//                    public void run() {
-//                        if (rp == null) {
-//                            rp = new RequestProcessor("End2EndGenerator", 5); //NOI18N
-//                        }
-//                        rp.post(new Runnable() {
-//                            @SuppressWarnings("synthetic-access")
-//							public void run() {
-                                final Lookup.Result<E2EServiceProvider> result = Lookup.getDefault().lookup(new Lookup.Template<E2EServiceProvider>(E2EServiceProvider.class));
-                                for ( final E2EServiceProvider elem : result.allInstances() ) {
-                                    if (E2EDataObject.this.getConfiguration().getServiceType().equals(elem.getServiceType())){
-                                        final ServiceGeneratorResult service = elem.generateStubs( Lookups.singleton( E2EDataObject.this ));
+                public void run() {
+                    if( rp == null ) {
+                        rp = new RequestProcessor( "End2EndGenerator", 5 ); //NOI18N
+                    }
+                    rp.post( new Runnable() {
+                        @SuppressWarnings("synthetic-access")
+                        public void run() {
+                        final Lookup.Result<E2EServiceProvider> result = Lookup.getDefault().lookup(new Lookup.Template<E2EServiceProvider>(E2EServiceProvider.class));
+                        for( final E2EServiceProvider elem : result.allInstances() ) {
+                            if( E2EDataObject.this.getConfiguration().getServiceType().equals( elem.getServiceType())) {
+                                final ServiceGeneratorResult service = elem.generateStubs( Lookups.singleton( E2EDataObject.this ));
 //                                        if (generateMidlet && service != null && service.getAccessMethods().length != 0 && Util.isSuitableProjectConfiguration( getClientProject())){
 //                                            final VisualDesignGenerator designGenerator = new VisualDesignGenerator(service);
 //                                            DataObject generated;
@@ -437,10 +435,12 @@ public class E2EDataObject extends XmlMultiViewDataObject {
 //                                        generating = false;
 //                                        E2EDataObject.this.firePropertyChange(PROP_GENERATING, Boolean.TRUE, Boolean.FALSE);
 //                                        return;
-                                    }
-                                }
-                                generating = false;
-                                E2EDataObject.this.firePropertyChange(PROP_GENERATING, Boolean.TRUE, Boolean.FALSE);
+                            }
+                        }
+                    } 
+                } );
+                generating = false;
+                E2EDataObject.this.firePropertyChange(PROP_GENERATING, Boolean.TRUE, Boolean.FALSE);
 //                            }
 //                            
 //                            private void setServerUrlInJad( J2MEProject project, String url ) {
