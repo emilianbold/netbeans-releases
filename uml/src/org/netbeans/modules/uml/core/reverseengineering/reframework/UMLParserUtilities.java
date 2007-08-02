@@ -50,6 +50,7 @@ import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframe
 import org.netbeans.modules.uml.core.roundtripframework.codegeneration.IParseInformationCache;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
+import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.ui.products.ad.applicationcore.IADProduct;
@@ -647,14 +648,32 @@ public class UMLParserUtilities
         
         ETList<IParameter> pars = op.getParameters();
         ETList<IREParameter> repars = reo.getParameters();
+        
+        if (op.getReturnType().getName().equals("")) {
+            for (int i = 0, count = pars.size(); i < count; ++i)
+            {
+                if (pars.get(i).getDirection() == BaseElement.PDK_RESULT) {
+                    String returnType = XMLManip.getAttributeValue(pars.get(i).getDOM4JNode(), "type");
+                    if (returnType.indexOf(".") != -1)
+                        returnType = returnType.substring(returnType.lastIndexOf(".")+1) ;
+                    
+                    op.setReturnType2(returnType);
+                }
+            }
+            
+        }
+        
         if ((pars == null || pars.size() == 0) && 
                 (repars == null || repars.size() == 0))
             return true;
+        
         if ((pars == null) != (repars == null) ||
                 pars.size() != repars.size())
             return false;
+        
         for (int i = 0, count = pars.size(); i < count; ++i)
         {
+           if (pars.get(i).getDirection() == BaseElement.PDK_RESULT) continue;           
            if(!isMatchingParameter(op,pars.get(i),repars.get(i),false))
               return false;
         }
