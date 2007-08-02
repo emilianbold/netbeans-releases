@@ -95,6 +95,9 @@ public class PropertyAction extends AbstractAction {
                                 property.restoreDefaultValue();
                             }
                             dialog.dispose();
+                        } catch (PropertyVetoException pve) {
+                            NotifyDescriptor descriptor = new NotifyDescriptor.Message(pve.getLocalizedMessage());
+                            DialogDisplayer.getDefault().notify(descriptor);
                         } catch (Exception ex) {
                             NotifyDescriptor descriptor = new NotifyDescriptor.Message(
                                 NbBundle.getBundle(PropertyAction.class).getString("MSG_InvalidValue")); // NOI18N
