@@ -51,6 +51,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.FileEntry;
 import org.netbeans.installer.utils.progress.CompositeProgress;
@@ -974,10 +975,16 @@ public final class FileUtils {
         final File target = new File(source.getParentFile(),
                 source.getName() + PACK_GZ_SUFFIX);
         
-        SystemUtils.executeCommand(
+        ExecutionResults er = SystemUtils.executeCommand(
                 SystemUtils.getPacker().getAbsolutePath(),
                 target.getAbsolutePath(),
                 source.getAbsolutePath());
+        if( er.getErrorCode() != 0) {
+            throw new IOException(ResourceUtils.getString(FileUtils.class,
+                    ERROR_PACK200_FAILED_KEY, 
+                    er.getErrorCode(), er.getStdOut(),er.getStdErr()));
+        }
+        
         
         return target;
     }
@@ -988,10 +995,15 @@ public final class FileUtils {
         final File target = new File(source.getParentFile(),
                 name.substring(0, name.length() - PACK_GZ_SUFFIX.length()));
         
-        SystemUtils.executeCommand(
+        ExecutionResults er = SystemUtils.executeCommand(
                 SystemUtils.getUnpacker().getAbsolutePath(),
                 source.getAbsolutePath(),
                 target.getAbsolutePath());
+        if (er.getErrorCode() != 0) {
+            throw new IOException(ResourceUtils.getString(FileUtils.class,
+                    ERROR_UNPACK200_FAILED_KEY, 
+                    er.getErrorCode(), er.getStdOut(),er.getStdErr()));
+        }
         
         return target;
     }
@@ -1723,4 +1735,8 @@ public final class FileUtils {
     public static final String MESSAGE_DELETE_DIR =
             ResourceUtils.getString(FileUtils.class, 
             "FU.message.delete.dir");//NOI18N
+    public static final String ERROR_PACK200_FAILED_KEY =
+            "FU.error.pack200.failed";//NOI18N
+    public static final String ERROR_UNPACK200_FAILED_KEY =
+            "FU.error.unpack200.failed";//NOI18N
 }
