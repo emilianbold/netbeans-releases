@@ -9,7 +9,6 @@
     <mapID target="viewing_logfile"				url="general/sjs_view_serverlog.html" />
     <mapID target="def_connpool"      				url="general/def_connpool.html" />
     <mapID target="def_jdbcresource"      			url="general/def_jdbcresource.html" />
-    <mapID target="def_persistence"      			url="general/def_persistence.html" />
     <mapID target="def_javamail"      				url="general/def_javamail.html" />
     <mapID target="def_jms"      				url="general/def_jms.html" />
     <mapID target="working_withsjs"          			url="general/working_withSJS.html" />
