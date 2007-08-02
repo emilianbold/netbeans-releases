@@ -215,7 +215,7 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
             _lblProjectFolder = new JLabelOperator(this,
                     Bundle.getStringTrimmed(
                     "org.netbeans.modules.web.project.ui.wizards.Bundle",
-                    "LBL_NWP1_CreatedProjectFolder_Lablel"));
+                    "LBL_NWP1_CreatedProjectFolder_Label"));
         }
         return _lblProjectFolder;
     }
