@@ -1,5 +1,4 @@
-<?xml version="1.0"?>
-
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 The contents of this file are subject to the terms of the Common Development
 and Distribution License (the License). You may not use this file except in
@@ -19,14 +18,18 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
-
-<filesystem>
-  <folder name="org-netbeans-api-project-libraries">
-    <folder name="Libraries">
-      <file name="jsf1102.xml" url="jsf1102.xml"/>
-      <file name="jsf-designtime.xml" url="jsf-designtime.xml"/>
-      <file name="jsf-runtime.xml" url="jsf-runtime.xml"/>
-    </folder>
-  </folder>
-</filesystem>
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+<library version="1.0">
+    <name>jsf-designtime</name>
+    <type>complib</type>
+    <localizing-bundle>org/netbeans/modules/web/libraries/jsf1102/Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/jsf-api.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jsf-1_1_02/jsf-impl.jar!/</resource>
+    </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst:///docs/javaee5-doc-api.zip!/</resource>
+    </volume>
+</library>
