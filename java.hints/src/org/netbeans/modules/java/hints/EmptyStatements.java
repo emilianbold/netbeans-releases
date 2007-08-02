@@ -141,13 +141,13 @@ public class EmptyStatements extends AbstractHint {
             case WHILE_LOOP:
             case DO_WHILE_LOOP:        
                 
-                ed = createErrorDescription(treePath.getParentPath(), compilationInfo);
+                ed = createErrorDescription(treePath.getParentPath(), parent.getKind(), compilationInfo);
                 if ( ed != null ) {                    
                     return Collections.singletonList(ed);
                 }
                 break;         
             case BLOCK:    
-                ed = createErrorDescription(treePath, compilationInfo);
+                ed = createErrorDescription(treePath, parent.getKind(), compilationInfo);
                 if ( ed != null ) {                    
                     return Collections.singletonList(ed);
                 }
@@ -157,11 +157,11 @@ public class EmptyStatements extends AbstractHint {
                 IfTree it = (IfTree)parent;
                 if ( it.getThenStatement() != null && 
                      it.getThenStatement().getKind() == Tree.Kind.EMPTY_STATEMENT ) {
-                    result.add( createErrorDescription(treePath.getParentPath(), compilationInfo) );
+                    result.add( createErrorDescription(treePath.getParentPath(), parent.getKind(), compilationInfo) );
                 }
                 if ( it.getElseStatement() != null &&
                      it.getElseStatement().getKind() == Tree.Kind.EMPTY_STATEMENT ) {
-                    result.add( createErrorDescription(treePath, compilationInfo) ); 
+                    result.add( createErrorDescription(treePath, parent.getKind(), compilationInfo) ); 
                 }
                 return result;
         }       
@@ -193,11 +193,12 @@ public class EmptyStatements extends AbstractHint {
     
     // Private methods ---------------------------------------------------------
     
-    private ErrorDescription createErrorDescription( TreePath tp, CompilationInfo info )  {
+    private ErrorDescription createErrorDescription( TreePath tp, Tree.Kind kind, CompilationInfo info )  {
                         
         return ErrorDescriptionFactory.createErrorDescription(
                     getSeverity().toEditorSeverity(), 
-                    getDisplayName(), 
+                    // getDisplayName(),
+                    NbBundle.getMessage(EmptyStatements.class, "LBL_Empty_" + kind.toString()),
                     // Collections.<Fix>singletonList(new EmptyStatementFix( info.getFileObject(), TreePathHandle.create(tp, info) ) ), 
                     NO_FIXES,    
                     info.getFileObject(),
