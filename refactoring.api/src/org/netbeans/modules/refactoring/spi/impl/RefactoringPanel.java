@@ -145,7 +145,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         setLayout(new BorderLayout());
         add(splitPane, BorderLayout.CENTER);
         if (!isQuery) {
-            splitPane.setRightComponent(new JLabel("<Preview not Available>", SwingConstants.CENTER));
+            splitPane.setRightComponent(new JLabel(org.openide.util.NbBundle.getMessage(RefactoringPanel.class, "LBL_Preview_not_Available"), SwingConstants.CENTER));
         }
         // add panel with buttons
         JButton[] buttons = getButtons();
