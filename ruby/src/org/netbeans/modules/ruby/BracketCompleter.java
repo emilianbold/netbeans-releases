@@ -1026,28 +1026,24 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             }
         }
 
-        if ((ch == '(') || (ch == '[')) {
+        if ((ch == '(') || (ch == '[') || ch == '{') {
             char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
 
             if (((tokenAtDot == ']') &&
                     (LexUtilities.getTokenBalance(doc, RubyTokenId.LBRACKET, RubyTokenId.RBRACKET, dotPos) != 0)) ||
                     ((tokenAtDot == ')') &&
-                    (LexUtilities.getTokenBalance(doc, RubyTokenId.LPAREN, RubyTokenId.RPAREN, dotPos) != 0))) {
+                    (LexUtilities.getTokenBalance(doc, RubyTokenId.LPAREN, RubyTokenId.RPAREN, dotPos) != 0)) ||
+                    ((tokenAtDot == '}') &&
+                    (LexUtilities.getTokenBalance(doc, RubyTokenId.LBRACE, RubyTokenId.RBRACE, dotPos) != 0))) {
                 doc.remove(dotPos, 1);
             }
-        } else if (ch == '\"') {
+        } else if (ch == '\"' || ch == '\'' || ch == '/') {
             char[] match = doc.getChars(dotPos, 1);
 
-            if ((match != null) && (match[0] == '\"')) {
+            if ((match != null) && (match[0] == ch)) {
                 doc.remove(dotPos, 1);
             }
-        } else if (ch == '\'') {
-            char[] match = doc.getChars(dotPos, 1);
-
-            if ((match != null) && (match[0] == '\'')) {
-                doc.remove(dotPos, 1);
-            }
-        }
+        } // TODO: Test other auto-completion chars, like %q-foo-
 
         return true;
     }

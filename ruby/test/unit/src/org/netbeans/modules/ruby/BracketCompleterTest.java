@@ -549,15 +549,14 @@ public class BracketCompleterTest extends RubyTestBase {
         deleteChar("x=(^)", "x=^");
     }
     
-    // BROKEN!
-    //public void testBackspace8() throws Exception {
-    //    deleteChar("x={^}", "x=^");
-    //}
+    public void testBackspace8() throws Exception {
+        // See bug 111534
+        deleteChar("x={^}", "x=^");
+    }
     
-    // BROKEN!
-    //public void testBackspace9() throws Exception {
-    //    deleteChar("x=/^/", "x=^");
-    //}
+    public void testBackspace9() throws Exception {
+        deleteChar("x=/^/", "x=^");
+    }
     
     public void testContComment() throws Exception {
         if (BracketCompleter.CONTINUE_COMMENTS) {
