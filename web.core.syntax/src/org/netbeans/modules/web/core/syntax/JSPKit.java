@@ -49,6 +49,7 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.folding.JspFoldTypes;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo;
 import org.netbeans.spi.jsp.lexer.JspParseData;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.text.CloneableEditorSupport;
@@ -253,12 +254,16 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         if (dobj != null) {
-            if (dobj.getPrimaryFile() != null)
-                return new JspSyntaxSupport(doc,
-                        JspContextInfo.getContextInfo(dobj.getPrimaryFile()).getCachedOpenInfo(doc, dobj.getPrimaryFile(), false).isXmlSyntax());
+            if (dobj.getPrimaryFile() != null) {
+                JspOpenInfo jspOpenInfo = JspContextInfo.getContextInfo(dobj.getPrimaryFile()).getCachedOpenInfo(doc, dobj.getPrimaryFile(), false);
+                if(jspOpenInfo == null) {
+                    Logger.getLogger(JSPKit.class.getName()).log(Level.INFO, "Cannot obtain JspOpenInfo for file " + dobj.getPrimaryFile().getNameExt());
+                }
+                return new JspSyntaxSupport(doc, jspOpenInfo != null ? jspOpenInfo.isXmlSyntax() : false);
+                
+            }
         }
         return new JspSyntaxSupport(doc, false);
-        
     }
     
     /** This method now returns null since the code completion is got from
