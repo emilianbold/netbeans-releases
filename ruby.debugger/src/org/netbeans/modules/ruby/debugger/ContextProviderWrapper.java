@@ -23,11 +23,13 @@ import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ruby.debugger.breakpoints.BreakpointModel;
 import org.netbeans.modules.ruby.debugger.model.CallStackModel;
+import org.netbeans.modules.ruby.debugger.model.SessionsTableModelFilter;
 import org.netbeans.modules.ruby.debugger.model.ThreadsModel;
 import org.netbeans.modules.ruby.debugger.model.VariablesModel;
 import org.netbeans.modules.ruby.debugger.model.WatchesModel;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TreeModel;
 
 /**
@@ -43,6 +45,7 @@ public class ContextProviderWrapper {
     private VariablesModel variablesModel;
     private WatchesModel watchesModel;
     private ThreadsModel threadsModel;
+    private SessionsTableModelFilter sessionsModel;
     
     public ContextProviderWrapper(final ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
@@ -65,6 +68,7 @@ public class ContextProviderWrapper {
         getVariablesModel().fireChanges();
         getWatchesModel().fireChanges();
         getBreakpointModel().fireChanges();
+        getSessionsModel().fireChanges();
     }
     
     public RubySession getRubySession() {
@@ -79,6 +83,19 @@ public class ContextProviderWrapper {
             threadsModel = (ThreadsModel) contextProvider.lookupFirst("ThreadsView", TreeModel.class);
         }
         return threadsModel;
+    }
+    
+    public SessionsTableModelFilter getSessionsModel() {
+        if (sessionsModel == null) {
+            List<TableModelFilter> tableModels = ContextProviderWrapper.debugLookup("SessionsView", TableModelFilter.class);
+            for (TableModelFilter model : tableModels) {
+                if (model instanceof SessionsTableModelFilter) {
+                    sessionsModel = (SessionsTableModelFilter) model;
+                    break;
+                }
+            }
+        }
+        return sessionsModel;
     }
     
     public BreakpointModel getBreakpointModel() {

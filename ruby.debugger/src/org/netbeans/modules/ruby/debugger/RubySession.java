@@ -26,6 +26,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.ruby.debugger.RubySession.State;
 import org.netbeans.modules.ruby.debugger.model.CallSite;
 import org.netbeans.modules.ruby.debugger.ui.CallStackAnnotation;
 import org.netbeans.modules.ruby.rubyproject.execution.FileLocator;
@@ -56,25 +57,34 @@ public final class RubySession {
     private final RubyThreadInfo[] EMPTY_THREAD_INFOS = new RubyThreadInfo[0];
     private final RubyFrame[] EMPTY_FRAMES = new RubyFrame[0];
     private final RubyVariable[] EMPTY_VARIABLES = new RubyVariable[0];
-
+    
     private final RubyDebuggerProxy proxy;
     private final FileLocator fileLocator;
     private RubyThread activeThread;
     private RubyFrame selectedFrame;
     private final DebuggerManagerListener sessionListener;
+    private State state;
+    
+    public enum State { STARTING, RUNNING, STOPPED };
 
     public RubySession(final RubyDebuggerProxy proxy, final FileLocator fileLocator) {
         this.proxy = proxy;
         this.fileLocator = fileLocator;
         this.sessionListener = new RubySessionListener();
+        this.state = State.STARTING;
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_SESSION, sessionListener);
     }
-    
+
+    public State getState() {
+        return state;
+    }
+
     public void resume() {
         selectFrame(null);
         activeThread.resume();
         EditorUtil.unmarkCurrent();
+        state = State.RUNNING;
     }
 
     public void stepInto() {
@@ -84,6 +94,7 @@ public final class RubySession {
                 return;
             }
             activeThread.stepInto(forceNewLine());
+            state = State.RUNNING;
         } catch (RubyDebuggerException e) {
             Util.severe("Cannot step into", e); // NOI18N
         }
@@ -96,6 +107,7 @@ public final class RubySession {
                 return;
             }
             activeThread.stepOver(forceNewLine());
+            state = State.RUNNING;
         } catch (RubyDebuggerException e) {
             Util.severe("Cannot step over", e); // NOI18N
         }
@@ -105,6 +117,7 @@ public final class RubySession {
         try {
             selectFrame(null);
             activeThread.stepReturn();
+            state = State.RUNNING;
         } catch (RubyDebuggerException e) {
             Util.severe("Cannot step return", e); // NOI18N
         }
@@ -121,6 +134,7 @@ public final class RubySession {
         if (file != null) {
             try {
                 activeThread.runTo(file.getAbsolutePath(), line.getLineNumber() + 1);
+                state = State.RUNNING;
             } catch (RubyDebuggerException e) {
                 Util.severe("Cannot step return", e); // NOI18N
             }
@@ -239,6 +253,11 @@ public final class RubySession {
         }
     }
     
+    void suspend(final RubyThread thread, final ContextProviderWrapper contextProvider) {
+        state = State.STOPPED;
+        switchThread(thread, contextProvider);
+    }
+
     public void switchThread(final RubyThread thread, final ContextProviderWrapper contextProvider) {
         if (thread.isSuspended()) {
             activeThread = thread;
