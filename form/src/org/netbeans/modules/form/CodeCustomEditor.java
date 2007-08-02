@@ -22,6 +22,8 @@ package org.netbeans.modules.form;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -29,10 +31,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import org.jdesktop.layout.GroupLayout;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
+import org.netbeans.api.editor.guards.SimpleSection;
 import org.openide.util.Utilities;
 
 /**
@@ -90,12 +90,9 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
                 .add(jScrollPane, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
             .add(typeField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 
-        codePane.setContentType("text/x-java");  // NOI18N
-        EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(codePane);
-        eui.removeLayer(ExtCaret.HIGHLIGHT_ROW_LAYER_NAME);
-        codePane.getDocument().putProperty(Document.StreamDescriptionProperty,
-                                           FormEditor.getFormDataObject(formModel));
-
+        int codePos = -1;
+        FormDataObject dobj = FormEditor.getFormDataObject(formModel);
+        SimpleSection sec = dobj.getFormEditorSupport().getInitComponentSection();
         if ((property instanceof RADProperty) && (property.getWriteMethod() != null)) {
             RADComponent metacomp = ((RADProperty)property).getRADComponent();
             headerLabel.setFont(codePane.getFont());
@@ -103,16 +100,40 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
                     + property.getWriteMethod().getName() + "</b>("); // NOI18N
             footerLabel.setFont(codePane.getFont());
             footerLabel.setText(");"); // NOI18N
+
+            String codeSnippet;
+            if (metacomp != formModel.getTopRADComponent()) {
+                codeSnippet = " " + metacomp.getName() + "." + property.getWriteMethod().getName() + "("; // NOI18N
+            } else {
+                codeSnippet = " " + property.getWriteMethod().getName() + "("; // NOI18N
+            }
+            codePos = sec.getText().indexOf(codeSnippet);
+            if (codePos >= 0) {
+                codePos += codeSnippet.length();
+            }
         }
         else {
             headerLabel.setText(FormUtils.getBundleString("CodeCustomEditor.codeLabel")); // NOI18N
         }
+        if (codePos < 0) {
+            codePos = sec.getText().indexOf('{') + 2;
+        }
+        FormUtils.setupEditorPane(codePane, dobj.getPrimaryFile(), codePos + sec.getStartPosition().getOffset());
+
         typeField.setBorder(BorderFactory.createEmptyBorder());
         typeField.setEditable(false);
         typeField.setFont(codePane.getFont());
         typeField.setText(Utilities.getClassName(property.getValueType()));
 
         codePane.getDocument().addDocumentListener(this);
+
+        // issue 103809
+        addComponentListener(new ComponentAdapter() {
+            public void componentShown(ComponentEvent ev) {
+                revalidate();
+                repaint();
+            }
+        });
     }
 
     void setValue(RADConnectionPropertyEditor.RADConnectionDesignValue value) {
@@ -121,10 +142,6 @@ class CodeCustomEditor extends javax.swing.JPanel implements DocumentListener, R
             codePane.setText(value.getCode());
             ignoreUpdate = false;
         }
-    }
-
-    private int getLineCount() {
-        return codePane.getDocument().getRootElements()[0].getElementCount();
     }
 
     // DocumentListener
