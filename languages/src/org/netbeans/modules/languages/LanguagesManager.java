@@ -269,6 +269,11 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
             int pos = selectInPos + increment;
             createSeparator(popup, "SeparatorAfterSelectInPopupAction", pos);
             boolean actionAdded = false;
+            if (l.getFeatures("SEMANTIC_USAGE").size() > 0) {
+                actionAdded = true;
+                pos += increment;
+                FileUtil.createData (popup, "org-netbeans-modules-languages-features-GoToDeclarationAction.instance").setAttribute("position", pos);
+            }
             for (Feature action : actions) {
                 if (action.getBoolean ("explorer", false))
                     continue;
