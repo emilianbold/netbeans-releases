@@ -325,7 +325,6 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.jpa.refactoring</friend>
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
-                <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.j2ee.persistence.api.entity.generator</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator</package>
