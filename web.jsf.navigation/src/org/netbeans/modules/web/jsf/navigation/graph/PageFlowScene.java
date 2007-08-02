@@ -199,10 +199,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         if (!widgets.contains(malFormedLabel)) {
             addChild(malFormedLabel);
             validate();
-        } else {
-            addChild(malFormedLabel);
-            validate();
-        }
+        } 
     }
 
     /**
@@ -211,12 +208,9 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     public void removeMalFormedWidget() {
         List<Widget> widgets = getChildren();
         if (widgets.contains(malFormedLabel)) {
-            addChild(malFormedLabel);
+            removeChild(malFormedLabel);  //Removed major bug... Not sure what I was doing before...
             validate();
-        } else {
-            removeChild(malFormedLabel);
-            validate();
-        }
+        } 
     }
 
 
