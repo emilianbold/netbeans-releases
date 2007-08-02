@@ -81,7 +81,6 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
 
         prefs.putBoolean("UML_Show_Aliases", showAlias.isSelected());
-        prefs.putBoolean("UML_Prompt_to_Save_Project", promptToSaveCB.isSelected());
         prefs.putBoolean("UML_Open_Project_Diagrams", openProjectDiagramsCB.isSelected());
 
         prefs.put("UML_Automatically_Size_Elements", resizeMappedChoices[autoResizeIndex]);
@@ -104,11 +103,6 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
             showAlias.setSelected(true);
         } else {
             showAlias.setSelected(false);
-        }
-        if (prefs.getBoolean("UML_Prompt_to_Save_Project", false)) {
-            promptToSaveCB.setSelected(true);
-        } else {
-            promptToSaveCB.setSelected(false);
         }
         if (prefs.getBoolean("UML_Open_Project_Diagrams", true)) {
             openProjectDiagramsCB.setSelected(true);
@@ -186,7 +180,6 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
     private void initComponents() {
 
         advancedPropsPanel = new javax.swing.JPanel();
-        promptToSaveCB = new javax.swing.JCheckBox();
         openProjectDiagramsCB = new javax.swing.JCheckBox();
         showAlias = new javax.swing.JCheckBox();
         jPanel4 = new javax.swing.JPanel();
@@ -207,10 +200,6 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
 
-        promptToSaveCB.setSelected(true);
-        promptToSaveCB.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.promptToSaveCB.text")); // NOI18N
-        promptToSaveCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
         openProjectDiagramsCB.setSelected(true);
         openProjectDiagramsCB.setText(org.openide.util.NbBundle.getMessage(GeneralOptionsPanelForm.class, "GeneralOptionsPanel.openProjectDiagramsCB.text")); // NOI18N
         openProjectDiagramsCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -224,7 +213,6 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
             advancedPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(advancedPropsPanelLayout.createSequentialGroup()
                 .add(advancedPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(promptToSaveCB)
                     .add(openProjectDiagramsCB)
                     .add(showAlias))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -232,12 +220,9 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
         advancedPropsPanelLayout.setVerticalGroup(
             advancedPropsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(advancedPropsPanelLayout.createSequentialGroup()
-                .add(promptToSaveCB)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(openProjectDiagramsCB)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(showAlias)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .add(showAlias))
         );
 
         displayEmpty.setSelected(true);
@@ -368,13 +353,9 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(20, 20, 20)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(jLabel3)
-                        .add(63, 63, 63))
-                    .add(layout.createSequentialGroup()
-                        .add(advancedPropsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                    .add(jLabel3)
+                    .add(advancedPropsPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(43, 43, 43)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(jLabel4)
                     .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -412,7 +393,6 @@ public class GeneralOptionsPanelForm extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JCheckBox openProjectDiagramsCB;
-    private javax.swing.JCheckBox promptToSaveCB;
     private javax.swing.JCheckBox reconnect;
     private javax.swing.JCheckBox resizeCB;
     private javax.swing.JCheckBox showAlias;
