@@ -147,11 +147,26 @@ public class RetoucheUtils {
         return null;
     }
     
+    public static Set<ElementHandle<TypeElement>> getImplementorsAsHandles(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {    
+       LinkedList<ElementHandle<TypeElement>> elements = new LinkedList<ElementHandle<TypeElement>>(idx.getElements(ElementHandle.create(el),
+                EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+                EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        HashSet<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
+        while(!elements.isEmpty()) {
+            ElementHandle<TypeElement> next = elements.removeFirst();
+            result.add(next);
+            elements.addAll(idx.getElements(next,
+                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
+                    EnumSet.of(ClassIndex.SearchScope.SOURCE)));
+        }
+        return result;
+    }
+
     public static Collection<ExecutableElement> getOverridingMethods(ExecutableElement e, CompilationInfo info) {
         Collection<ExecutableElement> result = new ArrayList();
         TypeElement parentType = (TypeElement) e.getEnclosingElement();
         //XXX: Fixme IMPLEMENTORS_RECURSIVE were removed
-        Set<ElementHandle<TypeElement>> subTypes = info.getClasspathInfo().getClassIndex().getElements(ElementHandle.create(parentType),  EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),EnumSet.of(ClassIndex.SearchScope.SOURCE));
+        Set<ElementHandle<TypeElement>> subTypes = getImplementorsAsHandles(info.getClasspathInfo().getClassIndex(), info.getClasspathInfo(), parentType);
         for (ElementHandle<TypeElement> subTypeHandle: subTypes){
             TypeElement type = subTypeHandle.resolve(info);
             for (ExecutableElement method: ElementFilter.methodsIn(type.getEnclosedElements())) {

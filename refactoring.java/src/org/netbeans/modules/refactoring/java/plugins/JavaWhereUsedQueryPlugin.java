@@ -32,6 +32,7 @@ import org.netbeans.modules.refactoring.java.WhereUsedElement;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.ErrorManager;
@@ -143,20 +144,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
     
     private Set<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el) {
         Set<FileObject> set = new HashSet<FileObject>();
-        LinkedList<ElementHandle<TypeElement>> elements = new LinkedList<ElementHandle<TypeElement>>(idx.getElements(ElementHandle.create(el),
-                EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-        HashSet<ElementHandle<TypeElement>> result = new HashSet<ElementHandle<TypeElement>>();
-        while(!elements.isEmpty()) {
-            ElementHandle<TypeElement> next = elements.removeFirst();
-            result.add(next);
-            elements.addAll(idx.getElements(next,
-                    EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS),
-                    EnumSet.of(ClassIndex.SearchScope.SOURCE)));
-        }
-        for (ElementHandle<TypeElement> e : result) {
+        for (ElementHandle<TypeElement> e : RetoucheUtils.getImplementorsAsHandles(idx, cpInfo, el)) {
             FileObject fo = SourceUtils.getFile(e, cpInfo);
-            assert fo != null: "issue 90196, Cannot find file for " + e + ". cpInfo=" + cpInfo ;
+            assert fo != null : "issue 90196, Cannot find file for " + e + ". cpInfo=" + cpInfo;
             set.add(fo);
         }
         return set;
