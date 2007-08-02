@@ -32,7 +32,7 @@ import org.openidex.search.SearchType;
  *
  * @author  Marian Petras
  */
-public class PrintDetailsTask implements Runnable {
+final class PrintDetailsTask implements Runnable {
 
     /** */
     private static final int BUFFER_SIZE = 8;
@@ -53,9 +53,9 @@ public class PrintDetailsTask implements Runnable {
     
     
     /** Creates a new instance of PrintDetailsTask */
-    public PrintDetailsTask(final Object[] matchingObjects,
-                            final BasicSearchCriteria basicCriteria,
-                            final List<SearchType> searchTypes) {
+    PrintDetailsTask(final Object[] matchingObjects,
+                     final BasicSearchCriteria basicCriteria,
+                     final List<SearchType> searchTypes) {
         this.objects = matchingObjects;
         this.basicSearchCriteria = basicCriteria;
         this.searchTypes = searchTypes;
@@ -135,7 +135,7 @@ public class PrintDetailsTask implements Runnable {
     
     /**
      */
-    public Reference<OutputWriter> getOutputWriterRef() {
+    Reference<OutputWriter> getOutputWriterRef() {
         return displayer.getOutputWriterRef();
     }
 
