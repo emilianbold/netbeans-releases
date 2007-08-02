@@ -430,4 +430,25 @@
 <mapID target="org.netbeans.modules.css.text.syntax.CSSEditorOptions"     url="xml/xml_editor-props.html" />
 <mapID target="org.netbeans.modules.xml.text.syntax.DTDOptions"     url="xml/xml_editor-props.html" />
 
+
+
+
+<!-- Local History -->
+<mapID target="hist_about" url="local-history/hist_about.html" />
+<mapID target="hist_working_with" url="local-history/hist_working_with.html" />
+<mapID target="hist_settings" url="local-history/hist_settings.html" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </map>
