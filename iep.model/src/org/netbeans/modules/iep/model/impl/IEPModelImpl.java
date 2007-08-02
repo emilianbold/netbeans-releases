@@ -24,6 +24,13 @@ import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPComponentFactory;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.LinkComponent;
+import org.netbeans.modules.iep.model.LinkComponentContainer;
+import org.netbeans.modules.iep.model.OperatorComponent;
+import org.netbeans.modules.iep.model.OperatorComponentContainer;
+import org.netbeans.modules.iep.model.PlanComponent;
+import org.netbeans.modules.iep.model.SchemaComponent;
+import org.netbeans.modules.iep.model.SchemaComponentContainer;
 
 
 import org.netbeans.modules.xml.xam.ComponentUpdater;
@@ -51,7 +58,7 @@ public class IEPModelImpl extends IEPModel {
                 //     IEPModel.IEP_COMPONENT.equals( root.getLocalName() )) 
                 if (IEPModel.IEP_COMPONENT.equals( root.getLocalName() )) 
 	        {
-                    rootComponent = new ComponentImpl (this, root);
+                    rootComponent = new PlanComponentImpl (this, root);
 	            return rootComponent;
 	        } 
 	        return null;
@@ -111,12 +118,11 @@ public class IEPModelImpl extends IEPModel {
 	}
 
 	public IEPComponent getRootComponent() {
-		// TODO Auto-generated method stub
 		return rootComponent;
 	}
         
-        public Component getComponent() {
-            return rootComponent;
+        public PlanComponent getPlanComponent() {
+            return (PlanComponent) rootComponent;
         }
 	
 	
@@ -129,6 +135,8 @@ public class IEPModelImpl extends IEPModel {
         change.setParentComponent(parentComponent);
         return change;
     }
+
+	
 
     
 

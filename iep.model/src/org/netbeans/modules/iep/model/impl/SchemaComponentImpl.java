@@ -2,6 +2,7 @@ package org.netbeans.modules.iep.model.impl;
 
 import java.util.List;
 
+import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.SchemaAttribute;
 import org.netbeans.modules.iep.model.SchemaComponent;
@@ -15,6 +16,12 @@ public class SchemaComponentImpl extends ComponentImpl implements SchemaComponen
 
 	public SchemaComponentImpl(IEPModel model, Element element) {
 		super(model, element);
+	}
+	
+	public IEPComponent createChild (Element childEl) {
+		IEPComponent child = null;
+		
+		return child;
 	}
 	
 	public SchemaComponent duplicateSchema(String name) {

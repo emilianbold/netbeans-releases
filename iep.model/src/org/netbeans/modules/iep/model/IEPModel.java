@@ -21,7 +21,6 @@ package org.netbeans.modules.iep.model;
 
 import java.util.List;
 
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.Referenceable;
@@ -40,16 +39,9 @@ public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> imple
      protected IEPModel(ModelSource source) {
         super(source);
      }
-
-    /**
-     * @return WLM model root component 'definitions'
-     */
-	//public abstract TTasks getTasks();
-	
-	//public abstract void setTasks (TTasks tasks);
     
     /**
-     * @return WLM entity factory.
+     * @return IEP component factory.
      */
     public abstract IEPComponentFactory getFactory();
     
@@ -77,5 +69,6 @@ public abstract class IEPModel extends AbstractDocumentModel<IEPComponent> imple
 //     */
 //   <T extends ReferenceableWLMComponent> T  findComponetnByName(QName name, Class<T> type);
    
-     public abstract Component getComponent();
+     public abstract PlanComponent getPlanComponent();
+     
 }
