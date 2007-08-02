@@ -223,7 +223,7 @@ public class PartnerLinkTypeWidget extends AbstractWidget<PartnerLinkType>
     }
 
     public boolean isCollapsed() {
-        return mContentWidget.isVisible();
+        return !mContentWidget.isVisible();
     }
 
     public Object hashKey() {

@@ -61,15 +61,16 @@ import org.netbeans.api.visual.layout.LayoutFactory.SerialAlignment;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.TextFieldInplaceEditorProvider;
 import org.netbeans.modules.xml.refactoring.spi.SharedUtils;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.actions.TextFieldInplaceEditorProvider;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.border.FilledBorder;
 import org.netbeans.modules.xml.wsdl.ui.view.grapheditor.layout.LeftRightLayout;
 import org.netbeans.modules.xml.xam.AbstractComponent;
@@ -262,7 +263,7 @@ public class MessageWidget extends AbstractWidget<Message>
             }
         }
         
-        if (partHitPointWidget.getParentWidget() != null) {
+        if (partHitPointWidget != null && partHitPointWidget.getParentWidget() != null) {
             if (partHitPointWidget.isHitAt(partHitPointWidget.convertSceneToLocal(
                     scenePoint))) 
             {
@@ -304,17 +305,15 @@ public class MessageWidget extends AbstractWidget<Message>
 
     private void showHitPoint(Point scenePoint, Object draggedObj) {
         this.draggedObject = draggedObj;
-        
+        if (partHitPointWidget == null) {
+            partHitPointWidget = new PartHitPointWidget(getScene());
+        }
         PartHitPointPosition newPosition = getPartHitPointPosition(scenePoint);
         PartHitPointPosition oldPosition = partHitPointPosition;
                 
         if (table == null) {
             table = createEmptyTable(getScene());
             contentWidget.addChild(0, table);
-        }
-        
-        if (partHitPointWidget != null) {
-            partHitPointWidget = new PartHitPointWidget(getScene());
         }
         
         if (!newPosition.equals(oldPosition)) {
@@ -450,7 +449,7 @@ public class MessageWidget extends AbstractWidget<Message>
     }
 
     public boolean isCollapsed() {
-        return contentWidget.isVisible();
+        return !contentWidget.isVisible();
     }
     
     
@@ -520,45 +519,35 @@ public class MessageWidget extends AbstractWidget<Message>
         Message message = getWSDLComponent();
         WSDLModel model = message.getModel();
 
-        if (position.column == 0) {
-            try {
-                if (model.startTransaction()) {
-                    Part newPart = model.getFactory().createPart();
-                    newPart.setName(MessagesUtils.createNewPartName(message));
-                    if (sc instanceof GlobalType) {
-                        newPart.setType(model.getDefinitions().createSchemaReference(
-                                (GlobalType) sc, GlobalType.class));
-                    } else {
-                        newPart.setElement(model.getDefinitions().createSchemaReference(
-                                (GlobalElement) sc, GlobalElement.class));
-                    }
-
-                    ((AbstractComponent<WSDLComponent>) message).insertAtIndex(Message.PART_PROPERTY, newPart, position.row);
-                }
-            } finally {
-                model.endTransaction();
-            }
-        } else {
-            try {
-                if (model.startTransaction()) {
-                    Part[] parts = message.getParts().toArray(new Part[0]);
-                    Part part = parts[position.row];
-
-                    if (sc instanceof GlobalType) {
-                        part.setType(model.getDefinitions().createSchemaReference(
-                                (GlobalType) sc, GlobalType.class));
-                        part.setElement(null);
-                    } else {
-                        part.setElement(model.getDefinitions().createSchemaReference(
-                                (GlobalElement) sc, GlobalElement.class));
-                        part.setType(null);
-                    }
-                }
-            } finally {
-                model.endTransaction();
-            }
+        Part part = null;
+        if (model.startTransaction()) {
+        	try {
+        		if (position.column == 0) {
+        			part = model.getFactory().createPart();
+        			part.setName(MessagesUtils.createNewPartName(message));
+        			((AbstractComponent<WSDLComponent>) message).insertAtIndex(Message.PART_PROPERTY, part, position.row);
+        		} else {
+        			Part[] parts = message.getParts().toArray(new Part[0]);
+        			part = parts[position.row];
+        		}
+        		if (part != null) {
+        			if (sc instanceof GlobalType) {
+        				part.setType(model.getDefinitions().createSchemaReference(
+        						(GlobalType) sc, GlobalType.class));
+        				part.setElement(null);
+        			} else {
+        				part.setElement(model.getDefinitions().createSchemaReference(
+        						(GlobalElement) sc, GlobalElement.class));
+        				part.setType(null);
+        			}
+        		} else {
+        			model.rollbackTransaction();
+        		}
+        	} finally {
+        		if (model.isIntransaction()) model.endTransaction();
+        	}
         }
-        
+
         return true;
     }
     

@@ -34,6 +34,7 @@ import org.netbeans.modules.xml.xam.ui.actions.GotoType;
 import org.netbeans.modules.xml.xam.ui.actions.SourceGotoType;
 import org.netbeans.modules.xml.xam.ui.actions.SuperGotoType;
 import org.netbeans.modules.xml.xam.ui.cookies.GotoCookie;
+import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -105,7 +106,7 @@ public class EmbeddedSchemaNode extends FilterNode {
         @Override
         protected Node copyNode(Node origNode) {
             InstanceContent content = new InstanceContent();
-            Node node =  new FilterNode(origNode, new EmbeddedSchemaChildren(origNode, objList), new ProxyLookup(new Lookup[] {new AbstractLookup(content), origNode.getLookup()}));
+            Node node =  new EmbeddedReadOnlySchemaComponentNode(origNode, new EmbeddedSchemaChildren(origNode, objList), new ProxyLookup(new Lookup[] {new AbstractLookup(content), origNode.getLookup()}));
             if (objList != null) {
                 for (Object obj : objList) {
                     content.add(obj);
@@ -114,8 +115,19 @@ public class EmbeddedSchemaNode extends FilterNode {
             return node;
             
         }
-        
-        
-        
+    }
+    
+    static class EmbeddedReadOnlySchemaComponentNode extends FilterNode {
+		
+		public EmbeddedReadOnlySchemaComponentNode(Node original,
+				Children children, Lookup lookup) {
+			super(original, children, lookup);
+		}
+
+		@Override
+		public boolean canCopy() {
+			return true;
+		}
+    	
     }
 }
