@@ -62,6 +62,7 @@ public class CompilationInfo {
     final JavaFileObject jfo;    
     final JavaSource javaSource;        
     boolean needsRestart;
+    boolean parserCrashed;      //When javac throws an error, the moveToPhase sets this flag to true to prevent the same exception to be rethrown
     
     private ElementUtilities elementUtilities;
     private TreeUtilities treeUtilities;

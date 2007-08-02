@@ -1093,7 +1093,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
      *
      */
     static Phase moveToPhase (final Phase phase, final CompilationInfo currentInfo, final boolean cancellable) throws IOException {
-        Phase currentPhase = currentInfo.getPhase();                
+        boolean parserError = currentInfo.parserCrashed;
+        Phase currentPhase = currentInfo.getPhase();
+        if (parserError) {
+            return currentPhase;
+        }
         final boolean isMultiFiles = currentInfo.getJavaSource().files.size()>1;
         LowMemoryNotifier lm = null;
         LMListener lmListener = null;
@@ -1181,21 +1185,26 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         } catch (CancelAbort ca) {
             return Phase.MODIFIED;
         } catch (Abort abort) {
-            currentPhase = Phase.UP_TO_DATE;
+            parserError = true;
+            currentPhase = Phase.MODIFIED;
         } catch (IOException ex) {
-            currentPhase = Phase.UP_TO_DATE;
+            currentInfo.parserCrashed = true;
+            currentPhase = Phase.MODIFIED;
             dumpSource(currentInfo, ex);
             throw ex;
         } catch (ReattributionException ex) {
-            currentPhase = Phase.UP_TO_DATE;
+            parserError = true;
+            currentPhase = Phase.MODIFIED;
             dumpSource(currentInfo, ex);
             throw new RuntimeException(ex);
         } catch (RuntimeException ex) {
-            currentPhase = Phase.UP_TO_DATE;
+            parserError = true;
+            currentPhase = Phase.MODIFIED;
             dumpSource(currentInfo, ex);
             throw ex;        
         } catch (Error ex) {
-            currentPhase = Phase.UP_TO_DATE;
+            parserError = true;
+            currentPhase = Phase.MODIFIED;
             dumpSource(currentInfo, ex);
             throw ex;
         }
@@ -1207,6 +1216,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 lm.removeLowMemoryListener (lmListener);
             }
             currentInfo.setPhase(currentPhase);
+            currentInfo.parserCrashed = parserError;
         }
         return currentPhase;
     }
