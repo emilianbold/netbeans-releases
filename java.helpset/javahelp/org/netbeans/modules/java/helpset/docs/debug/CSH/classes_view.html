@@ -16,60 +16,66 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 
 <p>You can open the Classes window by choosing Window &gt; Debugging &gt; Classes. If you open the Classes window when a debugging session is running, it closes automatically when you end the debugging session. If you open the window when no debugging session is running, it stays open until you close it.</p>
-<p>The Classes window displays the hierarchy of all classes that have been loaded into the virtual machine hosting the program that is being debugged. The contents of the Classes window is dependent on the current context. When you change the current session, the Classes window is updated to show the classes for that session.</p>
-<p>You can click the turner control to the left of the class name to expand or collapse the class. You can inspect the fields, constructors, and methods in your program as well as inspect the value of static variables.</p>
+<p>The Classes window displays the hierarchy of all classes that have been loaded into the virtual machine hosting the program that is being debugged. 
+The contents of the Classes window is dependent on the current context. 
+When you change the current session, the Classes window is updated to show the classes for that session.</p>
+<p>You can click the turner control to the left of the class name to expand or collapse the class loader or class. </p>
 <p>The following table describes the icons used in the Classes window.</p>
 <table border="1" cellpadding="5" cellspacing="0">
 	<tr align="left" valign="top">
 		<th scope="col">Icon</th>
 		<th scope="col">Description</th>
 	</tr>
-	<tr>
-		<td align="center"><img src="../../files/images/class.gif" alt="Class icon"></td>
+        <tr>
+		<td align="center"><img src="../images/classLoader.gif" alt="Class Loader icon"></td>
+		<td>Class Loader.</td>
+	</tr>
+        <tr>
+		<td align="center"><img src="../images/Classes.gif" alt="Class icon"></td>
 		<td>Class.</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/constructors.gif" alt="Constructor category icon"></td>
-		<td>Category node for constructors.</td>
+		<td align="center"><img src="../images/interface.gif" alt="Interface icon"></td>
+		<td>Interface.</td>
 	</tr>
-	<tr>
-		<td align="center"><img src="../../files/images/constructorPackage.gif" alt="Constructor package icon "></td>
+	<!-- <tr>
+		<td align="center"><img src="../images/constructorPackage.gif" alt="Constructor package icon "></td>
 		<td>Constructor with default access.</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/constructorPrivate.gif" alt="Private constructor icon"></td>
+		<td align="center"><img src="../images/constructorPrivate.gif" alt="Private constructor icon"></td>
 		<td>Private constructor.</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/constructorPublic.gif" alt="Public constructor icon"></td>
+		<td align="center"><img src="../images/constructorPublic.gif" alt="Public constructor icon"></td>
 		<td>Public constructor or nonstatic initializer.</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/constructorProtected.gif" alt="Protected constructor icon"></td>
+		<td align="center"><img src="../images/constructorProtected.gif" alt="Protected constructor icon"></td>
 		<td>Constructor with protected access.</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/initializerSt.gif" alt="Static initializer icon"></td>
+		<td align="center"><img src="../images/initializerSt.gif" alt="Static initializer icon"></td>
 		<td>Static initializer.</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/methods.gif" alt="Method icon"></td>
+		<td align="center"><img src="../images/methods.gif" alt="Method icon"></td>
 		<td>Category node for methods.</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/methodPackage.gif" alt="Method package icon"></td>
+		<td align="center"><img src="../images/methodPackage.gif" alt="Method package icon"></td>
 		<td>Method with default access (nonstatic).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/methodPrivate.gif" alt="Private method icon"></td>
+		<td align="center"><img src="../images/methodPrivate.gif" alt="Private method icon"></td>
 		<td>Private method (nonstatic).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/methodPublic.gif" alt="Public method icon"></td>
+		<td align="center"><img src="../images/methodPublic.gif" alt="Public method icon"></td>
 		<td>Public method (nonstatic).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/methodProtected.gif" alt="Protected access method icon"></td>
+		<td align="center"><img src="../images/methodProtected.gif" alt="Protected access method icon"></td>
 		<td>Method with protected access (nonstatic).</td>
 	</tr>
 	<tr>
@@ -89,45 +95,45 @@
 		<td>Method with protected access (static).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/variables.gif" alt="Field icon"></td>
+		<td align="center"><img src="../images/variables.gif" alt="Field icon"></td>
 		<td>Category node for fields.</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/variablePackage.gif" alt="Nonstatic field icon"></td>
+		<td align="center"><img src="../images/variablePackage.gif" alt="Nonstatic field icon"></td>
 		<td>Field with default access (nonstatic).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/variablePrivate.gif" alt="Private nonstatic field icon"></td>
+		<td align="center"><img src="../images/variablePrivate.gif" alt="Private nonstatic field icon"></td>
 		<td>Private field (nonstatic).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/variablePublic.gif" alt="Public nonstatic field icon"></td>
+		<td align="center"><img src="../images/variablePublic.gif" alt="Public nonstatic field icon"></td>
 		<td>Public field (nonstatic).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/variableProtected.gif" alt="Protected access, nonstatic field icon"></td>
+		<td align="center"><img src="../images/variableProtected.gif" alt="Protected access, nonstatic field icon"></td>
 		<td>Field with protected access (nonstatic).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/variableStPackage.gif" alt=" Default access, static field icon"></td>
+		<td align="center"><img src="../images/variableStPackage.gif" alt=" Default access, static field icon"></td>
 		<td>Field with default access (static).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/variableStPrivate.gif" alt="Static private field icon"></td>
+		<td align="center"><img src="../images/variableStPrivate.gif" alt="Static private field icon"></td>
 		<td>Private field (static).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/variableStPublic.gif" alt="Static public field icon"></td>
+		<td align="center"><img src="../images/variableStPublic.gif" alt="Static public field icon"></td>
 		<td>Public field (static).</td>
 	</tr>
 	<tr>
-		<td align="center"><img src="../../files/images/variableStProtected.gif" alt="Static protected access field icon"></td>
+		<td align="center"><img src="../images/variableStProtected.gif" alt="Static protected access field icon"></td>
 		<td>Field with protected access (static).</td>
-	</tr>
+	</tr> -->
 </table>
 
 <h3>Actions</h3>
-<p>The pop-up menu in the Classes window includes the following item.</p>
+<p>The pop-up menu in the Classes window includes the following items.</p>
 <table border="1" cellpadding="5" cellspacing="0">
   <tr align="left" valign="top">
     <th scope="col" nowrap>Menu Item</th>
@@ -135,9 +141,14 @@
   </tr>
   <tr valign="top">
     <td>List Options</td>
-    <td>Enables you to customize the display of the Call Stack window, including adding and removing columns of information, reordering the columns, and sorting the columns. 
+    <td>Enables you to customize the Classes window by choosing how classes are sorted in the display.
 See <a href="../debug_customize_views.html">Customizing a Debugger Window</a> for more information. </td>
   </tr>
+    <tr>
+        <td>View Packages As</td>
+        <td>Enables you to customize how packages are displayed in the window. 
+        You can choose to display packages in List or Tree view.</td>
+    </tr>
 </table>
 
 <dl>
