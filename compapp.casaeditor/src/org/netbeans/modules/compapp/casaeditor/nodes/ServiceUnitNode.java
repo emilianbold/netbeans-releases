@@ -26,6 +26,8 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.LoadWSDLPortsAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddConsumesPinAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddProvidesPinAction;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
@@ -58,8 +60,15 @@ public class ServiceUnitNode extends CasaNode {
     
     public void addCustomActions(List<Action> actions) {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
-        if (su != null && su.isInternal()) {
+        if (su == null) {
+            return;
+        }
+        
+        if (su.isInternal()) {
             actions.add(SystemAction.get(LoadWSDLPortsAction.class));
+        } else {
+            actions.add(SystemAction.get(AddConsumesPinAction.class));
+            actions.add(SystemAction.get(AddProvidesPinAction.class));
         }
     }
 

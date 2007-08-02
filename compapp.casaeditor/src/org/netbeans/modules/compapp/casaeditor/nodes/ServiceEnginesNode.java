@@ -23,29 +23,35 @@ import java.awt.Image;
 import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddExternalServiceUnitAction;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author Josh Sandusky
  */
 public class ServiceEnginesNode extends CasaNode {
-    
+
     private static final Image ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ServiceEnginesNode.png");      // NOI18N
-    
+
     public ServiceEnginesNode(List<CasaServiceEngineServiceUnit> data, CasaNodeFactory factory) {
         super(data, new MyChildren(data, factory), factory);
     }
-    
-    
+
+
     public String getName() {
         return NbBundle.getMessage(getClass(), "LBL_JbiModules");       // NOI18N
     }
-    
-    
+
+    @Override
+    public void addCustomActions(List actions) {
+        actions.add(SystemAction.get(AddExternalServiceUnitAction.class));
+    }
+
     private static class MyChildren extends CasaNodeChildren {
         public MyChildren(Object data, CasaNodeFactory factory) {
             super(data, factory);
@@ -58,11 +64,11 @@ public class ServiceEnginesNode extends CasaNode {
             return null;
         }
     }
-    
+
     public Image getIcon(int type) {
         return ICON;
     }
-    
+
     public Image getOpenedIcon(int type) {
         return ICON;
     }

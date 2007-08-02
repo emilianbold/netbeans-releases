@@ -23,29 +23,36 @@ import java.awt.Image;
 import java.util.List;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaPort;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.WSDLEndpointAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddWSDLPortsAction;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author Josh Sandusky
  */
 public class WSDLEndpointsNode extends CasaNode {
-    
+
     private static final Image ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/WSDLEndpointsNode.png");   // NOI18N
-    
+
     public WSDLEndpointsNode(List<CasaPort> data, CasaNodeFactory factory) {
         super(data, new MyChildren(data, factory), factory);
     }
-    
-    
+
+
     public String getName() {
         return NbBundle.getMessage(getClass(), "LBL_WSDLEndpoints");        // NOI18N
     }
-    
-    
+
+    @Override
+    public void addCustomActions(List actions) {
+        actions.add(SystemAction.get(AddWSDLPortsAction.class));
+    }
+
     private static class MyChildren extends CasaNodeChildren {
         public MyChildren(Object data, CasaNodeFactory factory) {
             super(data, factory);
@@ -58,11 +65,11 @@ public class WSDLEndpointsNode extends CasaNode {
             return null;
         }
     }
-    
+
     public Image getIcon(int type) {
         return ICON;
     }
-    
+
     public Image getOpenedIcon(int type) {
         return ICON;
     }

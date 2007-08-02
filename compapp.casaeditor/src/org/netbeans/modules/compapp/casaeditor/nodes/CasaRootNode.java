@@ -35,6 +35,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddWSDLPortsAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddExternalServiceUnitAction;
 import org.netbeans.modules.compapp.casaeditor.properties.LookAndFeelProperty;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
@@ -44,32 +45,33 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author Josh Sandusky
  */
 public class CasaRootNode extends CasaNode {
-    
+
     private static final Image ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/CasaRootNode.png"); // NOI18N
-    
+
     private static final String CHILD_ID_WSDL_ENDPOINTS  = "WSDLEndpoints";     // NOI18N
     private static final String CHILD_ID_SERVICE_ENGINES = "ServiceEngines";    // NOI18N
     private static final String CHILD_ID_CONNECTIONS     = "Connections";       // NOI18N
-    
+
     private static final String[] CHILD_TYPES = {
         CHILD_ID_WSDL_ENDPOINTS,
         CHILD_ID_SERVICE_ENGINES,
         CHILD_ID_CONNECTIONS
     };
-    
-    
+
+
     public CasaRootNode(Object data, CasaNodeFactory factory) {
         super(data, new MyChildren(data, factory), factory);
     }
-    
-    
+
+
     public String getName() {
         DataObject dataObject = getDataObject();
         if (dataObject != null) {
@@ -83,7 +85,7 @@ public class CasaRootNode extends CasaNode {
         if (model == null) {
             return;
         }
-        
+
         Sheet.Set mainPropertySet =
                 getPropertySet(sheet, PropertyUtils.PropertiesGroups.MAIN_SET);
 
@@ -100,11 +102,11 @@ public class CasaRootNode extends CasaNode {
     public Image getIcon(int type) {
         return ICON;
     }
-    
+
     public Image getOpenedIcon(int type) {
         return ICON;
     }
-    
+
     public boolean isValidSceneActionForLocation(Action action, Widget widget, Point sceneLocation) {
         if (action instanceof AddJBIModuleAction) {
             CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
@@ -116,7 +118,7 @@ public class CasaRootNode extends CasaNode {
             }
             return false;
         }
-        
+
         else if (action instanceof AddWSDLPortsAction) {
             CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
             Widget bindingRegion = scene.getBindingRegion();
@@ -127,24 +129,36 @@ public class CasaRootNode extends CasaNode {
             }
             return false;
         }
-        
+
+        else if (action instanceof AddExternalServiceUnitAction) {
+            CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
+            Widget externalRegion = scene.getExternalRegion();
+            Rectangle externalRegionRect =
+                    externalRegion.convertLocalToScene(new Rectangle(externalRegion.getBounds().width, externalRegion.getBounds().height));
+            if (externalRegionRect.contains(sceneLocation)) {
+                return true;
+            }
+            return false;
+        }
+
         return true;
     }
-    
+
     public void addCustomActions(List<Action> actions) {
         try {
             final Project jbiProject = getModel().getJBIProject();
             actions.add(new AddJBIModuleAction(jbiProject));
-            actions.add(new AddWSDLPortsAction(getDataObject()));
+            actions.add(SystemAction.get(AddWSDLPortsAction.class));
+            actions.add(SystemAction.get(AddExternalServiceUnitAction.class));
             actions.add(null);
             actions.add(new AutoLayoutAction(getDataObject()));
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
     }
-    
-    
-    
+
+
+
     private static class MyChildren extends CasaNodeChildren<String> {
         private WeakReference mReference;
         public MyChildren(Object data, CasaNodeFactory factory) {
@@ -156,13 +170,13 @@ public class CasaRootNode extends CasaNode {
                 try {
                     CasaWrapperModel model = (CasaWrapperModel) mReference.get();
                     if (keyName.equals(CHILD_ID_WSDL_ENDPOINTS)) {
-                        return new Node[] { 
+                        return new Node[] {
                             mNodeFactory.createNode_portList(model.getCasaPorts()) };
                     } else if (keyName.equals(CHILD_ID_SERVICE_ENGINES)) {
-                        return new Node[] { 
+                        return new Node[] {
                             mNodeFactory.createNode_suList(model.getServiceEngineServiceUnits()) };
                     } else if (keyName.equals(CHILD_ID_CONNECTIONS)) {
-                        return new Node[] { 
+                        return new Node[] {
                             mNodeFactory.createNode_connectionList(model.getCasaConnectionList(false)) };
                     }
                 } catch (Exception e) {
@@ -176,17 +190,17 @@ public class CasaRootNode extends CasaNode {
         }
     }
 
-    
-    
+
+
     private static class AddJBIModuleAction extends AbstractAction {
-        
+
         private WeakReference mProjectReference;
-        
+
         public AddJBIModuleAction(Project jbiProject) {
             super(NbBundle.getMessage(CasaRootNode.class, "LBL_AddProjectAction_Name"), null);
             mProjectReference = new WeakReference<Project>(jbiProject);
         }
-        
+
         public void actionPerformed(ActionEvent e) {
             Project jbiProject = (Project) mProjectReference.get();
             if (jbiProject != null) {

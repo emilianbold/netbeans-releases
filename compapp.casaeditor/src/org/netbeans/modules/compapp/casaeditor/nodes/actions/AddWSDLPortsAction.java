@@ -24,12 +24,14 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.lang.ref.WeakReference;
 import java.util.*;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
+import javax.swing.*;
+
+import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
+import org.netbeans.modules.compapp.casaeditor.CasaDataNode;
+import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
+import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBindingInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiDefaultComponentInfo;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensibilityElementTemplateFactory;
@@ -37,30 +39,39 @@ import org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateGroup;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.LocalizedTemplateGroup;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.HelpCtx;
+import org.openide.util.actions.NodeAction;
 
 
 /**
  *
  * @author jsandusky
  */
-public class AddWSDLPortsAction extends AbstractAction {
-    
-    private WeakReference<CasaDataObject> mReference;
-    
-    
-    public AddWSDLPortsAction(CasaDataObject dataObject) {
-        super(
-                NbBundle.getMessage(AddWSDLPortsAction.class, "LBL_AddWSDLPortsAction_Name"), 
-                null);
-        mReference = new WeakReference<CasaDataObject>(dataObject);
+public class AddWSDLPortsAction extends NodeAction {
+
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
     }
-    
-    
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    public String getName() {
+        return NbBundle.getMessage(LoadWSDLPortsAction.class, "LBL_AddWSDLPortsAction_Name"); // NOI18N
+    }
+
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
     public Action getAction() {
         return this;
     }
 
+    /*
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() instanceof CanvasNodeProxyContext) {
             CanvasNodeProxyContext context = (CanvasNodeProxyContext) e.getSource();
@@ -69,6 +80,7 @@ public class AddWSDLPortsAction extends AbstractAction {
             performAction(new Point(-1, -1));
         }
     }
+    */
 
     private Map<String, LocalizedTemplateGroup> getWsdlTemplates() {
         ExtensibilityElementTemplateFactory factory = new ExtensibilityElementTemplateFactory();
@@ -85,14 +97,38 @@ public class AddWSDLPortsAction extends AbstractAction {
         return temps;
     }
 
-    public void performAction(final Point location) {
-        
-        CasaDataObject dataObject = mReference.get();
-        if (dataObject == null) {
+    public void performAction(Node[] activatedNodes) { // final Point location) {
+
+        if (activatedNodes.length < 1) {
             return;
         }
-        
-        final CasaWrapperModel model = dataObject.getEditorSupport().getModel();
+        CasaWrapperModel cmodel = null;
+        if (activatedNodes[0] instanceof CasaDataNode) {
+            final CasaDataNode node = ((CasaDataNode) activatedNodes[0]);
+            CasaDataObject obj = (CasaDataObject) node.getDataObject();
+            CasaDataEditorSupport es = obj.getLookup().lookup(CasaDataEditorSupport.class);
+            if (es != null) {
+                cmodel = es.getModel();
+            }
+        } else if (activatedNodes[0] instanceof CasaNode) {
+            final CasaNode node = ((CasaNode) activatedNodes[0]);
+            cmodel = node.getModel();
+        }
+
+        if (cmodel == null) {
+            return;
+        }
+
+        final Point location = new Point(-1, -1);
+        final CasaWrapperModel model = cmodel;
+        SwingUtilities.invokeLater(new Runnable(){
+            public void run(){
+                showDialog(model, location);
+            }
+        });
+    }
+
+    private void showDialog(final CasaWrapperModel model, final Point location) {
 
         final Map<String, JbiBindingInfo> portMap = new HashMap<String, JbiBindingInfo>();
 
@@ -111,7 +147,7 @@ public class AddWSDLPortsAction extends AbstractAction {
         Arrays.sort(ports);
 
         final LoadWsdlPortPanel panel = new LoadWsdlPortPanel(
-                NbBundle.getMessage(getClass(), "LBL_AllAvailableWSDLPorts"), 
+                NbBundle.getMessage(getClass(), "LBL_AllAvailableWSDLPorts"),
                 ports);
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
@@ -136,5 +172,5 @@ public class AddWSDLPortsAction extends AbstractAction {
         dlg.setPreferredSize(new Dimension(400, 400));
         dlg.setVisible(true);
     }
-    
+
 }
