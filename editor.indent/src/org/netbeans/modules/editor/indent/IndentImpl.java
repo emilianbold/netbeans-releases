@@ -148,84 +148,102 @@ public final class IndentImpl {
 
     public void reindent(int startOffset, int endOffset) throws BadLocationException {
         assert (startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N
-        if (indentHandler == null) { // 
+        boolean runUnlocked = false;
+        if (indentHandler == null) {
             LOG.log(Level.SEVERE, "Not locked. Use Indent.lock().", new Exception()); // NOI18N
+            runUnlocked = true;
             // Attempt to call the tasks unlocked since now it's too late to lock (doc's lock already taken).
             indentHandler = new TaskHandler(true, doc);
-            indentHandler.collectTasks();
         }
-        // Find begining of line
-        Element lineRootElem = lineRootElement(doc);
-        // Correct the start offset to point to the begining of the start line
-        int startLineIndex = lineRootElem.getElementIndex(startOffset);
-        if (startLineIndex < 0)
-            return; // Invalid line index => do nothing
-        Element lineElem = lineRootElem.getElement(startLineIndex);
-        int startLineOffset = lineElem.getStartOffset();
-        boolean done = false;
-        if (indentHandler.hasItems()) {
-            // Find ending line element - by default use the same as for start offset
-            if (endOffset > lineElem.getEndOffset()) { // need to get a different line element
-                int endLineIndex = lineRootElem.getElementIndex(endOffset);
-                lineElem = lineRootElem.getElement(endLineIndex);
-                // Check if the given endOffset ends right after line's newline (in fact at the begining of the next line)
-                if (endLineIndex > 0 && lineElem.getStartOffset() == endOffset) {
-                    endLineIndex--;
+        try {
+            if (runUnlocked) {
+                indentHandler.collectTasks();
+            }
+            // Find begining of line
+            Element lineRootElem = lineRootElement(doc);
+            // Correct the start offset to point to the begining of the start line
+            int startLineIndex = lineRootElem.getElementIndex(startOffset);
+            if (startLineIndex < 0)
+                return; // Invalid line index => do nothing
+            Element lineElem = lineRootElem.getElement(startLineIndex);
+            int startLineOffset = lineElem.getStartOffset();
+            boolean done = false;
+            if (indentHandler.hasItems()) {
+                // Find ending line element - by default use the same as for start offset
+                if (endOffset > lineElem.getEndOffset()) { // need to get a different line element
+                    int endLineIndex = lineRootElem.getElementIndex(endOffset);
                     lineElem = lineRootElem.getElement(endLineIndex);
+                    // Check if the given endOffset ends right after line's newline (in fact at the begining of the next line)
+                    if (endLineIndex > 0 && lineElem.getStartOffset() == endOffset) {
+                        endLineIndex--;
+                        lineElem = lineRootElem.getElement(endLineIndex);
+                    }
                 }
+
+                // Create context from begining of the start line till the end of the end line.
+                indentHandler.setGlobalBounds(
+                        doc.createPosition(startLineOffset),
+                        doc.createPosition(lineElem.getEndOffset()));
+
+                // Perform whole reindent on top and possibly embedded levels
+                indentHandler.runTasks();
+                done = true;
             }
 
-            // Create context from begining of the start line till the end of the end line.
-            indentHandler.setGlobalBounds(
-                    doc.createPosition(startLineOffset),
-                    doc.createPosition(lineElem.getEndOffset()));
+            // Fallback to Formatter
+            if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
+                // Original formatter does not have reindentation of multiple lines
+                // so reformat start line and continue for each line.
+                do {
+                    startOffset = defaultFormatter.indentLine(doc, startOffset);
+                    startLineIndex = lineRootElem.getElementIndex(startOffset) + 1;
+                    if (startLineIndex >= lineRootElem.getElementCount())
+                        break;
+                    lineElem = lineRootElem.getElement(startLineIndex);
+                    startOffset = lineElem.getStartOffset(); // Move to next line
+                } while (startOffset < endOffset);
 
-            // Perform whole reindent on top and possibly embedded levels
-            indentHandler.runTasks();
-            done = true;
-        }
-
-        // Fallback to Formatter
-        if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
-            // Original formatter does not have reindentation of multiple lines
-            // so reformat start line and continue for each line.
-            do {
-                startOffset = defaultFormatter.indentLine(doc, startOffset);
-                startLineIndex = lineRootElem.getElementIndex(startOffset) + 1;
-                if (startLineIndex >= lineRootElem.getElementCount())
-                    break;
-                lineElem = lineRootElem.getElement(startLineIndex);
-                startOffset = lineElem.getStartOffset(); // Move to next line
-            } while (startOffset < endOffset);
-
+            }
+        } finally {
+            if (runUnlocked)
+                indentHandler = null;
         }
     }
 
     public void reformat(int startOffset, int endOffset) throws BadLocationException {
         assert (startOffset <= endOffset) : "startOffset=" + startOffset + " > endOffset=" + endOffset; // NOI18N
+        boolean runUnlocked = false;
         if (reformatHandler == null) { // 
             LOG.log(Level.SEVERE, "Not locked. Use Reformat.lock().", new Exception()); // NOI18N
             // Attempt to call the tasks unlocked since now it's too late to lock (doc's lock already taken).
+            runUnlocked = true;
             reformatHandler = new TaskHandler(false, doc);
-            reformatHandler.collectTasks();
         }
-        boolean done = false;
-        if (reformatHandler.hasItems()) {
-            reformatHandler.setGlobalBounds(
-                    doc.createPosition(startOffset),
-                    doc.createPosition(endOffset));
-            
-            // Run top and embedded reformatting
-            reformatHandler.runTasks();
-            
-            // Perform reformatting of the top section and possible embedded sections
-            done = true;
-        }
-        
-        // Fallback to Formatter
-        if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
-            BaseDocument bdoc = (BaseDocument)doc;
-            defaultFormatter.reformat(bdoc, startOffset, endOffset);
+        try {
+            if (runUnlocked) {
+                reformatHandler.collectTasks();
+            }
+            boolean done = false;
+            if (reformatHandler.hasItems()) {
+                reformatHandler.setGlobalBounds(
+                        doc.createPosition(startOffset),
+                        doc.createPosition(endOffset));
+
+                // Run top and embedded reformatting
+                reformatHandler.runTasks();
+
+                // Perform reformatting of the top section and possible embedded sections
+                done = true;
+            }
+
+            // Fallback to Formatter
+            if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
+                BaseDocument bdoc = (BaseDocument)doc;
+                defaultFormatter.reformat(bdoc, startOffset, endOffset);
+            }
+        } finally {
+            if (runUnlocked)
+                reformatHandler = null;
         }
     }
     
