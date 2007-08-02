@@ -2,89 +2,82 @@
 <html>
     <head>
         <!--
-        * 
-        *     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+        *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
         *     Use is subject to license terms.
-        *
         *
         -->
         <title>Comparing File Revisions in Subversion</title>
-        <link rel="StyleSheet"
-        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link href="nbdocs:/org/netbeans/modules/usersguide/ide.css" 
+            rel="StyleSheet" type="text/css">
     </head>
+    
     <body>
         <h2>Comparing File Revisions in Subversion</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>The Diff command compares different revisions of a file and displays
-        the differences found graphically.</p>
+        
+        <p>You can compare two file revisions side-by-side by performing a diff. 
+            The Diff command allows you to compare two different revisions through
+            a graphical interface.</p>
+            
         <h3>Comparing File Revisions Graphically</h3>
+        
         <p>The IDE's Graphical Diff Viewer enables you to compare different
             versions of a file side by side using color coding to emphasize the
             differences between the files being compared.</p>
-        <p>The previous (<img src="images/diff-prev.png"
-        alt="Last difference button" height="16" width="16">) and next (<img
-        src="images/diff-next.png" alt="Next difference button" height="16"
-        width="16">) difference
-        buttons in the toolbar enable you to navigate among the differences in
-        the file. You can also refresh the status and update files from within
-        the Diff Viewer using the Refresh Diff (<img src="images/refresh.png"
-        alt="Last difference button" height="16" width="16">) and Update (<img
-        src="images/update.png" alt="Last difference button" height="16"
-        width="16">) buttons. When you are finished comparing the files, you
-        can commit your changes using the Graphical Diff Viewer's Commit button
-        (<img src="images/commit.png" alt="Last difference button" height="16"
-        width="16">). </p>
-        <p>The Graphical Diff Viewer highlights changes in the files using
-        the following colors: </p>
+            
+        <p>The Previous (<img src="images/diff-prev.png" alt="Last difference button" 
+            height="16" width="16">) and Next (<img src="images/diff-next.png" 
+            alt="Next difference button" height="16" width="16">) difference
+            buttons in the toolbar enable you to navigate among differences found in
+            the file. You can also refresh the status and update files from within
+            the Diff Viewer using the Refresh Diff (<img src="images/refresh.png"
+            alt="Last difference button" height="16" width="16">) and Update (<img
+            src="images/update.png" alt="Last difference button" height="16"
+            width="16">) buttons. When you are finished comparing the files, you
+            can commit your changes using the Graphical Diff Viewer's Commit button
+            (<img src="images/commit.png" alt="Last difference button" height="16"
+            width="16">).</p>
+         
+        <p>The Graphical Diff Viewer also enables you to select whether to view files 
+            containing changes from the local working copy, the repository, as well as
+            both simultaneously. To change viewing criteria, click on the appropriate 
+            icon:</p>
+        <ul>
+            <li><img src="images/locally_mod.png">: local working copy</li>
+            <li><img src="images/remotely_mod.png">: repository</li>
+            <li><img src="images/both_mod.png">: both local and remote files</li>            
+        </ul>
+            
+        <p>The Graphical Diff Viewer highlights changes in the files using the 
+            following colors:</p>
+        
         <ul>
             <li><strong>Blue</strong>. Indicates lines that have been changed
-            since the earlier revision.</li>
+                since the earlier revision.</li>
             <li> <strong>Green</strong>. Indicates lines that have been added
-            since the earlier revision. </li>
+                since the earlier revision.</li>
             <li><strong>Red</strong>. Indicates lines that have been removed
-            since the earlier revision.</li>
+                since the earlier revision.</li>
         </ul>
-        <p><b>To generate a graphical diff comparing a revision to your working
-            copy:</b></p>
+        
+        <h4>To generate a graphical diff comparing a revision to your working copy:</h4>
+        
         <ol>
-            <li>Right-click the appropriate file node in the Projects, Files,
-            or Subversion window. </li>
-            <li>Choose Diff from the pop-up menu. </li>
+            <li>Right-click the appropriate file node in the Projects, Files, Favorites
+                or Subversion window.</li>
+            <li>Choose Diff from the right-click menu. The IDE displays the results in 
+                the Graphical Diff Viewer in a new tab of the main window.</li>
         </ol>
-        <!--<p><b>To generate a graphical diff comparing two revisions:</b>
-        </li>
-        <ol>
-        <li>Control-click to select the revision nodes you want to compare
-        in the Projects, Files, or Subversion
-        window.
-        <li>Right-click either of their nodes and choose Diff.
-        </ol>-->
-        <p>The IDE displays the results in the Graphical Diff Viewer in a new
-           tab of the main window.
-           <!--mention the search window diffs here also--></p>
-        <!--<h3>Comparing File Revisions as Text<a name="textually"></a></h3>
-        <p>You can also use the Diff Textual command to view file revision differences.
-        To view the differences between your working copy with the repository's current
-        version, right-click the node of the file you want to compare and choose Subversion > Diff
-        Textual. The results are displayed in the IDE's Output window.</p>
-        <ul class="note">
-        <li>To enter specific revisions, tags, or dates to
-        for the versions compared, press the Control key while choosing Diff commands.</li></ul>-->
-
-		  <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="svn_merge.html">Merging File Revisions</a></dd>
-            <dd> <a href="svn_mergeresolve.html">Resolving Merge Conflicts in Subversion</a></dd>
-<!--todo deal with patches				<dd> <a href="svn_patch.html">Creating and Applying a Patch</a>--> </dd>
+ 
+	<dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="svn_merge.html">Merging File Revisions</a></dd>
+            <dd><a href="svn_mergeresolve.html">Resolving Merge Conflicts in Subversion</a></dd>
+            <dd><a href="svn_patch.html">Creating and Applying a Patch</a></dd>
         </dl>
 
         <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        <br><br><br>
     </body>
 </html>
