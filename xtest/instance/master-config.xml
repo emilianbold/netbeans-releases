@@ -234,4 +234,9 @@ Microsystems, Inc. All Rights Reserved.
           <property name="wtk.dir" value="${wtk.dir}"/>
       </module>
   </config>
+
+  <config name="commit-validation-uml">
+      <module name="uml" testtypes="qa-functional" attributes="commit"/>
+  </config>
+
 </testconfig>
