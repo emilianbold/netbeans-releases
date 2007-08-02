@@ -275,7 +275,7 @@ public class Imports extends AbstractHint implements  PreferenceChangeListener {
         // Same package
         allFix = null;
         if ( sameList.size() > 1 ) {
-            allFix  = createFix(ci, defaultList, ImportHintKind.SAME_PACKAGE);
+            allFix  = createFix(ci, sameList, ImportHintKind.SAME_PACKAGE);
         }
         for (ImportTree importTree : sameList) {
             List<Fix> fixes = new ArrayList<Fix>();
