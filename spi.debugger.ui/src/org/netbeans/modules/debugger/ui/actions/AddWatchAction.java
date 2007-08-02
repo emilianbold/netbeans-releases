@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,9 +24,9 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.debugger.ui.WatchPanel;
-import org.netbeans.modules.debugger.ui.views.View;
 
 import org.openide.DialogDisplayer;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -76,13 +76,20 @@ public class AddWatchAction extends CallableSystemAction {
 
     /** The action's icon location.
     * @return the action's icon location
-    * Not in toolbar - no icon
+    */
     protected String iconResource () {
         return "org/netbeans/modules/debugger/resources/actions/NewWatch.gif"; // NOI18N
     }
-     */
-
     
+    // This is necessary so that the icon is not displayed in the menu.
+    // The action is not in the toolbar by default, so it should not have the icon
+    // in the menu.
+    public JMenuItem getMenuPresenter() {
+        JMenuItem menuItem = new JMenuItem();
+        Mnemonics.setLocalizedText(menuItem, getName());
+        return menuItem;
+    }
+
     public void performAction () {
         ResourceBundle bundle = NbBundle.getBundle (AddWatchAction.class);
 
