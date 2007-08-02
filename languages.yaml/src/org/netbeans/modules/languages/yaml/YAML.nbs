@@ -51,6 +51,7 @@ MapValue = <value>;
 SequenceValue = <sequence>;
 
 AST {
+    removeSimple:"!Collection,Item";
     process:org.netbeans.modules.languages.yaml.YAML.parse;
 }
 
