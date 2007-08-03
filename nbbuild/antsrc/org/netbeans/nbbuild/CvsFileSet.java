@@ -121,6 +121,7 @@ public class CvsFileSet extends FileSet {
             List<Set<String>> tb = entries.get(dir);
             if (tb == null) {
                 File efile = new File(new File(dir, "CVS"), "Entries");
+                // XXX check also Entries.Log?
                 if (efile.exists()) {
                     tb = new ArrayList<Set<String>>();
                     tb.add(new HashSet<String>(10));
