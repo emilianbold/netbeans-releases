@@ -965,7 +965,57 @@ public class J2MEProjectGenerator {
         ep.put(DefaultPropertiesDescriptor.LIBS_CLASSPATH, libs.toString());
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
     }
-    
+
+    public static void copyMIDletProperty(final Project project, final AntProjectHelper h, String sourceClass, String targetClass) throws IOException {
+        if (sourceClass == null  ||  targetClass == null)
+            return;
+
+        final ProjectConfigurationsHelper confHelper = project.getLookup().lookup(ProjectConfigurationsHelper.class);
+        final ProjectConfiguration[] confs = confHelper.getConfigurations().toArray(new ProjectConfiguration[0]);
+        final EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+        final String defaultValue = ep.getProperty(DefaultPropertiesDescriptor.MANIFEST_MIDLETS);
+        HashMap<String,String> map = defaultValue != null ? (HashMap<String,String>)DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(defaultValue, null, null) : new HashMap<String,String>();
+
+        copyMIDletProperty (map, sourceClass, targetClass);
+
+        ep.put(DefaultPropertiesDescriptor.MANIFEST_MIDLETS, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.encode(map, null, null));
+
+        for (int i = 0; i < confs.length; i++) {
+            final ProjectConfiguration conf = confs[i];
+            final String confName = conf.getDisplayName();
+            final String propertyName = VisualPropertySupport.translatePropertyName(confName, DefaultPropertiesDescriptor.MANIFEST_MIDLETS, false);
+            if (propertyName == null)
+                continue;
+            final String propertyValue = ep.getProperty(propertyName);
+            if (propertyValue == null)
+                continue;
+            map = (HashMap<String,String>)DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.decode(defaultValue, null, null);
+
+            copyMIDletProperty (map, sourceClass, targetClass);
+
+            ep.put(propertyName, DefaultPropertyParsers.MANIFEST_PROPERTY_PARSER.encode(map, null, null));
+        }
+
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+    }
+
+    private static void copyMIDletProperty (HashMap<String, String> map, String sourceClass, String targetClass) {
+        String newMIDlet = null;
+        int a = 1;
+        for (;;) {
+            String value = map.get (MIDLET + a);// NOI18N
+            if (value == null)
+                break;
+            int index = value.lastIndexOf (',');
+            if (index >= 0  &&  sourceClass.equals (value.substring (index + 1).trim ()))
+                newMIDlet = value.substring (0, index + 1) + targetClass;
+            a++;
+        }
+        if (newMIDlet != null)
+            map.put(MIDLET + a, newMIDlet);  //NOI18N
+    }
+
     public static void addMIDletProperty(final Project project, final AntProjectHelper h, String name, String clazz, String icon) throws IOException {
         if (name == null)
             name = ""; // NOI18N

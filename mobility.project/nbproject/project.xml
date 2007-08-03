@@ -354,6 +354,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.mobility.svgcore</friend>
                 <friend>org.netbeans.modules.vmd.io.javame</friend>
                 <friend>org.netbeans.modules.vmd.midp</friend>
+                <friend>org.netbeans.modules.vmd.midp.converter</friend>
                 <friend>org.netbeans.modules.deployment.deviceanywhere</friend>
                 <package>org.netbeans.api.mobility.project</package>
                 <package>org.netbeans.api.mobility.project.ui.customizer</package>
