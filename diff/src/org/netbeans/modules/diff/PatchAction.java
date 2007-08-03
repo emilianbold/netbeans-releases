@@ -29,7 +29,6 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -37,9 +36,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import org.openide.util.io.ReaderInputStream;
-import org.netbeans.api.diff.Difference;
-import org.netbeans.modules.diff.builtin.Patch;
 import org.netbeans.modules.diff.builtin.ContextualPatch;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -56,11 +52,6 @@ import org.openide.util.RequestProcessor;
  */
 public class PatchAction extends NodeAction {
     
-    /**
-     * For patch application use an encoding, that is able to convert all bytes
-     * to characters so that there is no loss in the file content.
-     */
-    private static final String PATCHING_IO_ENCODING = "ISO-8859-1"; // NOI18N
     private static final String PREF_RECENT_PATCH_PATH = "patch.recentPatchDir";
 
     /** Creates a new instance of PatchAction */
@@ -166,11 +157,15 @@ public class PatchAction extends NodeAction {
         }
         
         if (successful.size() > 0) {
+            List<FileObject> binaries = new ArrayList<FileObject>();
             List<FileObject> appliedFiles = new ArrayList<FileObject>();
             Map<FileObject, FileObject> backups = new HashMap<FileObject, FileObject>();
             for (ContextualPatch.PatchReport patchReport : successful) {
                 FileObject fo = FileUtil.toFileObject(patchReport.getFile());
                 FileObject backup = FileUtil.toFileObject(patchReport.getOriginalBackupFile());
+                if (patchReport.isBinary()) {
+                    binaries.add(fo);
+                }
                 appliedFiles.add(fo);
                 backups.put(fo, backup);
             }
@@ -181,7 +176,7 @@ public class PatchAction extends NodeAction {
                     message,
                     NotifyDescriptor.YES_NO_OPTION));
             if (NotifyDescriptor.YES_OPTION.equals(notifyResult)) {
-                showDiffs(appliedFiles, backups);
+                showDiffs(appliedFiles, binaries, backups);
             }
             removeBackups(appliedFiles, backups);
         } else {
@@ -238,214 +233,11 @@ public class PatchAction extends NodeAction {
         return selectedFile;
     }
 
-    private void applyFileDiffs(Patch.FileDifferences[] fileDiffs, FileObject fo, String patchContext) {
-        ArrayList<String> notFoundFileNames = new ArrayList<String>();
-        ArrayList<FileObject> appliedFiles = new ArrayList<FileObject>();
-        Map<FileObject, FileObject> backups = new HashMap<FileObject, FileObject>();
-        boolean patchFailed = false;
-        for (int i = 0; i < fileDiffs.length; i++) {
-            //System.out.println("applyFileDiffs(): fileName = "+fileDiffs[i].getFileName());
-            FileObject targetFileObject;
-            if (fo.isData()) {
-                targetFileObject = fo;
-            } else {
-                String indexName = fileDiffs[i].getIndexName();
-                if (indexName != null) {
-                    targetFileObject = fo.getFileObject(indexName);
-                } else {
-                    targetFileObject = findChild(fo, fileDiffs[i].getFileName());
-                }
-            }
-
-            if (targetFileObject == null) {
-                Difference[] diffs = fileDiffs[i].getDifferences();
-                String filePath = fileDiffs[i].getIndexName();
-                if (diffs.length == 1 && diffs[0].getFirstStart() == 0 && filePath != null) {
-                    // create new targetFileObject
-                    try {
-                        targetFileObject = FileUtil.createData(fo, filePath);
-                    } catch (IOException e) {
-                        ErrorManager err = ErrorManager.getDefault();
-                        err.annotate(e, "Patch can not create new file, skipping...");  // NOI18N
-                        err.notify(ErrorManager.INFORMATIONAL, e);
-                    }
-                }
-            }
-
-            if (targetFileObject == null) {
-                String indexName = fileDiffs[i].getIndexName();
-                if (indexName != null) {
-                    notFoundFileNames.add(FileUtil.getFileDisplayName(fo) + '/' + indexName);
-                } else {
-                    notFoundFileNames.add("sourceHostPath:" + fileDiffs[i].getFileName());
-                }
-            } else {
-                FileObject backup = createFileBackup(targetFileObject);
-                if (applyDiffsTo(fileDiffs[i].getDifferences(), targetFileObject)) {
-                    appliedFiles.add(targetFileObject);
-                    backups.put(targetFileObject, backup);
-                    targetFileObject.refresh(true);
-                } else {
-                    patchFailed = true;
-                }
-            }
-        }
-
-        if (notFoundFileNames.size() > 0) {
-            if (notFoundFileNames.size() == fileDiffs.length) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        patchContext == null ? NbBundle.getMessage(PatchAction.class, "MSG_WrongPatch") :
-                        NbBundle.getMessage(PatchAction.class, "MSG_WrongPatch_Hint", patchContext)));
-            } else {
-                StringBuffer files = new StringBuffer();
-                for (int i = 0; i < notFoundFileNames.size(); i++) {
-                    files.append(notFoundFileNames.get(i));
-                    if (i < notFoundFileNames.size() - 1) {
-                        files.append(", ");
-                    }
-                }
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(PatchAction.class, "MSG_NotFoundFiles", files)));
-            }
-        }
-        if (appliedFiles.size() > 0) {
-            String message = patchFailed ? NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedPartially") : NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully");
-            Object notifyResult = DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Confirmation(
-                    message,
-                    NotifyDescriptor.YES_NO_OPTION));
-            if (NotifyDescriptor.YES_OPTION.equals(notifyResult)) {
-                showDiffs(appliedFiles, backups);
-            }
-            removeBackups(appliedFiles, backups);
-        }
-    }
-
-    /**
-     * Flaky heuristics to find remote path on local system.
-     */
-    private static FileObject findChild(FileObject folder, String child) {
-        child = child.replace(File.separatorChar, '/');
-        StringTokenizer tokenizer = new StringTokenizer(child, "/");
-        FileObject ch = null;
-        // FIXME it's for sure wrong, it can be confused by /path/DUPL/somethigs/DULP/some.file
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            ch = folder.getFileObject(token);
-            if (ch != null && ch.isFolder()) {
-                folder = ch;
-                ch = null;
-            }
-        }
-        return ch;
-    }
-
-    private FileObject createFileBackup(FileObject fo) {
-        FileObject parent = fo.getParent();
-        FileLock lock = null;
-        InputStream in = null;
-        OutputStream out = null;
-        try {
-            FileObject orig = parent.getFileObject(fo.getNameExt(), "orig");
-            if (orig == null) {
-                orig = parent.createData(fo.getNameExt(), "orig");
-            }
-            FileUtil.copy(in = fo.getInputStream(), out = orig.getOutputStream(lock = orig.lock()));
-            return orig;
-        } catch (IOException ioex) {
-            return null;
-        } finally {
-            try {
-                if (in != null) in.close();
-                if (out != null) out.close();
-            } catch (IOException ioex) {}
-            if (lock != null) lock.releaseLock();
-        }
-    }
-
-    private boolean applyDiffsTo(Difference[] diffs, FileObject fo) {
-//        System.err.println("applyDiffsTo("+fo.getPath() + " " + diffs.length);
-//        for (int i= 0; i<diffs.length; i++) {
-//            System.err.println("\t" + diffs[i]);
-//        }
-        File tmp;
-        try {
-            tmp = FileUtil.normalizeFile(File.createTempFile("patch", "tmp"));
-        } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
-            return false;
-        }
-        tmp.deleteOnExit();
-        InputStream in = null;
-        Reader r = null;
-        OutputStream out = null;
-        try {
-            r = new InputStreamReader(fo.getInputStream(), PATCHING_IO_ENCODING);
-            Reader patched = Patch.apply(diffs, r);
-            in = new ReaderInputStream(patched, PATCHING_IO_ENCODING);
-            out = new FileOutputStream(tmp);
-            FileUtil.copy(in, out);
-        } catch (IOException ioex) {
-//            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
-//                NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage(), fo.getNameExt())));
-            String msg = NbBundle.getMessage(PatchAction.class, "EXC_PatchApplicationFailed", ioex.getLocalizedMessage(), fo.getNameExt());
-            NotifyDescriptor dd = new NotifyDescriptor.Message(msg);
-            DialogDisplayer.getDefault().notify (dd);
-            ErrorManager.getDefault().log (msg);
-            tmp.delete();
-            return false;
-        } finally {
-            try {
-                if (r != null) r.close();
-            } catch (IOException ioex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
-            }
-            try {
-                if (in != null) in.close();
-            } catch (IOException ioex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
-            }
-            try {
-                if (out != null) out.close();
-            } catch (IOException ioex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
-            }
-
-        }
-        FileLock lock = null;
-        try {
-            FileUtil.copy(in = new FileInputStream(tmp), out = fo.getOutputStream(lock = fo.lock()));
-        } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(ioex,
-                NbBundle.getMessage(PatchAction.class, "EXC_CopyOfAppliedPatchFailed",
-                                    fo.getNameExt())));
-            return false;
-        } finally {
-            if (lock != null) {
-                lock.releaseLock();
-            }
-            try {
-                if (in != null) in.close();
-            } catch (IOException ioex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
-            }
-            try {
-                if (out != null) out.close();
-            } catch (IOException ioex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioex);
-            }
-
-        }
-        tmp.delete();
-        return true;
-        //TopManager.getDefault().notify(new NotifyDescriptor.Message(
-        //    NbBundle.getMessage(PatchAction.class, "MSG_PatchAppliedSuccessfully")));
-    }
-
-    private void showDiffs(List<FileObject> files, Map<FileObject, FileObject> backups) {
+    private void showDiffs(List<FileObject> files, List<FileObject> binaries, Map<FileObject, FileObject> backups) {
         for (int i = 0; i < files.size(); i++) {
             FileObject file = files.get(i);
             FileObject backup = backups.get(file);
+            if (binaries.contains(file)) continue;
             if (backup == null) {
                 try {
                     backup = FileUtil.toFileObject(FileUtil.normalizeFile(File.createTempFile("diff-empty-backup", "")));

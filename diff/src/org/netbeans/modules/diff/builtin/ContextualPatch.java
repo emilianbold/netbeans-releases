@@ -80,9 +80,9 @@ public final class ContextualPatch {
             for (SinglePatch patch : patches) {
                 try {
                     applyPatch(patch, dryRun);
-                    report.add(new PatchReport(patch.targetFile, computeBackup(patch.targetFile), PatchStatus.Patched, null));
+                    report.add(new PatchReport(patch.targetFile, computeBackup(patch.targetFile), patch.binary, PatchStatus.Patched, null));
                 } catch (Exception e) {
-                    report.add(new PatchReport(patch.targetFile, null, PatchStatus.Failure, e));
+                    report.add(new PatchReport(patch.targetFile, null, patch.binary, PatchStatus.Failure, e));
                 }
             }
             return report;
@@ -623,12 +623,14 @@ public final class ContextualPatch {
 
         private File        file;
         private File        originalBackupFile;
+        private boolean     binary;
         private PatchStatus status;
         private Throwable   failure;
 
-        PatchReport(File file, File originalBackupFile, PatchStatus status, Throwable failure) {
+        PatchReport(File file, File originalBackupFile, boolean binary, PatchStatus status, Throwable failure) {
             this.file = file;
             this.originalBackupFile = originalBackupFile;
+            this.binary = binary;
             this.status = status;
             this.failure = failure;
         }
@@ -639,6 +641,10 @@ public final class ContextualPatch {
 
         public File getOriginalBackupFile() {
             return originalBackupFile;
+        }
+
+        public boolean isBinary() {
+            return binary;
         }
 
         public PatchStatus getStatus() {
