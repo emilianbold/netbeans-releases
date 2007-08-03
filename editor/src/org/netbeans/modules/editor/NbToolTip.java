@@ -45,6 +45,7 @@ import org.openide.cookies.InstanceCookie;
 import java.util.Enumeration;
 import java.util.ArrayList;
 import java.beans.PropertyChangeEvent;
+import java.lang.ref.WeakReference;
 import javax.swing.plaf.TextUI;
 import org.netbeans.editor.BaseTextUI;
 import org.openide.filesystems.Repository;
@@ -61,7 +62,7 @@ public class NbToolTip extends FileChangeAdapter {
     
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.tooltip");
     
-    private static final HashMap mime2tip = new HashMap();
+    private static final HashMap<String,WeakReference<NbToolTip>> mime2tip = new HashMap();
     
     private static int lastRequestId;
     
@@ -91,12 +92,12 @@ public class NbToolTip extends FileChangeAdapter {
     }
     
     private static NbToolTip getTip(String mimeType) {
-        NbToolTip tip = (NbToolTip)mime2tip.get(mimeType);
+        WeakReference<NbToolTip> nttWr = mime2tip.get(mimeType);
+        NbToolTip tip = nttWr == null ? null : nttWr.get();
         if (tip == null) {
             tip = new NbToolTip(mimeType);
-            mime2tip.put(mimeType, tip);
+            mime2tip.put(mimeType, new WeakReference<NbToolTip>(tip));
         }
-        
         return tip;
     }
 
