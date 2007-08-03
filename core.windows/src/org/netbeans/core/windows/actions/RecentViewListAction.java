@@ -95,7 +95,7 @@ public final class RecentViewListAction extends AbstractAction
                             : WindowManager.getDefault().getMainWindow();
                         KeyboardPopupSwitcher.selectItem(
                                 createSwitcherItems(documents),
-                                releaseKey, triggerKey);
+                                releaseKey, triggerKey, (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0);
                     }
                     return;
                 }

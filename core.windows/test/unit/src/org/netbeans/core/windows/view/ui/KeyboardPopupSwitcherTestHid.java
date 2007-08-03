@@ -103,7 +103,7 @@ public class KeyboardPopupSwitcherTestHid extends TestCase
                 (isCtrl || isCtrlShift);
         if (doPopup && !KeyboardPopupSwitcher.isShown()) {
             // create popup with our SwitcherTable
-            KeyboardPopupSwitcher.selectItem(items, KeyEvent.VK_CONTROL, e.getKeyCode());
+            KeyboardPopupSwitcher.selectItem(items, KeyEvent.VK_CONTROL, e.getKeyCode(), (e.getModifiers() & InputEvent.SHIFT_MASK)==0);
             return true;
         }
         

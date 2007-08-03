@@ -132,7 +132,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             } else {
                 AbstractAction rva = new RecentViewListAction();
                 rva.actionPerformed(new ActionEvent(kev.getSource(),
-                        ActionEvent.ACTION_PERFORMED, "C-TAB"));
+                        ActionEvent.ACTION_PERFORMED, "C-TAB", kev.getModifiers()));
                 return true;
             }
             // consume all ctrl-(shift)-tab to avoid confusion about
@@ -162,7 +162,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
      * A popup appears on <code>x</code>, <code>y</code> coordinates.
      */
     public static void selectItem(SwitcherTableItem items[], int releaseKey,
-            int triggerKey) {
+            int triggerKey, boolean forward) {
         // reject multiple invocations
         if (invokerTimerRunning) {
             return;
@@ -170,7 +170,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         KeyboardPopupSwitcher.items = items;
         KeyboardPopupSwitcher.releaseKey = releaseKey;
         KeyboardPopupSwitcher.triggerKey = triggerKey;
-        invokerTimer = new Timer(TIME_TO_SHOW, new PopupInvoker());
+        invokerTimer = new Timer(TIME_TO_SHOW, new PopupInvoker(forward));
         invokerTimer.setRepeats(false);
         invokerTimer.start();
         invokerTimerRunning = true;
@@ -188,11 +188,15 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
      * Serves to <code>invokerTimer</code>. Shows popup after specified time.
      */
     private static class PopupInvoker implements ActionListener {
+        private boolean forward;
+        public PopupInvoker( boolean forward ) {
+            this.forward = forward;
+        }
         /** Timer just hit the specified time_to_show */
         public void actionPerformed(ActionEvent e) {
             if (invokerTimerRunning) {
                 cleanupInterrupter();
-                instance = new KeyboardPopupSwitcher(hits + 1);
+                instance = new KeyboardPopupSwitcher( forward ? hits + 1 : items.length - hits - 1, forward);
                 instance.showPopup();
             }
         }
@@ -221,7 +225,8 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
      * Creates a new instance of KeyboardPopupSwitcher with initial selection
      * set to <code>initialSelection</code>.
      */
-    private KeyboardPopupSwitcher(int initialSelection) {
+    private KeyboardPopupSwitcher(int initialSelection, boolean forward) {
+        this.fwd = forward;
         pTable = new SwitcherTable(items);
         // Compute coordinates for popup to be displayed in center of screen
         Dimension popupDim = pTable.getPreferredSize();
@@ -233,7 +238,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
         int rows = pTable.getRowCount();
         assert cols > 0 : "There aren't any columns in the KeyboardPopupSwitcher's table"; // NOI18N
         assert rows > 0 : "There aren't any rows in the KeyboardPopupSwitcher's table"; // NOI18N
-        changeTableSelection((rows > initialSelection) ? initialSelection :
+        changeTableSelection((rows > initialSelection && initialSelection >= 0) ? initialSelection :
             initialSelection, 0);
     }
     
@@ -285,7 +290,7 @@ public final class KeyboardPopupSwitcher implements WindowFocusListener {
             hits++;
             kev.consume();
             cleanupInterrupter();
-            instance = new KeyboardPopupSwitcher(hits + 1);
+            instance = new KeyboardPopupSwitcher(hits + 1, true);
             instance.showPopup();
         }
     }
