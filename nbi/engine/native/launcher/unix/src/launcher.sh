@@ -490,6 +490,7 @@ extractJVMData() {
         extractTestJVMFile
 	debug "Extracting bundled JVMs ..."
 	extractJVMFiles        
+	debug "Extracting JVM data done"
 }
 extractBundledData() {
 	message "$MSG_EXTRACTING"
@@ -497,7 +498,7 @@ extractBundledData() {
 	extractJars		
 	debug "Extracting other  data..."
 	extractOtherData
-	debug "Extracting finished..."
+	debug "Extracting bundled data finished..."
 }
 
 setTestJVMClasspath() {
@@ -555,17 +556,21 @@ resolveResourceType() {
 	echo "$resourceType"
 }
 
-extractResource() {
+extractResource() {	
+	debug "... extracting resource" 
         resourcePrefix="$1"
+	debug "... resource prefix id=$resourcePrefix"	
 	resourceType=`resolveResourceType "$resourcePrefix"`
+	debug "... resource type=$resourceType"	
 	if [ $resourceType -eq 0 ] ; then
                 resourceSize=`resolveResourceSize "$resourcePrefix"`
+		debug "... resource size=$resourceSize"
             	resourcePath=`resolveResourcePath "$resourcePrefix"`
-
-	    	debug "Extracting resource size=$resourceSize to $resourcePath"		
+	    	debug "... resource path=$resourcePath"		
             	extractFile "$resourceSize" "$resourcePath"
 		debug "... done"
 	fi
+	debug "... extracting resource finished"	
         
 }
 
@@ -587,6 +592,7 @@ extractOtherData() {
 
 extractJVMFiles() {
 	javaCounter=0
+	debug "... total number of JVM files : $JAVA_LOCATION_NUMBER"
 	while [ $javaCounter -lt $JAVA_LOCATION_NUMBER ] ; do		
 		extractResource "JAVA_LOCATION_$javaCounter"
 		javaCounter=`expr "$javaCounter" + 1`
