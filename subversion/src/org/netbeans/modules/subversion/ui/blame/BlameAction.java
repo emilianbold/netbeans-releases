@@ -211,8 +211,8 @@ public class BlameAction extends ContextAction {
      * does not have any or more nodes selected.
      */
     private JEditorPane activatedEditorPane(Node[] nodes) {
-        EditorCookie ec = activatedEditorCookie(nodes);
-        if (ec != null) {
+        EditorCookie ec = activatedEditorCookie(nodes);        
+        if (ec != null && SwingUtilities.isEventDispatchThread()) {              
             JEditorPane[] panes = ec.getOpenedPanes();
             if (panes != null && panes.length > 0) {
                 return panes[0];
