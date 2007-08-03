@@ -572,10 +572,9 @@ public class RADConnectionPropertyEditor
                 setValue(new RADConnectionDesignValue(code));
             }
         } catch (NullPointerException e) {
-            if (System.getProperty("netbeans.debug.exceptions") != null) {
-                e.printStackTrace();
-            }
-            throw new java.io.IOException();
+            java.io.IOException ioex = new java.io.IOException();
+            ioex.initCause(e);
+            throw ioex;
         }
     }
 

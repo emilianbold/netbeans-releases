@@ -21,6 +21,8 @@ package org.netbeans.modules.form.layoutsupport;
 
 import java.util.Iterator;
 import java.lang.reflect.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.codestructure.*;
@@ -272,12 +274,9 @@ final class BeanCodeManager
                 origin = CodeStructure.createOrigin(ctor, new CodeExpression[0]);
             }
             catch (NoSuchMethodException ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-                    System.out.println("[WARNING] No default constructor for " // NOI18N
-                                       + beanClass.getName());
-                    ex.printStackTrace();
-                    return;
-                }
+                Logger.getLogger(BeanCodeManager.class.getName())
+                        .log(Level.INFO, "[WARNING] No default constructor for " + beanClass.getName(), ex); // NOI18N
+                return;
             }
             beanExpression.setOrigin(origin);
         }

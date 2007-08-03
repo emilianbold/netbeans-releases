@@ -25,6 +25,8 @@ import java.lang.reflect.Method;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
@@ -61,9 +63,8 @@ public class BeanSupport
             return CreationFactory.createDefaultInstance(beanClass);
         }
         catch (Exception ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
-            System.err.println("[WARNING] BeanSupport cannot create default instance of: "+beanClass.getName());
+            Logger.getLogger(BeanSupport.class.getName())
+                    .log(Level.INFO, "[WARNING] Cannot create default instance of: "+beanClass.getName(), ex); // NOI18N
             return null;
         }
     }

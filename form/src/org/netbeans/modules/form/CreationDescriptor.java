@@ -21,6 +21,8 @@ package org.netbeans.modules.form;
 
 import java.util.*;
 import java.lang.reflect.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.form.codestructure.*;
 
 /**
@@ -175,10 +177,8 @@ public class CreationDescriptor {
             creators.add( creator );
         }
         catch (NoSuchMethodException ex) { // ignore
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-                System.out.println("[WARNING] No default constructor for "+descClass.getName()); // NOI18N
-                ex.printStackTrace();
-            }
+            Logger.getLogger(CreationDescriptor.class.getName())
+                    .log(Level.INFO, "[WARNING] No default constructor for "+descClass.getName(), ex); // NOI18N
         }
 
         defaultParams = emptyParams;
@@ -315,20 +315,19 @@ public class CreationDescriptor {
         {
             Object[] paramValues = new Object[constructorPropNames.length];
 
-            try {
-                for (int i=0; i < constructorPropNames.length; i++) {
-                    FormProperty prop = CreationFactory.findProperty(
-                                            constructorPropNames[i], props);
-                    if (prop == null)
-                        return null; // should not happen
+            for (int i=0; i < constructorPropNames.length; i++) {
+                FormProperty prop = CreationFactory.findProperty(
+                                        constructorPropNames[i], props);
+                if (prop == null)
+                    return null; // should not happen
 
+                try {
                     paramValues[i] = prop.getRealValue();
+                } catch (Exception ex) { // unlikely to happen
+                    InstantiationException iex = new InstantiationException();
+                    iex.initCause(ex);
+                    throw(iex);
                 }
-            }
-            catch (Exception ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
-                throw new InstantiationException(ex.getMessage());
             }
 
             return constructor.newInstance(paramValues);
@@ -424,22 +423,15 @@ public class CreationDescriptor {
         {
                                 
             ArrayList paramValuesList = new ArrayList(); 
-            try {
-                for (int i=0; i < properties.length; i++) {
-                    FormProperty prop = CreationFactory.findProperty(properties[i].getPropertyName(), props);
-                    if (prop == null)
-                        return null; // should not happen
+            for (int i=0; i < properties.length; i++) {
+                FormProperty prop = CreationFactory.findProperty(properties[i].getPropertyName(), props);
+                if (prop == null)
+                    return null; // should not happen
 
-                    Object[] propertyParameters = properties[i].getPropertyParametersValues(prop);
-                    for (int j = 0; j < propertyParameters.length; j++) {
-                        paramValuesList.add(propertyParameters[j]);
-                    }                                        
-                }
-            }
-            catch (Exception ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
-                throw new InstantiationException(ex.getMessage());
+                Object[] propertyParameters = properties[i].getPropertyParametersValues(prop);
+                for (int j = 0; j < propertyParameters.length; j++) {
+                    paramValuesList.add(propertyParameters[j]);
+                }                                        
             }
             
             Object[] paramValues = paramValuesList.toArray(new Object[paramValuesList.size()]);
