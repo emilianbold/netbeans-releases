@@ -23,7 +23,6 @@ import java.net.URL;
 import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
-import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.webmodule.WebModuleAccessor;
 import org.netbeans.modules.web.spi.webmodule.*;
