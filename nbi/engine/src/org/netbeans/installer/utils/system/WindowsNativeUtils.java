@@ -2,17 +2,17 @@
  * The contents of this file are subject to the terms of the Common Development and
  * Distribution License (the License). You may not use this file except in compliance
  * with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html or
  * http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file and
  * include the License file at http://www.netbeans.org/cddl.txt. If applicable, add
  * the following below the CDDL Header, with the fields enclosed by brackets []
  * replaced by your own identifying information:
- * 
+ *
  *     "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
@@ -60,9 +60,9 @@ import static org.netbeans.installer.utils.system.windows.WindowsRegistry.*;
 public class WindowsNativeUtils extends NativeUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final String LIBRARY_PATH_X86 = 
+    public static final String LIBRARY_PATH_X86 =
             NATIVE_JNILIB_RESOURCE_SUFFIX + "windows/windows-x86.dll"; //NOI18N
-    public static final String LIBRARY_PATH_X64 = 
+    public static final String LIBRARY_PATH_X64 =
             NATIVE_JNILIB_RESOURCE_SUFFIX + "windows/windows-x64.dll"; //NOI18N
     
     private static final String CLEANER_RESOURCE =
@@ -270,7 +270,10 @@ public class WindowsNativeUtils extends NativeUtils {
         
         // the path should be absolute, i.e. should start with "<Drive>:\"
         if (!path.matches("^[A-Z,a-z]:\\\\.*")) {
-            return false;
+            // the path can be also in UNC form
+            if(!path.matches("^\\\\\\\\.+\\\\.+")) {                
+                return false;
+            }
         }
         
         String[] parts = path.split("\\\\");
@@ -388,7 +391,7 @@ public class WindowsNativeUtils extends NativeUtils {
                 }
             }
         } catch (IOException e) {
-           LogManager.log("Can`t remove shortcut",e); 
+            LogManager.log("Can`t remove shortcut",e);
         }
     }
     
@@ -610,8 +613,8 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     public void setPermissions(
-            final File file, 
-            final int mode, 
+            final File file,
+            final int mode,
             final int change) throws IOException {
         // does nothing
     }
