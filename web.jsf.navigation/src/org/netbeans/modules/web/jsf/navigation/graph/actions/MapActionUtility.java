@@ -577,7 +577,9 @@ public class MapActionUtility {
             if (obj instanceof PageFlowScene) {
                 PageFlowScene scene = (PageFlowScene) obj;
                 Page page = getSelectedPage(scene);
-                movePage(scene, page, 5, 0);
+                if( page != null ) {
+                    movePage(scene, page, 5, 0);
+                }
             }
         }
     };
@@ -589,7 +591,9 @@ public class MapActionUtility {
             if (obj instanceof PageFlowScene) {
                 PageFlowScene scene = (PageFlowScene) obj;
                 Page page = getSelectedPage(scene);
-                movePage(scene, page, -5, 0);
+                if( page != null ) {
+                    movePage(scene, page, -5, 0);
+                }
             }
         }
     };
@@ -601,7 +605,9 @@ public class MapActionUtility {
             if (obj instanceof PageFlowScene) {
                 PageFlowScene scene = (PageFlowScene) obj;
                 Page page = getSelectedPage(scene);
-                movePage(scene, page, 0, -5);
+                if( page != null ) {
+                    movePage(scene, page, 0, -5);
+                }
             }
         }
     };
@@ -614,7 +620,9 @@ public class MapActionUtility {
             if (obj instanceof PageFlowScene) {
                 PageFlowScene scene = (PageFlowScene) obj;
                 Page page = getSelectedPage(scene);
-                movePage(scene, page, 0, 5);
+                if( page != null ) {
+                    movePage(scene, page, 0, 5);
+                }
             }
         }
     };
