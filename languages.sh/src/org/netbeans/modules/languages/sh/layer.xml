@@ -19,13 +19,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="sh.xml" url="sh.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.sh.Bundle"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Editors">
         <folder name="text">
             <folder name="sh">
