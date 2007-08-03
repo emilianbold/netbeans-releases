@@ -74,7 +74,7 @@ public class CreateEmptyDiagram extends org.netbeans.performance.test.utilities.
         Node doc = new Node(pNode,"Diagrams");
         doc.select();
  
-        doc.performPopupAction("New Diagram...|Diagram..."); 
+        doc.performPopupAction("New|Diagram..."); 
         create_diag = new NbDialogOperator("Create New Diagram");
         new EventTool().waitNoEvent(2000);
 	JListOperator diag_type = new JListOperator(create_diag,1);
