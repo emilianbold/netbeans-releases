@@ -56,6 +56,7 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.action.PopupMenuProvider;
+import org.netbeans.modules.web.jsf.navigation.NavigationCaseEdge;
 import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
@@ -138,7 +139,6 @@ public class MapActionUtility {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT, 0), "handleLeftArrowKey");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT, 0), "handleRightArrowKey");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP, 0), "handleUpArrowKey");
-        //
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN, 0), "handleDownArrowKey");
         //        // SHIFT + F10
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10,InputEvent.SHIFT_MASK), "handlePopupMenu");
@@ -265,7 +265,6 @@ public class MapActionUtility {
         } else {
             scene.setSelectedObjects(new HashSet());
             scene.setHoveredObject(null); //Not sure if I can do this yet.
-            //scene.setFocusedWidget(scene);
         }
     }
 
@@ -530,7 +529,15 @@ public class MapActionUtility {
             if (selObj instanceof PageFlowSceneElement) {
                 selectedWidget = scene.findWidget(selObj);
                 assert selectedWidget != null;
-                popupPoint = selectedWidget.getLocation();
+                
+                /* Because you cannot use getLocation on a connectionwidget, I need to grab it's source pin for the location */
+                if (selObj instanceof NavigationCaseEdge) {
+                    NavigationCaseEdge edge = (NavigationCaseEdge) selObj;                    
+                    VMDConnectionWidget connectionWidget = (VMDConnectionWidget) scene.findWidget(edge);
+                    popupPoint = connectionWidget.getFirstControlPoint();
+                } else {
+                    popupPoint = selectedWidget.getLocation();
+                }
             } else {
                 Rectangle rectangleScene = scene.getClientArea();
                 popupPoint = scene.convertSceneToLocal(new Point(rectangleScene.width / 2, rectangleScene.height / 2));
