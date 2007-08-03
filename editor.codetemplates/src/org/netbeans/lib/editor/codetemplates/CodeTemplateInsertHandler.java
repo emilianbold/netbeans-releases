@@ -271,15 +271,11 @@ implements DocumentListener, KeyListener {
         BaseDocument bdoc = (doc instanceof BaseDocument)
                 ? (BaseDocument)doc
                 : null;
-        // Need to lock formatter first because CT's multiline text will be reformatted
-        Formatter formatter = null;
-        if (bdoc != null) {
-             formatter = bdoc.getFormatter();
-            if (formatter != null) {
-                formatter.reformatLock();
-            }
+        
+        Position insertPos = null;
+
+        if (bdoc != null)
             ((BaseDocument)doc).atomicLock();
-        }
         try {
             // First check if there is a caret selection and if so remove it
             Caret caret = component.getCaret();
@@ -315,29 +311,37 @@ implements DocumentListener, KeyListener {
                 }
             }
             
-            positionRegion.reset(doc.createPosition(insertOffset),
+            insertPos = doc.createPosition(insertOffset);
+            positionRegion.reset(insertPos,
                     doc.createPosition(insertOffset + (doc.getLength() - docLen)));
 
             if (caretPosition == null) { // no specific ${cursor} parameter
                 caretPosition = doc.createPosition(insertOffset + completeInsertString.length());
             }
             
-            if (parametrizedText.indexOf('\n') != -1 && doc instanceof BaseDocument) {
-                formatter.reformat(bdoc, insertOffset,
-                        insertOffset + completeInsertString.length());
-            }
-            
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         } finally {
-            if (bdoc != null) {
+            if (bdoc != null)
                 bdoc.atomicUnlock();
-                if (formatter != null) {
+            markInserted();
+        }
+        if (insertPos != null  && bdoc  != null && parametrizedText.indexOf('\n') != -1) {
+            // Need to lock formatter first because CT's multiline text will be reformatted
+            Formatter formatter = bdoc.getFormatter();
+            if (formatter != null) {
+                formatter.reformatLock();
+                bdoc.atomicLock();
+                try {
+                    int off = insertPos.getOffset();
+                    formatter.reformat(bdoc, off, off + completeInsertString.length());
+                } catch (BadLocationException e) {
+                    ErrorManager.getDefault().notify(e);
+                } finally {
+                    bdoc.atomicUnlock();
                     formatter.reformatUnlock();
                 }
             }
-            
-            markInserted();
         }
     }
     
