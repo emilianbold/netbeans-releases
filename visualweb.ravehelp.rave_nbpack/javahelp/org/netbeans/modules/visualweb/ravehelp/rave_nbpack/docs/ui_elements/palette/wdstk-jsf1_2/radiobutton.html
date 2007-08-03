@@ -1,1 +1,108 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Radio Button Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Radio Button Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>The Radio Button component <img src="../../../images/bh_radiobutton_icon.gif" alt="radio button component icon" width="14" height="14">&nbsp;is a single radio button with an optional label. </p>   <ul class="note">      <li>        This component is a JavaServer Faces 1.2 component. You see components that use this        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,        see:<br>         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value=          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>      </li></ul><p>Radio Button components are typically used in a group. If you want a set of radio buttons that is preformatted with labels, use a <a href="radiobutton_group.html">Radio Button Group component</a> instead.</p><ul class="note">  <li>It is not common to use a single radio button that is not in a group, although there are situations where it makes sense (see below). In most cases,  a <a href="checkbox.html">Checkbox component</a> is what is needed. A radio button is defined to be a single selection among several selections, with one radio button always selected. A radio button becomes unselected only if the user selects another radio button in the group. If a single radio button that is not in a group is selected by the user, the user cannot deselect it. A checkbox can be selected and unselected by the user. </li></ul><p>The radio button component can be useful in situations where the Radio Button Group component layout is not desirable, such as in a table row. You can also drop the radio button on a container component, like a table cell or group box.</p><p>A single radio button can be used to represent several types of data: </p><ul>  <li>a boolean control </li>  <li> a string value that is related to the radio button selection </li>  <li> an object value defined by the application </li></ul><p> A group of radio buttons can be used to represent: </p><ul>  <li>a group of boolean controls where only one control is selected at a time</li>  <li>string values that are related to the radio button selections </li>  <li> object values defined by the application </li></ul><p>A radio button can represent any object, whether the object is of a predefined class like <code>Boolean</code>, <code>Byte</code>, <code>Character</code>, <code>Double</code>, <code>Float</code>, <code>Integer</code>, <code>Long</code>, <code>Short</code>, <code>String</code>, or of a class defined by the user. A radio button  can also represent a primitive value.</p><p>A <code>Boolean</code> value is useful for indicating whether an item, such as a table row, is selected. A <code>String</code> value is useful for passing values for radio button selections made in the interface. An application defined <code>Object</code> value or class instance can be used to hold more information related to a radio button selection. </p><h3>Detecting a Selected Radio Button</h3><p> The radio button component uses both the <code>selected</code> and <code>selectedValue</code> properties to pass information about the radio button's selection status. The <code>selected</code> property is used to indicate that the radio button is selected, and an indication that the button is selected is displayed in the page. The <code>selectedValue</code> property is used to pass a data value for the radio button. A radio button is considered to be selected when the value of the <code>selected</code> property is equal to the value of the <code>selectedValue</code> property. You can display a radio button as selected on the initial viewing of the page by assigning the same value to the <code>selectedValue</code> and the <code>selected</code> properties. </p><p>If the <code>selectedValue</code> property is not specified or its value is <code>null</code>, the radio button behaves like a boolean control, as described  in the next section. </p><p>A value binding expression that evaluates to a primitive value can be assigned to the <code>selected</code> and <code>selectedValue</code> properties. </p><h3>Using a Radio Button Component as a Boolean Control</h3><p> If the <code>selectedValue</code> property is not specified or its value is <code>null</code>, the radio button behaves like a boolean control. </p><p>To use the radio button as a boolean control, do not specify a value for the <code>selectedValue</code> property. The radio button is selected if the <code>selected</code> property is not null and has the value of a true <code>Boolean</code> instance or a boolean primitive value. If the radio button is not selected,  the value of the selected property is a false <code>Boolean</code> instance or boolean primitive. </p><ul class="note">  <li>Using a boolean radio button in a group and referencing the request attribute for the selected radio buttons is not useful, since the value of the request property will be an ArrayList of indistinguishable <code>true</code> values. </li></ul><h3>Using a Radio Button to Represent an Application-defined Value</h3><p> The <code>selectedValue</code> property can be assigned an application-defined object value to represent the value of a selected radio button. If the radio button is selected, the value of the <code>selected</code> property is assigned the value of the <code>selectedValue</code> property. </p><p>If the value of the <code>selectedValue</code> property is an application-defined object, a converter must be registered to convert to and from a <code>String</code> value. The converter is used to encode the radio button value as the value of the HTML <code>&lt;input&gt;</code> element and to decode the submitted value in a request. In addition the object must support an <code>equals</code> method that returns <code>true</code> when the value of the <code>selectedValue</code> property is compared to the <code>selected</code> property value  to detect a selected radio button. </p><h3>Using a Radio Button as one control in a group</h3><p>The <code>name</code> property determines whether a radio button is part of a group. All radio buttons in a group have the same <code>name</code> property value. The group behaves like a single selection list in which only one radio button can be selected. The value of the <code>name</code> property must be unique within the scope of the page  containing the radio buttons. </p><dl>	<dt><a name="seealso">See Also</a></dt>  <dd><a href="propsheets/radiobutton_props.html">Radio Button  Properties Window</a></dd><dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>		<dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl>     <dt>         <a name="tutorials">Tutorials</a>      </dt>      <dd>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">          <param name="text" value="Delving Into Components"></object>      </dd><dd> <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer"> <param name="content" value="http://www.netbeans.org/kb/55/vwp-listbox_components.html"> <param name="text" value="Using Listbox Components"></object></dd> <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Radio Button Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small><table cellpadding="50" border="0"><tr><td>&nbsp;</td></tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Radio Button Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Radio Button Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+
+<p>The Radio Button component <img src="../../../images/bh_radiobutton_icon.gif" alt="radio button component icon" width="14" height="14">&nbsp;is a single radio button with an optional label. </p>
+    <ul class="note">
+      <li>
+        This component has support for client-side JavaScript functions that enable you to perform actions on the client without a trip back to the server.  For more information on this advanced feature, choose Help &gt; JavaScript References &gt; Project Woodstock 4.1 Tag Library and navigate to webuijsf:radioButton.</li>
+</ul>
+
+<p>Radio Button components are typically used in a group. If you want a set of radio buttons that is preformatted with labels, use a <a href="radiobutton_group.html">Radio Button Group component</a> instead.</p>
+<ul class="note">
+  <li>It is not common to use a single radio button that is not in a group, although there are situations where it makes sense (see below). In most cases,  a <a href="checkbox.html">Checkbox component</a> is what is needed. A radio button is defined to be a single selection among several selections, with one radio button always selected. A radio button becomes unselected only if the user selects another radio button in the group. If a single radio button that is not in a group is selected by the user, the user cannot deselect it. A checkbox can be selected and unselected by the user. </li>
+</ul>
+
+<p>The radio button component can be useful in situations where the Radio Button Group component layout is not desirable, such as in a table row. You can also drop the radio button on a container component, like a table cell or group box.</p>
+<p>A single radio button can be used to represent several types of data: </p>
+<ul>
+  <li>a boolean control </li>
+  <li> a string value that is related to the radio button selection </li>
+  <li> an object value defined by the application </li>
+</ul>
+<p> A group of radio buttons can be used to represent: </p>
+<ul>
+  <li>a group of boolean controls where only one control is selected at a time</li>
+  <li>string values that are related to the radio button selections </li>
+  <li> object values defined by the application </li>
+</ul>
+<p>A radio button can represent any object, whether the object is of a predefined class like <code>Boolean</code>, <code>Byte</code>, <code>Character</code>, <code>Double</code>, <code>Float</code>, <code>Integer</code>, <code>Long</code>, <code>Short</code>, <code>String</code>, or of a class defined by the user. A radio button  can also represent a primitive value.</p>
+<p>A <code>Boolean</code> value is useful for indicating whether an item, such as a table row, is selected. A <code>String</code> value is useful for passing values for radio button selections made in the interface. An application defined <code>Object</code> value or class instance can be used to hold more information related to a radio button selection. </p>
+<h3>Detecting a Selected Radio Button</h3>
+<p> The radio button component uses both the <code>selected</code> and <code>selectedValue</code> properties to pass information about the radio button's selection status. The <code>selected</code> property is used to indicate that the radio button is selected, and an indication that the button is selected is displayed in the page. The <code>selectedValue</code> property is used to pass a data value for the radio button. A radio button is considered to be selected when the value of the <code>selected</code> property is equal to the value of the <code>selectedValue</code> property. You can display a radio button as selected on the initial viewing of the page by assigning the same value to the <code>selectedValue</code> and the <code>selected</code> properties. </p>
+<p>If the <code>selectedValue</code> property is not specified or its value is <code>null</code>, the radio button behaves like a boolean control, as described  in the next section. </p>
+<p>A value binding expression that evaluates to a primitive value can be assigned to the <code>selected</code> and <code>selectedValue</code> properties. </p>
+<h3>Using a Radio Button Component as a Boolean Control</h3>
+<p> If the <code>selectedValue</code> property is not specified or its value is <code>null</code>, the radio button behaves like a boolean control. </p>
+<p>To use the radio button as a boolean control, do not specify a value for the <code>selectedValue</code> property. The radio button is selected if the <code>selected</code> property is not null and has the value of a true <code>Boolean</code> instance or a boolean primitive value. If the radio button is not selected,  the value of the selected property is a false <code>Boolean</code> instance or boolean primitive. </p>
+<ul class="note">
+  <li>Using a boolean radio button in a group and referencing the request attribute for the selected radio buttons is not useful, since the value of the request property will be an ArrayList of indistinguishable <code>true</code> values. </li>
+</ul>
+<h3>Using a Radio Button to Represent an Application-defined Value</h3>
+<p> The <code>selectedValue</code> property can be assigned an application-defined object value to represent the value of a selected radio button. If the radio button is selected, the value of the <code>selected</code> property is assigned the value of the <code>selectedValue</code> property. </p>
+<p>If the value of the <code>selectedValue</code> property is an application-defined object, a converter must be registered to convert to and from a <code>String</code> value. The converter is used to encode the radio button value as the value of the HTML <code>&lt;input&gt;</code> element and to decode the submitted value in a request. In addition the object must support an <code>equals</code> method that returns <code>true</code> when the value of the <code>selectedValue</code> property is compared to the <code>selected</code> property value  to detect a selected radio button. </p>
+<h3>Using a Radio Button as one control in a group</h3>
+<p>The <code>name</code> property determines whether a radio button is part of a group. All radio buttons in a group have the same <code>name</code> property value. The group behaves like a single selection list in which only one radio button can be selected. The value of the <code>name</code> property must be unique within the scope of the page  containing the radio buttons. </p>
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>  
+<dd><a href="propsheets/radiobutton_props.html">Radio Button  Properties Window</a></dd>
+<dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+	<dd><a href="../../../components/howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a></dd>
+	
+	<dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>     <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">
+          <param name="text" value="Delving Into Components"></object>
+      </dd>
+<dd>
+ <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+ <param name="content" value="http://www.netbeans.org/kb/55/vwp-listbox_components.html">
+ <param name="text" value="Using Listbox Components"></object>
+</dd> 
+
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Radio Button Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small>
+<table cellpadding="50" border="0">
+<tr>
+<td>&nbsp;</td>
+</tr>
+</table>
+</body>
+</html>

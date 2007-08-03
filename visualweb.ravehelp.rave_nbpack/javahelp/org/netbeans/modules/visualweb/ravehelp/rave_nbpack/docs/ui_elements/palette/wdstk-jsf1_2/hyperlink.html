@@ -1,1 +1,100 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Hyperlink Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Hyperlink Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>The Hyperlink <img src="../../../images/hyperlinkicon.gif" alt="Hyperlink icon">&nbsp;component is used either as a standard hyperlink to a URL or a link to a page in your application. This component is equivalent to an HTML <code>&lt;a&gt;</code>   element.</p>   <ul class="note">      <li>        This component is a JavaServer Faces 1.2 component. You see components that use this        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,        see:<br>         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value=          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>      </li></ul><p>If you set the <code>action</code> property by right-clicking the component and choosing Edit action Event Handler, the page is submitted. If instead you set the <code>url</code> property,  the link is a normal hyperlink that sends the browser to a new location. </p><p>If you want the link to be represented as an image instead of as text, use the <a href="image_hyperlink.html">Image Hyperlink</a> component.</p><ul class="note">  <li>You can drop an Image component or a Static Text component or both on the  Hyperlink if you want to customize the appearance of the link.     <p>If you drop a component on the  Hyperlink, you  embed the component in the hyperlink, and you must work with the embedded  component's properties rather than the properties of the  Hyperlink. Select the embedded  component in the       <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>        <param name="content" value="../app_outline_win_graphic.html">        <param name="viewerActivator" value="javax.help.LinkLabel">        <param name="viewerStyle" value="javax.help.Popup">        <param name="viewerSize" value="385,450">        <param name="text" value="Navigator window"></object>&nbsp;  to set the embedded component's properties.</p>  </li></ul><p>After adding a hyperlink to a page, you can do a number of things with it: </p><ul>  <li> Select the component and edit its properties in the component's <a href="propsheets/hyperlink_props.html">Properties window</a>. Some typical properties to edit are:      <ul>        <li><b>id.</b> The name of the component. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>Hyperlink</code> object.</li>        <li><b>text.</b> The displayed text for the link. You can also click the component and edit this value.</li>        <li> <b>url.</b> The URL to the target document or resource that the hyperlink is to open. Setting the <code>url</code> property overrides any action event handler you might define, as described below. If this property is set, when the user clicks the hyperlink they are taken directly to the URL and the page is not submitted. If   this property is not set, clicking the hyperlink submits the page. Typically, if you do not set this property, you use the action even handler to define what happens when the user clicks the hyperlink.</li>      </ul>  </li>  <li>Right-click the component and choose one of the following pop-up menu items:      <ul>        <li><b>Edit action Event Handler.</b> Code the action event handler, the  method that is called when the user clicks the hyperlink, and set the <code>action</code> property to the name of this method. See the <code>url</code> property above for information about how these two properties interact. <p>The action event handler determines which page or resource to open based on specified conditions.  The action method typically processes mouse clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>hyperlink-id</code></i><code>_action</code>, where <i>hyperlink-id</i> is the value of the hyperllink's <code>id</code> property. </p></li>        <li><b>Bind to Data</b>. Opens a dialog box that enables you to bind the component's <code>text</code> property to a data provider or an object that dynamically sets the displayed text of the hyperlink. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>        <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>text</code> property to other objects or properties that supply data for the values of this component's properties.</li>      </ul>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="propsheets/hyperlink_props.html">Hyperlink Component Properties Window</a></dd><dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>   <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl>     <dt>         <a name="tutorials">Tutorials</a>      </dt>      <dd>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">          <param name="text" value="Delving Into Components"></object>      </dd><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Hyperlink Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table> </body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Hyperlink Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Hyperlink Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+<p>The Hyperlink <img src="../../../images/hyperlinkicon.gif" alt="Hyperlink icon">&nbsp;component 
+is used either as a standard hyperlink to a URL or a link to a page in your application. This component is equivalent to an HTML <code>&lt;a&gt;</code> 
+  element.</p>
+   <ul class="note">
+      <li>
+      This component has support for client-side JavaScript functions that enable you to perform actions on the client without a trip back to the server.  For more information on this advanced feature, choose Help &gt; JavaScript References &gt; Project Woodstock 4.1 Tag Library and navigate to webuijsf:hyperlink.      </li>
+</ul>
+
+<p>If you set the <code>action</code> property by right-clicking the component and choosing Edit action Event Handler, the page is submitted. If instead you set the <code>url</code> property,  the link is a normal hyperlink that sends the browser to a new location. </p>
+<p>If you want the link to be represented as an image instead of as text, use the <a href="image_hyperlink.html">Image Hyperlink</a> component.</p>
+<ul class="note">
+  <li>You can drop an Image component or a Static Text component or both on the  Hyperlink if you want to customize the appearance of the link. 
+    <p>If you drop a component on the  Hyperlink, you  embed the component in the hyperlink, and you must work with the embedded  component's properties rather than the properties of the  Hyperlink. Select the embedded  component in the 
+      <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+        <param name="content" value="../app_outline_win_graphic.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="385,450">
+        <param name="text" value="Navigator window"></object>&nbsp;  to set the embedded component's properties.</p>
+  </li>
+</ul>
+<p>After adding a hyperlink to a page, you can do a number of things with it: </p>
+<ul>
+  <li> Select the component and edit its properties in the component's <a href="propsheets/hyperlink_props.html">Properties window</a>. Some typical properties to edit are:
+      <ul>
+        <li><b>id.</b> The name of the component. In the JSP file, this name is the value of the component's <code>id</code> attribute. In the page bean, this property's value is the name of the <code>Hyperlink</code> object.</li>
+        <li><b>text.</b> The displayed text for the link. You can also click the component and edit this value.</li>
+        <li> <b>url.</b> The URL to the target document or resource that the hyperlink is to open. Setting the <code>url</code> property overrides any action event handler you might define, as described below. If this property is set, when the user clicks the hyperlink they are taken directly to the URL and the page is not submitted. If   this property is not set, clicking the hyperlink submits the page. Typically, if you do not set this property, you use the action even handler to define what happens when the user clicks the hyperlink.</li>
+      </ul>
+  </li>
+  <li>Right-click the component and choose one of the following pop-up menu items:
+      <ul>
+        <li><b>Edit action Event Handler.</b> Code the action event handler, the  method that is called when the user clicks the hyperlink, and set the <code>action</code> property to the name of this method. See the <code>url</code> property above for information about how these two properties interact. 
+<p>The action event handler determines which page or resource to open based on specified conditions.  The action method typically processes mouse clicks and returns a string indicating the name of a page navigation case (the page in your application to display next). The default name for the method is <i><code>hyperlink-id</code></i><code>_action</code>, where <i>hyperlink-id</i> is the value of the hyperllink's <code>id</code> property. </p>
+</li>
+        <li><b>Bind to Data</b>. Opens a dialog box that enables you to bind the component's <code>text</code> property to a data provider or an object that dynamically sets the displayed text of the hyperlink. For more information, see <a href="../../dialogs/bindtodata_simple_db.html">Bind to Data Dialog Box</a>.</li>
+        <li><b>Property Bindings</b>. Opens a dialog box that enables you to bind properties of the component in addition to the <code>text</code> property to other objects or properties that supply data for the values of this component's properties.</li>
+      </ul>
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>  
+<dd><a href="propsheets/hyperlink_props.html">Hyperlink Component Properties Window</a></dd>
+<dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+ 
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>     <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">
+          <param name="text" value="Delving Into Components"></object>
+      </dd>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Hyperlink Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>

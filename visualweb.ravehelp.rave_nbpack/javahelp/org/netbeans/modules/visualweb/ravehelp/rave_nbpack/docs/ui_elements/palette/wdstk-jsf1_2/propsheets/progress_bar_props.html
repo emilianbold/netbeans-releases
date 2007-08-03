@@ -103,19 +103,11 @@ bar. This technique is useful when space is limited.</li>
 <li><b>rendered.</b><code> Type: boolean</code><br>
   If selected, the component is to be rendered and processed on any subsequent page submission. If not selected, the progress bar does not appear on the page at all, not even as a hidden component.</li>
 <li><b>taskState.</b><code> Type: String </code><br>
-    A string representing the current state of the task associated with this progress bar.
-  Valid values are:</li>
-  <ul>
-    <li><code>not_started</code></li>
-  <li><code>      running</code></li>
-  <li><code>paused</code></li>
-  <li><code>      resumed</code></li>
-  <li><code>      stopped</code></li>
-  <li><code>      canceled</code></li>
-  <li><code>      failed</code></li>
-  <li><code>      completed</code>
-                    </li>
-  </ul>
+    A string representing the current state of the task associated with this progress bar. You can click the dropdown list next to the property to select a value. The default value is <code>not_started</code>. If you do not set this property, the component automatically sets this property to <code>running</code> if if the value of the <code>progress</code> attribute is less than 100 and greater than 0, and to <code>completed</code> if the value is 100. 
+<!--
+Clicking  a control element (pause, resume or cancel) sets the  value to <code>paused</code>, <code>canceled</code>, or <code>resumed</code>. 
+-->
+</li>
   <li><b>type.</b><code> Type: boolean</code><br> 
     The general type of progress bar. Types are as follows:
   </li>
