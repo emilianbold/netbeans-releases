@@ -95,6 +95,8 @@ public class CvsVersioningSystem {
     private boolean     userIgnorePatternsReset;
     private long        userIgnorePatternsTimestamp;
 
+    private final Set<File> unignoreOverride = new HashSet<File>(1);
+
     private final Set<File> alreadyGeneratedFiles = new HashSet<File>(5);
 
     public static synchronized CvsVersioningSystem getInstance() {
@@ -251,6 +253,17 @@ public class CvsVersioningSystem {
     public void removeVersioningListener(VersioningListener listener) {
         listenerSupport.removeListener(listener);
     }
+
+    /**
+     * Returns true for files that were originally ignored by default (.exe files for example) but the user 
+     * explicitly invoked CVS/Unignore on them.
+     * 
+     * @param file a file to test
+     * @return true if the file was explicitly Unignored by user
+     */
+    boolean isUnignored(final File file) {
+        return unignoreOverride.contains(file);
+    }
     
     /**
      * Checks if the file is ignored by CVS module. This method assumes that the file is managed so
@@ -272,6 +285,8 @@ public class CvsVersioningSystem {
         if (".nbintdb".equals(name)) {  // NOI18N
             return true;
         }
+        
+        if (isUnignored(file)) return false;
 
         Set patterns = new HashSet(Arrays.asList(CvsModuleConfig.getDefault().getIgnoredFilePatterns()));
         addUserPatterns(patterns);
@@ -426,7 +441,7 @@ public class CvsVersioningSystem {
         }
     }
     
-     public boolean isInCvsIgnore(File file) {
+     private boolean isInCvsIgnore(File file) {
         try {
             String patternToIgnore = computePatternToIgnore(file.getName());
             return readCvsIgnoreEntries(file.getParentFile()).contains(patternToIgnore);
@@ -565,13 +580,22 @@ public class CvsVersioningSystem {
             addToCvsIgnore(file);
         }
     }
+
+    void setNotUnignored(File file) {
+        unignoreOverride.remove(file);
+    }
     
     public void setNotignored(File[] files) {
-        for (int i = 0; i < files.length; i++) {
-            try {
-                removeFromCvsIgnore(files[i]);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
+        for (File file : files) {
+            if (isInCvsIgnore(file)) {
+                try {
+                    removeFromCvsIgnore(file);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            } else {
+                unignoreOverride.add(file);
+                fileStatusCache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
         }
     }

@@ -498,6 +498,7 @@ public class FileStatusCache {
             }
             return createMissingEntryFileInformation(file, repositoryStatus);            
         } else {
+            cvs.setNotUnignored(file);
             return createVersionedFileInformation(entry, file, repositoryStatus);            
         }
     }
@@ -619,7 +620,7 @@ public class FileStatusCache {
                 return new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory);
             } else {
                 // server marks this file as uptodate and it does not have an entry, the file is probably listed in CVSROOT/cvsignore
-                return new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, isDirectory);
+                return cvs.isUnignored(file) ? new FileInformation(FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY, isDirectory) : new FileInformation(FileInformation.STATUS_NOTVERSIONED_EXCLUDED, isDirectory);
             }
         } else if (repositoryStatus == REPOSITORY_STATUS_REMOVED_REMOTELY) {
             if (exists(file)) {

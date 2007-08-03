@@ -68,7 +68,7 @@ public class IgnoreAction extends AbstractSystemAction {
             if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                 actionStatus = (actionStatus == -1 || actionStatus == IGNORING) ? IGNORING : UNDEFINED;
             } else if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                actionStatus = ((actionStatus == -1 || actionStatus == UNIGNORING) && canBeUnignored(files[i])) ? UNIGNORING : UNDEFINED;
+                actionStatus = (actionStatus == -1 || actionStatus == UNIGNORING) ? UNIGNORING : UNDEFINED;
             } else {
                 actionStatus = UNDEFINED;
                 break;
@@ -77,10 +77,6 @@ public class IgnoreAction extends AbstractSystemAction {
         return actionStatus == -1 ? UNDEFINED : actionStatus;
     }
     
-    private boolean canBeUnignored(File file) {
-        return CvsVersioningSystem.getInstance().isInCvsIgnore(file);
-    }
-
     protected boolean enable(Node[] nodes) {
         return getActionStatus(nodes) != UNDEFINED;
     }
