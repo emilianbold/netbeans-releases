@@ -170,19 +170,6 @@ public final class WebModule {
         return getDocumentBase ().getPath ().length () + getContextPath ().length ();
     }
     
-    public ClassPath getClassPath() {
-        FileObject[] roots = getJavaSources();
-        if (roots.length > 0) {
-            FileObject fo = roots[0];
-            return ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
-                ClassPath.getClassPath(fo, ClassPath.SOURCE),
-                ClassPath.getClassPath(fo, ClassPath.COMPILE)
-            });
-        } else {
-            return org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(new URL[0]);
-        }
-    }
-    
     public MetadataModel<WebAppMetadata> getMetadataModel() {
         return impl.getMetadataModel();
     }

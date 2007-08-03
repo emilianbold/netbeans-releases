@@ -129,24 +129,4 @@ public final class Car {
     public FileObject getMetaInf() {
         return impl.getMetaInf();
     }
-
-    /**
-     * Provides unit's classpath, which covers sources and libraries logically 
-     * coupled with XML descriptor. Note, that if XML doesn't exist, this
-     * classpath is only place where metadata comes from.
-     *
-     * @return classpath of the unit
-     */
-    public ClassPath getClassPath() {
-        FileObject[] roots = getJavaSources();
-        if (roots.length > 0) {
-            FileObject fo = roots[0];
-            return ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
-                ClassPath.getClassPath(fo, ClassPath.SOURCE),
-                ClassPath.getClassPath(fo, ClassPath.COMPILE)
-            });
-        } else {
-            return org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
-        }
-    }
 }
