@@ -100,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation" executor="ide" name="testbag_openforms">
+    <testbag testattribs="validation, mytest" executor="ide" name="testbag_openforms">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/OpenForm.class"/>
@@ -128,7 +128,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <!-- issue <testbag testattribs="validation" executor="ide" name="testbag_editor_basictest">
+    <testbag testattribs="validation, mytest" executor="ide" name="testbag_editor_basictest">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/editor/formatting/BasicTest.*"/>                
