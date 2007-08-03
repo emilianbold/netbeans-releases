@@ -64,7 +64,6 @@ public class FontStyleEditor extends StyleEditor {
     DefaultComboBoxModel fontVariants;
     
     String temporaryFontSet = null;
-    private String fontSizeValue;
     
     /** Creates new form FontStyleEditor */
     public FontStyleEditor() {
@@ -336,9 +335,6 @@ public class FontStyleEditor extends StyleEditor {
             }
         });
         fontSizeField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                fontSizeFieldFocusGained(evt);
-            }
             public void focusLost(java.awt.event.FocusEvent evt) {
                 fontSizeFieldFocusLost(evt);
             }
@@ -582,10 +578,6 @@ public class FontStyleEditor extends StyleEditor {
 
         add(mainPanel, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
-
-private void fontSizeFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fontSizeFieldFocusGained
-    fontSizeValue = fontSizeField.getText();
-}//GEN-LAST:event_fontSizeFieldFocusGained
     
     private void noDecorationCheckboxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_noDecorationCheckboxItemStateChanged
         textDecorationData.enableNoDecoration((evt.getStateChange() == evt.SELECTED));
@@ -675,11 +667,7 @@ private void fontSizeFieldFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRS
     }//GEN-LAST:event_fontSizeFieldActionPerformed
     
     private void fontSizeFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_fontSizeFieldFocusLost
-        //update the model only if the value has changed
-        if(fontSizeValue == null || !fontSizeValue.equals(fontSizeField.getText())) {
-            setFontSize();
-            fontSizeValue = null;
-        }
+        setFontSize();
     }//GEN-LAST:event_fontSizeFieldFocusLost
     
     private void fontSizeFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fontSizeFieldKeyTyped
