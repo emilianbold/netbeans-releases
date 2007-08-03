@@ -1591,7 +1591,7 @@ identPrimary
 				{if (#ta2 == null) astFactory.addASTChild(currentAST, #ta1);}
 				argList RPAREN
 			)
-		|	( options {greedy=true;} :
+		|	( options {greedy=true;} :          
 				lbc:LBRACK^ {#lbc.setType(ARRAY_DECLARATOR);} RBRACK
 			)+
 		)?
@@ -1976,20 +1976,7 @@ NUM_INT
 			)?
 
 	|	(	'0' {isDecimal = true;} // special case for just '0'
-			(	('x'|'X')
-				(											// hex
-					// the 'e'|'E' and float suffix stuff look
-					// like hex digits, hence the (...)+ doesn't
-					// know when to stop: ambig. ANTLR resolves
-					// it correctly by matching immediately. It
-					// is therefor ok to hush warning.
-					options {
-						warnWhenFollowAmbig=false;
-					}
-				:	HEX_DIGIT
-				)+
-
-			|	//float or double with leading zero
+			(	//float or double with leading zero
 				(('0'..'9')+ ('.'|EXPONENT|FLOAT_SUFFIX)) => ('0'..'9')+
 
 			|	('0'..'7')+									// octal
@@ -2013,6 +2000,36 @@ NUM_INT
 			}
 			}
 		)?
+	|	(	'0' ('x'|'X')
+			(
+              ( (	// hex
+					// the 'e'|'E' and float suffix stuff look
+					// like hex digits, hence the (...)+ doesn't
+					// know when to stop: ambig. ANTLR resolves
+					// it correctly by matching immediately. It
+					// is therefor ok to hush warning.
+					options {
+						warnWhenFollowAmbig=false;
+					}
+				:	HEX_DIGIT
+				)+
+                (   ( ('l'|'L') { _ttype = NUM_LONG; } )?
+                    |
+                    ( ('.')? ( HEX_DIGIT )* ('p'|'P') ('+'|'-')? ('0'..'9')+ (fh1:FLOAT_SUFFIX {t=fh1;})? ) 
+                )
+              )
+            |
+              (	'.' ( HEX_DIGIT )+  ('p'|'P') ('+'|'-')? ('0'..'9')+ (fh2:FLOAT_SUFFIX {t=fh2;})? )
+            )
+		)
+        {
+	    if (t != null && t.getText().toUpperCase() .indexOf('F') >= 0) {
+            _ttype = NUM_FLOAT;
+        }
+	    else {
+			_ttype = NUM_DOUBLE; // assume double
+		}
+		}
 	;
 
 // JDK 1.5 token for annotations and their declarations
