@@ -19,11 +19,13 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URLEncoder;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,14 +56,16 @@ public class URLUtil {
     public static URL createExternalURL(URL url, boolean allowJar) {
         if (url == null)
             return null;
+        
+        URL compliantURL = getFullyRFC2396CompliantURL(url);
 
         // return if the protocol is fine
-        if (isAcceptableProtocol(url, allowJar))
-            return url;
+        if (isAcceptableProtocol(compliantURL, allowJar))
+            return compliantURL;
         
         // remove the anchor
-        String anchor = url.getRef();
-        String urlString = url.toString ();
+        String anchor = compliantURL.getRef();
+        String urlString = compliantURL.toString ();
         int ind = urlString.indexOf('#');
         if (ind >= 0) {
             urlString = urlString.substring(0, ind);
@@ -86,8 +90,39 @@ public class URLUtil {
             Logger.getLogger("global").log(Level.INFO, null, e);
         }
         
-        return url;
+        return compliantURL;
     }
+    
+    private static URL getFullyRFC2396CompliantURL(URL url){
+            String urlStr = url.toString();
+            int ind = urlStr.indexOf('#');
+            
+            if (ind > -1){
+                String urlWithoutRef = urlStr.substring(0, ind);
+                String anchorOrg = url.getRef();
+                try {
+                    String anchorEscaped  = URLEncoder.encode(anchorOrg, "UTF8"); //NOI18N
+                    
+                    // browsers seems to like %20 more...
+                    anchorEscaped = anchorEscaped.replaceAll("\\+", "%20"); // NOI18N
+                    
+                    if (!anchorOrg.equals(anchorEscaped)){
+                        URL escapedURL = new URL(urlWithoutRef + '#' + anchorEscaped);
+                        
+                        Logger.getLogger("global").warning("The URL:\n" + urlStr //NOI18N
+                                + "\nis not fully RFC 2396 compliant and cannot " //NOI18N
+                                + "be used with Desktop.browse(). Instead using URL:" //NOI18N
+                                + escapedURL);
+                        
+                        return escapedURL;
+                    }
+                } catch (IOException e){
+                    Logger.getLogger("global").log(Level.SEVERE, e.getMessage(), e);
+                }
+            }
+            
+            return url;
+        }
     
     /** Returns a URL for the given file object that can be correctly interpreted
      * by usual web browsers (including Netscape 4.71, IE and Mozilla).

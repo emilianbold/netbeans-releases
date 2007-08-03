@@ -25,7 +25,6 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.awt.HtmlBrowser;
@@ -175,7 +174,6 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
         public void setURL(URL url) {
             URL extURL = URLUtil.createExternalURL(url, /* to be safe */false);
             try {
-                extURL = getFullyRFC2396CompliantURL(extURL);
 		URI uri = extURL.toURI();
                 logger.fine("Calling java.awt.Desktop.browse("+uri+")");
                 JDK_6_DESKTOP_BROWSE.browse(uri);
@@ -189,43 +187,6 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
             }
         }
         
-        /**
-         * We used to allow URLs that do not fully conform the spec
-         * (specifically those containing reserved characters),
-         * the JVM 6's Desktop.browse() method wouldn't work with them.
-         * This method addresses numerous compatibility issues by
-         * attemting to convert those to "kosher" URLs
-         */
-        private URL getFullyRFC2396CompliantURL(URL url){
-            String urlStr = url.toString();
-            int ind = urlStr.indexOf('#');
-            
-            if (ind > -1){
-                String urlWithoutRef = urlStr.substring(0, ind);
-                String anchorOrg = url.getRef();
-                try {
-                    String anchorEscaped  = URLEncoder.encode(anchorOrg, "UTF8"); //NOI18N
-                    
-                    // browsers seems to like %20 more...
-                    anchorEscaped = anchorEscaped.replaceAll("\\+", "%20"); // NOI18N
-                    
-                    if (!anchorOrg.equals(anchorEscaped)){
-                        URL escapedURL = new URL(urlWithoutRef + '#' + anchorEscaped);
-                        
-                        logger.warning("The URL:\n" + urlStr //NOI18N
-                                + "\nis not fully RFC 2396 compliant and cannot " //NOI18N
-                                + "be used with Desktop.browse(). Instead using URL:" //NOI18N
-                                + escapedURL);
-                        
-                        return escapedURL;
-                    }
-                } catch (IOException e){
-                    logger.log(Level.SEVERE, e.getMessage(), e);
-                }
-            }
-            
-            return url;
-        }
         
     }
 
