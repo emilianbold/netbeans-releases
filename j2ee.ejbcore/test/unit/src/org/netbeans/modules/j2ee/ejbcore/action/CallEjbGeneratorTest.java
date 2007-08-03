@@ -39,7 +39,7 @@ import org.openide.filesystems.FileObject;
  */
 public class CallEjbGeneratorTest extends TestBase {
     
-    private TestModule referencedModule;
+    private TestModule referencedEjb21Module;
     private EjbReference ejbReference;
         
     public CallEjbGeneratorTest(String testName) throws IOException {
@@ -49,45 +49,45 @@ public class CallEjbGeneratorTest extends TestBase {
     @Override
     protected void setUp() throws IOException {
         super.setUp();
-        this.referencedModule = createEjb21Module();
+        this.referencedEjb21Module = createTestModule("EJBModule2_1_4", EjbProjectConstants.J2EE_14_LEVEL);
         this.ejbReference = EjbReference.create(
-            "statelesslr.StatelessLRBean",
+            "statelesslr.StatelessLRBean2",
             EjbRef.EJB_REF_TYPE_SESSION,
-            "statelesslr.StatelessLRLocal",
-            "statelesslr.StatelessLRLocalHome",
-            "statelesslr.StatelessLRRemote",
-            "statelesslr.StatelessLRRemoteHome",
-            referencedModule.getEjbModule()
+            "statelesslr.StatelessLRLocal2",
+            "statelesslr.StatelessLRLocalHome2",
+            "statelesslr.StatelessLRRemote2",
+            "statelesslr.StatelessLRRemoteHome2",
+            referencedEjb21Module.getEjbModule()
             );
     }
     
     public void testAddReference_LocalEE14FromEjbEE14() throws IOException {
-        TestModule referencingModule = createTestModule("EJBModule2_1_4", EjbProjectConstants.J2EE_14_LEVEL);
+        TestModule referencingModule = createEjb21Module();
         
-        FileObject referencingFO = referencingModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean2.java");
+        FileObject referencingFO = referencingModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean.java");
         
-        CallEjbGenerator generator = CallEjbGenerator.create(ejbReference, "StatelessLRBean", true);
+        CallEjbGenerator generator = CallEjbGenerator.create(ejbReference, "StatelessLRBean2", true);
         generator.addReference(
                 referencingFO,
-                "statelesslr.StatelessLRBean2",
-                referencedModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean.java"),
                 "statelesslr.StatelessLRBean",
+                referencedEjb21Module.getSources()[0].getFileObject("statelesslr/StatelessLRBean2.java"),
+                "statelesslr.StatelessLRBean2",
                 null,
                 false,
                 false,
-                referencedModule.getProject()
+                referencedEjb21Module.getProject()
                 );
         
         EnterpriseReferenceContainerImpl erc = referencingModule.getEnterpriseReferenceContainerImpl();
         assertNotNull(erc.getLocalEjbReference());
-        assertEquals("StatelessLRBean", erc.getLocalEjbRefName());
-        assertEquals("statelesslr.StatelessLRBean2", erc.getLocalReferencingClass());
+        assertEquals("StatelessLRBean2", erc.getLocalEjbRefName());
+        assertEquals("statelesslr.StatelessLRBean", erc.getLocalReferencingClass());
 
         final String generatedMethodBody =
         "{\n" +
         "    try {\n" +
         "        javax.naming.Context c = new javax.naming.InitialContext();\n" +
-        "        statelesslr.StatelessLRLocalHome rv = (statelesslr.StatelessLRLocalHome)c.lookup(\"java:comp/env/StatelessLRBean\");\n" +
+        "        statelesslr.StatelessLRLocalHome2 rv = (statelesslr.StatelessLRLocalHome2)c.lookup(\"java:comp/env/StatelessLRBean2\");\n" +
         "        return rv.create();\n" +
         "    } catch (javax.naming.NamingException ne) {\n" +
         "        java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, \"exception caught\", ne);\n" +
@@ -103,7 +103,7 @@ public class CallEjbGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.PARSED);
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                ExecutableElement method = getMethod(sourceUtils.getTypeElement(), "lookupStatelessLRBean");
+                ExecutableElement method = getMethod(sourceUtils.getTypeElement(), "lookupStatelessLRBean2");
                 assertNotNull(method);
                 MethodTree methodTree = controller.getTrees().getTree(method);
                 assertEquals(generatedMethodBody, methodTree.getBody().toString());
