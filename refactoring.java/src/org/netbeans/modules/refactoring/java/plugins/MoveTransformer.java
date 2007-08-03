@@ -74,7 +74,7 @@ public class MoveTransformer extends RefactoringVisitor {
                 FileObject fo = SourceUtils.getFile(el, workingCopy.getClasspathInfo());
                 if (isElementMoving(el)) {
                     elementsAlreadyImported.add(el);
-                    String newPackageName = move.getTargetPackageName(move.filesToMove.get(index));
+                    String newPackageName = move.getTargetPackageName(SourceUtils.getFile(el, workingCopy.getClasspathInfo()));
                     if (!"".equals(newPackageName)) {
                         Tree nju = make.MemberSelect(make.Identifier(newPackageName), el);
                         rewrite(node, nju);
@@ -177,16 +177,12 @@ public class MoveTransformer extends RefactoringVisitor {
 //        return true;
 //    }
     
-    private int index;
     private boolean isElementMoving(Element el) {
-        index=0;
         for (ElementHandle handle:move.classes.values()) {
             if (handle.signatureEquals(el)) {
                 return true;
             }
-            index++;
         }
-        index=-1;
         return false;
     }
     
