@@ -72,7 +72,7 @@ cd ../..
 generated=nbbuild/build/generated
 rm -rf $generated
 ant -f nbbuild/build.xml generate-golden-files generate-files-layout index-layer-paths || exit
-# XXX other candidates: check-module-configs
+cp -v nbbuild/netbeans/THIRDPARTYLICENSE-generated.txt $generated/external-libraries.txt || exit
 prev_generated=../lastSuccessful/archive/$generated
 if [ -d $prev_generated ]; then
     diff -r -U 25 $prev_generated $generated > $generated.diff

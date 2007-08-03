@@ -29,6 +29,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.math.BigInteger;
+import java.nio.channels.FileChannel;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -84,13 +88,26 @@ public class CreateLicenseSummary extends Task {
             try {
                 PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
                 pw.println("DO NOT TRANSLATE OR LOCALIZE.");
-                pw.println();
                 File licenses = new File(new File(nball, "nbbuild"), "licenses");
                 for (Map.Entry<String,Set<String>> entry : license2Binaries.entrySet()) {
                     String licenseName = entry.getKey();
+                    pw.println();
                     pw.println("=========== " + licenseName + " ===========");
                     for (String binary : entry.getValue()) {
-                        pw.println(binary);
+                        File f = new File(build, binary.replace('/', File.separatorChar));
+                        MessageDigest digest;
+                        try {
+                            digest = MessageDigest.getInstance("SHA-1");
+                        } catch (NoSuchAlgorithmException x) {
+                            throw new BuildException(x, getLocation());
+                        }
+                        FileInputStream is = new FileInputStream(f);
+                        try {
+                            digest.update(is.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, f.length()));
+                        } finally {
+                            is.close();
+                        }
+                        pw.printf("%s (size: %d; SHA-1: %040X)\n", binary, f.length(), new BigInteger(1, digest.digest()));
                     }
                     pw.println();
                     File license = new File(licenses, licenseName);

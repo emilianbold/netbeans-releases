@@ -24,7 +24,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,7 +52,6 @@ public class ModuleDependencies extends Task {
     private List<Input> inputs = new ArrayList<Input>();
     private List<Output> outputs = new ArrayList<Output>();
     private Set<ModuleInfo> modules;
-    private Set<File> external;
     private Pattern regexp;
     
     public ModuleDependencies () {
@@ -123,10 +121,6 @@ public class ModuleDependencies extends Task {
                     generatePublicPackages(o.file, false, true);                    
                     continue;
                 }
-                if ("external-libraries".equals (o.type.getValue ())) {
-                    generateExternalLibraries (o.file);                    
-                    continue;
-                }
             }
         
         } catch (IOException ex) {
@@ -136,13 +130,6 @@ public class ModuleDependencies extends Task {
     
     private void readModuleInfo () throws IOException {
         modules = new TreeSet<ModuleInfo>();
-        
-        class Comp implements Comparator<File> {
-            public int compare (File f1, File f2) {
-                return f1.getName ().compareTo (f2.getName ());
-            }
-        }
-        external = new TreeSet<File>(new Comp ());
         
         if (inputs.isEmpty()) {
             throw new BuildException ("At least one <input> tag is needed");
@@ -161,7 +148,6 @@ public class ModuleDependencies extends Task {
                 Manifest manifest = file.getManifest();
                 if (manifest == null) {
                     // process only manifest files
-                    external.add (f);
                     continue;
                 }
                 
@@ -170,9 +156,6 @@ public class ModuleDependencies extends Task {
                 
                 if (module == null) {
                     // skip this one
-                    if (!isBuiltFromSource(f, manifest)) {
-                        external.add (f);
-                    }
                     continue;
                 }
 
@@ -241,30 +224,6 @@ public class ModuleDependencies extends Task {
         }
     }
 
-    private boolean isBuiltFromSource(File jar, Manifest manifest) {
-        if (manifest.getMainAttributes().getValue("NetBeans-Own-Library") != null) {
-            // Special marker can be added to any JAR to skip over it.
-            return true;
-        }
-        if (jar.getAbsolutePath().matches(".*(/docs/|/ant/nblib/).*")) {
-            // JavaHelp or in-IDE Ant task surely built by us.
-            return true;
-        }
-        String name = jar.getName();
-        if (name.matches("designtime.*\\.jar|webui.*\\.jar|jruby\\.jar|graphlib\\.jar")) { // XXX hardcoded for now
-            return true;
-        }
-        if (name.endsWith("_nb.jar") && !name.equals("resolver-1_1_nb.jar")) {
-            // Branding.
-            return true;
-        }
-        if (name.startsWith("org-netbeans-") || name.startsWith("nb_")) {
-            // Clearly ours.
-            return true;
-        }
-        return false;
-    }
-    
     private void generatePublicPackages(File output, boolean justPublic, boolean justInterCluster) throws BuildException, IOException {
         TreeSet<String> packages = new TreeSet<String>();
         TreeMap<ModuleInfo,TreeSet<String>> friendExports = new TreeMap<ModuleInfo,TreeSet<String>>();
@@ -447,48 +406,6 @@ public class ModuleDependencies extends Task {
         w.close ();
     }
     
-    private void generateExternalLibraries (File output) throws BuildException, IOException {
-        PrintWriter w = new PrintWriter (new FileWriter (output));
-        String SPACES = "                                                     ";
-        for (File f : external) {
-            /* File hash is not very useful in practice; when two JARs of the same size differ only in hash, usually it is because it was just recompiled:
-            java.security.MessageDigest dig;
-            
-            try {
-                dig = java.security.MessageDigest.getInstance ("MD5");
-            } catch (java.security.NoSuchAlgorithmException ex) {
-                throw new BuildException (ex);
-            }
-            InputStream is = new BufferedInputStream (new FileInputStream (f));
-            byte[] arr = new byte[4092];
-            for (;;) {
-                int len = is.read (arr);
-                if (len == -1) {
-                    break;
-                }
-                dig.update (arr, 0, len);
-            }
-            
-            byte[] res = dig.digest ();
-            is.close ();
-             */
-            
-            w.print ("LIBRARY ");
-            w.print ((f.getName () + SPACES).substring (0, 50));
-            String size = SPACES + f.length ();
-            w.print (size.substring (size.length () - 15));
-            w.print (" ");
-            /*
-            for (byte b : res) {
-                String hex = "00" + Integer.toHexString(b);
-                w.print (hex.substring (hex.length () - 2));
-            }
-             */
-            w.println ();
-        }
-        w.close ();
-    }
-
     private void generateSharedPackages (File output) throws BuildException, IOException {
         TreeMap<String,List<ModuleInfo>> packages = new TreeMap<String,List<ModuleInfo>>();
         
