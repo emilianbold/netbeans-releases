@@ -18,15 +18,11 @@
  */
 package org.netbeans.modules.j2ee.api.ejbjar;
 
-import java.util.Collections;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.ejbjar.CarAccessor;
-import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarsInProject;
-import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
