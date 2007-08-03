@@ -255,7 +255,8 @@ public class FormUtils
                 "adjustmentListeners", PROP_HIDDEN },
         { "javax.swing.JTable", CLASS_AND_SUBCLASSES,
                 "model", PROP_PREFERRED,
-                "border", PROP_PREFERRED },
+                "border", PROP_PREFERRED,
+                "autoCreateColumnsFromModel", PROP_PREFERRED},
         { "javax.swing.JTable", CLASS_EXACTLY,
                 "editing", PROP_HIDDEN,
                 "editorComponent", PROP_HIDDEN,
@@ -366,7 +367,9 @@ public class FormUtils
             "text", "selectionEnd" },
         { "javax.swing.JEditorPane",
             "contentType", "text",
-            "editorKit", "text" }
+            "editorKit", "text" },
+        { "javax.swing.JTable",
+            "autoCreateColumnsFromModel", "model" }
     };
 
     /** Table enumerating properties that can hold HTML text. */
