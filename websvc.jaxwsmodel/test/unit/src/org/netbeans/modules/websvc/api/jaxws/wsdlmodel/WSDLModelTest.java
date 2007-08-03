@@ -19,17 +19,13 @@
 
 package org.netbeans.modules.websvc.api.jaxws.wsdlmodel;
 
-import com.sun.tools.ws.processor.model.Model;
-import com.sun.tools.ws.processor.model.Service;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import junit.framework.*;
-import org.netbeans.junit.AssertionFailedErrorException;
 import org.netbeans.junit.NbTestCase;
 import java.util.*;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -63,7 +59,7 @@ public class WSDLModelTest extends NbTestCase {
         initResults();
         final WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(getUrl("T2.wsdl"));
         assertNotNull("WsdlModelerFactory failed to create object", wsdlModeler);
-        for (int i=0;i<1000;i++) {
+        for (int i=0;i<100;i++) {
             final int j=i+1; 
             wsdlModeler.generateWsdlModel(new WsdlModelListener() {
                     public void modelCreated(WsdlModel model) {
@@ -76,7 +72,7 @@ public class WSDLModelTest extends NbTestCase {
         wsdlModeler.task.waitFinished();
         System.out.println("Test 1 : FINISHED");
         if (expectedValue!=null) assertEquals (expectedValue,realValue);
-        assertEquals(1000,numberOfEvents);
+        assertEquals(100,numberOfEvents);
     }
     public void testSynchronousModelCreation() throws java.net.MalformedURLException {
         System.out.println("Test 2 : Synchronous Model Creation");
