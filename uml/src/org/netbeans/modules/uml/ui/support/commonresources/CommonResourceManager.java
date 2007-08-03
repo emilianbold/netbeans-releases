@@ -278,6 +278,7 @@ public class CommonResourceManager implements ICommonResourceManager
       
       // Other
       m_ElementNameIconMap.put("Project", RESOURCE_BUNDLE.getString("IDI_PROJECT"));
+      m_ElementNameIconMap.put("WSProject", RESOURCE_BUNDLE.getString("IDI_PROJECT"));
       m_ElementNameIconMap.put("NewProperty", RESOURCE_BUNDLE.getString("IDI_NEWPROPERTY"));
       
       // Collections
