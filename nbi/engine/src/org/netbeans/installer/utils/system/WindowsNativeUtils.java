@@ -261,7 +261,10 @@ public class WindowsNativeUtils extends NativeUtils {
             return getFreeSpace0(file.getPath());
         }
     }
-    
+    public boolean isUNCPath(String path) {
+        // for windows UNC is smth like \\servername\folder...
+        return path.matches("^\\\\\\\\.+(\\\\|/).+");
+    }
     public boolean isPathValid(String path) {
         // there is a max length limitation
         if (path.length() > 256) {
@@ -271,7 +274,7 @@ public class WindowsNativeUtils extends NativeUtils {
         // the path should be absolute, i.e. should start with "<Drive>:\"
         if (!path.matches("^[A-Z,a-z]:\\\\.*")) {
             // the path can be also in UNC form
-            if(!path.matches("^\\\\\\\\.+(\\\\|/).+")) {                
+            if(!isUNCPath(path)) {                
                 return false;
             }
         }

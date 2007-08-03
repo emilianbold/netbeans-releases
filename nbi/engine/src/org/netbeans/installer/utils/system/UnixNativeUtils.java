@@ -61,6 +61,7 @@ public abstract class UnixNativeUtils extends NativeUtils {
     private boolean isUserAdminSet;
     private boolean isUserAdmin;
 
+
     private static final String[] FORBIDDEN_DELETING_FILES_UNIX = {
             System.getProperty("user.home"),
             System.getProperty("java.home"),
@@ -406,6 +407,11 @@ public abstract class UnixNativeUtils extends NativeUtils {
         }
     }
     
+    public boolean isUNCPath(String path) {
+        // for Unix UNC is smth like servername:/folder...
+        return path.matches("^.+:/.+");
+    }
+
     // other ... //////////////////////////
     
     public String getEnvironmentVariable(String name, EnvironmentScope scope, boolean flag) {

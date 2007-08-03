@@ -54,6 +54,7 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.FilesList;
 import org.netbeans.installer.utils.helper.FileEntry;
+import org.netbeans.installer.utils.helper.Pair;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.NativeUtils;
@@ -262,7 +263,7 @@ public final class FileUtils {
                 size = file.length();
             } catch (SecurityException e) {
                 ErrorManager.notifyError(
-                        ResourceUtils.getString(FileUtils.class, 
+                        ResourceUtils.getString(FileUtils.class,
                         ERROR_FILE_SECURITY_EXCEPTION_KEY, file),
                         e);
             }
@@ -981,7 +982,7 @@ public final class FileUtils {
                 source.getAbsolutePath());
         if( er.getErrorCode() != 0) {
             throw new IOException(ResourceUtils.getString(FileUtils.class,
-                    ERROR_PACK200_FAILED_KEY, 
+                    ERROR_PACK200_FAILED_KEY,
                     er.getErrorCode(), er.getStdOut(),er.getStdErr()));
         }
         
@@ -1001,7 +1002,7 @@ public final class FileUtils {
                 target.getAbsolutePath());
         if (er.getErrorCode() != 0) {
             throw new IOException(ResourceUtils.getString(FileUtils.class,
-                    ERROR_UNPACK200_FAILED_KEY, 
+                    ERROR_UNPACK200_FAILED_KEY,
                     er.getErrorCode(), er.getStdOut(),er.getStdErr()));
         }
         
@@ -1090,13 +1091,17 @@ public final class FileUtils {
         return path;
     }
     
+    public static boolean isUNCPath(String path) {
+        return SystemUtils.getNativeUtils().isUNCPath(path);
+    }
+    
     public static File eliminateRelativity(
             final String path) {
         String corrected = path;
         
-        if(SystemUtils.isWindows() && corrected.matches("^\\\\\\\\.+(\\\\|/).+")) {
+        if(SystemUtils.isWindows() && isUNCPath(corrected)) {
             // don`t correct UNC paths that starts with \\<servername>
-            corrected = corrected.substring(0,2) + 
+            corrected = corrected.substring(0,2) +
                     corrected.substring(2).replace(BACKSLASH, SLASH);
         } else {
             corrected = corrected.replace(BACKSLASH, SLASH);
@@ -1138,7 +1143,7 @@ public final class FileUtils {
         }
         
         return new File(corrected);
-    }
+    }    
     
     public static File getRoot(
             final File file) {
@@ -1181,16 +1186,16 @@ public final class FileUtils {
             final long total) throws IOException {
         long count = start;
         
-        if (SystemUtils.isDeletingAllowed(file)) {            
+        if (SystemUtils.isDeletingAllowed(file)) {
             final boolean isDir = file.isDirectory();
             final String type = (isDir) ? "directory" : "file";
             if (isDir && recurse) {
-                    final File[] children = file.listFiles();
-                    if (children != null) {
-                        for (File child: children) {
-                            count = deleteFile(child, true, progress, count, total);
-                        }
-                    }                
+                final File[] children = file.listFiles();
+                if (children != null) {
+                    for (File child: children) {
+                        count = deleteFile(child, true, progress, count, total);
+                    }
+                }
             }
             
             LogManager.log("deleting " + type + ": " + file);
@@ -1736,10 +1741,10 @@ public final class FileUtils {
     public static final String ERROR_FILE_SECURITY_EXCEPTION_KEY =
             "FU.error.file.security.exception";//NOI18N
     public static final String MESSAGE_DELETE_FILE =
-            ResourceUtils.getString(FileUtils.class, 
+            ResourceUtils.getString(FileUtils.class,
             "FU.message.delete.file");//NOI18N
     public static final String MESSAGE_DELETE_DIR =
-            ResourceUtils.getString(FileUtils.class, 
+            ResourceUtils.getString(FileUtils.class,
             "FU.message.delete.dir");//NOI18N
     public static final String ERROR_PACK200_FAILED_KEY =
             "FU.error.pack200.failed";//NOI18N
