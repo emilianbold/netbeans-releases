@@ -1,1 +1,102 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Tree Node Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Tree Node Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>The Tree Node <img src="../../../images/bh_tree_node_icon.gif" alt="Tree Node icon">&nbsp;requires that you have added a <a href="tree.html">Tree component</a> to your page. You can drop it  either on a Tree component or on another tree node in the Visual Designer to create a   node in a hierarchical tree structure, similar to the tree you see in the   		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../navigator_win/navigator_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window."></object>&nbsp;</p>   <ul class="note">      <li>        This component is a JavaServer Faces 1.2 component. You see components that use this        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,        see:<br>         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value=          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>      </li></ul><p>The tree node is created as a subnode of the node on which you drop it. If you drop the node on the tree component itself, a new node is created as a child of the root node. You can see the hierarchical structure clearly in the         <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>        <param name="content" value="../app_outline_win_graphic.html">        <param name="viewerActivator" value="javax.help.LinkLabel">        <param name="viewerStyle" value="javax.help.Popup">        <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window,"></object>&nbsp;  where you can also easily move nodes around and reparent them.</p><p>You can also add a tree node either to a Tree component or to a Tree Node component by right-clicking the component and choosing Add Tree Node. </p><p>A Tree Node component by default is a container for an image and can be used to navigate to another page, submit the current page, or simply open or close the node if the node has child nodes. </p><ul>  <li>If you select the Tree Node component's node <img src="../../../images/bh_tree_node_icon.gif" alt="Tree Node icon">&nbsp;in the Outline window, you can edit its properties in the Tree Node Properties window. You can set things like whether or not the Tree Node is expanded by default, the tooltip for the Tree Node, the label for the tree node, and the Tree Node's identifier in your web application.</li>  <li>You can use a Tree Node to navigate to another page by setting its <code>url</code> property. You can also use a Tree Node to submit the current page. If the the Tree Node's <code>action</code> property is bound to an action event handler, selecting the node automatically submits the page. If the Tree Node's <code>actionListener</code> property is bound to an action listener, opening or closing the node automatically submits the page. </li>  <li>If you select the image in the Tree Node, you can see that its <code>icon</code> property is set to <code>TREE_DOCUMENT</code>. If you right-click the image on the page and choose Set Image, you can either change the icon to another one or choose your own image in the Image Customizer dialog box. For more information on working with an image in a tree node, see <a href="image.html">Image component</a>.    <ul class="note">      <li>The image used in a tree node works best if it is 16x16 or smaller. Larger images can work, but might appear overlapped in the Visual Designer.  You can right-click the component and choose Preview in Browser  to view the images in a web browser.</li>    </ul>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt>   <dd><a href="propsheets/tree_node_props.html">Tree Node Properties Window</a></dd>      <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>   <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl>     <dt>         <a name="tutorials">Tutorials</a>      </dt>      <dd>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">          <param name="text" value="Delving Into Components"></object>      </dd><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Tree Node Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table> </body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Tree Node Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Tree Node Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+<p>The Tree Node <img src="../../../images/bh_tree_node_icon.gif" alt="Tree Node icon">&nbsp;requires that you have added a <a href="tree.html">Tree component</a> to your page. You can drop it  either on a Tree component or on another tree node in the Visual Designer to create a   node in a hierarchical tree structure, similar to the tree you see in the   
+		  <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../navigator_win/navigator_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window."></object>&nbsp;
+
+</p>
+   <ul class="note">
+      <li>
+        This component is a JavaServer Faces 1.2 component. You see components that use this
+        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,
+        see:<br>
+         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value=
+          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
+          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
+      </li>
+</ul>
+
+<p>The tree node is created as a subnode of the node on which you drop it. If you drop the node on the tree component itself, a new node is created as a child of the root node. You can see the hierarchical structure clearly in the   
+      <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+        <param name="content" value="../../navigator_win/navigator_win_popup.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window,"></object>&nbsp;  where you can also easily move nodes around and reparent them.</p>
+<p>You can also add a tree node either to a Tree component or to a Tree Node component by right-clicking the component and choosing Add Tree Node. </p>
+<p>A Tree Node component by default is a container for an image and can be used to navigate to another page, submit the current page, or simply open or close the node if the node has child nodes. </p>
+<ul>
+  <li>If you select the Tree Node component's node <img src="../../../images/bh_tree_node_icon.gif" alt="Tree Node icon">&nbsp;in the Outline window, you can edit its properties in the Tree Node Properties window. You can set things like whether or not the Tree Node is expanded by default, the tooltip for the Tree Node, the label for the tree node, and the Tree Node's identifier in your web application.</li>
+  <li>You can use a Tree Node to navigate to another page by setting its <code>url</code> property. You can also use a Tree Node to submit the current page. If the the Tree Node's <code>action</code> property is bound to an action event handler, selecting the node automatically submits the page. If the Tree Node's <code>actionListener</code> property is bound to an action listener, opening or closing the node automatically submits the page. 
+</li>
+  <li>If you select the image in the Tree Node, you can see that its <code>icon</code> property is set to <code>TREE_DOCUMENT</code>. If you right-click the image on the page and choose Set Image, you can either change the icon to another one or choose your own image in the Image Customizer dialog box. For more information on working with an image in a tree node, see <a href="image.html">Image component</a>.
+    <ul class="note">
+      <li>The image used in a tree node works best if it is 16x16 or smaller. Larger images can work, but might appear overlapped in the Visual Designer.  You can right-click the component and choose Preview in Browser  to view the images in a web browser.</li>
+    </ul>
+  </li>
+</ul>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+   
+<dd><a href="propsheets/tree_node_props.html">Tree Node Properties Window</a></dd>    
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+ 
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>     <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">
+          <param name="text" value="Delving Into Components"></object>
+      </dd>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+
+
+</dl>
+
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Tree Node Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+</body>
+</html>

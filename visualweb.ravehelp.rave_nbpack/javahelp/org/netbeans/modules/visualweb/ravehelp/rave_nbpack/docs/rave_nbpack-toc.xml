@@ -146,7 +146,11 @@
 							<tocitem text="Add Remove List Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_add_remove_list" />
 							<tocitem text="Alert Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_alert" />
 							<tocitem text="Breadcrumbs Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_breadcrumbs" />
+							<tocitem text="Common Tasks Section Component" target="projrave_ui_elements_palette_wdstk-jsf1_2_common_tasks_section" />
+							<tocitem text="Common Tasks Group Component" target="projrave_ui_elements_palette_wdstk-jsf1_2_common_tasks_group" />
+							<tocitem text="Common Task Component" target="projrave_ui_elements_palette_wdstk-jsf1_2_common_task" />
 							<tocitem text="Inline Help Component" target="projrave_ui_elements_palette_wdstk-jsf1.2_inline_help" />
+							<tocitem text="Progress Bar Component" target="projrave_ui_elements_palette_wdstk-jsf1_2_progressbar" />
 						</tocitem>
 					</tocitem>
 					<tocitem text="Standard JSF Components">

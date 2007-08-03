@@ -1,1 +1,162 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Listbox Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Listbox Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>The Listbox  component <img src="../../../images/bh_listbox_icon.gif" alt="listbox icon"> enables the user to select  items from a list of items. If   the box is too small to contain the items in the list, the list box includes scrollbars. </p>   <ul class="note">      <li>        This component is a JavaServer Faces 1.2 component. You see components that use this        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,        see:<br>         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value=          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>      </li></ul><p>By default, only one item can be selected in the list. The <code>multiple</code> property determines whether one item or multiple items can be selected by the user. </p><p> You can set the <code>items</code> property to associate the component either with a database table or with an array, a collection, or a map of <code>com.sun.webui.jsf.model.Option</code> objects to populate the  list. Right-click the component and choose Bind to Data to set this property. In the       <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>        <param name="content" value="../app_outline_win_graphic.html">        <param name="viewerActivator" value="javax.help.LinkLabel">        <param name="viewerStyle" value="javax.help.Popup">        <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window,"></object>&nbsp;  you can see the default object that populates the list, which has a name similar to <code>listbox1DefaultOptions</code>. </p><p>You set the <code>selected</code> property to associate the component with a model object that picks up the list items selected by the user. The model object must be an array of objects whose values represent the values of the <code>com.sun.webui.jsf.model.Option</code> objects in the  list. The first time the component is rendered, the options that correspond to the value of the <code>selected</code>  property, if there are any, are marked as selected.</p><p>After adding a Listbox Component to a page, you can do a number of things with it:</p><ul><li>Drag a table from the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../../ui_elements/server_nav/services_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="400,250">    <param name="text" value="Services window"></object> and drop it on the     component, and then choose whether to fill the list with the     table data or to set the component up to have its selection driven     by another component. For more information, see <a href="../../../connect_data/howtodata/binding_data_2_list_component.html">Binding a List Component to a Database</a>.</li>  <li>Select the component and edit its properties in the      <a href="propsheets/listbox_props.html">Listbox Component Properties window</a>. Some typical properties you might set are:     <ul>      <li><b>id.</b> The name of the Listbox component. In the         JSP file, this name is the value of the component's <code>id</code>         attribute. In the page bean, this property's value is         the name of the <code>Listbox</code> object.</li>      <li><b>label.</b> An optional, descriptive label for the list, which can appear on top of the list if you set the <code>labelOnTop</code> property or next to the list if you do not select the <code>labelOnTop</code> property.        <ul class="note">          <li>The <code>label</code> property is not as flexible as the <a href="label.html">Label component</a>. You can use the Label component if you want more control over the label's appearance, such as positioning of the label relative to the component.</li>        </ul>      </li>      <li><b>rows.</b> The number of options to show at one time.         If there are more options to show than indicated in this         property, a scrollbar is added to the listbox. If this         property is not set, all options are shown.        <ul class="note">          <li>            <div>If you set the <code> rows</code> property to 1, the listbox renders as a drop down list on most browsers.</div>          </li>        </ul>      </li>      <li><b>required.</b> Indicates that the user must select an item from the list. If this property is selected and there is a label, the label displays with a <code>required</code> icon. </li>    </ul>  </li>  <li>Right-click the component and choose one of the following     pop-up menu items:     <ul>      <li><b>Edit Event Handler. </b>Write code for one of the         following event handlers.         <ul>          <li><b>validate. </b>Opens the Java Editor with the             cursor positioned in the component's <code>validate</code>             method so you can insert code to validate the value             of the component.</li>          <li><b>processValueChange.</b> Opens the Java Editor             with the cursor positioned in the component's <code>processValueChange</code>             method so you can insert code that executes when the             value of this component changes (for example, the             user changes the value of another component that is             controlling the value of this component)</li>        </ul>      </li>      <li><b>Auto-Submit on Change.</b> Causes the form to be automatically submitted if the value of the component changes. Sets the component's JavaScript <code>onclick</code> property to <code>common_timeoutSubmitForm(this.form, '<i>component-id</i>');</code>. At runtime, this code causes the form to be automatically submitted if the user changes the component value. Once the form is submitted, conversion and validation occur on the server and any value change listener methods execute, and then the page is redisplayed.        <p>A component configured to Auto-Submit on Change can use <a href="../../../components/aboutvirtualforms.html">virtual forms</a> to limit the input fields that are processed when the form is submitted. If the auto-submit component is defined to submit a virtual form, only the participants in that virtual form will be processed when the auto-submit occurs.</p>      </li>      <li><b>Bind to Data.</b> Bind the component's <code>items</code> property to an object or to a data provider, as described in <a href="../../dialogs/bindtodata_list_db.html">Bind to Data Dialog Box</a>.        <ul>          <li>To bind the <code>items</code> property to an object, select the Bind to Object tab and then select a bean property that will be used to populate the list. The bean property must be an <code>Object</code> array, map, or collection whose members are all subclasses of <code>com.sun.webui.jsf.model.Option</code>. </li>          <li>To bind the <code>items</code> property to a data provider for a database table or JavaBeans object that will be used to populate the list, select the Bind to Data Provider tab and choose a data provider.</li>        </ul>      </li>      <li><b>Property Bindings</b>. Opens a dialog box that enables         you to bind the properties of the component to other objects         or properties that can update this component's properties         automatically. A typical property to bind is the <code>selected</code> property so you can evaluate what the user chose after the page is submitted.</li>    </ul>  </li></ul><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="propsheets/listbox_props.html">Listbox Component Properties Window</a></dd><dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>  <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>    <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl>     <dt>         <a name="tutorials">Tutorials</a>      </dt>      <dd>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">          <param name="text" value="Delving Into Components"></object>      </dd><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd><dd>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="content" value="http://www.netbeans.org/kb/55/vwp-listbox_components.html">    <param name="text" value="Using Listbox Components"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Listbox Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Listbox Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Listbox Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+<p>The Listbox  component <img src="../../../images/bh_listbox_icon.gif" alt="listbox icon"> enables the user to select  items from a list of items. If 
+  the box is too small to contain the items in the list, the list 
+box includes scrollbars. </p>
+   <ul class="note">
+      <li>
+        This component is a JavaServer Faces 1.2 component. You see components that use this
+        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,
+        see:<br>
+         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value=
+          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
+          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
+      </li>
+</ul>
+
+<p>By default, only one item can be selected in the list. The <code>multiple</code> property determines whether one item or multiple items can be selected by the user. </p>
+<p> You can set the <code>items</code> property to associate the component either with a database table or with an array, a collection, or a map of <code>com.sun.webui.jsf.model.Option</code> objects to populate the  list. Right-click the component and choose Bind to Data to set this property. In the 
+      <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+        <param name="content" value="../../navigator_win/navigator_win_popup.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window,"></object>&nbsp;  you can see the default object that populates the list, which has a name similar to <code>listbox1DefaultOptions</code>. </p>
+<p>You set the <code>selected</code> property to associate the component with a model object that picks up the list items selected by the user. The model object must be an array of objects whose values represent the values of the <code>com.sun.webui.jsf.model.Option</code> objects in the  list. The first time the component is rendered, the options that correspond to the 
+value of the <code>selected</code>  property, if there are any, are marked as selected.</p>
+<p>After adding a Listbox Component to a page, you can do a number 
+of things with it:</p>
+<ul><li>Drag a table from the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../../ui_elements/server_nav/services_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,250">
+    <param name="text" value="Services window"></object> 
+and drop it on the 
+    component, and then choose whether to fill the list with the 
+    table data or to set the component up to have its selection driven 
+    by another component. For more information, see <a href="../../../connect_data/howtodata/binding_data_2_list_component.html">Binding a List Component to a Database</a>.</li>
+  <li>Select the component and edit its properties in the  
+    <a href="propsheets/listbox_props.html">Listbox Component Properties window</a>. Some typical properties you might set are: 
+    <ul>
+      <li><b>id.</b> The name of the Listbox component. In the 
+        JSP file, this name is the value of the component's <code>id</code> 
+        attribute. In the page bean, this property's value is 
+        the name of the <code>Listbox</code> object.</li>
+      <li><b>label.</b> An optional, descriptive label for the list, which can appear on top of the list if you set the <code>labelOnTop</code> property or next to the list if you do not select the <code>labelOnTop</code> property.
+        <ul class="note">
+          <li>The <code>label</code> property is not as flexible as the <a href="label.html">Label component</a>. You can use the Label component if you want more control over the label's appearance, such as positioning of the label relative to the component.</li>
+        </ul>
+      </li>
+      <li><b>rows.</b> The number of options to show at one time. 
+        If there are more options to show than indicated in this 
+        property, a scrollbar is added to the listbox. If this 
+        property is not set, all options are shown.
+        <ul class="note">
+          <li>
+            <div>If you set the <code> rows</code> property to 1, the listbox renders as a drop down list on most browsers.</div>
+          </li>
+        </ul>
+      </li>
+      <li><b>required.</b> Indicates that the user must select an item from the list. If this property is selected and there is a label, the label displays with a <code>required</code> icon. </li>
+    </ul>
+  </li>
+  <li>Right-click the component and choose one of the following 
+    pop-up menu items: 
+    <ul>
+      <li><b>Edit Event Handler. </b>Write code for one of the 
+        following event handlers. 
+        <ul>
+          <li><b>validate. </b>Opens the Java Editor with the 
+            cursor positioned in the component's <code>validate</code> 
+            method so you can insert code to validate the value 
+            of the component.</li>
+          <li><b>processValueChange.</b> Opens the Java Editor 
+            with the cursor positioned in the component's <code>processValueChange</code> 
+            method so you can insert code that executes when the 
+            value of this component changes (for example, the 
+            user changes the value of another component that is 
+            controlling the value of this component)</li>
+        </ul>
+      </li>
+      <li><b>Auto-Submit on Change.</b> Causes the form to be automatically submitted if the value of the component changes. Sets the component's JavaScript <code>onclick</code> property to <code>common_timeoutSubmitForm(this.form, '<i>component-id</i>');</code>. At runtime, this code causes the form to be automatically submitted if the user changes the component value. Once the form is submitted, conversion and validation occur on the server and any value change listener methods execute, and then the page is redisplayed.
+        <p>A component configured to Auto-Submit on Change can use <a href="../../../components/aboutvirtualforms.html">virtual forms</a> to limit the input fields that are processed when the form is submitted. If the auto-submit component is defined to submit a virtual form, only the participants in that virtual form will be processed when the auto-submit occurs.</p>
+      </li>
+      <li><b>Bind to Data.</b> Bind the component's <code>items</code> property to an object or to a data provider, as described in <a href="../../dialogs/bindtodata_list_db.html">Bind to Data Dialog Box</a>.
+        <ul>
+          <li>To bind the <code>items</code> property to an object, select the Bind to Object tab and then select a bean property that will be used to populate the list. The bean property must be an <code>Object</code> array, map, or collection whose members are all subclasses of <code>com.sun.webui.jsf.model.Option</code>. </li>
+          <li>To bind the <code>items</code> property to a data provider for a database table or JavaBeans object that will be used to populate the list, select the Bind to Data Provider tab and choose a data provider.</li>
+        </ul>
+      </li>
+      <li><b>Property Bindings</b>. Opens a dialog box that enables 
+        you to bind the properties of the component to other objects 
+        or properties that can update this component's properties 
+        automatically. A typical property to bind is the <code>selected</code> property so you can evaluate what the user chose after the page is submitted.</li>
+    </ul>
+  </li>
+</ul>
+
+<dl>
+  <dt><a name="seealso">See Also</a></dt>  
+<dd><a href="propsheets/listbox_props.html">Listbox Component Properties Window</a></dd>
+<dd><a href="../../../components/howtocomponents/bind_comp_props.html">Binding Component Properties</a></dd>
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+  
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>     <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">
+          <param name="text" value="Delving Into Components"></object>
+      </dd>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+<dd>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://www.netbeans.org/kb/55/vwp-listbox_components.html">
+    <param name="text" value="Using Listbox Components"></object>
+</dd>
+
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Listbox Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,1 +1,97 @@
-<html><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- * Copyright © 2007 Sun Microsystems, Inc. * All rights reserved.  * Use is subject to license terms.--><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><title>Layout Panel Component</title><link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css"></head><body><h2>Layout Panel  Component</h2><p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p><p>The Layout Panel component <img src="../../../images/bh_layoutpanel_icon.gif" alt="page separator icon">&nbsp;is a panel that groups   other components visually. The Layout Panel component is called <code>panelLayout</code> in the JSP code, and the associated Java class in the page bean is <code>PanelLayout</code>. </p>   <ul class="note">      <li>        This component is a JavaServer Faces 1.2 component. You see components that use this        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,        see:<br>         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value=          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>      </li></ul><p>After you drag the Layout Panel to     your page, you can add components by dropping them on the Layout Panel. The primary feature of this component is that it can be either in Grid Layout or Flow Layout, which affects how the components you drop on it are arranged. See below for more information on these two settings for the <code>panelLayout</code> property. </p><p>The IDE automatically adds a Layout Panel component to a new <a href="tab.html">Tab&nbsp;Component</a>. You see it below the tab component when you add a new tab to your page, for example, by dropping a <a href="tab_set.html">Tab Set component</a> on a page. If you select the Layout Panel component below the Tab component, you see the Layout Panel component's Properties window. </p><ul class="note">  <li>The Layout Panel component is  rendered as a <code>&lt;div&gt;</code> element surrounding the group of child components, which puts the Layout Panel on its own line on the page, below any component that precedes it and above any component placed after it. If you want a panel that is rendered on the same line as the components that precede and follow it, use a <a href="group_panel.html">Group Panel</a> component.</li></ul><h3>Layout Modes  </h3><p>Depending on whether you choose Grid Layout or Flow Layout for the <code>panelLayout</code> property, there are a number of ways to position the components in the Layout Panel.</p><h4>Flow  Layout</h4><p>Flow  Layout is the default setting for this component. Setting the <code>panelLayout</code> property to this value  aligns components from left to right on the top line as you drop them on the panel. When no more components fit, the components are lined up left to right on the next line, proceeding down the page. </p><ul>    <li>When you drag the component over a layout panel that already contains a component,  an insert marker appears at the&nbsp;nearest insert position. For example, after dropping a button, if you want to drop another component and you hover over the left half of the button, you see the marker to the left of the button. Otherwise it is on the right side. When you drop the current component, it is positioned at the marker position.</li>    <li>If you drop a component on the Layout Panel in the       <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>        <param name="content" value="../app_outline_win_graphic.html">        <param name="viewerActivator" value="javax.help.LinkLabel">        <param name="viewerStyle" value="javax.help.Popup">        <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window,"></object>&nbsp;   the component is appended to the other components.</li>    <li>You can select a component under the Layout Panel node in the Outline window and drag it to a new position in the Layout Panel. </li></ul><h4>Grid Layout</h4><p>Setting the <code>panelLayout</code> property to Grid Layout aligns components at the location where they were created on the panel. This is often called absolute positioning. If you are using <a href="../../../components/howtocomponents/snap2grid.html">snap to grid</a>, each component is positioned relative to the nearest grid corner when it is created. If snap to grid is off, Grid Layout has no effect, and the panel acts as though it is in Flow Layout. </p><p>By default, when you drop components on the panel, they are positioned in a single column, one above the other. You can change the arrangement of the components by selecting the  Panel Layout component and dragging the selection handles to change the panel's size.</p><dl>  <dt><a name="seealso">See Also</a></dt>  <dd><a href="propsheets/layoutPanel_props.html">Layout Panel Properties Window</a></dd>    <dd><a href="../../../components/component_process.html">Working     With Components</a></dd>  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component     Tasks: Quick Reference</a></dd>   <dd><a href="../palette.html">About the Visual Web Palette</a></dd></dl><dl>     <dt>         <a name="tutorials">Tutorials</a>      </dt>      <dd>        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">          <param name="text" value="Delving Into Components"></object>      </dd><dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd></dl><hr><!-- Start Customer Feedback Link --><!-- <p><b>Comments or questions?</b><br>Use the link below to connect to the Visual Web Development contact page. </p>  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">    <param name="viewerActivator" value="javax.help.LinkButton">    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Layout Panel Component">    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> <!-- End Customer Feedback Link -->  <small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="50" border="0">  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Layout Panel Component</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Layout Panel  Component</h2>
+<p><small><a href="#seealso">See Also</a></small> | <small><a href="#tutorials">Tutorials</a></small></p>
+<p>The Layout Panel component <img src="../../../images/bh_layoutpanel_icon.gif" alt="page separator icon">&nbsp;is a panel that groups 
+  other components visually. The Layout Panel component is called <code>panelLayout</code> in the JSP code, and the associated Java class in the page bean is <code>PanelLayout</code>. </p>
+   <ul class="note">
+      <li>
+        This component is a JavaServer Faces 1.2 component. You see components that use this
+        version of JavaServer Faces when your project  uses Java EE 5. For more information on JavaServer Faces 1.2,
+        see:<br>
+         <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value=
+          "http://java.sun.com/developer/technicalArticles/J2EE/jsf_12/">
+          <param name="text" value="Summary of New Features in JavaServer Faces 1.2 Technology"></object>
+      </li>
+</ul>
+
+<p>After you drag the Layout Panel to 
+    your page, you can add components by dropping them on the Layout Panel. The primary feature of this component is that it can be either in Grid Layout or Flow Layout, which affects how the components you drop on it are arranged. See below for more information on these two settings for the <code>panelLayout</code> property. </p>
+<p>The IDE automatically adds a Layout Panel component to a new <a href="tab.html">Tab&nbsp;Component</a>. You see it below the tab component when you add a new tab to your page, for example, by dropping a <a href="tab_set.html">Tab Set component</a> on a page. If you select the Layout Panel component below the Tab component, you see the Layout Panel component's Properties window. </p>
+<ul class="note">
+  <li>The Layout Panel component is  rendered as a <code>&lt;div&gt;</code> element surrounding the group of child components, which puts the Layout Panel on its own line on the page, below any component that precedes it and above any component placed after it. If you want a panel that is rendered on the same line as the components that precede and follow it, use a <a href="group_panel.html">Group Panel</a> component.</li>
+</ul>
+<h3>Layout Modes  </h3>
+<p>Depending on whether you choose Grid Layout or Flow Layout for the <code>panelLayout</code> property, there are a number of ways to position the components in the Layout Panel.</p>
+<h4>Flow  Layout</h4>
+<p>Flow  Layout is the default setting for this component. Setting the <code>panelLayout</code> property to this value  aligns components from left to right on the top line as you drop them on the panel. When no more components fit, the components are lined up left to right on the next line, proceeding down the page. </p>
+<ul>
+    <li>When you drag the component over a layout panel that already contains a component,  an insert marker appears at the&nbsp;nearest insert position. For example, after dropping a button, if you want to drop another component and you hover over the left half of the button, you see the marker to the left of the button. Otherwise it is on the right side. When you drop the current component, it is positioned at the marker position.</li>
+    <li>If you drop a component on the Layout Panel in the 
+      <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+        <param name="content" value="../../navigator_win/navigator_win_popup.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window,"></object>&nbsp;   the component is appended to the other components.</li>
+    <li>You can select a component under the Layout Panel node in the Outline window and drag it to a new position in the Layout Panel. </li>
+</ul>
+
+<h4>Grid Layout</h4>
+<p>Setting the <code>panelLayout</code> property to Grid Layout aligns components at the location where they were created on the panel. This is often called absolute positioning. If you are using <a href="../../../components/howtocomponents/snap2grid.html">snap to grid</a>, each component is positioned relative to the nearest grid corner when it is created. If snap to grid is off, Grid Layout has no effect, and the panel acts as though it is in Flow Layout. </p>
+<p>By default, when you drop components on the panel, they are positioned in a single column, one above the other. You can change the arrangement of the components by selecting the  Panel Layout component and dragging the selection handles to change the panel's size.</p>
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="propsheets/layoutPanel_props.html">Layout Panel Properties Window</a></dd>  
+  <dd><a href="../../../components/component_process.html">Working 
+    With Components</a></dd>
+  <dd><a href="../../../components/howtocomponents/components_quickref.html">Component 
+    Tasks: Quick Reference</a></dd>
+ 
+  <dd><a href="../palette.html">About the Visual Web Palette</a></dd>
+</dl>
+<dl>     <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+          <param name="content" value="http://www.netbeans.org/kb/55/vwp-about_components.html">
+          <param name="text" value="Delving Into Components"></object>
+      </dd>
+<dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+</dl>
+
+<hr>
+<!-- Start Customer Feedback Link -->
+<!-- <p><b>Comments or questions?</b><br>
+Use the link below to connect to the Visual Web Development contact page. </p>
+  <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="viewerActivator" value="javax.help.LinkButton">
+    <param name="content" value="http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20Layout Panel Component">
+    <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+<!-- End Customer Feedback Link -->
+  <small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
