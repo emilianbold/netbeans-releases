@@ -221,7 +221,7 @@ public final class RubyDebuggerTest extends TestBase {
     }
     
     public void testFinishWhenSpawnedThreadIsSuspended() throws Exception {
-        if (switchToRDebugIDE()) {
+        if (tryToSwitchToRDebugIDE()) {
             String[] testContent = {
                 "Thread.start do",
                 "    puts '1'",

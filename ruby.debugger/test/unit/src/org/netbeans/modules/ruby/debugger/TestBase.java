@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -51,8 +52,11 @@ import org.rubyforge.debugcommons.RubyDebuggerProxy;
  */
 public abstract class TestBase extends NbTestCase {
     
-    protected static boolean watchStepping = false;
+    private enum Engine { CLASSIC, RDEBUG_IDE }
     
+    protected static boolean watchStepping = false;
+    private Stack<Engine> engines;
+
     protected TestBase(final String name, final boolean verbose) {
         super(name);
         MockServices.setServices(IFL.class);
@@ -68,6 +72,11 @@ public abstract class TestBase extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("ruby.interpreter", TestBase.getFile("ruby.executable", true).getAbsolutePath());
+        engines = new Stack<Engine>();
+        engines.push(Engine.CLASSIC);
+        if (isRDebugExecutableCorrectlySet()) {
+            engines.push(Engine.RDEBUG_IDE);
+        }
         doCleanUp();
     }
     
@@ -106,18 +115,47 @@ public abstract class TestBase extends NbTestCase {
         }
     }
     
-    protected boolean switchToRDebugIDE() {
-        File rdebugExecutable = TestBase.getFile("rdebug.executable", false);
-        boolean rdebugFound = (rdebugExecutable != null);
-        if (rdebugFound) { // run tests for rdebug as well if property is set
-            DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-            prefs.setUseClassicDebugger(false);
-            File rubyExecutable = TestBase.getFile("ruby.executable", true);
-            RubyInstallation.getInstance().setRuby(rubyExecutable.getAbsolutePath());
+    protected boolean switchToNextEngine() {
+        if (engines.isEmpty()) {
+            return false;
         }
-        return rdebugFound;
+        Engine engine = engines.pop();
+        switch (engine) {
+            case CLASSIC:
+                DebuggerPreferences.getInstance().setUseClassicDebugger(true);
+                break;
+            case RDEBUG_IDE:
+                switchToRDebugIDE();
+                break;
+            default:
+                fail("Unknown engine type: " + engine);
+        }
+        return true;
     }
     
+    protected boolean tryToSwitchToRDebugIDE() {
+        boolean available = isRDebugExecutableCorrectlySet();
+        if (available) {
+            switchToRDebugIDE();
+        }
+        return available;
+    }
+    
+    protected void switchToRDebugIDE() {
+        DebuggerPreferences.getInstance().setUseClassicDebugger(false);
+        File rubyExecutable = TestBase.getFile("ruby.executable", true);
+        RubyInstallation.getInstance().setRuby(rubyExecutable.getAbsolutePath());
+    }
+
+    private File getRDebugExecutable(boolean failIfNotAvailable) {
+        return TestBase.getFile("rdebug.executable", failIfNotAvailable);
+    }
+
+    private boolean isRDebugExecutableCorrectlySet() {
+        File rdebugExecutable = getRDebugExecutable(false);
+        return rdebugExecutable != null && rdebugExecutable.isFile();
+    }
+
     /**
      * Creates test.rb script in the {@link #getWorkDir} with the given content.
      */

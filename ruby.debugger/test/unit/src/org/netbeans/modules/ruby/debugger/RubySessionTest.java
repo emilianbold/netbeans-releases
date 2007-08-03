@@ -37,7 +37,7 @@ public final class RubySessionTest extends TestBase {
     }
     
     public void testLocalVariables() throws Exception {
-        if (switchToRDebugIDE()) {
+        if (tryToSwitchToRDebugIDE()) {
             String[] testContent = {
                 "a = 5",
                 "sleep 0.01",
@@ -54,7 +54,7 @@ public final class RubySessionTest extends TestBase {
     }
     
     public void testSuspendedThread() throws Exception {
-        if (switchToRDebugIDE()) {
+        if (tryToSwitchToRDebugIDE()) {
             String[] testContent = {
                 "loop do",
                 "  a = 2",
@@ -80,7 +80,7 @@ public final class RubySessionTest extends TestBase {
     }
     
     public void testSwitchToNonSuspendedThread() throws Exception {
-        if (switchToRDebugIDE()) {
+        if (tryToSwitchToRDebugIDE()) {
             String[] testContent = {
                 "loop do",
                 "  sleep 1",
