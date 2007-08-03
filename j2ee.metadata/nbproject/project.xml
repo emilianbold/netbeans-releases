@@ -37,8 +37,6 @@
                 </test-type>
             </test-dependencies>
             <public-packages>
-                <!-- XXX temporary, should be removed -->
-                <package>org.netbeans.modules.j2ee.metadata</package>
                 <package>org.netbeans.modules.j2ee.metadata.model.api</package>
                 <package>org.netbeans.modules.j2ee.metadata.model.spi</package>
             </public-packages>

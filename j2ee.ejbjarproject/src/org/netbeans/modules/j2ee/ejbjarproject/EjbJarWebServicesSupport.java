@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -60,6 +59,7 @@ import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import static org.netbeans.modules.websvc.spi.webservices.WebServicesConstants.*;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
  *
@@ -782,7 +782,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
         synchronized (this) {
             if (projectSourcesClassPath == null) {
                 ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
-                projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
+                projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
                     cpProvider.getJ2eePlatformClassPath(),
                 });

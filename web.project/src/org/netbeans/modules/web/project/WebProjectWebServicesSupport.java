@@ -20,7 +20,6 @@
 package org.netbeans.modules.web.project;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportImpl;
@@ -60,6 +59,7 @@ import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import static org.netbeans.modules.websvc.spi.webservices.WebServicesConstants.*;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
@@ -707,7 +707,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
                 ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
-                projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
+                projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
                     cpProvider.getJ2eePlatformClassPath(),
                 });

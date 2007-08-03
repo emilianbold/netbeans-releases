@@ -157,9 +157,7 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                //retouche:
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
-//                projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
                     cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
                 });

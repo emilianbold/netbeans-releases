@@ -33,7 +33,6 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.webservices.PortComponent;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebserviceDescription;
 import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
-import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.serviceapi.InterfaceDescription;
 import org.netbeans.modules.serviceapi.ServiceInterface;
 import org.netbeans.modules.serviceapi.ServiceLink;
@@ -329,16 +328,8 @@ public class ServiceModuleImpl extends ServiceModule {
         return project;
     }
     
-    private ClassPath sourcesClassPath;
     private ClassPath getSourcesClassPath() {
-        synchronized (this) {
-            if (sourcesClassPath == null) {
-                ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
-                sourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
-                    cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                });
-            }
-            return sourcesClassPath;
-        }
+        ClassPathProviderImpl cpProvider = project.getLookup().lookup(ClassPathProviderImpl.class);
+        return cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE);
     }
 }

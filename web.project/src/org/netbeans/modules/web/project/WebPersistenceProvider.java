@@ -26,7 +26,6 @@ import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.ClassPathSupport;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -44,6 +43,7 @@ import org.netbeans.modules.j2ee.persistence.spi.support.EntityMappingsMetadataM
 import org.netbeans.modules.j2ee.persistence.spi.support.PersistenceScopesHelper;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 
@@ -123,7 +123,7 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
         synchronized (this) {
             if (projectSourcesClassPath == null) {
                 ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)project.getLookup().lookup(ClassPathProviderImpl.class);
-                projectSourcesClassPath = ClassPathSupport.createWeakProxyClassPath(new ClassPath[] {
+                projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
                     cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
                 });
