@@ -251,7 +251,7 @@ public class OpenProjectListSettings {
     
     public File getProjectsFolder(boolean create) {
         String result = getProperty (PROP_PROJECTS_FOLDER);
-        if (result == null) {
+        if (result == null || !(new File(result)).exists()) {
             // property for overriding default projects dir location
             String userPrjDir = System.getProperty("netbeans.projects.dir"); // NOI18N
             if (userPrjDir != null) {
