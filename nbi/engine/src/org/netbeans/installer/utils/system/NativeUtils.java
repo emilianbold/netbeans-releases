@@ -103,6 +103,15 @@ public abstract class NativeUtils {
     
     public abstract boolean isUNCPath(String path);
     
+    public File getRoot(final File file) {             
+        File parent = file;        
+        while (parent.getParentFile() != null) {
+            parent = parent.getParentFile();
+        }
+        
+        return parent;
+    }
+    
     public abstract File getShortcutLocation(Shortcut shortcut, LocationType locationType) throws NativeException;
     
     public abstract File createShortcut(Shortcut shortcut, LocationType locationType) throws NativeException;

@@ -498,6 +498,11 @@ public final class FileUtils {
                 }
             }
         }
+        if(result == null) {
+            if(SystemUtils.isWindows() && FileUtils.isUNCPath(file.getPath())) {
+                return getRoot(file);
+            }
+        }
         return result;
     }
     
@@ -1093,7 +1098,7 @@ public final class FileUtils {
     
     public static boolean isUNCPath(String path) {
         return SystemUtils.getNativeUtils().isUNCPath(path);
-    }
+    }    
     
     public static File eliminateRelativity(
             final String path) {
@@ -1143,17 +1148,11 @@ public final class FileUtils {
         }
         
         return new File(corrected);
-    }    
+    }
     
     public static File getRoot(
             final File file) {
-        File parent = file;
-        
-        while (parent.getParentFile() != null) {
-            parent = parent.getParentFile();
-        }
-        
-        return parent;
+        return SystemUtils.getNativeUtils().getRoot(file);
     }
     
     public static File findFile(
