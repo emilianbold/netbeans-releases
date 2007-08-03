@@ -145,17 +145,11 @@ class FilesystemHandler extends VCSInterceptor {
     }
     
     public boolean beforeCreate(File file, boolean isDirectory) {
-        if (svn.isAdministrative(file.getName())) {
-            if (isDirectory) {  // file.isDirectory() always returns false if file does not exist
-                File f = new File(file, Subversion.INVALID_METADATA_MARKER);
-                try {
-                    f.createNewFile();
-                } catch (IOException e) {
-                    ErrorManager.getDefault().log(ErrorManager.ERROR, "Unable to create marker: " + f.getAbsolutePath()); // NOI18N
-                }
+        if ( SvnUtils.isPartOfSubversionMetadata(file)) {
+            synchronized(invalidMetadata) {
                 invalidMetadata.add(file);
             }
-            return true;
+            return false;
         } else {
             if (!file.exists()) {
                 int status = cache.getStatus(file).getStatus();
