@@ -199,6 +199,8 @@ public class VisualTestCase extends NbTestCase {
      * @param imageID the image id used as an image file name
      */
     public void saveImage (BufferedImage image, String imageID) {
+        if (image == null)
+            return;
         try {
             ImageIO.write (image, "png", new File (getWorkDir(), imageID + ".png")); // NOI18N
         } catch (IOException e) {
