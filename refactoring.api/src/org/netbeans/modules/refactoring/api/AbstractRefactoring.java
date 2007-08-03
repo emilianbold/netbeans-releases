@@ -167,14 +167,16 @@ public abstract class AbstractRefactoring {
      */
     public final Problem prepare(RefactoringSession session) {
         Problem p = null;
+        boolean checkCalled = false;
         if (currentState < PARAMETERS_CHECK) {
             p = checkParameters();
+            checkCalled = true;
         }
         if (p != null && p.isFatal())
             return p;
         
         try {
-            p = pluginsPrepare(p, session);
+            p = pluginsPrepare(checkCalled?p:null, session);
         } catch (RuntimeException ex) {
             Throwable cause = ex.getCause();
             if (cause!=null && cause.getClass().getName().equals("org.netbeans.api.java.source.JavaSource$InsufficientMemoryException")) {
