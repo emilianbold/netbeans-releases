@@ -23,13 +23,14 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
+import org.openide.filesystems.FileObject;
 
 public class ProjectWebModuleProvider implements WebModuleProvider {
 
     public ProjectWebModuleProvider () {
     }
 
-    public org.netbeans.modules.web.api.webmodule.WebModule findWebModule (org.openide.filesystems.FileObject file) {
+    public WebModule findWebModule (FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null) {
             WebModuleProvider provider = project.getLookup ().lookup (WebModuleProvider.class);
