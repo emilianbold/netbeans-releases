@@ -53,7 +53,7 @@ public class Utilities {
     public static String windowMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Window");
     public static String runMenu = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
     public static String debugMenu = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
-    public static String runFileMenu = Bundle.getString("org.netbeans.modules.java.project.Bundle", "LBL_RunFile_Action");
+    public static String runFileMenu = Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "LBL_RunFile_Action");
     public static String debugToolbarLabel = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "Toolbars/Debug");
 
     public static String toggleBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Toggle_breakpoint");
@@ -61,9 +61,9 @@ public class Utilities {
     public static String newWatchItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch");
     public static String debugMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugMainProjectAction_Name");
     public static String stepIntoItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_into_action_name");
-    public static String stepOverItem = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Step_Over");
-    public static String stepOutItem = Bundle.getString("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Step_Out");
-    public static String stepOverExpresItem = Bundle.getString("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_operation_action_name");
+    public static String stepOverItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Step_Over");
+    public static String stepOutItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Step_Out");
+    public static String stepOverExpresItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Step_operation_action_name");
     public static String runIntoMethodItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Run_into_method_action_name");
     public static String continueItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Continue_action_name");
     public static String pauseItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Pause_action_name");
