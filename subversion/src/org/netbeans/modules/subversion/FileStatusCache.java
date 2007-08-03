@@ -34,6 +34,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import java.util.*;
 import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.*;
@@ -797,8 +798,17 @@ public class FileStatusCache implements ISVNNotifyListener {
         // boring ISVNNotifyListener event
     }
 
-    public void onNotify(File path, SVNNodeKind kind) {
+    public void onNotify(final File path, final SVNNodeKind kind) {
+        // notifications from the svnclientadapter may be caused by a synchronously handled FS event. 
+        // The thing is that we have to prevent reentrant calls on the FS api ...
+        Utils.post(new Runnable() {
+            public void run() {
+                onNotifyImpl(path, kind);
+            }
+        });                        
+    }
 
+    private void onNotifyImpl(File path, SVNNodeKind kind) {
         if (path == null) {  // on kill
             return;
         }
