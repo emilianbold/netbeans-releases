@@ -100,6 +100,8 @@ ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-cnd -Dxtest.ins
 ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish runtests
 # Mobility UI validation tests
 ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-mobility -Dxtest.instance.name="Mobility tests" -Dxtest.no.cleanresults=true -Dwtk.dir=/hudson runtests
+# UML UI validation tests
+ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-uml -Dxtest.instance.name="UML tests" -Dxtest.no.cleanresults=true runtests
 echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 
