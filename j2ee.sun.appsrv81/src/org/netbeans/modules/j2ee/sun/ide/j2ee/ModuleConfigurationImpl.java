@@ -382,7 +382,7 @@ public class ModuleConfigurationImpl implements DatasourceConfiguration, Deploym
         }
         
         private void reactToInstanceChange(final InstanceListener il) {
-            ProjectManager.mutex().writeAccess(new Runnable() {
+            ProjectManager.mutex().postWriteRequest(new Runnable() {
                 public void run() {
                     Project p = FileOwnerQuery.getOwner(projectDirectory.toURI());
                     J2eeModuleProvider jmp = null;
