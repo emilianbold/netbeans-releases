@@ -265,6 +265,10 @@ public final class VisualClassPathItem {
                 return true;
             default:
                 final Object element = getElement();
+                final Object cElement = vcpi.getElement();
+                //Special case when the library is missing but we want compare values
+                if (cElement == null && element == null && vcpi.getRawText().equals(getRawText()))
+                    return true;
                 if (element == null)
                     return false;
                 return element.equals( vcpi.getElement() );
