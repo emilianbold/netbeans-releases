@@ -94,7 +94,7 @@ final class TextDetail {
      * @see #DH_SHOW 
      * @see #DH_HIDE */
     void showDetail(int how) {
-        if (dobj == null) {
+        if ((dobj == null) || !dobj.isValid()) {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
