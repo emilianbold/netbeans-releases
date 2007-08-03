@@ -51,15 +51,15 @@ Microsystems, Inc. All Rights Reserved.
             
             <file name="SeparatorAfterProjectsSearch.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                <attr name="position" intvalue="100"/>
+                <attr name="position" intvalue="3000"/>
             </file>
             
             <file name="org-netbeans-modules-editor-MainMenuAction$StartMacroRecordingAction.instance">
-                <attr name="position" intvalue="300"/>
+                <attr name="position" intvalue="3100"/>
             </file>
             
             <file name="org-netbeans-modules-editor-MainMenuAction$StopMacroRecordingAction.instance">
-                <attr name="position" intvalue="600"/>
+                <attr name="position" intvalue="3200"/>
             </file>
             </folder>
                 
