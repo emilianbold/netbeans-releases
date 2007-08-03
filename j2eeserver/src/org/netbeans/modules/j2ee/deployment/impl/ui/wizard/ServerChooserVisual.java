@@ -201,13 +201,11 @@ public class ServerChooserVisual extends javax.swing.JPanel {
 
         setName(org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_Name")); // NOI18N
 
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_Server_mnem").charAt(0));
         jLabel1.setLabelFor(serverListBox);
-        jLabel1.setText(org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_Server")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_Server")); // NOI18N
 
-        jLabel2.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_DisplayName_mnem").charAt(0));
         jLabel2.setLabelFor(displayNameEditField);
-        jLabel2.setText(org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_DisplayName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getBundle(ServerChooserVisual.class).getString("LBL_SCV_DisplayName")); // NOI18N
 
         displayNameEditField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
