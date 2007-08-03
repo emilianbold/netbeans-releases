@@ -533,7 +533,7 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
   <!-- Use of nbmerge target has the effect of automatically depending on all-X for every module. -->
   <!-- It also runs deltree(dir=wherever) and copydir(src=../X/netbeans,dest=wherever) to create the IDE install. -->
 
-  <target name="build-nozip" depends="clean-cluster-flags,build-clusters,create-license-summary" description="Build the IDE but do not create a final ZIP file.">
+  <target name="build-nozip" depends="clean-cluster-flags,build-clusters,create-license-summary,clean-untracked-files" description="Build the IDE but do not create a final ZIP file.">
     <loadproperties srcFile="${clusters.list.file}" />
      
     <loadproperties srcfile="${netbeans.dest.dir}/moduleCluster.properties" />
@@ -971,6 +971,16 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
                 excludepattern="**/ja/,**/*_ja.*"/>
     <delete dir="tmp"/>
   </target>
+
+    <target name="clean-untracked-files" depends="bootstrap" description="Removes files from clusters which are not listed as belonging to any NBM.">
+        <taskdef name="ducf" classname="org.netbeans.nbbuild.DeleteUnreferencedClusterFiles" classpath="nbantext.jar"/>
+        <mkdir dir="build"/>
+        <ducf report="build/ducf.xml">
+            <clusters dir="${netbeans.dest.dir}">
+                <include name="*"/>
+            </clusters>
+        </ducf>
+    </target>
 
   <target name="clean-external">
     <subant target="clean">
@@ -1587,28 +1597,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
   
 
-  <target name="check-clusters-content" depends="bootstrap,init-tasks"> 
-    <taskdef name="checkcontent" classname="org.netbeans.nbbuild.CheckClustersContent" classpath="nbantext.jar"/>
-    <checkcontent clusters="${nb.clusters.list}" trackingPath="${netbeans.dest.dir}" kitDestDir="${netbeans.dest.dir}">
-      <exclude name="extra/**"/>
-      <exclude name="testtools/**"/>
-      <exclude name="bin/**"/>
-      <exclude name="profiler2/**"/>
-      <exclude name="README.html"/>
-      <exclude name="CREDITS.html"/>
-      <exclude name="LICENSE.txt"/>
-      <exclude name="DISTRIBUTION.txt"/>
-      <exclude name="THIRDPARTYLICENSE.txt"/>
-      <exclude name="nb.cluster.*"/>
-      <exclude name="etc/netbeans.conf"/>
-      <exclude name="etc/netbeans.clusters"/>
-      <exclude name="build_info"/>
-      <exclude name="module_tracking.xml"/>
-      <exclude name="moduleCluster.properties"/>
-      <exclude name="netbeans.css"/>
-    </checkcontent>
-  </target>
-  
   <target name="check-module-configs" depends="bootstrap" description="Sanity-check build.properties and cluster.properties.">
     <taskdef name="checkmoduleconfigs" classname="org.netbeans.nbbuild.CheckModuleConfigs" classpath="nbantext.jar"/>
     <checkmoduleconfigs nbroot=".."/>
