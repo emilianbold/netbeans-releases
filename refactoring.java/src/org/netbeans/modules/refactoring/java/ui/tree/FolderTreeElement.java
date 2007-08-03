@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.refactoring.java.ui.tree;
 
+import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.swing.Icon;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -95,6 +96,12 @@ public class FolderTreeElement implements TreeElement {
         SourceGroup[] xmlgroups = src.getSourceGroups("xml");//NOI18N
         
         SourceGroup[] allgroups =  new SourceGroup[javagroups.length + xmlgroups.length];
+
+        if (allgroups.length < 1) {
+            // Unknown project group
+            Logger.getLogger(FolderTreeElement.class.getName()).severe("Cannot find SourceGroup for " + file.getPath());
+            return null;
+       }
         System.arraycopy(javagroups,0,allgroups,0,javagroups.length);
         System.arraycopy(xmlgroups,0,allgroups,allgroups.length-1,xmlgroups.length);
         for(int i=0; i<allgroups.length; i++) {
