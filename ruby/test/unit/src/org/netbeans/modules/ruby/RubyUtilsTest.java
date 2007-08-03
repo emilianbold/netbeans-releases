@@ -27,6 +27,19 @@ public class RubyUtilsTest extends TestCase {
         super.tearDown();
     }
 
+    public void testIsInvalidMultibytechars() {
+        assertTrue(RubyUtils.isSafeIdentifierName("foo_bar", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("FOO", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("foo_bar=", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("foo_bar?", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("foo_bar!", 0));
+        assertTrue(RubyUtils.isSafeIdentifierName("$foo", 1));
+        assertTrue(RubyUtils.isSafeIdentifierName("@foo", 1));
+        assertTrue(RubyUtils.isSafeIdentifierName("@@foo", 2));
+        assertFalse(RubyUtils.isSafeIdentifierName("abc\\u1234", 0));
+        assertFalse(RubyUtils.isSafeIdentifierName("Torbjørn", 0));
+    }
+    
     public void testCamelToUnderlinedName() {
         assertEquals("foo", RubyUtils.camelToUnderlinedName("Foo"));
         assertEquals("foo", RubyUtils.camelToUnderlinedName("foo"));

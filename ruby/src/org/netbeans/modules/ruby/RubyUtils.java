@@ -94,10 +94,11 @@ public class RubyUtils {
         }
         for (; i < name.length(); i++) {
             char c = name.charAt(i);
-            if (!((c >= 'a' && c <= 'z') ||
+            if (!((c >= 'a' && c <= 'z') || (c == '_') ||
                     (c >= 'A' && c <= 'Z') ||
                     (c >= '0' && c <= '9') ||
-                   (c == '_'))) { 
+                    (c == '?') || (c == '=') || (c == '!') || // Method suffixes; only allowed on the last line
+                   (c == '[') || c == ']')) {  // [] is a valid method name
                 return false;
             }
         }
