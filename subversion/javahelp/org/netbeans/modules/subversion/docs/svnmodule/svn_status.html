@@ -1,167 +1,165 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-<head>
-    <!--
+    <head>
+        <!--
         * 
-        *     Copyright ? 2006 Sun Microsystems, Inc. All rights reserved.
+        *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
         *     Use is subject to license terms.
         *
-        *
         -->
-    <title>Viewing File Status Information</title>
-    <link rel="StyleSheet" 
-          href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" 
-          type="text/css">
-</head>
-
-<body>
-<h2>Viewing File Status Information</h2>
-
-<p><small><a href="#seealso">See Also</a></small></p>
-
-<p>The IDE's Subversion support enables you to view and manage the evolution
-of changes in version-controlled files.</p>
-
-<h3>Viewing Revision Information<a name="viewing"></a></h3>
-
-<p>The IDE's Subversion support enables you to view version status information in 
-    many of the IDE's windows, including the Versioning, Projects, Files, and Favorites 
-    windows. The Versioning window, however, represents the primary place within which 
-    to manage version-controlled files by displaying a list of all of the new, modified, 
-removed, and out-of-date files in the currently selected project or directory.</p>
-
-<p>To open the Versioning window, either:</p>
-
-<ul>
-    <li>Choose Window &gt; Versioning (Ctrl+8) from the main menu</li>
-    <li>Choose Show Changes from the right-click menu of a version-controlled folder 
-    from the Projects, Files, or Favorites window</li>
-    <li>Choose Versioning &gt; Show Changes (Versioning &gt; Subversion &gt; Show 
-    Changes) from the main menu</li>
-</ul>
-
-<p>The IDE's Subversion support provides file status information in the following
-ways:</p>
-
-<ul>
-    <li><b>Status Labels.</b> Textual indication of file status in the Versioning, 
-        Projects, Files, and Favorites windows. To display status labels, choose View 
-    &gt; Show Versioning Labels from the main menu.</li>
-    <li><b>Status Color.</b> Graphical indication of file status in the Versioning, 
-    Projects, Files, and Favorites windows.</li>
-    <li><b>Status Badges.</b> Graphical indication of the status of files contained 
-        within your project, folder, and package nodes. Displayed in the Projects, Files, 
-    and Favorites windows.</li>
-    <li><b>Revision Annotations.</b> Displays commit message, author, date, and 
-        revision number information in the left margin of files open in the Source Editor. 
-        To display annotations, select a versioned file in either the Projects, Files, and 
-        Favorites window, then choose Show Annotations from its right-click menu. 
-    Alternatively, choose Versioning, &gt; Show Annotations from the main menu.</li>
-</ul>
-
-<p>The IDE displays version-controlled files using the following color coding and font styles:</p>
-
-<table border="1" cellpadding="5">
-    <tr valign="top">
-        <th scope="col" align="left">Color Coding</th>
-        <th scope="col" align="center">Description</th>
-    </tr>
-    <tr valign="top">
-        <td align="center">
-            <p><img src="images/green_status.png" alt="Note"></p>
-        </td>
-        <td><strong>Green.</strong> Indicates that the file is 
-        a new local file that does not yet exist in the repository.</td>
-    </tr>
-    <tr valign="top">
-        <td align="center">
-            <p><img src="images/blue_status.png" alt="Note"></p>
-        </td>
-        <td>
-            <p><strong>Blue.</strong> Indicates that the file has 
-            been modified locally.</p>
-        </td>
-    </tr>
-    <tr valign="top">
-        <td align="center">
-            <p><img src="images/red_status.png" alt="Note"></p>
-        </td>
-        <td><strong>Red.</strong> Indicates that the file contains conflicts.
-            You must use the Resolve Conflicts command (Subversion &gt; Resolve 
-        Conflicts) for such files.</td>
-    </tr>
-    <tr valign="top">
-        <td align="center">
-            <p><img src="images/grey_status.png" alt="Note"></p>
-        </td>
-        <td><strong>Grey.</strong> Indicates that the file is ignored by Subversion 
-        and will not be included when calling versioning commands.</td>
-    </tr>                    
-    <tr valign="top">
-        <td align="center">
-            <p><img src="images/strikethrough_status.png" alt="Note"></p>
-        </td>
-        <td>
-            <p><strong>Strikethrough.</strong> Indicates that the file is excluded 
-                when calling the Commit command. All other Subversion commands, however, 
-                work as usual. Note that files displayed in the strikethrough style only 
-                appear in the Versioning window and Commit dialog. They will not appear 
-                in Diff panes, nor will their parent folders (or packages) display badges 
-            if they are modified.</p>
-        </td>
-    </tr>
-</table>
-
-<p>Current Subversion file status is indicated by adding the following badges
-to project, package and directory icons:</p>
-
-<table border="1" cellpadding="5">
-    <tr valign="top">
-        <th scope="col" align="left">Badge</th>
-        <th scope="col" align="center">Description</th>
-    </tr>
-    <tr valign="top">
-        <td align="center">
-            <p><img src="images/blue_badge.png" alt="Note"></p>
-        </td>
-        <td>
-            <p><strong>Locally Modified Badge.</strong> A blue badge on a
-                folder or package node marks folders or packages that contain locally
-                modified or new files. In the case of packages, this badge applies only
-                to the package itself and not its subpackages. For folders, the badge
-            indicates local modifications in that folder or any of its subfolders.</p>
-        </td>
-    </tr>
-    <tr valign="top">
-        <td align="center">
-            <p><img src="images/red_badge.png" alt="Note"></p>
-        </td>
-        <td>
-            <p><strong>Conflict Badge.</strong> A red badge on a folder or package 
-                node marks folders or packages that contain files for which the repository 
-                copy of the file contains changes which conflict with the local version. 
-                In case of packages, this badge applies only to the package itself and not 
-                its subpackages. For folders, the badge indicates local modifications in 
-            that folder or any of its subfolders.</p>
-        </td>
-    </tr>
-</table>
-
-<ul class="note">
-    <li>Note that the parent folders (or packages) of files excluded from commits
-        and displayed in the strikethrough style will not display badges if they 
-    are modified.</li>
-</ul>
-
-<dl>
-    <dt> <a name="seealso">See Also</a></dt>
-    <dd> <a href="svn_using.html">Using Subversion in the IDE</a></dd>
-    <dd> <a href="svn_quickref.html">Subversion Tasks: Quick Reference</a></dd>
-    <dd> <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/editing/editing_error-marks.html">
-    Identifying Errors in Source Code</a></dd>
-</dl>
-
-<hr><small><a href="../credits.html">Legal Notices</a></small>
-<br><br>
-</body>
+        <title>Viewing File Status Information</title>
+        <link href="nbdocs:/org/netbeans/modules/usersguide/ide.css"
+              rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Viewing File Status Information</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The IDE's Subversion support enables you to view and manage the evolution
+        of changes in version-controlled files.</p>
+        
+        <h3>Viewing Revision Information<a name="viewing"></a></h3>
+        
+        <p>The IDE's Subversion support enables you to view version status information in 
+            many of the IDE's windows, including the Versioning, Projects, Files, and Favorites 
+            windows. The Versioning window, however, represents the primary place within which 
+            to manage version-controlled files by displaying a list of all of the new, modified, 
+        removed, and out-of-date files in the currently selected project or directory.</p>
+        
+        <h4>To open the Versioning window, either:</h4>
+        
+        <ul>
+            <li>Choose Window &gt; Versioning &gt; Subversion from the main menu.</li>
+            <li>Choose Show Changes from the right-click menu of a version-controlled file or 
+                folder from the Projects, Files, or Favorites window.</li>
+            <li>Choose Versioning &gt; Show Changes (Versioning &gt; Subversion &gt; Show 
+                Changes) from the main menu.</li>
+        </ul>
+        
+        <p>The IDE's Subversion support provides file status information in the following
+            ways:</p>
+        
+        <ul>
+            <li><strong>Status Labels.</strong> Textual indication of file status in the Versioning, 
+                Projects, Files, and Favorites windows. To display status labels, choose View 
+                &gt; Show Versioning Labels from the main menu.</li>
+            <li><strong>Status Color.</strong> Graphical indication of file status in the Versioning, 
+                Projects, Files, and Favorites windows.</li>
+            <li><strong>Status Badges.</strong> Graphical indication of the status of files contained 
+                within your project, folder, and package nodes. Displayed in the Projects, Files, 
+                and Favorites windows.</li>
+            <li><strong>Revision Annotations.</strong> Displays commit message, author, date, and 
+                revision number information in the left margin of files open in the Source Editor. 
+                To display annotations, select a versioned file in either the Projects, Files, and 
+                Favorites window, then choose Show Annotations from its right-click menu. 
+                Alternatively, choose Versioning, &gt; Show Annotations from the main menu.</li>
+        </ul>
+        
+        <p>The IDE displays version-controlled files using the following color coding and font styles:</p>
+        
+        <table border="1" cellpadding="5">
+            <tr valign="top">
+                <th scope="col" align="left">Color Coding</th>
+                <th scope="col" align="center">Description</th>
+            </tr>
+            <tr valign="top">
+                <td align="center">
+                    <p><img src="images/green_status.png" alt="Note"></p>
+                </td>
+                <td><strong>Green.</strong> Indicates that the file is 
+                a new local file that does not yet exist in the repository.</td>
+            </tr>
+            <tr valign="top">
+                <td align="center">
+                    <p><img src="images/blue_status.png" alt="Note"></p>
+                </td>
+                <td>
+                    <p><strong>Blue.</strong> Indicates that the file has 
+                    been modified locally.</p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td align="center">
+                    <p><img src="images/red_status.png" alt="Note"></p>
+                </td>
+                <td><strong>Red.</strong> Indicates that the file contains conflicts.
+                    You must use the Resolve Conflicts command (Subversion &gt; Resolve 
+                Conflicts) for such files.</td>
+            </tr>
+            <tr valign="top">
+                <td align="center">
+                    <p><img src="images/grey_status.png" alt="Note"></p>
+                </td>
+                <td><strong>Grey.</strong> Indicates that the file is ignored by Subversion 
+                and will not be included when calling versioning commands.</td>
+            </tr>                    
+            <tr valign="top">
+                <td align="center">
+                    <p><img src="images/strikethrough_status.png" alt="Note"></p>
+                </td>
+                <td>
+                    <p><strong>Strikethrough.</strong> Indicates that the file is excluded 
+                        when calling the Commit command. All other Subversion commands, however, 
+                        work as usual. Note that files displayed in the strikethrough style only 
+                        appear in the Versioning window and Commit dialog. They will not appear 
+                        in Diff panes, nor will their parent folders (or packages) display badges 
+                        if they are modified.</p>
+                </td>
+            </tr>
+        </table>
+        
+        <p>Current Subversion file status is indicated by adding the following badges
+        to project, package and directory icons:</p>
+        
+        <table border="1" cellpadding="5">
+            <tr valign="top">
+                <th scope="col" align="left">Badge</th>
+                <th scope="col" align="center">Description</th>
+            </tr>
+            <tr valign="top">
+                <td align="center">
+                    <p><img src="images/blue_badge.png" alt="Note"></p>
+                </td>
+                <td>
+                    <p><strong>Locally Modified Badge.</strong> A blue badge on a
+                        folder or package node marks folders or packages that contain locally
+                        modified or new files. In the case of packages, this badge applies only
+                        to the package itself and not its subpackages. For folders, the badge
+                        indicates local modifications in that folder or any of its subfolders.</p>
+                </td>
+            </tr>
+            <tr valign="top">
+                <td align="center">
+                    <p><img src="images/red_badge.png" alt="Note"></p>
+                </td>
+                <td>
+                    <p><strong>Conflict Badge.</strong> A red badge on a folder or package 
+                        node marks folders or packages that contain files for which the repository 
+                        copy of the file contains changes which conflict with the local version. 
+                        In case of packages, this badge applies only to the package itself and not 
+                        its subpackages. For folders, the badge indicates local modifications in 
+                        that folder or any of its subfolders.</p>
+                </td>
+            </tr>
+        </table>
+        
+        <ul class="note">
+            <li>Note that the parent folders (or packages) of files excluded from commits
+                and displayed in the strikethrough style will not display badges if they 
+                are modified.</li>
+        </ul>
+        
+        <dl>
+            <dt> <a name="seealso">See Also</a></dt>
+            <dd> <a href="svn_using.html">Using Subversion in the IDE</a></dd>
+            <dd> <a href="svn_quickref.html">Subversion Tasks: Quick Reference</a></dd>
+            <dd> <a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/editing/editing_error-marks.html">
+                Identifying Errors in Source Code</a></dd>
+        </dl>
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
 </html>

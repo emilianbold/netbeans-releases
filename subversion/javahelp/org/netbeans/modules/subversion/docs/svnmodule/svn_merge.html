@@ -3,72 +3,69 @@
     <head>
         <!--
         * 
-        *     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+        *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
         *     Use is subject to license terms.
         * 
         -->
         <title>Merging File Revisions in Subversion</title>
-        <link rel="StyleSheet"
-        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link href="nbdocs:/org/netbeans/modules/usersguide/ide.css" 
+              rel="StyleSheet" type="text/css">
     </head>
+    
     <body>
-        <h2>Merging File Revisions in Subversion
-        </h2>
+        <h2>Merging File Revisions in Subversion</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
+        
         <p>The Merge command is useful for porting changes from a specific 
-        repository revision to your local working copy of a
-        file or folder. You can also port the changes made within a given range 
-        of revisions to your local working copy.</p>
-        <p><b>To port changes from a revision or range of revisions to your local working copy:</b></p>
+            repository revision to your local working copy of a
+            file or folder. You can also port the changes made within a given range 
+            of revisions to your local working copy.</p>
+        
+        <h4>To port changes from a revision or range of revisions to your local working copy:</h4>
+        
         <ol>
-            <li>In the Projects, Files, Favorites, or Subversion window,
-            right-click the files or folders on which you want to perform the 
-            merge operation and choose Subversion &gt; Merge Changes. </li>
+            <li>In the Projects, Files, Favorites, or Subversion window, right-click the files 
+                or folders on which you want to perform the merge operation and choose Subversion 
+                &gt; Merge Changes.</li>
             <li>In the dialog that appears, fill in the following fields:
                 <ul>
-                <li><b>Merge From.</b> Select one of the following types of merge:
-                <ul>
-                    <li><b>One Repository Folder.</b> Port changes from one repository folder.</li>
-                    <li><b>Two Repository Folders.</b> Port changes from two repository folders.</li>
-                    <li><b>One Repository Folder Since Its Origin.</b> Port changes 
-                    that have occurred between the time of the folder's creation and 
-                    the revision number that you specify in the Ending Revision Field.</li>
+                    <li><strong>Merge From.</strong> Select one of the following types of merge:
+                        <ul>
+                            <li><strong>One Repository Folder.</strong> Port changes from one repository folder.</li>
+                            <li><strong>Two Repository Folders.</strong> Port changes from two repository folders.</li>
+                            <li><strong>One Repository Folder Since Its Origin.</strong> Port changes that have 
+                                occurred between the time of the folder's creation and the revision number that 
+                                you specify in the Ending Revision Field.</li>
+                        </ul></li>
+                    <li><strong>Repository Folder.</strong> The folder from which you want to port changes. (If you 
+                        select Two Repository Folders in the Merge From field, this field is replaced by 
+                        First Repository Folder and Second Repository Folder fields.)</li>
+                    <li><strong>Starting Revision.</strong> If merging from a single revision, enter the revision 
+                        number. If merging changes that occurred within a range of revisions, enter the starting 
+                        point of that range.</li>
+                    <li><strong>Ending Revision.</strong> If merging changes that occurred within a range of revisions, 
+                        enter the ending point of that range.</li>
                 </ul></li>
-                <li><b>Repository Folder.</b> The folder from which you want to port changes. (If you 
-                select Two Repository Folders in the Merge From field, this field is replaced by 
-                First Repository Folder and Second Repository Folder fields.)</li>
-                <li><b>Starting Revision.</b> If merging from a single revision, enter the revision 
-                number. If merging changes that occurred within a range of revisions, enter 
-                the starting point of that range.</li>
-                <li><b>Ending Revision.</b> If merging changes that occurred within a range of revisions, enter 
-                the ending point of that range.</li>
-            </ul>
-            <li>Click Merge.
-                <p>The IDE incorporates any differences found in the selected revision 
-                to the local copy of the file. If merge conflicts occur, the file's
-                status is updated to Merge Conflict to indicate this.</p>
-            </li>
+            <li>Click Merge. The IDE incorporates any differences found in the selected revision 
+                to the local copy of the file. If merge conflicts occur, the file's status is 
+                updated to Merge Conflict to indicate this.</li>
         </ol>
+        
         <ul class="note">
-            <li>After merging file changes to your local working
-            directory, you must still commit the changes using the Commit command
-            in order for them to added to the repository.</li>
+            <li>After merging file changes to your local working directory, you must still commit changes 
+                using the Commit command in order for them to be added to the repository.</li>
         </ul>
         <p>For more information about merging files with Subversion consult your Subversion
-        documentation.
+            documentation.</p>
+            
         <dl>
-            <dt> <a name="seealso">See Also</a></dt>
-            <dd> <a href="svn_mergeresolve.html">Resolving Merge
-            Conflicts in Subversion</a></dd>
-            <dd> <a href="svn_diff.html">Comparing File Revisions in Subversion</a></dd>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="svn_mergeresolve.html">Resolving Merge Conflicts in Subversion</a></dd>
+            <dd><a href="svn_diff.html">Comparing File Revisions in Subversion</a></dd>
         </dl>
-        <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
-        </table>
+        
+        <hr><small><a href="../credits.html">Legal Notices</a></small>
+        <br><br><br>
     </body>
 </html>

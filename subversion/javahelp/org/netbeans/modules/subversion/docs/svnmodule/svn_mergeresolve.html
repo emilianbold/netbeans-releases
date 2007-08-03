@@ -3,80 +3,65 @@
     <head>
         <!--
         * 
-        *     Copyright © 2006 Sun Microsystems, Inc. All rights reserved.
+        *     Copyright 2007 Sun Microsystems, Inc. All rights reserved.
         *     Use is subject to license terms.
         * 
         -->
         <title>Resolving Merge Conflicts in Subversion</title>
-        <link rel="StyleSheet"
-        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link href="nbdocs:/org/netbeans/modules/usersguide/ide.css" 
+              rel="StyleSheet" type="text/css">
     </head>
+    
     <body>
         <h2>Resolving Merge Conflicts in Subversion</h2>
+        
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>When merge conflicts occur, a Merge Conflict badge (<img
-        src="./images/conflicts-badge.png" alt="Merge Conflict Badge">)
-        appears on the parent folder (or package) of file. Within the file itself, 
-        each conflict is marked with arrows followed by the lines from the two 
-        revisions that caused the conflict. </p>
+        
+        <p>When merge conflicts occur, a Merge Conflict badge (<img src="./images/conflicts-badge.png" 
+            alt="Merge Conflict Badge">) appears on the parent folder (or package) of file. Within the 
+            file itself, each conflict is marked with arrows followed by the lines from the two revisions 
+            that caused the conflict.</p>
+            
         <ul class="note">
             <li>Merge conflicts must be resolved prior to checking your local
-            file into the repository. </li>
+            file into the repository.</li>
         </ul>
-        <h4>To resolve merge conflicts graphically with the Merge Conflicts
-        Resolver:</h4>
+        
+        <h4>To resolve merge conflicts graphically with the Merge Conflicts Resolver:</h4>
+        
         <ol>
-            <li>Right-click the node of the file whose status indicates that
-                there is a conflict and choose Resolve Conflicts from the pop-up menu.
-                <p>The Merge Conflicts Resolver is displayed with merge conflicts
-                highlighted in red. </p>
-            </li>
-            <li>Use the Next (<img src="images/diff-next.png" alt="Next"
-            height="16" width="16">) and Previous (<img src="images/diff-prev.png"
-            alt="Previous" height="16" width="16">) difference buttons in the
-            upper-lefthand corner to navigate to each conflict in the file. </li>
-            <li>For each conflict, click Accept above the pane containing the
-                text that you wish to accept.
-                <p>Once you have chosen the correct text, it is highlighted in
-                green and displayed in the Merge Result pane. The text you did not
-                choose is highlighted in blue. </p>
-            </li>
-            <li>If neither pane contains the text you want, exit the Merge
-            Conflict Resolver and edit your source file manually. When you are done
-            making changes, right-click the node of the file and choose
-            Subversion&nbsp;&gt; Update from the contextual menu. Then repeat the
-            procedure, beginning with Step 1. </li>
-            <li>After resolving each conflict, click OK to exit the Merge
-                Conflict Resolver.
-                <p>The IDE updates your local working copy with the desired
-                changes. </p>
-            </li>
+            <li>In the Projects, Files, Subversion or Favorites window, select the node 
+                of the file whose status indicates that there is a conflict and choose Resolve 
+                Conflicts from the menu. The Merge Conflicts Resolver displays with merge conflicts
+                highlighted in red.</li>
+            <li>Use the Next (<img src="images/diff-next.png" alt="Next" height="16" width="16">) 
+                and Previous (<img src="images/diff-prev.png" alt="Previous" height="16" width="16">) 
+                difference buttons in the upper-left corner to navigate to each conflict in the file.</li>
+            <li>For each conflict, click Accept above the pane containing the text that you wish to accept.
+                Once you have chosen the correct text, it is highlighted in green and displayed in the 
+                Merge Result pane. The text you did not choose is highlighted in blue.</li>
+            <li>If neither pane contains the text you want, exit the Merge Conflict Resolver and edit 
+                your source file manually. When you are done making changes, right-click the node of 
+                the file and choose Subversion &gt; Update from the contextual menu. Then repeat the
+                procedure, beginning with Step 1.</li>
+            <li>After resolving each conflict, click OK to exit the Merge Conflict Resolver. The IDE 
+                updates your local working copy with the desired changes.</li>
         </ol>
-        <!--<h4>To resolve conflicts manually in the source file:</h4>
-        <ol>
-        <li>Open the file in the editor.
-        <li>For each conflict in the file, delete the arrows and  text that
-        you do not want.
-        <li>Save the file.<p>The IDE updates your local working copy with the desired
-        changes. </ol>-->
+
         <ul class="note">
             <li>Once you have resolved each merge conflict, you still need to
-            commit the file to add your changes to the repository copy. For more
-            information, see <a href="svn_commit.html">Committing Files to a
-            Subversion Repository</a>. </li>
+                commit the file to add your changes to the repository copy. For more
+                information, see <a href="svn_commit.html">Committing Files to a
+                Subversion Repository</a>.</li>
         </ul>
+        
         <dl>
             <dt> <a name="seealso">See Also</a></dt>
             <dd> <a href="svn_merge.html">Merging File Revisions in Subversion </a></dd>
             <dd> <a href="svn_diff.html">Comparing File Revisions in Subversion</a></dd>
         </dl>
         <hr> <small><a href="../credits.html">Legal Notices</a></small>
-        <table border="0" cellpadding="50">
-            <tbody>
-                <tr>
-                    <td>&nbsp;</td>
-                </tr>
-            </tbody>
+        <br><br><br>
         </table>
     </body>
 </html>
