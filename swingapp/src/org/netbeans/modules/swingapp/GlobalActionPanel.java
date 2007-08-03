@@ -119,7 +119,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 if(getSelectedAction() != null) {
                     editActionButton.setEnabled(true);
                     enableViewSource(true);
-                    deleteActionButton.setEnabled(true);
+                    enableDeleteAction(true);
                 }
             }
         });
@@ -129,7 +129,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 boolean state = getSelectedAction() != null;
                 editActionButton.setEnabled(state);
                 enableViewSource(state);
-                deleteActionButton.setEnabled(state);
+                enableDeleteAction(state);
             }
         });
         
@@ -223,16 +223,29 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         reloadClassesCombo();
         reloadTable();
     }
-        
+    
+    private boolean actionHasSource(ProxyAction act) {
+        if(actionManager == null) return false;
+        if(act == null) return false;
+        if(act.getClassname() == null) return false;
+        FileObject sourceFile = actionManager.getFileForClass(act.getClassname());
+        if(sourceFile == null) return false;
+        return true;
+    }
+    
     private void enableViewSource(boolean enabled) {
-        ProxyAction act = getSelectedAction();
         viewSourceButton.setEnabled(enabled);
         // disable viewsource if the action has no source
-        if(actionManager != null && act != null) {
-            FileObject sourceFile = actionManager.getFileForClass(act.getClassname());
-            if(sourceFile == null) {
-                viewSourceButton.setEnabled(false);
-            }
+        if(!actionHasSource(getSelectedAction())) {
+            viewSourceButton.setEnabled(false);
+        }
+    }
+    
+    private void enableDeleteAction(boolean enabled) {
+        deleteActionButton.setEnabled(enabled);
+        // disable delete if the action has no source
+        if(!actionHasSource(getSelectedAction())) {
+            deleteActionButton.setEnabled(false);
         }
     }
     
@@ -558,7 +571,14 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         int row = getSelectedRow();
         if(act == null) { return; }
         String defClassName = act.getClassname();
-        ActionEditor editor = new ActionEditor(actionManager.getFileForClass(defClassName));
+        
+        FileObject fileObject = actionManager.getFileForClass(defClassName);
+        // use the apps file if the action is missing one. used
+        // for built-in actions like 'quit'
+        if(fileObject == null) {
+            fileObject = actionManager.getApplicationClassFile();
+        }
+        ActionEditor editor = new ActionEditor(fileObject);
         editor.setValue(act);
         ActionPropertyEditorPanel comp = (ActionPropertyEditorPanel) editor.getCustomEditor();
         //make sure it's in the right mode
