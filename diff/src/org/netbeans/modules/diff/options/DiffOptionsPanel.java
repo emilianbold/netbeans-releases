@@ -95,6 +95,8 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
         browseCommand = new javax.swing.JButton();
         ignoreWhitespace = new javax.swing.JCheckBox();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 0, 0, 5));
+
         buttonGroup1.add(internalDiff);
         org.openide.awt.Mnemonics.setLocalizedText(internalDiff, org.openide.util.NbBundle.getMessage(DiffOptionsPanel.class, "jRadioButton1.text")); // NOI18N
         internalDiff.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -134,7 +136,7 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
                 .add(41, 41, 41)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(externalCommand, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)
+                        .add(externalCommand, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(browseCommand))
                     .add(ignoreWhitespace)))
@@ -152,7 +154,7 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
                     .add(jLabel1)
                     .add(browseCommand)
                     .add(externalCommand, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
