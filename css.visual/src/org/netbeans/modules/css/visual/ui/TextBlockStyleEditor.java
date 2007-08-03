@@ -281,23 +281,25 @@ public class TextBlockStyleEditor extends StyleEditor {
 
         setLayout(new java.awt.BorderLayout());
 
+        textBlockPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         textBlockPanel.setLayout(new java.awt.GridBagLayout());
 
-        textBlockPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        decorationLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_TEXT_INDENTATION").charAt(0));
         decorationLabel.setLabelFor(textIndentCombo);
-        decorationLabel.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "TEXT_INDENTATION"));
+        decorationLabel.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "TEXT_INDENTATION")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
+        textBlockPanel.add(decorationLabel, gridBagConstraints);
+
+        imageScroll.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_TEXT_DIRECTION").charAt(0));
+        imageScroll.setLabelFor(directionCombo);
+        imageScroll.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "TEXT_DIRECTION")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 10);
-        textBlockPanel.add(decorationLabel, gridBagConstraints);
-
-        imageScroll.setLabelFor(directionCombo);
-        imageScroll.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "TEXT_DIRECTION"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         textBlockPanel.add(imageScroll, gridBagConstraints);
@@ -307,16 +309,15 @@ public class TextBlockStyleEditor extends StyleEditor {
                 directionComboItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         textBlockPanel.add(directionCombo, gridBagConstraints);
-        directionCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "DIRECTION_ACCESS_NAME"));
-        directionCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "DIRECTION_ACCESS_DESC"));
+        directionCombo.getAccessibleContext().setAccessibleName(null);
+        directionCombo.getAccessibleContext().setAccessibleDescription(null);
 
         horizontalAlignCombo.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
@@ -328,7 +329,6 @@ public class TextBlockStyleEditor extends StyleEditor {
                 horizontalAlignComboItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -336,11 +336,12 @@ public class TextBlockStyleEditor extends StyleEditor {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         textBlockPanel.add(horizontalAlignCombo, gridBagConstraints);
-        horizontalAlignCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "HORIZONTAL_ALIGN_ACCESS_NAME"));
-        horizontalAlignCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "HORIZONTAL_ALIGN_ACCESS_DESC"));
+        horizontalAlignCombo.getAccessibleContext().setAccessibleName(null);
+        horizontalAlignCombo.getAccessibleContext().setAccessibleDescription(null);
 
+        textAlignLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_TEXT_HORIZ_ALIGN").charAt(0));
         textAlignLabel.setLabelFor(horizontalAlignCombo);
-        textAlignLabel.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "TEXT_HORIZ_ALIGN"));
+        textAlignLabel.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "TEXT_HORIZ_ALIGN")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -348,8 +349,9 @@ public class TextBlockStyleEditor extends StyleEditor {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 10);
         textBlockPanel.add(textAlignLabel, gridBagConstraints);
 
+        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_TEXT_VERTICAL_ALIGN").charAt(0));
         jLabel2.setLabelFor(verticalAlignCombo);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "TEXT_VERTICAL_ALIGN"));
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "TEXT_VERTICAL_ALIGN")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -373,16 +375,15 @@ public class TextBlockStyleEditor extends StyleEditor {
                 textIndentComboFocusLost(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         textBlockPanel.add(textIndentCombo, gridBagConstraints);
-        textIndentCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "INDENT_ACCESS_NAME"));
-        textIndentCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "INDENT_ACCESS_DESC"));
+        textIndentCombo.getAccessibleContext().setAccessibleName(null);
+        textIndentCombo.getAccessibleContext().setAccessibleDescription(null);
 
         verticalAlignCombo.setEditable(true);
         verticalAlignCombo.addActionListener(new java.awt.event.ActionListener() {
@@ -400,7 +401,6 @@ public class TextBlockStyleEditor extends StyleEditor {
                 verticalAlignComboItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -408,31 +408,31 @@ public class TextBlockStyleEditor extends StyleEditor {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         textBlockPanel.add(verticalAlignCombo, gridBagConstraints);
-        verticalAlignCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "VERTICAL_ALIGN_ACCESS_NAME"));
-        verticalAlignCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "VERTICAL_ALIGN_ACCESS_DESC"));
+        verticalAlignCombo.getAccessibleContext().setAccessibleName(null);
+        verticalAlignCombo.getAccessibleContext().setAccessibleDescription(null);
 
         wordSpacingUnitCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 wordSpacingUnitComboItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 0);
         textBlockPanel.add(wordSpacingUnitCombo, gridBagConstraints);
-        wordSpacingUnitCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "WORD_SPACING_UNIT_ACCESS_NAME"));
-        wordSpacingUnitCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "WORD_SPACING_UNIT_ACCESS_DESC"));
+        wordSpacingUnitCombo.getAccessibleContext().setAccessibleName(null);
+        wordSpacingUnitCombo.getAccessibleContext().setAccessibleDescription(null);
 
+        imageScroll1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_WORD_SPACING").charAt(0));
         imageScroll1.setLabelFor(wordSpacingCombo);
-        imageScroll1.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "WORD_SPACING"));
+        imageScroll1.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "WORD_SPACING")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 10);
         textBlockPanel.add(imageScroll1, gridBagConstraints);
 
         wordSpacingCombo.setEditable(true);
@@ -451,24 +451,24 @@ public class TextBlockStyleEditor extends StyleEditor {
                 wordSpacingComboFocusLost(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         textBlockPanel.add(wordSpacingCombo, gridBagConstraints);
-        wordSpacingCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "WORD_SPACING_ACCESS_NAME"));
-        wordSpacingCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "WORD_SPACING_ACCESS_DESC"));
+        wordSpacingCombo.getAccessibleContext().setAccessibleName(null);
+        wordSpacingCombo.getAccessibleContext().setAccessibleDescription(null);
 
+        imageScroll2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_LETTER_SPACING").charAt(0));
         imageScroll2.setLabelFor(letterSpacingCombo);
-        imageScroll2.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LETTER_SPACING"));
+        imageScroll2.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LETTER_SPACING")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 10);
         textBlockPanel.add(imageScroll2, gridBagConstraints);
 
         letterSpacingCombo.setEditable(true);
@@ -487,54 +487,52 @@ public class TextBlockStyleEditor extends StyleEditor {
                 letterSpacingComboFocusLost(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         textBlockPanel.add(letterSpacingCombo, gridBagConstraints);
-        letterSpacingCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LETTER_SPACING_ACCESS_NAME"));
-        letterSpacingCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LETTER_SPACING_ACCESS_DESC"));
+        letterSpacingCombo.getAccessibleContext().setAccessibleName(null);
+        letterSpacingCombo.getAccessibleContext().setAccessibleDescription(null);
 
         letterSpacingUnitCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 letterSpacingUnitComboItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
         textBlockPanel.add(letterSpacingUnitCombo, gridBagConstraints);
-        letterSpacingUnitCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LETTER_SPACING_UNIT_ACCESS_NAME"));
-        letterSpacingUnitCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LETTER_SPACING_UNIT_ACCESS_DESC"));
+        letterSpacingUnitCombo.getAccessibleContext().setAccessibleName(null);
+        letterSpacingUnitCombo.getAccessibleContext().setAccessibleDescription(null);
 
         textIndentUnitCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 textIndentUnitComboItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 10, 0, 0);
         textBlockPanel.add(textIndentUnitCombo, gridBagConstraints);
-        textIndentUnitCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "INDENT_UNIT_ACCESS_NAME"));
-        textIndentUnitCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "INDENT_UNIT_ACCESS_DESC"));
+        textIndentUnitCombo.getAccessibleContext().setAccessibleName(null);
+        textIndentUnitCombo.getAccessibleContext().setAccessibleDescription(null);
 
+        lineHeightLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_LINE_HEIGHT").charAt(0));
         lineHeightLabel.setLabelFor(lineHeightCombo);
-        lineHeightLabel.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LINE_HEIGHT"));
+        lineHeightLabel.setText(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LINE_HEIGHT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 10);
         textBlockPanel.add(lineHeightLabel, gridBagConstraints);
 
         lineHeightCombo.setEditable(true);
@@ -553,41 +551,38 @@ public class TextBlockStyleEditor extends StyleEditor {
                 lineHeightComboFocusLost(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         textBlockPanel.add(lineHeightCombo, gridBagConstraints);
-        lineHeightCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LINE_HEIGHT_ACCESS_NAME"));
-        lineHeightCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LINE_HEIGHT_ACCESS_DESC"));
+        lineHeightCombo.getAccessibleContext().setAccessibleName(null);
+        lineHeightCombo.getAccessibleContext().setAccessibleDescription(null);
 
         lineHeightUnitCombo.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 lineHeightUnitComboItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
         textBlockPanel.add(lineHeightUnitCombo, gridBagConstraints);
-        lineHeightUnitCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LINE_HEIGHT_UNIT_ACCESS_NAME"));
-        lineHeightUnitCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TextBlockStyleEditor.class, "LINE_HEIGHT_UNIT_ACCESS_DESC"));
+        lineHeightUnitCombo.getAccessibleContext().setAccessibleName(null);
+        lineHeightUnitCombo.getAccessibleContext().setAccessibleDescription(null);
 
         add(textBlockPanel, java.awt.BorderLayout.NORTH);
 
+        errorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
         errorPanel.setLayout(new java.awt.BorderLayout());
 
-        errorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
         errorLabel.setMinimumSize(new java.awt.Dimension(200, 20));
         errorPanel.add(errorLabel, java.awt.BorderLayout.CENTER);
 
         add(errorPanel, java.awt.BorderLayout.CENTER);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void letterSpacingUnitComboItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_letterSpacingUnitComboItemStateChanged

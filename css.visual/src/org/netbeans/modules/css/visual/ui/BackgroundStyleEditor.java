@@ -193,11 +193,12 @@ public class BackgroundStyleEditor extends StyleEditor {
 
         setLayout(new java.awt.BorderLayout());
 
+        colorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
         colorPanel.setLayout(new java.awt.GridBagLayout());
 
-        colorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        colorLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_BACKGROUND_COLOR").charAt(0));
         colorLabel.setLabelFor(colorPanel);
-        colorLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_COLOR"));
+        colorLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_COLOR")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -206,7 +207,6 @@ public class BackgroundStyleEditor extends StyleEditor {
         colorPanel.add(colorLabel, gridBagConstraints);
 
         browseButton.setText("...");
-        browseButton.setToolTipText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_IMAGE_BROWSE_BTN_TOOLTIP"));
         browseButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
         browseButton.setPreferredSize(new java.awt.Dimension(20, 20));
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -214,7 +214,6 @@ public class BackgroundStyleEditor extends StyleEditor {
                 browseButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
@@ -222,8 +221,8 @@ public class BackgroundStyleEditor extends StyleEditor {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(6, 3, 0, 0);
         colorPanel.add(browseButton, gridBagConstraints);
-        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_IAMGE_BROWSE_ACCESS_NAME"));
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_IAMGE_BROWSE_ACCESS_DESC"));
+        browseButton.getAccessibleContext().setAccessibleName(null);
+        browseButton.getAccessibleContext().setAccessibleDescription(null);
 
         imageFileField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -235,7 +234,6 @@ public class BackgroundStyleEditor extends StyleEditor {
                 imageFileFieldFocusLost(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -245,11 +243,12 @@ public class BackgroundStyleEditor extends StyleEditor {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         colorPanel.add(imageFileField, gridBagConstraints);
-        imageFileField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_IMG_TEXTFIELD_ACCESS_NAME"));
-        imageFileField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_IMG_TEXTFIELD_ACCESS_DESC"));
+        imageFileField.getAccessibleContext().setAccessibleName(null);
+        imageFileField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_IMG_TEXTFIELD_ACCESS_DESC")); // NOI18N
 
+        lineHeightLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_BACKGROUND_IMAGE").charAt(0));
         lineHeightLabel.setLabelFor(imageFileField);
-        lineHeightLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_IMAGE"));
+        lineHeightLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_IMAGE")); // NOI18N
         lineHeightLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -258,22 +257,24 @@ public class BackgroundStyleEditor extends StyleEditor {
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(lineHeightLabel, gridBagConstraints);
 
+        imageTileLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_BACKGROUNDTILE").charAt(0));
         imageTileLabel.setLabelFor(repeatComboBox);
-        imageTileLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUNDTILE"));
+        imageTileLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUNDTILE")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(imageTileLabel, gridBagConstraints);
 
+        imageScrollLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_BACKGROUND_SCROLL").charAt(0));
         imageScrollLabel.setLabelFor(scrollComboBox);
-        imageScrollLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_SCROLL"));
+        imageScrollLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BACKGROUND_SCROLL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(imageScrollLabel, gridBagConstraints);
 
         scrollComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -281,7 +282,6 @@ public class BackgroundStyleEditor extends StyleEditor {
                 scrollComboBoxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -289,15 +289,14 @@ public class BackgroundStyleEditor extends StyleEditor {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         colorPanel.add(scrollComboBox, gridBagConstraints);
-        scrollComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "SCROLL_COMBO_ACCESSIBLE_NAME"));
-        scrollComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "SCROLL_COMBO_ACCESSIBLE_DESC"));
+        scrollComboBox.getAccessibleContext().setAccessibleName(null);
+        scrollComboBox.getAccessibleContext().setAccessibleDescription(null);
 
         repeatComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 repeatComboBoxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -305,25 +304,27 @@ public class BackgroundStyleEditor extends StyleEditor {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         colorPanel.add(repeatComboBox, gridBagConstraints);
-        repeatComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "TILE_COMBO_ACCESSIBLE_NAME"));
-        repeatComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "TILE_COMBO_ACCESSIBLE_DESC"));
+        repeatComboBox.getAccessibleContext().setAccessibleName(null);
+        repeatComboBox.getAccessibleContext().setAccessibleDescription(null);
 
+        horizontalPosLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_BG_HORIZONTAL_POS").charAt(0));
         horizontalPosLabel.setLabelFor(horizontalPosComboBox);
-        horizontalPosLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_HORIZONTAL_POS"));
+        horizontalPosLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_HORIZONTAL_POS")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(horizontalPosLabel, gridBagConstraints);
 
+        verticalPosLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_BG_VERTICAL_POS").charAt(0));
         verticalPosLabel.setLabelFor(verticalPosComboBox);
-        verticalPosLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_VERTICAL_POS"));
+        verticalPosLabel.setText(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "BG_VERTICAL_POS")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 20, 0, 10);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 10);
         colorPanel.add(verticalPosLabel, gridBagConstraints);
 
         horizontalPosComboBox.setEditable(true);
@@ -337,7 +338,6 @@ public class BackgroundStyleEditor extends StyleEditor {
                 horizontalPosComboBoxActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
@@ -346,8 +346,8 @@ public class BackgroundStyleEditor extends StyleEditor {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         colorPanel.add(horizontalPosComboBox, gridBagConstraints);
-        horizontalPosComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "HORIZPOS_COMBO_ACCESSIBLE_NAME"));
-        horizontalPosComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "HORIZPOS_COMBO_ACCESSIBLE_DESC"));
+        horizontalPosComboBox.getAccessibleContext().setAccessibleName(null);
+        horizontalPosComboBox.getAccessibleContext().setAccessibleDescription(null);
 
         verticalPosComboBox.setEditable(true);
         verticalPosComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -360,7 +360,6 @@ public class BackgroundStyleEditor extends StyleEditor {
                 verticalPosComboBoxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -369,8 +368,8 @@ public class BackgroundStyleEditor extends StyleEditor {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         colorPanel.add(verticalPosComboBox, gridBagConstraints);
-        verticalPosComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "VERTPOS_COMBO_ACCESSIBLE_NAME"));
-        verticalPosComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "VERTPOS_COMBO_ACCESSIBLE_DESC"));
+        verticalPosComboBox.getAccessibleContext().setAccessibleName(null);
+        verticalPosComboBox.getAccessibleContext().setAccessibleDescription(null);
 
         horizontalUnitComboBox.setEnabled(false);
         horizontalUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -378,15 +377,14 @@ public class BackgroundStyleEditor extends StyleEditor {
                 horizontalUnitComboBoxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
         colorPanel.add(horizontalUnitComboBox, gridBagConstraints);
-        horizontalUnitComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "HORIZPOS_UNIT_COMBO_ACCESSIBLE_NAME"));
-        horizontalUnitComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "HORIZPOS_UNIT_COMBO_ACCESSIBLE_DESC"));
+        horizontalUnitComboBox.getAccessibleContext().setAccessibleName(null);
+        horizontalUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
 
         verticalUnitComboBox.setEnabled(false);
         verticalUnitComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -394,18 +392,16 @@ public class BackgroundStyleEditor extends StyleEditor {
                 verticalUnitComboBoxItemStateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
         colorPanel.add(verticalUnitComboBox, gridBagConstraints);
-        verticalUnitComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BackgroundStyleEditor.class, "VERTPOS_UNIT_COMBO_ACCESSIBLE_NAME"));
-        verticalUnitComboBox.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("VERTPOS_UNIT_COMBO_ACCESSIBLE_DESC"));
+        verticalUnitComboBox.getAccessibleContext().setAccessibleName(null);
+        verticalUnitComboBox.getAccessibleContext().setAccessibleDescription(null);
 
         colorSelectionPanel.setLayout(new java.awt.BorderLayout());
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -413,14 +409,13 @@ public class BackgroundStyleEditor extends StyleEditor {
 
         add(colorPanel, java.awt.BorderLayout.NORTH);
 
+        errorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
         errorPanel.setLayout(new java.awt.BorderLayout());
 
-        errorPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 10, 1, 1));
         errorLabel.setForeground(new java.awt.Color(0, 0, 153));
         errorPanel.add(errorLabel, java.awt.BorderLayout.NORTH);
 
         add(errorPanel, java.awt.BorderLayout.CENTER);
-
     }// </editor-fold>//GEN-END:initComponents
     
     private void verticalUnitComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_verticalUnitComboBoxItemStateChanged
