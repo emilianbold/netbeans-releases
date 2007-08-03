@@ -15,32 +15,35 @@
 <p>
 <small><a href="#seealso">See Also</a></small></p>
 <p> The current context is the portion of your program on which the debugger
-	is  currently focusing. When multiple sessions are running, only one session
-	is  current. Within the current session, the thread
+	is currently focusing. When multiple sessions are running, only one session
+	is current. Within the current session, the thread
 	from which the debugger regained control is the default current thread. Inside
 	the current thread, the most recent call is the default current call. </p>
   
 <p>You can make any session, thread, or call current by right-clicking its node 
   in the appropriate debugger window and choosing Make Current.</p>
-<h3>Debugger Windows<a name="debugwindow"></a> and Context</h3>
-<p> Most debugger windows depend on the current context. When you change the
-	 current context, the contents of these windows are updated to reflect the new
-  context. </p>
-<p>For example, the Threads window shows the threads in the current session,
-		while the Call Stack window shows the call stack for the current thread.
+
+  <a name="debugwindow"></a>
+  <h3>Debugger Windows and Context</h3>
+        <p>Most debugger windows depend on the current context. When you change the
+	current context, the contents of these windows are updated to reflect the new context. </p>
+        <p>For example, the Threads window shows the threads in the current session,
+        while the Call Stack window shows the call stack for the current thread.
 	The Local Variables window shows the variables that are local to the current
 	call, and the Classes window shows the classes that have been loaded by the
 	current session. </p>
-<p> The exceptions are the Breakpoints and Watches windows. These windows list 
-  all breakpoints and watches set in the IDE. While the set of watches is shared 
-  by all sessions, an individual watch expression is evaluated and displayed based 
-  on the current context. </p>
-<h3>The Source Editor<a name="sourceeditor"></a> and Context</h3>
-<p> When a variable is active in the current context, the Source Editor displays 
-  the value of the variable when you move the pointer over it. In cases where 
-  a program includes different variables with the same name, the Source Editor 
-  displays the value based on the current context, and not on the instance of 
-  the variable in the source code. </p>
+        <p> The exceptions are the Breakpoints and Watches windows. These windows list 
+        all breakpoints and watches set in the IDE. While the set of watches is shared 
+        by all sessions, an individual watch expression is evaluated and displayed based 
+        on the current context. </p>
+        
+        <a name="sourceeditor"></a>
+        <h3>The Source Editor and Context</h3>
+        <p> When a variable is active in the current context, the Source Editor displays 
+        the value of the variable when you move the pointer over it. In cases where 
+        a program includes different variables with the same name, the Source Editor 
+        displays the value based on the current context, and not on the instance of 
+        the variable in the source code. </p>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="breakpoint_about.html">Breakpoints in the IDE</a></dd>
@@ -49,9 +52,7 @@
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
+<table border="0" cellpadding="50">
 <tr><td>&nbsp;</td></tr>
 </table>
 </body>

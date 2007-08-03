@@ -18,17 +18,15 @@ condition is true. You can set conditions on any breakpoint except thread and
 class breakpoints.</p>
 <p><b>To set conditions on a breakpoint:</b></p>
 <ol>
-  <li>Create a new breakpoint or open an existing breakpoint's customizer as described 
-    above. 
+  <li>Create a new breakpoint or open an existing breakpoint's customizer 
+  by right-clicking its name in the <a href="CSH/breakpoint_view.html">Breakpoints window</a> and choosing Customize.</p>. 
   <li> Type the condition in the Condition field. The condition must follow the 
     Java syntax rules. The condition may include anything that can be on the right 
     side of the equal sign (<tt>=</tt>). The condition may also include variables 
     and methods that are within the current context. The following are exceptions: 
     <ul>
-      <li> Imports are ignored. You must use fully qualified names, such as <tt>obj 
-        instanceof java.lang.String</tt>. </li>
-      <li> You cannot access outerclass methods and variables directly. Use <tt>this.<i>variableName</i></tt> 
-        or <tt>this$1</tt>. </li>
+      <li> Imports are ignored. You must use fully qualified names, such as <tt>obj instanceof java.lang.String</tt>. </li>
+      <li> You cannot access outerclass methods and variables directly. Use <tt>this.<i>variableName</i></tt> or <tt>this$1</tt>. </li>
     </ul>
   </li>
 </ol>

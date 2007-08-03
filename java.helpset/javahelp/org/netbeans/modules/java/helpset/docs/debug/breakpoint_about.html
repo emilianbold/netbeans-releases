@@ -16,29 +16,27 @@
 <small><a href="#seealso">See Also</a></small></p>
 <p> A breakpoint is a flag in the source code that tells the debugger to stop
 	execution of the program. When your program stops on a breakpoint, you can
-	perform actions like examining the value of variables and single-stepping through
-  your program. </p>
-<p>The IDE enables you to set  several types of breakpoints using the New Breakpoint
+	perform actions like examining the value of variables and single-stepping through your program. </p>
+<p>The IDE enables you to set several types of breakpoints using the New Breakpoint
 	dialog. You can also set line breakpoints directly in the Source Editor. Breakpoints
 	can be set for the following types of source elements: </p>
 <ul>
-  <li><b>Class. </b>You can break when the class is loaded into the virtual machine,
-  	unloaded from the virtual machine, or both.
+    <li><b>Class. </b>You can break when the class is loaded into the virtual machine,
+    unloaded from the virtual machine, or both.</li>
   <li><b>Exception.</b> You can break whenever a specific exception is caught,
   	whenever a specific exception is not handled in the source code, or whenever
   	any exception is encountered regardless of whether the program handles the
-  	error or not.
-  <li><b>Variable. </b>You can stop execution of your program whenever a variable
-  	in a specific class and field is accessed (for example, the method was called
-  	with the variable as an argument) or modified. 
-  <li><b>Method.</b> Program execution stops every time the method is executed. 
+  	error or not.</li>
+  <li><b>Field.</b> You can stop execution of your program whenever a field
+  	in a specific class is accessed (for example, the method was called
+  	with the variable as an argument), modified or both.</li> 
+  <li><b>Method.</b> Program execution stops every time the method is entered, exited or both.</li> 
   <li><b>Thread.</b> You can break program execution whenever a thread starts,
-  	stops, or both.
+  	stops, or both.</li>
 </ul>
 <p>The Source Editor indicates a breakpoint by highlighting the line at which the
 	breakpoint is set in red and placing an annotation in the left margin. The
-	following table describes the debugging annotations.
-</p>
+	following table describes the debugging annotations.</p>
 
 <table border="1" cellpadding="5" cellspacing="0">
 <tr>
@@ -47,9 +45,14 @@
 </tr>
 <tr><td><img src="images/Breakpoint.gif" alt="Breakpoint icon"></td><td>Breakpoint</td></tr>
 <tr><td><img src="images/DisabledBreakpoint.gif" alt="Disabled breakpoint icon group"></td><td>Disabled breakpoint</td></tr>
+<tr><td><img src="images/Breakpoint_broken.gif" alt="Invalid breakpoint icon group"></td><td>Invalid breakpoint</td></tr>
 <tr><td><img src="images/MultiBreakpoint.gif" alt="Multiple breakpoint icon icon"></td><td>Multiple breakpoints</td></tr>
+<tr><td><img src="images/Breakpoint_nonline.png" alt="Method or field breakpoint"></td><td>Method or field breakpoint</td></tr>
+<tr><td><img src="images/DisabledBreakpoint_nonline.png" alt="Disabled method or field breakpoint"></td><td>Disabled method or field breakpoint</td></tr>
+<tr><td><img src="images/Breakpoint_nonline_broken.png" alt="Invalid method or field breakpoint"></td><td>Invalid method or field breakpoint</td></tr>
 <tr><td><img src="images/ConditionalBreakpoint.gif" alt="Conditional breakpoint icon"></td><td>Conditional breakpoint</td></tr>
 <tr><td><img src="images/DisabledConditionalBreakpoint.gif" alt="Disabled conditional breakpoint icon group"></td><td>Disabled conditional breakpoint</td></tr>
+<tr><td><img src="images/ConditionalBreakpoint_broken.gif" alt="Invalid conditional breakpoint icon group"></td><td>Invalid conditional breakpoint</td></tr>
 <tr><td><img src="images/PC.gif" alt="Program counter icon"></td><td>Program counter</td></tr>
 <tr>
     <td><img src="images/Breakpoint_PC.gif" alt="Program counter and one breakpoint icon" width="16" height="16"></td>
@@ -61,14 +64,14 @@
 the current call on the call stack was made</td></tr>
 </table>
 <ul class="note">
-	<li> Except for line breakpoints, all Java breakpoints are defined globally
+	<li>All Java breakpoints are defined globally
 		and therefore affect all IDE projects that include the source on which
 		a breakpoint is set. For example, if you set a class breakpoint on <tt>com.me.MyClass</tt> in
 		one project, the IDE will stop execution every time it encounters that
-		class during a debugging session  for other projects that include the class. 
+		class during a debugging session  for other projects that include the class.</li>
 </ul>
 <p>You can view and organize all IDE breakpoints by choosing Windows  &gt; Debugging  &gt; Breakpoints
-(Alt-Shift-5).
+(Alt-Shift-5).</p>
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="breakpoint_setting.html">Setting a Java Breakpoint</a></dd>

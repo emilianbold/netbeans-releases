@@ -13,7 +13,7 @@
 <h2>Using the Call Stack</h2>
 <p>
 <small><a href="#seealso">See Also</a></small></p>
-<p> The Call Stack window lists the sequence of calls made during the execution
+<p>The Call Stack window lists the sequence of calls made during the execution
 	of the current thread. By default, the Call Stack window opens automatically
   whenever you start a debugging session. </p>
 <p>The information given for each call includes the name of the call, followed 
@@ -22,7 +22,7 @@
   the text is linked to the source code for that call. </p>
 <p>You can open the Call Stack window at any time by choosing Window  &gt; Debugging  &gt; Call
 Stack (Alt -Shift-3). </p>
-<h3> Changing the Current Call</h3>
+<h3>Changing the Current Call</h3>
 <p>The current call (marked by a <img src="images/CurrentFrame.gif" alt="Current frame icon"> 
   icon) is the most recent call made by the current thread. When you select a 
   different current thread, the Call Stack window is updated to show the calls 
@@ -31,13 +31,14 @@ Stack (Alt -Shift-3). </p>
 <p><b>To browse the call stack, do any of the following:</b></p>
 <ul>
   <li>To move one level away from the <tt>main</tt> routine, choose Run  &gt; Stack 
-     &gt; Make Callee Current 
-    (Ctrl-Alt-up arrow). </li>
+     &gt; Make Callee Current (Ctrl-Alt-up arrow). </li>
   <li>To move one level toward the <tt>main</tt> routine, choose Run  &gt; Stack 
-     &gt; Make Caller Current 
-    (Ctrl-Alt-down arrow). </li>
+     &gt; Make Caller Current (Ctrl-Alt-down arrow). </li>
   <li>To make a call current, double-click the call in the Call Stack window.</li>
 </ul>
+<p>You can capture a textual representation of the call stack by right-clicking a a call and choosing Copy Stack from the pop-up menu.
+When you copy the call stack, the text is copied to the clipboard. You can then paste the call stack into a text file.</p>
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="debug_pop.html">Popping a Call From the Call Stack</a></dd>
@@ -47,9 +48,7 @@ Stack (Alt -Shift-3). </p>
 
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
+<table border="0" cellpadding="50">
 <tr><td>&nbsp;</td></tr>
 </table>
 </body>

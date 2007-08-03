@@ -15,28 +15,33 @@
 <h2>Syntax Rules for Setting a Condition on a Breakpoint</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>A condition is a Boolean expression set on a breakpoint that triggers the breakpoint when the expression evaluates to True. You can set a condition on the following types of Java breakpoints:</p>
+<p>A condition is a Boolean expression set on a breakpoint that triggers the breakpoint when the expression evaluates to True. 
+You can set a condition on the following types of Java breakpoints:</p>
 <ul>
     <li>Line</li>
     <li>Method</li>
     <li>Exception</li>
-    <li>Variable</li>
+    <li>Field</li>
 </ul>
 
-<p>The condition must follow Java syntax rules. The condition can include anything allowed to be on the right side of the equal sign (=). The condition can also include variables and methods that are in the current context. The restrictions that There are some restrictions that apply to breakpoint conditions: </p>
+<p>The condition must follow Java syntax rules. 
+The condition can include anything allowed to be on the right side of the equal sign (=). 
+The condition can also include variables and methods that are in the current context. 
+The following restrictions apply to breakpoint conditions: </p>
 
 <ul>
     <li>Imports are ignored. You must use fully qualified names, such as <tt>obj</tt>, <tt>instanceof</tt>, or <tt>java.lang.String</tt>. </li>
     <li>You cannot access outerclass methods and variables directly. Use <tt>this.</tt><i><tt>variableName</tt></i> or <tt>this$1</tt>.</li>
 </ul>
 
-<p>You can set a condition by using the New Breakpoint dialog box or the breakpoint's Properties window. The Source Editor identifies a conditional breakpoint with the symbol <img src="images/conditionalbreakpoint.gif" alt="Conditional breakpoint icon">.</p>
+<p>You can set a condition by using the New Breakpoint dialog box or the breakpoint's Properties window. 
+The Source Editor identifies a conditional breakpoint with the symbol <img src="images/ConditionalBreakpoint.gif" alt="Conditional breakpoint icon">.</p>
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
 	<dd><a href="CSH/breakpoint_method.html">New Breakpoint Dialog Box: Method</a></dd>
 	<dd><a href="CSH/breakpoint_exception.html">New Breakpoint Dialog Box: Exception</a></dd>
-	<dd><a href="CSH/breakpoint_variable.html">New Breakpoint Dialog Box: Variable</a></dd>
+	<dd><a href="CSH/breakpoint_variable.html">New Breakpoint Dialog Box: Field</a></dd>
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>

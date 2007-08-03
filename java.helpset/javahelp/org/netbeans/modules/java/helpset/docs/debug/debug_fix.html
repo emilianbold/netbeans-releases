@@ -15,8 +15,7 @@
 <p>
 <small><a href="#seealso">See Also</a></small></p>
 <p> If you find a problem while debugging, you can use the Apply Code Changes 
-command to fix your source and then continue 
-  debugging with the changed code without restarting your program.</p>
+command to fix your source and then continue debugging with the changed code without restarting your program.</p>
 
 <p>It is not possible to use the Apply Code Changes command to do the following:</p>
 <ul>
@@ -26,30 +25,28 @@ command to fix your source and then continue
 <li>Change classes that have not been loaded into the virtual machine</li>
 </ul>
 
-<p><b>To fix your code:</b>
-</p>
+<p><b>To fix your code:</b></p>
 <ol>
-	<li>From the main menu, choose Run  &gt; Apply Code Changes
-  	to  recompile and begin repairing your source code.
-      <ul>
-	  <li>If there are errors during compilation, nothing is changed in your program. 
+    <li>From the main menu, choose Run &gt; Apply Code Changes
+    to recompile and begin repairing your source code.
+    <ul>
+        <li>If there are errors during compilation, nothing is changed in your program. 
         Edit your source code as needed, then execute the Apply Code Changes command 
-        again. 
-      <li>If there are no errors, the resulting object code is swapped into the currently
-		 executing program. However, all calls on the call stack continue running
-		 the unfixed code. To use the modified code, you must pop from the call
-		stack  any calls that contain modified code. When the calls are reentered,
-		they  use the modified code. 
-		
-	<p><b>Note:</b> If you  modify the currently running method, the IDE displays
-		an alert box. If you click the Pop Call button, the most recent call is
-		removed from the current call stack. If you click the Leave Call button,
-		the program executes with the original version of the code. If there is only
-		one call in the stack, you cannot pop the call and continue. 
-	</ul>
-  	</li>
-  <li>Continue the program to verify that the fixed version of your code works correctly.
-</li>
+        again.</li> 
+        <li>If there are no errors, the resulting object code is swapped into the currently
+            executing program. However, all calls on the call stack continue running
+            the unfixed code. To use the modified code, you must pop from the call
+            stack any calls that contain modified code. When the calls are reentered,
+            they use the modified code. 
+
+            <p><b>Note:</b> If you  modify the currently running method, the IDE displays
+                an alert box. If you click the Pop Call button, the most recent call is
+                removed from the current call stack. If you click the Leave Call button,
+                the program executes with the original version of the code. If there is only
+        one call in the stack, you cannot pop the call and continue.</p></li>
+    </ul>
+    </li>
+    <li>Continue the program to verify that the fixed version of your code works correctly.</li>
 </ol>
 
 <ul class="note">
@@ -67,9 +64,7 @@ command to fix your source and then continue
 </dl>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
-<table border="0" cellpadding="20">
-<tr><td>&nbsp;</td></tr>
-<tr><td>&nbsp;</td></tr>
+<table border="0" cellpadding="50">
 <tr><td>&nbsp;</td></tr>
 </table>
 </body>
