@@ -50,6 +50,10 @@
                 <pathelement location="${xtest.home}/lib/nbjunit.jar"/> 
             </classpath>
         </executeTests>
+        <delete verbose="false" quiet="true" includeemptydirs="true">
+            <fileset dir="${xtest.workdir}/user" includes="**/bundle/*"/>
+            <fileset dir="${xtest.workdir}/user" includes="**/installer.*"/>
+        </delete>
     </target>
     
 </project>
