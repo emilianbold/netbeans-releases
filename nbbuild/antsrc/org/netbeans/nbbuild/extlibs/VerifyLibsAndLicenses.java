@@ -400,26 +400,35 @@ public class VerifyLibsAndLicenses extends Task {
 
     static Set<String> findCvsControlledFiles(File dir) throws IOException {
         File efile = new File(new File(dir, "CVS"), "Entries");
-        if (!efile.isFile()) {
+        File elfile = new File(new File(dir, "CVS"), "Entries.Log");
+        if (!efile.isFile() && !elfile.isFile()) {
             return Collections.emptySet();
         }
+	List<File> files = new ArrayList<File>(2);
+	if (efile.isFile())
+	    files.add(efile);
+        if (elfile.isFile())
+            files.add(elfile);
+
         Set<String> entries = new TreeSet<String>();
-        Reader r = new FileReader(efile);
-        try {
-            BufferedReader buf = new BufferedReader(r);
-            String line;
-            while ((line = buf.readLine()) != null) {
-                String[] components = line.split("/");
-                if (components.length > 1) {
-                    String n = components[1];
-                    if (new File(dir, n).exists()) {
-                        entries.add(n);
+	for (File f : files){
+            Reader r = new FileReader(f);
+            try {
+                BufferedReader buf = new BufferedReader(r);
+                String line;
+                while ((line = buf.readLine()) != null) {
+                    String[] components = line.split("/");
+                    if (components.length > 1) {
+                        String n = components[1];
+                    	if (new File(dir, n).exists()) {
+                            entries.add(n);
+                    	}
                     }
-                }
+            	}
+            } finally {
+                r.close();
             }
-        } finally {
-            r.close();
-        }
+	}
         return entries;
     }
 
