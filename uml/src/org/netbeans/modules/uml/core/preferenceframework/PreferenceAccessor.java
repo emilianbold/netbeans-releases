@@ -112,8 +112,8 @@ public class PreferenceAccessor implements IPreferenceAccessor{
 	 *
 	 */
 	public String getUnknownClassifierType() {
-            //kris richards - "UnknownClassifierType" pref expunged. Set to "Class", 110338
-            return "Class" ;
+            //kris richards - "UnknownClassifierType" pref expunged. Set to "DataType"
+            return "DataType" ;
 	}
 
 	/**
