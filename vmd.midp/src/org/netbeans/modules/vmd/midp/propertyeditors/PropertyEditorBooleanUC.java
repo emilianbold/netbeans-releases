@@ -81,9 +81,6 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
             }
             checkBox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent e) {
-                    if (!(inplaceEditor.getComponent() instanceof JCheckBox)) {
-                        return;
-                    }
                     JCheckBox checkBox = (JCheckBox) inplaceEditor.getComponent();
                     PropertyValue value = MidpTypes.createBooleanValue(checkBox.isSelected());
                     PropertyEditorBooleanUC.this.setValue(value);

@@ -22,7 +22,6 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 import java.awt.Component;
 
 import java.awt.event.ActionListener;
-import java.awt.event.ItemListener;
 import java.beans.PropertyEditor;
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;

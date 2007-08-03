@@ -17,9 +17,6 @@
 
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
-import java.awt.Cursor;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.List;
@@ -29,19 +26,17 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Anton Chechel
  */
-public class TaskEditorElement extends PropertyEditorResourceElement implements MouseListener {
+public class TaskEditorElement extends PropertyEditorResourceElement {
 
     private WeakReference<DesignComponent> component;
 
     public TaskEditorElement() {
         initComponents();
-        gotoLabel.addMouseListener(this);
     }
 
     public JComponent getJComponent() {
@@ -74,37 +69,9 @@ public class TaskEditorElement extends PropertyEditorResourceElement implements 
         setAllEnabled(wrapper != null);
     }
 
-    public void mouseClicked(MouseEvent e) {
-        if (component != null) {
-            DesignComponent _component = component.get();
-            if (_component != null) {
-                GoToSourceSupport.goToSourceOfComponent(_component);
-            }
-        }
-    }
-
-    public void mousePressed(MouseEvent e) {
-    }
-
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    public void mouseEntered(MouseEvent e) {
-        if (gotoLabel.isEnabled()) {
-            gotoLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        }
-    }
-
-    public void mouseExited(MouseEvent e) {
-        if (gotoLabel.isEnabled()) {
-            gotoLabel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
-    }
-
     private void setAllEnabled(boolean isEnabled) {
         taskLabel.setEnabled(isEnabled);
-        gotoLabel.setEnabled(isEnabled);
-        gotoLabel.setText(NbBundle.getMessage(TaskEditorElement.class, isEnabled ? "TaskEditorElement.gotoLabel.html.text" : "TaskEditorElement.gotoLabel.text")); // NOI18N
+        gotoButton.setEnabled(isEnabled);
     }
 
     /** This method is called from within the constructor to
@@ -116,37 +83,48 @@ public class TaskEditorElement extends PropertyEditorResourceElement implements 
     private void initComponents() {
 
         taskLabel = new javax.swing.JLabel();
-        gotoLabel = new javax.swing.JLabel();
+        gotoButton = new javax.swing.JButton();
 
-        taskLabel.setLabelFor(gotoLabel);
+        taskLabel.setLabelFor(gotoButton);
         org.openide.awt.Mnemonics.setLocalizedText(taskLabel, org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "TaskEditorElement.taskLabel.text")); // NOI18N
         taskLabel.setEnabled(false);
 
-        gotoLabel.setText(org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "TaskEditorElement.gotoLabel.text")); // NOI18N
-        gotoLabel.setEnabled(false);
+        org.openide.awt.Mnemonics.setLocalizedText(gotoButton, org.openide.util.NbBundle.getMessage(TaskEditorElement.class, "TaskEditorElement.gotoButton.text")); // NOI18N
+        gotoButton.setEnabled(false);
+        gotoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gotoButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(taskLabel)
-                    .add(gotoLabel))
-                .addContainerGap(204, Short.MAX_VALUE))
+            .add(taskLabel)
+            .add(gotoButton)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(taskLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(gotoLabel)
-                .addContainerGap(116, Short.MAX_VALUE))
+                .add(gotoButton)
+                .addContainerGap(107, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void gotoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gotoButtonActionPerformed
+        if (component != null) {
+            DesignComponent _component = component.get();
+            if (_component != null) {
+                GoToSourceSupport.goToSourceOfComponent(_component);
+            }
+        }
+}//GEN-LAST:event_gotoButtonActionPerformed
     // Variables declaration - do not modify
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel gotoLabel;
+    private javax.swing.JButton gotoButton;
     private javax.swing.JLabel taskLabel;
     // End of variables declaration//GEN-END:variables
 }
