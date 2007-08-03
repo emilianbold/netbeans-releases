@@ -98,6 +98,11 @@ public class MapActionUtility {
 
         actionMap.put("handleRename", handleRename);
         actionMap.put("handlePopup", handlePopup);
+
+        actionMap.put("handleLeftCtrlArrowKey", handleLeftCtrlArrowKey);
+        actionMap.put("handleRightCtrlArrowKey", handleRightCtrlArrowKey);
+        actionMap.put("handleDownCtrlArrowKey", handleDownCtrlArrowKey);
+        actionMap.put("handleUpCtrlArrowKey", handleUpCtrlArrowKey);
         return actionMap;
     }
 
@@ -125,6 +130,7 @@ public class MapActionUtility {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.SHIFT_MASK), "handleLinkEnd");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.SHIFT_MASK), "handleZoomPage");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.SHIFT_MASK), "handleUnZoomPage");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.SHIFT_MASK), "handlePopup");
 
         // Upper and Lower Case R (rename)
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_MASK), "handleRename");
@@ -140,6 +146,16 @@ public class MapActionUtility {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT, 0), "handleRightArrowKey");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP, 0), "handleUpArrowKey");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN, 0), "handleDownArrowKey");
+
+        // CTRL ARROW to move pages.
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.CTRL_MASK), "handleLeftCtrlArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT, InputEvent.CTRL_MASK), "handleLeftCtrlArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.CTRL_MASK), "handleRightCtrlArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT, InputEvent.CTRL_MASK), "handleRightCtrlArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.CTRL_MASK), "handleUpCtrlArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, InputEvent.CTRL_MASK), "handleUpCtrlArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK), "handleDownCtrlArrowKey");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, InputEvent.CTRL_MASK), "handleDownCtrlArrowKey");
         //        // SHIFT + F10
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10,InputEvent.SHIFT_MASK), "handlePopupMenu");
         //
@@ -342,11 +358,11 @@ public class MapActionUtility {
                         CONNECT_DECORATOR_DEFAULT = ActionFactory.createDefaultConnectDecorator();
                         CONNECT_DECORATOR_DEFAULT.createTargetAnchor(selWidget);
                         CONNECT_WIDGET = CONNECT_DECORATOR_DEFAULT.createConnectionWidget(scene);
-                        System.out.println("Connection Widget: " + CONNECT_WIDGET);
+                        //System.out.println("Connection Widget: " + CONNECT_WIDGET);
                         CONNECT_WIDGET.setSourceAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(selWidget));
-                        System.out.println("Source Anchor: " + CONNECT_WIDGET.getSourceAnchor());
+                        //System.out.println("Source Anchor: " + CONNECT_WIDGET.getSourceAnchor());
                         CONNECT_WIDGET.setTargetAnchor(CONNECT_DECORATOR_DEFAULT.createSourceAnchor(selWidget));
-                        System.out.println("Target Anchor: " + CONNECT_WIDGET.getTargetAnchor());
+                        //System.out.println("Target Anchor: " + CONNECT_WIDGET.getTargetAnchor());
                         scene.getConnectionLayer().addChild(CONNECT_WIDGET);
                         scene.validate();
                     }
@@ -529,10 +545,10 @@ public class MapActionUtility {
             if (selObj instanceof PageFlowSceneElement) {
                 selectedWidget = scene.findWidget(selObj);
                 assert selectedWidget != null;
-                
+
                 /* Because you cannot use getLocation on a connectionwidget, I need to grab it's source pin for the location */
                 if (selObj instanceof NavigationCaseEdge) {
-                    NavigationCaseEdge edge = (NavigationCaseEdge) selObj;                    
+                    NavigationCaseEdge edge = (NavigationCaseEdge) selObj;
                     VMDConnectionWidget connectionWidget = (VMDConnectionWidget) scene.findWidget(edge);
                     popupPoint = connectionWidget.getFirstControlPoint();
                 } else {
@@ -551,4 +567,72 @@ public class MapActionUtility {
             }
         }
     };
+
+
+    public static Action handleRightCtrlArrowKey = new AbstractAction() {
+
+        public void actionPerformed(ActionEvent e) {
+
+            Object obj = e.getSource();
+            if (obj instanceof PageFlowScene) {
+                PageFlowScene scene = (PageFlowScene) obj;
+                Page page = getSelectedPage(scene);
+                movePage(scene, page, 5, 0);
+            }
+        }
+    };
+    public static Action handleLeftCtrlArrowKey = new AbstractAction() {
+
+        public void actionPerformed(ActionEvent e) {
+
+            Object obj = e.getSource();
+            if (obj instanceof PageFlowScene) {
+                PageFlowScene scene = (PageFlowScene) obj;
+                Page page = getSelectedPage(scene);
+                movePage(scene, page, -5, 0);
+            }
+        }
+    };
+    public static Action handleUpCtrlArrowKey = new AbstractAction() {
+
+        public void actionPerformed(ActionEvent e) {
+
+            Object obj = e.getSource();
+            if (obj instanceof PageFlowScene) {
+                PageFlowScene scene = (PageFlowScene) obj;
+                Page page = getSelectedPage(scene);
+                movePage(scene, page, 0, -5);
+            }
+        }
+    };
+    
+    public static Action handleDownCtrlArrowKey = new AbstractAction() {
+
+        public void actionPerformed(ActionEvent e) {
+
+            Object obj = e.getSource();
+            if (obj instanceof PageFlowScene) {
+                PageFlowScene scene = (PageFlowScene) obj;
+                Page page = getSelectedPage(scene);
+                movePage(scene, page, 0, 5);
+            }
+        }
+    };
+
+    public static Page getSelectedPage(PageFlowScene scene) {
+        for (Object selObj : scene.getSelectedObjects()) {
+            if (selObj instanceof Page) {
+                return (Page) selObj;
+            }
+        }
+        return null;
+    }
+
+    public static void movePage(PageFlowScene scene, Page page, int horizontal, int vertical) {
+        Widget pageWidget = scene.findWidget(page);
+        Point currentLocation = pageWidget.getLocation();
+        currentLocation.translate(horizontal, vertical);
+        pageWidget.setPreferredLocation(currentLocation);
+        scene.validate();
+    }
 }
