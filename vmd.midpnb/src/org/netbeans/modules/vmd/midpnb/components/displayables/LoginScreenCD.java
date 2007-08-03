@@ -48,6 +48,7 @@ import org.openide.util.Utilities;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.netbeans.modules.vmd.midpnb.screen.display.LoginScreenDisplayPresenter;
 
 /**
  * @author Karol Harezlak
@@ -72,7 +73,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
     public static final String PROP_FRG_COLOR = "foregroungColor"; //NOI18N
     
     public static final String USERNAME_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "LBL_LoginScreen_Username"); //NOI18N 
-    public static final String USERNAME_PASSWORD = NbBundle.getMessage(LoginScreenCD.class, "LBL_LoginScreen_Password"); //NOI18N  
+    public static final String PASSWORD_LOGIN = NbBundle.getMessage(LoginScreenCD.class, "LBL_LoginScreen_Password"); //NOI18N  
     
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -139,7 +140,7 @@ public final class LoginScreenCD extends ComponentDescriptor {
             // actions
             AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, CommandCD.TYPEID),
             // screen
-            new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH_SD))
+            new LoginScreenDisplayPresenter()
         );
     }
 

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.vmd.midpnb.producers;
 
+import java.awt.Color;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PaletteDescriptor;
@@ -50,11 +51,11 @@ public class LoginScreenProducer extends MidpComponentProducer {
         loginEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(loginScreen));
         loginEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(loginCommand));
         MidpDocumentSupport.addEventSource(loginScreen, DisplayableCD.PROP_COMMANDS, loginEventSource);
-        loginScreen.writeProperty(LoginScreenCD.PROP_BGK_COLOR, MidpTypes.createIntegerValue(0x00));
-        loginScreen.writeProperty(LoginScreenCD.PROP_FRG_COLOR, MidpTypes.createIntegerValue(0xCCCCCC));
+        loginScreen.writeProperty(LoginScreenCD.PROP_BGK_COLOR, MidpTypes.createIntegerValue(-3355444));
+        loginScreen.writeProperty(LoginScreenCD.PROP_FRG_COLOR, MidpTypes.createIntegerValue(0x0));
         loginScreen.writeProperty(LoginScreenCD.PROP_USE_LOGIN_BUTTON, MidpTypes.createBooleanValue(Boolean.FALSE));
         loginScreen.writeProperty(LoginScreenCD.PROP_USERNAME_LABEL, MidpTypes.createStringValue(LoginScreenCD.USERNAME_LOGIN));
-        loginScreen.writeProperty(LoginScreenCD.PROP_PASSWORD_LABEL, MidpTypes.createStringValue(LoginScreenCD.USERNAME_PASSWORD));
+        loginScreen.writeProperty(LoginScreenCD.PROP_PASSWORD_LABEL, MidpTypes.createStringValue(LoginScreenCD.PASSWORD_LOGIN));
         return new Result(loginScreen, loginCommand, loginEventSource);
     }
 
