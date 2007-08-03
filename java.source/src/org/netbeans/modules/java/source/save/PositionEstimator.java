@@ -888,7 +888,9 @@ public abstract class PositionEstimator {
                     if (fgt.isEnum()) {
                         seq.move(treeEnd);
                         moveToSrcRelevant(seq, Direction.FORWARD);
-                        seq.moveNext();
+                        if (JavaTokenId.SEMICOLON == seq.token().id()) {
+                            seq.moveNext();
+                        }
                         treeEnd = seq.offset();
                     }
                 } else {
