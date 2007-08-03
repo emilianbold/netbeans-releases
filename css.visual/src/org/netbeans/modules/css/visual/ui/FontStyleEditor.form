@@ -90,6 +90,9 @@
             </Component>
             <Component class="javax.swing.JButton" name="fontFamilyButton">
               <Properties>
+                <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                  <ResourceString bundle="org/netbeans/modules/css/visual/ui/Bundle.properties" key="MNE_EDIT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/css/visual/ui/Bundle.properties" key="EDIT" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
@@ -383,6 +386,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="styleLabel">
                   <Properties>
+                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                      <ResourceString bundle="org/netbeans/modules/css/visual/ui/Bundle.properties" key="MNE_FONT_STYLE" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="fontStyleComboBox"/>
                     </Property>
@@ -413,6 +419,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="weightLabel">
                   <Properties>
+                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                      <ResourceString bundle="org/netbeans/modules/css/visual/ui/Bundle.properties" key="MNE_FONT_WEIGHT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="fontWeightComboBox"/>
                     </Property>
@@ -443,6 +452,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="variantLabel">
                   <Properties>
+                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                      <ResourceString bundle="org/netbeans/modules/css/visual/ui/Bundle.properties" key="MNE_FONT_VARIANT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="fontVariantComboBox"/>
                     </Property>
@@ -479,6 +491,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="colorLabel">
                   <Properties>
+                    <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
+                      <ResourceString bundle="org/netbeans/modules/css/visual/ui/Bundle.properties" key="MNE_FONT_COLOR" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+                    </Property>
                     <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
                       <ComponentRef name="colorSelectionPanel"/>
                     </Property>

@@ -306,6 +306,7 @@ public class FontStyleEditor extends StyleEditor {
         fontChosenField.getAccessibleContext().setAccessibleName(null);
         fontChosenField.getAccessibleContext().setAccessibleDescription(null);
 
+        fontFamilyButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_EDIT").charAt(0));
         fontFamilyButton.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "EDIT")); // NOI18N
         fontFamilyButton.setMargin(new java.awt.Insets(4, 4, 4, 4));
         fontFamilyButton.addActionListener(new java.awt.event.ActionListener() {
@@ -429,6 +430,7 @@ public class FontStyleEditor extends StyleEditor {
             }
         });
 
+        styleLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_FONT_STYLE").charAt(0));
         styleLabel.setLabelFor(fontStyleComboBox);
         styleLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_STYLE")); // NOI18N
 
@@ -449,6 +451,7 @@ public class FontStyleEditor extends StyleEditor {
             }
         });
 
+        weightLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_FONT_WEIGHT").charAt(0));
         weightLabel.setLabelFor(fontWeightComboBox);
         weightLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_WEIGHT")); // NOI18N
 
@@ -469,6 +472,7 @@ public class FontStyleEditor extends StyleEditor {
             }
         });
 
+        variantLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_FONT_VARIANT").charAt(0));
         variantLabel.setLabelFor(fontVariantComboBox);
         variantLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_VARIANT")); // NOI18N
 
@@ -492,6 +496,7 @@ public class FontStyleEditor extends StyleEditor {
             }
         });
 
+        colorLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_FONT_COLOR").charAt(0));
         colorLabel.setLabelFor(colorSelectionPanel);
         colorLabel.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_COLOR")); // NOI18N
 
