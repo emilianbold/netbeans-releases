@@ -87,9 +87,9 @@ public class CssRuleContent {
             //property remove
             firePropertyChange(item, null); //NOI18N
         } else {
-            String oldVal = item.value().name();
+            String oldVal = item == null ? null : item.value().name();
             //do not fire events when the old and new values are the same
-            if(!newValue.equals(oldVal)) {
+            if(oldVal == null || !newValue.equals(oldVal)) {
                 //property add or modify
                 firePropertyChange(item, new CssRuleItem(property, -1, newValue, -1)); //NOI18N
             }
