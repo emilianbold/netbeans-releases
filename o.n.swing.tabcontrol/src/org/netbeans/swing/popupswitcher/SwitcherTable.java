@@ -137,7 +137,7 @@ public class SwitcherTable extends JTable {
         if (icon == null ) {
             icon = nullIcon;
         }
-        ren.setText(selected || item.isActive() ? item.getName() : item.getHtmlName());
+        ren.setText(selected || item.isActive() ? stripHtml( item.getHtmlName() ) : item.getHtmlName());
         ren.setIcon(icon);
         ren.setBorder(rendererBorder);
         ren.setIconTextGap(26 - icon.getIconWidth());
@@ -150,6 +150,15 @@ public class SwitcherTable extends JTable {
         ren.setOpaque(true);
         
         return ren;
+    }
+    
+    private String stripHtml( String htmlText ) {
+        if( null == htmlText )
+            return null;
+        String res = htmlText.replaceAll( "<[^>]*>", "" ); // NOI18N // NOI18N
+        res = res.replaceAll( "&nbsp;", " " ); // NOI18N // NOI18N
+        res = res.trim();
+        return res;
     }
     
     private static class NullIcon implements Icon {
