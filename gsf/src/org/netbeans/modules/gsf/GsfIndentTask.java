@@ -22,10 +22,12 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.gsf.Formatter;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.editor.SettingsNames;
+import org.netbeans.modules.editor.SimpleIndentEngine;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
 import org.netbeans.spi.editor.indent.IndentTask;
+import org.openide.text.IndentEngine;
 import org.openide.util.Lookup;
 
 public class GsfIndentTask implements IndentTask {
@@ -64,9 +66,14 @@ public class GsfIndentTask implements IndentTask {
             BaseOptions options = lookup.lookup(BaseOptions.class);
             int indentSize = formatter.indentSize();
             if (options != null) {
-                Object o = options.getSettingValue(SettingsNames.SPACES_PER_TAB);
-                if (o instanceof Number) {
-                    indentSize = ((Number)o).intValue();
+                IndentEngine indentEngine = options.getIndentEngine ();
+                if (indentEngine instanceof SimpleIndentEngine) {
+                    indentSize = ((SimpleIndentEngine)indentEngine).getSpacesPerTab();
+                } else {
+                    Object o = options.getSettingValue(SettingsNames.SPACES_PER_TAB);
+                    if (o instanceof Number) {
+                        indentSize = ((Number)o).intValue();
+                    }
                 }
             }
             
