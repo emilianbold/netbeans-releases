@@ -168,7 +168,7 @@ public class DatabaseUtils {
         //MySQL (Connector/J driver)
         driverMap.put("jdbc:mysql:", "com.mysql.jdbc.Driver");
         //MySQL (MM.MySQL driver)
-        driverMap.put("jdbc:mysql:", "org.gjt.mm.mysql.Driver");
+        //driverMap.put("jdbc:mysql:", "org.gjt.mm.mysql.Driver");
         
         //PostgreSQL (v6.5 and earlier)
         //driverMap.put("jdbc:postgresql:", "postgresql.Driver");

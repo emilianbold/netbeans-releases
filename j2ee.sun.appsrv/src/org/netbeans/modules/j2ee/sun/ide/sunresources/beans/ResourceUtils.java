@@ -217,7 +217,7 @@ public class ResourceUtils implements WizardConstants{
          Object[] params = new Object[]{attrList, propsList, null};
          String operName = NbBundle.getMessage(ResourceUtils.class, "CreateJMS"); //NOI18N
          String resourceName = resource.getJndiName();
-         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, WizardConstants.__GetJmsResource)){
+         if(!isResourceUpdated(resourceName, mejb, attrList, propsList, __GetJmsResource)){
              createResource(operName, params, mejb);
          }
      }
@@ -305,7 +305,7 @@ public class ResourceUtils implements WizardConstants{
              String[] signature = new String[]{"javax.management.Attribute"};  //NOI18N
              Object[] params = null;
              //Get Extra Properties From Server
-             AttributeList attrList = (AttributeList)mejb.invoke(objName, WizardConstants.__GetProperties, null, null);             
+             AttributeList attrList = (AttributeList)mejb.invoke(objName, __GetProperties, null, null);             
              for(int i=0; i<attrList.size(); i++){
                  Attribute oldAttr = (Attribute)attrList.get(i);
                  String oldAttrName = oldAttr.getName();
@@ -315,13 +315,13 @@ public class ResourceUtils implements WizardConstants{
                          if(! props.getProperty(oldAttrName).equals(oldAttrValue)){
                              Attribute attr = new Attribute(oldAttrName, props.getProperty(oldAttrName));
                              params = new Object[]{attr};
-                             mejb.invoke(objName, WizardConstants.__SetProperty, params, signature);
+                             mejb.invoke(objName, __SetProperty, params, signature);
                          }
                      }else{//Server extra property value not null
                          if(props.getProperty(oldAttrName) != null){
                              Attribute attr = new Attribute(oldAttrName, props.getProperty(oldAttrName));
                              params = new Object[]{attr};
-                             mejb.invoke(objName, WizardConstants.__SetProperty, params, signature);
+                             mejb.invoke(objName, __SetProperty, params, signature);
                          }
                      }
                  }else{
@@ -329,7 +329,7 @@ public class ResourceUtils implements WizardConstants{
                      //Remove from server resource
                      Attribute removeAttr = new Attribute(oldAttrName, null);
                      params = new Object[]{removeAttr};
-                     mejb.invoke(objName, WizardConstants.__SetProperty, params, signature);
+                     mejb.invoke(objName, __SetProperty, params, signature);
                  }
              }//loop through server extra properties
              addNewExtraProperties(objName, props, attrList, mejb);
@@ -365,7 +365,7 @@ public class ResourceUtils implements WizardConstants{
                      if(! attrList.contains(propName)){
                          Attribute attr = new Attribute(propName, props.getProperty(propName));
                          params = new Object[]{attr};
-                         mejb.invoke(objName, WizardConstants.__SetProperty, params, signature);
+                         mejb.invoke(objName, __SetProperty, params, signature);
                      }
                  }//while
              }
@@ -398,7 +398,7 @@ public class ResourceUtils implements WizardConstants{
         attrs.add(new Attribute(__PoolResizeQuantity, connPool.getPoolResizeQuantity()));
         attrs.add(new Attribute(__IdleTimeoutInSeconds, connPool.getIdleTimeoutInSeconds()));
         String isolation = connPool.getTransactionIsolationLevel();
-        if (isolation != null && (isolation.length() == 0 || isolation.equals(WizardConstants.__IsolationLevelDefault)) ){  
+        if (isolation != null && (isolation.length() == 0 || isolation.equals(__IsolationLevelDefault)) ){  
             isolation = null;
         }
         attrs.add(new Attribute(__TransactionIsolationLevel, isolation));
@@ -559,7 +559,7 @@ public class ResourceUtils implements WizardConstants{
                     else if (key.equals(__IdleTimeoutInSeconds))
                         connPool.setIdleTimeoutInSeconds(value);
                     else if (key.equals(__TransactionIsolationLevel)){
-                        if (value.equals(WizardConstants.__IsolationLevelDefault)){  
+                        if (value.equals(__IsolationLevelDefault)){  
                             value = null;
                         }
                         connPool.setTransactionIsolationLevel(value);
@@ -814,7 +814,7 @@ public class ResourceUtils implements WizardConstants{
             String keyProp = "jndi-name"; //NOI18N
             InstanceProperties instanceProperties = getTargetServer(data.getTargetFileObject());
             if(instanceProperties != null)
-                dataSources = getResourceNames(instanceProperties, WizardConstants.__GetJdbcResource, keyProp);
+                dataSources = getResourceNames(instanceProperties, __GetJdbcResource, keyProp);
             dataSources.removeAll(Arrays.asList(sysDatasources));    
             List projectDS = getProjectResources(data, __JDBCResource);
             for(int i=0; i<projectDS.size(); i++){
@@ -989,13 +989,13 @@ public class ResourceUtils implements WizardConstants{
     public static HashSet getServerDataSources(DeploymentManager dm){
         HashSet datasources = new HashSet();
         try {
-            ObjectName configObjName = new ObjectName(WizardConstants.MAP_RESOURCES);
+            ObjectName configObjName = new ObjectName(MAP_RESOURCES);
             SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)dm;
             ServerInterface mejb = (ServerInterface)eightDM.getManagement();
             List systemDS = Arrays.asList(sysDatasources);
             if(eightDM.isRunning()){
                 updateSampleDatasource(eightDM, configObjName);
-                ObjectName[] resourceObjects = (ObjectName[])  mejb.invoke(configObjName, WizardConstants.__GetJdbcResource, null, null);
+                ObjectName[] resourceObjects = (ObjectName[])  mejb.invoke(configObjName, __GetJdbcResource, null, null);
                 for(int i=0; i<resourceObjects.length; i++){
                     ObjectName objName = resourceObjects[i];
                     //Get Required values from JDBC Resource
@@ -1004,10 +1004,10 @@ public class ResourceUtils implements WizardConstants{
                         String poolName = (String)mejb.getAttribute(objName, "pool-name"); //NOI18N
                         HashMap poolValues = fillInPoolValues(eightDM, configObjName, poolName);
                         if(! poolValues.isEmpty()){
-                            String username = (String)poolValues.get(WizardConstants.__User);
-                            String password = (String)poolValues.get(WizardConstants.__Password);
-                            String url = (String)poolValues.get(WizardConstants.__Url);
-                            String driverClassName = (String)poolValues.get(WizardConstants.__DriverClass);
+                            String username = (String)poolValues.get(__User);
+                            String password = (String)poolValues.get(__Password);
+                            String url = (String)poolValues.get(__Url);
+                            String driverClassName = (String)poolValues.get(__DriverClass);
                             
                             SunDatasource ds = new SunDatasource(dsJndiName, url, username, password, driverClassName);
                             datasources.add(ds);
@@ -1048,6 +1048,7 @@ public class ResourceUtils implements WizardConstants{
                     propsList.put(__ServerName, "localhost"); //NOI18N
                     propsList.put(__DerbyPortNumber, "1527");
                     propsList.put(__DerbyDatabaseName, "sample"); //NOI18N
+                    propsList.put(__Url, "jdbc:derby://localhost:1527/sample"); //NOI18N
                     Object[] poolParams = new Object[]{poolAttrs, propsList, null};
                     createResource(__CreateCP, poolParams, mejb);
                 }
@@ -1078,30 +1079,30 @@ public class ResourceUtils implements WizardConstants{
         String sid = ""; //NOI18N
         String driverClass = ""; //NOI18N
         
-        AttributeList attrList = (AttributeList)mejb.invoke(connPoolObj, WizardConstants.__GetProperties, null, null);
+        AttributeList attrList = (AttributeList)mejb.invoke(connPoolObj, __GetProperties, null, null);
         HashMap attrs = getObjMap(attrList);
         Object[] keys = attrs.keySet().toArray();
         for(int i=0; i<keys.length; i++){
             String keyName = (String)keys[i];
-            if(keyName.equalsIgnoreCase(WizardConstants.__DatabaseName)){
+            if(keyName.equalsIgnoreCase(__DatabaseName)){
                 if(dsClassName.indexOf("pointbase") != -1){ //NOI18N
                     url = getStringVal(attrs.get(keyName));
                 }else{
                     dbName = getStringVal(attrs.get(keyName));
                 }
-            }else if(keyName.equalsIgnoreCase(WizardConstants.__User)) {
+            }else if(keyName.equalsIgnoreCase(__User)) {
                 username = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(WizardConstants.__Password)) {
+            }else if(keyName.equalsIgnoreCase(__Password)) {
                 password = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(WizardConstants.__Url)) {
+            }else if(keyName.equalsIgnoreCase(__Url)) {
                 url = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(WizardConstants.__ServerName)) {
+            }else if(keyName.equalsIgnoreCase(__ServerName)) {
                 serverName = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(WizardConstants.__DerbyPortNumber)) {
+            }else if(keyName.equalsIgnoreCase(__DerbyPortNumber)) {
                 portNo = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(WizardConstants.__SID)) {
+            }else if(keyName.equalsIgnoreCase(__SID)) {
                 sid = getStringVal(attrs.get(keyName));
-            }else if(keyName.equalsIgnoreCase(WizardConstants.__DriverClass)) {
+            }else if(keyName.equalsIgnoreCase(__DriverClass)) {
                 driverClass = getStringVal(attrs.get(keyName));
             }    
         }
@@ -1130,9 +1131,9 @@ public class ResourceUtils implements WizardConstants{
                 }
                 if (vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) { //NOI18N
                     url = url + ";SID=" + sid; //NOI18N
-                } else if (Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
+                } else if (Arrays.asList(Reqd_DBName).contains(vName)) {
                     url = url + ";databaseName=" + dbName; //NOI18N
-                } else if (Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
+                } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
                     url = url + "/" + dbName; //NOI8N
                 }
             }
@@ -1164,7 +1165,7 @@ public class ResourceUtils implements WizardConstants{
     private static ObjectName getConnectionPoolByName(ServerInterface mejb, ObjectName configObjName, String poolName) throws Exception {
         String[] signature = new String[]{"java.lang.String"};  //NOI18N
         Object[] params = new Object[]{poolName};
-        ObjectName connPoolObj = (ObjectName) mejb.invoke(configObjName, WizardConstants.__GetJdbcConnectionPoolByName, params, signature);
+        ObjectName connPoolObj = (ObjectName) mejb.invoke(configObjName, __GetJdbcConnectionPoolByName, params, signature);
         return connPoolObj;
     }
     
@@ -1242,7 +1243,7 @@ public class ResourceUtils implements WizardConstants{
     public static HashMap getConnPoolValues(File resourceDir, String poolName){
         HashMap poolValues = new HashMap();
         try{
-            ObjectName configObjName = new ObjectName(WizardConstants.MAP_RESOURCES);
+            ObjectName configObjName = new ObjectName(MAP_RESOURCES);
             InstanceProperties instanceProperties = getTargetServer(FileUtil.toFileObject(resourceDir));
             if(instanceProperties != null){
                 SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)instanceProperties.getDeploymentManager();
@@ -1324,9 +1325,9 @@ public class ResourceUtils implements WizardConstants{
                     }
                     if (vName.equals("sun_oracle") || vName.equals("datadirect_oracle")) {  //NOI18N
                         url = url + ";SID=" + sid; //NOI18N
-                    } else if (Arrays.asList(WizardConstants.Reqd_DBName).contains(vName)) {
+                    } else if (Arrays.asList(Reqd_DBName).contains(vName)) {
                         url = url + ";databaseName=" + dbVal; //NOI18N
-                    } else if (Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vName)) {
+                    } else if (Arrays.asList(VendorsDBNameProp).contains(vName)) {
                         url = url + "/" + dbVal; //NOI8N
                     }
                 }
@@ -1355,11 +1356,11 @@ public class ResourceUtils implements WizardConstants{
     public static HashSet getServerDestinations(DeploymentManager dm){
         HashSet destinations = new HashSet();
         try {
-            ObjectName configObjName = new ObjectName(WizardConstants.MAP_RESOURCES);
+            ObjectName configObjName = new ObjectName(MAP_RESOURCES);
             SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)dm;
             ServerInterface mejb = (ServerInterface)eightDM.getManagement();
             if(eightDM.isRunning()){
-                ObjectName[] resourceObjects = (ObjectName[])  mejb.invoke(configObjName, WizardConstants.__GetAdmObjResource, null, null);
+                ObjectName[] resourceObjects = (ObjectName[])  mejb.invoke(configObjName, __GetAdmObjResource, null, null);
                 for(int i=0; i<resourceObjects.length; i++){
                     ObjectName objName = resourceObjects[i];
                     String jndiName = (String)mejb.getAttribute(objName, "jndi-name"); //NOI18N

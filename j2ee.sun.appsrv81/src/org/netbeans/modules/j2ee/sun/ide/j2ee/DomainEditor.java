@@ -581,6 +581,7 @@ public class DomainEditor {
             poolProps.put(CONST_USER, "app");
             poolProps.put(CONST_DATABASE_NAME, "sample");
             poolProps.put(CONST_PORT_NUMBER, "1527");
+            poolProps.put(CONST_URL, "jdbc:derby://localhost:1527/sample");
             
             Object[] propNames = poolProps.keySet().toArray();
             for(int i=0; i<propNames.length; i++){

@@ -664,7 +664,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     }
     
     private String getDerbyPortNo(String url){
-        String portNumber = "1527";  //NOI18N
+        String portNumber = "";  //NOI18N
         int index = url.indexOf(":"); //NOI18N
         if(index != -1) {
             portNumber = url.substring(index + 1, url.indexOf("/")); //NOI18N
