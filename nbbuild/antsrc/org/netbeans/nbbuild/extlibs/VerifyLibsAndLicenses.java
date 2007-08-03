@@ -343,7 +343,8 @@ public class VerifyLibsAndLicenses extends Task {
         try {
             BufferedReader r = new BufferedReader(new InputStreamReader(is));
             String line;
-            while ((line = r.readLine().trim()) != null) {
+            while ((line = r.readLine()) != null) {
+                line = line.trim();
                 if (!line.startsWith("#") && line.length() > 0) {
                     if (line.endsWith("/")) {
                         line += "**";
