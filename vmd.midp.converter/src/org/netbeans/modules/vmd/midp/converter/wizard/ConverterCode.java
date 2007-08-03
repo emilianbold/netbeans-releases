@@ -210,16 +210,7 @@ public class ConverterCode {
 
                 public void run (CompilationController controller) throws Exception {
                     controller.toPhase (JavaSource.Phase.ELEMENTS_RESOLVED);
-                    ClassTree mainClass = null;
-                    for (Tree decl : controller.getCompilationUnit ().getTypeDecls ()) {
-                        if (decl.getKind () == Tree.Kind.CLASS) {
-                            ClassTree ct = (ClassTree) decl;
-                            if (mainClass == null  ||  ct.getModifiers ().getFlags ().contains (Modifier.PUBLIC)) {
-                                mainClass = ct;
-                                break;
-                            }
-                        }
-                    }
+                    ClassTree mainClass = findMainClass (controller);
                     if (mainClass == null)
                         return;
 
@@ -242,6 +233,17 @@ public class ConverterCode {
         } catch (IOException e) {
             throw Debug.error (e);
         }
+    }
+
+    static ClassTree findMainClass (CompilationController controller) {
+        for (Tree decl : controller.getCompilationUnit ().getTypeDecls ()) {
+            if (decl.getKind () == Tree.Kind.CLASS) {
+                ClassTree ct = (ClassTree) decl;
+                if (ct.getModifiers ().getFlags ().contains (Modifier.PUBLIC))
+                    return ct;
+            }
+        }
+        return null;
     }
 
     private static int getFirstGuardedSectionOffset (StyledDocument styledDocument) {

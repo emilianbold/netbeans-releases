@@ -19,7 +19,14 @@
  */
 package org.netbeans.modules.vmd.midp.converter.wizard;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePath;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.flow.visual.FlowNodeDescriptor;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
 import org.netbeans.modules.vmd.api.io.providers.DocumentSerializer;
@@ -34,15 +41,18 @@ import org.netbeans.modules.vmd.midp.components.categories.PointsCategoryCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.points.MobileDeviceCD;
 import static org.netbeans.modules.vmd.midp.converter.wizard.ConverterUtil.getBoolean;
+import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
+import javax.lang.model.element.TypeElement;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
@@ -131,9 +141,35 @@ public class Converter {
             CloneableEditorSupport cloneableEditorSupport = IOSupport.getCloneableEditorSupport (outputDesign);
             cloneableEditorSupport.saveDocument ();
             cloneableEditorSupport.close ();
+
+            final String[] classNames = new String[2];
+            JavaSource.forDocument (styledDocument).runUserActionTask (new Task<CompilationController>() {
+                public void run (CompilationController parameter) throws Exception {
+                    parameter.toPhase (JavaSource.Phase.ELEMENTS_RESOLVED);
+                    ClassTree classTree = ConverterCode.findMainClass (parameter);
+                    TypeElement element = (TypeElement) parameter.getTrees ().getElement (TreePath.getPath (parameter.getCompilationUnit (), classTree));
+                    classNames[0] = element.getQualifiedName ().toString ();
+                }
+            }, true);
+            JavaSource.forDocument (outputStyledDocument).runUserActionTask (new Task<CompilationController>() {
+                public void run (CompilationController parameter) throws Exception {
+                    parameter.toPhase (JavaSource.Phase.ELEMENTS_RESOLVED);
+                    ClassTree classTree = ConverterCode.findMainClass (parameter);
+                    TypeElement element = (TypeElement) parameter.getTrees ().getElement (TreePath.getPath (parameter.getCompilationUnit (), classTree));
+                    classNames[1] = element.getQualifiedName ().toString ();
+                }
+            }, true);
+
+            Project project = FileOwnerQuery.getOwner (inputJavaFile);
+            if (project != null) {
+                AntProjectHelper helper = project.getLookup ().lookup (AntProjectHelper.class);
+                if (helper != null)
+                    J2MEProjectGenerator.copyMIDletProperty (project, helper, classNames[0], classNames[1]);
+            }
         } catch (Exception e) {
             Exceptions.printStackTrace (e);
         }
+
         return errors;
     }
 
