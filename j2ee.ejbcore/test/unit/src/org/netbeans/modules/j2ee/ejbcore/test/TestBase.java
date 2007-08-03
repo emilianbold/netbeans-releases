@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
@@ -36,7 +37,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -76,29 +76,29 @@ public class TestBase extends NbTestCase {
      * Creates copy of EJB 2.1 project in test's working directory
      * and returns TestModule wrapper for that
      */
-    public TestModule createEjb21Module() throws IOException {
-        return createTestModule("EJBModule_1_4", EjbProjectConstants.J2EE_14_LEVEL);
+    public TestModule createEjb21Module(TestModule... modulesOnClasspath) throws IOException {
+        return createTestModule("EJBModule_1_4", EjbProjectConstants.J2EE_14_LEVEL, modulesOnClasspath);
     }
 
     /**
      * Creates copy of EJB 3.0 project in test's working directory
      * and returns TestModule wrapper for that
      */
-    public TestModule createEjb30Module() throws IOException {
-        return createTestModule("EJBModule_5_0", EjbProjectConstants.JAVA_EE_5_LEVEL);
+    public TestModule createEjb30Module(TestModule... modulesOnClasspath) throws IOException {
+        return createTestModule("EJBModule_5_0", EjbProjectConstants.JAVA_EE_5_LEVEL, modulesOnClasspath);
     }
 
     /**
      * Creates new copy of project in test's working directory instead of using one froo data dir,
      * co it can be called multiple times on 'clean' project (without generated code)
      */
-    public TestModule createTestModule(String projectDirName, String ejbVersion) throws IOException {
+    public TestModule createTestModule(String projectDirName, String ejbVersion, TestModule... modulesOnClasspath) throws IOException {
 
         File projectDir = new File(getDataDir(), projectDirName);
         File tempProjectDir = copyFolder(projectDir);
 
         TestModule testModule = new TestModule(FileUtil.toFileObject(tempProjectDir), ejbVersion);
-        activate(testModule);
+        activate(testModule, modulesOnClasspath);
 
         return testModule;
     }
@@ -126,10 +126,15 @@ public class TestBase extends NbTestCase {
         MockLookup.setInstances(allInstances);
     }
 
-    private void activate(TestModule testModule) {
+    private void activate(TestModule testModule, TestModule... modulesOnClasspath) {
         fileOwnerQuery.setProject(testModule.project);
         ejbJarProvider.setEjbModule(testModule.j2eePlatformVersion, testModule.deploymentDescriptor, testModule.sources);
-        classPathProvider.setClassPath(testModule.sources);
+        FileObject[] sources = new FileObject[1 + modulesOnClasspath.length];
+        sources[0] = testModule.sources[0];
+        for (int i = 0; i < modulesOnClasspath.length; i++) {
+            sources[i + 1] = modulesOnClasspath[i].sources[0];
+        }
+        classPathProvider.setClassPath(sources);
         try {
             for (FileObject fileObject : testModule.sources) {
                 RepositoryUpdater.getDefault().scheduleCompilationAndWait(fileObject, fileObject).await();
@@ -239,10 +244,10 @@ public class TestBase extends NbTestCase {
         return false;
     }
 
-    protected static ExecutableElement getMethod(TypeElement typeElement, String methodName) {
-        for (ExecutableElement executableElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
-            if (executableElement.getSimpleName().contentEquals(methodName)) {
-                return executableElement;
+    protected static Element getMember(TypeElement typeElement, String elementName) {
+        for (Element element : typeElement.getEnclosedElements()) {
+            if (element.getSimpleName().contentEquals(elementName)) {
+                return element;
             }
         }
         return null;

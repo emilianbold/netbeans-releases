@@ -20,7 +20,9 @@
 package org.netbeans.modules.j2ee.ejbcore.action;
 
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import java.io.IOException;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -103,10 +105,76 @@ public class CallEjbGeneratorTest extends TestBase {
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.PARSED);
                 SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                ExecutableElement method = getMethod(sourceUtils.getTypeElement(), "lookupStatelessLRBean2");
+                ExecutableElement method = (ExecutableElement) getMember(sourceUtils.getTypeElement(), "lookupStatelessLRBean2");
                 assertNotNull(method);
                 MethodTree methodTree = controller.getTrees().getTree(method);
                 assertEquals(generatedMethodBody, methodTree.getBody().toString());
+            }
+        }, true);
+        
+    }
+    
+    public void testAddReference_LocalEE14FromEjbEE5() throws IOException {
+        TestModule referencingModule = createEjb30Module(referencedEjb21Module);
+        
+        FileObject referencingFO = referencingModule.getSources()[0].getFileObject("statelesslr/StatelessLRBean.java");
+        
+        CallEjbGenerator generator = CallEjbGenerator.create(ejbReference, "StatelessLRBean2", true);
+        generator.addReference(
+                referencingFO,
+                "statelesslr.StatelessLRBean",
+                referencedEjb21Module.getSources()[0].getFileObject("statelesslr/StatelessLRBean2.java"),
+                "statelesslr.StatelessLRBean2",
+                null,
+                false,
+                false,
+                referencedEjb21Module.getProject()
+                );
+        
+        EnterpriseReferenceContainerImpl erc = referencingModule.getEnterpriseReferenceContainerImpl();
+        assertNotNull(erc.getLocalEjbReference());
+        assertEquals("StatelessLRBean2", erc.getLocalEjbRefName());
+        assertEquals("statelesslr.StatelessLRBean", erc.getLocalReferencingClass());
+
+        final String generatedHome =
+                "@EJB()\n" +
+                "private StatelessLRLocalHome2 statelessLRLocalHome2";
+        
+        final String generatedComponent =
+                "private StatelessLRLocal2 statelessLRBean2";
+        
+        final String generatedMethod =
+                "\n" +
+                "@PostConstruct()\n" +
+                "private void initialize() {\n" +
+                "    try {\n" +
+                "        statelessLRBean2 = statelessLRLocalHome2.create();\n" +
+                "    } catch (Exception e) {\n" +
+                "        throw new javax.ejb.EJBException(e);\n" +
+                "    }\n" +
+                "}";
+        
+        JavaSource javaSource = JavaSource.forFileObject(referencingFO);
+        javaSource.runUserActionTask(new AbstractTask<CompilationController>() {
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.PARSED);
+                SourceUtils sourceUtils = SourceUtils.newInstance(controller);
+
+                Element memberElement = getMember(sourceUtils.getTypeElement(), "statelessLRLocalHome2");
+                assertNotNull(memberElement);
+                Tree memberTree = controller.getTrees().getTree(memberElement);
+                assertEquals(generatedHome, memberTree.toString());
+                
+                memberElement = getMember(sourceUtils.getTypeElement(), "statelessLRBean2");
+                assertNotNull(memberElement);
+                memberTree = controller.getTrees().getTree(memberElement);
+                assertEquals(generatedComponent, memberTree.toString());
+                
+                memberElement = getMember(sourceUtils.getTypeElement(), "initialize");
+                assertNotNull(memberElement);
+                memberTree = controller.getTrees().getTree(memberElement);
+                assertEquals(generatedMethod, memberTree.toString());
+                
             }
         }, true);
         

@@ -17,8 +17,13 @@
 
 package org.netbeans.modules.j2ee.ejbcore.action;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -26,12 +31,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.naming.NamingException;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -42,6 +50,7 @@ import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.common.queries.api.InjectionTargetQuery;
 import org.netbeans.modules.j2ee.common.source.AbstractTask;
+import org.netbeans.modules.j2ee.common.source.GenerationUtils;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
@@ -119,7 +128,7 @@ public class CallEjbGenerator {
                 erc.addEjbReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
             }
             if (serviceLocator == null) {
-                generateReferenceCode(referencingFO, referencingClassName, false, throwExceptions);
+                generateReferenceCode(referencingFO, referencingClassName, false, throwExceptions, !nodeProjectIsJavaEE5);
             } else {
                 generateServiceLocatorLookup(referencingFO, referencingClassName, serviceLocator, false, throwExceptions);
             }
@@ -130,7 +139,7 @@ public class CallEjbGenerator {
                 erc.addEjbLocalReference(ejbReference, ejbReferenceName, referencingFO, referencingClassName);
             }
             if (serviceLocator == null) {
-                generateReferenceCode(referencingFO, referencingClassName, true, throwExceptions);
+                generateReferenceCode(referencingFO, referencingClassName, true, throwExceptions, !nodeProjectIsJavaEE5);
             } else {
                 generateServiceLocatorLookup(referencingFO, referencingClassName, serviceLocator, true, throwExceptions);
             }
@@ -178,15 +187,24 @@ public class CallEjbGenerator {
         }
     }
     
-    private void generateReferenceCode(FileObject fileObject, String className, boolean isLocal, boolean throwExceptions) {
+    private void generateReferenceCode(FileObject fileObject, String className, boolean isLocal, boolean throwExceptions, boolean isTargetEjb2x) {
         try {
             boolean isInjectionTarget = InjectionTargetQuery.isInjectionTarget(fileObject, className);
             if (isInjectionTarget) {
-                generateInjection(
-                        fileObject, 
-                        className, 
-                        isLocal ? ejbReference.getLocal() : ejbReference.getRemote()
-                        );
+                if (isTargetEjb2x) {
+                    generateInjectionEjb21FromEE5(
+                            fileObject,
+                            className,
+                            isLocal ? ejbReference.getLocalHome() : ejbReference.getRemoteHome(), 
+                            isLocal ? ejbReference.getLocal() : ejbReference.getRemote()
+                            );
+                } else {
+                    generateInjection(
+                            fileObject, 
+                            className, 
+                            isLocal ? ejbReference.getLocal() : ejbReference.getRemote()
+                            );
+                }
             } else {
                 generateJNDI(
                         fileObject, 
@@ -236,6 +254,19 @@ public class CallEjbGenerator {
             "javax.naming.Context c = new javax.naming.InitialContext();\n" +
             "return ({1}) c.lookup(\"{0}\");\n";
     
+    /**
+     * Lookup code for EJB 2.x beans in Java EE 5 environments.
+     * {0} - name of variable representing component interface
+     * {1} - name of variable representing home interface
+     */
+    private static final String JNDI_LOOKUP_EJB3_JAVAEE5 =
+            "try '{'\n" +
+            "    {0} = {1}.create();\n" +
+            "'}' catch(Exception e) '{'\n" +
+            "    throw new javax.ejb.EJBException(e);\n" +
+            "'}'\n";
+
+    
     private void generateInjection(FileObject fileObject, final String className, final String fieldTypeClass) throws IOException {
         String strippedRefName = ejbReferenceName.substring(ejbReferenceName.lastIndexOf('/') + 1);
         String name = Character.toLowerCase(strippedRefName.charAt(0)) + strippedRefName.substring(1);
@@ -248,6 +279,65 @@ public class CallEjbGenerator {
                 isDefaultRefName ? null : Collections.singletonMap("name", strippedRefName), // XXX still not sure about this, is needed?
                 InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
                 );
+    }
+    
+    private void generateInjectionEjb21FromEE5(FileObject fileObject, final String className, final String homeName, final String componentName) throws IOException {
+        String strippedRefName = ejbReferenceName.substring(ejbReferenceName.lastIndexOf('/') + 1);
+        final String name = Character.toLowerCase(strippedRefName.charAt(0)) + strippedRefName.substring(1);
+        String strippedHomeName = homeName.substring(homeName.lastIndexOf('.') + 1);
+        final String homeFieldName = Character.toLowerCase(strippedHomeName.charAt(0)) + strippedHomeName.substring(1);
+        
+        // injection of EJB 2.x home interface
+        _RetoucheUtil.generateAnnotatedField(
+                fileObject, 
+                className, 
+                "javax.ejb.EJB", 
+                homeFieldName,
+                homeName, 
+                isDefaultRefName ? null : Collections.singletonMap("name", strippedRefName), // XXX still not sure about this, is needed?
+                InjectionTargetQuery.isStaticReferenceRequired(fileObject, className)
+                );
+        
+        JavaSource javaSource = JavaSource.forFileObject(fileObject);
+        javaSource.runModificationTask(new AbstractTask<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                TreeMaker treeMaker = workingCopy.getTreeMaker();
+                TypeElement callerTypeElement = workingCopy.getElements().getTypeElement(className);
+                TypeElement componentTypeElement = workingCopy.getElements().getTypeElement(componentName);
+        
+                // field for EJB 2.x component interface
+                VariableTree variableTree = treeMaker.Variable(
+                        treeMaker.Modifiers(Collections.singleton(Modifier.PRIVATE)),
+                        name,
+                        treeMaker.QualIdent(componentTypeElement),
+                        null
+                        );
+                ClassTree classTree = workingCopy.getTrees().getTree(callerTypeElement);
+                ClassTree newClassTree = treeMaker.insertClassMember(classTree, 2, variableTree);
+                
+                // init method with @PostConstruct annotation to initialize component interface variable
+                ModifiersTree modifiersTree = treeMaker.Modifiers(Collections.singleton(Modifier.PRIVATE));
+                AnnotationTree annotationTree = GenerationUtils.newInstance(workingCopy).createAnnotation("javax.annotation.PostConstruct"); // NOI18N
+                modifiersTree = treeMaker.addModifiersAnnotation(modifiersTree, annotationTree);
+                
+                MethodTree methodTree = treeMaker.Method(
+                        modifiersTree,
+                        "initialize",
+                        treeMaker.PrimitiveType(TypeKind.VOID),
+                        Collections.<TypeParameterTree>emptyList(),
+                        Collections.<VariableTree>emptyList(),
+                        Collections.<ExpressionTree>emptyList(),
+                        '{' + MessageFormat.format(JNDI_LOOKUP_EJB3_JAVAEE5, new Object[] { name, homeFieldName }) + '}',
+                        null
+                        );
+                newClassTree = treeMaker.insertClassMember(newClassTree, 3, methodTree);
+                
+                workingCopy.rewrite(classTree, newClassTree);
+            }
+        }).commit();
+        
+        
     }
     
     private void generateJNDI(FileObject fileObject, final String className, String homeName, 
