@@ -22,11 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
-        <mkdir dir="${cluster}/external"/>
         <mkdir dir="${cluster}/modules/scr"/>
-        <copy todir="${cluster}/external">
-            <fileset dir="external" excludes="*.txt"/>
-        </copy>
         <copy todir="${cluster}/modules/scr">
             <fileset dir="scripts"/>
         </copy>

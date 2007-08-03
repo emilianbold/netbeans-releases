@@ -27,7 +27,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="${cluster}/sources"/>
         <echo message="${cluster}/modules/ext"/>
         <copy file="../nb_svg_midp_components/dist/nb_svg_midp_components.jar" todir="${cluster}/modules/ext"/>
-        <copy file="../nb_svg_midp_components/dist/nb_svg_midp_components-api.zip" todir="${cluster}/docs"/>    
+        <copy file="../nb_svg_midp_components/dist/nb_svg_midp_components-api.zip" todir="${cluster}/modules/docs"/>    
         <copy file="../nb_svg_midp_components/dist/nb_svg_midp_components-src.zip" todir="${cluster}/sources"/>         
     </target>    
 </project>

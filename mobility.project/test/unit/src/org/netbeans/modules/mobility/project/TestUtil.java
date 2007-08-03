@@ -150,7 +150,7 @@ public class TestUtil extends ProxyLookup {
         System.setProperty("test.bridge.jar","${test.ant.home}/nblib/bridge.jar");
         //System.setProperty("libs.j2me_ant_ext.classpath",root+root Ext);
         System.setProperty("libs.j2me_ant_ext.classpath",antLib);
-        System.setProperty("libs.ant-contrib.classpath","${netbeans.dest.dir}/${cluster}/external/ant-contrib-1.0b3.jar");
+        System.setProperty("libs.ant-contrib.classpath","${netbeans.dest.dir}/${cluster}/modules/ext/ant-contrib-1.0b3.jar");
         Logger.getLogger("org.openide.util.RequestProcessor").addHandler(new Handler() {
             public void publish(LogRecord record) {
                 String s=record.getMessage();

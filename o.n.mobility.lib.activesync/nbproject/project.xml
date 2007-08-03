@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/nbactivesync.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/nbactivesync.jar</binary-origin>
+                <binary-origin>external/nbactivesync.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

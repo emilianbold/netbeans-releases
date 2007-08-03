@@ -30,6 +30,6 @@ Microsystems, Inc. All Rights Reserved.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/j2meunit-1.1.1-api.zip!/</resource>
+        <resource>jar:nbinst:///modules/docs/j2meunit-1.1.1-api.zip!/</resource>
     </volume>
 </library>

@@ -19,13 +19,4 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="mobility/j2meunit">
     <import file="../../nbbuild/templates/projectized.xml"/>
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <mkdir dir="${cluster}/docs"/>
-        <copy file="external/jmunit4cldc10-1.0.1.jar" todir="${cluster}/modules/ext"/>
-        <copy file="external/jmunit4cldc11-1.0.1.jar" todir="${cluster}/modules/ext"/>
-        <copy file="docs/jmunit-1.0.1-api.zip" todir="${cluster}/docs"/>
-    </target>
 </project>

@@ -5,6 +5,15 @@
 **/test/
 #verify if templates are Sun owned or under which license are distributed
 cnd/symbian/project/src/org/netbeans/modules/symbian/project/resources/templates/
+ide/projectimport/bluej/src/org/netbeans/bluej/EmptyBluejProject.zip
+
+#OK
+mobility/cdcplugins/ricoh/external/samples/*
+#consider consolidation
+mobility/designer/nb_midp_components/dist/*
+mobility/miscme/**
+mobility/svg/nb_svg_midp_components/dist/*
+
 libs/external/
 j2ee/adventure/
 form/swingapp/

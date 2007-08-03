@@ -25,6 +25,6 @@ Microsystems, Inc. All Rights Reserved.
     <localizing-bundle>org/netbeans/mobility/antext/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///external/ant-contrib-1.0b3.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/ant-contrib-1.0b3.jar!/</resource>
     </volume>
 </library>

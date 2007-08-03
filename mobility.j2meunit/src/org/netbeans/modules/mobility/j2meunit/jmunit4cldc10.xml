@@ -24,6 +24,6 @@ Microsystems, Inc. All Rights Reserved.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/jmunit-1.0.1-api.zip!/</resource>
+        <resource>jar:nbinst:///modules/docs/jmunit-1.0.1-api.zip!/</resource>
     </volume>
 </library>

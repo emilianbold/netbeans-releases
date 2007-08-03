@@ -26,10 +26,10 @@ Microsystems, Inc. All Rights Reserved.
     <localizing-bundle>org.netbeans.modules.mobility.deployment.webdav.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst:///external/commons-httpclient.jar!/</resource>
-        <resource>jar:nbinst:///external/commons-logging.jar!/</resource>
-        <resource>jar:nbinst:///external/jdom-1.0.jar!/</resource>
-        <resource>jar:nbinst:///external/jakarta-slide-webdavlib-2.1.jar!/</resource>
-        <resource>jar:nbinst:///external/jakarta-slide-ant-webdav-2.1.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/commons-httpclient.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/commons-logging.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jdom-1.0.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jakarta-slide-webdavlib-2.1.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/jakarta-slide-ant-webdav-2.1.jar!/</resource>
     </volume>
 </library>

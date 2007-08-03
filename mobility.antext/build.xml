@@ -19,10 +19,4 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="mobility/ant-ext">
     <import file="../../nbbuild/templates/projectized.xml"/>
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/external"/>
-        <copy file="external/ant-contrib-1.0b3.jar" todir="${cluster}/external"/>
-    </target>
 </project>
