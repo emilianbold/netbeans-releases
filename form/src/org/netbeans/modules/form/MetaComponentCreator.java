@@ -1517,30 +1517,44 @@ public class MetaComponentCreator {
     }
 
     /**
-     * Initial setting for components that can't be done until they are placed
-     * in the target container. E.g. button properties are adjusted when added
-     * to a toolbar.
+     * Initial setting for components that can't be done until knowing where
+     * they are to be added to (type of target container). E.g. button
+     * properties are adjusted when added to a toolbar.
      */
     private static void defaultTargetInit(RADComponent metacomp, RADComponent target) {
-        Object comp = metacomp.getBeanInstance();
         Object targetComp = target != null ? target.getBeanInstance() : null;
-        Map<String, Object> changes = new HashMap<String, Object>();
+
+        if (metacomp.getBeanClass().equals(JSeparator.class) && targetComp instanceof JToolBar) {
+            // hack: change JSeparator to JToolBar.Separator
+            try {
+                metacomp.initInstance(JToolBar.Separator.class);
+            } catch (Exception ex) {} // should not fail with JDK class
+            return;
+        }
+
+        Object comp = metacomp.getBeanInstance();
+        Map<String, Object> changes = null;
 
         if (comp instanceof AbstractButton && targetComp instanceof JToolBar) {
+            if (changes == null) {
+                changes = new HashMap<String, Object>();
+            }
             changes.put("focusable", false); // NOI18N
             changes.put("horizontalTextPosition", SwingConstants.CENTER); // NOI18N
             changes.put("verticalTextPosition", SwingConstants.BOTTOM); // NOI18N
         }
 
-        for (Map.Entry<String, Object> e : changes.entrySet()) {
-            FormProperty prop = metacomp.getBeanProperty(e.getKey());
-            if (prop != null) {
-                try {
-                    prop.setChangeFiring(false);
-                    prop.setValue(e.getValue());
-                    prop.setChangeFiring(true);
+        if (changes != null) {
+            for (Map.Entry<String, Object> e : changes.entrySet()) {
+                FormProperty prop = metacomp.getBeanProperty(e.getKey());
+                if (prop != null) {
+                    try {
+                        prop.setChangeFiring(false);
+                        prop.setValue(e.getValue());
+                        prop.setChangeFiring(true);
+                    }
+                    catch (Exception ex) {} // never mind, ignore
                 }
-                catch (Exception ex) {} // never mind, ignore
             }
         }
     }
