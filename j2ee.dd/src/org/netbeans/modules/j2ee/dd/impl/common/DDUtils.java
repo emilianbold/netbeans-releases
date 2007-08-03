@@ -31,6 +31,7 @@ import org.xml.sax.SAXParseException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import org.netbeans.modules.schema2beans.Schema2BeansException;
 
 /**
  * @author pfiala
@@ -82,12 +83,19 @@ public class DDUtils {
             // so lets not set the original to null here but wait
             // until the file becomes parsable again to do a merge
             //ejbJarProxy.setOriginal(null);
-        } catch (Schema2BeansRuntimeException ex2){ // see #70286    
+        } catch (Schema2BeansRuntimeException s2bre){ // see #70286    
             ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
-            ejbJarProxy.setError(new SAXParseException(null, null, ex2));
+            ejbJarProxy.setError(new SAXParseException(null, null, s2bre));
+        } catch (RuntimeException re){ // see #99047    
+            if (re.getCause() instanceof Schema2BeansException){
+                ejbJarProxy.setStatus(EjbJar.STATE_INVALID_UNPARSABLE);
+                ejbJarProxy.setError(new SAXParseException(null, null, (Schema2BeansException) re.getCause()));
+            } else {
+                throw re;
+            }
         }
     }
-    
+
     public static WebApp createWebApp(InputStream is, String version) throws IOException, SAXException {
         try {
             if (WebApp.VERSION_2_3.equals(version)) {
