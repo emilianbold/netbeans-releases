@@ -21,7 +21,7 @@
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/perseus-nb.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/perseus-nb.jar</binary-origin>
+                <binary-origin>external/perseus-nb.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
