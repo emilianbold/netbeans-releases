@@ -224,7 +224,7 @@ public final class VCSContext {
                 FileObject rootChildFo = rootChildren[i];
                 File child = FileUtil.toFile(rootChildFo);
                 // TODO: #60516 deep scan is required here but not performed due to performace reasons 
-                if (!sourceGroup.contains(rootChildFo) && SharabilityQuery.getSharability(child) != SharabilityQuery.NOT_SHARABLE) {
+                if (child != null && !sourceGroup.contains(rootChildFo) && SharabilityQuery.getSharability(child) != SharabilityQuery.NOT_SHARABLE) {
                     rootFilesExclusions.add(child);
                 }
             }
@@ -310,6 +310,7 @@ public final class VCSContext {
     private static Set<File> substract(Set<File> roots, Set<File> exclusions, FileFilter filter) {
         Set<File> files = new HashSet<File>(roots);
         for (File exclusion : exclusions) {
+            assert exclusion != null;
             for (;;) {
                 addSiblings(files, exclusion, filter);
                 exclusion = exclusion.getParentFile();
