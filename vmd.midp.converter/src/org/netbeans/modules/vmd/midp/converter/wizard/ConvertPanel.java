@@ -97,11 +97,15 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
 
         setPreferredSize(new java.awt.Dimension(500, 400));
 
+        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/converter/wizard/Bundle").getString("ConvertPanel.jLabel1.mnemonic").charAt(0));
+        jLabel2.setLabelFor(inputFileName);
         jLabel2.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.jLabel2.text")); // NOI18N
 
         inputFileName.setEditable(false);
         inputFileName.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.inputFileName.text")); // NOI18N
 
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/converter/wizard/Bundle").getString("ConvertPanel.jLabel2.mnemonic").charAt(0));
+        jLabel1.setLabelFor(outputFileName);
         jLabel1.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.jLabel1.text")); // NOI18N
 
         outputFileName.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.outputFileName.text")); // NOI18N
@@ -118,17 +122,17 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, progress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, progress, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(inputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, outputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE))))
+                            .add(inputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, outputFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -147,9 +151,15 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(progress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
+                .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
                 .addContainerGap())
         );
+
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.jLabel2.AccessibleContext.accessibleDescription")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.jLabel1.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ACC_NAME_ConvertPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ACC_DESC_ConvertPanel")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
