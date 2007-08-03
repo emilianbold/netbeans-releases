@@ -649,7 +649,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return wizard;
     }
     
-    private String getDerbyServerName(String url){
+    public String getDerbyServerName(String url){
         String hostName = ""; //NOI18N
         int index = url.indexOf(":"); //NOI18N
         if(index != -1) {
@@ -663,7 +663,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return hostName;
     }
     
-    private String getDerbyPortNo(String url){
+    public String getDerbyPortNo(String url){
         String portNumber = "";  //NOI18N
         int index = url.indexOf(":"); //NOI18N
         if(index != -1) {
@@ -672,7 +672,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return portNumber;
     }
     
-    private String getDerbyDatabaseName(String url){
+    public String getDerbyDatabaseName(String url){
         String databaseName = ""; //NOI18N
         int index = url.indexOf("/"); //NOI18N
         if(index != -1){
@@ -1038,15 +1038,12 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             if(Arrays.asList(WizardConstants.VendorsExtraProps).contains(vendorName)) {
                jdbcConnectionPool = setAdditionalProps(vendorName, databaseUrl, jdbcConnectionPool);
             }else{
-                PropertyElement databaseOrUrl = jdbcConnectionPool.newPropertyElement();
                 if(vendorName.equals("pointbase")) { // NOI18N
+                    PropertyElement databaseOrUrl = jdbcConnectionPool.newPropertyElement();
                     databaseOrUrl.setName(WizardConstants.__DatabaseName); // NOI18N
+                    databaseOrUrl.setValue(databaseUrl);
+                    jdbcConnectionPool.addPropertyElement(databaseOrUrl);
                 }
-//                else {
-//                    databaseOrUrl.setName(WizardConstants.__Url); // NOI18N
-//                }
-                databaseOrUrl.setValue(databaseUrl);
-                jdbcConnectionPool.addPropertyElement(databaseOrUrl);
             }
         }
         user.setValue(dbUser);

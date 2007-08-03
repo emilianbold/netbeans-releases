@@ -42,6 +42,7 @@ import org.openide.util.HelpCtx;
 import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceUtils;
+import org.netbeans.modules.j2ee.sun.ide.sunresources.beans.ResourceConfigurator;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Field;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.FieldGroup;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
@@ -480,6 +481,7 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
         //change standard properties following database vendor change
         ResourceConfigData data = this.helper.getData();
         data.setProperties(new Vector());
+        data.addProperty(__Url, url);
         Field[] propFields = this.propGroup.getField();
         for (int i = 0; i < propFields.length; i++) {
             String value = FieldHelper.getConditionalFieldValue(propFields[i], vendorName);
@@ -491,17 +493,10 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
                     String databaseName = "";
                     try{
                         String workingUrl = url.substring(url.indexOf("//") + 2, url.length());
-                        if(workingUrl.indexOf(":") != -1){
-                            hostName = workingUrl.substring(0, workingUrl.indexOf(":"));
-                            if(workingUrl.indexOf("/") != -1){
-                                portNumber = workingUrl.substring(workingUrl.indexOf(":") + 1, workingUrl.indexOf("/"));
-                                int braceIndex = workingUrl.indexOf("[");
-                                if(braceIndex == -1)
-                                    databaseName = workingUrl.substring(workingUrl.indexOf("/") + 1, workingUrl.length());
-                                else
-                                    databaseName = workingUrl.substring(workingUrl.indexOf("/") + 1, braceIndex + 1).trim();
-                            }
-                        }
+                        ResourceConfigurator rci = new ResourceConfigurator();
+                        hostName = rci.getDerbyServerName(workingUrl);
+                        portNumber = rci.getDerbyPortNo(workingUrl);
+                        databaseName = rci.getDerbyDatabaseName(workingUrl);
                     }catch(java.lang.StringIndexOutOfBoundsException ex){
                     }
                     if (name.equals(__DerbyPortNumber)) {
