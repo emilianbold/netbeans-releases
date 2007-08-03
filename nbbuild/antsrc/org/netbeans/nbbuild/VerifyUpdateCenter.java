@@ -20,9 +20,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.URI;
 import java.util.HashMap;
@@ -99,8 +97,7 @@ public final class VerifyUpdateCenter extends Task {
         this.reportFile = report;
     }
 
-    @Override
-    public void execute() throws BuildException {
+    public @Override void execute() throws BuildException {
         if (updates == null) {
             throw new BuildException("you must specify updates");
         }
@@ -110,42 +107,42 @@ public final class VerifyUpdateCenter extends Task {
         checkForProblems(findInconsistencies(manifests, loader), "Inconsistency(ies) in " + updates, "synchronicConsistency", pseudoTests);
         if (pseudoTests.get("synchronicConsistency") == null) {
             log(updates + " is internally consistent", Project.MSG_INFO);
-        }
-        if (oldUpdates != null && pseudoTests.get("synchronicConsistency") == null) {
-            Map<String,Manifest> updated = new HashMap<String,Manifest>();
-            for (Manifest m : loadManifests(oldUpdates)) {
-                updated.put(findCNB(m), m);
-            }
-            if (!findInconsistencies(new HashSet<Manifest>(updated.values()), loader).isEmpty()) {
-                log(oldUpdates + " is already inconsistent, skipping update check", Project.MSG_WARN);
-                writeReport(pseudoTests);
-                return;
-            }
-            SortedSet<String> updatedCNBs = new TreeSet<String>();
-            Set<String> newCNBs = new HashSet<String>();
-            for (Manifest m : manifests) {
-                String cnb = findCNB(m);
-                newCNBs.add(cnb);
-                boolean doUpdate = true;
-                Manifest old = updated.get(cnb);
-                if (old != null) {
-                    String oldspec = old.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
-                    String newspec = m.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
-                    doUpdate = specGreaterThan(newspec, oldspec);
+            if (oldUpdates != null) {
+                Map<String,Manifest> updated = new HashMap<String,Manifest>();
+                for (Manifest m : loadManifests(oldUpdates)) {
+                    updated.put(findCNB(m), m);
                 }
-                if (doUpdate) {
-                    updated.put(cnb, m);
-                    updatedCNBs.add(cnb);
+                if (!findInconsistencies(new HashSet<Manifest>(updated.values()), loader).isEmpty()) {
+                    log(oldUpdates + " is already inconsistent, skipping update check", Project.MSG_WARN);
+                    JUnitReportWriter.writeReport(this, reportFile, pseudoTests);
+                    return;
+                }
+                SortedSet<String> updatedCNBs = new TreeSet<String>();
+                Set<String> newCNBs = new HashSet<String>();
+                for (Manifest m : manifests) {
+                    String cnb = findCNB(m);
+                    newCNBs.add(cnb);
+                    boolean doUpdate = true;
+                    Manifest old = updated.get(cnb);
+                    if (old != null) {
+                        String oldspec = old.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
+                        String newspec = m.getMainAttributes().getValue("OpenIDE-Module-Specification-Version");
+                        doUpdate = specGreaterThan(newspec, oldspec);
+                    }
+                    if (doUpdate) {
+                        updated.put(cnb, m);
+                        updatedCNBs.add(cnb);
+                    }
+                }
+                SortedMap<String,SortedSet<String>> updateProblems = findInconsistencies(new HashSet<Manifest>(updated.values()), loader);
+                updateProblems.keySet().retainAll(newCNBs); // ignore problems in now-deleted modules
+                checkForProblems(updateProblems, "Inconsistency(ies) in " + updates + " relative to " + oldUpdates, "diachronicConsistency", pseudoTests);
+                if (pseudoTests.get("diachronicConsistency") == null) {
+                    log(oldUpdates + " after updating " + updatedCNBs + " from " + updates + " remains consistent");
                 }
             }
-            SortedMap<String,SortedSet<String>> updateProblems = findInconsistencies(new HashSet<Manifest>(updated.values()), loader);
-            updateProblems.keySet().retainAll(newCNBs); // ignore problems in now-deleted modules
-            checkForProblems(updateProblems, "Inconsistency(ies) in " + updates + " relative to " + oldUpdates, "diachronicConsistency", pseudoTests);
-            if (pseudoTests.get("diachronicConsistency") == null) {
-                log(oldUpdates + " after updating " + updatedCNBs + " from " + updates + " remains consistent");
-            }
         }
-        writeReport(pseudoTests);
+        JUnitReportWriter.writeReport(this, reportFile, pseudoTests);
     }
 
     @SuppressWarnings("unchecked")
@@ -217,64 +214,15 @@ public final class VerifyUpdateCenter extends Task {
         return false;
     }
     
-    private void checkForProblems(SortedMap<String,SortedSet<String>> problems, String msg, String testName, Map<String,String> pseudoTests) throws BuildException {
+    private void checkForProblems(SortedMap<String,SortedSet<String>> problems, String msg, String testName, Map<String,String> pseudoTests) {
         if (!problems.isEmpty()) {
-            if (reportFile != null) {
-                StringBuffer message = new StringBuffer(msg);
-                for (Map.Entry<String,SortedSet<String>> entry : problems.entrySet()) {
-                    message.append("\nProblems found for module " + entry.getKey() + ": " + entry.getValue());
-                }
-                pseudoTests.put(testName, message.toString());
-            } else {
-                for (Map.Entry<String,SortedSet<String>> entry : problems.entrySet()) {
-                    log("Problems found for module " + entry.getKey() + ": " + entry.getValue(), Project.MSG_ERR);
-                }
-                throw new BuildException(msg, getLocation());
+            StringBuffer message = new StringBuffer(msg);
+            for (Map.Entry<String, SortedSet<String>> entry : problems.entrySet()) {
+                message.append("\nProblems found for module " + entry.getKey() + ": " + entry.getValue());
             }
+            pseudoTests.put(testName, message.toString());
         } else {
             pseudoTests.put(testName, null);
-        }
-    }
-
-    private void writeReport(Map<String,String> pseudoTests) {
-        if (reportFile == null) {
-            return;
-        }
-        Document reportDoc = XMLUtil.createDocument("testsuite");
-        Element testsuite = reportDoc.getDocumentElement();
-        int successes = 0;
-        int failures = 0;
-        testsuite.setAttribute("errors", "0");
-        testsuite.setAttribute("time", "0.0");
-        for (Map.Entry<String,String> entry : pseudoTests.entrySet()) {
-            Element testcase = reportDoc.createElement("testcase");
-            testsuite.appendChild(testcase);
-            testcase.setAttribute("classname", VerifyUpdateCenter.class.getName());
-            testcase.setAttribute("name", entry.getKey());
-            testcase.setAttribute("time", "0.0");
-            String msg = entry.getValue();
-            if (msg != null) {
-                failures++;
-                Element failure = reportDoc.createElement("failure");
-                testcase.appendChild(failure);
-                failure.setAttribute("type", "junit.framework.AssertionFailedError");
-                failure.setAttribute("message", msg.replaceFirst("(?s)\n.*", ""));
-                failure.appendChild(reportDoc.createTextNode(msg));
-            } else {
-                successes++;
-            }
-        }
-        testsuite.setAttribute("failures", Integer.toString(failures));
-        testsuite.setAttribute("tests", Integer.toString(successes + failures));
-        try {
-            OutputStream os = new FileOutputStream(reportFile);
-            try {
-                XMLUtil.write(reportDoc, os);
-            } finally {
-                os.close();
-            }
-        } catch (IOException x) {
-            throw new BuildException("Could not write " + reportFile + ": " + x, x, getLocation());
         }
     }
 

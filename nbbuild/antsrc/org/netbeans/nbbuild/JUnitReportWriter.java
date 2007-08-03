@@ -29,8 +29,6 @@ import org.apache.tools.ant.Task;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-// XXX use from VerifyUpdateCenter when in trunk
-
 /**
  * Utility permitting Ant tasks to write out JUnit-format reports rather than aborting the build.
  */
@@ -60,6 +58,8 @@ public class JUnitReportWriter {
             }
             if (errors.length() > 0) {
                 throw new BuildException("Some tests failed:" + errors, task.getLocation());
+            } else {
+                task.log("All tests passed");
             }
         } else {
             Document reportDoc = XMLUtil.createDocument("testsuite");
