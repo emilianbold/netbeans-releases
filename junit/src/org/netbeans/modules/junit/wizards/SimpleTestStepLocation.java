@@ -1304,7 +1304,20 @@ public final class SimpleTestStepLocation implements WizardDescriptor.Panel<Wiza
                 String className = getClassName(selectedFileObj);
                 classNameLength = className.length();
                 if (!multipleSourceRoots) {
+                    /*
+                     * Caution! Calling setText("className") triggers two
+                     * text change events - once when the original text is
+                     * cleared and the second time when the new text is set.
+                     * Method classNameChanged() must only be called when the
+                     * text change is complete (see issue #91794) so we set
+                     * the 'ignoreClsNameChanges' flag for the time the text
+                     * is being changed and then call the classNameChanged()
+                     * explicitely.
+                     */
+                    ignoreClsNameChanges = true;
                     tfClassToTest.setText(className);
+                    ignoreClsNameChanges = false;
+                    classNameChanged();
                 } else {
                     String srcGroupDisplay = getSrcGrpDisp(selectedSourceGroup);
 
