@@ -73,11 +73,7 @@ public class WsdlModeler {
         task = RequestProcessor.getDefault().create(new Runnable() {
             public void run() {
                 generateWsdlModel();
-                synchronized (this) {
-                    listenersSize = modelListeners.size();
-                    fireModelCreated(wsdlModel,listenersSize);
-                    removeListeners();
-                }
+                fireModelCreated(wsdlModel);
             }
         },true);
         
@@ -133,8 +129,7 @@ public class WsdlModeler {
                 public void run() {
                     generateWsdlModel(errorHandler);
                     synchronized (this) {
-                        fireModelCreated(wsdlModel,1);
-                        removeListeners();
+                        fireModelCreated(wsdlModel);
                     }
                 }
             },true);
@@ -147,6 +142,7 @@ public class WsdlModeler {
     }
     
     public void generateWsdlModel(WsdlModelListener listener, boolean forceReload) {
+        
         if (forceReload) {
             try {task.waitFinished(10000);} catch (InterruptedException ex) {}
             addWsdlModelListener(listener);
@@ -159,11 +155,11 @@ public class WsdlModeler {
         }
     }
     
-    private synchronized void generateWsdlModel() {
+    private void generateWsdlModel() {
         this.generateWsdlModel(new CatchFirstErrorHandler());
     }
     
-    private synchronized void generateWsdlModel(WsdlErrorHandler errorHandler) {
+    private void generateWsdlModel(WsdlErrorHandler errorHandler) {
         WsimportOptions options = new WsimportOptions();
         properties = new Properties();
         bindingFiles = new HashSet<String>();
@@ -235,18 +231,21 @@ public class WsdlModeler {
     }
     
     private synchronized void addWsdlModelListener(WsdlModelListener listener) {
+        // adding listener
         if (listener!=null)
             modelListeners.add(listener);
     }
     
-    private void removeListeners() {
+    private synchronized void removeListeners() {
         modelListeners.clear();
     }
     
-    private void fireModelCreated(WsdlModel model, int listenersSize) {
-        for (int i=0;i<listenersSize;i++) {
-            modelListeners.get(i).modelCreated(model);
+    private void fireModelCreated(WsdlModel model) {
+        for (WsdlModelListener l:modelListeners) {
+            l.modelCreated(model);
         }
+        // Removing all listeners
+        removeListeners();
     }
     
     private class IdeErrorReceiver extends ErrorReceiver{
