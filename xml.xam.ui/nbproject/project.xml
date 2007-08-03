@@ -149,6 +149,7 @@
                 <friend>org.netbeans.modules.bpel.xpath</friend>
                 <friend>org.netbeans.modules.compapp.casaeditor</friend>
                 <friend>org.netbeans.modules.encoder.ui.basic</friend>
+                <friend>org.netbeans.modules.iep.editor</friend>
                 <friend>org.netbeans.modules.worklist.editor</friend>
                 <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
