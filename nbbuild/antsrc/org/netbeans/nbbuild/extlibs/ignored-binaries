@@ -3,6 +3,8 @@
 # Implicit includes is **/*.jar,**/*.zip.
 # Only files under CVS control will be checked, so no need to exclude build products.
 **/test/
+#verify if templates are Sun owned or under which license are distributed
+cnd/symbian/project/src/org/netbeans/modules/symbian/project/resources/templates/
 libs/external/
 j2ee/adventure/
 form/swingapp/
