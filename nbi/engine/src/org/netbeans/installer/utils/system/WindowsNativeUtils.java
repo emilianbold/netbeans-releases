@@ -271,7 +271,7 @@ public class WindowsNativeUtils extends NativeUtils {
         // the path should be absolute, i.e. should start with "<Drive>:\"
         if (!path.matches("^[A-Z,a-z]:\\\\.*")) {
             // the path can be also in UNC form
-            if(!path.matches("^\\\\\\\\.+\\\\.+")) {                
+            if(!path.matches("^\\\\\\\\.+(\\\\|/).+")) {                
                 return false;
             }
         }

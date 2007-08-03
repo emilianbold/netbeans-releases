@@ -1094,7 +1094,13 @@ public final class FileUtils {
             final String path) {
         String corrected = path;
         
-        corrected = corrected.replace(BACKSLASH, SLASH);
+        if(SystemUtils.isWindows() && corrected.matches("^\\\\\\\\.+(\\\\|/).+")) {
+            // don`t correct UNC paths that starts with \\<servername>
+            corrected = corrected.substring(0,2) + 
+                    corrected.substring(2).replace(BACKSLASH, SLASH);
+        } else {
+            corrected = corrected.replace(BACKSLASH, SLASH);
+        }
         
         while (corrected.indexOf(SLASH + SLASH) != -1) {
             corrected = corrected.replace(SLASH + SLASH, SLASH);
