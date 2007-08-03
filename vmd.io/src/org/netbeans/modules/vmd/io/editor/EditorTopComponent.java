@@ -46,7 +46,7 @@ public class EditorTopComponent extends TopComponent {
         this.lookup = new ProxyLookup (lookup, /*new AbstractLookup(ic),*/ Lookups.singleton(getActionMap()));
     }
 
-    public ProxyLookup getLookup () {
+    public Lookup getLookup () {
         return lookup;
     }
 
