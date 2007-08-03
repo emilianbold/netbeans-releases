@@ -20,6 +20,7 @@
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -217,29 +218,30 @@ public class MapActionUtility {
     public static final Action handleTab = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
-            Object sourceObj = e.getSource();
-            if (!(sourceObj instanceof PageFlowScene)) {
-                return;
-            }
-            PageFlowScene scene = (PageFlowScene) sourceObj;
             boolean reverse = false;
-            handleTab(scene, reverse);
+            handleTabActionEvent(e, reverse);
         }
     };
     public static final Action handleCtrlTab = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
-            Object sourceObj = e.getSource();
-            if (!(sourceObj instanceof PageFlowScene)) {
-                return;
-            }
-            PageFlowScene scene = (PageFlowScene) sourceObj;
             boolean reverse = true;
-            handleTab(scene, reverse);
+            handleTabActionEvent(e, reverse);
         }
     };
 
+    private static final void handleTabActionEvent(ActionEvent e, boolean reverse) {
+
+        Object sourceObj = e.getSource();
+        if (!(sourceObj instanceof PageFlowScene)) {
+            return;
+        }
+        PageFlowScene scene = (PageFlowScene) sourceObj;
+        handleTab(scene, reverse);
+    }
+
     private static final void handleTab(PageFlowScene scene, boolean reverse) {
+
         PageFlowSceneElement nextElement = SceneElementComparator.getNextSelectableElement(scene, reverse, true, true, false);
         if (nextElement != null) {
             if (CONNECT_WIDGET != null && scene.getConnectionLayer().getChildren().contains(CONNECT_WIDGET)) {
@@ -258,7 +260,12 @@ public class MapActionUtility {
             }
             Set<PageFlowSceneElement> set = new HashSet<PageFlowSceneElement>();
             set.add(nextElement);
+            scene.setHoveredObject(nextElement); //Do this because the popup action is looking for hovered.
             scene.setSelectedObjects(set);
+        } else {
+            scene.setSelectedObjects(new HashSet());
+            scene.setHoveredObject(null); //Not sure if I can do this yet.
+            //scene.setFocusedWidget(scene);
         }
     }
 
@@ -515,25 +522,26 @@ public class MapActionUtility {
             }
             PageFlowScene scene = (PageFlowScene) obj;
             PopupMenuProvider provider = scene.getPopupMenuProvider();
+            Object[] selObjs = scene.getSelectedObjects().toArray();
 
-            for (Object selObj : scene.getSelectedObjects()) {
-                if (selObj instanceof Page) {
-                    Page selPage = (Page) selObj;
-                    if (scene.isNode(selPage)) {
-                        VMDNodeWidget pageWidget = (VMDNodeWidget) scene.findWidget(selPage);
-                        /* Widget and Point are not needed in our implementation, but we will get to them anyone just 
-                         * in case things change in the future. */                        
-                        JPopupMenu popupMenu = provider.getPopupMenu(pageWidget, pageWidget.getLocation());
-                        if (popupMenu != null) {
-                            Point point = pageWidget.getLocation();
-                            popupMenu.show(scene.getView(), point.x, point.y);
-                        }
-                    }
-                }
+            Object selObj = (selObjs.length > 0) ? selObjs[0] : null;
+            Widget selectedWidget;
+            Point popupPoint;
+            if (selObj instanceof PageFlowSceneElement) {
+                selectedWidget = scene.findWidget(selObj);
+                assert selectedWidget != null;
+                popupPoint = selectedWidget.getLocation();
+            } else {
+                Rectangle rectangleScene = scene.getClientArea();
+                popupPoint = scene.convertSceneToLocal(new Point(rectangleScene.width / 2, rectangleScene.height / 2));
+                selectedWidget = scene;
             }
-         
-
-
+            assert selectedWidget != null;
+            assert popupPoint != null;
+            JPopupMenu popupMenu = provider.getPopupMenu(selectedWidget, popupPoint);
+            if (popupMenu != null) {
+                popupMenu.show(scene.getView(), popupPoint.x, popupPoint.y);
+            }
         }
     };
 }

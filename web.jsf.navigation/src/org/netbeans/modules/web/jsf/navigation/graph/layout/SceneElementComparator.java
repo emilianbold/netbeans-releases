@@ -141,6 +141,8 @@ public class SceneElementComparator implements Comparator<SceneElement> {
                     /*System.out.println("Index: " + index + " Selected Element: " + mySelectedSceneElement.element);*/
                     if (sortedElements.size() > index + 1) {
                         nextElement = sortedElements.get(index + 1).element;
+                    } else {
+                        return null; // Let me know if you are on the last one so I can send focus to the scene.
                     }
                 }
             }
