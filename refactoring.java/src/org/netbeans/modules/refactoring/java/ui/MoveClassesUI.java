@@ -35,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -174,6 +175,8 @@ public class MoveClassesUI implements RefactoringUI, RefactoringUIBypass {
         LinkedList<FileObject> q = new LinkedList<FileObject>(javaObjects);
         while (!q.isEmpty()) {
             FileObject f = q.removeFirst();
+            if (!VisibilityQuery.getDefault().isVisible(f))
+                continue;
             DataObject d = null;
             try {
                 d = DataObject.find(f);
