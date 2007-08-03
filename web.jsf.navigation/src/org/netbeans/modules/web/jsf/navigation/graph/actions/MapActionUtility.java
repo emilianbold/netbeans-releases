@@ -190,14 +190,10 @@ public class MapActionUtility {
         public void actionPerformed(ActionEvent e) {
             /* Cancel A11y Linking */
             Object sourceObj = e.getSource();
-            if (!(sourceObj instanceof PageFlowScene)) {
-                return;
-            }
-            PageFlowScene scene = (PageFlowScene) sourceObj;
-            Set selectedObjects = scene.getSelectedObjects();
-            if (selectedObjects.size() > 0) {
-                PageFlowSceneElement selectedObj = (PageFlowSceneElement) selectedObjects.toArray()[0];
-                Widget widget = scene.findWidget(selectedObj);
+            if (sourceObj instanceof PageFlowScene) {
+                PageFlowScene scene = (PageFlowScene) sourceObj;
+                PageFlowSceneElement selElement = getSelectedPageFlowSceneElement(scene);
+                Widget widget = scene.findWidget(selElement);
                 assert widget != null;
                 EditorController controller = null;
                 if (widget instanceof VMDNodeWidget) {
@@ -343,15 +339,12 @@ public class MapActionUtility {
             Object sourceObj = e.getSource();
             if (sourceObj instanceof PageFlowScene) {
                 PageFlowScene scene = (PageFlowScene) sourceObj;
-                List<Object> elements = new ArrayList<Object>(scene.getSelectedObjects());
-                if (elements.size() > 0) {
-                    PageFlowSceneElement selElement = (PageFlowSceneElement) elements.get(0);
+                PageFlowSceneElement selElement = getSelectedPageFlowSceneElement(scene);
+                if (selElement != null) {
                     Widget selWidget = null;
                     if (selElement instanceof Page) {
                         selWidget = scene.findWidget(selElement);
-                        //Pin selPin = scene.getDefaultPin((Page) selElement);
                     } else if (selElement instanceof Pin) {
-                        //Pin selPin = (Pin) selElement;
                         selWidget = scene.findWidget((Pin) selElement);
                     }
                     if (selWidget != null) {
@@ -494,20 +487,15 @@ public class MapActionUtility {
 
         public void actionPerformed(ActionEvent e) {
             Object obj = e.getSource();
-            if (!(obj instanceof PageFlowScene)) {
-                return;
-            }
-            PageFlowScene scene = (PageFlowScene) obj;
-            for (Object selObj : scene.getSelectedObjects()) {
-                if (selObj instanceof Page) {
-                    Page selPage = (Page) selObj;
-                    if (scene.isNode(selPage)) {
-                        VMDNodeWidget pageWidget = (VMDNodeWidget) scene.findWidget(selPage);
-                        if (pageWidget.isMinimized()) {
-                            pageWidget.expandWidget();
-                        } else {
-                            pageWidget.collapseWidget();
-                        }
+            if (obj instanceof PageFlowScene) {
+                PageFlowScene scene = (PageFlowScene) obj;
+                Page selPage = getSelectedPage(scene);
+                if (selPage != null) {
+                    VMDNodeWidget pageWidget = (VMDNodeWidget) scene.findWidget(selPage);
+                    if (pageWidget.isMinimized()) {
+                        pageWidget.expandWidget();
+                    } else {
+                        pageWidget.collapseWidget();
                     }
                 }
             }
@@ -537,18 +525,16 @@ public class MapActionUtility {
             }
             PageFlowScene scene = (PageFlowScene) obj;
             PopupMenuProvider provider = scene.getPopupMenuProvider();
-            Object[] selObjs = scene.getSelectedObjects().toArray();
-
-            Object selObj = (selObjs.length > 0) ? selObjs[0] : null;
+            PageFlowSceneElement selElement = getSelectedPageFlowSceneElement(scene);
             Widget selectedWidget;
             Point popupPoint;
-            if (selObj instanceof PageFlowSceneElement) {
-                selectedWidget = scene.findWidget(selObj);
+            if (selElement != null && selElement instanceof PageFlowSceneElement) {
+                selectedWidget = scene.findWidget(selElement);
                 assert selectedWidget != null;
 
                 /* Because you cannot use getLocation on a connectionwidget, I need to grab it's source pin for the location */
-                if (selObj instanceof NavigationCaseEdge) {
-                    NavigationCaseEdge edge = (NavigationCaseEdge) selObj;
+                if (selElement instanceof NavigationCaseEdge) {
+                    NavigationCaseEdge edge = (NavigationCaseEdge) selElement;
                     VMDConnectionWidget connectionWidget = (VMDConnectionWidget) scene.findWidget(edge);
                     popupPoint = connectionWidget.getFirstControlPoint();
                 } else {
@@ -577,7 +563,7 @@ public class MapActionUtility {
             if (obj instanceof PageFlowScene) {
                 PageFlowScene scene = (PageFlowScene) obj;
                 Page page = getSelectedPage(scene);
-                if( page != null ) {
+                if (page != null) {
                     movePage(scene, page, 5, 0);
                 }
             }
@@ -591,7 +577,7 @@ public class MapActionUtility {
             if (obj instanceof PageFlowScene) {
                 PageFlowScene scene = (PageFlowScene) obj;
                 Page page = getSelectedPage(scene);
-                if( page != null ) {
+                if (page != null) {
                     movePage(scene, page, -5, 0);
                 }
             }
@@ -605,13 +591,13 @@ public class MapActionUtility {
             if (obj instanceof PageFlowScene) {
                 PageFlowScene scene = (PageFlowScene) obj;
                 Page page = getSelectedPage(scene);
-                if( page != null ) {
+                if (page != null) {
                     movePage(scene, page, 0, -5);
                 }
             }
         }
     };
-    
+
     public static Action handleDownCtrlArrowKey = new AbstractAction() {
 
         public void actionPerformed(ActionEvent e) {
@@ -620,23 +606,49 @@ public class MapActionUtility {
             if (obj instanceof PageFlowScene) {
                 PageFlowScene scene = (PageFlowScene) obj;
                 Page page = getSelectedPage(scene);
-                if( page != null ) {
+                if (page != null) {
                     movePage(scene, page, 0, 5);
                 }
             }
         }
     };
 
+    /**
+     * Get the first selected page
+     * @return the page selected or null if no page is selected.
+     **/ 
     public static Page getSelectedPage(PageFlowScene scene) {
-        for (Object selObj : scene.getSelectedObjects()) {
-            if (selObj instanceof Page) {
-                return (Page) selObj;
+        assert scene != null;
+        
+        PageFlowSceneElement element = getSelectedPageFlowSceneElement(scene);
+        if (element != null) {
+            if (element instanceof Page) {
+                return (Page) element;
             }
         }
         return null;
     }
 
+    /** 
+     * Get the first selected page element
+     * @return a page, navigationedge or pin... null if no page is selected
+     **/
+    public static PageFlowSceneElement getSelectedPageFlowSceneElement(PageFlowScene scene) {
+        assert scene != null;
+        
+        for (Object selObj : scene.getSelectedObjects()) {
+            return (PageFlowSceneElement) selObj;
+        }
+        return null;
+    }
+
+    /**
+     * Move a given page in the scene.  This allows arrow keys to move a page.
+     **/
     public static void movePage(PageFlowScene scene, Page page, int horizontal, int vertical) {
+        assert scene != null;
+        assert page != null;
+        
         Widget pageWidget = scene.findWidget(page);
         Point currentLocation = pageWidget.getLocation();
         currentLocation.translate(horizontal, vertical);
