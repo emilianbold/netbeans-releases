@@ -394,6 +394,7 @@ public class FontStyleEditor extends StyleEditor {
 
         decorationPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
+        underlineCheckbox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_FONT_UNDERLINE").charAt(0));
         underlineCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_UNDERLINE")); // NOI18N
         underlineCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
         underlineCheckbox.addItemListener(new java.awt.event.ItemListener() {
@@ -402,6 +403,7 @@ public class FontStyleEditor extends StyleEditor {
             }
         });
 
+        strikethroughCheckbox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_FONT_STRIKETHROUGH").charAt(0));
         strikethroughCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_STRIKETHROUGH")); // NOI18N
         strikethroughCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
         strikethroughCheckbox.addItemListener(new java.awt.event.ItemListener() {
@@ -410,6 +412,7 @@ public class FontStyleEditor extends StyleEditor {
             }
         });
 
+        overlineCheckbox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_FONT_OVERLINE").charAt(0));
         overlineCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "FONT_OVERLINE")); // NOI18N
         overlineCheckbox.setMargin(new java.awt.Insets(0, 2, 0, 2));
         overlineCheckbox.addItemListener(new java.awt.event.ItemListener() {
@@ -418,6 +421,7 @@ public class FontStyleEditor extends StyleEditor {
             }
         });
 
+        noDecorationCheckbox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/css/visual/ui/Bundle").getString("MNE_NO_DECORATION_1").charAt(0));
         noDecorationCheckbox.setText(org.openide.util.NbBundle.getMessage(FontStyleEditor.class, "NO_DECORATION_1")); // NOI18N
         noDecorationCheckbox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -523,7 +527,7 @@ public class FontStyleEditor extends StyleEditor {
                         .add(noDecorationCheckbox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(strikethroughCheckbox)))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(87, Short.MAX_VALUE))
         );
         decorationPanelLayout.setVerticalGroup(
             decorationPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
