@@ -81,7 +81,7 @@ public class PageFlowPopupProvider implements PopupMenuProvider {
     }
     
     
-    
+    /* Point and widget are actually not needed. */
     public JPopupMenu getPopupMenu(Widget widget, Point point){
         Object obj = graphScene.getHoveredObject();
         if( obj != null ) {

@@ -56,7 +56,9 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.KeyStroke;
+import javax.swing.Popup;
 import javax.swing.border.Border;
+import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
 import org.netbeans.api.visual.action.WidgetAction.Chain;
@@ -118,6 +120,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     private final WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
     private PageFlowView tc;
+    private PopupMenuProvider popupProvider;   //Please see POPUP_HACK below.
 
     private static Paint PAINT_BACKGROUND;
     static {
@@ -131,6 +134,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         PAINT_BACKGROUND = new TexturePaint(image, new Rectangle(0, 0, width, height));
     }
 
+    
 
     /**
      * Creates a VMD graph scene.
@@ -155,16 +159,22 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         actions.addAction(ActionFactory.createZoomAction());
         actions.addAction(ActionFactory.createPanAction());
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
-        actions.addAction(ActionFactory.createPopupMenuAction(new PageFlowPopupProvider(this, tc)));
+        /*** POPUP_HACK: I have no access to PopupAction so I can't look through the actions and determine which one is a popup.
+         * In order to added accessibility to popup I need access to this provider unless an API is created 
+         * to figure this out another means.
+         **/
+        popupProvider = new PageFlowPopupProvider(this, tc);
+        actions.addAction(ActionFactory.createPopupMenuAction(popupProvider));
         actions.addAction(createActionMap());
         addObjectSceneListener(new MyObjectSceneListener(), ObjectSceneEventType.OBJECT_SELECTION_CHANGED);
 
 
-        InputMap inputMap = MapActionUtility.initInputMap();
-        ActionMap actionMap = MapActionUtility.initActionMap();
-        //Temporary workaround  ISSUE# 107506
-        actions.addAction(new MyActionMapAction(inputMap, actionMap));
-        MyActionMapAction action = new MyActionMapAction(null, null);
+        /* Temporary workaround  ISSUE# 107506 Still an issue. */
+        //InputMap inputMap = MapActionUtility.initInputMap();
+        //ActionMap actionMap = MapActionUtility.initActionMap();
+        //actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
+        //MyActionMapAction action = new MyActionMapAction(null, null);
+        
         FreePlaceNodesLayouter fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
     }
 
@@ -178,6 +188,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
         //Temporary workaround  ISSUE# 107506
         return new MyActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
+        //return ActionFactory.createActionMapAction(MapActionUtility.initInputMap(), MapActionUtility.initActionMap());
     }
 
     /**
@@ -263,6 +274,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
             if (actionMapAction != null) {
                 nodeWidget.getActions().addAction(actionMapAction);
             }
+            
         }
     }
 
@@ -281,7 +293,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
             return null;
         }
         return new MyActionMapAction(inputMap, actionMap);
-//        return  ActionFactory.createActionMapAction(inputMap, actionMap);
+        //return  ActionFactory.createActionMapAction(inputMap, actionMap);
     }
 
     private Map<VMDNodeWidget, Point> nodeWidget2Point = new HashMap<VMDNodeWidget, Point>();
@@ -308,6 +320,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
             super(scene, image);
         }
 
+        @Override
         protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
             Border BORDER_HOVERED = (Border) javax.swing.BorderFactory.createLineBorder(java.awt.Color.BLACK);
             Border BORDER = BorderFactory.createEmptyBorder();
@@ -416,8 +429,6 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
         connectionWidget.addChild(label);
 
-
-        //        connectionWidget.getActions().addAction(createActionMap());
         return connectionWidget;
     }
 
@@ -691,4 +702,8 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     //
     //
     //    }
+    
+    public PopupMenuProvider getPopupMenuProvider() {
+        return popupProvider;
+    }
 }

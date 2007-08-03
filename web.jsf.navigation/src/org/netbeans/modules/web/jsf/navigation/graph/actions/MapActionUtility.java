@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.web.jsf.navigation.graph.actions;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -40,6 +41,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ConnectDecorator;
@@ -52,6 +54,7 @@ import org.netbeans.api.visual.vmd.VMDNodeWidget;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.modules.web.jsf.navigation.Page;
 import org.netbeans.modules.web.jsf.navigation.Pin;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
@@ -92,6 +95,7 @@ public class MapActionUtility {
 
 
         actionMap.put("handleRename", handleRename);
+        actionMap.put("handlePopup", handlePopup);
         return actionMap;
     }
 
@@ -110,6 +114,7 @@ public class MapActionUtility {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_E, 0), "handleLinkEnd");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, 0), "handleZoomPage");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, 0), "handleUnZoomPage");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), "handlePopup");
         //
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "handleOpenPage");
 
@@ -132,8 +137,8 @@ public class MapActionUtility {
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT, 0), "handleLeftArrowKey");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_RIGHT, 0), "handleRightArrowKey");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_UP, 0), "handleUpArrowKey");
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN, 0), "handleDownArrowKey");
         //
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_KP_DOWN, 0), "handleDownArrowKey");
         //        // SHIFT + F10
         //        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F10,InputEvent.SHIFT_MASK), "handlePopupMenu");
         //
@@ -178,24 +183,23 @@ public class MapActionUtility {
                 Widget widget = scene.findWidget(selectedObj);
                 assert widget != null;
                 EditorController controller = null;
-                if( widget instanceof VMDNodeWidget ){
-                    LabelWidget labelWidget = ((VMDNodeWidget)widget).getNodeNameWidget();
+                if (widget instanceof VMDNodeWidget) {
+                    LabelWidget labelWidget = ((VMDNodeWidget) widget).getNodeNameWidget();
                     controller = findEditorController(labelWidget.getActions().getActions());
-                    if( controller != null ) {
+                    if (controller != null) {
                         controller.openEditor(labelWidget);
                     }
-                } else if ( widget instanceof VMDConnectionWidget ){
+                } else if (widget instanceof VMDConnectionWidget) {
                     List<Widget> childWidgets = widget.getChildren();
-                    for( Widget childWidget : childWidgets){
-                        if( childWidget instanceof LabelWidget ){
+                    for (Widget childWidget : childWidgets) {
+                        if (childWidget instanceof LabelWidget) {
                             controller = findEditorController(childWidget.getActions().getActions());
-                            if( controller != null ){
+                            if (controller != null) {
                                 controller.openEditor(childWidget);
                             }
                         }
                     }
                 }
-
             }
         }
 
@@ -499,6 +503,37 @@ public class MapActionUtility {
             //                    ((NavigationGraphNode)node).setZoomed(false);
             //                }
             //            }
+        }
+    };
+
+    public static Action handlePopup = new AbstractAction() {
+
+        public void actionPerformed(ActionEvent e) {
+            Object obj = e.getSource();
+            if (!(obj instanceof PageFlowScene)) {
+                return;
+            }
+            PageFlowScene scene = (PageFlowScene) obj;
+            PopupMenuProvider provider = scene.getPopupMenuProvider();
+
+            for (Object selObj : scene.getSelectedObjects()) {
+                if (selObj instanceof Page) {
+                    Page selPage = (Page) selObj;
+                    if (scene.isNode(selPage)) {
+                        VMDNodeWidget pageWidget = (VMDNodeWidget) scene.findWidget(selPage);
+                        /* Widget and Point are not needed in our implementation, but we will get to them anyone just 
+                         * in case things change in the future. */                        
+                        JPopupMenu popupMenu = provider.getPopupMenu(pageWidget, pageWidget.getLocation());
+                        if (popupMenu != null) {
+                            Point point = pageWidget.getLocation();
+                            popupMenu.show(scene.getView(), point.x, point.y);
+                        }
+                    }
+                }
+            }
+         
+
+
         }
     };
 }
