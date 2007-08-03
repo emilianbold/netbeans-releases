@@ -20,8 +20,9 @@
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
@@ -35,15 +36,19 @@ import org.netbeans.modules.sun.manager.jbi.actions.ShutdownAction;
 import org.netbeans.modules.sun.manager.jbi.actions.StartAction;
 import org.netbeans.modules.sun.manager.jbi.actions.StopAction;
 import org.netbeans.modules.sun.manager.jbi.actions.UninstallAction;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.SchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Sheet;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.PropertiesAction;
+import org.openide.nodes.PropertySupport;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
@@ -57,8 +62,14 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     
     private boolean busy;
     
-    private String compType;
+    private String compType;    
     
+    // Cached component configuration schema
+    private String configSchema;
+    
+    private boolean hasConfigSchema = true;
+    
+        
     public JBIComponentNode(final AppserverJBIMgmtController controller,
             String compType, String nodeType, String name, String description) {
         super(controller, nodeType);
@@ -68,31 +79,107 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         this.compType = compType;
     }
     
+    private JBIComponentConfigurator getComponentConfigurator() {
+        AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
+        String containerType = getContainerType();
+        String compName = getName();
+        JBIComponentConfigurator configurator =
+                controller.getComponentConfigurator(containerType, compName);
+        return configurator;
+    }
+    
     protected Sheet createSheet() {
         Sheet sheet = super.createSheet();
         
-        // Augment the general property sheet
+        // Augment the general property sheet by adding Identification sheet
         try {
+            Map<Attribute, MBeanAttributeInfo> identificationPropertyMap = 
+                        getIdentificationProperties();
             Sheet.Set sheetSet = createSheetSet("Identification", // NOI18N
                     "LBL_IDENTIFICATION_PROPERTIES", // NOI18N
                     "DSC_IDENTIFICATION_PROPERTIES", // NOI18N
-                    getIdentificationProperties());
+                    identificationPropertyMap);
             sheet.put(sheetSet);
         } catch (Exception e) {
             e.printStackTrace();
         }
         
+        // Augment the general property sheet by adding Configuration sheet
         try {
-            Sheet.Set sheetSet = createSheetSet("Configuration", // NOI18N
+            if (hasConfigSchema && configSchema == null) {
+                JBIComponentConfigurator configurator = getComponentConfigurator();
+                configSchema = configurator.getConfigurationSchema();                
+                if (configSchema == null) {
+                    hasConfigSchema = false;
+                }
+            }
+                        
+            Map<Attribute, MBeanAttributeInfo> configPropertyMap = 
+                        getConfigurationProperties();
+            
+            Sheet.Set sheetSet = null;
+            if (hasConfigSchema) {
+                PropertySupport[] propertySupports = 
+                        createPropertySupportArrayWithSchema(configPropertyMap);
+                sheetSet = createSheetSet("Configuration", // NOI18N
+                        "LBL_CONFIG_PROPERTIES", // NOI18N
+                        "DSC_CONFIG_PROPERTIES", // NOI18N
+                        propertySupports);    
+            } else {                
+                sheetSet = createSheetSet("Configuration", // NOI18N            
                     "LBL_CONFIG_PROPERTIES", // NOI18N
                     "DSC_CONFIG_PROPERTIES", // NOI18N
-                    getConfigurationProperties());
+                    configPropertyMap);                
+            }
+                    
             sheet.put(sheetSet);
         } catch (Exception e) {
             e.printStackTrace();
         }
         
         return sheet;
+    }
+    
+    protected PropertySupport[] createPropertySupportArrayWithSchema(
+            final Map<Attribute, MBeanAttributeInfo> attrMap) {
+        
+        assert configSchema != null;
+        
+        List<PropertySupport> supports = new ArrayList<PropertySupport>();
+        
+        try {
+            String compName = getName();
+            
+            for (Attribute attr : attrMap.keySet()) {                
+                String attrName = attr.getName();
+                MBeanAttributeInfo info = attrMap.get(attr); 
+                
+                if (attrName.equals("EnvironmentVariables")) { // NOI18N
+                    // There is no schema support for environment variables
+                    PropertySupport support = JBIPropertySupportFactory.
+                            getPropertySupport(this, attr, info);
+                    supports.add(support);
+                    continue;
+                }
+                
+                PropertySupport support = SchemaBasedConfigPropertySupportFactory.
+                        getPropertySupport(configSchema, compName, this, attr, info);
+                
+                if (support == null) {
+                    String msg = "Fail to get property support for " + 
+                            compName + ":" + attrName;
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            msg, NotifyDescriptor.WARNING_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                } else {
+                    supports.add(support);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return supports.toArray(new PropertySupport[0]); 
     }
     
     protected Map<Attribute, MBeanAttributeInfo> getSheetProperties() {
@@ -106,7 +193,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      * @return A java.util.Map containing all identification properties.
      */
     private Map<Attribute, MBeanAttributeInfo> getIdentificationProperties()
-    throws Exception {
+    throws Exception { 
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
         return getIdentificationProperties(controller, true);
     }
@@ -159,7 +246,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             Object newValue = controller.getJBIComponentConfigPropertyValue(
                     containerType, getName(), attrName);
             
-            updatePropertySheet();
+//            updatePropertySheet();
             
             return new Attribute(attrName, newValue);
         } catch (Exception e) {

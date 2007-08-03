@@ -19,20 +19,14 @@
 
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
-import org.netbeans.modules.sun.manager.jbi.util.*;
-import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
+import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
-
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceUnitStatus;
-import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentContainerNode;
-import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
-import org.netbeans.modules.sun.manager.jbi.nodes.JBIServiceAssembliesNode;
-import org.netbeans.modules.sun.manager.jbi.nodes.JBIServiceAssemblyNode;
-import org.netbeans.modules.sun.manager.jbi.nodes.JBIServiceUnitNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 

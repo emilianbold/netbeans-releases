@@ -247,11 +247,15 @@ public class AppserverJBIMgmtController {
         adminService.setComponentLoggerProperty(componentName, attrName, value);
     }
     
-    private JBIComponentConfigurator getComponentConfigurator(
-            String containerType, String componentName) 
-            throws Exception {
-        return new JBIComponentConfigurator(containerType, componentName, 
-                mBeanServerConnection);
+    public JBIComponentConfigurator getComponentConfigurator(
+            String containerType, String componentName) {
+        try {
+            return new JBIComponentConfigurator(containerType, componentName,
+                    mBeanServerConnection);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
     
     private boolean isCurrentInstance(ServerInstance instance) {

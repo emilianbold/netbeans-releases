@@ -27,7 +27,7 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.util.JBIPropertySupportFactory;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
@@ -45,10 +45,6 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
     
     private String nodeType;
     private AppserverJBIMgmtController appsrvrJBIMgmtController;
-    
-    private JBIPropertySupportFactory propSupportFactory = 
-        JBIPropertySupportFactory.getInstance();
-    
     
     /**
      *
@@ -129,9 +125,24 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
      *                              property sheet set
      * @parm properties             property map
      */
-    protected Sheet.Set createSheetSet(String name, String displayNameLabel, 
+    protected Sheet.Set createSheetSet(String name, 
+            String displayNameLabel, 
             String descriptionLabel, 
             Map<Attribute, MBeanAttributeInfo> properties) {
+        
+        PropertySupport[] propertySupports = 
+                createPropertySupportArray(properties);
+        
+        Sheet.Set sheetSet = createSheetSet(
+                name, displayNameLabel, descriptionLabel, propertySupports);
+        
+        return sheetSet;
+    }
+    
+    protected Sheet.Set createSheetSet(String name, 
+            String displayNameLabel, 
+            String descriptionLabel, 
+            PropertySupport[] propertySupports) {
         
         Sheet.Set sheetSet = new Sheet.Set();
         sheetSet.setName(name);
@@ -139,8 +150,8 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
                 NbBundle.getMessage(this.getClass(), displayNameLabel)); // NOI18N
         sheetSet.setShortDescription(
                 NbBundle.getMessage(this.getClass(), descriptionLabel)); // NOI18N
-        if (properties != null) {
-            sheetSet.put(createPropertySupportArray(properties));
+        if (propertySupports != null) {
+            sheetSet.put(propertySupports);
         }
         
         return sheetSet;
@@ -152,16 +163,15 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
      * @param properties The properties of the component.
      * @return An array of PropertySupport objects.
      */
-    protected PropertySupport[] createPropertySupportArray(final Map attrMap) {
+    protected PropertySupport[] createPropertySupportArray(
+            final Map<Attribute, MBeanAttributeInfo> attrMap) {
         PropertySupport[] supports = new PropertySupport[attrMap.size()];
-        int i = 0;
         
-        for(Iterator itr = attrMap.keySet().iterator(); itr.hasNext(); ) {
-            Attribute attr = (Attribute) itr.next();
-            MBeanAttributeInfo info = (MBeanAttributeInfo) attrMap.get(attr);
-            supports[i] = 
-                propSupportFactory.getPropertySupport(this, attr, info);
-            i++;
+        int i = 0;        
+        for (Attribute attr : attrMap.keySet()) {
+            MBeanAttributeInfo info = attrMap.get(attr);
+            supports[i++] = 
+                JBIPropertySupportFactory.getPropertySupport(this, attr, info);
         }
         return supports; 
     }
