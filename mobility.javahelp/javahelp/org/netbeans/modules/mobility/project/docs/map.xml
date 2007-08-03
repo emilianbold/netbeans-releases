@@ -228,4 +228,5 @@
 	<mapID target="cldc.svg_working" url="svg/svg_working.html"/>
 	<mapID target="cldc.gloss_svg" url="glossary/gloss_svg.html"/>
 	<mapID target="org.netbeans.modules.mvd.ui.editors.UpgradePanel" url="ui/dialog_upgradeinformation.html"/>
+	<mapID target="cdc.panelConfigurationPlatform" url="ui/wizard_newcdcproject_platformselection.html"/>
 </map>
