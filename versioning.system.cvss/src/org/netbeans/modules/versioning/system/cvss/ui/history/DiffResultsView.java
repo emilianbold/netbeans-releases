@@ -24,15 +24,13 @@ import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffStreamSource;
 import org.netbeans.modules.versioning.system.cvss.VersionsCache;
 import org.netbeans.modules.versioning.util.NoContentPanel;
-import org.netbeans.api.diff.DiffView;
-import org.netbeans.api.diff.Diff;
+import org.netbeans.api.diff.DiffController;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Cancellable;
 import org.openide.ErrorManager;
-import org.openide.awt.UndoRedo;
 
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
@@ -59,7 +57,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     private ShowDiffTask            currentTask;
     private RequestProcessor.Task   currentShowDiffTask;
     
-    private DiffView                currentDiff;
+    private DiffController          currentDiff;
     private int                     currentDifferenceIndex;
     private int                     currentIndex;
     private boolean                 dividerSet;
@@ -98,7 +96,10 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+        if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
+            currentDifferenceIndex = currentDiff.getDifferenceIndex();
+            parent.refreshComponents(false);
+        } else if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
             final Node [] nodes = (Node[]) evt.getNewValue();
             currentDifferenceIndex = 0;
             if (nodes.length == 0) {
@@ -120,8 +121,8 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                     SearchHistoryPanel.DispRevision r1 = nodes[0].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
                     try {
                         if (r1 == null || !r1.isBranchRoot()) {
-                            currentIndex = treeView.getSelection()[0];
                             if (nodes.length == 1) {
+                                currentIndex = treeView.getSelection()[0];
                                 if (container1 != null) {
                                     showContainerDiff(container1, onSelectionshowLastDifference);
                                 }
@@ -129,6 +130,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                                     showRevisionDiff(r1, onSelectionshowLastDifference);
                                 }
                             } else if (nodes.length == 2) {
+                                currentIndex = -1;
                                 SearchHistoryPanel.DispRevision r2 = nodes[1].getLookup().lookup(SearchHistoryPanel.DispRevision.class);
                                 if (r2.isBranchRoot()) throw new Exception();
                                 if (r2.getRevision().getLogInfoHeader() != r1.getRevision().getLogInfoHeader()) {
@@ -226,7 +228,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                 if (++currentIndex >= treeView.getRowCount()) currentIndex = 0;
                 setDiffIndex(currentIndex, false);
             } else {
-                currentDiff.setCurrentDifference(currentDifferenceIndex);
+                currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
             if (++currentIndex >= treeView.getRowCount()) currentIndex = 0;
@@ -240,7 +242,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                 if (--currentIndex < 0) currentIndex = treeView.getRowCount() - 1;
                 setDiffIndex(currentIndex, true);
             } else {
-                currentDiff.setCurrentDifference(currentDifferenceIndex);
+                currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
             if (--currentIndex < 0) currentIndex = treeView.getRowCount() - 1;
@@ -250,7 +252,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
     boolean isNextEnabled() {
         if (currentDiff != null) {
-            return currentIndex < treeView.getRowCount() - 1 || currentDifferenceIndex < currentDiff.getDifferenceCount() - 1;
+            return currentIndex != -1 && currentIndex < treeView.getRowCount() - 1 || currentDifferenceIndex < currentDiff.getDifferenceCount() - 1;
         } else {
             return false;
         }
@@ -309,7 +311,6 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
 
         public void run() {
             parent.getUndoRedo().setDiffView(null);            
-            final Diff diff = Diff.getDefault();
             final DiffStreamSource s1 = new DiffStreamSource(header.getFile(), revision1, revision1 == VersionsCache.REVISION_CURRENT ? 
                     NbBundle.getMessage(DiffResultsView.class, "LBL_DiffPanel_LocalCopy") : revision1);  // NOI18N
             final DiffStreamSource s2 = new DiffStreamSource(header.getFile(), revision2, revision2 == VersionsCache.REVISION_CURRENT ? 
@@ -334,14 +335,18 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
                         if (cancelled) {
                             return;
                         }
-                        final DiffView view = diff.createDiff(s1, s2);
+                        DiffController view = DiffController.create(s1, s2);
                         if (currentTask == ShowDiffTask.this) {
+                            if (currentDiff != null) {
+                                currentDiff.removePropertyChangeListener(DiffResultsView.this);
+                            }
                             currentDiff = view;
-                            parent.getUndoRedo().setDiffView((JComponent) currentDiff.getComponent());
-                            setBottomComponent(currentDiff.getComponent());
+                            currentDiff.addPropertyChangeListener(DiffResultsView.this);
+                            parent.getUndoRedo().setDiffView((JComponent) currentDiff.getJComponent());
+                            setBottomComponent(currentDiff.getJComponent());
                             if (currentDiff.getDifferenceCount() > 0) {
                                 currentDifferenceIndex = showLastDifference ? currentDiff.getDifferenceCount() - 1 : 0;
-                                currentDiff.setCurrentDifference(currentDifferenceIndex);
+                                currentDiff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
                             }
                             parent.refreshComponents(false);
                         }
@@ -359,7 +364,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     }
     
     JComponent getCurrentDiffComponent() {
-        return (JComponent) (currentDiff == null ? null : currentDiff.getComponent());
+        return (JComponent) (currentDiff == null ? null : currentDiff.getJComponent());
     }
 
     public JComponent getComponent() {
