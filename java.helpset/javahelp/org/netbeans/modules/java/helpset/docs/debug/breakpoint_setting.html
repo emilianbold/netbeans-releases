@@ -13,16 +13,20 @@
 
 <h2>Setting a Java Breakpoint</h2>
 <p> <small><a href="#seealso">See Also</a></small></p>
-<p>Except for line breakpoints, all Java breakpoints are defined globally 
+<p>All Java breakpoints are defined globally 
 and therefore affect all IDE projects that include the source on which
 a breakpoint is set. For example, if you set a class breakpoint on <tt>com.me.MyClass</tt> in
 one project, the IDE will stop execution every time it encounters that class
 during a debugging session for other projects that include the class. </p>
 
-<p><b>To set a line breakpoint:</b></p>
+<p><b>To set a line, field or method breakpoint:</b></p>
 <ul>
   <li>Click the left margin of the line in the Source Editor or press Ctrl-F8.</li>
 </ul>
+<p>When you set the breakpoint, the corresponding breakpoint annotation is visible in the left margin next to the line of source code.
+When you set a breakpoint, the IDE tests the validity of the breakpoint. 
+If a breakpoint is invalid the IDE uses a broken annotation to indicate the invalid breakpoint and displays an error message
+in the Debugger Console.</p>
 
 <p><b>To set all other types of breakpoints:</b></p>
 <ol>
@@ -56,7 +60,6 @@ during a debugging session for other projects that include the class. </p>
 <ul>
     <li>You can modify and enable line breakpoints by right-clicking the breakpoint
 icon in the left margin of the Source Editor and choosing from the Breakpoint submenu.</li>
-    <li>You cannot set conditional breakpoints on threads and classes.</li>
     <li>When a debugging session is running, you can use code completion in the New Breakpoint dialog box.</li>
 </ul>
 
