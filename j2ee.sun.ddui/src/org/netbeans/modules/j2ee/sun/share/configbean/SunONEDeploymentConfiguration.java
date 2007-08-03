@@ -1665,7 +1665,7 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         T[] beans = (T[]) parentDD.getValues(beanProp);
         if (beans != null) {
             for (int i = 0; i < beans.length; i++) {
-                String name = (String) beans[0].getValue(nameProp);
+                String name = (String) beans[i].getValue(nameProp);
                 if (referenceName.equals(name)) {
                     result = beans[i];
                     break;
