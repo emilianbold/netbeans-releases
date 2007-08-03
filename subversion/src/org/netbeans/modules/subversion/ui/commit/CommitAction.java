@@ -49,7 +49,6 @@ import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 /**
  * Commit action
