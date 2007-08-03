@@ -113,8 +113,8 @@ public class ReportTask extends Thread implements Cancellable
         "org/netbeans/modules/uml/reporting/templates/behaviour.js",
         "org/netbeans/modules/uml/reporting/templates/stylesheet.css",
         "org/netbeans/modules/uml/reporting/templates/index.html",
-        "org/netbeans/modules/uml/reporting/templates/help.html",
-        //	"org/netbeans/modules/uml/reporting/templates/element-index.html",
+        "org/netbeans/modules/uml/reporting/templates/help.html"
+        // "org/netbeans/modules/uml/reporting/templates/element-index.html",
     };
     
     // image files used by the report being generated
@@ -253,7 +253,11 @@ public class ReportTask extends Thread implements Cancellable
     private void initialize()
     {
         opened.clear();
-//        copyImages();
+        // copyImages();
+        File images = new File(getReportDir() + File.separator + "images");
+        images.mkdirs();
+        images = null;
+
         for (int i=0; i<files.length; i++)
         {
             copyFiles(files[i]);
@@ -456,12 +460,11 @@ public class ReportTask extends Thread implements Cancellable
             }
         }
     }
-    
+
     
     private void copyImages()
     {
         File images = new File(getReportDir() + File.separator + "images");
-        images.mkdirs();
         String toFolder = images.getAbsolutePath() + File.separatorChar;
         images = null;
         
