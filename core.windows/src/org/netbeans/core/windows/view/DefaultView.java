@@ -439,11 +439,14 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 }
                 ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
                 if (modeView != null) {
-                   TopComponent tc = (TopComponent) viewEvent.getNewValue();
-                   if (tc == null) {
-                       throw new NullPointerException ("Top component is null for attention cancellation request"); //NOI18N
-                   }
-                   modeView.cancelRequestAttention (tc); 
+                    TopComponent tc = (TopComponent) viewEvent.getNewValue();
+                    if (tc == null) {
+                        throw new NullPointerException ("Top component is null for attention cancellation request"); //NOI18N
+                    }
+                    //make sure the TC is still opened in the given mode container
+                    if( modeView.getTopComponents().contains( tc ) ) {
+                        modeView.cancelRequestAttention (tc); 
+                    }
                 } else {
                     Logger.getLogger(DefaultView.class.getName()).fine(
                         "Could not find mode " + viewEvent.getSource());
