@@ -41,6 +41,7 @@ Microsystems, Inc. All Rights Reserved.
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Dialogs">
         <testset dir="qa-functional/src">
             <patternset>
+                <include name="gui/MeasureJ2EEDialogs.class/Call EJB Dialog open" expectedFail="http://www.netbeans.org/issues/show_bug.cgi?id=73806"/>
                 <include name="gui/MeasureJ2EEDialogs.class"/>
             </patternset>
         </testset>
@@ -71,6 +72,7 @@ Microsystems, Inc. All Rights Reserved.
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Menus">
         <testset dir="qa-functional/src">
             <patternset>
+                <include name="gui/MeasureJ2EEMenus.class/EAR Project node popup in Projects View" expectedFail="http://www.netbeans.org/issues/show_bug.cgi?id=60111"/>
                 <include name="gui/MeasureJ2EEMenus.class"/>
             </patternset>
         </testset>
@@ -101,6 +103,8 @@ Microsystems, Inc. All Rights Reserved.
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Actions">
         <testset dir="qa-functional/src">
             <patternset>
+                <include name="gui/MeasureJ2EEActions.class/Add business method to SB" expectedFail="http://www.netbeans.org/issues/show_bug.cgi?id=110458"/>
+                <include name="gui/MeasureJ2EEActions.class/Add business method to EB" expectedFail="http://www.netbeans.org/issues/show_bug.cgi?id=110458"/>
                 <include name="gui/MeasureJ2EEActions.class"/>
             </patternset>
         </testset>
