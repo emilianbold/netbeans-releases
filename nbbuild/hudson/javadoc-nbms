@@ -16,7 +16,7 @@ keystore=$mydir/NBstore
 storepass=`cat $mydir/storepass`
 ant -emacs -Dbuildnum=$BUILD_TAG -Dcluster.config=experimental -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass -f nbbuild/build.xml build-nozip build-nbms || exit
 ant -f core/test/build.xml -Dxtest.attribs=commit cleanresults runtests || exit
-ant -f nbbuild/build.xml -Dtest.dir=`pwd`/core/test commit-validation-junit-format
+ant -f nbbuild/build.xml -Dtest.dir=`pwd`/core/test commit-validation-junit-format || exit
 ant -f $mydir/build-update-descriptor.xml || exit
-ant -f nbbuild/build.xml -Djnlp.codebase=http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp
+ant -f nbbuild/build.xml -Djnlp.codebase=http://deadlock.netbeans.org/hudson/job/javadoc-nbms/lastSuccessfulBuild/artifact/nbbuild/build/jnlp/ -Djnlp.signjar.keystore=$keystore -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$storepass build-jnlp || exit
 ant -f nbbuild/build.xml index-layer-paths
