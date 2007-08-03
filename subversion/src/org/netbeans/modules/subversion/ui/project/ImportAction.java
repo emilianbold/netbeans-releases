@@ -20,7 +20,6 @@
 package org.netbeans.modules.subversion.ui.project;
 
 import org.netbeans.modules.subversion.Subversion;
-import org.netbeans.modules.subversion.SvnFileNode;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.commit.CommitAction;
 import org.openide.util.actions.NodeAction;
@@ -36,7 +35,6 @@ import java.util.*;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
-import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.subversion.ui.wizards.ImportWizard;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.util.SvnUtils;
