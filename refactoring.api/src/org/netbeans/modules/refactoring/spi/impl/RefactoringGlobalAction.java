@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
+import java.util.Dictionary;
 import java.util.Hashtable;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -38,6 +39,7 @@ import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**
@@ -126,7 +128,15 @@ public abstract class RefactoringGlobalAction extends NodeAction {
         Lookup context;
 
         public ContextAction(Lookup context) {
-            this.context=context;
+            if (context.lookup(Dictionary.class)==null) {
+                Object[] values = context.lookupAll(Object.class).toArray();
+                Object[] newValues = new Object[values.length+1];
+                System.arraycopy(values, 0, newValues, 0, values.length);
+                newValues[values.length]=new Hashtable();
+                this.context = Lookups.fixed(newValues);
+            } else {
+                this.context=context;
+            }
         }
         
         public Object getValue(String arg0) {
