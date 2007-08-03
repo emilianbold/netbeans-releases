@@ -118,7 +118,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
                 }
                 if(getSelectedAction() != null) {
                     editActionButton.setEnabled(true);
-                    viewSourceButton.setEnabled(true);
+                    enableViewSource(true);
                     deleteActionButton.setEnabled(true);
                 }
             }
@@ -128,7 +128,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
             public void valueChanged(ListSelectionEvent e) {
                 boolean state = getSelectedAction() != null;
                 editActionButton.setEnabled(state);
-                viewSourceButton.setEnabled(state);
+                enableViewSource(state);
                 deleteActionButton.setEnabled(state);
             }
         });
@@ -222,6 +222,18 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         reloadProjectsCombo();
         reloadClassesCombo();
         reloadTable();
+    }
+        
+    private void enableViewSource(boolean enabled) {
+        ProxyAction act = getSelectedAction();
+        viewSourceButton.setEnabled(enabled);
+        // disable viewsource if the action has no source
+        if(actionManager != null && act != null) {
+            FileObject sourceFile = actionManager.getFileForClass(act.getClassname());
+            if(sourceFile == null) {
+                viewSourceButton.setEnabled(false);
+            }
+        }
     }
     
     private final static String SHOW_ALL_CLASSES = getLocalizedString("classesFilter.allClasses");
