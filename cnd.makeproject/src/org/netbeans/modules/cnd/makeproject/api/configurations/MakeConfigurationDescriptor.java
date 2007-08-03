@@ -479,18 +479,6 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
             Element data = helper.getPrimaryConfigurationData(true);
             Document doc = data.getOwnerDocument();
             
-            // Read dep projects
-            NodeList nl4 = data.getElementsByTagName("make-dep-project"); // NOI18N
-            if (nl4.getLength() > 0) {
-                for (int i = 0; i < nl4.getLength(); i++) {
-                    Node node = nl4.item(i);
-                    NodeList nl2 = node.getChildNodes();
-                    for (int j = 0; j < nl2.getLength(); j++) {
-                        String typeTxt = (String)nl2.item(j).getNodeValue();
-                        System.out.println("dep " + typeTxt);
-                    }
-                }
-            }
             // Remove old node
             NodeList nodeList = data.getElementsByTagName("make-dep-projects"); // NOI18N
             if (nodeList != null && nodeList.getLength() > 0) {
@@ -626,6 +614,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor {
     
     private void addFiles(Folder folder, File dir, boolean addSubFolders, FileFilter filter, ProgressHandle handle, ArrayList filesAdded) {
         File[] files = dir.listFiles();
+        if (files == null)
+            return;
         for (int i = 0; i < files.length; i++) {
             if (!filter.accept(files[i]))
                 continue;

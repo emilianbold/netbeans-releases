@@ -20,6 +20,7 @@
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,8 +34,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public class SunCCCompiler extends CCCCompiler {
-    private static final String compilerStderrCommand = "CC -xdryrun -E"; // NOI18N
-    private static final String compilerStderrCommand2 = "CC -xdumpmacros=defs,sys -E"; // NOI18N
+    private static final String compilerStderrCommand = " -xdryrun -E"; // NOI18N
+    private static final String compilerStderrCommand2 = " -xdumpmacros=defs,sys -E"; // NOI18N
     private PersistentList systemIncludeDirectoriesList = null;
     private PersistentList systemPreprocessorSymbolsList = null;
     private boolean saveOK = true;
@@ -108,10 +109,9 @@ public class SunCCCompiler extends CCCCompiler {
                 return "-m32"; // NOI18N
             else if (value == BasicCompilerConfiguration.BITS_64)
                 return "-m64"; // NOI18N
-        else
+            else
                 return ""; // NOI18N
-    }
-        else {
+        } else {
             if (value == BasicCompilerConfiguration.BITS_DEFAULT)
                 return ""; // NOI18N
             else if (value == BasicCompilerConfiguration.BITS_32)
@@ -133,7 +133,7 @@ public class SunCCCompiler extends CCCCompiler {
             return false;
         }
         systemIncludeDirectoriesList = new PersistentList(values);
-        return true;        
+        return true;
     }
     
     public boolean setSystemPreprocessorSymbols(Platform platform, List values) {
@@ -158,7 +158,7 @@ public class SunCCCompiler extends CCCCompiler {
             return systemIncludeDirectoriesList;
         
         getSystemIncludesAndDefines(platform);
-	normalizePaths(systemIncludeDirectoriesList);
+        normalizePaths(systemIncludeDirectoriesList);
         return systemIncludeDirectoriesList;
     }
     
@@ -202,16 +202,20 @@ public class SunCCCompiler extends CCCCompiler {
     }
     
     private void getFreshSystemIncludesAndDefines(Platform platform) {
+        systemIncludeDirectoriesList = new PersistentList();
+        systemPreprocessorSymbolsList = new PersistentList();
+        String path = getPath();
+        if (path == null || !new File(path).exists()) {
+            path = "CC"; // NOI18N
+        }
         try {
-            systemIncludeDirectoriesList = new PersistentList();
-            systemPreprocessorSymbolsList = new PersistentList();
-            getSystemIncludesAndDefines(platform, compilerStderrCommand, false);
-            getSystemIncludesAndDefines(platform, compilerStderrCommand2, false);
+            getSystemIncludesAndDefines(platform, path + compilerStderrCommand, false);
+            getSystemIncludesAndDefines(platform, path + compilerStderrCommand2, false);
             systemIncludeDirectoriesList.add("/usr/include"); // NOI18N
             saveOK = true;
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
-            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName()); // NOI18N
+            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", path); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;
         }

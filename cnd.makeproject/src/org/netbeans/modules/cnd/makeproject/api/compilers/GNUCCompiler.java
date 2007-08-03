@@ -34,8 +34,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public class GNUCCompiler extends CCCCompiler {
-    private static final String compilerStdoutCommand = "gcc -x c -dM -E"; // NOI18N
-    private static final String compilerStderrCommand = "gcc -x c -v -E"; // NOI18N
+    private static final String compilerStdoutCommand = " -x c -dM -E"; // NOI18N
+    private static final String compilerStderrCommand = " -x c -v -E"; // NOI18N
     private PersistentList systemIncludeDirectoriesList = null;
     private PersistentList systemPreprocessorSymbolsList = null;
     private boolean saveOK = true;
@@ -62,7 +62,7 @@ public class GNUCCompiler extends CCCCompiler {
     }
     
     /** Creates a new instance of GNUCCompiler */
-    public GNUCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) { 
+    public GNUCCompiler(CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(flavor, kind, name, displayName, path);
     }
     
@@ -94,7 +94,7 @@ public class GNUCCompiler extends CCCCompiler {
             return false;
         }
         systemIncludeDirectoriesList = new PersistentList(values);
-        return true;        
+        return true;
     }
     
     public boolean setSystemPreprocessorSymbols(Platform platform, List values) {
@@ -119,7 +119,7 @@ public class GNUCCompiler extends CCCCompiler {
             return systemIncludeDirectoriesList;
         
         getSystemIncludesAndDefines(platform);
-	normalizePaths(systemIncludeDirectoriesList);
+        normalizePaths(systemIncludeDirectoriesList);
         return systemIncludeDirectoriesList;
     }
     
@@ -143,11 +143,15 @@ public class GNUCCompiler extends CCCCompiler {
     }
     
     private void getFreshSystemIncludesAndDefines(Platform platform) {
+        systemIncludeDirectoriesList = new PersistentList();
+        systemPreprocessorSymbolsList = new PersistentList();
+        String path = getPath();
+        if (path == null || !new File(path).exists()) {
+            path = "gcc"; // NOI18N
+        }
         try {
-            systemIncludeDirectoriesList = new PersistentList();
-            systemPreprocessorSymbolsList = new PersistentList();
-            getSystemIncludesAndDefines(platform, compilerStderrCommand, false);
-            getSystemIncludesAndDefines(platform, compilerStdoutCommand, true);
+            getSystemIncludesAndDefines(platform, path + compilerStderrCommand, false);
+            getSystemIncludesAndDefines(platform, path + compilerStdoutCommand, true);
             // a workaround for gcc bug - see http://gcc.gnu.org/ml/gcc-bugs/2006-01/msg00767.html
             if (!containsMacro(systemPreprocessorSymbolsList, "__STDC__")) { // NOI18N
                 systemPreprocessorSymbolsList.add("__STDC__=1"); // NOI18N
@@ -155,7 +159,7 @@ public class GNUCCompiler extends CCCCompiler {
             saveOK = true;
         } catch (IOException ioe) {
             System.err.println("IOException " + ioe);
-            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", getName()); // NOI18N
+            String errormsg = NbBundle.getMessage(getClass(), "CANTFINDCOMPILER", path); // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
             saveOK = false;
         }
@@ -218,7 +222,7 @@ public class GNUCCompiler extends CCCCompiler {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
         }
     }
-
+    
     
     private void dumpLists() {
         System.out.println("==================================" + getDisplayName()); // NOI18N

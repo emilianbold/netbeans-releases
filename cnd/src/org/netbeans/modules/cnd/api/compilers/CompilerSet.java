@@ -506,7 +506,9 @@ public class CompilerSet {
             if (tool.getKind() == kind)
                 return tool;
         }
-        return compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
+        Tool t = compilerProvider.createCompiler(CompilerFlavor.Unknown, kind, "", noCompDNames[kind], ""); // NOI18N
+        tools.add(t);
+        return t;
     }
     
     public boolean isValid() {

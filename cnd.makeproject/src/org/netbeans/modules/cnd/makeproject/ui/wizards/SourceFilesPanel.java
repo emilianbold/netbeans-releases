@@ -361,6 +361,10 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         int ret = fileChooser.showOpenDialog(this);
         if (ret == FileChooser.CANCEL_OPTION)
             return;
+        if (!fileChooser.getSelectedFile().exists() || !fileChooser.getSelectedFile().isDirectory()) {
+            // FIXUP: error message
+            return;
+        }
         data.add(new FolderEntry(fileChooser.getSelectedFile(), IpeUtils.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
         refresh();
     }//GEN-LAST:event_addButtonActionPerformed
