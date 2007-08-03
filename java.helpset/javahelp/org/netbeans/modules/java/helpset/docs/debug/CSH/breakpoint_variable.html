@@ -7,33 +7,43 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>New Breakpoint Dialog Box: Variable</title>
+<title>New Breakpoint Dialog Box: Field</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>New Breakpoint Dialog Box: Variable</h2>
+<h2>New Breakpoint Dialog Box: Field</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
 
-<p>You use the New Breakpoint dialog box to set a breakpoint on a variable.</p>
-<p>To open the dialog box, from the main menu, choose Run &gt; New Breakpoint, then select Variable from the Breakpoint Type drop-down list.</p>
+<p>You use the New Breakpoint dialog box to set a breakpoint on a field.</p>
+<p>To open the dialog box, from the main menu, choose Run &gt; New Breakpoint, then select Field from the Breakpoint Type drop-down list.</p>
 <p>You can set the following values:</p>
-<ul>
-	<li><b>Settings.</b>
-		<ul>
-			<li><b>Package Name.</b> The name of the package you want the debugger to stop on. You can use an asterisk (*) for the package name.</li>
-			<li><b>Class Name.</b> The name of the class file. You can also use an asterisk for the class name. For example, if you specify <tt>java.lang</tt> as the package name and * for the class name, the breakpoint applies to any class from the package <tt>java.lang</tt>.</li>
-			<li><b>Field Name.</b> The name of the field.</li>
-			<li><b>Stop on.</b> When to trigger the breakpoint. Variable Access stops your program when it queries a variable in the specified class and field. Variable Modification stops your program when the value of the variable changes.</li>
-			<li><b>Condition.</b> A Boolean expression that triggers the breakpoint when the expression evaluates to True. For information on the syntax rules for setting a condition, see <a href="../debug_syntaxrules_breakpointconditions.html">Syntax Rules for Setting a Condition on a Breakpoint</a>.</li>
-		</ul></li>
-	<li><b>Actions.</b> Enable you to specify the actions to take when the breakpoint is triggered.
-		<ul>
-			<li><b>Suspend Debugging.</b> If selected, all threads in the program being debugged are temporarily stopped. </li>
-			<li><b>Print Text.</b> If selected, the specified message is printed in the Debugger Console view of the Output window. For information on the tags you can include in the message, see 
-<a href="../debug_print_breakpoint_message.html">Printing a Breakpoint Message</a>.</li>
-		</ul></li>
-</ul>
+    <ul>
+        <li><b>Settings.</b>
+            <ul>
+                <!--<li><b>Package Name.</b> The name of the package you want the debugger to stop on. You can use an asterisk (*) for the package name.</li>-->
+                <li><b>Class Name.</b> The name of the class file. You can also use an asterisk for the class name. For example, if you specify <tt>java.lang</tt> as the package name and * for the class name, the breakpoint applies to any class from the package <tt>java.lang</tt>.</li>
+                <li><b>Field Name.</b> The name of the field.</li>
+                <li><b>Stop On.</b> When to trigger the breakpoint. 
+                    Field Access stops your program when it queries a variable in the specified class and field. 
+                Field Modification stops your program when the value of the variable changes.</li>
+            </ul>
+        </li>
+        <li><b>Conditions</b>
+            <ul>
+            <li><b>Condition.</b> A Boolean expression that triggers the breakpoint when the expression evaluates to True. For information on the syntax rules for setting a condition, see <a href="../debug_syntaxrules_breakpointconditions.html">Syntax Rules for Setting a Condition on a Breakpoint</a>.</li>
+            <li><b>Break when hit count.</b> When selected, enables you to specify how frequently the breakpoint is triggered. 
+            Choose a criteria in the drop-down list and then specify a numerical value.</li>
+            </ul>
+        </li>
+        <li><b>Actions.</b> Enable you to specify the actions to take when the breakpoint is triggered.
+            <ul>
+            <li><b>Suspend Debugging.</b> If selected, all threads in the program being debugged are temporarily stopped. </li>
+            <li><b>Print Text.</b> If selected, the specified message is printed in the Debugger Console view of the Output window. For information on the tags you can include in the message, see 
+            <a href="../debug_print_breakpoint_message.html">Printing a Breakpoint Message</a>.</li>
+            </ul>
+        </li>
+    </ul>
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>

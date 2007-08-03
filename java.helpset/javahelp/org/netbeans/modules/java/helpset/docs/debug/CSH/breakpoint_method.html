@@ -25,22 +25,29 @@
 <ul>
 	<li><b>Settings.</b>
 		<ul>
-			<li><b>Package Name.</b> The name of the package that contains the method that you want the debugger to stop on. </li>
+			<!--<li><b>Package Name.</b> The name of the package that contains the method that you want the debugger to stop on. </li>-->
 			<li><b>Class Name.</b> The name of the class that contains the method. If the Apply Also to Anonymous Inner Classes checkbox is selected, the breakpoint also applies to all anonymous (unnamed) inner classes that the specified class contains. If an anonymous class contains another inner class (either anonymous or named), the breakpoint also applies to that inner class. </li>
-			<li><b>Method Name.</b> The name of the method. If you want to apply the breakpoint to all methods of the specified class, select the All Methods for Given Classes checkbox. </li>
-			<li><b>Condition.</b> A Boolean expression that triggers the breakpoint when the expression evaluates to True.
-				<p>For information on the syntax rules for setting a condition, see <a href="../debug_syntaxrules_breakpointconditions.html">Syntax Rules for Setting a Condition on a Breakpoint</a>.</p></li>
-		</ul></li>
+                        <li><b>All Methods for Given Class.</b> If selected, applies the breakpoint to all methods of the specified class. </li>
+                        <li><b>Method Name.</b> The name of the method. If you want to apply the breakpoint to all methods of the specified class, select the All Methods for Given Classes checkbox. </li>
+                        <li><b>Stop On.</b> Specifies when program execution is stopped. </li>
+                    </ul></li>
+        <li><b>Conditions</b>
+            <ul>
+            <li><b>Condition.</b> A Boolean expression that triggers the breakpoint when the expression evaluates to True. For information on the syntax rules for setting a condition, see <a href="../debug_syntaxrules_breakpointconditions.html">Syntax Rules for Setting a Condition on a Breakpoint</a>.</li>
+            <li><b>Break when hit count.</b> When selected, enables you to specify how frequently the breakpoint is triggered. 
+            Choose a criteria in the drop-down list and then specify a numerical value.</li>
+            </ul>
+        </li>
 	<li><b>Actions.</b> The actions to take when the breakpoint is triggered.
-      <ul>
+          <ul>
                 <li><b>Suspend.</b> Specifies which threads in the program 
                 being debugged are suspended when the breakpoint is reached. 
                 You can specify no threads, all threads, or the breakpoint 
                 thread. The breakpoint thread is the thread that is current 
                 when the breakpoint is reached.</li>
-        <li><b>Print Text.</b> The specified message is printed in the Debugger Console view of the Output window. For information on the tags you can include in the message, see 
-<a href="../debug_print_breakpoint_message.html">Printing a Breakpoint Message</a>.</li>
-      </ul>
+                <li><b>Print Text.</b> The specified message is printed in the Debugger Console view of the Output window. For information on the tags you can include in the message, see 
+                <a href="../debug_print_breakpoint_message.html">Printing a Breakpoint Message</a>.</li>
+          </ul>
 	</li>
 </ul>
 
