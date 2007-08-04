@@ -154,6 +154,7 @@ public class Utils {
                 } catch (IllegalThreadStateException e) {
                     ; // do nothing - the process is still running
                 }
+                Utils.wait(data, 1);
             }
 
             if (runningTime >= MAX_EXECUTION_TIME) {
