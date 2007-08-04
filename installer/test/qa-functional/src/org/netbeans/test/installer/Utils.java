@@ -143,7 +143,9 @@ public class Utils {
                     "--verbose",
                     "--userdir", data.getTestWorkDir().getCanonicalPath(),
                     "--extract", pathToExtract, 
-                    "--output", data.getTestWorkDir().getCanonicalPath() + File.separator + "inst.log");
+                    "--output", data.getTestWorkDir().getCanonicalPath() + 
+                                File.separator + 
+                                "inst_" + data.getInstallerType() + ".log");
             process = builder.start();
 
             long runningTime;
