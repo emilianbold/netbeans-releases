@@ -21,10 +21,12 @@ Microsystems, Inc. All Rights Reserved.
     <import file="../../../nbbuild/templates/projectized.xml"/>
     <target name="netbeans-extra" depends="release"/>
 
+<!--
     <target name="release" depends="init">
         <mkdir dir="${cluster}/modules/scr"/>
         <copy todir="${cluster}/modules/scr">
             <fileset dir="scripts"/>
         </copy>
     </target>
+-->
 </project>
