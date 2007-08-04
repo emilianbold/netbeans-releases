@@ -77,7 +77,7 @@ public class RailsProjectGenerator {
         if (create) {
             boolean runThroughRuby = RubyInstallation.getInstance().getVersion("rails") != null; // NOI18N
             ExecutionDescriptor desc = null;
-            String displayName = NbBundle.getMessage(GotoActionView.class, "GenerateRails");
+            String displayName = NbBundle.getMessage(RailsProjectGenerator.class, "GenerateRails");
 
             File pwd = dir.getParentFile();
             if (runThroughRuby) {

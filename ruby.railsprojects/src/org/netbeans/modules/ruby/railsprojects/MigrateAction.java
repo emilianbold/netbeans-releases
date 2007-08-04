@@ -294,7 +294,7 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
 
             // EMPTY CONTEXT??
             RailsFileLocator fileLocator = new RailsFileLocator(Lookup.EMPTY, project);
-            String displayName = NbBundle.getMessage(GotoActionView.class, "Migration");
+            String displayName = NbBundle.getMessage(MigrateAction.class, "Migration");
 
             //            ProjectInformation info = ProjectUtils.getInformation(project);
             //
