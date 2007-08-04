@@ -15,9 +15,9 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
             super(model, e);
         }
         
-        public OperatorComponentImpl(IEPModel model) {
-            super(model);
-        }
+    public OperatorComponentImpl(IEPModel model) {
+        super(model);
+    }
         
 	public String getDescription() {
 		String description = null;
@@ -132,7 +132,14 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		return x;
 		
 	}
-
+	
+	public void setX(int x) {
+		Property p = super.getProperty(PROP_X);
+		if(p != null) {
+			p.setValue(x+"");
+		}
+	}
+	
 	public int getY() {
 		String yStr = null;
 		
@@ -152,7 +159,14 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		return y;
 	
 	}
-
+	
+	public void setY(int y) {
+		Property p = super.getProperty(PROP_Y);
+		if(p != null) {
+			p.setValue(y+"");
+		}
+	}
+	
 	public int getZ() {
 		String zStr = null;
 		
@@ -173,6 +187,13 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		
 	}
 
+	public void setZ(int z) {
+		Property p = super.getProperty(PROP_Z);
+		if(p != null) {
+			p.setValue(z+"");
+		}
+	}
+	
 	public boolean isBatchMode() {
 		return false;
 	}

@@ -2,6 +2,8 @@ package org.netbeans.modules.iep.model;
 
 import java.util.List;
 
+import org.netbeans.modules.iep.model.lib.TcgComponentType;
+
 public interface OperatorComponent extends Component {
 
 	public static final String PROP_X = "x";
@@ -40,9 +42,15 @@ public interface OperatorComponent extends Component {
 	
 	int getX();
 	
+	void setX(int x);
+	
 	int getY();
 	
+	void setY(int y);
+	
 	int getZ();
+	
+	void setZ(int z);
 	
 	String getId();
 	
@@ -77,5 +85,6 @@ public interface OperatorComponent extends Component {
 	public List<Property> getGroupByColumnList();
 	
 	public String getWhereClause();
+	
 	
 }
