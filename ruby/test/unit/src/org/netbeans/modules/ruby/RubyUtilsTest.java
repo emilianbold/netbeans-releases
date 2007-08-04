@@ -11,20 +11,12 @@ import junit.framework.TestCase;
 
 /**
  *
- * @author tor
+ * @author Tor Norbye
  */
 public class RubyUtilsTest extends TestCase {
     
     public RubyUtilsTest(String testName) {
         super(testName);
-    }
-
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
     }
 
     public void testIsInvalidMultibytechars() {
@@ -75,11 +67,20 @@ public class RubyUtilsTest extends TestCase {
         assertTrue(RubyUtils.isValidRubyMethodName("ab_"));
         assertTrue(RubyUtils.isValidRubyMethodName("cde?"));
         assertTrue(RubyUtils.isValidRubyMethodName("[]"));
+        assertTrue(RubyUtils.isValidRubyMethodName("[]="));
+        assertTrue(RubyUtils.isValidRubyMethodName("<=>"));
+        assertTrue(RubyUtils.isValidRubyMethodName("<="));
+        assertTrue(RubyUtils.isValidRubyMethodName("`"));
 
         assertTrue(!RubyUtils.isValidRubyMethodName("Abc"));
         assertTrue(!RubyUtils.isValidRubyMethodName(" def"));
         assertTrue(!RubyUtils.isValidRubyMethodName(""));
         assertTrue(!RubyUtils.isValidRubyMethodName("ijk "));
+        assertTrue(!RubyUtils.isValidRubyMethodName("=>"));
+        assertTrue(!RubyUtils.isValidRubyMethodName("^^"));
+        assertTrue(!RubyUtils.isValidRubyMethodName("***"));
+        assertTrue(!RubyUtils.isValidRubyMethodName(".."));
+        assertTrue(!RubyUtils.isValidRubyMethodName("["));
 
         assertTrue(RubyUtils.isValidRubyMethodName("abc?"));
         assertTrue(RubyUtils.isValidRubyMethodName("abc="));

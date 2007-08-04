@@ -77,6 +77,50 @@ public class RubyUtils {
         return sb.toString();
     }
     
+    /** Is this name a valid operator name? */
+    public static boolean isOperator(String name) {
+        if (name.length() == 0) {
+            return false;
+        }
+        // Pieced together from various sources (RubyYaccLexer, DefaultRubyParser, ...)
+        switch (name.charAt(0)) {
+        case '+':
+            return name.equals("+") || name.equals("+@");
+        case '-':
+            return name.equals("-@");
+        case '*':
+            return name.equals("*") || name.equals("**");
+        case '<':
+            return name.equals("<") || name.equals("<<") || name.equals("<=") || name.equals("<=>");
+        case '>':
+            return name.equals(">") || name.equals(">>") || name.equals(">=");
+        case '=':
+            return name.equals("=") || name.equals("==") || name.equals("===") || name.equals("=~");
+        case '!':
+            return name.equals("!=") || name.equals("!~");
+        case '&':
+            return name.equals("&") || name.equals("&&");
+        case '|':
+            return name.equals("|") || name.equals("||");
+        case '[':
+            return name.equals("[]") || name.equals("[]=");
+        case '%':
+            return name.equals("%");
+        case '/':
+            return name.equals("/");
+        case '~':
+            return name.equals("~");
+        case '^':
+            return name.equals("^");
+        case '`':
+            return name.equals("`");
+        default:
+            return false;
+        }
+    }
+    
+    // There are lots of valid method names...   %, *, +, -, <=>, ...
+    
     /**
      * Ruby identifiers should consist of [a-zA-Z0-9_]
      * http://www.headius.com/rubyspec/index.php/Variables
@@ -97,8 +141,12 @@ public class RubyUtils {
             if (!((c >= 'a' && c <= 'z') || (c == '_') ||
                     (c >= 'A' && c <= 'Z') ||
                     (c >= '0' && c <= '9') ||
-                    (c == '?') || (c == '=') || (c == '!') || // Method suffixes; only allowed on the last line
-                   (c == '[') || c == ']')) {  // [] is a valid method name
+                    (c == '?') || (c == '=') || (c == '!'))) { // Method suffixes; only allowed on the last line
+
+                if (isOperator(name)) {
+                    return true;
+                }
+
                 return false;
             }
         }
@@ -211,8 +259,7 @@ public class RubyUtils {
             return false;
         }
 
-        // TODO - find out what the exact rules are
-        if (name.equals("[]")) {
+        if (isOperator(name)) {
             return true;
         }
 
@@ -220,22 +267,16 @@ public class RubyUtils {
             return false;
         }
 
-        for (int i = 1; i < name.length(); i++) {
-            // Identifier char isn't really accurate - I can have a function named "[]" etc.
-            // so just look for -obvious- mistakes
-            if (Character.isWhitespace(name.charAt(i))) {
-                return false;
-            }
-            
-        }
-        
-        // !, = and ? can only be in the last position
-        for (int i = 0; i < name.length()-1; i++) {
+        for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            
-            if (c == '!' || c == '=' || c == '?') {
+            if (!(Character.isLetterOrDigit(c) || c == '_')) {
+                // !, = and ? can only be in the last position
+                if (i == name.length()-1 && ((c == '!') || (c == '=') || (c == '?'))) {
+                    return true;
+                }
                 return false;
             }
+            
         }
 
         return true;
@@ -257,6 +298,7 @@ public class RubyUtils {
                 return false;
             }
             
+            // TODO - make this more accurate, like the method validifier
         }
         
         return true;
