@@ -1038,6 +1038,19 @@ public class BracketCompleterTest extends RubyTestBase {
         assertLogicalRange(next, false, code);
     }
 
+    public void testLogicalRangeStrings5() throws Exception {
+        String code = "def test\n 'return^ me'\nend";
+        String next = "def test\n %<%'return^ me'%>%\nend";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRangeStrings6() throws Exception {
+        String code = "def test\n %<%'return^ me'%>%\nend";
+        String next = "%<%def test\n 'return^ me'\nend%>%";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
 
     public void testLogicalRangeRegexps1() throws Exception {
         String code = "x = /foo b^ar baz/, y = \"whatever\"";
