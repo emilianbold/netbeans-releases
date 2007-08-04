@@ -16,6 +16,9 @@
  */
 package org.netbeans.modules.ruby.hints;
 
+import java.util.List;
+import org.openide.filesystems.FileObject;
+
 /**
  * Test the block-var hint
  * 
@@ -34,5 +37,12 @@ public class BlockVarTest extends HintTestBase {
     
     public void testHint1() throws Exception {
         findHints(this, new BlockVarReuse(), "testfiles/blockvars.rb", null);
+    }
+
+    public void testBlockVarReuse() throws Exception {
+        List<FileObject> files = getBigSourceFiles();
+        for (FileObject f : files) {
+            findHints(this, new BlockVarReuse(), f, null);
+        }
     }
 }

@@ -1,0 +1,12 @@
+          id.collect { |id| idx += 1; update(id, attributes[idx]) }
+                        --
+HINT:Block variable aliases local variable - Unintentional side effect?
+FIX:Rename the block variable
+FIX:Rename the local variable
+FIX:Disable this hint
+        id.is_a?(Array) ? id.each { |id| destroy(id) } : find(id).destroy
+                                     --
+HINT:Block variable aliases local variable - Unintentional side effect?
+FIX:Rename the block variable
+FIX:Rename the local variable
+FIX:Disable this hint

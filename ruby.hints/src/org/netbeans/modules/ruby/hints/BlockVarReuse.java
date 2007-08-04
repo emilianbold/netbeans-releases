@@ -49,6 +49,8 @@ import org.openide.util.NbBundle;
  * 
  * @todo Doesn't seem to work for params
  * @todo Don't warn on last lines?
+ * @todo Doesn't seem to work for comma-separated lists of arguments, e.g. { |foo,bar| }
+ *   (at least not the second arg)
  *
  * @author Tor Norbye
  */
