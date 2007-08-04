@@ -1501,7 +1501,8 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                 int end = Utilities.getRowEnd(doc, caretOffset);
 
                 if (LexUtilities.isCommentOnlyLine(doc, caretOffset)) {
-                    ranges.add(new OffsetRange(begin, end));
+                    ranges.add(new OffsetRange(Utilities.getRowFirstNonWhite(doc, begin), 
+                            Utilities.getRowLastNonWhite(doc, end)+1));
 
                     int lineBegin = begin;
                     int lineEnd = end;
@@ -1510,6 +1511,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                         int newBegin = Utilities.getRowStart(doc, begin - 1);
 
                         if ((newBegin <= 0) || !LexUtilities.isCommentOnlyLine(doc, newBegin)) {
+                            begin = Utilities.getRowFirstNonWhite(doc, begin);
                             break;
                         }
 
@@ -1522,6 +1524,7 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
                         int newEnd = Utilities.getRowEnd(doc, end + 1);
 
                         if ((newEnd >= length) || !LexUtilities.isCommentOnlyLine(doc, newEnd)) {
+                            end = Utilities.getRowLastNonWhite(doc, end)+1;
                             break;
                         }
 

@@ -7,15 +7,18 @@
 
 package org.netbeans.modules.ruby;
 
+import java.util.List;
 import javax.swing.JTextArea;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
+import org.openide.filesystems.FileObject;
 
 /**
  * @todo Test that if you insert x="" and then DELETE the ", it wipes out BOTH of them!
@@ -260,6 +263,92 @@ public class BracketCompleterTest extends RubyTestBase {
         } finally {
             DocumentUtilities.setTypingModification(doc, false);
             doc.atomicUnlock();
+        }
+    }
+    
+    private void assertLogicalRange(String source, boolean up, String expected) throws Exception {
+        String BEGIN = "%<%"; // NOI18N
+        String END = "%>%"; // NOI18N
+        int sourceStartPos = source.indexOf(BEGIN);
+        if (sourceStartPos != -1) {
+            source = source.substring(0, sourceStartPos) + source.substring(sourceStartPos+BEGIN.length());
+        }
+        
+        int caretPos = source.indexOf('^');
+        source = source.substring(0, caretPos) + source.substring(caretPos+1);
+
+        int sourceEndPos = source.indexOf(END);
+        if (sourceEndPos != -1) {
+            source = source.substring(0, sourceEndPos) + source.substring(sourceEndPos+END.length());
+        }
+        
+        int expectedStartPos = expected.indexOf(BEGIN);
+        if (expectedStartPos != -1) {
+            expected = expected.substring(0, expectedStartPos) + expected.substring(expectedStartPos+BEGIN.length());
+        }
+
+        int expectedCaretPos = expected.indexOf('^');
+        expected = expected.substring(0, expectedCaretPos) + expected.substring(expectedCaretPos+1);
+        
+        int expectedEndPos = expected.indexOf(END);
+        if (expectedEndPos != -1) {
+            expected = expected.substring(0, expectedEndPos) + expected.substring(expectedEndPos+END.length());
+        }
+
+        assertEquals("Only range markers should differ", source,expected);
+
+        OffsetRange selected = null;
+        
+        BaseDocument doc = getDocument(source);
+        FileObject fileObject = null;
+        CompilationInfo info = new TestCompilationInfo(fileObject, doc, source);
+        
+        BracketCompleter completer = new BracketCompleter();
+        List<OffsetRange> ranges = completer.findLogicalRanges(info, caretPos);
+        OffsetRange expectedRange;
+        if (expectedStartPos != -1) {
+            expectedRange = new OffsetRange(expectedStartPos, expectedEndPos);
+        } else {
+            expectedRange = new OffsetRange(expectedCaretPos, expectedCaretPos);
+        }
+
+        if (sourceStartPos != -1) {
+            assert sourceEndPos != -1;
+            selected = new OffsetRange(sourceStartPos, sourceEndPos);            
+
+            for (int i = 0; i < ranges.size(); i++) {
+                if (ranges.get(i).equals(selected)) {
+                    if (up) {
+                        assertTrue(i < ranges.size()-1);
+                        OffsetRange was = ranges.get(i+1);
+                        assertEquals("Wrong selection: expected \"" + 
+                                expected.substring(expectedRange.getStart(),expectedRange.getEnd()) + "\" and was \"" +
+                                source.substring(was.getStart(), was.getEnd()) + "\"",
+                                expectedRange, was);
+                        return;
+                    } else {
+                        if (i == 0) {
+                            assertEquals(caretPos, expectedCaretPos);
+                            return;
+                        }
+                        OffsetRange was = ranges.get(i-1);
+                        assertEquals("Wrong selection: expected \"" + 
+                                expected.substring(expectedRange.getStart(),expectedRange.getEnd()) + "\" and was \"" +
+                                source.substring(was.getStart(), was.getEnd()) + "\"",
+                                expectedRange, was);
+                        return;
+                    }
+                }
+            }
+            fail("Selection range " + selected + " is not in the range");
+        } else {
+            assert ranges.size() > 0;
+            OffsetRange was = ranges.get(0);
+            assertEquals("Wrong selection: expected \"" + 
+                    expected.substring(expectedRange.getStart(),expectedRange.getEnd()) + "\" and was \"" +
+                    source.substring(was.getStart(), was.getEnd()) + "\"",
+                    expectedRange, was);
+            return;
         }
     }
 
@@ -836,5 +925,111 @@ public class BracketCompleterTest extends RubyTestBase {
             "    OpenStruct.new\n" +
                             "";
         insertBreak(before, after);
+    }
+    
+    public void testLogicalRange1() throws Exception {
+        String code = "if (true)\n  fo^o\nend";
+        String next = "if (true)\n  %<%fo^o%>%\nend";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRange2() throws Exception {
+        String code = "if (true)\n  %<%fo^o%>%\nend";
+        String next = "%<%if (true)\n  fo^o\nend%>%";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRange3() throws Exception {
+        String code = "def foo\nif (true)\n  %<%fo^o%>%\nend\nend";
+        String next = "def foo\n%<%if (true)\n  fo^o\nend%>%\nend";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRange4() throws Exception {
+        String code = "class Foo\ndef foo\nif (true)\n  %<%fo^o%>%\nend\nend\nend";
+        String next = "class Foo\ndef foo\n%<%if (true)\n  fo^o\nend%>%\nend\nend";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRange5() throws Exception {
+        String code = "class Foo\ndef foo\n%<%if (true)\n  fo^o\nend%>%\nend\nend";
+        String next = "class Foo\n%<%def foo\nif (true)\n  fo^o\nend\nend%>%\nend";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRange6() throws Exception {
+        String code = "class Foo\n%<%def fo^o\nif (true)\n  foo\nend\nend%>%\nend";
+        String next = "%<%class Foo\ndef fo^o\nif (true)\n  foo\nend\nend\nend%>%";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRangeComment1() throws Exception {
+        String code = "foo\n  # Foo Bar\n  # Foo^y Baary\n  # Bye\ndef foo\nend\n";
+        String next = "foo\n  # Foo Bar\n  %<%# Foo^y Baary%>%\n  # Bye\ndef foo\nend\n";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRangeComment2() throws Exception {
+        String code = "foo\n  # Foo Bar\n  %<%# Foo^y Baary%>%\n  # Bye\ndef foo\nend\n";
+        String next = "foo\n  %<%# Foo Bar\n  # Foo^y Baary\n  # Bye%>%\ndef foo\nend\n";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRangeComment3() throws Exception {
+        String code = "foo\n  # Foo Bar\n\n  %<%# Foo^y Baary%>%\n  # Bye\ndef foo\nend\n";
+        String next = "foo\n  # Foo Bar\n\n  %<%# Foo^y Baary\n  # Bye%>%\ndef foo\nend\n";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+    public void testLogicalRangeComment5() throws Exception {
+        String code = "foo\n  foo # Foo Bar\n  %<%# Foo^y Baary%>%\n  # Bye\ndef foo\nend\n";
+        String next = "foo\n  foo # Foo Bar\n  %<%# Foo^y Baary\n  # Bye%>%\ndef foo\nend\n";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+    
+    public void testLogicalRangeStrings1() throws Exception {
+        String code = "x = 'foo b^ar baz', y = \"whatever\"";
+        String next = "x = %<%'foo b^ar baz'%>%, y = \"whatever\"";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRangeStrings2() throws Exception {
+        String code = "x = %q-foo b^ar baz-, y = \"whatever\"";
+        String next = "x = %<%%q-foo b^ar baz-%>%, y = \"whatever\"";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRangeStrings3() throws Exception {
+        String code = "def foo\nif (true)\nx = %<%'foo b^ar baz'%>%\nend\nend";
+        String next = "def foo\nif (true)\n%<%x = 'foo b^ar baz'%>%\nend\nend";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+    public void testLogicalRangeStrings4() throws Exception {
+        String code = "def foo\nif (true)\n%<%x = 'foo b^ar baz'%>%\nend\nend";
+        String next = "def foo\n%<%if (true)\nx = 'foo b^ar baz'\nend%>%\nend";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
+    }
+
+
+    public void testLogicalRangeRegexps1() throws Exception {
+        String code = "x = /foo b^ar baz/, y = \"whatever\"";
+        // Uhm - is it good that we're selecting the -inside- of the regexp?
+        String next = "x = /%<%foo b^ar baz%>%/, y = \"whatever\"";
+        assertLogicalRange(code, true, next);
+        assertLogicalRange(next, false, code);
     }
 }
