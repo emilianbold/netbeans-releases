@@ -47,6 +47,7 @@ import org.netbeans.modules.ruby.hints.spi.HintSeverity;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -58,6 +59,36 @@ public abstract class HintTestBase extends RubyTestBase {
 
     public HintTestBase(String testName) {
         super(testName);
+    }
+    
+    private static final String[] JRUBY_BIG_FILES = {
+        // Biggest files in the standard library
+        "lib/ruby/1.8/drb/drb.rb",
+        "lib/ruby/1.8/rdoc/parsers/parse_rb.rb",
+        "lib/ruby/1.8/rdoc/parsers/parse_f95.rb",
+        "lib/ruby/1.8/net/http.rb",
+        "lib/ruby/1.8/cgi.rb",
+        "lib/ruby/1.8/net/imap.rb",
+         // Biggest files in Rails
+        "lib/ruby/gems/1.8/gems//activerecord-1.15.3/test/associations_test.rb",
+        "lib/ruby/gems/1.8/gems//actionmailer-1.3.3/lib/action_mailer/vendor/text/format.rb",
+        "lib/ruby/gems/1.8/gems//actionpack-1.13.3/test/controller/routing_test.rb",
+        "lib/ruby/gems/1.8/gems//activerecord-1.15.3/lib/active_record/associations.rb",
+        "lib/ruby/gems/1.8/gems//activerecord-1.15.3/lib/active_record/base.rb",
+        "lib/ruby/gems/1.8/gems//actionpack-1.13.3/test/template/date_helper_test.rb",
+    };
+    
+    protected List<FileObject> getBigSourceFiles() {
+        FileObject jruby = findJRuby();
+        
+        List<FileObject> files = new ArrayList<FileObject>();
+        for (String relative : JRUBY_BIG_FILES) {
+            FileObject f = jruby.getFileObject(relative);
+            assertNotNull(f);
+            files.add(f);
+        }
+        
+        return files;
     }
 
     private String annotate(BaseDocument doc, List<ErrorDescription> result, int caretOffset) throws Exception {
@@ -149,19 +180,16 @@ public abstract class HintTestBase extends RubyTestBase {
         return sb.toString();
     }
     
-    protected ComputedHints getHints(NbTestCase test, AstRule hint, String relFilePath, String caretLine) throws Exception {
+    protected ComputedHints getHints(NbTestCase test, AstRule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
+        assert relFilePath == null || fileObject == null;
+
         // Make sure the hint is enabled
         if (!HintsSettings.isEnabled(hint)) {
             Preferences p = RulesManager.getInstance().getPreferences(hint, HintsSettings.getCurrentProfileId());
             HintsSettings.setEnabled(p, true);
         }
         
-        File rubyFile = new File(test.getDataDir(), relFilePath);
-        if (!rubyFile.exists()) {
-            NbTestCase.fail("File " + rubyFile + " not found.");
-        }
-
-        CompilationInfo info = getInfo(relFilePath);
+        CompilationInfo info = fileObject != null ? getInfo(fileObject) : getInfo(relFilePath);
         Node root = AstUtilities.getRoot(info);
         assertNotNull("Unexpected parse error in test case " + 
                 FileUtil.getFileDisplayName(info.getFileObject()) + "\nErrors = " + 
@@ -200,20 +228,35 @@ public abstract class HintTestBase extends RubyTestBase {
         return new ComputedHints(info, result, caretOffset);
     }
 
+    // TODO - rename to "checkHints"
     protected void findHints(NbTestCase test, AstRule hint, String relFilePath, String caretLine) throws Exception {
-        ComputedHints r = getHints(test, hint, relFilePath, caretLine);
+        findHints(test, hint, relFilePath, null, caretLine);
+    }
+
+    // TODO - rename to "checkHints"
+    protected void findHints(NbTestCase test, AstRule hint, FileObject fileObject, String caretLine) throws Exception {
+        findHints(test, hint, null, fileObject, caretLine);
+    }
+    
+    // TODO - rename to "checkHints"
+    protected void findHints(NbTestCase test, AstRule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
+        ComputedHints r = getHints(test, hint, relFilePath, fileObject, caretLine);
         CompilationInfo info = r.info;
         List<ErrorDescription> result = r.hints;
         int caretOffset = r.caretOffset;
         
         String annotatedSource = annotate((BaseDocument)info.getDocument(), result, caretOffset);
 
-        assertDescriptionMatches(relFilePath, annotatedSource, true, ".hints");
+        if (fileObject != null) {
+            assertDescriptionMatches(fileObject, annotatedSource, true, ".hints");
+        } else {
+            assertDescriptionMatches(relFilePath, annotatedSource, true, ".hints");
+        }
     }
-    
-    protected void applyHint(NbTestCase test, AstRule hint, String relFilePath, 
+
+    protected void applyHint(NbTestCase test, AstRule hint, String relFilePath,
             String caretLine, String fixDesc) throws Exception {
-        ComputedHints r = getHints(test, hint, relFilePath, caretLine);
+        ComputedHints r = getHints(test, hint, relFilePath, null, caretLine);
         CompilationInfo info = r.info;
         
         Fix fix = findApplicableFix(r, fixDesc);

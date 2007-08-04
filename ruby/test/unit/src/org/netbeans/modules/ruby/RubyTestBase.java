@@ -218,6 +218,10 @@ public abstract class RubyTestBase extends NbTestCase {
     public CompilationInfo getInfo(String file) throws Exception {
         FileObject fileObject = getTestFile(file);
 
+        return getInfo(fileObject);
+    }
+
+    public CompilationInfo getInfo(FileObject fileObject) throws Exception {
         String text = readFile(fileObject);
         BaseDocument doc = getDocument(text);
 
@@ -225,7 +229,7 @@ public abstract class RubyTestBase extends NbTestCase {
 
         return info;
     }
-
+    
     protected static String readFile(File f) throws Exception {
         FileReader r = new FileReader(f);
         int fileLen = (int)f.length();
@@ -268,7 +272,8 @@ public abstract class RubyTestBase extends NbTestCase {
         return inputFile;
     }
 
-    protected void assertDescriptionMatches(String relFilePath, String description, boolean includeTestName, String ext) throws Exception {
+    protected void assertDescriptionMatches(String relFilePath,
+            String description, boolean includeTestName, String ext) throws Exception {
         File rubyFile = getDataFile(relFilePath);
         if (!rubyFile.exists()) {
             NbTestCase.fail("File " + rubyFile + " not found.");
@@ -306,6 +311,40 @@ public abstract class RubyTestBase extends NbTestCase {
         assertEquals(expected.trim(), description.trim());
     }
 
+    protected void assertDescriptionMatches(FileObject fileObject, 
+            String description, boolean includeTestName, String ext) throws Exception {
+        File goldenFile = getDataFile("testfiles/" + fileObject.getName() + (includeTestName ? ("." + getName()) : "") + ext);
+        if (!goldenFile.exists()) {
+            if (!goldenFile.createNewFile()) {
+                NbTestCase.fail("Cannot create file " + goldenFile);
+            }
+            FileWriter fw = new FileWriter(goldenFile);
+            try {
+                fw.write(description);
+            }
+            finally{
+                fw.close();
+            }
+            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
+        }
+
+        String expected = readFile(goldenFile);
+
+        // Because the unit test differ is so bad...
+        if (false) { // disabled
+            if (!expected.equals(description)) {
+                BufferedWriter fw = new BufferedWriter(new FileWriter("/tmp/expected.txt"));
+                fw.write(expected);
+                fw.close();
+                fw = new BufferedWriter(new FileWriter("/tmp/actual.txt"));
+                fw.write(description);
+                fw.close();
+            }
+        }
+
+        assertEquals(expected.trim(), description.trim());
+    }
+    
     protected void assertFileContentsMatches(String relFilePath, String description, boolean includeTestName, String ext) throws Exception {
         File rubyFile = getDataFile(relFilePath);
         if (!rubyFile.exists()) {
