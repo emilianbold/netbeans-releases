@@ -23,12 +23,14 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="rules">
             <folder name="hints">
                 <folder name="general">
+                   <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
                     <file name="org-netbeans-modules-ruby-hints-BlockVarReuse.instance"/>
                     <file name="org-netbeans-modules-ruby-hints-ExpandSameLineDef.instance"/>
                 </folder>    
                 
                 <folder name="rails">
+                    <attr name="position" intvalue="200"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.hints.Bundle"/>
                     <file name="org-netbeans-modules-ruby-hints-RailsDeprecations.instance"/>
                 </folder>    
@@ -44,24 +46,15 @@ Microsystems, Inc. All Rights Reserved.
         
     <!-- **Infrastructure, nothing hint-specific, below this point** -->
     
-    <!-- TODO - put this in the -Ruby- options instead! -->
-    <!--
-    <folder name="org.netbeans.modules.java.source">
+    <folder name="org.netbeans.modules.ruby">
         <folder name="options">
-            <file name="RubyHints.instance">
+            <file name="Hints.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.options.HintsAdvancedOption"/>
+                <attr name="position" intvalue="200"/>
             </file>
         </folder>
     </folder>
-    -->
-    <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="RubyHints.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.hints.options.HintsAdvancedOption"/>
-            </file>
-        </folder>
-    </folder>
-    
+
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-ruby">
