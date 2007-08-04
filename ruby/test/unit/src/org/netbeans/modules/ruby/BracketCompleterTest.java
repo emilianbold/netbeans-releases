@@ -449,6 +449,16 @@ public class BracketCompleterTest extends RubyTestBase {
         insertChar("x = [^]", ']', "x = []^");
     }
 
+    public void testBracketsSpecialName() throws Exception {
+        // "[]" and "[]=" are valid method names!
+        insertChar("def ^", '[', "def [^]");
+    }
+
+    public void testBracketsSpecialName2() throws Exception {
+        // "[]" and "[]=" are valid method names!
+        insertChar("def [^]", ']', "def []^");
+    }
+    
     public void testBrackets3() throws Exception {
         insertChar("x = [^]", 'a', "x = [a^]");
     }
@@ -637,7 +647,11 @@ public class BracketCompleterTest extends RubyTestBase {
     public void testBackspace7() throws Exception {
         deleteChar("x=(^)", "x=^");
     }
-    
+
+    public void testBackspace7b() throws Exception {
+        deleteChar("x=[^]", "x=^");
+    }
+
     public void testBackspace8() throws Exception {
         // See bug 111534
         deleteChar("x={^}", "x=^");

@@ -770,10 +770,10 @@ public class BracketCompleter implements org.netbeans.api.gsf.BracketCompletion 
             Token<?extends GsfTokenId> token = LexUtilities.getToken(doc, dotPos);
             TokenId id = token.id();
 
-            if (id == RubyTokenId.IDENTIFIER) {
+            if (id == RubyTokenId.ANY_OPERATOR) {
                 int length = token.length();
-
-                if ((length == 2) && "[]".equals(token.text().toString())) { // Special case
+                String s = token.text().toString();
+                if ((length == 2) && "[]".equals(s) || "[]=".equals(s)) { // Special case
                     skipClosingBracket(doc, caret, ch, RubyTokenId.RBRACKET);
 
                     return true;
