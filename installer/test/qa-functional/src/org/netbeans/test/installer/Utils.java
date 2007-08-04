@@ -47,7 +47,7 @@ import org.netbeans.junit.NbTestCase;
  */
 public class Utils {
 
-    public static final long MAX_EXECUTION_TIME = 60000000;
+    public static final long MAX_EXECUTION_TIME = 30000000;
     public static final long MAX_INSTALATION_WAIT = 60000000;
     public static final int DELAY = 50;
 
@@ -123,6 +123,7 @@ public class Utils {
                         } catch (IllegalThreadStateException e) {
                             ; // do nothing - the process is still running
                         }
+                        wait(data, 1);
                     }
 
                     if (runningTime >= MAX_EXECUTION_TIME) {
@@ -156,7 +157,7 @@ public class Utils {
                 } catch (IllegalThreadStateException e) {
                     ; // do nothing - the process is still running
                 }
-                Utils.wait(data, 1);
+                wait(data, 1);
             }
 
             if (runningTime >= MAX_EXECUTION_TIME) {
@@ -185,15 +186,6 @@ public class Utils {
             data.getLogger().log(Level.SEVERE, null, ex);
             return toString(ex);
         }
-//        } catch (IllegalArgumentException ex) {
-//            data.getLogger().log(Level.SEVERE, null, ex);
-//        } catch (SecurityException ex) {
-//            data.getLogger().log(Level.SEVERE, null, ex);
-//        } catch (ClassNotFoundException ex) {
-//            data.getLogger().log(Level.SEVERE, null, ex);
-//        } catch (MalformedURLException ex) {
-//            data.getLogger().log(Level.SEVERE, null, ex);
-//        }
         return OK;
     }
 
@@ -206,17 +198,6 @@ public class Utils {
                 } catch (Exception ex) {
                     data.getLogger().log(Level.SEVERE, null, ex);
                 }
-//                } catch (NoSuchMethodException ex) {
-//                    data.getLogger().log(Level.SEVERE, null, ex);
-//                } catch (SecurityException ex) {
-//                    data.getLogger().log(Level.SEVERE, null, ex);
-//                } catch (IllegalAccessException ex) {
-//                    data.getLogger().log(Level.SEVERE, null, ex);
-//                } catch (IllegalArgumentException ex) {
-//                    data.getLogger().log(Level.SEVERE, null, ex);
-//                } catch (InvocationTargetException ex) {
-//                    data.getLogger().log(Level.SEVERE, null, ex);
-//                }
             }
         }).run();
         return OK;
@@ -232,17 +213,6 @@ public class Utils {
                 } catch (Exception ex) {
                     data.getLogger().log(Level.SEVERE, null, ex);
                 }
-//                } catch (NoSuchMethodException ex) {
-//                    data.getLogger().log(Level.SEVERE, null, ex);
-//                } catch (SecurityException ex) {
-//                    data.getLogger().log(Level.SEVERE, null, ex);
-//                } catch (IllegalAccessException ex) {
-//                    data.getLogger().log(Level.SEVERE, null, ex);
-//                } catch (IllegalArgumentException ex) {
-//                    data.getLogger().log(Level.SEVERE, null, ex);
-//                } catch (InvocationTargetException ex) {
-//                    data.getLogger().log(Level.SEVERE, null, ex);
-//                }
             }
         }).run();
         return OK;
@@ -258,19 +228,6 @@ public class Utils {
             data.getLogger().log(Level.SEVERE, null, ex);
             return toString(ex);
         }
-//        } catch (IllegalArgumentException ex) {
-//            data.getLogger().log(Level.SEVERE, "-1", ex);
-//            return -1;
-//        } catch (SecurityException ex) {
-//            data.getLogger().log(Level.SEVERE, "-2", ex);
-//            return -2;
-//        } catch (ClassNotFoundException ex) {
-//            data.getLogger().log(Level.SEVERE, "-3", ex);
-//            return -3;
-//        } catch (MalformedURLException ex) {
-//            data.getLogger().log(Level.SEVERE, "-4", ex);
-//            return -4;
-//        }
         return OK;
     }
 
@@ -319,7 +276,7 @@ public class Utils {
             if (val >= 100) {
                 break;
             }
-            Utils.wait(data, 5);
+            Utils.waitSecond(data, 5);
         }
 
         if (waitingTime >= Utils.MAX_INSTALATION_WAIT) {
@@ -361,7 +318,7 @@ public class Utils {
         //finish
         Utils.stepFinish();
 
-        Utils.wait(data, 5);
+        Utils.waitSecond(data, 5);
 
         NbTestCase.assertEquals("Installer Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
 
@@ -372,7 +329,7 @@ public class Utils {
 
         Utils.stepFinish();
 
-        Utils.wait(data, 5);
+        Utils.waitSecond(data, 5);
 
         NbTestCase.assertEquals("Uninstaller Finshed", 0, ((Integer) System.getProperties().get("nbi.exit.code")).intValue());
     }
@@ -396,14 +353,19 @@ public class Utils {
         Utils.stepSetDir(data, "Installation location", "Tomcat");
     }
 
-    public static void wait(TestData data, int sec) {
+    public static void waitSecond(TestData data, int sec) {
+        wait(data, 1000 * sec);
+    }
+
+    public static void wait(TestData data, int time) {
         try {
-            java.lang.Thread.sleep(1000 * sec);
+            java.lang.Thread.sleep(time);
         } catch (InterruptedException ex) {
             data.getLogger().log(Level.SEVERE, "Interrupted");
         }
     }
-
+    
+    
     private static String toString(Exception ex) {
         return ex.getClass().getName() + "=>" + ex.getMessage();
     }
