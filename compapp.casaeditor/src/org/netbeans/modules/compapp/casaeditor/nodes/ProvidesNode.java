@@ -20,94 +20,27 @@
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
-import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpointRef;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaProvides;
-import org.netbeans.modules.compapp.casaeditor.model.jbi.impl.JBIAttributes;
-import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
-import org.openide.nodes.Children;
-import org.openide.nodes.Sheet;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Josh Sandusky
  */
-public class ProvidesNode extends CasaNode {
+public class ProvidesNode extends EndpointNode {
     
     private static final Image ICON = Utilities.loadImage(
             "org/netbeans/modules/compapp/casaeditor/nodes/resources/ProvidesNode.png");    // NOI18N
     
     public ProvidesNode(CasaProvides component, CasaNodeFactory factory) {
-        super(component, Children.LEAF, factory);
+        super(component, factory);
     }
-    
-    
-    protected void setupPropertySheet(Sheet sheet) {
-        final CasaProvides provides = (CasaProvides) getData();
-        if (provides == null) {
-            return;
-        }
         
-        Sheet.Set mainPropertySet =
-                getPropertySet(sheet, PropertyUtils.PropertiesGroups.MAIN_SET);
-        
-        PropertyUtils.installEndpointInterfaceQNameProperty(
-                mainPropertySet, this, provides,
-                JBIAttributes.INTERFACE_NAME.getName(), 
-                "interfaceQName",                                           // NOI18N
-                NbBundle.getMessage(getClass(), "PROP_InterfaceName"),      // NOI18N
-                NbBundle.getMessage(getClass(), "PROP_InterfaceName"));     // NOI18N
-        
-        PropertyUtils.installEndpointServiceQNameProperty(
-                mainPropertySet, this, provides,
-                JBIAttributes.SERVICE_NAME.getName(), 
-                "serviceQName",                                             // NOI18N
-                NbBundle.getMessage(getClass(), "PROP_ServiceName"),        // NOI18N
-                NbBundle.getMessage(getClass(), "PROP_ServiceName"));       // NOI18N
-        
-        PropertyUtils.installEndpointNameProperty(
-                mainPropertySet, this, provides,
-                JBIAttributes.ENDPOINT_NAME.getName(), 
-                "endpointName",                                             // NOI18N
-                NbBundle.getMessage(getClass(), "PROP_EndpointName"),       // NOI18N
-                NbBundle.getMessage(getClass(), "PROP_EndpointName"));      // NOI18N
-    }
-
-    public String getName() {
-        CasaProvides provides = (CasaProvides) getData();
-        if (provides != null) {
-            try {
-                return provides.getEndpointName();
-            } catch (Throwable t) {
-                // getName MUST recover gracefully.
-                return getBadName();
-            }
-        }
-        return super.getName();
-    }
-    
     public Image getIcon(int type) {
         return ICON;
     }
     
     public Image getOpenedIcon(int type) {
         return ICON;
-    }
-    
-    public boolean isEditable(String propertyType) {
-        CasaEndpointRef endpoint = (CasaEndpointRef) getData();
-        if (endpoint != null) {
-            return getModel().isEditable(endpoint, propertyType);
-        }
-        return false;
-    }
-    
-    public boolean isDeletable() {
-        CasaEndpointRef endpoint = (CasaEndpointRef) getData();
-        if (endpoint != null) {
-            return getModel().isDeletable(endpoint);
-        }
-        return false;
     }
 }

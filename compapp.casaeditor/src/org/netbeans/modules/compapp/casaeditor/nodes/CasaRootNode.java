@@ -144,7 +144,7 @@ public class CasaRootNode extends CasaNode {
         return true;
     }
 
-    public void addCustomActions(List<Action> actions) {
+    protected void addCustomActions(List<Action> actions) {
         try {
             final Project jbiProject = getModel().getJBIProject();
             actions.add(new AddJBIModuleAction(jbiProject));

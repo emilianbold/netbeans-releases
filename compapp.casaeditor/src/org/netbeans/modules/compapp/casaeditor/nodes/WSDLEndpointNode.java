@@ -94,7 +94,7 @@ public class WSDLEndpointNode extends CasaNode {
     // todo: 05/31/07, enable WSIT GUI
     /*
     @Override
-    public void addCustomActions(List actions) {
+    protected void addCustomActions(List<Action> actions) {
         actions.add(SystemAction.get(WSDLEndpointAction.class));
     }
     */

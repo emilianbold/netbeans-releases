@@ -60,6 +60,10 @@ public abstract class CasaEndpointRefImpl extends CasaComponentImpl
         return getCasaEndpoint().getServiceQName();
     }
     
+    public String getFullyQualifiedEndpointName() {
+        return getServiceQName() + "." + getEndpointName(); // NOI18N                
+    }
+    
     private CasaEndpoint getCasaEndpoint() {
         return getEndpoint().get();
     }

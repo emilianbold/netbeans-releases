@@ -202,8 +202,8 @@ implements ExplorerManager.Provider, HelpCtx.Provider, Runnable, PropertyChangeL
         Node rootNode = myExplorerManager.getRootContext();
         treeView.expandNode(rootNode);
         expandNodes(treeView, 1, rootNode);
-        selectActivatedNodes();
-    }
+            selectActivatedNodes();
+        }
     
     public static void expandNodes(TreeView tv, int level, Node rootNode) {
         if (level == 0) return;

@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.compapp.casaeditor.model.casa;
 
-import java.util.List;
-
 /**
  *
  * @author jqian

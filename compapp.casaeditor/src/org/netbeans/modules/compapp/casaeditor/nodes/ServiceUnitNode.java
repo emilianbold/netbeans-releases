@@ -58,7 +58,7 @@ public class ServiceUnitNode extends CasaNode {
     }
     
     
-    public void addCustomActions(List<Action> actions) {
+    protected void addCustomActions(List<Action> actions) {
         CasaServiceEngineServiceUnit su = (CasaServiceEngineServiceUnit) getData();
         if (su == null) {
             return;

@@ -21,6 +21,7 @@ package org.netbeans.modules.compapp.casaeditor.nodes;
 
 import java.awt.Image;
 import java.util.List;
+import javax.swing.Action;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddExternalServiceUnitAction;
@@ -48,7 +49,7 @@ public class ServiceEnginesNode extends CasaNode {
     }
 
     @Override
-    public void addCustomActions(List actions) {
+    protected void addCustomActions(List<Action> actions) {
         actions.add(SystemAction.get(AddExternalServiceUnitAction.class));
     }
 

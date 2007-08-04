@@ -117,7 +117,7 @@ public abstract class CasaNode extends AbstractNode
         return false;
     }
     
-    public void addCustomActions(List<Action> actions) {
+    protected void addCustomActions(List<Action> actions) {
         // Subclasses can override this to provide custom actions.
     }
     
