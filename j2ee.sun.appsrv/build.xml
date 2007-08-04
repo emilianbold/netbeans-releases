@@ -23,8 +23,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="netbeans-extra" depends="build-init">
         <ant dir="../../external" target="unzip"/>
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy file="../../external/persistence-tool-support.jar" todir="${cluster}/modules/ext"/>
     </target>
 
 </project>

@@ -81,6 +81,7 @@ public interface SunDeploymentManagerInterface extends Node.Cookie{
    boolean isDebugSharedMemory() throws java.rmi.RemoteException;
    
    ResourceConfiguratorInterface getResourceConfigurator();
+   CmpMappingProvider getSunCmpMapper();
    
    boolean isSuspended();
    /*

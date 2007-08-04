@@ -59,6 +59,14 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.libs.javacapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>0.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dbschema</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -125,6 +133,23 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency>
                         <release-version>4</release-version>
                         <specification-version>1.29</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.project</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.12</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.source</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>0.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -280,10 +305,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.modules.j2ee.sun.share.configbean</package>
                 <package>org.netbeans.modules.j2ee.sun.share.plan</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/persistence-tool-support.jar</runtime-relative-path>
-                <binary-origin>../../external/persistence-tool-support.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

@@ -25,9 +25,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.Map;
 
 import javax.enterprise.deploy.spi.DConfigBean;
 import javax.enterprise.deploy.model.DDBean;
@@ -38,9 +35,6 @@ import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.DDException;
@@ -54,15 +48,12 @@ import org.netbeans.modules.j2ee.sun.dd.api.ejb.SchemaGeneratorProperties;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
 import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 
-import org.netbeans.modules.j2ee.deployment.common.api.SourceFileMap;
-import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 
 import org.netbeans.modules.j2ee.sun.share.configbean.Base.DefaultSnippet;
 
 // ValidationSupport should either be deprecated or moved from package ...customizers.common to ...configbean
-import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.ValidationSupport;
 
-import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMappings;
+/*import com.sun.jdo.api.persistence.mapping.ejb.beans.SunCmpMappings;
 import com.sun.jdo.api.persistence.mapping.ejb.EJBInfoHelper;
 import com.sun.jdo.api.persistence.mapping.ejb.ConversionHelper;
 import com.sun.jdo.modules.persistence.mapping.core.util.MappingContext;
@@ -85,6 +76,7 @@ import com.sun.jdo.api.persistence.model.mapping.MappingFieldElement;
 import com.sun.jdo.api.persistence.model.mapping.impl.MappingFieldElementImpl;
 import com.sun.jdo.api.persistence.model.mapping.impl.MappingRelationshipElementImpl;
 // end TODO
+ */
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 
 
@@ -131,20 +123,20 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
     private List messageDestinations;
 
     /** Holds the value of the cmp mapping info */
-    private MappingContext mappingContext;    
+//    private MappingContext mappingContext;    
 
     /** Holds the value of the cmp mapping info helper */
-    private EJBInfoHelper ejbInfoHelper;    
+  //  private EJBInfoHelper ejbInfoHelper;    
 
     /** Holds the value of the source file map passed to ejbInfoHelper to prevent it
      *  from being garbage collected.
      */
-    private SourceFileMap sourceFileMap;
+ //   private SourceFileMap sourceFileMap;
     
     /** Holds the value of the cmp mapping conversion helper */
-    private ConversionHelper conversionHelper;    
+  //  private ConversionHelper conversionHelper;    
 
-    private PropertyChangeListener cmpMappingListener = 
+ /*   private PropertyChangeListener cmpMappingListener = 
         new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 Object source = evt.getSource();
@@ -163,7 +155,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                         getPCS().firePropertyChange("mapping", null, null);
                 }
             }
-        };
+        };*/
 
     /** Creates a new instance of EjbJarRoot */
     public EjbJarRoot() {
@@ -371,14 +363,14 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
         String ejbDocType = generateDocType("sun-ejb-jar", version.getSunEjbJarPublicId(), version.getSunEjbJarSystemId()); // NOI18N
         String result = ejbDocType;
 
-        if(hasSunCmpMappings()) {
+/*        if(hasSunCmpMappings()) {
             StringBuffer buffer = new StringBuffer(512);
             buffer.append("sun-ejb-jar.xml: "); // NOI18N
             buffer.append(ejbDocType); // NOI18N
             buffer.append("\nsun-cmp-mappings.xml: "); // NOI18N
             buffer.append(generateDocType("sun-cmp-mappings", version.getSunCmpMappingsPublicId(), version.getSunCmpMappingsSystemId())); // NOI18N
             result = buffer.toString();
-        }
+        }*/
 
         return result;
     }
@@ -404,9 +396,9 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
      *  This logic borrowed from hasDDSnippet() in getCmpMappingSnippet() and probably
      *  could be optimized further.
      */
-    private boolean hasSunCmpMappings() {
+ /*   private boolean hasSunCmpMappings() {
         return mappingContext != null && ejbInfoHelper != null;
-    }
+    }*/
 
     /* ------------------------------------------------------------------------
      * Persistence support.  Loads DConfigBeans from previously saved Deployment
@@ -463,7 +455,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
         return snippets;
     }
 
-    Snippet getCmpMappingSnippet() {
+ /*   Snippet getCmpMappingSnippet() {
         return new Snippet() {
             public CommonDDBean getDDSnippet() {
                 return null;
@@ -516,7 +508,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
             }	
             // end Peter says these shouldn't be called
         };
-    }
+    }*/
 
     /** Calculate what the parent S2B bean should be for this child and return
      *  that bean.
@@ -537,9 +529,9 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
      */
     public void removeDConfigBean(DConfigBean dConfigBean) throws BeanNotFoundException {
         // remove cmp before super so save works on both files
-        if ((dConfigBean != null) && (dConfigBean instanceof CmpEntityEjb))
+   /*     if ((dConfigBean != null) && (dConfigBean instanceof CmpEntityEjb))
             removeMappingForCmp(((CmpEntityEjb)dConfigBean).getEjbName());
-        super.removeDConfigBean(dConfigBean);
+     */   super.removeDConfigBean(dConfigBean);
     }
 
     // methods used to read a DConfigBean from a deployment plan
@@ -572,7 +564,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
     }
 
     // methods used to read a DConfigBean from a deployment plan
-    public static class SunCmpMappingsParser implements ConfigParser {
+ /*   public static class SunCmpMappingsParser implements ConfigParser {
         public Object parse(java.io.InputStream stream) throws IOException, SAXException, DDException {
             SunCmpMappings result = null;
 
@@ -605,7 +597,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
             SunCmpMappings retVal = (SunCmpMappings) obj;
             return retVal;
         }
-    }
+    }*/
 
     protected ConfigParser getParser() {
         return new SunEjbJarParser();
@@ -649,7 +641,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
             setDefaultProperties();
         }
 
-        cmpMappingLoaded = loadCmpMappingsFromPlanFile(config);
+//        cmpMappingLoaded = loadCmpMappingsFromPlanFile(config);
 
         return ((beanGraph != null) || cmpMappingLoaded);
     }
@@ -670,7 +662,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
     }
 	
 
-    public MappingContext getMappingContext () {
+/*    public MappingContext getMappingContext () {
         return getMappingContext(null, getEJBInfoHelper());
     }
 
@@ -997,7 +989,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
 
         return (beanGraph != null);
     }
-
+*/
     protected void clearProperties() {
         StorageBeanFactory beanFactory = getConfig().getStorageFactory();
 
@@ -1175,7 +1167,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
             String xpath = bean.getXpath();
 
             // add or remove cmp field gets this event
-            if (CMP_FIELD_XPATH.equals(xpath)) {
+     /*       if (CMP_FIELD_XPATH.equals(xpath)) {
                 String beanName = extractBeanName(xpath, bean);
                 String fieldName = extractFieldName(xpath, bean);
 
@@ -1249,7 +1241,7 @@ public class EjbJarRoot extends BaseRoot implements javax.enterprise.deploy.spi.
                         }
                     }
                  }
-            }
+            }*/
     }
 
     private String extractFieldName(String xpath, DDBean bean) {

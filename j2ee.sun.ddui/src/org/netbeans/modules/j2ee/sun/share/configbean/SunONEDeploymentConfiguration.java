@@ -53,6 +53,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.OriginalCMPMapping;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.j2ee.sun.api.CmpMappingProvider;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentConfigurationInterface;
@@ -1627,6 +1628,17 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
         }
     }
     
+    private CmpMappingProvider getSunCmpMapper() {
+       CmpMappingProvider mapper = null;
+       DeploymentManager dm = getDeploymentManager();
+       if(dm instanceof SunDeploymentManagerInterface) {
+           SunDeploymentManagerInterface sdmi = (SunDeploymentManagerInterface) dm;
+           mapper = sdmi.getSunCmpMapper();
+       } else {
+           throw new IllegalStateException("Invalid DeploymentManager: " + dm);
+       }
+       return mapper;
+   } 
     public void mapCmpBeans(OriginalCMPMapping [] mapping) throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
         if(!J2eeModule.EJB.equals(module.getModuleType())) {
             return; // wrong module type.
@@ -1639,8 +1651,13 @@ public class SunONEDeploymentConfiguration implements Constants, SunDeploymentCo
                 if (sunDDRoot instanceof SunCmpMappings) {
                     SunCmpMappings sunCmpMappings = (SunCmpMappings) sunDDRoot;
 
-                    // EjbJarRoot.mapCmpBeans() body moves to here, integrating with the graph above.
-
+                    try {
+                       CmpMappingProvider mapper = getSunCmpMapper();
+                       mapper.mapCmpBeans(sunCmpDDFO, mapping, sunCmpMappings);
+                   } catch(Exception ex) {
+                       ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+                   }                
+                   
                     // if changes, save file.
                     sunCmpMappings.write(sunCmpDDFO);
                 }

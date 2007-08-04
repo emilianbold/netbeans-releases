@@ -132,6 +132,7 @@ Microsystems, Inc. All Rights Reserved.
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.ejbcore</friend>
                 <friend>org.netbeans.modules.j2ee.persistence</friend>
+                <friend>org.netbeans.modules.j2ee.sun.appsrv</friend>
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <package>org.netbeans.modules.dbschema</package>
                 <package>org.netbeans.modules.dbschema.jdbcimpl</package>

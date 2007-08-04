@@ -25,10 +25,10 @@ package org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule;
 
 import java.awt.GridBagConstraints;
 
-import com.sun.jdo.api.persistence.model.Model;
+/*import com.sun.jdo.api.persistence.model.Model;
 import com.sun.jdo.modules.persistence.mapping.core.util.MappingContext;
 import com.sun.jdo.modules.persistence.mapping.core.util.MappingContextFactory;
-import com.sun.jdo.modules.persistence.mapping.ejb.ui.panels.BeanMappingPanel;
+import com.sun.jdo.modules.persistence.mapping.ejb.ui.panels.BeanMappingPanel;*/
 import javax.swing.event.TableModelEvent;
 
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Cmp;
@@ -55,7 +55,7 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer {
     private PrefetchDisabledPanel prefetchDisabledPanel;
     private CmpEntityEjbPanel cmpEntityEjbPanel;
     private CmpPanel cmpPanel;
-    private BeanMappingPanel mappingPanel;
+//    private BeanMappingPanel mappingPanel;
 
     private OneOneFinderModel finderModel;
     
@@ -105,7 +105,7 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer {
     protected void addTabbedBeanPanels() {
         super.addTabbedBeanPanels();
         
-        MappingContext dummyContext = MappingContextFactory.getMappingContext(Model.RUNTIME);
+//        MappingContext dummyContext = MappingContextFactory.getMappingContext(Model.RUNTIME);
 
         finderModel = new OneOneFinderModel();
         finderPanel = new OneOneFinderPanel(finderModel);
@@ -126,7 +126,7 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer {
         tabbedPanel.addTab(bundle.getString("LBL_Prefetch_Disabled"),        // NOI18N
             prefetchDisabledPanel);
 
-        mappingPanel =  new BeanMappingPanel(dummyContext);
+  /*      mappingPanel =  new BeanMappingPanel(dummyContext);
         mappingPanel.putClientProperty(PARTITION_KEY, ValidationError.PARTITION_EJB_CMPMAPPING);
         mappingPanel.getAccessibleContext().setAccessibleName(bundle.getString("Cmp_Mapping_Acsbl_Name"));             //NOI18N
         mappingPanel.getAccessibleContext().setAccessibleDescription(bundle.getString("Cmp_Mapping_Acsbl_Desc"));      //NOI18N  
@@ -134,7 +134,7 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer {
         tabbedPanel.add(mappingPanel, bundle.getString("LBL_Cmp_Mapping"), 0);   // NOI18N
 
         // Select Cmp Mapping Panel
-        tabbedPanel.setSelectedIndex(0);
+        tabbedPanel.setSelectedIndex(0);*/
     }
 
     protected void addListeners() {
@@ -179,13 +179,13 @@ public class CmpEntityEjbCustomizer extends EntityEjbCustomizer {
 
                 jarBean = (EjbJarRoot) myParent;
                 beanName = theBean.getEjbName();
-                mappingPanel.setMappingContext(jarBean.getMappingContext(), jarBean.getEJBInfoHelper());
+/*                mappingPanel.setMappingContext(jarBean.getMappingContext(), jarBean.getEJBInfoHelper());
 
                 // if no corresponding MCE object, this must be a new
                 // bean, have jarBean create the skeleton
                 jarBean.ensureCmpMappingExists(beanName);
 
-                mappingPanel.showMappingForBean(beanName);
+                mappingPanel.showMappingForBean(beanName);*/
             }
         }
 // TODO - clear the mapping panel if theBean is null?

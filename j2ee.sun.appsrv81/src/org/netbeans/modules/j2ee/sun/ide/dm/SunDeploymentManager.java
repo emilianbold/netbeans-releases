@@ -86,6 +86,7 @@ import org.netbeans.modules.j2ee.sun.api.ServerInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.netbeans.modules.j2ee.sun.api.ResourceConfiguratorInterface;
 import java.util.Properties;
+import org.netbeans.modules.j2ee.sun.api.CmpMappingProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -1218,7 +1219,19 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         return (javax.management.MBeanServerConnection)serverMgmt.getMBeanServerConnection();
     }
     
-    
+    public CmpMappingProvider getSunCmpMapper() {
+        CmpMappingProvider sunCmpMapper = null;
+        try {
+            ClassLoader loader = getExtendedClassLoader();
+            Class cc = loader.loadClass("org.netbeans.modules.j2ee.sun.bridge.cmp.CmpMappingProviderImpl");
+
+            sunCmpMapper = (CmpMappingProvider) cc.newInstance();
+        } catch (Exception ex) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+        }
+        return sunCmpMapper;
+    }
+
     public boolean isMaybeRunningButWrongUserName() {
         return maybeRunningButWrongUserName;
     }
