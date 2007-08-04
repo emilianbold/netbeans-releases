@@ -102,10 +102,10 @@ public class ObjectCreationExpression extends ExpressionStateHandler
     {
         StateHandler retVal = null;
         
-        if("Identifier".equals(stateName))
+        if("Identifier".equals(stateName) && (!m_ExpressionList))
         {
             m_InIdentifierState = true;
-            retVal = this;
+	    retVal = this;
         }
         else if("Expression List".equals(stateName))
         {
