@@ -36,6 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.EventListenerList;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
+import org.netbeans.modules.vmd.game.view.GameDesignNavigator;
 import org.netbeans.modules.vmd.game.view.GameDesignOverViewPanel;
 import org.netbeans.modules.vmd.game.view.main.MainView;
 import org.openide.util.NbBundle;
@@ -48,6 +49,8 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	public static final boolean DEBUG = false;
 	
 	EventListenerList listenerList = new EventListenerList();
+	
+	private GameDesignNavigator navigator;
 	
 	private HashMap<String, Layer> layers = new HashMap<String, Layer>();
 	private ArrayList<TiledLayer> tiledLayers = new ArrayList<TiledLayer>();
@@ -234,7 +237,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
 	}
 	
 	public Layer getLayerByName(String name) {
-		return (Layer) this.layers.get(name);
+		return this.layers.get(name);
 	}
 
 
@@ -399,8 +402,7 @@ public class GlobalRepository implements PropertyChangeListener, Editable {
     }
 
     public JComponent getNavigator() {
-        //return new GameDesignNavigator(this);
-		return null;
+        return this.navigator == null ? this.navigator = new GameDesignNavigator(this) : this.navigator;
     }
 
     public String getName() {

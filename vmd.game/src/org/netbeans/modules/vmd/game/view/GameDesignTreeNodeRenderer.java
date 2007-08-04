@@ -19,21 +19,32 @@
 package org.netbeans.modules.vmd.game.view;
 
 import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
+import javax.swing.ImageIcon;
 
-import javax.swing.JComponent;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
-import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
+	
+	private static ImageIcon imgGame;
+	private static ImageIcon imgSprite;
+	private static ImageIcon imgTiled;
+	private static ImageIcon imgScene;
+	
+	static {
+		imgGame = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/game/integration/res/gamer_16.png"));
+		imgSprite = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/sprite.png"));
+		imgTiled = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/tiled.png"));
+		imgScene = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/game/model/adapter/res/scene.png"));
+	}
 
 	public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 		if (value instanceof Scene) {
@@ -57,7 +68,9 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			GlobalRepository gr = (GlobalRepository) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			r.setText("[Global repository]"); // NOI18N
+			r.setText(NbBundle.getMessage(GameDesignTreeNodeRenderer.class, "GameDesignTreeNodeRenderer.GameDesignNode.name"));
+			r.setIcon(imgGame); // NOI18N
+			this.setToolTipText(NbBundle.getMessage(GameDesignTreeNodeRenderer.class, "GameDesignTreeNodeRenderer.GameDesignNode.tooltip"));
 			return r;
 		}	
 	}
@@ -66,45 +79,33 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			Scene scene = (Scene) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			r.setText("[Scene] " + scene.getName()); // NOI18N
+			r.setText(scene.getName()); // NOI18N
+			r.setIcon(imgScene); // NOI18N
+			r.setToolTipText(NbBundle.getMessage(GameDesignTreeNodeRenderer.class, "GameDesignTreeNodeRenderer.SceneNode.tooltip", scene.getName()));
 			return r;
-		}	
+		}
 	}
 
 	private class TiledLayerNodeRenderer extends DefaultTreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			TiledLayer tiledLayer = (TiledLayer) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			r.setText("[TiledLayer] " + tiledLayer.getName()); // NOI18N
+			r.setText(tiledLayer.getName());
+			r.setIcon(imgTiled); // NOI18N
+			r.setToolTipText(NbBundle.getMessage(GameDesignTreeNodeRenderer.class, "GameDesignTreeNodeRenderer.TiledLayerNode.tooltip", tiledLayer.getName()));
 			return r;
-		}	
+		}
 	}
 
 	private class SpriteNodeRenderer extends DefaultTreeCellRenderer {
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			Sprite sprite = (Sprite) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			r.setText("[Sprite] " + sprite.getName()); // NOI18N
+			r.setText(sprite.getName());
+			r.setIcon(imgSprite); // NOI18N
+			r.setToolTipText(NbBundle.getMessage(GameDesignTreeNodeRenderer.class, "GameDesignTreeNodeRenderer.SpriteNode.tooltip", sprite.getName()));
 			return r;
 		}	
-	}
-
-	private class LayerNode extends JComponent {
-		private Layer layer;
-		private boolean isSelected;
-		private boolean isExpanded;
-		private boolean hasFocus;
-		LayerNode(Layer layer, boolean isSelected, boolean isExpanded, boolean hasFocus) {
-			this.setLayout(new FlowLayout());
-			this.layer = layer;
-			this.isSelected = isSelected;
-			this.isExpanded = isExpanded;
-			this.hasFocus = hasFocus;
-		}
-		protected void paintComponent(Graphics g) {
-			super.paintComponent(g);
-			//TODO finish custom painter
-		}
 	}
 	
 }

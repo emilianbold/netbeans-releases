@@ -292,7 +292,7 @@ public class ImageResource {
 	public List<AnimatedTile> getAnimatedTiles() {
 		List<AnimatedTile> list = new ArrayList<AnimatedTile>(this.animatedTiles.values());
 		Collections.sort(list);
-		return list;
+		return Collections.unmodifiableList(list);
 	}
 	
 	public List<AnimatedTile> getAnimatedTiles(int width, int height) {

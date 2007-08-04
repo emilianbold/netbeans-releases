@@ -18,35 +18,49 @@
  */
 package org.netbeans.modules.vmd.game.model.adapter;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.awt.Point;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
 import org.netbeans.modules.vmd.game.model.GlobalRepositoryListener;
 import org.netbeans.modules.vmd.game.model.ImageResource;
+import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.Scene;
+import org.netbeans.modules.vmd.game.model.Scene.LayerInfo;
+import org.netbeans.modules.vmd.game.model.SceneListener;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
-import org.openide.util.NbBundle;
 
-public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryListener {
+public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryListener, SceneListener, PropertyChangeListener {
 
-	private ArrayList listeners = new ArrayList();
-	
-	private static final int INDEX_TILED_LAYER_NODE = 0;
-	private static final int INDEX_SPRITE_NODE = 1;
+	private EventListenerList listenerList;
 	
 	private GlobalRepository globalRepository;
-	private SimpleSpritesNode spritesNode = new SimpleSpritesNode();
-	private SimpleTiledLayersNode tiledLayersNode = new SimpleTiledLayersNode();
 	
 	public GlobalRepositoryTreeAdapter(GlobalRepository globalRepository) {
 		this.globalRepository = globalRepository;
-		this.globalRepository.addGlobalRepositoryListener(this);
+		this.listenerList = new EventListenerList();
+		this.registerListeners();
 	}
+	
+	private void registerListeners() {
+		this.globalRepository.addGlobalRepositoryListener(this);
+		for (Scene scene : this.globalRepository.getScenes()) {
+			scene.addSceneListener(this);
+			scene.addPropertyChangeListener(this);
+			for (Layer layer : scene.getLayers()) {
+				layer.addPropertyChangeListener(this);
+			}
+		}
+	}
+	
+	//------ TreeModel -----------
 	
 	public Object getRoot() {
 		return this.globalRepository;
@@ -54,127 +68,174 @@ public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryL
 
 	public Object getChild(Object parent, int index) {
 		if (parent == this.globalRepository) {
-			if (index == INDEX_SPRITE_NODE) {
-				return this.spritesNode;
+			int numScenes = this.globalRepository.getScenes().size();
+			if (index >= numScenes) {
+				return null;
 			}
-			else if (index == INDEX_TILED_LAYER_NODE) {
-				return this.tiledLayersNode;
-			}
+			return this.globalRepository.getScenes().get(index);
 		}
-		else if (parent == this.spritesNode) {
-			return globalRepository.getSprites().get(index);
-		}
-		else if (parent == this.tiledLayersNode) {
-			return globalRepository.getTiledLayers().get(index);
+		if (parent instanceof Scene) {
+			return ((Scene) parent).getLayerAt(index);
 		}
 		return null;
 	}
 
 	public int getChildCount(Object parent) {
-		if (parent == this.globalRepository)
-			return 2;
-		if (parent == this.spritesNode)
-			return globalRepository.getSprites().size();
-		if (parent == this.tiledLayersNode)
-			return globalRepository.getTiledLayers().size();
+		if (parent == this.globalRepository) {
+			return this.globalRepository.getScenes().size();
+		}
+		if (parent instanceof Scene) {
+			return ((Scene) parent).getLayers().size();
+		}
 		return 0;
 	}
 
 	public boolean isLeaf(Object node) {
-		if (node == this.globalRepository || node == this.tiledLayersNode || node == this.spritesNode)
+		if (node == this.globalRepository || node instanceof Scene) {
 			return false;
+		}
 		return true;
 	}
 
 	public void valueForPathChanged(TreePath path, Object newValue) {
-		//System.out.println("GlobalRepositoryTreeAdapter.valueForPathChanged");
+		System.out.println("GlobalRepositoryTreeAdapter.valueForPathChanged"); // NOI18N 
 	}
 
 	public int getIndexOfChild(Object parent, Object child) {
 		if (parent == this.globalRepository) {
-			if (child == this.tiledLayersNode)
-				return INDEX_TILED_LAYER_NODE;
-			if (child == this.spritesNode)
-				return INDEX_SPRITE_NODE;
+			return this.globalRepository.getScenes().indexOf((Scene) child);
 		}
-		if (parent == this.tiledLayersNode)
-			return this.globalRepository.getTiledLayers().indexOf(child);
-		if (parent == this.spritesNode)
-			return this.globalRepository.getSprites().indexOf(child);
-		
-		return -1;		
+		if (parent instanceof Scene) {
+			return ((Scene) parent).indexOf((Layer) child);
+		}
+		return -1;
 	}
 
-	public void addTreeModelListener(TreeModelListener l) {
-		this.listeners.add(l);
+	public void addTreeModelListener(TreeModelListener listener) {
+		this.listenerList.add(TreeModelListener.class, listener);
 	}
 
-	public void removeTreeModelListener(TreeModelListener l) {
-		this.listeners.remove(l);
+	public void removeTreeModelListener(TreeModelListener listener) {
+		this.listenerList.remove(TreeModelListener.class, listener);
 	}
-
 	
-	private class SimpleSpritesNode {
-		public String toString() {
-			return NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryTreeAdapter.labelSprites");
-		}
-	}
-	private class SimpleTiledLayersNode {
-		public String toString() {
-			return NbBundle.getMessage(GlobalRepositoryListAdapter.class, "GlobalRepositoryTreeAdapter.labelTiledLayers");
-		}
-	}
+	
+	//------ GlobalRepositoryListener -----------
+	
 	public void sceneAdded(Scene scene, int index) {
+		scene.addPropertyChangeListener(this);
+		TreePath path = new TreePath(this.getRoot());
+		this.fireNodeInserted(path, index, scene);
 	}
 
 	public void sceneRemoved(Scene scene, int index) {
-	}
-
-	public void tiledLayerAdded(TiledLayer tiledLayer, int index) {
-		TreePath parent = new TreePath(new Object[] {this.getRoot(), this.tiledLayersNode});
-		int[] indicies = {index};
-		Object[] children = new Object[] {tiledLayer};
-		TreeModelEvent e = new TreeModelEvent(this, parent, indicies, children);
-		for (Iterator iter = this.listeners.iterator(); iter.hasNext();) {
-			TreeModelListener l = (TreeModelListener) iter.next();
-			l.treeNodesInserted(e);
-		}
-	}
-
-	public void tiledLayerRemoved(TiledLayer tiledLayer, int index) {
-		TreePath parent = new TreePath(new Object[] {this.getRoot(), this.tiledLayersNode});
-		int[] indicies = {index};
-		Object[] children = new Object[] {tiledLayer};
-		TreeModelEvent e = new TreeModelEvent(this, parent, indicies, children);
-		for (Iterator iter = this.listeners.iterator(); iter.hasNext();) {
-			TreeModelListener l = (TreeModelListener) iter.next();
-			l.treeNodesRemoved(e);
-		}
-	}
-
-	public void spriteAdded(Sprite sprite, int index) {
-		TreePath parent = new TreePath(new Object[] {this.getRoot(), this.spritesNode});
-		int[] indicies = {index};
-		Object[] children = new Object[] {sprite};
-		TreeModelEvent e = new TreeModelEvent(this, parent, indicies, children);
-		for (Iterator iter = this.listeners.iterator(); iter.hasNext();) {
-			TreeModelListener l = (TreeModelListener) iter.next();
-			l.treeNodesInserted(e);
-		}
-	}
-
-	public void spriteRemoved(Sprite sprite, int index) {
-		TreePath parent = new TreePath(new Object[] {this.getRoot(), this.spritesNode});
-		int[] indicies = {index};
-		Object[] children = new Object[] {sprite};
-		TreeModelEvent e = new TreeModelEvent(this, parent, indicies, children);
-		for (Iterator iter = this.listeners.iterator(); iter.hasNext();) {
-			TreeModelListener l = (TreeModelListener) iter.next();
-			l.treeNodesRemoved(e);
-		}
+		scene.removePropertyChangeListener(this);
+		TreePath path = new TreePath(this.getRoot());
+		this.fireNodeRemoved(path, index, scene);
 	}
 	
-    public void imageResourceAdded(ImageResource imageResource) {
+    public void tiledLayerAdded(TiledLayer tiledLayer, int index) {
+		tiledLayer.addPropertyChangeListener(this);
     }
 
+    public void tiledLayerRemoved(TiledLayer tiledLayer, int index) {
+		tiledLayer.removePropertyChangeListener(this);
+    }
+
+    public void spriteAdded(Sprite sprite, int index) {
+		sprite.addPropertyChangeListener(this);
+    }
+
+    public void spriteRemoved(Sprite sprite, int index) {
+		sprite.removePropertyChangeListener(this);
+    }
+
+	public void imageResourceAdded(ImageResource imageResource) {
+		//ignore
+    }
+
+
+	//----------------------------------------
+	
+	//EVENTS firing
+	
+	private void fireNodeInserted(TreePath path, int index, Object object) {
+		TreeModelEvent e = new TreeModelEvent(this, path, new int[] {index}, new Object[] {object});
+		Object[] listeners = listenerList.getListenerList();
+		for (int i = listeners.length - 2; i >= 0; i -= 2) {
+			if (listeners[i] == TreeModelListener.class) {
+				((TreeModelListener) listeners[i+1]).treeNodesInserted(e);
+			}
+		}
+	}
+	private void fireNodeRemoved(TreePath path, int index, Object object) {		
+		TreeModelEvent e = new TreeModelEvent(this, path, new int[] {index}, new Object[] {object});
+		Object[] listeners = listenerList.getListenerList();
+		for (int i = listeners.length - 2; i >= 0; i -= 2) {
+			if (listeners[i] == TreeModelListener.class) {
+				((TreeModelListener) listeners[i+1]).treeNodesRemoved(e);
+			}
+		}
+	}
+	private void fireNodeChanged(TreePath path, int index, Object object) {
+		TreeModelEvent e = new TreeModelEvent(this, path, new int[] {index}, new Object[] {object});
+		Object[] listeners = listenerList.getListenerList();
+		for (int i = listeners.length - 2; i >= 0; i -= 2) {
+			if (listeners[i] == TreeModelListener.class) {
+				((TreeModelListener) listeners[i+1]).treeNodesChanged(e);
+			}
+		}
+	}
+
+	//--------------- SceneListener -------------------
+	
+ 	public void layerAdded(Scene sourceScene, Layer layer, int index) {
+		TreePath path = new TreePath(new Object[] {this.getRoot(), sourceScene});
+		this.fireNodeInserted(path, index, layer);
+	}
+	
+	public void layerRemoved(Scene sourceScene, Layer layer, LayerInfo info, int index) {
+		TreePath path = new TreePath(new Object[] {this.getRoot(), sourceScene});
+		this.fireNodeRemoved(path, index, layer);
+	}
+	
+	public void layerMoved(Scene sourceScene, Layer layer, int indexOld, int indexNew) {
+		this.layerRemoved(sourceScene, layer, null, indexOld);
+		this.layerAdded(sourceScene, layer, indexNew);
+	}
+	
+   public void layerPositionChanged(Scene sourceScene, Layer layer, Point oldPosition, Point newPosition, boolean inTransition) {
+		//ignore
+    }
+
+    public void layerLockChanged(Scene sourceScene, Layer layer, boolean locked) {
+		//ignore
+    }
+
+    public void layerVisibilityChanged(Scene sourceScene, Layer layer, boolean visible) {
+		//ignore
+    }
+
+	//----------------- PropertyChangeListener -----------------
+	
+    public void propertyChange(PropertyChangeEvent e) {
+		Object src = e.getSource();
+		if (e.getPropertyName().equals(Editable.PROPERTY_NAME)) {
+			if (src instanceof Scene) {
+				Scene scene = (Scene) src;
+				TreePath path = new TreePath(this.getRoot());
+				this.fireNodeChanged(path, this.globalRepository.getScenes().indexOf(scene), scene);
+			}
+			else if (src instanceof Layer) {
+				Layer layer = (Layer) src;
+				for (Scene scene : this.globalRepository.getScenes()) {
+					if (scene.getLayers().contains(layer)) {
+						TreePath path = new TreePath(new Object[] {this.getRoot(), scene});
+						this.fireNodeChanged(path, scene.getLayers().indexOf(layer), layer);
+					}
+				}
+			}
+		}
+    }
+	
 }

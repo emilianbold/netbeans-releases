@@ -16,34 +16,35 @@
  */
 package org.netbeans.modules.vmd.game.view;
 
-import javax.swing.JTable;
-import org.netbeans.modules.vmd.game.model.Editable;
+import java.awt.BorderLayout;
+import javax.swing.JPanel;
+import javax.swing.JTree;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
-import org.netbeans.modules.vmd.game.model.adapter.GlobalRepositoryTableAdapter;
+import org.netbeans.modules.vmd.game.model.adapter.GlobalRepositoryTreeAdapter;
 
 /**
  *
  * @author kaja
  */
-public class GameDesignNavigator extends JTable {
-
-	
-	
-	public static final int PAD_X = 4;
-	public static final int PAD_Y = 4;
-	
-	private static final int IMG_PREVIEW_WIDTH = 40;
-	private static final int IMG_PREVIEW_HEIGHT = 30;
+public class GameDesignNavigator extends JPanel {
 	
 	private GlobalRepository gameDesign;
+	private JTree tree;
+	private GlobalRepositoryTreeAdapter model;
 	
     public GameDesignNavigator(GlobalRepository gameDesign) {
-		System.out.println(">>>>>>>>>> GAME DESIGN: " + gameDesign); // NOI18N
 		this.gameDesign = gameDesign;
-		this.getColumnModel().setColumnMargin(0);
-		this.setRowHeight(IMG_PREVIEW_HEIGHT);
-		this.setModel(new GlobalRepositoryTableAdapter(gameDesign));
-		this.setDefaultRenderer(Editable.class, new GameDesignTableCellRenderer());
+		this.init();
+		this.setLayout(new BorderLayout());
+		this.add(tree, BorderLayout.CENTER);
     }
-
+	
+	private void init() {
+		this.model = new GlobalRepositoryTreeAdapter(gameDesign);
+		this.tree = new JTree(model);
+		this.tree.setRootVisible(true);
+		this.tree.setShowsRootHandles(true);
+		
+		this.tree.setCellRenderer(new GameDesignTreeNodeRenderer());
+	}
 }
