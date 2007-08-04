@@ -107,9 +107,11 @@ public abstract class CasaPinWidget extends Widget {
      */
     protected void notifyStateChanged (ObjectState previousState, ObjectState state) {
         super.notifyStateChanged(previousState, state);
-        if (!previousState.isSelected() && state.isSelected()) {
+        if ((!previousState.isSelected() && state.isSelected()) ||
+            (!previousState.isFocused() && state.isFocused())   ) {
             setSelected(true);
-        } else if (previousState.isSelected() && !state.isSelected()) {
+        } else if ((previousState.isSelected() && !state.isSelected())||
+                   (previousState.isFocused() && !state.isFocused())){
             setSelected(false);
         }
         

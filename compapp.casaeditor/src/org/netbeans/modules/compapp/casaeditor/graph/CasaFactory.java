@@ -29,7 +29,9 @@
 package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.beans.PropertyChangeListener;
+import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.modules.compapp.casaeditor.graph.actions.CycleCasaSceneSelectProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaAcceptProvider;
 import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteAcceptAction;
 
@@ -39,10 +41,12 @@ import org.netbeans.modules.compapp.casaeditor.palette.CasaPaletteAcceptAction;
  */
 public class CasaFactory {
     
-    static CasaCustomizer msCasaCustomizer = new CasaCustomizer();
+    private static CasaCustomizer msCasaCustomizer = new CasaCustomizer();
     
-    static CasaCustomizerRegistor msCasaCustomizerRegistor = new CasaCustomizerRegistor();
-    
+    private static CasaCustomizerRegistor msCasaCustomizerRegistor = new CasaCustomizerRegistor();
+
+    private static final WidgetAction msCasaCycleCasaSceneSelectAction = ActionFactory.createCycleFocusAction (new CycleCasaSceneSelectProvider());
+
     /** Creates a new instance of CasaFactory */
     public CasaFactory() {
     }
@@ -69,4 +73,7 @@ public class CasaFactory {
         return msCasaCustomizerRegistor;
     }
     
+    public static WidgetAction createCycleCasaSceneSelectAction() {
+        return msCasaCycleCasaSceneSelectAction;
+    }
 }

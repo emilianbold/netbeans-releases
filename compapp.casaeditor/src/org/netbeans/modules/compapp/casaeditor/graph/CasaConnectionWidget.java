@@ -48,7 +48,7 @@ public class CasaConnectionWidget extends ConnectionWidget {
      * @param state the new state
      */
     public void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        if (state.isSelected ()) {
+        if (state.isSelected () || state.isFocused()) {
             bringToFront();
             setStroke(STROKE_SELECTED);
             setForeground (CasaFactory.getCasaCustomizer().getCOLOR_SELECTION());

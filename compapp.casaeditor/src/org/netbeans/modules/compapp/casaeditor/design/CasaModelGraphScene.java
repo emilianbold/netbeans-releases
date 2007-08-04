@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.visual.action.RectangularSelectDecorator;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
@@ -270,6 +269,7 @@ implements PropertyChangeListener {
         getActions().addAction(mPopupMenuAction);
         getActions().addAction(new CasaRemoveAction(this, mModel));
         getActions().addAction(CasaFactory.createAcceptAction(new CasaPaletteAcceptProvider(this, mModel)));
+        getActions().addAction(CasaFactory.createCycleCasaSceneSelectAction());        
         
         addSceneListener(new BannerSceneListener(this));
     }
@@ -773,5 +773,75 @@ implements PropertyChangeListener {
      */
     public String getSourcesPath() {
         return mDataObject.getFolder().getPrimaryFile().getParent().getPath();
+    }
+        /**
+     * This method returns an identity code. It should be unique for each object in the scene.
+     * The identity code is a Comparable and could be used for sorting.
+     * The method implementation should be fast.
+     * @param object the object
+     * @return the identity code of the object; null, if the object is null
+     */
+    public Comparable getIdentityCode (Object object) {
+        if(object == null || object instanceof CasaRegion) {
+            return null;
+        }
+        String idCode = "";
+        if(object instanceof CasaPort) {
+            idCode = getIdentityCode((CasaPort) object).toString();
+        } else if(object instanceof CasaConnection) {
+            idCode = getIdentityCode((CasaConnection) object).toString();
+        } else if(object instanceof CasaServiceEngineServiceUnit) {
+            idCode = getIdentityCode((CasaServiceEngineServiceUnit) object).toString();
+        } else if(object instanceof CasaConsumes) {
+            idCode = getIdentityCode((CasaConsumes) object).toString();
+        } else if(object instanceof CasaProvides) {
+            idCode = getIdentityCode((CasaProvides) object).toString();
+        } else {
+        }
+        return idCode;
+    }
+    
+    private StringBuffer getIdentityCode(CasaPort casaPort) {
+        StringBuffer retString = new StringBuffer("A");
+        retString.append(String.format("%010d",casaPort.getX()));
+        retString.append(String.format("%010d",casaPort.getY()));
+        return retString;
+    }
+    
+    private StringBuffer getIdentityCode(CasaServiceEngineServiceUnit casaSU) {
+        String code = casaSU.isInternal() ? "C" : "E";
+        StringBuffer retString = new StringBuffer(code);
+        retString.append(String.format("%010d",casaSU.getY()));
+        retString.append(String.format("%010d",casaSU.getX()));
+        return retString;
+    }
+    private StringBuffer getIdentityCode(CasaConsumes casaConsumes) {
+        StringBuffer retString = new StringBuffer("");
+        CasaComponent parent = casaConsumes.getParent();
+        if(parent instanceof CasaPort) {
+            retString = getIdentityCode((CasaPort) parent);
+        } else if(parent instanceof CasaServiceEngineServiceUnit) {
+            retString = getIdentityCode((CasaServiceEngineServiceUnit) parent);
+        }
+        retString.append("C");
+        retString.append(String.format("%010d",casaConsumes.findPosition()));
+        return retString;
+    }
+    private StringBuffer getIdentityCode(CasaProvides casaProvides) {
+        StringBuffer retString = new StringBuffer("");
+        CasaComponent parent = casaProvides.getParent();
+        if(parent instanceof CasaPort) {
+            retString = getIdentityCode((CasaPort) parent);
+        } else if(parent instanceof CasaServiceEngineServiceUnit) {
+            retString = getIdentityCode((CasaServiceEngineServiceUnit) parent);
+        }
+        retString.append("P");
+        retString.append(String.format("%010d",casaProvides.findPosition()));
+        return retString;
+    }
+    private StringBuffer getIdentityCode(CasaConnection casaConnection) {
+        StringBuffer retString = new StringBuffer("G");
+        retString.append(String.format("%010d",casaConnection.findPosition()));
+        return retString;
     }
 }
