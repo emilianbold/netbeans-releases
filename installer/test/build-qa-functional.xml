@@ -53,6 +53,7 @@
         <delete verbose="false" quiet="true" includeemptydirs="true">
             <fileset dir="${xtest.workdir}/user" includes="**/bundle/*"/>
             <fileset dir="${xtest.workdir}/user" includes="**/installer.*"/>
+            <fileset dir="${xtest.workdir}/user" includes="**/nbi-engine.jar"/>
         </delete>
     </target>
     
