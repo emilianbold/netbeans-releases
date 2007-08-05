@@ -26,11 +26,9 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
 import org.netbeans.modules.xml.schema.model.visitor.SchemaVisitor;
 import org.netbeans.modules.xml.xam.EmbeddableRoot;
-import org.netbeans.modules.xml.xam.EmbeddableRoot.ForeignParent;
-import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.xml.xam.EmbeddableRoot.ForeignParent;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.w3c.dom.Element;
 
 /**
@@ -112,7 +110,7 @@ public class ImportImpl extends SchemaComponentImpl implements Import {
         ForeignParent fr = (ForeignParent) getModel().getSchema().getForeignParent();
         if (fr == null) return null;
         for (EmbeddableRoot embedded : fr.getAdoptedChildren()) {
-            if (embedded instanceof Schema) {
+            if (embedded instanceof Schema && embedded != getModel().getSchema()) {
                 Schema es = (Schema) embedded;
                 if (getNamespace().equals(es.getTargetNamespace())) {
                     return es.getModel();
