@@ -19,6 +19,9 @@
 
 package org.netbeans.api.debugger;
 
+import java.beans.Customizer;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +34,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -462,25 +467,54 @@ public abstract class Properties {
         private static final Collection BAD_COLLECTION = new ArrayList ();
         private static final Object[] BAD_ARRAY = new Object [0];
         
-        private HashMap register;
+        private List<Reader> readersList;
+        private HashMap<String, Reader> register;
         
         
         private PrimitiveRegister impl = new PrimitiveRegister ();
 
         private void initReaders () {
-            register = new HashMap ();
-            Iterator i = DebuggerManager.getDebuggerManager().lookup(null, Reader.class).iterator ();
-            while (i.hasNext ()) {
-                Reader r = (Reader) i.next ();
+            register = new HashMap<String, Reader>();
+            readersList = DebuggerManager.getDebuggerManager().lookup(null, Reader.class);
+            for (Reader r : readersList) {
                 registerReader(r);
             }
+            ((Customizer) readersList).addPropertyChangeListener(
+                    new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            synchronized (PropertiesImpl.this) {
+                                Set<Reader> registeredReaders = new HashSet<Reader>(register.values());
+                                //List<Reader> readersList = (List<Reader>) evt.getSource();
+                                for (Reader r : readersList) {
+                                    if (!registeredReaders.remove(r)) {
+                                        registerReader(r);
+                                    }
+                                }
+                                for (Reader r : registeredReaders) {
+                                    unregisterReader(r);
+                                }
+                            }
+                        }
+                    });
+            ((Customizer) readersList).setObject(Lookup.NOTIFY_LOAD_FIRST);
+            ((Customizer) readersList).setObject(Lookup.NOTIFY_UNLOAD_LAST);
         }
         
         private void registerReader(Reader r) {
+            //System.err.println("registerReader("+r+")");
             String[] ns = r.getSupportedClassNames ();
             int j, jj = ns.length;
             for (j = 0; j < jj; j++) {
                 register.put (ns [j], r);
+            }
+        }
+        
+        private void unregisterReader(Reader r) {
+            //System.err.println("unregisterReader("+r+")");
+            String[] ns = r.getSupportedClassNames ();
+            int j, jj = ns.length;
+            for (j = 0; j < jj; j++) {
+                register.remove (ns [j]);
             }
         }
         

@@ -30,6 +30,9 @@ import org.netbeans.spi.debugger.DelegatingDebuggerEngineProvider;
 import org.netbeans.spi.debugger.DelegatingSessionProvider;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 
 
 /**
@@ -162,6 +165,8 @@ public final class DebuggerManager {
     private ActionsManager                    actionsManager = null;
     
     private Lookup                            lookup = new Lookup.MetaInf (null);
+    
+    //private ModuleUnloadListeners             moduleUnloadListeners = new ModuleUnloadListeners();
     
     
     /**
@@ -469,8 +474,23 @@ public final class DebuggerManager {
         Breakpoint breakpoint
     ) {
         if (initBreakpoints (breakpoint)) {
+            registerBreakpoint(breakpoint);
             breakpoints.addElement (breakpoint);
             fireBreakpointCreated (breakpoint, null);
+        }
+    }
+    
+    private void registerBreakpoint(Breakpoint breakpoint) {
+        Class c = breakpoint.getClass();
+        ClassLoader cl = c.getClassLoader();
+        synchronized (breakpointsByClassLoaders) {
+            Set<Breakpoint> lb = breakpointsByClassLoaders.get(cl);
+            if (lb == null) {
+                lb = new HashSet<Breakpoint>();
+                breakpointsByClassLoaders.put(cl, lb);
+                //moduleUnloadListeners.listenOn(cl);
+            }
+            lb.add(breakpoint);
         }
     }
     
@@ -482,10 +502,32 @@ public final class DebuggerManager {
     public void removeBreakpoint (
         Breakpoint breakpoint
     ) {
-        initBreakpoints ();
-        breakpoints.removeElement (breakpoint);
-        breakpoint.disposeOut ();
-        fireBreakpointRemoved (breakpoint);
+        removeBreakpoint(breakpoint, false);
+    }
+    
+    private void removeBreakpoint (
+        Breakpoint breakpoint, boolean ignoreInitBreakpointsListeners
+    ) {
+        if (!ignoreInitBreakpointsListeners) {
+            initBreakpoints ();
+            Class c = breakpoint.getClass();
+            ClassLoader cl = c.getClassLoader();
+            synchronized (breakpointsByClassLoaders) {
+                Set<Breakpoint> lb = breakpointsByClassLoaders.get(cl);
+                if (lb != null) {
+                    lb.remove(breakpoint);
+                    if (lb.isEmpty()) {
+                        breakpointsByClassLoaders.remove(cl);
+                    }
+                }
+            }
+            breakpoints.removeElement (breakpoint);
+            breakpoint.disposeOut();
+        } else {
+            breakpoints.removeElement (breakpoint);
+            breakpoint.dispose();
+        }
+        fireBreakpointRemoved (breakpoint, ignoreInitBreakpointsListeners);
     }
 
     /** 
@@ -496,6 +538,17 @@ public final class DebuggerManager {
     public Breakpoint[] getBreakpoints () {
         initBreakpoints ();
         return (Breakpoint[]) breakpoints.toArray(new Breakpoint[0]);
+    }
+    
+    private void moduleUnloaded(ClassLoader cl) {
+        Set<Breakpoint> lb;
+        synchronized (breakpointsByClassLoaders) {
+            lb = breakpointsByClassLoaders.remove(cl);
+        }
+        if (lb == null) return ;
+        for (Breakpoint b : lb) {
+            removeBreakpoint(b, true);
+        }
     }
 
     
@@ -618,7 +671,7 @@ public final class DebuggerManager {
             listeners.addElement (l);
         }
     }
-
+    
     /** 
      * Remove a debuggerManager listener to changes of watches and breakpoints.
      *
@@ -693,7 +746,7 @@ public final class DebuggerManager {
      *
      * @param breakpoint  a breakpoint that was removed
      */
-    private void fireBreakpointRemoved (final Breakpoint breakpoint) {
+    private void fireBreakpointRemoved (final Breakpoint breakpoint, boolean ignoreInitBreakpointsListeners) {
         initDebuggerManagerListeners ();
         PropertyChangeEvent ev = new PropertyChangeEvent (
             this, PROP_BREAKPOINTS, null, null
@@ -702,9 +755,13 @@ public final class DebuggerManager {
         Vector l = (Vector) listeners.clone ();
         int i, k = l.size ();
         for (i = 0; i < k; i++) {
-            ((DebuggerManagerListener) l.elementAt (i)).breakpointRemoved 
-                (breakpoint);
-            ((DebuggerManagerListener) l.elementAt (i)).propertyChange (ev);
+            DebuggerManagerListener ml = (DebuggerManagerListener) l.elementAt(i);
+            Breakpoint[] bps;
+            if (ignoreInitBreakpointsListeners && (bps = ml.initBreakpoints()) != null && bps.length > 0) {
+                continue;
+            }
+            ml.breakpointRemoved(breakpoint);
+            ml.propertyChange (ev);
         }
         
         Vector l1;
@@ -717,9 +774,13 @@ public final class DebuggerManager {
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++) {
-                ((DebuggerManagerListener) l1.elementAt (i)).breakpointRemoved 
-                    (breakpoint);
-                ((DebuggerManagerListener) l1.elementAt (i)).propertyChange (ev);
+                DebuggerManagerListener ml = (DebuggerManagerListener) l1.elementAt(i);
+                Breakpoint[] bps;
+                if (ignoreInitBreakpointsListeners && (bps = ml.initBreakpoints()) != null && bps.length > 0) {
+                    continue;
+                }
+                ml.breakpointRemoved(breakpoint);
+                ml.propertyChange (ev);
             }
         }
     }
@@ -728,7 +789,9 @@ public final class DebuggerManager {
         initBreakpoints(null);
     }
     
-    private List createdBreakpoints;
+    private List<Breakpoint> createdBreakpoints;
+    private Map<ClassLoader, Set<Breakpoint>> breakpointsByClassLoaders =
+            new HashMap<ClassLoader, Set<Breakpoint>>();
     
     /**
      * @param newBreakpoint a breakpoint that is to be added if the breakpoints are not yet initialized.
@@ -739,7 +802,8 @@ public final class DebuggerManager {
         // and DebuggerManagerListener.propertyChange(..PROP_BREAKPOINTS_INIT..) calls.
         // Clients should return the breakpoints via that listener, not add them
         // directly. Therefore this should not lead to deadlock...
-        Map originatingListeners;
+        Map<Breakpoint, DebuggerManagerListener> originatingListeners;
+        List<Breakpoint> breakpointsToAdd;
         synchronized (breakpoints) {
             if (breakpointsInitialized) return true;
             if (breakpointsInitializing) {
@@ -792,15 +856,48 @@ public final class DebuggerManager {
             } finally {
                 breakpointsInitializing = false;
             }
-            breakpointsInitialized = true; 
+            breakpointsInitialized = true;
+            breakpointsToAdd = createdBreakpoints;
+            createdBreakpoints = null;
         }
-        int k = createdBreakpoints.size ();
-        for (int i = 0; i < k; i++) {
-            Breakpoint bp = (Breakpoint) createdBreakpoints.get (i);
-            fireBreakpointCreated (bp, (DebuggerManagerListener) originatingListeners.get(bp));
+        for (Breakpoint bp : breakpointsToAdd) {
+            registerBreakpoint(bp);
+            fireBreakpointCreated (bp, originatingListeners.get(bp));
         }
-        createdBreakpoints = null;
         return true;
+    }
+
+    private void addBreakpoints(DebuggerManagerListener dl) {
+        if (!breakpointsInitialized) {
+            return ;
+        }
+        //System.err.println("\n addBreakpoints("+dl+")\n");
+        Map<Breakpoint, DebuggerManagerListener> originatingListeners = new HashMap<Breakpoint, DebuggerManagerListener>();
+        List<Breakpoint> breakpointsToAdd;
+        synchronized (breakpoints) {
+            breakpointsInitialized = false;
+            breakpointsInitializing = true;
+            try {
+                createdBreakpoints = new ArrayList<Breakpoint>();
+                Breakpoint[] bps = dl.initBreakpoints();
+                createdBreakpoints.addAll (Arrays.asList(bps));
+                for (int j = 0; j < bps.length; j++) {
+                    originatingListeners.put(bps[j], dl);
+                }
+                //System.err.println("createdBreakpoints = "+createdBreakpoints);
+                breakpoints.addAll(createdBreakpoints);
+            } finally {
+                breakpointsInitializing = false;
+                breakpointsInitialized = true; 
+            }
+            breakpointsToAdd = createdBreakpoints;
+            createdBreakpoints = null;
+        }
+        //System.err.println("createdBreakpoints = "+breakpointsToAdd);
+        for (Breakpoint bp : breakpointsToAdd) {
+            registerBreakpoint(bp);
+            fireBreakpointCreated (bp, originatingListeners.get(bp));
+        }
     }
 
     /**
@@ -1103,27 +1200,72 @@ public final class DebuggerManager {
     
     // helper methods ....................................................
     
-    private boolean listerersLoaded = false;
+    private Set<LazyDebuggerManagerListener> loadedListeners;
+    private List<LazyDebuggerManagerListener> listenersLookupList;
     
     private void initDebuggerManagerListeners () {
         synchronized (listenersMap) {
-            if (listerersLoaded) return;
-            listerersLoaded = true;
-            List listenersMap = lookup.lookup (null, LazyDebuggerManagerListener.class);
-            int i, k = listenersMap.size ();
+            if (loadedListeners == null) {
+                loadedListeners = new HashSet<LazyDebuggerManagerListener>();
+                listenersLookupList = lookup.lookup (null, LazyDebuggerManagerListener.class);
+                refreshDebuggerManagerListeners(listenersLookupList);
+                ((Customizer) listenersLookupList).addPropertyChangeListener(new PropertyChangeListener() {
+
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        refreshDebuggerManagerListeners((List<LazyDebuggerManagerListener>) evt.getSource());
+                    }
+                });
+            }
+            
+        }
+    }
+    
+    private void refreshDebuggerManagerListeners (List<LazyDebuggerManagerListener> listenersLookupList) {
+        //System.err.println("\n refreshDebuggerManagerListeners()");
+        //It's neccessary to pay attention on the order in which the listeners and breakpoints are registered!
+        //Annotation listeners must be unregistered AFTER breakpoints are removed
+        //and registered back BEFORE breakpoints are loaded
+        Set<LazyDebuggerManagerListener> addedInitBreakpointsListeners = new HashSet<LazyDebuggerManagerListener>();
+        Set<ClassLoader> uninstalledModules = new HashSet<ClassLoader>();
+        synchronized (listenersLookupList) {
+            int i, k = listenersLookupList.size ();
+            //System.err.println("size() = "+k+",  content = "+listenersLookupList+"\n");
             for (i = 0; i < k; i++) {
-                LazyDebuggerManagerListener l = (LazyDebuggerManagerListener)
-                    listenersMap.get (i);
-                String[] props = l.getProperties ();
-                if ((props == null) || (props.length == 0)) {
-                    addDebuggerListener (l);
-                    continue;
-                }
-                int j, jj = props.length;
-                for (j = 0; j < jj; j++) {
-                    addDebuggerListener (props [j], l);
+                LazyDebuggerManagerListener l = listenersLookupList.get (i);
+                if (loadedListeners.add(l)) {
+                    String[] props = l.getProperties ();
+                    if ((props == null) || (props.length == 0)) {
+                        addDebuggerListener (l);
+                    } else {
+                        int j, jj = props.length;
+                        for (j = 0; j < jj; j++) {
+                            addDebuggerListener (props [j], l);
+                        }
+                    }
+                    //System.err.println("ADDED listener: "+l);
+                    addedInitBreakpointsListeners.add(l);
                 }
             }
+            Set<LazyDebuggerManagerListener> listenersToRemove = new HashSet<LazyDebuggerManagerListener>(loadedListeners);
+            listenersToRemove.removeAll(listenersLookupList);
+            for (LazyDebuggerManagerListener l : listenersToRemove) {
+                if (loadedListeners.remove(l)) {
+                    moduleUnloaded(l.getClass().getClassLoader());
+                    String[] props = l.getProperties ();
+                    if ((props == null) || (props.length == 0)) {
+                        removeDebuggerListener (l);
+                    } else {
+                        int j, jj = props.length;
+                        for (j = 0; j < jj; j++) {
+                            removeDebuggerListener (props [j], l);
+                        }
+                    }
+                    //System.err.println("REMOVED listener: "+l);
+                }
+            }
+        }
+        for (LazyDebuggerManagerListener l : addedInitBreakpointsListeners) {
+            addBreakpoints(l);
         }
     }
     
@@ -1248,5 +1390,52 @@ public final class DebuggerManager {
             }
         }
     }
+    
+    /*
+    private class ModuleUnloadListeners {
+        
+        private Map<ClassLoader, ModuleChangeListener> moduleChangeListeners
+                = new HashMap<ClassLoader, ModuleChangeListener>();
+        
+        public void listenOn(ClassLoader cl) {
+            /*
+            org.openide.util.Lookup.Result<ModuleInfo> moduleLookupResult =
+                    org.openide.util.Lookup.getDefault ().lookup(
+                        new org.openide.util.Lookup.Template<ModuleInfo>(ModuleInfo.class));
+            synchronized(moduleChangeListeners) {
+                if (!moduleChangeListeners.containsKey(cl)) {
+                    for (ModuleInfo mi : moduleLookupResult.allInstances()) {
+                        if (mi.isEnabled() && mi.getClassLoader() == cl) {
+                            ModuleChangeListener l = new ModuleChangeListener(cl);
+                            mi.addPropertyChangeListener(WeakListeners.propertyChange(l, mi));
+                            moduleChangeListeners.put(cl, l);
+                        }
+                    }
+                }
+            }
+             *//*
+        }
+        
+        private final class ModuleChangeListener implements PropertyChangeListener {
+            
+            private ClassLoader cl;
+
+            public ModuleChangeListener(ClassLoader cl) {
+                this.cl = cl;
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                ModuleInfo mi = (ModuleInfo) evt.getSource();
+                if (!mi.isEnabled()) {
+                    synchronized (moduleChangeListeners) {
+                        moduleChangeListeners.remove(cl);
+                    }
+                    moduleUnloaded(cl);
+                }
+            }
+
+        }
+    }
+                */
 }
 

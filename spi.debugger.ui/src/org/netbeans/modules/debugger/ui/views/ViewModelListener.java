@@ -19,8 +19,11 @@
 
 package org.netbeans.modules.debugger.ui.views;
 
+import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
 
@@ -41,6 +44,7 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -57,6 +61,18 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private String          viewType;
     private JComponent      view;
     private List models = new ArrayList(11);
+    
+    private List treeModels;
+    private List treeModelFilters;
+    private List treeExpansionModels;
+    private List nodeModels;
+    private List nodeModelFilters;
+    private List tableModels;
+    private List tableModelFilters;
+    private List nodeActionsProviders;
+    private List nodeActionsProviderFilters;
+    private List columnModels;
+    private List mm;
     
     // <RAVE>
     // Store the propertiesHelpID to pass to the Model object that is
@@ -97,6 +113,18 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
         );
+        models = null;
+        treeModels = null;
+        treeModelFilters = null;
+        treeExpansionModels = null;
+        nodeModels = null;
+        nodeModelFilters = null;
+        tableModels = null;
+        tableModelFilters = null;
+        nodeActionsProviders = null;
+        nodeActionsProviderFilters = null;
+        columnModels = null;
+        mm = null;
         Models.setModelsToView (
             view, 
             Models.EMPTY_MODEL
@@ -108,28 +136,18 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     }
     
     private List joinLookups(DebuggerEngine e, DebuggerManager dm, Class service) {
-        List es = e.lookup (viewType, service);
+        return new JoinedLookupsList(e, dm, service);
+        /*List es = e.lookup (viewType, service);
         List ms = dm.lookup(viewType, service);
         ms.removeAll(es);
         es.addAll(ms);
-        return es;
+        return es;*/
     }
     
     private synchronized void updateModel () {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
         
-        List treeModels;
-        List treeModelFilters;
-        List treeExpansionModels;
-        List nodeModels;
-        List nodeModelFilters;
-        List tableModels;
-        List tableModelFilters;
-        List nodeActionsProviders;
-        List nodeActionsProviderFilters;
-        List columnModels;
-        List mm;
         if (e != null) {
             treeModels =            joinLookups(e, dm, TreeModel.class);
             treeModelFilters =      joinLookups(e, dm, TreeModelFilter.class);
@@ -156,6 +174,31 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             mm =                    dm.lookup (viewType, Model.class);
         }
         
+        ModelsChangeRefresher mcr = new ModelsChangeRefresher();
+        Customizer[] modelListCustomizers = new Customizer[] {
+            (Customizer) treeModels,
+            (Customizer) treeModelFilters,
+            (Customizer) treeExpansionModels,
+            (Customizer) nodeModels,
+            (Customizer) nodeModelFilters,
+            (Customizer) tableModels,
+            (Customizer) tableModelFilters,
+            (Customizer) nodeActionsProviders,
+            (Customizer) nodeActionsProviderFilters,
+            (Customizer) columnModels,
+            (Customizer) mm
+        };
+        for (int i = 0; i < modelListCustomizers.length; i++) {
+            Customizer c = modelListCustomizers[i];
+            c.addPropertyChangeListener(mcr);
+            c.setObject("load first"); // NOI18N
+            c.setObject("unload last"); // NOI18N
+        }
+        
+        refreshModel();
+    }
+    
+    private void refreshModel() {
         models.clear();
         models.add(treeModels);
         models.add(treeModelFilters);
@@ -184,7 +227,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             newModel
         );
         // </RAVE>
-
     }
 
     
@@ -215,5 +257,78 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         
         public void addModelListener (ModelListener l) {}
         public void removeModelListener (ModelListener l) {}
+    }
+    
+    private class JoinedLookupsList extends ArrayList implements Customizer, PropertyChangeListener {
+        
+        private List es;
+        private List ms;
+        private List propertyChangeListeners;
+        
+        public JoinedLookupsList(DebuggerEngine e, DebuggerManager dm, Class service) {
+            es = e.lookup (viewType, service);
+            ms = dm.lookup(viewType, service);
+            setUp();
+        }
+        
+        private void setUp() {
+            addAll(es);
+            for (Iterator it = ms.iterator(); it.hasNext(); ) {
+                Object s = it.next();
+                if (!contains(s)) {
+                    add(s);
+                }
+            }
+        }
+
+        public void setObject(Object bean) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+            if (propertyChangeListeners == null) {
+                propertyChangeListeners = new ArrayList();
+                ((Customizer) ms).addPropertyChangeListener(this);
+            }
+            propertyChangeListeners.add(listener);
+        }
+
+        public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+            propertyChangeListeners.remove(listener);
+        }
+
+        public void propertyChange(PropertyChangeEvent e) {
+            clear();
+            setUp();
+            List listeners;
+            synchronized (this) {
+                if (propertyChangeListeners == null) {
+                    return ;
+                }
+                listeners = new ArrayList(propertyChangeListeners);
+            }
+            PropertyChangeEvent evt = new PropertyChangeEvent(this, "content", null, null);
+            for (Iterator it = listeners.iterator(); it.hasNext(); ) {
+                ((PropertyChangeListener) it.next()).propertyChange(evt);
+            }
+        }
+        
+    }
+    
+    private class ModelsChangeRefresher implements PropertyChangeListener, Runnable {
+        
+        private RequestProcessor.Task task;
+
+        public synchronized void propertyChange(PropertyChangeEvent evt) {
+            if (task == null) {
+                task = new RequestProcessor(ModelsChangeRefresher.class.getName(), 1).create(this);
+            }
+            task.schedule(1);
+        }
+
+        public void run() {
+            refreshModel();
+        }
+        
     }
 }
