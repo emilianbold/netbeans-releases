@@ -16,6 +16,9 @@
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
+ *
+ * $Id$
+ *
  */
 
 package org.netbeans.test.installer;
@@ -46,6 +49,7 @@ public class TestData implements Serializable {
     private String platformName = null;
     private String platformExt = null;
     private String installerType = null;
+    private String buildNumber = null;
 
     public TestData(Logger logger) {
         assert logger != null;
@@ -58,14 +62,22 @@ public class TestData implements Serializable {
 //        return "C:/work/test/TestInstaller/netbeans-6.0-nightly-200707100000-basic-windows.exe";
     }
 
-    public String getInstallerURL(String type) {
+    public String getInstallerURL() {
         String val = System.getProperty("installer.url.prefix");
-        String prefix = (val == null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/200707120000/bundles/netbeans-6.0-nightly-200707120000" : val;
+        String prefix = (buildNumber != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-nightly-" + buildNumber : val;
 
         //val = System.getProperty("installer.url.bundle.type");
-        String bundleType = (type == null) ? "basic" : type;
+        String bundleType = (getInstallerType() == null) ? "basic" : getInstallerType();
 
         return prefix + "-" + bundleType + "-" + platformName + "." + platformExt;
+    }
+
+    public String getBuildNumber() {
+        return buildNumber;
+    }
+
+    public void setBuildNumber(String buildNumber) {
+        this.buildNumber = buildNumber;
     }
 
     private void initPlatformVar() {
@@ -102,7 +114,7 @@ public class TestData implements Serializable {
     public String getPaltformName() {
         return platformName;
     }
-    
+
     public String getInstallerMainClassName() {
         return "org.netbeans.installer.Installer";
     }
@@ -213,24 +225,19 @@ public class TestData implements Serializable {
     public void setInstallerType(String installerType) {
         this.installerType = installerType;
     }
-    
+
     public Proxy getProxy() {
         Proxy proxy = null;
-        
+
         String proxyHost = System.getProperty("installer.proxy.host", null);
         String proxyPort = System.getProperty("installer.proxy.port", null);
-        
-        if(proxyHost != null && proxyPort != null) {
-            proxy = new Proxy(
-                    Proxy.Type.HTTP, 
-                    new InetSocketAddress(
-                        proxyHost, 
-                        Integer.valueOf(proxyPort)
-                        ));
+
+        if (proxyHost != null && proxyPort != null) {
+            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, Integer.valueOf(proxyPort)));
         } else {
             proxy = Proxy.NO_PROXY;
         }
-        
+
         return proxy;
     }
 }

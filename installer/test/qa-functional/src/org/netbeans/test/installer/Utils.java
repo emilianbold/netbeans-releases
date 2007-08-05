@@ -16,6 +16,9 @@
  * The Original Software is NetBeans. The Initial Developer of the Original Software
  * is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun Microsystems, Inc. All
  * Rights Reserved.
+ *
+ * $Id$
+ *
  */
 
 package org.netbeans.test.installer;
@@ -29,6 +32,8 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -51,9 +56,14 @@ public class Utils {
     public static final long MAX_INSTALATION_WAIT = 60000000;
     public static final int DELAY = 50;
 
+    public static final String NEWLINE_REGEXP = "(?:\n\r|\r\n|\n|\r)";
+    public static final String NB_DOWNLOAD_PAGE = "http://bits.netbeans.org/netbeans/6.0/nightly/latest/";
+    private static final Pattern PATTERN = Pattern.compile("NetBeans IDE 6.0 Build (20[0-9]{10})");
+
     public static final String OK = "OK";
 
     public static String getInstaller(TestData data) {
+        data.setBuildNumber(determineBuildNumber(data, NB_DOWNLOAD_PAGE));
         //File sourceBandle = new File(data.getInstallerFileName());
         File destBundle = new File(data.getTestWorkDir() + File.separator + "installer" + "." + data.getPlatformExt());
 
@@ -61,7 +71,7 @@ public class Utils {
         FileOutputStream out = null;
 
         try {
-            URL sourceBandeleURL = new URL(data.getInstallerURL(data.getInstallerType()));
+            URL sourceBandeleURL = new URL(data.getInstallerURL());
             Proxy proxy = null;
 
             proxy = data.getProxy();
@@ -138,15 +148,7 @@ public class Utils {
 
             String pathToExtract = data.getTestWorkDir() + java.io.File.separator + "bundle";
 
-            builder = new java.lang.ProcessBuilder(
-                    command, 
-                    /*"--silent",*/
-                    "--verbose",
-                    "--userdir", data.getTestWorkDir().getCanonicalPath(),
-                    "--extract", pathToExtract, 
-                    "--output", data.getTestWorkDir().getCanonicalPath() + 
-                                File.separator + 
-                                "inst_" + data.getInstallerType() + ".log");
+            builder = new java.lang.ProcessBuilder(command, "--verbose", "--userdir", data.getTestWorkDir().getCanonicalPath(), "--extract", pathToExtract, "--output", data.getTestWorkDir().getCanonicalPath() + File.separator + "inst_" + data.getInstallerType() + ".log");
             process = builder.start();
 
             long runningTime;
@@ -162,7 +164,7 @@ public class Utils {
 
             if (runningTime >= MAX_EXECUTION_TIME) {
                 process.destroy();
-                data.getLogger().log(Level.SEVERE, "Timeout. Process destroyed");
+                data.getLogger().log(Level.SEVERE, "Timeout. Extract process destroyed");
                 return "Timeout. Extract process destroyed";
             } else if (errorLevel == 0) {
                 data.setBundleFile(new File(pathToExtract + java.io.File.separator + "bundle.jar"));
@@ -364,10 +366,39 @@ public class Utils {
             data.getLogger().log(Level.SEVERE, "Interrupted");
         }
     }
-    
-    
+
+    public static String determineBuildNumber(TestData data, String downloadPageAddress) {
+        try {
+            URL downloadPage = new URL(downloadPageAddress);
+            InputStream in = downloadPage.openConnection(data.getProxy()).getInputStream();
+            StringBuilder pageContent = new StringBuilder();
+
+            byte[] buffer = new byte[1024];
+            while (in.available() > 0) {
+                int read = in.read(buffer);
+
+                String readString = new String(buffer, 0, read);
+                for (String string : readString.split(NEWLINE_REGEXP)) {
+                    pageContent.append(string).append(File.separator);
+                }
+                wait(data, 100);
+            }
+            in.close();
+
+            final Matcher matcher = PATTERN.matcher(pageContent);
+
+            if (matcher.find()) {
+                return matcher.group(1);
+            } else {
+                throw new Exception("Cannot find build number");
+            }
+        } catch (Exception ex) {
+            data.getLogger().log(Level.SEVERE, "Can not determine latest build.", ex);
+            return null;
+        }
+    }
+
     private static String toString(Exception ex) {
         return ex.getClass().getName() + "=>" + ex.getMessage();
     }
-
 }
