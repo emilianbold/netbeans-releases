@@ -5,29 +5,26 @@
 -->
 <html>
     <head>
-        <title>Subversion Checkout Wizard: Subversion Repository</title>
-        <link href="nbdocs:/org/netbeans/modules/usersguide/ide.css" 
+        <title>Subversion Import Wizard: Subversion Repository</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" 
             rel="StyleSheet" type="text/css">
     </head>
     
     <body>
-        <h2>Subversion Checkout Wizard: Subversion Repository</h2>
+        <h2>Subversion Import Wizard: Subversion Repository</h2>
         
-        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The Subversion Repository panel of the Subversion Import wizard enables you to specify 
+            the root path to the repository which you want to have files imported into.</p>
         
-        <p>The Subversion Repository panel of the Subversion Checkout wizard enables you to specify 
-            the root path for your Subversion repository when checking out files from the repository. 
-            If no root locations are listed in the drop-down list, you can enter the information 
-            directly into the text field.</p>
-        
-        <p>You can access this panel by choosing Versioning &gt; Subversion &gt; Checkout from 
-            the main menu.</p>
+        <p>You access this panel by choosing Versioning &gt; Subversion &gt; Import into 
+            Repository.</p>
             
-        <p>When checking out files or importing a project into a repository, you need to specify the 
-            location of the repository as defined by the Subversion root. To specify the Subversion 
-            root, do the following:</p>
+	<p>When importing files into a repository, you need to specify the location 
+            of the repository as defined by the Subversion root.</p>
             
-        <ul>
+        <h4>To specify the Subversion root, do the following:</h4>
+	
+       <ul>
             <li><strong>Repository URL.</strong> Select a Subversion root protocol and location from 
                 the drop-down list. The drop-down list contains a list of 
                 <a href="#protocolTypes">supported protocols</a>, as well as previous Subversion root 
@@ -55,15 +52,15 @@
             <tr><td align="center"><strong>svn+ssh</strong></td><td>Access via SVN protocol through 
                 an SSH tunnel</td><td><tt>svn+ssh://hostname/repository_path[@REV]</tt></td></tr>
         </table>   
-        
-        <dl>
-            <dt>
-            <a name="seealso">See Also</a></dt>
-            <dd> <a href="../svn_checkout.html">Checking Out Files from a Subversion Repository</a></dd> 
-            <dd> <a href="../svn_setup.html">Setting Up Subversion</a></dd>
-        </dl>
-        <hr>
-        <small><a href="../../credits.html">Legal Notices</a></small>
+	
+	<dl>
+	    <dt>
+	    <a name="seealso">See Also</a></dt>
+	    <dd> <a href="../svn_checkout.html">Checking Out Files from a Remote Repository</a></dd> 
+	    <dd> <a href="../svn_setup.html">Setting Up Subversion</a></dd>
+	</dl>
+	<hr>
+	<small><a href="../../credits.html">Legal Notices</a></small>
         <br><br><br>
     </body>
 </html>
