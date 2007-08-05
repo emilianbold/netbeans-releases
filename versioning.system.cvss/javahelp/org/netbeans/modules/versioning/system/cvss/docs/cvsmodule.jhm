@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright ï¿½ 2006 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
@@ -36,13 +36,14 @@
 <!-- CSH topics -->
 
 	<!-- CSH topics for wizards -->
-	<!-- This topic is first panel of Checkout wizard and Import into Repository -->
-	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep" url="cvsmodule/csh/cvs-lite_chkout_wizard_p1.html" />
+	<!-- CSH for 1st panel of Checkout wizard -->
+	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.checkout" url="cvsmodule/csh/cvs-lite_chkout_wizard_p1.html" />
 	<!-- CSH for 2nd panel of Checkout wizard -->
 	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard$ModuleStep" url="cvsmodule/csh/cvs-lite_chkout_wizard_p2.html" />
 
-	<!-- first panel of Import wizard has same id as first panel of checkout - CVS Root panel -->
-        <!-- TODO: find out if possible to change this id. Page has been created for first panel:   cvs-lite_import_wizard_p1.html   --> 
+        <!-- CSH for 1st panel of Import wizard -->        
+        <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.import" url="cvsmodule/csh/cvs-lite_import_wizard_p1.html" />
+
         <!-- CSH for 2nd panel of Import wizard -->
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction$ImportStep" url="cvsmodule/csh/cvs-lite_import_wizard_p2.html" />
 
@@ -52,7 +53,7 @@
 	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector" url="cvsmodule/csh/cvs-lite_chkoutmodules_dialog.html" />
 	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector" url="cvsmodule/csh/cvs-lite_browsetags_dialog.html" />
 	<mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutCompletedPanel" url="cvsmodule/csh/cvs-lite_chkoutcomplete_dialog.html" />
-
+        <mapID target="org.netbeans.modules.diff.PatchAction" url="cvsmodule/cvs-lite_patch.html" />
 
 	<!-- CSH topics for CVS UI - Diff viewer window and versioning window -->
         <mapID target="org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent" url="cvsmodule/csh/cvs-lite_versioning_window.html" />
