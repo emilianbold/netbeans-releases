@@ -282,7 +282,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         public void setObject(Object bean) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            ((Customizer) ms).setObject(bean);
         }
 
         public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
