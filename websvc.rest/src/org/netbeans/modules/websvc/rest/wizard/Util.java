@@ -26,6 +26,8 @@ import javax.swing.JComponent;
 import java.util.Vector;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -346,5 +348,29 @@ public class Util {
             sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         }
         return sourceGroups;
+    }
+
+    private static Map<String,Class> primitiveTypes;
+    public static Class getPrimitiveType(String typeName) {
+        if (primitiveTypes == null) {
+            primitiveTypes = new HashMap<String,Class>();
+            primitiveTypes.put("int", int.class);
+            primitiveTypes.put("int[]", int[].class);
+            primitiveTypes.put("boolean", boolean.class);
+            primitiveTypes.put("boolean[]", boolean[].class);
+            primitiveTypes.put("byte", byte.class);
+            primitiveTypes.put("byte[]", byte[].class);
+            primitiveTypes.put("char", char.class);
+            primitiveTypes.put("char[]", char[].class);
+            primitiveTypes.put("double", double.class);
+            primitiveTypes.put("double[]", double[].class);
+            primitiveTypes.put("float", float.class);
+            primitiveTypes.put("float[]", float[].class);
+            primitiveTypes.put("long", long.class);
+            primitiveTypes.put("long[]", long[].class);
+            primitiveTypes.put("short", short.class);
+            primitiveTypes.put("short[]", short[].class);
+        }
+        return primitiveTypes.get(typeName);
     }
 }

@@ -444,6 +444,11 @@ public class JavaSourceHelper {
             String name = names[i];
             Object type = types[i];
             Object initialValue = initialValues[i];
+            // get around Retouche lack support for non-java.lang type Literal ???
+            if (initialValue instanceof Enum) {
+                continue;
+            }
+            
             Tree typeTree = createTypeTree(copy, type);
             
             ModifiersTree modifiersTree = createModifiersTree(copy, modifiers,

@@ -22,6 +22,7 @@ package org.netbeans.modules.websvc.rest.support;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.JavaSource;
@@ -37,6 +39,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -248,5 +251,24 @@ public class SourceGroupSupport {
             }
         }
         return null;
+    }
+    
+    
+    public static List<ClassPath> gerClassPath(Project project) {
+        List<ClassPath> paths = new ArrayList<ClassPath>();
+        List<SourceGroup> groups = new ArrayList<SourceGroup>();
+        groups.addAll(Arrays.asList(ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)));
+        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+        for (SourceGroup group : groups) {
+            ClassPath cp = cpp.findClassPath(group.getRootFolder(), ClassPath.COMPILE);
+            if (cp != null) {
+                paths.add(cp);
+            }
+            cp = cpp.findClassPath(group.getRootFolder(), ClassPath.SOURCE);
+            if (cp != null) {
+                paths.add(cp);
+            }
+        }
+        return paths;
     }
 }

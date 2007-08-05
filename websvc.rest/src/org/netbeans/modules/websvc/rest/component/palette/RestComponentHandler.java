@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.rest.codegen.JAXWSwrapperRESTServiceGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WADLResourceCodeGenerator;
@@ -59,7 +61,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
         }
         
         final List<Exception> errors = new ArrayList<Exception>();
-        
+        final Project project = FileOwnerQuery.getOwner(targetFO);
         Lookup pItem = RestPaletteFactory.getCurrentPaletteItem();
         Node n = pItem.lookup(Node.class);
         final RestComponentData data = RestPaletteFactory.getRestComponentData(n);
@@ -70,7 +72,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
                     if (RestComponentData.isWSDL(type)) {
                         JAXWSwrapperRESTServiceGenerator codegen = new JAXWSwrapperRESTServiceGenerator(targetFO, data);
                         if (codegen.needsInputs()) {
-                            InputValuesPanel panel = new InputValuesPanel(codegen.getInputParameterTypes());
+                            InputValuesPanel panel = new InputValuesPanel(codegen.getInputParameterTypes(), project);
                             DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(RestComponentHandler.class, "LBL_ConstantParams"));
                             Object response = DialogDisplayer.getDefault().notify(desc);
                             if (response.equals(NotifyDescriptor.YES_OPTION)) {
