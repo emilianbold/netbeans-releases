@@ -12,6 +12,7 @@ package org.netbeans.test.subversion.main.branches;
 import java.io.File;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
@@ -97,8 +98,14 @@ public class SwitchUiTest extends JellyTestCase{
             CommitStepOperator cso = new CommitStepOperator();
             cso.finish();
             
+            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
+            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
+            oto.waitText("Committed revision 7");
+            
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             SwitchOperator so = SwitchOperator.invoke(projNode);
+            //only required nodes are expended - want to see all in browser
+            so.setRepositoryFolder("");
             RepositoryBrowserOperator rbo = so.browseRepositoryFolder();
             so.verify();
             rbo.selectFolder("tags");

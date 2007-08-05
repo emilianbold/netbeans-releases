@@ -145,7 +145,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Operator.setDefaultStringComparator(comOperator);
-            node.performMenuActionNoBlock("Versioning|Export Diff Patch...");
+            node.performMenuActionNoBlock("Versioning|Subversion|Export Diff Patch...");
             Operator.setDefaultStringComparator(oldOperator);
             
             //node.select();

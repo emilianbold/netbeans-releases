@@ -134,11 +134,15 @@ public class RefactoringTest extends JellyTestCase {
             oto.waitText("Refreshing... finished.");
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             node.select();
-            node.performPopupActionNoBlock("Refactor|Rename...");
+            node.performPopupActionNoBlock("Rename...");
             NbDialogOperator dialog = new NbDialogOperator("Rename");
             JTextFieldOperator txt = new JTextFieldOperator(dialog);
             txt.setText("javaapp_ren");
-            JButtonOperator btn = new JButtonOperator(dialog, "Refactor");
+            JButtonOperator btn = new JButtonOperator(dialog, "OK");
+            btn.push();
+            //temporary changes
+            dialog = new NbDialogOperator("Rename");
+            btn = new JButtonOperator(dialog, "Refactor");
             btn.push();
             dialog.waitClosed();
             Thread.sleep(2000);

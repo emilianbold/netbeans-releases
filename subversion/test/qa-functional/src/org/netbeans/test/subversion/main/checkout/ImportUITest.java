@@ -198,7 +198,8 @@ public class ImportUITest extends JellyTestCase {
 
             FolderToImportStepOperator ftiso = new FolderToImportStepOperator();
 
-            //
+            //only required nodes are expended - want to see all in browser
+            ftiso.setRepositoryFolder("");
             RepositoryBrowserImpOperator rbo = ftiso.browseRepository();
             rbo.selectFolder("branches");
             rbo.selectFolder("tags");
@@ -227,7 +228,7 @@ public class ImportUITest extends JellyTestCase {
             assertEquals("Wrong folder selection!!!", "trunk/" + PROJECT_NAME, ftiso.getRepositoryFolder());
 
             //
-            ftiso.setRepositoryFolder("trunk");
+            ftiso.setRepositoryFolder("");
             rbo = ftiso.browseRepository();
             rbo.selectFolder("branches");
             cnfo = rbo.createNewFolder();
