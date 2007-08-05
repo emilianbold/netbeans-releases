@@ -162,6 +162,11 @@ public class EarActionProvider implements ActionProvider {
         //EXECUTION PART
         if (command.equals (COMMAND_RUN) || command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) { //  || command.equals (COMMAND_DEBUG)) {
             if (!isSelectedServer ()) {
+                // no selected server => warning
+                String msg = NbBundle.getMessage(
+                        EarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 return null;
             }
             if (isDebugged()) {
@@ -175,6 +180,11 @@ public class EarActionProvider implements ActionProvider {
         //DEBUGGING PART
         } else if (command.equals (COMMAND_DEBUG)) {
             if (!isSelectedServer ()) {
+                // no selected server => warning
+                String msg = NbBundle.getMessage(
+                        EarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 return null;
             }
             
@@ -236,7 +246,7 @@ public class EarActionProvider implements ActionProvider {
             //see issue #92895
             //XXX - replace this method with a call to API as soon as issue 109895 will be fixed
             boolean isAppClientSelected = project.evaluator().getProperty("app.client") != null; //NOI18N
-            return !(isAppClientSelected && isTargetServerRemote());
+            return isSelectedServer() && !(isAppClientSelected && isTargetServerRemote());
         }
         // other actions are global
         return true;
@@ -298,10 +308,6 @@ public class EarActionProvider implements ActionProvider {
                 return true;
             }
         }
-        
-        // no selected server => warning
-        String msg = NbBundle.getMessage(EarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
         return false;
     }
 

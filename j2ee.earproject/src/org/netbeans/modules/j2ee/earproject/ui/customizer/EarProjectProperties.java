@@ -434,7 +434,10 @@ public final class EarProjectProperties {
         try {
             J2eeModuleProvider jmp = p.getLookup().lookup(J2eeModuleProvider.class);
             if (null != jmp) {
-                jmp.setServerInstanceID(earProject.getServerInstanceID());
+                String serverInstanceId = earProject.getServerInstanceID();
+                if (serverInstanceId != null) {
+                    jmp.setServerInstanceID(serverInstanceId);
+                }
                 J2eeModule jm = jmp.getJ2eeModule();
                 if (null != jm) {
                     earProject.getAppModule().addModuleProvider(jmp,path);

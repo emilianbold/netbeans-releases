@@ -287,6 +287,11 @@ class AppClientActionProvider implements ActionProvider {
             EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             //check server
             if (!isSelectedServer()) {
+                // no selected server => warning
+                String msg = NbBundle.getMessage(
+                        AppClientActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 return null;
             }
             
@@ -368,7 +373,12 @@ class AppClientActionProvider implements ActionProvider {
             }
         //DEBUGGING PART
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
-            if (!isSelectedServer ()) {
+            if (!isSelectedServer()) {
+                // no selected server => warning
+                String msg = NbBundle.getMessage(
+                        AppClientActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
                 return null;
             }
             if (isDebugged()) {
@@ -420,7 +430,7 @@ class AppClientActionProvider implements ActionProvider {
         if (command.equals(COMMAND_RUN)) {
             //see issue #92895
             //XXX - replace this method with a call to API as soon as issue 109895 will be fixed
-            return !isTargetServerRemote();
+            return isSelectedServer() && !isTargetServerRemote();
         } else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findSourcesAndPackages( context, project.getSourceRoots().getRoots()) != null
                     || findSourcesAndPackages( context, project.getTestSourceRoots().getRoots()) != null;
@@ -686,7 +696,7 @@ class AppClientActionProvider implements ActionProvider {
         dlg.setVisible(true);
     }
     
-    private boolean isSelectedServer () {
+    private boolean isSelectedServer() {
         String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (AppClientProjectProperties.J2EE_SERVER_INSTANCE);
         if (instance != null) {
             String id = Deployment.getDefault().getServerID(instance);
@@ -705,10 +715,6 @@ class AppClientActionProvider implements ActionProvider {
                 return true;
             }
         }
-
-        // no selected server => warning
-        String msg = NbBundle.getMessage(AppClientActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
         return false;
     }
     
