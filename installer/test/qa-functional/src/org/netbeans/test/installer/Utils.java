@@ -34,6 +34,7 @@ import java.net.URLClassLoader;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.JFrame;
 import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -60,6 +61,15 @@ public class Utils {
     public static final String NB_DOWNLOAD_PAGE = "http://bits.netbeans.org/netbeans/6.0/nightly/latest/";
     private static final Pattern PATTERN = Pattern.compile("NetBeans IDE 6.0 Build (20[0-9]{10})");
 
+    public static final String NB_DIR_NAME = "NetBeans";
+    public static final String GF_DIR_NAME = "GlassFish";
+    public static final String TOMACAT_DIR_NAME = "Tomcat";
+    public static final String NEXT_BUTTON_LABEL = "Next >";
+    public static final String FINISH_BUTTON_LABEL = "Finish";
+    public static final String INSTALL_BUTTON_LABEL = "Install";
+    public static final String UNINSTALL_BUTTON_LABEL = "Uninstall";
+    public static final String MAIN_FRAME_TITLE = "Netbeans IDE";
+    
     public static final String OK = "OK";
 
     public static String getInstaller(TestData data) {
@@ -234,28 +244,28 @@ public class Utils {
     }
 
     public static void stepWelcome() {
-        new JButtonOperator(new JFrameOperator("Netbeans IDE"), "Next >").push();
+        new JButtonOperator(new JFrameOperator(MAIN_FRAME_TITLE), NEXT_BUTTON_LABEL).push();
     }
 
     public static void stepLicense() {
-        JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
+        JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
 
         new JCheckBoxOperator(installerMain, "I accept").push();
-        new JButtonOperator(installerMain, "Next >").push();
+        new JButtonOperator(installerMain, NEXT_BUTTON_LABEL).push();
     }
 
     public static void stepSetDir(TestData data, String label, String dir) {
-        JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
+        JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
 
         new JTextFieldOperator((JTextField) (new JLabelOperator(installerMain, label)
                     .getLabelFor()
                     )).setText(data.getWorkDirCanonicalPath() + File.separator + dir);
 
-        new JButtonOperator(installerMain, "Next >").push();
+        new JButtonOperator(installerMain, NEXT_BUTTON_LABEL).push();
     }
 
     public static void stepChooseComponet(String name) {
-        JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
+        JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
 
         new JButtonOperator(installerMain, "Customize...").push();
         JDialogOperator customizeInstallation = new JDialogOperator("Customize Installation");
@@ -266,9 +276,9 @@ public class Utils {
     }
 
     public static void stepInstall(TestData data) {
-        JFrameOperator installerMain = new JFrameOperator("Netbeans IDE");
+        JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
 
-        new JButtonOperator(installerMain, "Install").push();
+        new JButtonOperator(installerMain, INSTALL_BUTTON_LABEL).push();
         new JLabelOperator(installerMain, "Installing"); //dirty hack
         JProgressBarOperator installingProgress = new JProgressBarOperator(installerMain);
 
@@ -287,11 +297,11 @@ public class Utils {
     }
 
     public static void stepUninstall() {
-        new JButtonOperator(new JFrameOperator("Netbeans IDE"), "Uninstall").push();
+        new JButtonOperator(new JFrameOperator(MAIN_FRAME_TITLE), UNINSTALL_BUTTON_LABEL).push();
     }
 
     public static void stepFinish() {
-        new JButtonOperator(new JFrameOperator("Netbeans IDE"), "Finish").push();
+        new JButtonOperator(new JFrameOperator(MAIN_FRAME_TITLE), FINISH_BUTTON_LABEL).push();
     }
 
     public static void phaseOne(NbTestCase thiz, TestData data, String installerType) {
@@ -344,15 +354,15 @@ public class Utils {
         stepLicense();
 
         //Choose dir
-        stepSetDir(data, "Install NetBeans IDE", "NetBeans");
+        stepSetDir(data, "Install NetBeans IDE", NB_DIR_NAME);
     }
 
     public static void phaseThree(TestData data) {
         //Choose GF dir
-        Utils.stepSetDir(data, "Install GlassFish", "GlassFish");
+        stepSetDir(data, "Install GlassFish", GF_DIR_NAME);
 
         //Choose Tomcat dir
-        Utils.stepSetDir(data, "Installation location", "Tomcat");
+        stepSetDir(data, "Installation location", TOMACAT_DIR_NAME);
     }
 
     public static void waitSecond(TestData data, int sec) {
