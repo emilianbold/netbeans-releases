@@ -409,7 +409,21 @@ public abstract class SimpleItem {
             assert declaratingNode != null : "declaratingNode must be declared";
             licenceId = getAttribute (declaratingNode, LICENSE_ID);
             NodeList innerList = declaratingNode.getChildNodes ();
-            assert innerList != null && innerList.getLength() == 1 : "Lincese " + getAttribute (declaratingNode, LICENSE_ID) + " should contain only once data.";
+            /* XXX: due to #111578 was commented out:
+            assert innerList != null && innerList.getLength() == 1 :
+                "Lincese " + getAttribute (declaratingNode, LICENSE_ID) + " should contain only once data.";
+            */
+            if (innerList == null) {
+                Logger.getLogger (SimpleItem.class.getName ()).log (Level.WARNING,
+                        "Lincese " + getAttribute (declaratingNode, LICENSE_ID) +
+                        " doesn't contain any data.");
+            }
+            if (innerList.getLength() != 1) {
+                Logger.getLogger (SimpleItem.class.getName ()).log (Level.WARNING,
+                        "Lincese " + getAttribute (declaratingNode, LICENSE_ID) +
+                        " contains more(" + innerList.getLength () + "x) instances of license content. " +
+                        "Reopen the issue 111578.");
+            }
 
             /* for more text in Lincese:
              for (int j = 0; j < innerList.getLength (); j++ ) {
