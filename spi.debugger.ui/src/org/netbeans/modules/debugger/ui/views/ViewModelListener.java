@@ -113,7 +113,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
         );
-        models = null;
+        models.clear();
         treeModels = null;
         treeModelFilters = null;
         treeExpansionModels = null;
