@@ -610,6 +610,33 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         
     } // end of UncommentAction
     
+    /** Uncomment action in Source main menu, wrapper for ExtKit.uncommentAction
+     */ 
+    public static final class ToggleCommentAction extends MainMenuAction {
+        
+        private JMenuItem menuItem;
+
+        public ToggleCommentAction () {
+            super();
+            menuItem = new JMenuItem(getMenuItemText());
+            setMenu();
+        }
+        
+        protected String getMenuItemText () {
+            return NbBundle.getBundle(UncommentAction.class).getString(
+                "toggle_comment_main_menu_item"); //NOI18N
+        }
+
+        public JMenuItem getMenuPresenter () {
+            return menuItem;
+        }
+
+        protected String getActionName () {
+            return ExtKit.toggleCommentAction;
+        }
+        
+    } // end of UncommentAction
+    
     /** Insert Next Matching Word action in Source main menu, wrapper for BaseKit.wordMatchNextAction
      */ 
     public static final class WordMatchNextAction extends MainMenuAction {
