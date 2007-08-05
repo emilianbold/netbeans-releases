@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -432,23 +432,12 @@
 
 
 
-
 <!-- Local History -->
 <mapID target="hist_about" url="local-history/hist_about.html" />
 <mapID target="hist_working_with" url="local-history/hist_working_with.html" />
 <mapID target="hist_settings" url="local-history/hist_settings.html" />
 
-
-
-
-
-
-
-
-
-
-
-
-
+<!-- CSH -->
+<mapID target="org.netbeans.modules.localhistory.ui.revert.RevertFileChanges" url="local-history/csh/hist_revert_dialog.html" />
 
 </map>
