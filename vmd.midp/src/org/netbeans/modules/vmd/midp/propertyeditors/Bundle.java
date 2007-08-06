@@ -24,7 +24,10 @@ import org.openide.util.NbBundle;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-
+/**
+ *
+ * @author Karol Harezlak
+ */
 public final class Bundle {
 
     private static final ResourceBundle bundle = NbBundle.getBundle (Bundle.class);
@@ -33,7 +36,8 @@ public final class Bundle {
         try {
             return bundle.getString (name);
         } catch (MissingResourceException e) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Missing Resource Bundle Message: Bundle: " + Bundle.class.getName () + " Resource: " + name);
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Missing Resource Bundle Message: Bundle: " // NOI18N
+                    + Bundle.class.getName() + " Resource: " + name); // NOI18N
             return name;
         }
     }

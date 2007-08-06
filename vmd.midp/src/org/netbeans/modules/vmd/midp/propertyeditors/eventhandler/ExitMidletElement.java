@@ -54,7 +54,7 @@ public class ExitMidletElement implements PropertyEditorEventHandlerElement {
         DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(eventSource.getDocument(), PointsCategoryCD.TYPEID);
         List<DesignComponent> list = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
         if (list.size() != 1) {
-            Debug.warning("Can not retrieve MobileDevice from document");
+            Debug.warning("Can not retrieve MobileDevice from document"); // NOI18N
             return;
         }
         DesignComponent mobileDevice = list.get(0);

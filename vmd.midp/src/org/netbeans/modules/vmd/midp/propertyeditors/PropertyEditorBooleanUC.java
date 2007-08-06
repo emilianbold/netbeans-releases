@@ -45,10 +45,8 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
     private static final PropertyValue TRUE_VALUE = MidpTypes.createBooleanValue(true);
     private static final PropertyValue FALSE_VALUE = MidpTypes.createBooleanValue(false);
-    private static final String TRUE_TEXT = String.valueOf(MidpTypes.getBoolean(TRUE_VALUE));
-    private static final String FALSE_TEXT = String.valueOf(MidpTypes.getBoolean(FALSE_VALUE));
 
-    private final String[] tags = {TRUE_TEXT, FALSE_TEXT};
+    private final String[] tags = {"true", "false"}; // NOI18N
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private BooleanInplaceEditor inplaceEditor;
@@ -93,13 +91,13 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
     @Override
     public void paintValue(Graphics gfx, Rectangle box) {
-        JComponent component = inplaceEditor.getComponent();
-        component.setSize(box.width, box.height);
-        component.doLayout();
-        component.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        JComponent _component = inplaceEditor.getComponent();
+        _component.setSize(box.width, box.height);
+        _component.doLayout();
+        _component.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         Graphics g = gfx.create(box.x, box.y, box.width, box.height);
-        component.setOpaque(false);
-        component.paint(g);
+        _component.setOpaque(false);
+        _component.paint(g);
         g.dispose();
     }
 
@@ -146,9 +144,9 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
         } else if (isCurrentValueANull()) {
-            return FALSE_TEXT;
+            return "false"; // NOI18N
         }
-        return MidpTypes.getBoolean((PropertyValue) super.getValue()) ? TRUE_TEXT : FALSE_TEXT;
+        return MidpTypes.getBoolean((PropertyValue) super.getValue()) ? "true" : "false"; // NOI18N
     }
 
     public void setTextForPropertyValue(String text) {
@@ -165,7 +163,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     }
 
     private void saveValue(String text) {
-        super.setValue(FALSE_TEXT.equals(text) ? FALSE_VALUE : TRUE_VALUE);
+        super.setValue("false".equals(text) ? FALSE_VALUE : TRUE_VALUE); // NOI18N
     }
 
     @Override
@@ -173,7 +171,7 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
-            if (customEditor.getText().equals("true")) { // NOI18N
+            if ("true".equals(customEditor.getText())) { // NOI18N
                 updateInplaceEditorComponent(true);
             } else {
                 updateInplaceEditorComponent(false);
@@ -217,9 +215,9 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
 
         public void setValue(PropertyValue value) {
             if (value == null || value.getPrimitiveValue() == null || !MidpTypes.getBoolean(value)) {
-                combobox.setSelectedItem(FALSE_TEXT);
+                combobox.setSelectedItem("false"); // NOI18N
             } else {
-                combobox.setSelectedItem(TRUE_TEXT);
+                combobox.setSelectedItem("true"); // NOI18N
             }
         }
 

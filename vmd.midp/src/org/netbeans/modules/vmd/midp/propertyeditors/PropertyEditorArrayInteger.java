@@ -39,34 +39,39 @@ import org.openide.util.NbBundle;
  */
 public class PropertyEditorArrayInteger extends GroupPropertyEditor implements ExPropertyEditor{
     
-    private static String ERROR_WARNING = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_ARRAY_INTEGER_DIALOG");
+    private static String ERROR_WARNING = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_ARRAY_INTEGER_DIALOG"); // NOI18N
     
     public static DesignPropertyEditor create() {
         return new PropertyEditorArrayInteger();
     }
     
+    @Override
     public boolean supportsCustomEditor() {
         return false;
     }
    
+    @Override
     public String getAsText() {
-        StringBuffer text = new StringBuffer("["); //NOI18N
+        StringBuffer text = new StringBuffer();
+        text.append('['); // NOI18N
         GroupValue values = getValue();
         for (Iterator<String> i = Arrays.asList(getValue().getPropertyNames()).iterator() ; i.hasNext() ; ) {
             PropertyValue value = (PropertyValue) values.getValue(i.next());
             text.append(value.getPrimitiveValue ());
-            if (i.hasNext())
-                text.append(","); //NOI18N
+            if (i.hasNext()) {
+                text.append(','); //NOI18N
+            }
         }
-        text.append("]"); //NOI18N
+        text.append(']'); //NOI18N
         return text.toString();
     }
     
+    @Override
     public void setAsText(String text) {
         String newText = decodeValuesFromText(text);
         
         if (newText == null)
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERROR_WARNING + " " + text)); //NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERROR_WARNING + ' ' + text)); //NOI18N
         else {
             GroupValue values = getValue();
             Iterator<String> propertyNamesIter = Arrays.asList(values.getPropertyNames()).iterator();
@@ -78,15 +83,16 @@ public class PropertyEditorArrayInteger extends GroupPropertyEditor implements E
     }
     
     private String decodeValuesFromText(String text) {
-        text = text.trim().replaceAll(Pattern.compile("[\\[$\\]]").pattern(),""); //NOI18N
+        text = text.trim().replaceAll(Pattern.compile("[\\[$\\]]").pattern(), ""); //NOI18N
         if (Pattern.compile("[^0123456789,]").matcher(text).find() //NOI18N
-        || text.split(",").length != getValue().getPropertyNames().length) { //NOI18N
+            || text.split(",").length != getValue().getPropertyNames().length) { //NOI18N
             return null;
         }
         
         return text;
     }
     
+    @Override
    public Boolean canEditAsText() {
         return true;
    }

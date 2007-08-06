@@ -48,9 +48,9 @@ import org.openide.util.NbBundle;
  */
 public class PropertyEditorColorChooser extends PropertyEditorUserCode implements PropertyEditorElement {
 
-    private static final String ERROR_WARNING = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_ARRAY_INTEGER_DIALOG"); //NOI18N
-    private static final String BUTTON_NAME = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_BUTTON_NAME"); //NOI18N
-    private static final String NULL = NbBundle.getMessage(PropertyEditorColorChooser.class, "LBL_STRING_USER_CODE"); //NOI18N
+    private static final String ERROR_WARNING = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_ARRAY_INTEGER_DIALOG"); // NOI18N
+    private static final String BUTTON_NAME = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_BUTTON_NAME"); // NOI18N
+    private static final String NULL = NbBundle.getMessage(PropertyEditorColorChooser.class, "LBL_STRING_USER_CODE"); // NOI18N
     
     private JColorChooser customEditorElement;
     private JRadioButton radioButton;
@@ -279,8 +279,8 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
 
         public void setValue(Object o) throws InvocationTargetException {
             String text = component.getText();
-            text = text.trim().replaceAll(Pattern.compile("[\\[$\\]]").pattern(), ""); //NOI18N
-            if (Pattern.compile("[^0123456789,]").matcher(text).find() || text.split(",").length != 3) { //NOI18N
+            text = text.trim().replaceAll(Pattern.compile("[\\[$\\]]").pattern(), ""); // NOI18N
+            if (Pattern.compile("[^0123456789,]").matcher(text).find() || text.split(",").length != 3) { // NOI18N
                 PropertyValue value = (PropertyValue) o;
                 component.setText(getFormatedRGB((Integer) value.getPrimitiveValue()));
                 wrongValueWarning((PropertyValue) o, text);
@@ -321,7 +321,7 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
 
         private void wrongValueWarning(PropertyValue value, String text) {
             component.setText(getFormatedRGB((Integer) value.getPrimitiveValue()));
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERROR_WARNING + ' ' + text)); //NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERROR_WARNING + ' ' + text)); // NOI18N
         }
     }
 }

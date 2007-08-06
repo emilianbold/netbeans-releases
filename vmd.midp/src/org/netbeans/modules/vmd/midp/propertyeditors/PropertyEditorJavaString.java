@@ -39,6 +39,7 @@ import org.netbeans.modules.vmd.midp.components.points.MethodPointCD;
 import org.netbeans.modules.vmd.midp.components.points.SwitchPointCD;
 import org.netbeans.modules.vmd.midp.components.sources.SwitchCaseEventSourceCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -46,6 +47,14 @@ import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUser
  */
 public final class PropertyEditorJavaString extends DesignPropertyEditor {
 
+    private static final String JAVA_CODE = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_JAVA_CODE_STR"); // NOI18N
+    private static final String METHOD_NAME = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_METHOD_NAME_STR"); // NOI18N
+    private static final String CONDITION_EXPRESSION = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_CONDITION_EXPRESSION_STR"); // NOI18N
+    private static final String SWITCH_OPERAND = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_SWITCH_OPERAND_STR"); // NOI18N
+    private static final String CASE_OPERAND = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_CASE_OPERAND_STR"); // NOI18N
+    private static final String JAVA_EXPRESSION = NbBundle.getMessage(PropertyEditorJavaString.class, "LBL_JAVA_EXPRESSION_STR"); // NOI18N
+
+    
     private TypeID typeID;
     private final CustomEditor customEditor;
 
@@ -111,20 +120,19 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
         return getLabelName();
     }
 
-    // TODO i18nalize it
     private String getLabelName() {
         if (typeID.equals(CallPointCD.TYPEID)) {
-            return "Java Code:";
+            return JAVA_CODE;
         } else if (typeID.equals(MethodPointCD.TYPEID)) {
-            return "Method Name:";
+            return METHOD_NAME;
         } else if (typeID.equals(IfPointCD.TYPEID)) {
-            return "Condition Expression:";
+            return CONDITION_EXPRESSION;
         } else if (typeID.equals(SwitchPointCD.TYPEID)) {
-            return "Switch Operand:";
+            return SWITCH_OPERAND;
         } else if (typeID.equals(SwitchCaseEventSourceCD.TYPEID)) {
-            return "Case Operand:";
+            return CASE_OPERAND;
         }
-        return "Java Expression:";
+        return JAVA_EXPRESSION;
     }
 
     private final class CustomEditor extends JPanel {

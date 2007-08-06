@@ -74,7 +74,7 @@ public class GoToPreviousDisplayableElement implements PropertyEditorEventHandle
     }
     
     public String getTextForPropertyValue () {
-        return "";
+        return ""; // NOI18N
     }
     
     public void updateState(PropertyValue value) {

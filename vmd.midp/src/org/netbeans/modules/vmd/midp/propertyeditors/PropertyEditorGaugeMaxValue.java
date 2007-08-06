@@ -247,7 +247,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         }
 
         private void checkNumberStatus() {
-            if (!Pattern.matches("[\\d\\-]+", textField.getText())) {// NOI18N
+            if (!Pattern.matches("[\\d\\-]+", textField.getText())) { // NOI18N
                 displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
             } else {
                 clearErrorStatus();

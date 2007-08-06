@@ -394,7 +394,7 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
             StringBuffer bitmaskAsTextCheckBoxes = new StringBuffer();
             StringBuffer bitmaskAsTextRadioButton1 = new StringBuffer();
             StringBuffer bitmaskAsTextRadioButton2 = new StringBuffer();
-            StringBuffer separator = new StringBuffer(" | ");
+            StringBuffer separator = new StringBuffer(" | "); // NOI18N
             
             for (JToggleButton button : bits.keySet()){
                 if ( layouts.isSet(bits.get(button))

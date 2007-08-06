@@ -356,7 +356,19 @@ public class FontEditorElement extends PropertyEditorResourceElement {
 
         @Override
         public String toString() {
-            return "[componentID=" + componentID + ", kind=" + kind + ", face=" + face + ", style=" + style + ", size=" + size + "]"; // NOI18N
+            StringBuffer str = new StringBuffer();
+            str.append("[componentID="); // NOI18N
+            str.append(componentID);
+            str.append(", kind="); // NOI18N
+            str.append(kind);
+            str.append(", face="); // NOI18N
+            str.append(face);
+            str.append(", style="); // NOI18N
+            str.append(style);
+            str.append(", size="); // NOI18N
+            str.append(size);
+            str.append(']'); // NOI18N
+            return str.toString(); // NOI18N
         }
     }
 

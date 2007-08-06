@@ -33,7 +33,6 @@ public final  class MidpPropertiesCategories {
     public static final String CATEGORY_ITEM_PROPERTIES = NbBundle.getMessage (MidpPropertiesCategories.class, "CTG_ITEM_PROPERTIES");  // NOI18N
     public static final String CATEGORY_CLASS_PROPERTIES = NbBundle.getMessage (MidpPropertiesCategories.class, "CTG_CLASS_PROPERTIES");  // NOI18N
 
-     
     private MidpPropertiesCategories () {
     }
     

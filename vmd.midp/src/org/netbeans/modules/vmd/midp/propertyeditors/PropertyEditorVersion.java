@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -111,11 +112,10 @@ public class PropertyEditorVersion extends DesignPropertyEditor {
             initComponents();
         }
         
-        // TODO i18nalize it
         private void initComponents() {
             setLayout(new GridBagLayout());
             GridBagConstraints constraints = new GridBagConstraints();
-            JLabel label = new JLabel("Version:");
+            JLabel label = new JLabel(NbBundle.getMessage(PropertyEditorVersion.class, "LBL_VERSION_STR")); // NOI18N
             constraints.insets = new Insets(12, 12, 12, 6);
             constraints.anchor = GridBagConstraints.NORTHWEST;
             constraints.gridx = 0;
