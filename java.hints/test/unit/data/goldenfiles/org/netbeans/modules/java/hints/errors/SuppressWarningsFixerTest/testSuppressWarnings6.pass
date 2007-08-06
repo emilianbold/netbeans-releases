@@ -29,8 +29,8 @@ public class Test {
     
     }
     
-    @SuppressWarnings("unchecked")
     @Deprecated
+    @SuppressWarnings("unchecked")
     private void test4() {
         List l = null;
         l.add("");

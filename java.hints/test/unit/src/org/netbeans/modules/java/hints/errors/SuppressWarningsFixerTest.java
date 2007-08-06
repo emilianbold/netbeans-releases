@@ -62,29 +62,29 @@ public class SuppressWarningsFixerTest extends HintsTestBase {
         performTest("Test", "unchecked", 16, 5);
     }
     
-//    public void testSuppressWarnings4() throws Exception {
-//        performTest("Test", "unchecked", 22, 5);
-//    }
-//    
-//    public void testSuppressWarnings5() throws Exception {
-//        performTest("Test", "unchecked", 28, 5);
-//    }
-//    
-//    public void testSuppressWarnings6() throws Exception {
-//        performTest("Test", "unchecked", 35, 5);
-//    }
-//    
-//    public void testSuppressWarnings7() throws Exception {
-//        performTest("Test2", "unchecked", 10, 5);
-//    }
-//    
-//    public void testSuppressWarnings8() throws Exception {
-//        performTest("Test2", "unchecked", 16, 5);
-//    }
-//    
-//    public void testSuppressWarnings9() throws Exception {
-//        performTest("Test2", "unchecked", 22, 5);
-//    }
+    public void testSuppressWarnings4() throws Exception {
+        performTest("Test", "unchecked", 22, 5);
+    }
+    
+    public void testSuppressWarnings5() throws Exception {
+        performTest("Test", "unchecked", 28, 5);
+    }
+    
+    public void testSuppressWarnings6() throws Exception {
+        performTest("Test", "unchecked", 35, 5);
+    }
+    
+    public void testSuppressWarnings7() throws Exception {
+        performTest("Test2", "unchecked", 10, 5);
+    }
+    
+    public void testSuppressWarnings8() throws Exception {
+        performTest("Test2", "unchecked", 16, 5);
+    }
+    
+    public void testSuppressWarnings9() throws Exception {
+        performTest("Test2", "unchecked", 22, 5);
+    }
     
     public void testSuppressWarnings10() throws Exception {
         performTestDoNotPerform("Test2", 31, 5);
