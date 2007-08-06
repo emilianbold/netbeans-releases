@@ -91,9 +91,10 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new BodyStatementTest("test101717"));
 //        suite.addTest(new BodyStatementTest("testModifyingIf"));
 //        suite.addTest(new BodyStatementTest("testRenameInParens"));
+//        suite.addTest(new BodyStatementTest("test111983"));
         return suite;
     }
-    
+
     /**
      * Adds 'System.err.println(null);' statement to the method body. 
      */
@@ -2307,6 +2308,59 @@ public class BodyStatementTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    public void test111983() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class NewClass {\n" +
+            "    public static <T> T method() {\n" +
+            "        return null;\n" +
+            "    }\n" +
+            "    \n" +
+            "    static void m() {\n" +
+            "        NewClass.<Class>method();\n" +
+            "    }\n" +
+            "}\n");
+        String golden = 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class NewClass {\n" +
+            "    public static <T> T metoda() {\n" +
+            "        return null;\n" +
+            "    }\n" +
+            "    \n" +
+            "    static void m() {\n" +
+            "        NewClass.<Class>metoda();\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree)clazz.getMembers().get(1);
+                workingCopy.rewrite(method, make.setLabel(method, "metoda"));
+                
+                method = (MethodTree)clazz.getMembers().get(2);
+                BlockTree block = method.getBody();
+                ExpressionStatementTree est = (ExpressionStatementTree) block.getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MemberSelectTree mst = (MemberSelectTree) mit.getMethodSelect();
+                workingCopy.rewrite(mst, make.setLabel(mst, "metoda"));
+            }
+            
+            public void cancel() {
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     // methods not used in this test.
     String getGoldenPckg() {
         return "";
