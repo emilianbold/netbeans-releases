@@ -92,7 +92,7 @@ entryPoint() {
 	
         message "$MSG_STARTING"
         createTempDirectory
-	checkFreeSpace "$TOTAL_BUNDLED_FILES_SIZE" "$LAUNCHER_TEMP"	
+	checkFreeSpace "$TOTAL_BUNDLED_FILES_SIZE" "$LAUNCHER_EXTRACT_DIR"	
 
         extractJVMData
 	if [ 0 -eq $EXTRACT_ONLY ] ; then 
@@ -150,7 +150,7 @@ parseCommandLineArguments() {
 			;;
 		$ARG_TEMPDIR)
 			if [ -n "$2" ] ; then
-				LAUNCHER_TEMP="$2"
+				LAUNCHER_JVM_TEMP_DIR="$2"
 				shift
 			fi
 			;;
@@ -407,9 +407,9 @@ showHelp() {
 
 exitProgram() {
 	if [ 0 -eq $EXTRACT_ONLY ] ; then
-	    if [ -n "$LAUNCHER_TEMP_RUNNING" ] && [ -d "$LAUNCHER_TEMP_RUNNING" ]; then		
-		debug "Removing directory $LAUNCHER_TEMP_RUNNING"
-		rm -rf "$LAUNCHER_TEMP_RUNNING" > /dev/null 2>&1
+	    if [ -n "$LAUNCHER_EXTRACT_DIR" ] && [ -d "$LAUNCHER_EXTRACT_DIR" ]; then		
+		debug "Removing directory $LAUNCHER_EXTRACT_DIR"
+		rm -rf "$LAUNCHER_EXTRACT_DIR" > /dev/null 2>&1
 	    fi
 	fi
 	exit $1
@@ -443,47 +443,46 @@ showTempDirMessage() {
 
 createTempDirectory() {
 	if [ 0 -eq $EXTRACT_ONLY ] ; then
-            if [ -z "$LAUNCHER_TEMP" ] ; then
+            if [ -z "$LAUNCHER_JVM_TEMP_DIR" ] ; then
 		if [ 0 -eq $EXTRACT_ONLY ] ; then 
                     SYSTEM_TEMP="/tmp"
                     if [ -d "$SYSTEM_TEMP" ] ; then
                                 debug "Using system temp"
-                                LAUNCHER_TEMP="/tmp"
+                                LAUNCHER_JVM_TEMP_DIR="/tmp"
                     else
                         debug "Using home dir for temp"
-                        LAUNCHER_TEMP="$HOME"
+                        LAUNCHER_JVM_TEMP_DIR="$HOME"
                     fi
 		else
 		    #extract only : to the curdir
-		    LAUNCHER_TEMP="$CURRENT_DIRECTORY"		    
+		    LAUNCHER_JVM_TEMP_DIR="$CURRENT_DIRECTORY"		    
 		fi
             fi
             # if temp dir does not exist then try to create it
-            if [ ! -d "$LAUNCHER_TEMP" ] ; then
-                mkdir -p "$LAUNCHER_TEMP" > /dev/null 2>&1
+            if [ ! -d "$LAUNCHER_JVM_TEMP_DIR" ] ; then
+                mkdir -p "$LAUNCHER_JVM_TEMP_DIR" > /dev/null 2>&1
                 if [ $? -ne 0 ] ; then                        
-                        showTempDirMessage "$LAUNCHER_TEMP"
+                        showTempDirMessage "$LAUNCHER_JVM_TEMP_DIR"
                 fi
             fi		
-            debug "Launcher TEMP ROOT = $LAUNCHER_TEMP"
+            debug "Launcher TEMP ROOT = $LAUNCHER_JVM_TEMP_DIR"
             subDir=`date '+%u%m%M%S'`
             subDir=`echo ".nbi-$subDir.tmp"`
-            LAUNCHER_TEMP_RUNNING="$LAUNCHER_TEMP/$subDir"
+            LAUNCHER_EXTRACT_DIR="$LAUNCHER_JVM_TEMP_DIR/$subDir"
 	else
 	    #extracting to the $LAUNCHER_EXTRACT_DIR
             debug "Launcher Extracting ROOT = $LAUNCHER_EXTRACT_DIR"
-	    LAUNCHER_TEMP_RUNNING="$LAUNCHER_EXTRACT_DIR"
 	fi
 
-        if [ ! -d "$LAUNCHER_TEMP_RUNNING" ] ; then
-                mkdir -p "$LAUNCHER_TEMP_RUNNING" > /dev/null 2>&1
+        if [ ! -d "$LAUNCHER_EXTRACT_DIR" ] ; then
+                mkdir -p "$LAUNCHER_EXTRACT_DIR" > /dev/null 2>&1
                 if [ $? -ne 0 ] ; then                        
-                        showTempDirMessage "$LAUNCHER_TEMP_RUNNING"
+                        showTempDirMessage "$LAUNCHER_EXTRACT_DIR"
                 fi
         else
-                debug "$LAUNCHER_TEMP_RUNNING is directory and exist"
+                debug "$LAUNCHER_EXTRACT_DIR is directory and exist"
         fi
-        debug "Using subdir $LAUNCHER_TEMP_RUNNING for extracting data"
+        debug "Using directory $LAUNCHER_EXTRACT_DIR for extracting data"
 }
 extractJVMData() {
 	debug "Extracting testJVM file data..."
@@ -980,9 +979,9 @@ checkFreeSpace() {
 		diskSpaceCheck=1
 	else
 		# get size of the atomic entry (directory)
-		freeSpaceDirCheck="$LAUNCHER_TEMP_RUNNING"/freeSpaceCheckDir
+		freeSpaceDirCheck="$path"/freeSpaceCheckDir
 		debug "Checking space in $path (size = $size)"
-		mkdir "$freeSpaceDirCheck"
+		mkdir -p "$freeSpaceDirCheck"
 		# POSIX compatible du return size in 1024 blocks
 		du --block-size=$DEFAULT_DISK_BLOCK_SIZE "$freeSpaceDirCheck" 1>/dev/null 2>&1
 		
@@ -1011,6 +1010,7 @@ checkFreeSpace() {
 		df -P --block-size="$DEFAULT_DISK_BLOCK_SIZE" "$path" 1>/dev/null 2>&1
 		if [ $? -eq 0 ] ; then 
 			# gnu df, use POSIX output
+			 debug "    getting GNU POSIX df with specified block size $DEFAULT_DISK_BLOCK_SIZE"
 			 availableBlocks=`df -P --block-size="$DEFAULT_DISK_BLOCK_SIZE"  "$path" | sed "1d" | awk ' { print $A }' A=$column 2>/dev/null`
 		else 
 			# try POSIX output
@@ -1132,7 +1132,7 @@ resolveLauncherSpecialProperties() {
 		if [ -n "$propertyName" ] ; then
 			case "$propertyName" in
 		        	"nbi.launcher.tmp.dir")                        		
-					propertyValue="$LAUNCHER_TEMP_RUNNING"
+					propertyValue="$LAUNCHER_EXTRACT_DIR"
 					;;
 				"nbi.launcher.java.home")	
 					propertyValue="$LAUNCHER_JAVA"
@@ -1207,7 +1207,7 @@ executeMainClass() {
 	classpathEscaped=`escapeString "$LAUNCHER_CLASSPATH"`
 	mainClassEscaped=`escapeString "$MAIN_CLASS"`
 	launcherJavaExeEscaped=`escapeString "$LAUNCHER_JAVA_EXE"`
-	tmpdirEscaped=`escapeString "$LAUNCHER_TEMP"`
+	tmpdirEscaped=`escapeString "$LAUNCHER_JVM_TEMP_DIR"`
 	
 	command="$launcherJavaExeEscaped $LAUNCHER_JVM_ARGUMENTS -Djava.io.tmpdir=$tmpdirEscaped -classpath $classpathEscaped $mainClassEscaped $LAUNCHER_APP_ARGUMENTS"
 
