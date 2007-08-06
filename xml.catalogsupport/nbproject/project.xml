@@ -140,6 +140,7 @@
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.project</friend>
                 <friend>org.netbeans.modules.xslt.tmap</friend>
+                <friend>org.netbeans.modules.compapp.projects.base</friend>
                 <package>org.netbeans.modules.xml.catalogsupport</package>
                 <package>org.netbeans.modules.xml.catalogsupport.ui.customizer</package>
             </friend-packages>
