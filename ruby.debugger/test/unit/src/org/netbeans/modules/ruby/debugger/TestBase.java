@@ -51,7 +51,11 @@ import org.rubyforge.debugcommons.RubyDebuggerProxy;
  * @author Martin Krauskopf
  */
 public abstract class TestBase extends NbTestCase {
-    
+
+    static {
+        RubySession.TEST = true;
+    }
+
     private enum Engine { CLASSIC, RDEBUG_IDE }
     
     protected static boolean watchStepping = false;
@@ -206,7 +210,7 @@ public abstract class TestBase extends NbTestCase {
         });
     }
     
-    private void waitForEvents(RubyDebuggerProxy proxy, int n, Runnable block) throws InterruptedException {
+    protected void waitForEvents(RubyDebuggerProxy proxy, int n, Runnable block) throws InterruptedException {
         final CountDownLatch events = new CountDownLatch(n);
         RubyDebugEventListener listener = new RubyDebugEventListener() {
             public void onDebugEvent(RubyDebugEvent e) {

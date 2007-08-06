@@ -151,8 +151,9 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
         if (event.isSuspensionType()) {
             String absPath = rubySession.resolveAbsolutePath(event.getFilePath());
             if (absPath != null) {
-                FileObject fo = FileUtil.toFileObject(new File(absPath));
-                if (event.isStepping() || (fo != null && RubyBreakpoint.isBreakpointOnLine(fo, event.getLine()))) {
+                File file = new File(absPath);
+                FileObject fo = FileUtil.toFileObject(file);
+                if (event.isStepping() || rubySession.isRunningTo(file, event.getLine()) || (fo != null && RubyBreakpoint.isBreakpointOnLine(fo, event.getLine()))) {
                     stopHere(event);
                 } else {
                     event.getRubyThread().resume();

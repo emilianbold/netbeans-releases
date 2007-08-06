@@ -54,6 +54,8 @@ public final class RubySession {
      */
     private final static String RUBY_SESSION = "RubySession"; // NOI18N
     
+    static boolean TEST;
+    
     private final RubyThreadInfo[] EMPTY_THREAD_INFOS = new RubyThreadInfo[0];
     private final RubyFrame[] EMPTY_FRAMES = new RubyFrame[0];
     private final RubyVariable[] EMPTY_VARIABLES = new RubyVariable[0];
@@ -64,7 +66,11 @@ public final class RubySession {
     private RubyFrame selectedFrame;
     private final DebuggerManagerListener sessionListener;
     private State state;
-    
+
+    // package-private for tests only
+    File runningToFile;
+    int runningToLine;
+
     public enum State { STARTING, RUNNING, STOPPED };
 
     public RubySession(final RubyDebuggerProxy proxy, final FileLocator fileLocator) {
@@ -72,6 +78,7 @@ public final class RubySession {
         this.fileLocator = fileLocator;
         this.sessionListener = new RubySessionListener();
         this.state = State.STARTING;
+        this.runningToLine = -1;
         DebuggerManager.getDebuggerManager().addDebuggerListener(
                 DebuggerManager.PROP_CURRENT_SESSION, sessionListener);
     }
@@ -124,21 +131,37 @@ public final class RubySession {
     }
     
     public void runToCursor() {
-        selectFrame(null);
-        Line line = EditorUtil.getCurrentLine();
-        if (line == null) { return; }
-        FileObject fo = line.getLookup().lookup(FileObject.class);
-        if (fo == null) { return; }
-        if (!Util.isRubySource(fo)) { return; }
-        File file = FileUtil.toFile(fo);
+        File file;
+        int line;
+        if (TEST) {
+            file = runningToFile;
+            line = runningToLine;
+        } else {
+            assert runningToFile == null : "runningToFile is not set";
+            selectFrame(null);
+            Line eLine = EditorUtil.getCurrentLine();
+            if (eLine == null) { return; }
+            FileObject fo = eLine.getLookup().lookup(FileObject.class);
+            if (fo == null) { return; }
+            if (!Util.isRubySource(fo)) { return; }
+            file = FileUtil.toFile(fo);
+            line = eLine.getLineNumber() + 1;
+        }
         if (file != null) {
             try {
-                activeThread.runTo(file.getAbsolutePath(), line.getLineNumber() + 1);
+                runningToFile = file;
+                runningToLine = line;
+                activeThread.runTo(file.getAbsolutePath(), line);
                 state = State.RUNNING;
             } catch (RubyDebuggerException e) {
                 Util.severe("Cannot step return", e); // NOI18N
             }
         }
+    }
+
+    public boolean isRunningTo(final File f, final int line) {
+        assert f != null : "isRunningTo is not passed null File arg";
+        return f.equals(runningToFile) && line == runningToLine;
     }
     
     public void finish(final RubyDebugEventListener listener, final boolean terminate) {
@@ -255,6 +278,8 @@ public final class RubySession {
     
     void suspend(final RubyThread thread, final ContextProviderWrapper contextProvider) {
         state = State.STOPPED;
+        runningToFile = null;
+        runningToLine = -1;
         switchThread(thread, contextProvider);
     }
 
@@ -314,6 +339,7 @@ public final class RubySession {
     }
 
     private void annotateCallStack(final RubyThread thread) {
+        if (TEST) return;
         try {
             RubyFrame[] frames = thread.getFrames();
             assert frames.length > 0 : "thread has >0 frames";

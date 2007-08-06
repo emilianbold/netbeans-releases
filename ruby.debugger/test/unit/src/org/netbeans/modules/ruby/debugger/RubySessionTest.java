@@ -146,5 +146,34 @@ public final class RubySessionTest extends TestBase {
         doContinue();
         p.waitFor();
     }
-
+    
+    public void testRunTo() throws Exception {
+        while (switchToNextEngine()) {
+            String[] testContent = {
+                "sleep 0.01",
+                "sleep 0.01",
+                "sleep 0.01",
+                "sleep 0.01",
+            };
+            final File testF = createScript(testContent);
+            FileObject testFO = FileUtil.toFileObject(testF);
+            addBreakpoint(testFO, 1);
+            Process p = startDebugging(testF);
+            final RubySession session = Util.getCurrentSession();
+            waitForEvents(session.getProxy(), 1, new Runnable() {
+                public void run() {
+                    session.runningToFile = testF;
+                    session.runningToLine = 3;
+                    try {
+                        doAction(ActionsManager.ACTION_RUN_TO_CURSOR);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            assertTrue("session suspended", session.isSessionSuspended());
+            doContinue();
+            p.waitFor();
+        }
+    }
 }
