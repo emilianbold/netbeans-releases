@@ -125,7 +125,8 @@ public final class InstanceNameResolver {
     }
 
     private static void checkValidity (DesignDocument document) {
-        checkValidity (document.getRootComponent (), new HashSet<String> (), new HashSet<String> ());
+    //XXX: build hotfix
+//        checkValidity (document.getRootComponent (), new HashSet<String> (), new HashSet<String> ());
     }
 
 }
