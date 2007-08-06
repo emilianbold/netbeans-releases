@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <!--============================-->
 
     <!-- testbag common for all suites to setup usedir -->
-    <testbag testattribs="measure_editor_once or measure_once or measure_ui or measure_setup or measure_openfiles or measure_nodepopup or measure_runtimepopup or measure_editor or measure_webactions" prio="1"
+    <testbag testattribs="measure_editor_once or ui_responsiveness or measure_once or measure_ui or measure_setup or measure_openfiles or measure_nodepopup or measure_runtimepopup or measure_editor or measure_webactions" prio="1"
              compiler="qa-perf-compiler" executor="ide_perf_setup" name="Setup IDE for UI responsiveness">
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <!-- 1st round -->    
-    <testbag testattribs="measure_once or measure_ui or measure_openfiles" prio="2"
+    <testbag testattribs="measure_once or ui_responsiveness or measure_ui or measure_openfiles" prio="2"
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Actions" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -44,7 +44,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_once or measure_ui or measure_nodepopup" prio="4"
+    <testbag testattribs="measure_once or ui_responsiveness or measure_ui or measure_nodepopup" prio="4"
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Dialogs" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_once or measure_ui or measure_runtimepopup" prio="6"
+    <testbag testattribs="measure_once or ui_responsiveness or measure_ui or measure_runtimepopup" prio="6"
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Menus" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -63,7 +63,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <!-- 2nd round -->    
-    <testbag testattribs="measure_ui or measure_openfiles" prio="12"
+    <testbag testattribs="measure_ui or ui_responsiveness or measure_openfiles" prio="12"
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Actions" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -72,7 +72,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_ui or measure_nodepopup" prio="14"
+    <testbag testattribs="measure_ui or ui_responsiveness or measure_nodepopup" prio="14"
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Dialogs" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -81,7 +81,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_ui or measure_runtimepopup" prio="16"
+    <testbag testattribs="measure_ui or ui_responsiveness or measure_runtimepopup" prio="16"
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Menus" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -91,7 +91,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- 3rd round -->    
-    <testbag testattribs="measure_ui or measure_openfiles" prio="22"
+    <testbag testattribs="measure_ui or ui_responsiveness or measure_openfiles" prio="22"
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Actions" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -100,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_ui or measure_nodepopup" prio="24"
+    <testbag testattribs="measure_ui or ui_responsiveness or measure_nodepopup" prio="24"
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Dialogs" >
 	<testset dir="qa-functional/src">
 	    <patternset>
@@ -109,7 +109,7 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 
-    <testbag testattribs="measure_ui or measure_runtimepopup" prio="26"
+    <testbag testattribs="measure_ui or ui_responsiveness or measure_runtimepopup" prio="26"
              compiler="qa-perf-compiler" executor="ide_performance" name="Measure Web Menus" >
 	<testset dir="qa-functional/src">
 	    <patternset>
