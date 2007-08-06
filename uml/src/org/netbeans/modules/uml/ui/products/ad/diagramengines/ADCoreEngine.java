@@ -1842,7 +1842,8 @@ public class ADCoreEngine extends DiagramEngine
 			} else if (changedME instanceof IAssociationEnd) {
 				IAssociationEnd end = (IAssociationEnd) changedME;
 				notifyAssocations(pTargets, diagram, end);
-			} else if (changedME instanceof IFeature) {
+                        // 78868, the logic to handle other IFeature cannot be applied to PartFacade
+			} else if (changedME instanceof IFeature && !(changedME instanceof IConnectableElement)) {
 				IFeature feature = (IFeature) changedME;
 				notifyFeaturesClassifierOrAssocEnd(pTargets, diagram, feature);
 			} else if (changedME instanceof IEnumerationLiteral) {
