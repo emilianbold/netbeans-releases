@@ -20,7 +20,7 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -56,26 +56,30 @@ public class DeleteUnreferencedClusterFiles extends Task {
     public @Override void execute() throws BuildException {
         StringBuilder missingFiles = new StringBuilder();
         StringBuilder extraFiles = new StringBuilder();
+        StringBuilder duplicatedFiles = new StringBuilder();
         for (String incl : clusters.getDirectoryScanner().getIncludedDirectories()) {
             File cluster = new File(clusters.getDir(), incl);
             File updateTracking = new File(cluster, "update_tracking");
             if (!updateTracking.isDirectory()) {
                 continue;
             }
-            Set<String> files = new HashSet<String>();
+            Map</*path*/String,/*CNB*/String> files = new HashMap<String,String>();
             for (File module : updateTracking.listFiles()) {
                 if (!module.getName().endsWith(".xml")) {
                     continue;
                 }
                 try {
                     Document doc = XMLUtil.parse(new InputSource(module.toURI().toString()), false, false, null, null);
+                    String cnb = doc.getDocumentElement().getAttribute("codename").replaceFirst("/[0-9]+$", "");
                     NodeList nl = doc.getElementsByTagName("file");
                     for (int i = 0; i < nl.getLength(); i++) {
                         String file = ((Element) nl.item(i)).getAttribute("name");
                         if (new File(cluster, file).isFile()) {
-                            files.add(file);
+                            String prev = files.put(file, cnb);
+                            if (prev != null) {
+                                duplicatedFiles.append("\ntwo registrations of the same file: " + file + " (from " + prev + " and " + cnb + ")");
+                            }
                         } else {
-                            String cnb = doc.getDocumentElement().getAttribute("codename").replaceFirst("/[0-9]+$", "");
                             missingFiles.append("\n" + cnb + ": missing " + file);
                         }
                     }
@@ -83,11 +87,12 @@ public class DeleteUnreferencedClusterFiles extends Task {
                     throw new BuildException("Parsing " + module + ": " + x, x, getLocation());
                 }
             }
-            scanForExtraFiles(cluster, "", files, cluster.getName(), extraFiles);
+            scanForExtraFiles(cluster, "", files.keySet(), cluster.getName(), extraFiles);
         }
         Map<String,String> pseudoTests = new LinkedHashMap<String,String>();
         pseudoTests.put("testMissingFiles", missingFiles.length() > 0 ? "Some files were missing" + missingFiles : null);
         pseudoTests.put("testExtraFiles", extraFiles.length() > 0 ? "Some extra files were present" + extraFiles : null);
+        pseudoTests.put("testDuplicatedFiles", duplicatedFiles.length() > 0 ? "Some files were registered in two or more NBMs" + duplicatedFiles : null);
         JUnitReportWriter.writeReport(this, report, pseudoTests);
     }
 
