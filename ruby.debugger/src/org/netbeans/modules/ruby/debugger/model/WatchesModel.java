@@ -29,6 +29,7 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 import org.rubyforge.debugcommons.model.RubyVariable;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TO_STRING_COLUMN_ID;
 import static org.netbeans.spi.debugger.ui.Constants.LOCALS_TYPE_COLUMN_ID;
@@ -96,7 +97,9 @@ public final class WatchesModel extends VariablesModel {
     
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
-        if (node instanceof Watch) {
+        if (node == ROOT) {
+            return NbBundle.getMessage(WatchesModel.class, "CTL_CallstackModel.Column.Name.Name");
+        } else if (node instanceof Watch) {
             return ((Watch) node).getExpression();
         } else {
             return super.getDisplayName(node);
@@ -115,7 +118,9 @@ public final class WatchesModel extends VariablesModel {
     @Override
     public String getShortDescription(Object node)
             throws UnknownTypeException {
-        if (node instanceof Watch) {
+        if (node == ROOT) {
+            return NbBundle.getMessage(WatchesModel.class, "CTL_CallstackModel.Column.Name.Desc");
+        } else if (node instanceof Watch) {
             return null; // XXX
         } else {
             return super.getShortDescription(node);
@@ -131,7 +136,7 @@ public final class WatchesModel extends VariablesModel {
         if(node instanceof Watch) {
             RubyVariable var = resolveVariable((Watch) node);
             if (var == null) {
-                return "<Unkown in the current context>";
+                return "<Unkown in the current context>"; // NOI18N
             }
             if (WATCH_VALUE_COLUMN_ID.equals(columnID)) {
                 return super.getValueAt(var, LOCALS_VALUE_COLUMN_ID);

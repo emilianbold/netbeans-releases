@@ -32,6 +32,7 @@ import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.util.NbBundle;
 import org.rubyforge.debugcommons.model.RubyThreadInfo;
 import static org.netbeans.spi.debugger.ui.Constants.THREAD_STATE_COLUMN_ID;
 
@@ -108,12 +109,12 @@ public final class ThreadsModel implements TreeModel, TableModel, NodeModel, Nod
     
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node == ROOT) {
-            return ROOT;
+            return NbBundle.getMessage(ThreadsModel.class, "CTL_ThreadsModel.Column.Name.Name");
         } else if (node instanceof RubyThreadInfo) {
             RubyThreadInfo ti = (RubyThreadInfo) node;
-            String threadName = "RubyThread - " + ti.getId();
+            String threadName = "RubyThread - " + ti.getId(); // NOI18N
             return rubySession.isActiveThread(ti.getId()) ?
-                "<html><b>" + threadName + "</b></html>" : threadName;
+                "<html><b>" + threadName + "</b></html>" : threadName; // NOI18N
         } else {
             throw new UnknownTypeException(node);
         }
@@ -131,7 +132,9 @@ public final class ThreadsModel implements TreeModel, TableModel, NodeModel, Nod
     
     public String getShortDescription(Object node)
             throws UnknownTypeException {
-        if (node instanceof RubyThreadInfo) {
+        if (node == ROOT) {
+            return NbBundle.getMessage(ThreadsModel.class, "CTL_ThreadsModel.Column.Name.Desc");
+        } else if (node instanceof RubyThreadInfo) {
             return null; // XXX
         } else {
             throw new UnknownTypeException(node);

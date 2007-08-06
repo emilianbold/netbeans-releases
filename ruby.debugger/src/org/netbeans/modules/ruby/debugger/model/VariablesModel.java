@@ -129,9 +129,9 @@ public class VariablesModel implements TreeModel, ExtendedNodeModel, TableModel 
     
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node == ROOT) {
-            return ROOT;
+            return getMessage("CTL_VariablesModel.Column.Name.Name");
         } else if (node == GLOBAL) {
-            return NbBundle.getMessage(VariablesModel.class, "CTL_VariablesModel.Global.Variables");
+            return getMessage("CTL_VariablesModel.Global.Variables");
         } else if (node instanceof RubyVariable) {
             String name = ((RubyVariable) node).getName();
             assert name != null : "null name for the RubyVariable: " + node;
@@ -143,7 +143,7 @@ public class VariablesModel implements TreeModel, ExtendedNodeModel, TableModel 
     }
 
     public String getIconBase(Object node) throws UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public String getIconBaseWithExtension(Object node) throws UnknownTypeException {
@@ -165,7 +165,9 @@ public class VariablesModel implements TreeModel, ExtendedNodeModel, TableModel 
     public String getShortDescription(Object node)
             throws UnknownTypeException {
         if (node == GLOBAL) {
-            return NbBundle.getMessage(VariablesModel.class, "CTL_VariablesModel.Global.Variables.Short.Description");
+            return getMessage("CTL_VariablesModel.Global.Variables.Short.Description");
+        } else if (node == ROOT) {
+            return getMessage("CTL_VariablesModel.Column.Name.Desc");
         } else if (node instanceof RubyVariable) {
             RubyValue value = ((RubyVariable) node).getValue();
             return '(' + value.getReferenceTypeName() + ") " +  value.getValueString(); // NOI18N
@@ -184,7 +186,7 @@ public class VariablesModel implements TreeModel, ExtendedNodeModel, TableModel 
         } else if (node instanceof RubyVariable) {
             RubyVariable var = (RubyVariable) node;
             if (var.getValue() == null) {
-                return "<nil>";
+                return "<nil>"; // NOI18N
             } else if (LOCALS_VALUE_COLUMN_ID.equals(columnID) || LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
                 return var.getValue().getValueString();
             } else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
@@ -217,11 +219,11 @@ public class VariablesModel implements TreeModel, ExtendedNodeModel, TableModel 
     }
 
     public Transferable clipboardCopy(Object node) throws IOException, UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public Transferable clipboardCut(Object node) throws IOException, UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public PasteType[] getPasteTypes(Object node, Transferable t) throws UnknownTypeException {
@@ -229,7 +231,10 @@ public class VariablesModel implements TreeModel, ExtendedNodeModel, TableModel 
     }
 
     public void setName(Object node, String name) throws UnknownTypeException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    private static String getMessage(final String key) {
+        return NbBundle.getMessage(VariablesModel.class, key);
+    }
 }

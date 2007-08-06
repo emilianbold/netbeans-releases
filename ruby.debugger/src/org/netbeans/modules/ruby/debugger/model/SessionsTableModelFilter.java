@@ -79,19 +79,19 @@ public final class SessionsTableModelFilter implements TableModelFilter {
     private String getSessionState(final Session s) {
         DebuggerEngine e = s.getCurrentEngine();
         if (e == null) {
-            return getMessage("MSG_Session_State_Starting");
+            return getMessage("MSG_Session.State.Starting");
         }
         RubySession session = (RubySession) e.lookupFirst (null, RubySession.class);
         String state;
         switch (session.getState()) {
             case RUNNING:
-                state = getMessage("MSG_Session_State_Running");
+                state = getMessage("MSG_Session.State.Running");
                 break;
             case STARTING:
-                state = getMessage("MSG_Session_State_Starting");
+                state = getMessage("MSG_Session.State.Starting");
                 break;
             case STOPPED:
-                state = getMessage("MSG_Session_State_Stopped");
+                state = getMessage("MSG_Session.State.Stopped");
                 break;
             default:
                 state = null;

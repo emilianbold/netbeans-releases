@@ -109,13 +109,13 @@ public class CallStackModel implements TreeModel, NodeModel,
     // NodeModel implementation ................................................
     
     public String getDisplayName(Object node) throws UnknownTypeException {
-        if (node instanceof RubyFrame) {
+        if (node == ROOT) {
+            return NbBundle.getMessage(CallStackModel.class, "CTL_CallstackModel.Column.Name.Name");
+        } else if (node instanceof RubyFrame) {
             RubyFrame frame = ((RubyFrame) node);
             String basename = new File(frame.getFile()).getName();
             String dn = basename + ':' + frame.getLine();
-            return rubySession.isSelectedFrame(frame) ? "<html><b>" + dn + "</b></html>" : dn;
-        } else if (node == ROOT) {
-            return NbBundle.getMessage(CallStackModel.class, "CTL_CallstackModel_Column_Name_Name");
+            return rubySession.isSelectedFrame(frame) ? "<html><b>" + dn + "</b></html>" : dn; // NOI18N
         } else {
             throw new UnknownTypeException(node);
         }
@@ -138,7 +138,7 @@ public class CallStackModel implements TreeModel, NodeModel,
     public String getShortDescription(Object node)
             throws UnknownTypeException {
         if (node == ROOT) {
-            return NbBundle.getMessage(CallStackModel.class, "CTL_CallstackModel_Column_Name_Desc");
+            return NbBundle.getMessage(CallStackModel.class, "CTL_CallstackModel.Column.Name.Desc");
         } else if (node instanceof RubyFrame) {
             return ((RubyFrame) node).getName();
         } else {
