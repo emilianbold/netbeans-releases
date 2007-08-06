@@ -1,13 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <html>
     <head>
         <title>Subversion Tasks: Quick Reference</title>
-        <link rel="StyleSheet"
-        href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css"
+            rel="StyleSheet" type="text/css">
     </head>
     <body>
 
@@ -17,10 +17,7 @@
         
         <p>The following table describes common Subversion tasks.</p>
         
-        <table
-            summary="The left column lists the
-            task name. The right column lists the steps to perform."
-            border="1" cellpadding="5">
+        <table border="1" cellpadding="5">
             <tbody>
                 <tr valign="top">
                     <th scope="col" align="left">To perform this task</th>
@@ -44,7 +41,8 @@
                     <td>View versioning information.</td>
                     <td>
                         <ul>
-                            <li>Choose Versioning &gt; Subversion &gt; Show All Changes from the main menu.</li>
+                            <li>Choose Versioning &gt; Subversion &gt; Show Changes from the main menu to 
+                                open the <a href="csh/svn_versioning_window.html">Versioning window</a>.</li>
                             <li>Right-click any project, directory, or file that is in a Subversion 
                                 working directory and choose Subversion &gt; Show Changes.</li>
                         </ul>
@@ -69,7 +67,7 @@
                     </td>
                 </tr>
                 <tr valign="top">
-                    <td>Commit local changes. </td>
+                    <td>Commit local changes.</td>
                     <td>
                         <ol>
                             <li>Right-click the file or directory you want to commit.</li>
@@ -81,9 +79,8 @@
                     <td>Merge revisions.</td>
                     <td>
                         <ol>
-                            <li>Right-click the files or folders that you want to merge
-                                into your local working copy and choose Subversion &gt; 
-                                <a href="svn_merge.html">Merge Changes</a>.</li>
+                            <li>Right-click the files or folders that you want to merge into your local working 
+                                copy and choose Subversion &gt; <a href="svn_merge.html">Merge Changes</a>.</li>
                             <li>Select the branch you want to merge the changes to.</li>
                             <li>Click Merge.</li>
                         </ol>
@@ -93,10 +90,10 @@
                     <td>Create a patch.</td>
                     <td>
                         <ol>
-                            <li>Select the locally modified file or folder and choose
-                                Subversion &gt; Export Diff Patch from the main menu.</li>
-                            <li>Enter a name for the patch file and specify the location
-                                where you want to save the patch.</li>
+                            <li>Select the locally modified file or folder and choose Subversion &gt;
+                                <a href="csh/svn_patch.html">Export Diff Patch</a> from the main menu.</li>
+                            <li>Enter a name for the patch file and specify the location where you want to 
+                                save the patch.</li>
                             <li>Click Export.</li>
                         </ol>
                     </td>
@@ -105,17 +102,16 @@
                     <td>Apply a patch.</td>
                     <td>
                         <ol>
-                            <li>Right-click the file or folder on which you want to apply
-                                the patch and choose Tools &gt; Apply Diff Patch</a>.</li>
-                            <li>Type the path or navigate to the patch file you want to
-                                apply.</li>
+                            <li>Select the locally modified file or folder and choose Subversion &gt;
+                                <a href="csh/svn_patch.html">Apply Diff Patch</a> from the main menu.</li>
+                            <li>Type the path or navigate to the patch file you want to apply.</li>
                             <li>Click Patch.</li>
                         </ol>
                     </td>
                 </tr>
-
             </tbody>
         </table>
+        
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="svn_about.html">About Subversion</a></dd>

@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+	<title>Subversion: Relocate Dialog Box</title>
+	<link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" 
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+	<h2>Subversion: Relocate Dialog Box</h2>
+        
+	<p><small><a href="#seealso">See Also</a></small></p>
+        
+	<p>The Subversion Relocate dialog box enables you to modify the path to the Subversion repository 
+            which you are registered with. You can access this dialog box by choosing Versioning &gt; Subversion 
+            &gt; Relocate from the main menu.</p>
+            
+	<p>For reference, the Relocate dialog box displays:</p> 
+        
+        <ul>
+            <li><strong>Working Copy</strong>. The path to the local copy which you are currently working in.</li>
+            <li><strong>Current URL</strong>. The path to the Subversion repository you are currently registered with.</li>
+        </ul>
+        
+        <h4>To modify the path to the Subversion repository:</h4>
+            
+	<ul>
+	    <li>In the <strong>New URL</strong> field, enter a new protocol type and location. You can select
+                a type and location from the drop-down list (if previous entries have been made).</li>
+            <li>Click Relocate. The new repository URL is registered in the IDE, and will be applied 
+                the next time you attempt to connect to the repository.</li>
+	</ul>
+        
+        <ul class="note">
+            <li>The IDE supports the following Subversion protocol types:</li>
+        </ul>
+        
+        <table border="1" cellpadding="5">
+            <tr align="center"><th>Protocol</th><th>Access Method</th><th>Example</th></tr>
+            <tr><td align="center"><strong>file</strong></td><td>Direct repository access (on local 
+                disk)</td><td><tt>file:///repository_path[@REV]</tt></td></tr>
+            <tr><td align="center"><strong>http</strong></td><td>Access via WebDAV protocol to a 
+                Subversion-aware server</td><td><tt>http://hostname/repository_path[@REV]</tt></td></tr>
+            <tr><td align="center"><strong>https</strong></td><td>Access via HTTP protocol with SSL 
+                encryption</td><td><tt>https://hostname/repository_path[@REV]</tt></td></tr>
+            <tr><td align="center"><strong>svn</strong></td><td>Access via custom protocol to an 
+                <tt>svnserve</tt> server</td><td><tt>svn://hostname/repository_path[@REV]</tt></td></tr>
+            <tr><td align="center"><strong>svn+ssh</strong></td><td>Access via SVN protocol through 
+                an SSH tunnel</td><td><tt>svn+ssh://hostname/repository_path[@REV]</tt></td></tr>
+        </table>           
+        
+	<dl>
+	    <dt>
+	    <a name="seealso">See Also</a></dt>
+	    <dd><a href="../svn_checkout.html">Checking Out Files from a Remote Repository</a></dd>
+	</dl>
+	<hr>
+	<small><a href="../../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+</html>

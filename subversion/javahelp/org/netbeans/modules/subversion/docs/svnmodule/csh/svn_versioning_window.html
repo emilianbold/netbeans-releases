@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+    <head>
+        <title>Subversion: Versioning Window</title>
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" 
+            rel="StyleSheet" type="text/css">
+    </head>
+    
+    <body>
+        <h2>Subversion: Versioning Window</h2>
+        
+        <p><small><a href="#seealso">See Also</a></small></p>
+        
+        <p>The Subversion Versioning window presents a real-time view of the changes in selected 
+            directories. It opens at the bottom of the IDE whenever you view changes made in 
+            version-controlled files.</p>
+            
+        <p>To open the Versioning window, choose Window &gt; Versioning &gt; Subversion from the 
+            main menu. The Versioning window also opens automatically when you choose Versioning &gt; 
+            Subversion &gt; Show Changes from the main menu. Alternately, you can right-click any 
+            project, directory, or file that is in a Subversion working directory and choose Subversion 
+            &gt; Show Changes.</p>
+        
+        <p>By default, the Versioning window displays a list of all modified files within the selected 
+            package or folder. Using the buttons in the toolbar, you can choose to display all changes 
+            or limit the list of displayed files to either locally or remotely modified files. 
+            You can click the column headings above the listed files to sort the files by name, status 
+            or location.</p>
+            
+        <p>The Versioning window toolbar also includes buttons that enable you to invoke the most common 
+            Subversion tasks on all files displayed in the list. The following table lists the Subversion 
+            commands available in the toolbar of the Versioning window:</p>
+            
+        <table border="1" cellpadding="5">
+            <tr>
+                <td><b>Icon</b></td>
+                <td><b>Description</b></td>
+            </tr>     	
+            <tr>
+                <td><img src="../images/refresh.png" alt="Refresh Status icon"></td>
+                <td><strong>Refresh Status.</strong></td>
+            </tr>
+            <tr>
+                <td><img src="../images/diff.png" alt="Diff All icon"></td>
+                <td><strong>Diff All.</strong></td>
+            </tr>
+            <tr>
+                <td><img src="../images/update.png" alt="Update All icon"></td>
+                <td><strong>Update All.</strong></td>
+            </tr>
+            <tr>
+                <td><img src="../images/commit.png" alt="Commit All icon"></td>
+                <td><strong>Commit All.</strong></td>
+            </tr>
+        </table>
+        
+        <p>You can access other Subversion commands in the Versioning window by selecting a table 
+            row that corresponds to a modified file, and choosing a command from the right-click menu.
+            You can, for example, perform the following actions on a file:</p>
+            
+        <ul>
+            <li><strong>Show Annotations</strong>. Displays commit message, author, date, and revision
+                number information in the left margin of files open in the Source Editor.</li>
+            <li><strong>Search History</strong>. Enables you to search for and compare multiple revisions
+                of the selected file in the IDE's <a href="svn_history_viewer.html">history viewer</a>.</li>
+            <li><strong>Exclude from Commit</strong>. Allows you to mark the file to be excluded when 
+                performing a commit.</li>
+            <li><strong>Revert Modifications</strong>. Enables you to revert any changes to the copy 
+                in your local working directory back to the current version maintained in the repository.</li>
+        </ul>
+
+        <h4>Notes:</h4>
+        <ul class="note">
+            <li>You can also exclude files from a commit in the Commit dialog box.</li>
+            <li>You can select multiple files in the Versioning window by holding down the Ctrl key 
+                when you select the files.</li>
+        </ul>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../svn_status.html">Viewing File Status information</a></dd>
+            <dd><a href="../svn_diff.html">Comparing File Revisions in Subversion</a></dd>
+            <dd><a href="../svn_updating.html">Updating Files in a Local Working Directory</a></dd>
+            <dd><a href="../svn_commit.html">Committing Local Changes to a Remote Repository</a></dd>
+        </dl>
+        <hr>
+        <small><a href="../../credits.html">Legal Notices</a></small>
+        <br><br><br>
+    </body>
+    
+</html>

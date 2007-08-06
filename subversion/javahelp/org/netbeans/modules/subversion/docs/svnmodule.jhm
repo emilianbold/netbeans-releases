@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -71,13 +71,16 @@
     <mapID target="org.netbeans.modules.subversion.ui.update.RevertModifications" url="svnmodule/csh/svn_revert_mod_dialog.html" />
 
     <!--Subversion Search History window-->
-    <mapID target="org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent" url="svnmodule/csh/svn_search_rev_dialog.html" />
+    <mapID target="org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent" url="svnmodule/csh/svn_history_viewer.html" />
  
     <!--Subversion Switch To dialog-->
     <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="svnmodule/csh/svn_switch_dialog.html" />
 
     <!--Subversion Versioning window-->
-    <mapID target="org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" url="pending.html" />
+    <mapID target="org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" url="svn_versioning_window.html" />
+
+    <!--Subversion Property Editor-->
+    <mapID target="org.netbeans.modules.subversion.options.SvnOptionsController" url="svnmodule/csh/svn_prop_editor.html" />
 
 </map>
 
