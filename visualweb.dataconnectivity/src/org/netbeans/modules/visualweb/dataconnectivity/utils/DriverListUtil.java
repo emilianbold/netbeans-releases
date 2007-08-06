@@ -56,7 +56,7 @@ public class DriverListUtil {
         urls.add("jdbc:weblogic:mssqlserver4:<DB>@<HOST>:<PORT>");
         
         names.add("Oracle"); //thin
-        drivers.add("oracle.jdbc.driver.OracleDriver");
+        drivers.add("oracle.jdbc.OracleDriver");
         urls.add("jdbc:oracle:thin:@<HOST>:<PORT>:<SID>");
         
         names.add("PointBase"); //Network Server
