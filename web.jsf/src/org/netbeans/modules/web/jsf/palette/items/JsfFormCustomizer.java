@@ -107,6 +107,7 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jFileChooser1 = new javax.swing.JFileChooser();
         populate = new javax.swing.ButtonGroup();
         viewType = new javax.swing.ButtonGroup();
@@ -124,9 +125,11 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         jFileChooser1.setCurrentDirectory(null);
 
         populate.add(empty);
+        empty.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_rbEmptyForm").charAt(0));
         empty.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(empty, java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("LBL_Empty_Form"));
-        empty.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(empty, bundle.getString("LBL_Empty_Form")); // NOI18N
+        empty.setLabel(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "LBL_rbEmptyForm")); // NOI18N
         empty.setMargin(new java.awt.Insets(0, 0, 0, 0));
         empty.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -135,8 +138,8 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         });
 
         populate.add(fromBean);
-        org.openide.awt.Mnemonics.setLocalizedText(fromBean, java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("LBL_Form_From_Entity"));
-        fromBean.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        fromBean.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_Form_From_Entity").charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(fromBean, bundle.getString("LBL_Form_From_Entity")); // NOI18N
         fromBean.setMargin(new java.awt.Insets(0, 0, 0, 0));
         fromBean.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -144,9 +147,12 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("LBL_GetProperty_Bean"));
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_tfEntityClass").charAt(0));
+        jLabel1.setLabelFor(classTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("LBL_GetProperty_Bean")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButton1, java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("LBL_Browse"));
+        jButton1.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_Browse").charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, bundle.getString("LBL_Browse")); // NOI18N
         jButton1.setEnabled(false);
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -155,17 +161,17 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
         });
 
         viewType.add(detail);
+        detail.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_View_Detail").charAt(0));
         detail.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(detail, java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("LBL_View_Detail"));
-        detail.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(detail, bundle.getString("LBL_View_Detail")); // NOI18N
         detail.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         viewType.add(edit);
-        org.openide.awt.Mnemonics.setLocalizedText(edit, java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("LBL_View_Edit"));
-        edit.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        edit.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MNE_View_Edit").charAt(0));
+        org.openide.awt.Mnemonics.setLocalizedText(edit, bundle.getString("LBL_View_Edit")); // NOI18N
         edit.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("LBL_From_Fields"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("LBL_From_Fields")); // NOI18N
 
         org.jdesktop.layout.GroupLayout jPanel2Layout = new org.jdesktop.layout.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -182,7 +188,7 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
                         .add(edit)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(detail))
-                    .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE))
+                    .add(classTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButton1))
         );
@@ -200,7 +206,11 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
                     .add(detail)))
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorField, java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/palette/items/Bundle").getString("MSG_No_Managed_Beans"));
+        detail.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_ReadOnly")); // NOI18N
+        edit.getAccessibleContext().setAccessibleName("Editable");
+        edit.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_Editable")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(errorField, bundle.getString("MSG_No_Managed_Beans")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -213,7 +223,7 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(fromBean)
-                .addContainerGap(430, Short.MAX_VALUE))
+                .addContainerGap(445, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(27, 27, 27)
                 .add(jPanel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -221,7 +231,7 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(errorField)
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -236,6 +246,11 @@ public final class JsfFormCustomizer extends javax.swing.JPanel implements Docum
                 .add(errorField)
                 .addContainerGap())
         );
+
+        empty.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSN_EmtryForm")); // NOI18N
+        empty.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_Emtry_form")); // NOI18N
+        fromBean.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSN_FormGenerated")); // NOI18N
+        fromBean.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JsfFormCustomizer.class, "ACSD_FromGenerated")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
