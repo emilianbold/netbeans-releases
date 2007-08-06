@@ -34,7 +34,6 @@ import org.netbeans.modules.xml.jaxb.cfg.schema.Catalog;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
 import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSource;
 import org.netbeans.modules.xml.jaxb.cfg.schema.SchemaSources;
-import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.cfg.schema.XjcOption;
 import org.netbeans.modules.xml.jaxb.cfg.schema.XjcOptions;
 import org.netbeans.modules.xml.jaxb.ui.JAXBWizardIterator;
@@ -49,7 +48,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.NodeAction;
 
 
 /**
@@ -57,7 +56,7 @@ import org.openide.util.actions.CookieAction;
  * @author $Author$
  */
 
-public class OpenJAXBCustomizerAction extends CookieAction  {
+public class OpenJAXBCustomizerAction extends NodeAction  {
     
     private void populateSchemaBindingValues(WizardDescriptor wiz,
                                              Project prj,
@@ -206,17 +205,7 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
         return NbBundle.getMessage(
                 this.getClass(), "LBL_DialogTitleChangeBindingOptions");//NOI18N  
     }   
-    
-   protected int mode() {
-        return CookieAction.MODE_EXACTLY_ONE;
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {
-            DataObject.class
-        };
-    }
-    
+            
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource()
@@ -228,6 +217,7 @@ public class OpenJAXBCustomizerAction extends CookieAction  {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }

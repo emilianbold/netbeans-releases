@@ -26,38 +26,26 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author lgao
  */
-public class JAXBWizardOpenXSDIntoEditorAction extends CookieAction {
+public class JAXBWizardOpenXSDIntoEditorAction extends NodeAction {
     
     public JAXBWizardOpenXSDIntoEditorAction() {
-    }
-
-    protected int mode() {
-        return super.MODE_EXACTLY_ONE;
-    }
-
-    protected Class[] cookieClasses() {
-        return new Class[] {
-            FileObject.class,
-        };
     }
 
     protected void performAction(Node[] nodes) {
         Node node = nodes[ 0 ];
         
-        FileObject fo = (FileObject)node.getLookup().lookup( 
-                FileObject.class );
+        FileObject fo = node.getLookup().lookup(FileObject.class );
         try {
         if ( fo != null ) {
             DataObject dataObject = DataObject.find( fo );
             if ( dataObject != null ) {
-                EditCookie ec = (EditCookie)dataObject.getCookie( 
-                        EditCookie.class );
+                EditCookie ec = dataObject.getCookie(EditCookie.class );
                 if ( ec != null ) {
                     ec.edit();
                 }
@@ -83,6 +71,7 @@ public class JAXBWizardOpenXSDIntoEditorAction extends CookieAction {
         return null;
     }
     
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return true;
     }

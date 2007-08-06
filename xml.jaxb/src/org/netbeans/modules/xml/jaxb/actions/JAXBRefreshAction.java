@@ -92,6 +92,11 @@ public class JAXBRefreshAction extends NodeAction  {
         return null;
     }
 
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+    
     @Override 
     protected boolean enable(Node[] node) {
         return true;

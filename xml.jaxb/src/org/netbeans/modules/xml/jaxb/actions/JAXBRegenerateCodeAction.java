@@ -48,6 +48,11 @@ public class JAXBRegenerateCodeAction extends NodeAction {
         return null;
     }
     
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+    
     public String getName() {
         return NbBundle.getMessage(this.getClass(),
                 "LBL_CodeRegenerateActionName"); //NOI18N

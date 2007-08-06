@@ -21,33 +21,22 @@ package org.netbeans.modules.xml.jaxb.actions;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.cfg.schema.Schema;
-import org.netbeans.modules.xml.jaxb.cfg.schema.Schemas;
 import org.netbeans.modules.xml.jaxb.ui.JAXBWizardSchemaNode;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
  * @author $Author$
  * @author lgao
  */
-public class JAXBDeleteSchemaAction extends CookieAction {
+public class JAXBDeleteSchemaAction extends NodeAction {
+    
     public JAXBDeleteSchemaAction() {
     }
 
-    protected int mode() {
-        return CookieAction.MODE_SOME;
-    }
-
-    protected Class[] cookieClasses() {
-        return new Class[] {
-            DataObject.class
-        };
-    }
-    
     public void performAction(Node[] nodes) {
         JAXBWizardSchemaNode schemaNode = 
                 nodes[0].getLookup().lookup(JAXBWizardSchemaNode.class);
@@ -71,6 +60,7 @@ public class JAXBDeleteSchemaAction extends CookieAction {
         return false;
     }
         
+    @Override
     protected boolean enable(Node[] node) {
         return true;
     }
