@@ -98,7 +98,7 @@ public final class WatchesModel extends VariablesModel {
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node == ROOT) {
-            return NbBundle.getMessage(WatchesModel.class, "CTL_CallstackModel.Column.Name.Name");
+            return getMessage("CTL_CallstackModel.Column.Name.Name");
         } else if (node instanceof Watch) {
             return ((Watch) node).getExpression();
         } else {
@@ -119,9 +119,10 @@ public final class WatchesModel extends VariablesModel {
     public String getShortDescription(Object node)
             throws UnknownTypeException {
         if (node == ROOT) {
-            return NbBundle.getMessage(WatchesModel.class, "CTL_CallstackModel.Column.Name.Desc");
+            return getMessage("CTL_CallstackModel.Column.Name.Desc");
         } else if (node instanceof Watch) {
-            return null; // XXX
+            RubyVariable var = resolveVariable((Watch) node);
+            return var == null ? getMessage("CTL_WatchesModel.Unknown.Evaluation") : super.getShortDescription(var);
         } else {
             return super.getShortDescription(node);
         }
@@ -136,7 +137,7 @@ public final class WatchesModel extends VariablesModel {
         if(node instanceof Watch) {
             RubyVariable var = resolveVariable((Watch) node);
             if (var == null) {
-                return "<Unkown in the current context>"; // NOI18N
+                return getMessage("CTL_WatchesModel.Unknown.Evaluation");
             }
             if (WATCH_VALUE_COLUMN_ID.equals(columnID)) {
                 return super.getValueAt(var, LOCALS_VALUE_COLUMN_ID);
@@ -240,5 +241,9 @@ public final class WatchesModel extends VariablesModel {
             Watch w = (Watch) evt.getSource();
             model.fireWatchPropertyChanged(w, evt.getPropertyName());
         }
+    }
+
+    private static String getMessage(final String key) {
+        return NbBundle.getMessage(WatchesModel.class, key);
     }
 }
