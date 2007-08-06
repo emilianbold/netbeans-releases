@@ -244,7 +244,11 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     
     public void setTabTitle(AbstractOutputTab tab, String name) {
         if (tab.getParent() == pane) {
-            pane.setTitleAt(pane.indexOfComponent(tab), name);
+            int index = pane.indexOfComponent(tab);
+            if (Controller.LOG) {
+                Controller.log("setTabTitle: #" + index + " '" + pane.getTitleAt(index) + "' -> '" + name + "'");
+            }
+            pane.setTitleAt(index, name);
         } else if (tab.getParent() == this) {
             updateSingletonName(name);
         }
