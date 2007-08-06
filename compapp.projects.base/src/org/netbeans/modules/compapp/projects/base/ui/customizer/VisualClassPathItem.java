@@ -24,11 +24,12 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.*;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.util.Utilities;
 
 import java.net.URI;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 
 /** Represents classpath items of various types. Can be used in the model
  * of classpath editing controls.
@@ -65,6 +66,8 @@ public class VisualClassPathItem {
     private String asaType;
 
     public VisualClassPathItem( Object cpElement, int type, String raw, String eval, boolean inDeployment) {
+        assert cpElement != null;
+        String src;
         this.cpElement = cpElement;
         this.type = type;
         this.raw = raw;
@@ -75,11 +78,16 @@ public class VisualClassPathItem {
             AntArtifact aa = (AntArtifact) cpElement;
 
             Project p = aa.getProject();
-            ProjectInformation info = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+            ProjectInformation info = p.getLookup().lookup(ProjectInformation.class);
             if (info != null) {
                projectName = info.getName();
-               AntProjectHelper ah = (AntProjectHelper) p.getLookup().lookup(AntProjectHelper.class);
-               String src = ah.getStandardPropertyEvaluator ().getProperty (IcanproProjectProperties.SRC_DIR);
+               AntProjectHelper ah = p.getLookup().lookup(AntProjectHelper.class);
+               if (ah != null) {
+                   src = ah.getStandardPropertyEvaluator ().getProperty (IcanproProjectProperties.SRC_DIR);
+               }
+               else {
+                   src= (aa.getArtifactLocations()[0]).toString(); //TBD temp test
+               }
                shortName = projectName+"  ("+info.getProject().getProjectDirectory().getPath()+")";
             }
 
@@ -146,6 +154,7 @@ public class VisualClassPathItem {
         return null;
     }
 
+    @Override
     public int hashCode() {
 
         int hash = getType();
@@ -166,6 +175,7 @@ public class VisualClassPathItem {
         return hash;
     }
 
+    @Override
     public boolean equals( Object object ) {
 
         if ( !( object instanceof VisualClassPathItem ) ) {
@@ -201,6 +211,7 @@ public class VisualClassPathItem {
 
     }
 
+    @Override
     public String toString() {
         switch ( getType() ) {
             case TYPE_JAR:

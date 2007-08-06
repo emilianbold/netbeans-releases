@@ -24,20 +24,25 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabelProjectName" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabelProjectType" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="jLabelServiceUnitDescription" alignment="0" min="-2" max="-2" attributes="1"/>
-                  <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="jTextFieldProjectFolder" pref="219" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jLabelProjectName" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabelProjectType" linkSize="3" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabelServiceUnitDescription" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="jTextFieldProjectFolder" pref="219" max="32767" attributes="0"/>
+                          </Group>
+                          <Component id="jTextFieldServiceUnitDescription" alignment="0" pref="219" max="32767" attributes="0"/>
+                          <Component id="jTextFieldProjectType" alignment="1" pref="219" max="32767" attributes="0"/>
+                          <Component id="jComboBoxEncoding" alignment="0" min="-2" pref="147" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
-                  <Component id="jTextFieldServiceUnitDescription" alignment="0" pref="219" max="32767" attributes="0"/>
-                  <Component id="jTextFieldProjectType" alignment="1" pref="219" max="32767" attributes="0"/>
-                  <Component id="jComboBoxEncoding" alignment="0" min="-2" pref="147" max="-2" attributes="0"/>
+                  <Component id="jCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -66,7 +71,9 @@
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jComboBoxEncoding" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="18" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -137,6 +144,32 @@
           </StringArray>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="jCheckBox1">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/compapp/projects/base/ui/customizer/Bundle.properties" key="CustomizerGeneral.jCheckBox1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/compapp/projects/base/ui/customizer/Bundle.properties" key="CustomizerGeneral.jCheckBox1.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+          </Border>
+        </Property>
+        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+          <Insets value="[0, 0, 0, 0]"/>
+        </Property>
+      </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/compapp/projects/base/ui/customizer/Bundle.properties" key="CustomizerGeneral.jCheckBox1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
+      <Events>
+        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="jCheckBox1validationHandler"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

@@ -36,6 +36,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.compapp.projects.base.IcanproProjectType;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproCustomizer;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
@@ -61,13 +62,25 @@ public class IcanproCustomizerProvider implements CustomizerProvider {
     // Option command names
     private static final String COMMAND_OK = "OK";          // NOI18N
     private static final String COMMAND_CANCEL = "CANCEL";  // NOI18N
+    private String projectConfigurationNamespace;
     
     public IcanproCustomizerProvider(Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+        this(project, antProjectHelper, refHelper, 
+                IcanproProjectType.PROJECT_CONFIGURATION_NAMESPACE);
+    }
+            
+    public IcanproCustomizerProvider(Project project, 
+            AntProjectHelper antProjectHelper, 
+            ReferenceHelper refHelper,
+            String projectConfigurationNamespace) 
+    {
+        assert projectConfigurationNamespace != null;
+        this.projectConfigurationNamespace = projectConfigurationNamespace;
         this.project = project;
         this.antProjectHelper = antProjectHelper;
         this.refHelper = refHelper;
     }
-            
+
     public void showCustomizer() {
             // Create options
             JButton options[] = new JButton[] { 
@@ -80,7 +93,10 @@ public class IcanproCustomizerProvider implements CustomizerProvider {
             options[ OPTION_CANCEL ].setActionCommand( COMMAND_CANCEL );
             
             // RegisterListener
-            IcanproProjectProperties webProperties = new IcanproProjectProperties( project, antProjectHelper, refHelper );
+            IcanproProjectProperties webProperties = 
+                    new IcanproProjectProperties( project, 
+                        antProjectHelper, refHelper, 
+                        projectConfigurationNamespace);
             ActionListener optionsListener = new OptionListener( project, webProperties );
             options[ OPTION_OK ].addActionListener( optionsListener );
             options[ OPTION_CANCEL ].addActionListener( optionsListener );

@@ -25,11 +25,13 @@ package org.netbeans.modules.compapp.projects.base;
  */
 
 public interface IcanproConstants {
-    public static final String WIZARD_BUNDLE="org/netbeans/modules/compapp/projects/base/ui/wizards/Bundle";
+    String WIZARD_BUNDLE="org/netbeans/modules/compapp/projects/base/ui/wizards/Bundle";
 
-    public static final String COMMAND_REDEPLOY = "redeploy";
-    public static final String COMMAND_DEPLOY = "deploy";
-    public static final String ARTIFACT_TYPE_JAR = "jar";
-    public static final String SOURCES_TYPE_JAVA = "java";
+    String COMMAND_REDEPLOY = "redeploy";
+    String COMMAND_DEPLOY = "deploy";
+    String ARTIFACT_TYPE_JAR = "jar";
+    String ARTIFACT_TYPE_EJB_WS="j2ee_archive";
+    String SOURCES_TYPE_JAVA = "java";
+    String VALIDATION_FLAG = "allow.build.with.error"; //NOI18N
 
 }

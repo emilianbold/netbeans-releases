@@ -36,6 +36,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.bpel.project.BpelproProjectType;
 
 import org.netbeans.modules.bpel.project.ui.customizer.IcanproCustomizer;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
@@ -80,7 +81,7 @@ public class IcanproCustomizerProvider implements CustomizerProvider {
             options[ OPTION_CANCEL ].setActionCommand( COMMAND_CANCEL );
             
             // RegisterListener
-            IcanproProjectProperties webProperties = new IcanproProjectProperties( project, antProjectHelper, refHelper );
+            IcanproProjectProperties webProperties = new IcanproProjectProperties( project, antProjectHelper, refHelper, BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE );
             ActionListener optionsListener = new OptionListener( project, webProperties );
             options[ OPTION_OK ].addActionListener( optionsListener );
             options[ OPTION_CANCEL ].addActionListener( optionsListener );

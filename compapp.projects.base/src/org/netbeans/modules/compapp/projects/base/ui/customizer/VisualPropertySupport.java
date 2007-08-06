@@ -163,6 +163,20 @@ public final class VisualPropertySupport {
         component.addActionListener(componentListener);
     }
     
+    /**
+     * Registers JList containing VisualClassPath items and acompaniing buttons for handling the
+     * class path
+     *
+     */
+    public void register(VisualArchiveIncludesSupport component, String propertyName) {
+        List value = (List) getAsType(propertyName, List.class);
+        component2property.put(component, propertyName);
+        component.setVisualWarItems((value != null) ? value : Collections.EMPTY_LIST);
+        component.removeActionListener(componentListener);
+        component.addActionListener(componentListener);
+    }
+    
+    
     // Static methods for reading components and models ------------------------
     
     private static Boolean readValue( JCheckBox checkBox ) {

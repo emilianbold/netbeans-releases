@@ -64,6 +64,7 @@ import org.w3c.dom.Text;
  * @author Petr Hrebejk, Chris Webster
  */
 public class IcanproProjectProperties {
+    public static final String WS_CONTENT_ADDITIONAL="ws.content.additional";
     
     public static final String J2EE_1_4 = "1.4";
     public static final String J2EE_1_3 = "1.3";
@@ -147,90 +148,114 @@ public class IcanproProjectProperties {
     private static final PropertyParser STRING_PARSER = new StringParser();
     private static final BooleanParser BOOLEAN_PARSER = new BooleanParser();
     private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();
-    private static final PathParser PATH_PARSER = new PathParser();
+    private final PathParser PATH_PARSER;
     private static final PlatformParser PLATFORM_PARSER = new PlatformParser();
     private static final CharsetParser CHARSET_PARSER = new CharsetParser();
 
     // Info about the property destination
     // XXX only properties which are visually set should be described here
     // XXX refactor this list
-    private PropertyDescriptor PROPERTY_DESCRIPTORS[] = {
-        new PropertyDescriptor( EJB_PROJECT_NAME, null, STRING_PARSER ),
-        new PropertyDescriptor( J2EE_PLATFORM, PROJECT, STRING_PARSER ),
-
-        new PropertyDescriptor( SOURCE_ROOT, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_FILE, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( DIST_JAR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( WSDL_CLASSPATH, PROJECT, STRING_PARSER ),
-
-        new PropertyDescriptor( JAR_NAME, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
-
-        new PropertyDescriptor( J2EE_SERVER_TYPE, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( J2EE_SERVER_INSTANCE, PRIVATE, STRING_PARSER ),
-
-        new PropertyDescriptor( JAVAC_SOURCE, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
-        new PropertyDescriptor( JAVAC_TARGET, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAVAC_ARGS, PROJECT, STRING_PARSER ),
-
-        new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( RESOURCE_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JAVA_PLATFORM, PROJECT, PLATFORM_PARSER ),
-        new PropertyDescriptor(SOURCE_ENCODING, PROJECT, CHARSET_PARSER),
-
-        //================== Start of IcanPro =====================================//
-        new PropertyDescriptor( JBI_SETYPE_PREFIX, PROJECT, STRING_PARSER ),
-//        new PropertyDescriptor( ASSEMBLY_UNIT_ALIAS, PROJECT, STRING_PARSER ),
-//        new PropertyDescriptor( ASSEMBLY_UNIT_DESCRIPTION, PROJECT, STRING_PARSER ),
-//        new PropertyDescriptor( APPLICATION_SUB_ASSEMBLY_ALIAS, PROJECT, STRING_PARSER ),
-//        new PropertyDescriptor( APPLICATION_SUB_ASSEMBLY_DESCRIPTION, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( SERVICE_UNIT_DESCRIPTION, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JBI_COMPONENT_CONF_ROOT, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JBI_DEPLOYMENT_CONF_ROOT, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( JBI_COMPONENT_CONF_FILE, PROJECT, STRING_PARSER ),
-
-        new PropertyDescriptor( BC_DEPLOYMENT_JAR, PROJECT, STRING_PARSER ),
-        new PropertyDescriptor( SE_DEPLOYMENT_JAR, PROJECT, STRING_PARSER ),
-
-        new PropertyDescriptor( JBI_DEPLOYMENT_CONF_FILE, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( DISPLAY_NAME_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( HOST_NAME_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( ADMINISTRATION_PORT_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( DOMAIN_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( HTTP_MONITOR_ON_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( HTTP_PORT_NUMBER_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( LOCATION_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( PASSWORD_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( URL_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( USER_NAME_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( JBI_REGISTRY_COMPONENT_FILE_KEY, PRIVATE, STRING_PARSER ),
-        new PropertyDescriptor( JBI_REGISTRY_BROKER_HOST_KEY, PRIVATE, STRING_PARSER ),
-        //================== End of IcanPro =======================================//
-    };
+    private PropertyDescriptor[] PROPERTY_DESCRIPTORS;
 
 
     // Private fields ----------------------------------------------------------
 
     private Project project;
-    private HashMap properties;
+    private HashMap<String, PropertyInfo> properties;
     private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
+    private String projectConfigurationNamespace;
 
-    public IcanproProjectProperties(Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+    public IcanproProjectProperties(Project project, 
+            AntProjectHelper antProjectHelper, 
+            ReferenceHelper refHelper) 
+    {
+        // use default project ConfigurationNamespace
+        this(project, antProjectHelper, refHelper, 
+                IcanproProjectType.PROJECT_CONFIGURATION_NAMESPACE);
+    }
+
+    public IcanproProjectProperties(Project project, 
+            AntProjectHelper antProjectHelper, 
+            ReferenceHelper refHelper,
+            String projectConfigurationNamespace) {
         this.project = project;
-        this.properties = new HashMap();
+        this.properties = new HashMap<String, PropertyInfo>();
         this.antProjectHelper = antProjectHelper;
         this.refHelper = refHelper;
+        this.projectConfigurationNamespace = projectConfigurationNamespace;
+        PATH_PARSER = new PathParser();
+        initPropertyDescriptor();
         read();
+    }
+    
+    private void initPropertyDescriptor() {
+        
+        PROPERTY_DESCRIPTORS = new PropertyDescriptor[] {
+            new PropertyDescriptor( EJB_PROJECT_NAME, null, STRING_PARSER ),
+            new PropertyDescriptor( J2EE_PLATFORM, PROJECT, STRING_PARSER ),
+
+            new PropertyDescriptor( SOURCE_ROOT, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( BUILD_FILE, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( DIST_JAR, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, PATH_PARSER ),
+            new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( WSDL_CLASSPATH, PROJECT, STRING_PARSER ),
+//            new PropertyDescriptor( WSDL_CLASSPATH, PROJECT, PATH_PARSER ),
+
+            new PropertyDescriptor( JAR_NAME, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
+
+            new PropertyDescriptor( J2EE_SERVER_TYPE, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( J2EE_SERVER_INSTANCE, PRIVATE, STRING_PARSER ),
+
+            new PropertyDescriptor( JAVAC_SOURCE, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER ),
+            new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
+            new PropertyDescriptor( JAVAC_TARGET, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( JAVAC_ARGS, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( IcanproConstants.VALIDATION_FLAG, PROJECT,BOOLEAN_PARSER ),
+
+            new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( RESOURCE_DIR, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( DIST_JAVADOC_DIR, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( JAVA_PLATFORM, PROJECT, PLATFORM_PARSER ),
+            new PropertyDescriptor(SOURCE_ENCODING, PROJECT, CHARSET_PARSER),
+
+            //================== Start of IcanPro =====================================//
+            new PropertyDescriptor( JBI_SETYPE_PREFIX, PROJECT, STRING_PARSER ),
+    //        new PropertyDescriptor( ASSEMBLY_UNIT_ALIAS, PROJECT, STRING_PARSER ),
+    //        new PropertyDescriptor( ASSEMBLY_UNIT_DESCRIPTION, PROJECT, STRING_PARSER ),
+    //        new PropertyDescriptor( APPLICATION_SUB_ASSEMBLY_ALIAS, PROJECT, STRING_PARSER ),
+    //        new PropertyDescriptor( APPLICATION_SUB_ASSEMBLY_DESCRIPTION, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( SERVICE_UNIT_DESCRIPTION, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( JBI_COMPONENT_CONF_ROOT, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( JBI_DEPLOYMENT_CONF_ROOT, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( JBI_COMPONENT_CONF_FILE, PROJECT, STRING_PARSER ),
+
+            new PropertyDescriptor( BC_DEPLOYMENT_JAR, PROJECT, STRING_PARSER ),
+            new PropertyDescriptor( SE_DEPLOYMENT_JAR, PROJECT, STRING_PARSER ),
+
+            new PropertyDescriptor( JBI_DEPLOYMENT_CONF_FILE, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( DISPLAY_NAME_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( HOST_NAME_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( ADMINISTRATION_PORT_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( DOMAIN_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( HTTP_MONITOR_ON_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( HTTP_PORT_NUMBER_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( LOCATION_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( PASSWORD_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( URL_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( USER_NAME_PROPERTY_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( JBI_REGISTRY_COMPONENT_FILE_KEY, PRIVATE, STRING_PARSER ),
+            new PropertyDescriptor( JBI_REGISTRY_BROKER_HOST_KEY, PRIVATE, STRING_PARSER ),
+            //================== End of IcanPro =======================================//
+            new PropertyDescriptor(WS_CONTENT_ADDITIONAL, PROJECT, PATH_PARSER),
+        };        
     }
 
     /** XXX to be deleted when introduced in AntPropertyHeleper API
@@ -252,7 +277,7 @@ public class IcanproProjectProperties {
 //            assert value instanceof List : "Wrong format of property " + propertyName; //NOI18N
 //            writeJavacClasspath ((List) value, antProjectHelper, refHelper);
 //        } 
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
+        PropertyInfo pi = properties.get(propertyName);
         if (pi == null) {
             PropertyDescriptor pd = null;
             for ( int i = 0; i < PROPERTY_DESCRIPTORS.length; i++ ) {
@@ -280,7 +305,7 @@ public class IcanproProjectProperties {
 //            return readJavacClasspath (antProjectHelper, refHelper);
 //        } 
 
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
+        PropertyInfo pi = properties.get(propertyName);
         if (pi == null) return null;
 
         return pi.getValue();
@@ -288,12 +313,13 @@ public class IcanproProjectProperties {
     
     public boolean isModified( String propertyName ) {
         assert propertyName != null : "Unknown property " + propertyName; // NOI18N
-        PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
+        PropertyInfo pi = properties.get(propertyName);
         if (pi == null) return false;
 
         return pi.isModified();
     }
     
+    @SuppressWarnings("unchecked")
     public List getSortedSubprojectsList() {
              
         ArrayList subprojects = new ArrayList( 5 );
@@ -319,7 +345,7 @@ public class IcanproProjectProperties {
      */
     private void addSubprojects( Project project, List result ) {
         
-        SubprojectProvider spp = (SubprojectProvider)project.getLookup().lookup( SubprojectProvider.class );
+        SubprojectProvider spp = project.getLookup().lookup(SubprojectProvider.class);
         
         if ( spp == null ) {
             return;
@@ -469,7 +495,7 @@ public class IcanproProjectProperties {
         Set oldArtifacts = new HashSet();
         Set newArtifacts = new HashSet();
         for ( int i = 0; i < allPaths.length; i++ ) {            
-            PropertyInfo pi = (PropertyInfo)properties.get( allPaths[i] );
+            PropertyInfo pi = properties.get(allPaths[i]);
 
             // Get original artifacts
             List oldList = (List)pi.getOldValue();
@@ -484,7 +510,8 @@ public class IcanproProjectProperties {
             
             // Get artifacts after the edit
             List newList = (List)pi.getValue();
-            if ( newList != null ) {
+            // in case empty newList the empty string is stored as artifact value
+            if ( newList != null && newList.size() > 0) {
                 for( Iterator it = newList.iterator(); it.hasNext(); ) {
                     VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
                     if ( vcpi.getType() == VisualClassPathItem.TYPE_ARTIFACT ) {
@@ -517,10 +544,13 @@ public class IcanproProjectProperties {
         return diff + "/" + fto ;
     }
 
+    /**
+     * Never returns null, in case empty javac classpath returns empty string
+     */ 
     private String adjustWsdlPathProperty(EditableProperties ep) {
         String val = "";
         String classpath = ep.getProperty(IcanproProjectProperties.JAVAC_CLASSPATH);
-        if (classpath != null) {
+        if (classpath != null && !"".equals(classpath)) {
             // todo: the following code only works for icanpro projects.
             String pathDiff = calculatePathDiff(
                     ep.getProperty(IcanproProjectProperties.SE_DEPLOYMENT_JAR),
@@ -531,7 +561,9 @@ public class IcanproProjectProperties {
                 val += ((i>0) ? File.pathSeparator : "") + classPathElement[i] + pathDiff;
             }
         }
+        
         ep.setProperty(IcanproProjectProperties.WSDL_CLASSPATH, val);
+
         return val;
     }
 
@@ -678,7 +710,7 @@ public class IcanproProjectProperties {
             
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();            
             for( int i = 0; i < platforms.length; i++ ) {
-                String normalizedName = (String)platforms[i].getProperties().get("platform.ant.name");
+                String normalizedName = platforms[i].getProperties().get("platform.ant.name");
                 if ( normalizedName != null && normalizedName.equals( raw ) ) {
                     return platforms[i].getDisplayName();
                 }
@@ -693,7 +725,7 @@ public class IcanproProjectProperties {
             if (platforms.length == 0)
                 return null;
             else
-                return (String) platforms[0].getProperties().get("platform.ant.name");  //NOI18N
+                return platforms[0].getProperties().get("platform.ant.name");  //NOI18N
         }
     }
     
@@ -744,18 +776,30 @@ public class IcanproProjectProperties {
         }
     }
 
-     private static class PathParser extends PropertyParser {
+//     private static class PathParser extends AbstractPathParser {
+//        protected String getProjectConfigurationNS() {
+//            return IcanproProjectType.PROJECT_CONFIGURATION_NAMESPACE;
+//        }
+//     }
+    private String getProjectConfigurationNS() {
+        return projectConfigurationNamespace;
+    }
+    
+     private class PathParser extends PropertyParser {
          public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
              
              if (raw == null) {
-                 return new ArrayList();
+//                 return new ArrayList();
+                 return null;
              }
 
              EditableProperties ep = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
              String classpath = ep.getProperty(IcanproProjectProperties.JAVAC_CLASSPATH);
 
-             if (classpath == null) {
-                 return new ArrayList();
+             // sometimes classpath can be empty 
+             if (classpath == null || "".equals(classpath)) {
+//                 return new ArrayList();
+                 return null;
              }
              String[] classPathElement = classpath.split(File.pathSeparator);
              List cpItems = new ArrayList();
@@ -813,11 +857,11 @@ public class IcanproProjectProperties {
          }
         
         public String encode( Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
-            
+            assert getProjectConfigurationNS() != null;
             StringBuffer sb = new StringBuffer();
             Element data = antProjectHelper.getPrimaryConfigurationData(true);
             org.w3c.dom.Document doc = data.getOwnerDocument();
-            NodeList libs = data.getElementsByTagNameNS(IcanproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library"); //NOI18N
+            NodeList libs = data.getElementsByTagNameNS(getProjectConfigurationNS(), "included-library"); //NOI18N
             for (int i = 0; i < libs.getLength(); i++) {
                 Node n = libs.item(i);
                 n.getParentNode().removeChild(n);
@@ -848,7 +892,10 @@ public class IcanproProjectProperties {
                         break;
                     case VisualClassPathItem.TYPE_ARTIFACT:
                         AntArtifact aa = (AntArtifact)vcpi.getObject();
-                        String reference = refHelper.addReference(aa, aa.getArtifactLocations()[0]);
+//                        String reference = refHelper.addReference(aa, aa.getArtifactLocations()[0]);
+                    // String reference = refHelper.addReference( aa, null );
+                    String reference = aa == null ? vcpi.getRaw() : // prevent NPE thrown from older projects
+                            refHelper.addReference(aa, aa.getArtifactLocations()[0]);
                         library_tag_value = reference;
                         break;
                     case VisualClassPathItem.TYPE_CLASSPATH:
@@ -858,7 +905,7 @@ public class IcanproProjectProperties {
                 sb.append(library_tag_value);
                 sb.append (File.pathSeparator);
                 if (vcpi.isInDeployment().booleanValue()) {
-                    Element library = doc.createElementNS(IcanproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library"); //NOI18N
+                    Element library = doc.createElementNS(getProjectConfigurationNS(), "included-library"); //NOI18N
                     library.appendChild(doc.createTextNode(getAntPropertyName(library_tag_value)));
                     data.appendChild(library);
                 }
@@ -870,8 +917,8 @@ public class IcanproProjectProperties {
             return sb.toString();
         }
      }
-    
-    /**
+
+     /**
      * Extract nested text from an element.
      * Currently does not handle coalescing text nodes, CDATA sections, etc.
      * @param parent a parent element
@@ -888,9 +935,9 @@ public class IcanproProjectProperties {
         return null;
     }
     
-    private static List librariesInDeployment(AntProjectHelper helper) {
+    private List librariesInDeployment(AntProjectHelper helper) {
         Element data = helper.getPrimaryConfigurationData (true);
-        NodeList libs = data.getElementsByTagNameNS (IcanproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library"); //NOI18N
+        NodeList libs = data.getElementsByTagNameNS (getProjectConfigurationNS(), "included-library"); //NOI18N
         List cpItems = new ArrayList( libs.getLength () );
         for (int i = 0; i < libs.getLength (); i++) {
             Element library = (Element) libs.item (i);

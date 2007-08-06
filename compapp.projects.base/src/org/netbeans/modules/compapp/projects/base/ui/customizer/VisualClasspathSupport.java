@@ -23,23 +23,29 @@ package org.netbeans.modules.compapp.projects.base.ui.customizer;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.*;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JList;
 
-import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import org.openide.util.Utilities;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.compapp.projects.base.IcanproProject;
 import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
 
 
 /** Handles adding, removing, editing and reordering of classpath.
  */
-final class VisualClasspathSupport {
+public final class VisualClasspathSupport {
 
     final Project master;
     final JList  classpathList;
@@ -50,7 +56,7 @@ final class VisualClasspathSupport {
 
     private final DefaultListModel classpathModel;
 
-    private final ArrayList actionListeners = new ArrayList();
+    private final List<ActionListener> actionListeners = new ArrayList<ActionListener>();
 
     public VisualClasspathSupport(Project master, JList classpathList, JButton addArtifactButton, JButton removeButton, JButton upButton, JButton downButton) {
         this.master = master;
@@ -114,16 +120,16 @@ final class VisualClasspathSupport {
     }
 
     private void fireActionPerformed() {
-        ArrayList listeners;
+        List<ActionListener> listeners;
 
         synchronized ( this ) {
-             listeners = new ArrayList( actionListeners );
+             listeners = new ArrayList<ActionListener>( actionListeners );
         }
 
         ActionEvent ae = new ActionEvent( this, 0, null );
 
-        for( Iterator it = listeners.iterator(); it.hasNext(); ) {
-            ActionListener al = (ActionListener)it.next();
+        for( Iterator<ActionListener> it = listeners.iterator(); it.hasNext(); ) {
+            ActionListener al = it.next();
             al.actionPerformed( ae );
         }
     }
@@ -304,6 +310,7 @@ final class VisualClasspathSupport {
     private static class ClassPathCellRenderer extends DefaultListCellRenderer {
 
 
+        @Override
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
             super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );

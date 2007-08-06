@@ -21,6 +21,7 @@
 package org.netbeans.modules.compapp.projects.base.ui.customizer;
 
 import java.awt.Component;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -34,7 +35,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
-import org.netbeans.modules.compapp.projects.base.IcanproProject;
+import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -48,6 +49,7 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
 
     private IcanproProjectProperties webProperties;
     private VisualPropertySupport vps;
+    private boolean bValidation = true;
 
     /** Creates new form CustomizerCompile */
     public CustomizerGeneral(IcanproProjectProperties webProperties) {
@@ -56,6 +58,22 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
 
         this.webProperties = webProperties;
         vps = new VisualPropertySupport(webProperties);
+        
+        Object validationObject =webProperties.get(IcanproConstants.VALIDATION_FLAG);
+        
+        // BpelProjectHelper.getInstance().getProjectProperty(IcanproProjectProperties.VALIDATION_FLAG);
+        if (validationObject != null ){
+            boolean validation = ((Boolean)validationObject).booleanValue();
+            if (validation) {
+                jCheckBox1.setSelected(true);
+            } else {
+                jCheckBox1.setSelected(false);
+            }
+            
+        }else {
+            jCheckBox1.setSelected(false);
+        }
+        
     }
 
     public void initValues(  ) {
@@ -98,6 +116,7 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
             return this;
         }
         
+        @Override
         public String getName() {
             String name = super.getName();
             return name == null ? "ComboBox.renderer" : name; // NOI18N
@@ -170,6 +189,7 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
         jTextFieldServiceUnitDescription = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         jComboBoxEncoding = new javax.swing.JComboBox();
+        jCheckBox1 = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -190,6 +210,16 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
 
         jComboBoxEncoding.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jCheckBox1.text")); // NOI18N
+        jCheckBox1.setToolTipText(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jCheckBox1.toolTipText")); // NOI18N
+        jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        jCheckBox1.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        jCheckBox1.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jCheckBox1validationHandler(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -197,18 +227,21 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabelProjectName)
-                    .add(jLabelProjectType)
-                    .add(jLabelServiceUnitDescription)
-                    .add(jLabel1))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabelProjectName)
+                            .add(jLabelProjectType)
+                            .add(jLabelServiceUnitDescription)
+                            .add(jLabel1))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE))
-                    .add(jTextFieldServiceUnitDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldProjectType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
-                    .add(jComboBoxEncoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE))
+                            .add(jTextFieldServiceUnitDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextFieldProjectType, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 219, Short.MAX_VALUE)
+                            .add(jComboBoxEncoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 147, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                    .add(jCheckBox1))
                 .addContainerGap())
         );
 
@@ -233,13 +266,30 @@ public class CustomizerGeneral extends JPanel implements IcanproCustomizer.Panel
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel1)
                     .add(jComboBoxEncoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jCheckBox1)
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         jTextFieldProjectFolder.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACS_CustomizeGeneral_ProjectFolder_A11YDesc")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "CustomizerGeneral.jCheckBox1.text")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jCheckBox1validationHandler(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jCheckBox1validationHandler
+        // TODO add your handling code here:
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
+            //bValidation = false;
+            webProperties.put(IcanproConstants.VALIDATION_FLAG, true);
+            //   BpelProjectHelper.getInstance().setProjectProperty(IcanproProjectProperties.VALIDATION_FLAG, "false", false);
+        } else {
+            webProperties.put(IcanproConstants.VALIDATION_FLAG, false);
+            //   bValidation = true;
+            //   BpelProjectHelper.getInstance().setProjectProperty(IcanproProjectProperties.VALIDATION_FLAG, "true",false);
+        }
+    }//GEN-LAST:event_jCheckBox1validationHandler
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JComboBox jComboBoxEncoding;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelProjectName;

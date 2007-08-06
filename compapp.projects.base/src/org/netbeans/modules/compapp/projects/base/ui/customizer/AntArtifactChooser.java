@@ -152,13 +152,18 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         jTextFieldName.setText(project == null ? "" : ProjectUtils.getInformation(project).getDisplayName()); //NOI18N
 
         if ( project != null ) {
-            AntArtifactProvider prov = (AntArtifactProvider)project.getLookup().lookup(AntArtifactProvider.class);
+            AntArtifactProvider prov = project.getLookup().lookup(AntArtifactProvider.class);
             if (prov != null) {
                 AntArtifact[] artifacts = prov.getBuildArtifacts();
                 if ((artifacts != null) && (artifacts.length > 0)) {
-                    AntArtifact aa = artifacts[0];
-                    if (aa.getType().startsWith(artifactType)) {
-                        model.addElement( new ArtifactItem( aa));
+//                    AntArtifact aa = artifacts[0];
+//                    if (aa.getType().startsWith(artifactType)) {
+//                        model.addElement( new ArtifactItem( aa));
+//                    }
+                    for (int i = 0; i < artifacts.length; i++) {
+                      if (artifacts[i].getType().startsWith(artifactType)) {
+                          model.addElement( new ArtifactItem( artifacts[i]));
+                      }
                     }
                 }
             }
@@ -249,6 +254,46 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
 
     }
 
+    /** Shows dialog with the artifact chooser
+     * @return null if canceled selected jars if some jars selected
+     */
+    public static AntArtifact[] showDialog( String artifactType, Project p ) {
+
+        JFileChooser chooser = ProjectChooser.projectChooser();
+        chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
+        chooser.setApproveButtonText( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_SelectProject" ) ); // NOI18N
+
+        AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
+        chooser.setAccessory( accessory );
+        if (p != null) {
+            FileObject dobj = p.getProjectDirectory().getParent();
+            if (dobj != null) {
+                chooser.setCurrentDirectory(FileUtil.toFile(dobj));
+            }
+        }
+        int option = chooser.showOpenDialog( null ); // Show the chooser
+
+        if ( option == JFileChooser.APPROVE_OPTION ) {
+
+            DefaultListModel model = (DefaultListModel)accessory.jListArtifacts.getModel();
+
+            AntArtifact artifacts[] = new AntArtifact[ model.size() ];
+
+            // XXX Adding references twice
+
+            // XXX What about adding reference to itself
+            for( int i = 0; i < artifacts.length; i++ ) {
+                artifacts[i] = ((ArtifactItem)model.getElementAt( i )).getArtifact();
+            }
+
+            return artifacts;
+
+        }
+        else {
+            return null;
+        }
+
+    }
 
     private static class ArtifactItem {
 

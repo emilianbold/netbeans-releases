@@ -50,6 +50,7 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
+import org.netbeans.modules.compapp.projects.base.ui.IcanproXmlCustomizerProvider;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -176,7 +177,12 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
             new BpelproActionProvider( this, helper, refHelper ),
             new IcanproLogicalViewProvider(this, helper, evaluator(), spp, refHelper),
 //            new BpelProjectCustomizerProvider(this),
-            new IcanproCustomizerProvider(this, helper, refHelper),
+//            new IcanproCustomizerProvider(this, helper, refHelper, 
+//                    BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE),
+            new IcanproXmlCustomizerProvider(this, helper, refHelper,
+                    BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE),
+            
+            
             new JbiArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(this),
@@ -481,7 +487,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     }
     
     public IcanproProjectProperties getProjectProperties() {
-      return new IcanproProjectProperties(this, helper, refHelper);
+      return new IcanproProjectProperties(this, helper, refHelper, BpelproProjectType.PROJECT_CONFIGURATION_NAMESPACE );
     }
 
     // vlv
