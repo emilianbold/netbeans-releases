@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -30,7 +31,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Basic;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 
 /**
@@ -68,6 +68,14 @@ public class EntityClassInfo {
                     List<VariableElement> fields = ElementFilter.fieldsIn(classElement.getEnclosedElements());
             
                     for (VariableElement field : fields) {
+                        Set<Modifier> modifiers = field.getModifiers();
+                        if (modifiers.contains(Modifier.STATIC) ||
+                            modifiers.contains(Modifier.TRANSIENT) ||
+                            modifiers.contains(Modifier.VOLATILE) ||
+                            modifiers.contains(Modifier.FINAL)) {
+                            continue;
+                        }
+                        
                         FieldInfo fieldInfo = new FieldInfo();
                         
                         fieldInfos.add(fieldInfo);

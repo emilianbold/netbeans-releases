@@ -303,8 +303,11 @@ public class JavaSourceHelper {
     public static JavaSource createJavaSource(String template, FileObject targetFolder,
             String packageName, String className) {
         try {
-            FileObject fobj = createDataObjectFromTemplate(template,
-                    targetFolder, packageName, className).getPrimaryFile();
+            FileObject fobj = targetFolder.getFileObject(className, Constants.JAVA_EXT);
+            if (fobj == null) {
+                fobj = createDataObjectFromTemplate(template,
+                        targetFolder, packageName, className).getPrimaryFile();
+            }
             return JavaSource.forFileObject(fobj);
         } catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
