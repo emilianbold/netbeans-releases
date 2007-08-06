@@ -314,6 +314,7 @@ public class Controller { //XXX public only for debug access to logging code
                         escaped = io.getName();
                     }
                     boolean wasReset = io.checkReset();
+                    // XXX useHtml name appears to be backwards? -jglick
                     boolean useHtml = io.isStreamClosed() && !wasReset;
                     
                     String name = useHtml ? io.getName() + " " :

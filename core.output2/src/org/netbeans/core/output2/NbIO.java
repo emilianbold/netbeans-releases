@@ -16,11 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * NbIO.java
- *
- * Created on February 27, 2004, 11:01 PM
- */
 
 package org.netbeans.core.output2;
 
@@ -43,7 +38,7 @@ class NbIO implements InputOutput {
 
     private Boolean focusTaken = null;
     private Boolean closed = null;
-    private String name;
+    private final String name;
     
     private Action[] actions;
 
@@ -188,6 +183,7 @@ class NbIO implements InputOutput {
     }
 
     boolean checkReset() {
+        // XXX won't this always return false? -jglick
         boolean result = wasReset;
         wasReset = false;
         return result;
@@ -197,7 +193,6 @@ class NbIO implements InputOutput {
     public void reset() {
         if (Controller.LOG) Controller.log (this + ": reset");
         closed = null;
-        boolean wasReset = true;
         streamClosedSet = false;
         streamClosed = false;
 
