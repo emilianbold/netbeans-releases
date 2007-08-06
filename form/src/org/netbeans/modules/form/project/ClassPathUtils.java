@@ -46,7 +46,7 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 
 public class ClassPathUtils {
 
-    private static Map loaders = new WeakHashMap();
+    private static Map<Project,FormClassLoader> loaders = new WeakHashMap<Project,FormClassLoader>();
 
     // class loading type - desired scope of classloader
     static final int UNSPECIFIED_CLASS = 0; // external class from user project's classpath only
@@ -77,7 +77,7 @@ public class ClassPathUtils {
 
     private static FormClassLoader getFormClassLoader(FileObject fileInProject) {
         Project p = FileOwnerQuery.getOwner(fileInProject);
-        FormClassLoader fcl = (FormClassLoader) loaders.get(p);
+        FormClassLoader fcl = loaders.get(p);
         ClassLoader existingProjectCL = fcl != null ? fcl.getProjectClassLoader() : null;
         ClassLoader newProjectCL = ProjectClassLoader.getUpToDateClassLoader(
                                      fileInProject, existingProjectCL);
@@ -114,10 +114,10 @@ public class ClassPathUtils {
 
         if (cpRootCount == 0) {
             // for loading JDK classes
-            loader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+            loader = Lookup.getDefault().lookup(ClassLoader.class);
         }
         else try {
-            List urlList = new ArrayList();
+            List<URL> urlList = new ArrayList<URL>();
             for (int i=0; i < cpRootCount; i++) {
                 String type = classSource.getCPRootType(i);
                 String name = classSource.getCPRootName(i);
@@ -223,7 +223,7 @@ public class ClassPathUtils {
             if (!fileInProject.getExt().equals("class")) // NOI18N
                 return null; // not interested in other than .class binary files
 
-            ArrayList outputList = new ArrayList(artifacts.length);
+            List<String> outputList = new ArrayList<String>(artifacts.length);
             for (int i=0; i < artifacts.length; i++) {
                 URI[] artifactLocations = artifacts[i].getArtifactLocations();
                 for (int j=0; j < artifactLocations.length; j++) {
@@ -234,7 +234,7 @@ public class ClassPathUtils {
                     outputList.add(outputFile.getAbsolutePath());
             }
             }
-            outputs = (String[])outputList.toArray(new String[outputList.size()]);
+            outputs = outputList.toArray(new String[outputList.size()]);
         }
 
         String[] types = new String[outputs.length];
@@ -242,6 +242,15 @@ public class ClassPathUtils {
             types[i] = ClassSource.PROJECT_SOURCE;
 
         return new ClassSource(classname, types, outputs);
+    }
+    
+    public static boolean isOnClassPath(FileObject fileInProject, String className) {
+        String resourceName = className.replace('.', '/') + ".class"; // NOI18N
+        ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
+        if (classPath == null)
+            return false;
+
+        return classPath.findResource(resourceName) != null;
     }
 
     public static boolean isJava6ProjectPlatform(FileObject fileInProject) {
@@ -412,10 +421,12 @@ public class ClassPathUtils {
                         return null;
                     // in case of any change in files make all the patterns reload
                     folder.addFileChangeListener(new FileChangeAdapter() {
+                        @Override
                         public void fileDataCreated(FileEvent ev) {
                             patternsSystem = null;
                             loaders.clear();
                         }
+                        @Override
                         public void fileDeleted(FileEvent ev) {
                             patternsSystem = null;
                             if (ev.getFile() == patternSystemFolder) {
@@ -436,10 +447,12 @@ public class ClassPathUtils {
                         return null;
                     // in case of any change in files make all the patterns reload
                     folder.addFileChangeListener(new FileChangeAdapter() {
+                        @Override
                         public void fileDataCreated(FileEvent ev) {
                             patternsSystemWithProject = null;
                             loaders.clear();
                         }
+                        @Override
                         public void fileDeleted(FileEvent ev) {
                             patternsSystemWithProject = null;
                             if (ev.getFile() == patternSystemFolder) {
@@ -470,8 +483,8 @@ public class ClassPathUtils {
         return folder;
     }
 
-    private static List loadClassPatterns(FileObject folder) {
-        List list = new ArrayList();
+    private static List<ClassPattern> loadClassPatterns(FileObject folder) {
+        List<ClassPattern> list = new ArrayList<ClassPattern>();
         if (folder == null)
             return list;
 

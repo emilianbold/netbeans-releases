@@ -27,9 +27,6 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
 import org.netbeans.api.editor.guards.SimpleSection;
-import org.netbeans.api.java.source.ui.DialogBinding;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.ext.ExtCaret;
 import org.netbeans.modules.form.assistant.AssistantModel;
 import org.netbeans.modules.form.palette.PaletteUtils;
 import org.netbeans.spi.palette.PaletteController;
@@ -44,7 +41,6 @@ import org.openide.windows.*;
 
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
-import org.openide.text.CloneableEditorSupport;
 
 /**
  * Form editor.
@@ -79,7 +75,7 @@ public class FormEditor {
     private BindingDesignSupport bindingSupport;
 
     /** List of exceptions occurred during the last persistence operation */
-    private List persistenceErrors;
+    private List<Throwable> persistenceErrors;
     
     /** Persistence manager responsible for saving the form */
     private PersistenceManager persistenceManager;
@@ -88,13 +84,13 @@ public class FormEditor {
     private boolean formLoaded = false;
     
     /** Table of opened FormModel instances (FormModel to FormEditor map) */
-    private static Map openForms = new Hashtable();
+    private static Map<FormModel,FormEditor> openForms = new Hashtable<FormModel,FormEditor>();
 
     /* Maps form model to assistant model. */
-    private static Map formModelToAssistant = new WeakHashMap();
+    private static Map<FormModel,AssistantModel> formModelToAssistant = new WeakHashMap<FormModel,AssistantModel>();
     
     /** List of floating windows - must be closed when the form is closed. */
-    private List floatingWindows;
+    private List<java.awt.Window> floatingWindows;
     
     /** The DataObject of the form */
     private FormDataObject formDataObject;
@@ -336,12 +332,12 @@ public class FormEditor {
         if (persistenceErrors != null)
             persistenceErrors.clear();
         else
-            persistenceErrors = new ArrayList();
+            persistenceErrors = new ArrayList<Throwable>();
     }
     
     private void logPersistenceError(Throwable t, int index) {
         if (persistenceErrors == null)
-            persistenceErrors = new ArrayList();
+            persistenceErrors = new ArrayList<Throwable>();
 
         if (index < 0)
             persistenceErrors.add(t);
@@ -519,7 +515,7 @@ public class FormEditor {
      */
     private void destroyInvalidComponents() {
         Collection<RADComponent> allComps = formModel.getAllComponents();
-        List<RADComponent> invalidComponents = new ArrayList(allComps.size());
+        List<RADComponent> invalidComponents = new ArrayList<RADComponent>(allComps.size());
         // collect all invalid components
         for (RADComponent comp : allComps) {
             if(!comp.isValid()) {
@@ -631,7 +627,7 @@ public class FormEditor {
                 detachSettingsListener();
             }
             else { // still any opened forms - focus some
-                next = (FormEditor)openForms.values().iterator().next();
+                next = openForms.values().iterator().next();
             }
             if (ComponentInspector.exists()) {
                 ComponentInspector.getInstance().focusForm(next);
@@ -640,7 +636,7 @@ public class FormEditor {
             // close the floating windows
             if (floatingWindows != null) {
                 if (floatingWindows.size() > 0) {
-                    List tempList = new LinkedList(floatingWindows);
+                    List<java.awt.Window> tempList = new LinkedList<java.awt.Window>(floatingWindows);
                     Iterator it = tempList.iterator();
                     while (it.hasNext()) {
                         java.awt.Window window = (java.awt.Window) it.next();
@@ -675,9 +671,9 @@ public class FormEditor {
                     return;
 
                 boolean modifying = false;
-                Set changedContainers = events.length > 0 ?
-                                          new HashSet() : null;
-                Set compsToSelect = null;
+                Set<ComponentContainer> changedContainers = events.length > 0 ?
+                                          new HashSet<ComponentContainer>() : null;
+                Set<RADComponent> compsToSelect = null;
                 FormNode nodeToSelect = null;
 
                 for (int i=0; i < events.length; i++) {
@@ -725,7 +721,7 @@ public class FormEditor {
                                  && ev.getComponent().isInModel())
                         {
                             if (compsToSelect == null)
-                                compsToSelect = new HashSet();
+                                compsToSelect = new HashSet<RADComponent>();
 
                             compsToSelect.add(ev.getComponent());
                             compsToSelect.remove(ev.getContainer());
@@ -931,7 +927,7 @@ public class FormEditor {
 
     public static synchronized AssistantModel getAssistantModel(FormModel formModel) {
         assert (formModel != null);
-        AssistantModel assistant = (AssistantModel)formModelToAssistant.get(formModel);
+        AssistantModel assistant = formModelToAssistant.get(formModel);
         if (assistant == null) {
             assistant = new AssistantModel();
             formModelToAssistant.put(formModel, assistant);
@@ -941,43 +937,43 @@ public class FormEditor {
 
     /** @return FormDesigner for given form */
     public static FormDesigner getFormDesigner(FormModel formModel) {
-        FormEditor formEditor = (FormEditor) openForms.get(formModel);
+        FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getFormDesigner() : null;
     }
 
     /** @return CodeGenerator for given form */
     public static CodeGenerator getCodeGenerator(FormModel formModel) {
-        FormEditor formEditor = (FormEditor) openForms.get(formModel);
+        FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getCodeGenerator() : null;
     }
 
     /** @return FormDataObject of given form */
     public static FormDataObject getFormDataObject(FormModel formModel) {
-        FormEditor formEditor = (FormEditor) openForms.get(formModel);
+        FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getFormDataObject() : null;
     }
 
     /** @return FormJavaSource of given form */
     public static FormJavaSource getFormJavaSource(FormModel formModel) {
-        FormEditor formEditor = (FormEditor) openForms.get(formModel);
+        FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getFormJavaSource() : null;
     }
 
     /** @return ResourceSupport of given form */
     static ResourceSupport getResourceSupport(FormModel formModel) {
-        FormEditor formEditor = (FormEditor) openForms.get(formModel);
+        FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getResourceSupport() : null;
     }
 
     /** @return BindingDesignSupport of given form */
     static BindingDesignSupport getBindingSupport(FormModel formModel) {
-        FormEditor formEditor = (FormEditor) openForms.get(formModel);
+        FormEditor formEditor = openForms.get(formModel);
         return formEditor != null ? formEditor.getBindingSupport() : null;
     }
 
     /** @return FormEditor instance for given form */
     public static FormEditor getFormEditor(FormModel formModel) {
-        return (FormEditor) openForms.get(formModel);
+        return openForms.get(formModel);
     }
     
     UndoRedo.Manager getFormUndoRedoManager() {
@@ -986,7 +982,7 @@ public class FormEditor {
     
     public void registerFloatingWindow(java.awt.Window window) {
         if (floatingWindows == null)
-            floatingWindows = new ArrayList();
+            floatingWindows = new ArrayList<java.awt.Window>();
         else
             floatingWindows.remove(window);
         floatingWindows.add(window);
@@ -1003,9 +999,9 @@ public class FormEditor {
     public static boolean updateProjectForNaturalLayout(FormModel formModel) {
         FormEditor formEditor = getFormEditor(formModel);
         if (formEditor != null
-                && formModel.getSettings().getLayoutCodeTarget() != JavaCodeGenerator.LAYOUT_CODE_JDK6) {
+                && formModel.getSettings().getLayoutCodeTarget() != JavaCodeGenerator.LAYOUT_CODE_JDK6
+                && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), org.jdesktop.layout.GroupLayout.class.getName())) {
             try {
-                // [TODO maybe we should check if the library isn't there already]
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
                                                  new String[] { ClassSource.LIBRARY_SOURCE },
                                                  new String[] { "swing-layout" }); // NOI18N
@@ -1026,10 +1022,9 @@ public class FormEditor {
      */
     public static boolean updateProjectForBeansBinding(FormModel formModel) {
         FormEditor formEditor = getFormEditor(formModel);
-        if (formEditor != null) {
+        if (formEditor != null
+                && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), javax.beans.binding.Binding.class.getName())) {
             try {
-                // TODO we should check if the library isn't there already
-                // e.g. check that some class (javax.beans.binding.Binding) is on the classpath
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
                                                  new String[] { ClassSource.LIBRARY_SOURCE },
                                                  new String[] { "beans-binding" }); // NOI18N
