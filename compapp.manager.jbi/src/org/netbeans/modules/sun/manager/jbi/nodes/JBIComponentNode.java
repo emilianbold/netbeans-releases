@@ -99,7 +99,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     "LBL_IDENTIFICATION_PROPERTIES", // NOI18N
                     "DSC_IDENTIFICATION_PROPERTIES", // NOI18N
                     identificationPropertyMap);
-            sheet.put(sheetSet);
+            if (sheetSet != null) {
+                sheet.put(sheetSet);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,7 +134,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     configPropertyMap);                
             }
                     
-            sheet.put(sheetSet);
+            if (sheetSet != null) {
+                sheet.put(sheetSet);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -629,7 +633,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                         "LBL_LOGGERS_PROPERTIES", // NOI18N
                         "DSC_LOGGERS_PROPERTIES", // NOI18N
                         getLoggerProperties());
-                sheet.put(sheetSet);
+                if (sheetSet != null) {
+                    sheet.put(sheetSet);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -710,7 +716,9 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                         "LBL_LOGGERS_PROPERTIES", // NOI18N
                         "DSC_LOGGERS_PROPERTIES", // NOI18N
                         getLoggerProperties());
-                sheet.put(sheetSet);
+                if (sheetSet != null) {
+                    sheet.put(sheetSet);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

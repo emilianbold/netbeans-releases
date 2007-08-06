@@ -110,7 +110,9 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
                 "LBL_GENERAL_PROPERTIES", // NOI18N
                 "DSC_GENERAL_PROPERTIES", // NOI18N
                 getSheetProperties());
-        sheet.put(sheetSet);
+        if (sheetSet != null) {
+            sheet.put(sheetSet);
+        }
         
         return sheet;
     }
@@ -130,6 +132,10 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
             String descriptionLabel, 
             Map<Attribute, MBeanAttributeInfo> properties) {
         
+        if (properties == null) {
+            return null;
+        }
+
         PropertySupport[] propertySupports = 
                 createPropertySupportArray(properties);
         
