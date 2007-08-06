@@ -79,9 +79,18 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
         } else {
             return;
         }
+        
         g.drawRect(box.x + 1, box.y + 2, 11, 11);
         Color color = new Color(rgb);
-        g.drawString("[" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "]", box.x + 18, box.y + 11); //NOI18N
+        StringBuffer str = new StringBuffer();
+        str.append('['); //NOI18N
+        str.append(color.getRed());
+        str.append(','); //NOI18N
+        str.append(color.getGreen());
+        str.append(','); //NOI18N
+        str.append(color.getBlue());
+        str.append(']'); //NOI18N
+        g.drawString(str.toString(), box.x + 18, box.y + 11);
         g.setColor(color);
         g.fillRect(box.x + 2, box.y + 3, 10, 10);
         g.dispose();
@@ -141,8 +150,15 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
 
     private String getFormatedRGB(Integer rgb) {
         Color color = new Color(rgb);
-        String stringRGB = "[" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + "]"; //NOI18N
-        return stringRGB;
+        StringBuffer stringRGB = new StringBuffer();
+        stringRGB.append('['); //NOI18N
+        stringRGB.append(color.getRed());
+        stringRGB.append(','); //NOI18N
+        stringRGB.append(color.getGreen());
+        stringRGB.append(','); //NOI18N
+        stringRGB.append(color.getBlue());
+        stringRGB.append(']'); //NOI18N
+        return stringRGB.toString();
     }
 
     public void setTextForPropertyValue(String text) {
@@ -272,7 +288,7 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
             }
             int[] colors = new int[3];
             int i = 0;
-            for (String number : text.split(",")) {
+            for (String number : text.split(",")) { //NOI18N
                 try {
                     colors[i++] = Integer.valueOf(number);
                 } catch (NumberFormatException ex) {
@@ -305,7 +321,7 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
 
         private void wrongValueWarning(PropertyValue value, String text) {
             component.setText(getFormatedRGB((Integer) value.getPrimitiveValue()));
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERROR_WARNING + " " + text)); //NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ERROR_WARNING + ' ' + text)); //NOI18N
         }
     }
 }

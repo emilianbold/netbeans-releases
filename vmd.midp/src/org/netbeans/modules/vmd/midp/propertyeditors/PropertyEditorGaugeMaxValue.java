@@ -35,9 +35,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.items.GaugeCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
@@ -50,63 +48,55 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode implements PropertyEditorElement {
-    
+
     private static final String INDEFINITE_TEXT = NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_MAX_VALUE_INDEFINITE_TXT"); // NOI18N
     private static final String INDEFINITE_NUM_TEXT = String.valueOf(GaugeCD.VALUE_INDEFINITE);
-    
+
     private CustomEditor customEditor;
     private JRadioButton radioButton;
-    
-    private long componentID;
-    
+
     private PropertyEditorGaugeMaxValue() {
         super();
         initComponents();
-        
+
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
     }
-    
+
     public static final PropertyEditorGaugeMaxValue createInstance() {
         return new PropertyEditorGaugeMaxValue();
     }
-    
+
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_GAUGE_MAX_VALUE_STR")); // NOI18N
         customEditor = new CustomEditor();
     }
-    
-    @Override
-    public void init(DesignComponent component) {
-        super.init(component);
-        this.componentID = component.getComponentID();
-    }
-    
+
     public JComponent getCustomEditorComponent() {
         return customEditor;
     }
-    
+
     public JRadioButton getRadioButton() {
         return radioButton;
     }
-    
+
     public boolean isInitiallySelected() {
         return true;
     }
-    
+
     public boolean isVerticallyResizable() {
         return false;
     }
-    
+
     @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
             return superText;
         }
-        
+
         PropertyValue value = (PropertyValue) super.getValue();
         if (value == null) {
             return INDEFINITE_TEXT;
@@ -117,15 +107,15 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         }
         return String.valueOf(intValue);
     }
-    
-    public void setTextForPropertyValue (String text) {
+
+    public void setTextForPropertyValue(String text) {
         saveValue(text);
     }
-    
-    public String getTextForPropertyValue () {
+
+    public String getTextForPropertyValue() {
         return null;
     }
-    
+
     public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.unsetForever(true);
@@ -137,24 +127,24 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
-    
+
     private void saveValue(String text) {
-        if (text.length() > 0) {
-            if (INDEFINITE_TEXT.equals(text) || INDEFINITE_NUM_TEXT.equals(text)) {
-                super.setValue(MidpTypes.createIntegerValue(GaugeCD.VALUE_INDEFINITE));
-                
-                final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-                if (document != null) {
-                    document.getTransactionManager().writeAccess( new Runnable() {
-                        public void run() {
-                            DesignComponent component = document.getComponentByUID(componentID);
-                            component.writeProperty(GaugeCD.PROP_VALUE, MidpTypes.createIntegerValue(GaugeCD.VALUE_CONTINUOUS_IDLE));
-                        }
-                    });
-                }
-                return;
+        if (text.length() <= 0) {
+            return;
+        }
+
+        if (INDEFINITE_TEXT.equals(text) || INDEFINITE_NUM_TEXT.equals(text)) {
+            if (component != null && component.get() != null) {
+                final DesignComponent _component = component.get();
+                _component.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                    public void run() {
+                        _component.writeProperty(GaugeCD.PROP_VALUE, MidpTypes.createIntegerValue(GaugeCD.VALUE_CONTINUOUS_IDLE));
+                    }
+                });
             }
-            
+            super.setValue(MidpTypes.createIntegerValue(GaugeCD.VALUE_INDEFINITE));
+        } else {
             int intValue = 0;
             try {
                 text = text.replaceAll("[^0-9\\-]+", ""); // NOI18N
@@ -164,7 +154,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
             super.setValue(MidpTypes.createIntegerValue(intValue));
         }
     }
-    
+
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();
@@ -172,7 +162,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
             saveValue(customEditor.getText());
         }
     }
-    
+
     @Override
     public Boolean canEditAsText() {
         if (!isCurrentValueAUserCodeType()) {
@@ -185,39 +175,40 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
         }
         return false;
     }
-    
+
     private class CustomEditor extends JPanel implements ActionListener, DocumentListener, FocusListener {
+
         private JTextField textField;
         private JCheckBox foreverCheckBox;
-        
+
         public CustomEditor() {
             radioButton.addFocusListener(this);
             initComponents();
         }
-        
+
         private void initComponents() {
             setLayout(new BorderLayout());
-            
+
             foreverCheckBox = new JCheckBox();
             Mnemonics.setLocalizedText(foreverCheckBox, NbBundle.getMessage(PropertyEditorGaugeMaxValue.class, "LBL_MAX_VALUE_INDEFINITE")); // NOI18N
             foreverCheckBox.addActionListener(this);
             foreverCheckBox.addFocusListener(this);
             add(foreverCheckBox, BorderLayout.NORTH);
-            
+
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
             textField.addFocusListener(this);
             add(textField, BorderLayout.SOUTH);
         }
-        
+
         public void setText(String text) {
             textField.setText(text);
         }
-        
+
         public String getText() {
             return textField.getText();
         }
-        
+
         public void setForever(boolean changeCheckBox) {
             setText(INDEFINITE_NUM_TEXT);
             textField.setEditable(false);
@@ -225,7 +216,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
                 foreverCheckBox.setSelected(true);
             }
         }
-        
+
         public void unsetForever(boolean changeCheckBox) {
             setText(null);
             textField.setEditable(true);
@@ -233,7 +224,7 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
                 foreverCheckBox.setSelected(false);
             }
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             if (foreverCheckBox.isSelected()) {
                 setForever(false);
@@ -241,34 +232,34 @@ public final class PropertyEditorGaugeMaxValue extends PropertyEditorUserCode im
                 unsetForever(false);
             }
         }
-        
+
         public void insertUpdate(DocumentEvent evt) {
             radioButton.setSelected(true);
             checkNumberStatus();
         }
-        
+
         public void removeUpdate(DocumentEvent evt) {
             radioButton.setSelected(true);
             checkNumberStatus();
         }
-        
+
         public void changedUpdate(DocumentEvent evt) {
         }
-        
+
         private void checkNumberStatus() {
-            if (!Pattern.matches("[\\d\\-]+", textField.getText())) { // NOI18N
+            if (!Pattern.matches("[\\d\\-]+", textField.getText())) {// NOI18N
                 displayWarning(PropertyEditorNumber.NON_DIGITS_TEXT);
             } else {
                 clearErrorStatus();
             }
         }
-        
+
         public void focusGained(FocusEvent e) {
             if (e.getSource() == radioButton || e.getSource() == textField || e.getSource() == foreverCheckBox) {
                 checkNumberStatus();
             }
         }
-        
+
         public void focusLost(FocusEvent e) {
             clearErrorStatus();
         }

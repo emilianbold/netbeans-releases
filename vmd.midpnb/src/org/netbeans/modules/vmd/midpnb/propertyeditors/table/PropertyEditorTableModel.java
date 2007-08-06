@@ -16,7 +16,6 @@
  */
 package org.netbeans.modules.vmd.midpnb.propertyeditors.table;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.JComponent;
@@ -43,7 +42,6 @@ public class PropertyEditorTableModel extends PropertyEditorUserCode implements 
     private TableModelEditorElement customEditor;
     private PropertyValue values;
     private PropertyValue headers;
-    private WeakReference<DesignComponent> component;
 
     private PropertyEditorTableModel() {
         super();
@@ -66,12 +64,6 @@ public class PropertyEditorTableModel extends PropertyEditorUserCode implements 
         customEditor.addPropertyEditorResourceElementListener(this);
     }
 
-    @Override
-    public void init(DesignComponent component) {
-        super.init(component);
-        this.component = new WeakReference<DesignComponent>(component);
-    }
-    
     public void updateState(PropertyValue value) {
         if (customEditor.isShowing()) {
             if (value == null) {

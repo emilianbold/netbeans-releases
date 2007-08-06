@@ -30,6 +30,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
+import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -201,6 +202,9 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
     }
 
     private FileObject getSourceFolder() {
+        if (project == null) {
+            throw Debug.illegalState("Current project is null"); // NOI18N
+        }
         String projectID = ProjectUtils.getProjectID(project);
         return ProjectUtils.getSourceGroups(projectID).iterator().next().getRootFolder();
     }

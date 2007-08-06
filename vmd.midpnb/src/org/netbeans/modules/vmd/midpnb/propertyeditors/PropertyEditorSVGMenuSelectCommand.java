@@ -54,63 +54,59 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement {
-    
-    private DesignDocument document;
-    private DesignComponent list;
-    
+
     private final List<String> tags = new ArrayList<String>();
     private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
-    
+
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private TypeID typeID;
-    
+
     private String noneItem;
     private String defaultItem;
-    
+
     public static PropertyEditorSVGMenuSelectCommand createInstanceMenuSelect() {
-        String mnemonic =  NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SEL_COMMAND_STR"); // NOI18N
-        String noneItem = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SELECTCOMMAND_NONE");  // NOI18N
-        String defaultItem  = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SELECTCOMMAND_DEFAULT");  // NOI18N
-        
+        String mnemonic = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SEL_COMMAND_STR"); // NOI18N
+        String noneItem = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SELECTCOMMAND_NONE"); // NOI18N
+        String defaultItem = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SELECTCOMMAND_DEFAULT"); // NOI18N
         return new PropertyEditorSVGMenuSelectCommand(SVGMenuSelectCommandCD.TYPEID, mnemonic, noneItem, defaultItem);
     }
-    
+
     public PropertyEditorSVGMenuSelectCommand(TypeID typeID, String mnemonic, String noneItem, String defaultItem) {
         super();
         initComponents();
         this.typeID = typeID;
-        Mnemonics.setLocalizedText(radioButton, mnemonic);
         this.noneItem = noneItem;
         this.defaultItem = defaultItem;
+        Mnemonics.setLocalizedText(radioButton, mnemonic);
+
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
     }
-    
+
     private void initComponents() {
         radioButton = new JRadioButton();
-        
         customEditor = new CustomEditor();
         radioButton.addActionListener(customEditor);
     }
-    
+
     public JComponent getCustomEditorComponent() {
         return customEditor;
     }
-    
+
     public JRadioButton getRadioButton() {
         return radioButton;
     }
-    
+
     public boolean isInitiallySelected() {
         return true;
     }
-    
+
     public boolean isVerticallyResizable() {
         return false;
     }
-    
+
     @Override
     public String getAsText() {
         if (isCurrentValueAUserCodeType()) {
@@ -118,19 +114,19 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         } else if (isCurrentValueANull()) {
             return noneItem;
         }
-        
+
         PropertyValue value = (PropertyValue) super.getValue();
         return getDecodeValue(value);
     }
-    
-    public String getTextForPropertyValue () {
+
+    public String getTextForPropertyValue() {
         return null;
     }
-    
-    public void setTextForPropertyValue (String text) {
+
+    public void setTextForPropertyValue(String text) {
         saveValue(text);
     }
-    
+
     public void updateState(PropertyValue value) {
         customEditor.updateModel();
         if (isCurrentValueANull() || value == null) {
@@ -140,7 +136,7 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
-    
+
     private void saveValue(String text) {
         if (text.length() > 0) {
             if (noneItem.equals(text)) {
@@ -150,120 +146,127 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
             }
         }
     }
-    
+
     @Override
     public void customEditorOKButtonPressed() {
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
     }
-    
+
     @Override
     public String[] getTags() {
         if (isCurrentValueAUserCodeType()) {
             return null;
         }
-        
+
         tags.clear();
         tags.add(noneItem);
         values.clear();
         values.put(noneItem, null);
-        
-        document.getTransactionManager().readAccess( new Runnable() {
-            public void run() {
-                Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
-                Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
-                for (DesignComponent command : components) {
-                    PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
-                    if (MidpTypes.getBoolean(ordinaryValue)) {
-                        commands.add(command);
+
+        if (component != null && component.get() != null) {
+            final DesignDocument document = component.get().getDocument();
+            document.getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                    Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(document, CommandsCategoryCD.TYPEID).getComponents();
+                    Collection<DesignComponent> commands = new ArrayList<DesignComponent>(components.size());
+                    for (DesignComponent command : components) {
+                        PropertyValue ordinaryValue = command.readProperty(CommandCD.PROP_ORDINARY);
+                        if (MidpTypes.getBoolean(ordinaryValue)) {
+                            commands.add(command);
+                        }
+                    }
+
+                    tags.add(defaultItem);
+                    values.put(defaultItem, getListSelectCommand(document));
+
+                    for (DesignComponent command : commands) {
+                        String displayName = getComponentDisplayName(command);
+                        tags.add(displayName);
+                        values.put(displayName, command);
                     }
                 }
-                
-                tags.add(defaultItem);
-                values.put(defaultItem, getListSelectCommand());
-                
-                for (DesignComponent command : commands) {
-                    String displayName = getComponentDisplayName(command);
-                    tags.add(displayName);
-                    values.put(displayName, command);
-                }
-            }
-        });
-        
+            });
+        }
+
         return tags.toArray(new String[tags.size()]);
     }
-    
-    private DesignComponent getListSelectCommand() {
+
+    private DesignComponent getListSelectCommand(DesignDocument document) {
         return MidpDocumentSupport.getSingletonCommand(document, typeID);
     }
-    
-    @Override
-    public void init(DesignComponent component) {
-        super.init(component);
-        list = component;
-        document = component.getDocument();
-    }
-    
+
     private String getComponentDisplayName(DesignComponent component) {
         return MidpValueSupport.getHumanReadableString(component);
     }
-    
-    private String getDecodeValue(final PropertyValue value){
+
+    private String getDecodeValue(final PropertyValue value) {
         final String[] decodeValue = new String[1];
-        document.getTransactionManager().readAccess(new Runnable() {
-            public void run() {
-                DesignComponent valueComponent = value.getComponent();
-                if (valueComponent != null) {
-                    PropertyValue pv = valueComponent.readProperty(CommandEventSourceCD.PROP_COMMAND);
-                    if (pv != null) {
-                        DesignComponent refComponent = pv.getComponent();
-                        if (refComponent != null && refComponent.equals(getListSelectCommand())) {
-                            decodeValue[0] = defaultItem;
+        if (component != null && component.get() != null) {
+            final DesignDocument document = component.get().getDocument();
+            document.getTransactionManager().readAccess(new Runnable() {
+
+                public void run() {
+                    DesignComponent valueComponent = value.getComponent();
+                    if (valueComponent != null) {
+                        PropertyValue pv = valueComponent.readProperty(CommandEventSourceCD.PROP_COMMAND);
+                        if (pv != null) {
+                            DesignComponent refComponent = pv.getComponent();
+                            if (refComponent != null && refComponent.equals(getListSelectCommand(document))) {
+                                decodeValue[0] = defaultItem;
+                            } else {
+                                decodeValue[0] = getComponentDisplayName(valueComponent);
+                            }
                         } else {
-                            decodeValue[0] = getComponentDisplayName(valueComponent);
+                            decodeValue[0] = noneItem;
                         }
                     } else {
                         decodeValue[0] = noneItem;
                     }
-                } else {
-                    decodeValue[0] = noneItem;
                 }
-            }
-        });
-        
+            });
+        }
+
         return decodeValue[0];
     }
-    
+
     private DesignComponent getCommandEvenSource(final String name) {
         final DesignComponent[] itemCommandEvenSource = new DesignComponent[1];
-        document.getTransactionManager().writeAccess( new Runnable() {
-            public void run() {
-                DesignComponent command = values.get(name);
-                List<PropertyValue> listESValues = list.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
-                for (PropertyValue esValue : listESValues) {
-                    DesignComponent existingES = esValue.getComponent();
-                    if (existingES.readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent().equals(command)) {
-                        itemCommandEvenSource[0] = existingES;
-                        break;
+        if (component != null && component.get() != null) {
+            final DesignComponent listComponent = component.get();
+            listComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
+
+                public void run() {
+                    DesignComponent command = values.get(name);
+                    List<PropertyValue> listESValues = listComponent.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
+                    for (PropertyValue esValue : listESValues) {
+                        DesignComponent existingES = esValue.getComponent();
+                        if (existingES.readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent().equals(command)) {
+                            itemCommandEvenSource[0] = existingES;
+                            break;
+                        }
+                    }
+
+                    if (itemCommandEvenSource[0] == null) {
+                        // create new ItemCommandEvenSource
+                        itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToDisplayable(listComponent, command);
                     }
                 }
-                
-                if (itemCommandEvenSource[0] == null) { // create new ItemCommandEvenSource
-                    itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToDisplayable(list, command);
-                }
-            }
-        });
+            });
+        }
         return itemCommandEvenSource[0];
     }
-    
+
     private class CustomEditor extends JPanel implements ActionListener {
+
         private JComboBox combobox;
-        
+
         public CustomEditor() {
             initComponents();
         }
-        
+
         private void initComponents() {
             setLayout(new BorderLayout());
             combobox = new JComboBox();
@@ -271,22 +274,26 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);
         }
-        
+
         public void setValue(final PropertyValue value) {
             if (value == null) {
                 combobox.setSelectedItem(noneItem);
                 return;
             }
-            
+
             final PropertyValue[] cmdValue = new PropertyValue[1];
-            document.getTransactionManager().readAccess(new Runnable() {
-                public void run() {
-                    cmdValue[0] = value.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND);
-                }
-            });
+            if (component != null && component.get() != null) {
+                component.get().getDocument().getTransactionManager().readAccess(new Runnable() {
+
+                    public void run() {
+                        cmdValue[0] = value.getComponent().readProperty(CommandEventSourceCD.PROP_COMMAND);
+                    }
+                });
+            }
             if (cmdValue[0] == null) {
                 return;
             }
+
             DesignComponent command = cmdValue[0].getComponent();
             for (String key : values.keySet()) {
                 DesignComponent tmpCommand = values.get(key);
@@ -296,11 +303,11 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
                 }
             }
         }
-        
+
         public String getText() {
             return (String) combobox.getSelectedItem();
         }
-        
+
         public void updateModel() {
             DefaultComboBoxModel model = (DefaultComboBoxModel) combobox.getModel();
             model.removeAllElements();
@@ -308,7 +315,7 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
                 model.addElement(tag);
             }
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             radioButton.setSelected(true);
         }

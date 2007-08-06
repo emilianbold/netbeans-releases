@@ -21,7 +21,6 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import org.netbeans.modules.vmd.api.model.ComponentProducer;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -37,7 +36,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.openide.explorer.propertysheet.InplaceEditor;
@@ -53,7 +51,6 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     private BooleanInplaceEditor inplaceEditor;
-    private WeakReference<DesignComponent> alert;
     private Boolean valueState;
     private boolean executeInsideWriteTransactionUsed = true;
 
@@ -72,12 +69,6 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorAlertIndicator.class, "LBL_VALUE_BOOLEAN")); // NOI18N
         customEditor = new CustomEditor();
-    }
-
-    @Override
-    public void init(DesignComponent component) {
-        super.init(component);
-        alert = new WeakReference<DesignComponent>(component);
     }
 
     public JComponent getCustomEditorComponent() {
@@ -127,13 +118,13 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
 
     @Override
     public void paintValue(Graphics gfx, Rectangle box) {
-        JComponent component = inplaceEditor.getComponent();
-        component.setSize(box.width, box.height);
-        component.doLayout();
-        component.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        JComponent _component = inplaceEditor.getComponent();
+        _component.setSize(box.width, box.height);
+        _component.doLayout();
+        _component.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         Graphics g = gfx.create(box.x, box.y, box.width, box.height);
-        component.setOpaque(false);
-        component.paint(g);
+        _component.setOpaque(false);
+        _component.paint(g);
         g.dispose();
     }
 
@@ -185,35 +176,33 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
 
     @Override
     public boolean executeInsideWriteTransaction() {
-
-        if (alert == null || alert.get() == null) {
+        if (component == null || component.get() == null) {
             return false;
         }
-        DesignComponent ac = alert.get();
-        DesignDocument document = alert.get().getDocument();
 
+        DesignComponent alertComponent = component.get();
         if (isCurrentValueAUserCodeType()) {
-            removeGauge(ac);
+            removeGauge(alertComponent);
             return true;
         }
 
         if (valueState) {
-            if (ac.readProperty(AlertCD.PROP_INDICATOR).getComponent() != null) {
+            if (alertComponent.readProperty(AlertCD.PROP_INDICATOR).getComponent() != null) {
                 return false;
             }
-            ComponentProducer producer = DocumentSupport.getComponentProducer(document, GaugeCD.TYPEID.toString());
+            ComponentProducer producer = DocumentSupport.getComponentProducer(alertComponent.getDocument(), GaugeCD.TYPEID.toString());
             if (producer == null) {
                 throw new IllegalStateException("No producer for TypeID : " + GaugeCD.TYPEID); //NOI18N
             }
-            DesignComponent gauge = producer.createComponent(document).getMainComponent();
+            DesignComponent gauge = producer.createComponent(alertComponent.getDocument()).getMainComponent();
             gauge.writeProperty(GaugeCD.PROP_INTERACTIVE, MidpTypes.createBooleanValue(false));
             gauge.writeProperty(GaugeCD.PROP_USED_BY_ALERT, MidpTypes.createBooleanValue(true));
             PropertyValue newGauge = PropertyValue.createComponentReference(gauge);
             PropertyEditorAlertIndicator.super.setValue(newGauge);
-            ac.addComponent(gauge);
-            ac.writeProperty(AlertCD.PROP_INDICATOR, newGauge);
+            alertComponent.addComponent(gauge);
+            alertComponent.writeProperty(AlertCD.PROP_INDICATOR, newGauge);
         } else {
-            removeGauge(ac);
+            removeGauge(alertComponent);
         }
         return false;
     }

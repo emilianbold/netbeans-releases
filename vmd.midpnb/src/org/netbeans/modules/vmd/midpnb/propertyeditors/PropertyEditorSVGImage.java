@@ -16,12 +16,10 @@
  */
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
-import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElement.DesignComponentWrapper;
@@ -41,7 +39,6 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     private JRadioButton radioButton;
     private SVGImageEditorElement customEditor;
     private String resourcePath;
-    private WeakReference<DesignComponent> component;
 
     private PropertyEditorSVGImage() {
         super();
@@ -64,12 +61,6 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
         customEditor.addPropertyEditorResourceElementListener(this);
     }
 
-    @Override
-    public void init(DesignComponent component) {
-        super.init(component);
-        this.component = new WeakReference<DesignComponent>(component);
-    }
-    
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();

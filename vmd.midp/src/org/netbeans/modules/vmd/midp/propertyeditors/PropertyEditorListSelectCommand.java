@@ -36,7 +36,6 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.MidpValueSupport;
@@ -56,8 +55,6 @@ import org.openide.util.NbBundle;
  * @author Karol Harezlak
  */
 public final class PropertyEditorListSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement {
-
-    private long componentID;
 
     private final List<String> tags = new ArrayList<String>();
     private final Map<String, DesignComponent> values = new TreeMap<String, DesignComponent>();
@@ -122,11 +119,11 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         return getDecodeValue(value);
     }
 
-    public String getTextForPropertyValue () {
+    public String getTextForPropertyValue() {
         return null;
     }
 
-    public void setTextForPropertyValue (String text) {
+    public void setTextForPropertyValue(String text) {
         saveValue(text);
     }
 
@@ -169,8 +166,8 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         values.clear();
         values.put(noneItem, null);
 
-        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
+        if (component != null && component.get() != null) {
+            final DesignDocument document = component.get().getDocument();
             document.getTransactionManager().writeAccess(new Runnable() {
 
                 public void run() {
@@ -202,12 +199,6 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         return MidpDocumentSupport.getSingletonCommand(document, typeID);
     }
 
-    @Override
-    public void init(DesignComponent component) {
-        super.init(component);
-        componentID = component.getComponentID();
-    }
-
     private String getComponentDisplayName(DesignComponent component) {
         return MidpValueSupport.getHumanReadableString(component);
     }
@@ -219,6 +210,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
             final DesignDocument document = valueComponent.getDocument();
             if (document != null) {
                 document.getTransactionManager().readAccess(new Runnable() {
+
                     public void run() {
                         DesignComponent valueComponent = value.getComponent();
                         if (valueComponent != null) {
@@ -247,14 +239,13 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
 
     private DesignComponent getCommandEvenSource(final String name) {
         final DesignComponent[] itemCommandEvenSource = new DesignComponent[1];
-        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            document.getTransactionManager().writeAccess(new Runnable() {
+        if (component != null && component.get() != null) {
+            final DesignComponent listComponent = component.get();
+            listComponent.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
                 public void run() {
                     DesignComponent command = values.get(name);
-                    DesignComponent list = document.getComponentByUID(componentID);
-                    List<PropertyValue> listESValues = list.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
+                    List<PropertyValue> listESValues = listComponent.readProperty(DisplayableCD.PROP_COMMANDS).getArray();
                     for (PropertyValue esValue : listESValues) {
                         DesignComponent existingES = esValue.getComponent();
                         if (existingES.readProperty(CommandEventSourceCD.PROP_COMMAND).getComponent().equals(command)) {
@@ -265,7 +256,7 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
 
                     if (itemCommandEvenSource[0] == null) {
                         // create new ItemCommandEvenSource
-                        itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToDisplayable(list, command);
+                        itemCommandEvenSource[0] = MidpDocumentSupport.attachCommandToDisplayable(listComponent, command);
                     }
                 }
             });
@@ -296,8 +287,8 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
             }
 
             final PropertyValue[] cmdValue = new PropertyValue[1];
-            final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-            if (document != null) {
+            if (component != null && component.get() != null) {
+                final DesignDocument document = component.get().getDocument();
                 document.getTransactionManager().readAccess(new Runnable() {
 
                     public void run() {

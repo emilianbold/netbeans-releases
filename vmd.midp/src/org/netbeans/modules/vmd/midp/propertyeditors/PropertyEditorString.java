@@ -33,7 +33,6 @@ import javax.swing.JScrollPane;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.displayables.TextBoxCD;
 import org.netbeans.modules.vmd.midp.components.items.TextFieldCD;
@@ -60,21 +59,20 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private JRadioButton radioButton;
     private int dependence;
     private String comment;
-    private long componentID;
     private String defaultValue;
     private boolean isDefaultValueUsed;
 
     /**
-    * Creates instance of PropertyEditorString.
-    *
-    * @param String comment to be displayed underneath of text area in custom
-    * property editor. Can be null.
-    * @param int dependence of particular DesignComponent type. Possible values
-    * are DEPENDENCE_NONE, DEPENDENCE_TEXT_BOX, DEPENDENCE_TEXT_FIELD. This value
-    * will affect for that components after property value will be changed. For
-    * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
-    * this property will be automatically increased to be equal of text length.
-    */
+     * Creates instance of PropertyEditorString.
+     *
+     * @param String comment to be displayed underneath of text area in custom
+     * property editor. Can be null.
+     * @param int dependence of particular DesignComponent type. Possible values
+     * are DEPENDENCE_NONE, DEPENDENCE_TEXT_BOX, DEPENDENCE_TEXT_FIELD. This value
+     * will affect for that components after property value will be changed. For
+     * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
+     * this property will be automatically increased to be equal of text length.
+     */
     public PropertyEditorString(String comment, int dependence) {
         this.comment = comment;
         this.dependence = dependence;
@@ -85,54 +83,55 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         elements.add(this);
         initElements(elements);
     }
-    
+
     /**
-    * Creates instance of PropertyEditorString.
-    *
-    * @param String comment to be displayed underneath of text area in custom
-    * property editor. Can be null.
-    * @param int dependence of particular DesignComponent type. Possible values
-    * are DEPENDENCE_NONE, DEPENDENCE_TEXT_BOX, DEPENDENCE_TEXT_FIELD. This value
-    * will affect for that components after property value will be changed. For
-    * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
-    * this property will be automatically increased to be equal of text length.
-    * @param String default value of the property editor, could be different from default
-    * value specified in the component descriptor 
-    */
+     * Creates instance of PropertyEditorString.
+     *
+     * @param String comment to be displayed underneath of text area in custom
+     * property editor. Can be null.
+     * @param int dependence of particular DesignComponent type. Possible values
+     * are DEPENDENCE_NONE, DEPENDENCE_TEXT_BOX, DEPENDENCE_TEXT_FIELD. This value
+     * will affect for that components after property value will be changed. For
+     * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
+     * this property will be automatically increased to be equal of text length.
+     * @param String default value of the property editor, could be different from default
+     * value specified in the component descriptor
+     */
     public PropertyEditorString(String comment, int dependence, String defaultValue) {
-       this(comment, dependence);
-       this.defaultValue = defaultValue;
-       isDefaultValueUsed = true;
+        this(comment, dependence);
+        this.defaultValue = defaultValue;
+        isDefaultValueUsed = true;
     }
 
     /**
-    * Creates instance of PropertyEditorString without dependences.
-    */
+     * Creates instance of PropertyEditorString without dependences.
+     */
     public static final PropertyEditorString createInstance() {
         return new PropertyEditorString(null, DEPENDENCE_NONE);
     }
-    
+
     /**
-    * Creates instance of PropertyEditorString without dependences with default value.
-    */
+     * Creates instance of PropertyEditorString without dependences with default value.
+     */
     public static final PropertyEditorString createInstance(String defaultValue) {
         return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue);
     }
 
     /**
-    * Creates instance of PropertyEditorString with particular dependences.
-    * @param int dependence
-    * @see PropertyEditorString(String comment, int dependence)
-    */
+     * Creates instance of PropertyEditorString with particular dependences.
+     * @param int dependence
+     * @see PropertyEditorString(String comment, int dependence)
+     */
     public static final PropertyEditorString createInstance(int dependence) {
         return new PropertyEditorString(null, dependence);
     }
 
     /**
-    * Creates instance of PropertyEditorString which can not change PropertyValue.
-    */
+     * Creates instance of PropertyEditorString which can not change PropertyValue.
+     */
     public static final PropertyEditorString createInstanceReadOnly() {
         return new PropertyEditorString(null, DEPENDENCE_NONE) {
+
             @Override
             public boolean canWrite() {
                 return false;
@@ -148,53 +147,46 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
 
     @Override
     public Object getDefaultValue() {
-        if (!isDefaultValueUsed)
+        if (!isDefaultValueUsed) {
             return super.getDefaultValue();
-        if (defaultValue == null)
-            return PropertyValue.createNull();
+        }
+        if (defaultValue == null) {
+            return NULL_VALUE;
+        }
         return MidpTypes.createStringValue(defaultValue);
-    }
-     
-    /*
-    * Give attention of invoking super.init(component)
-    */
-    @Override
-    public void init(DesignComponent component) {
-        super.init(component);
-        this.componentID = component.getComponentID();
     }
 
     /*
-    * Custom editor
-    */
+     * Custom editor
+     */
     public JComponent getCustomEditorComponent() {
         return customEditor.getComponent();
     }
 
     /*
-    * Radio button
-    */
+     * Radio button
+     */
     public JRadioButton getRadioButton() {
         return radioButton;
     }
 
     /*
-    * This element should be selected by default
-    */
+     * This element should be selected by default
+     */
     public boolean isInitiallySelected() {
         return true;
     }
 
     /*
-    * This element should be vertically resizable
-    */
+     * This element should be vertically resizable
+     */
     public boolean isVerticallyResizable() {
         return true;
     }
 
     /*
-    * Returns text from PropertyValue to be displayed in the inplace editor
-    */
+     * Returns text from PropertyValue to be displayed in the inplace editor
+     */
     @Override
     public String getAsText() {
         String superText = super.getAsText();
@@ -207,25 +199,25 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     }
 
     /*
-    * Sets PropertyValue according to given text. This method invoked when user
-    * sets new value in the inplace editor.
-    */
+     * Sets PropertyValue according to given text. This method invoked when user
+     * sets new value in the inplace editor.
+     */
     public void setTextForPropertyValue(String text) {
         saveValue(text);
     }
 
     /*
-    * This method used when PropertyEditorUserCode has more than one element
-    * incapsulated. In that case particular element returns text to be saved
-    * to PropertyValue.
-    */
+     * This method used when PropertyEditorUserCode has more than one element
+     * incapsulated. In that case particular element returns text to be saved
+     * to PropertyValue.
+     */
     public String getTextForPropertyValue() {
         return null;
     }
 
     /*
-    * This method updates state of custom property editor.
-    */
+     * This method updates state of custom property editor.
+     */
     public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             customEditor.setText(null);
@@ -236,43 +228,41 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     }
 
     private void saveValue(String text) {
-        final int length = text.length();
         super.setValue(MidpTypes.createStringValue(text));
+        if (component == null || component.get() == null) {
+            return;
+        }
 
-        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            switch (dependence) {
-                case DEPENDENCE_TEXT_BOX:
-                    document.getTransactionManager().writeAccess(new Runnable() {
+        final DesignComponent _component = component.get();
+        final int length = text.length();
+        switch (dependence) {
+            case DEPENDENCE_TEXT_BOX:
+                _component.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
-                        public void run() {
-                            DesignComponent component = document.getComponentByUID(componentID);
-                            PropertyValue value = component.readProperty(TextBoxCD.PROP_MAX_SIZE);
-                            if (MidpTypes.getInteger(value) < length) {
-                                component.writeProperty(TextBoxCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
-                            }
+                    public void run() {
+                        PropertyValue value = _component.readProperty(TextBoxCD.PROP_MAX_SIZE);
+                        if (MidpTypes.getInteger(value) < length) {
+                            _component.writeProperty(TextBoxCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
                         }
-                    });
-                    break;
-                case DEPENDENCE_TEXT_FIELD:
-                    document.getTransactionManager().writeAccess(new Runnable() {
+                    }
+                });
+                break;
+            case DEPENDENCE_TEXT_FIELD:
+                _component.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
-                        public void run() {
-                            DesignComponent component = document.getComponentByUID(componentID);
-                            PropertyValue value = component.readProperty(TextFieldCD.PROP_MAX_SIZE);
-                            if (MidpTypes.getInteger(value) < length) {
-                                component.writeProperty(TextFieldCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
-                            }
+                    public void run() {
+                        PropertyValue value = _component.readProperty(TextFieldCD.PROP_MAX_SIZE);
+                        if (MidpTypes.getInteger(value) < length) {
+                            _component.writeProperty(TextFieldCD.PROP_MAX_SIZE, MidpTypes.createIntegerValue(length));
                         }
-                    });
-                    break;
-            }
+                    }
+                });
         }
     }
 
     /*
-    * Saves PropertyValue
-    */
+     * Saves PropertyValue
+     */
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();
@@ -281,9 +271,9 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
     }
 
-    /*
-    * Custom property editor. JEditorPane plus possible JLabels with comments.
-    */
+/*
+     * Custom property editor. JEditorPane plus possible JLabels with comments.
+     */
     private class CustomEditor {
 
         private JPanel panel;

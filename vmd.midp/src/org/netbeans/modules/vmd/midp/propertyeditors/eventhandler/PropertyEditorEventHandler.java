@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -31,9 +32,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
@@ -56,81 +55,80 @@ import org.openide.util.NbBundle;
  * @author Anton Chechel
  */
 public final class PropertyEditorEventHandler extends DesignPropertyEditor {
-    
+
     private static final String DO_NOTHING = NbBundle.getMessage(PropertyEditorEventHandler.class, "LBL_NOTHING_ACTION"); // NOI18N
-    
     private final CustomEditor customEditor;
-    private long componentID;
-    
+    private WeakReference<DesignComponent> component;
+
     private PropertyEditorEventHandler() {
         Collection<PropertyEditorElementFactory> factories = Lookup.getDefault().lookup(new Lookup.Template(PropertyEditorElementFactory.class)).allInstances();
         Collection<PropertyEditorEventHandlerElement> elements = new ArrayList<PropertyEditorEventHandlerElement>(factories.size());
         for (PropertyEditorElementFactory factory : factories) {
             elements.add(factory.createElement());
         }
-        
+
         customEditor = new CustomEditor(elements);
     }
-    
+
     public static final PropertyEditorEventHandler createInstance() {
         return new PropertyEditorEventHandler();
     }
-    
+
     @Override
     public Component getCustomEditor() {
-        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            document.getTransactionManager().readAccess(new Runnable() {
+        if (component != null && component.get() != null) {
+            final DesignComponent _component = component.get();
+            _component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
                 public void run() {
-                    DesignComponent component = document.getComponentByUID(componentID);
                     PropertyValue value = null;
-                    Iterator<DesignComponent> iterator = component.getComponents().iterator();
+                    Iterator<DesignComponent> iterator = _component.getComponents().iterator();
                     if (iterator.hasNext()) {
                         DesignComponent eventHandler = iterator.next();
                         value = PropertyValue.createComponentReference(eventHandler);
                     }
-                    
-                    DesignComponent displayableCategory = MidpDocumentSupport.getCategoryComponent(document, DisplayablesCategoryCD.TYPEID);
-                    DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(document, PointsCategoryCD.TYPEID);
+
+                    DesignComponent displayableCategory = MidpDocumentSupport.getCategoryComponent(_component.getDocument(), DisplayablesCategoryCD.TYPEID);
+                    DesignComponent pointsCategory = MidpDocumentSupport.getCategoryComponent(_component.getDocument(), PointsCategoryCD.TYPEID);
                     List<DesignComponent> displayables = DocumentSupport.gatherAllComponentsOfTypeID(displayableCategory, DisplayableCD.TYPEID);
                     customEditor.updateModels(displayables, PropertyEditorEventHandlerElement.MODEL_TYPE_DISPLAYABLES, value);
-                    
+
                     List<DesignComponent> alerts = DocumentSupport.gatherAllComponentsOfTypeID(displayableCategory, AlertCD.TYPEID);
                     List<DesignComponent> displExceptAlerts = new ArrayList<DesignComponent>(displayables.size() - alerts.size());
                     displExceptAlerts.addAll(displayables);
                     displExceptAlerts.removeAll(alerts);
                     customEditor.updateModels(displExceptAlerts, PropertyEditorEventHandlerElement.MODEL_TYPE_DISPLAYABLES_WITHOUT_ALERTS, value);
-                    
+
                     List<DesignComponent> points = DocumentSupport.gatherAllComponentsOfTypeID(pointsCategory, CallPointCD.TYPEID);
                     List<DesignComponent> methods = DocumentSupport.gatherAllComponentsOfTypeID(pointsCategory, MethodPointCD.TYPEID);
                     List<DesignComponent> pointsAndMethods = new ArrayList<DesignComponent>(points.size() + methods.size());
                     pointsAndMethods.addAll(points);
                     pointsAndMethods.addAll(methods);
                     customEditor.updateModels(pointsAndMethods, PropertyEditorEventHandlerElement.MODEL_TYPE_POINTS, value);
-                    
+
                     List<DesignComponent> mobileDevices = DocumentSupport.gatherSubComponentsOfType(pointsCategory, MobileDeviceCD.TYPEID);
                     customEditor.setExitMidletEnabled(mobileDevices.size() == 1);
                 }
             });
         }
-        
+
         return customEditor;
     }
-    
+
     @Override
     public Boolean canEditAsText() {
         return false;
     }
-    
+
     @Override
     public String getAsText() {
         final String[] string = new String[1];
-        final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            document.getTransactionManager().readAccess(new Runnable() {
+        if (component != null && component.get() != null) {
+            final DesignComponent _component = component.get();
+            _component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
                 public void run() {
-                    DesignComponent component = document.getComponentByUID(componentID);
-                    Iterator<DesignComponent> iterator = component.getComponents().iterator();
+                    Iterator<DesignComponent> iterator = _component.getComponents().iterator();
                     if (!iterator.hasNext()) {
                         string[0] = DO_NOTHING;
                     } else {
@@ -147,36 +145,30 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
         }
         return string[0];
     }
-    
-    @Override
-    public void init(DesignComponent component) {
-        this.componentID = component.getComponentID();
-    }
-    
+
     @Override
     public boolean executeInsideWriteTransaction() {
-        DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-        if (document != null) {
-            DesignComponent component = document.getComponentByUID(componentID);
-            customEditor.createEventHandler(component);
+        if (component != null && component.get() != null) {
+            customEditor.createEventHandler(component.get());
         }
         return false;
     }
-    
+
     @Override
     public boolean isDefaultValue() {
         return true;
     }
-    
+
     private static class CustomEditor extends JPanel {
+
         private Collection<PropertyEditorEventHandlerElement> elements;
         private JRadioButton doNothingRadioButton;
-        
+
         public CustomEditor(Collection<PropertyEditorEventHandlerElement> elements) {
             this.elements = elements;
             initComponents(elements);
         }
-        
+
         private void initComponents(Collection<PropertyEditorEventHandlerElement> elements) {
             setLayout(new GridBagLayout());
             ButtonGroup buttonGroup = new ButtonGroup();
@@ -189,7 +181,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                     wasSelected = true;
                 }
                 buttonGroup.add(rb);
-                
+
                 constraints.insets = new Insets(12, 12, 6, 12);
                 constraints.anchor = GridBagConstraints.NORTHWEST;
                 constraints.gridx = GridBagConstraints.REMAINDER;
@@ -198,7 +190,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                 constraints.weighty = 0.0;
                 constraints.fill = GridBagConstraints.HORIZONTAL;
                 add(rb, constraints);
-                
+
                 Component component = element.getCustomEditorComponent();
                 if (component != null) {
                     constraints.insets = new Insets(0, 32, 12, 12);
@@ -211,12 +203,12 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                     add(component, constraints);
                 }
             }
-            
+
             doNothingRadioButton = new JRadioButton();
             Mnemonics.setLocalizedText(doNothingRadioButton, NbBundle.getMessage(PropertyEditorEventHandler.class, "LBL_NOTHING")); // NOI18N
             doNothingRadioButton.setSelected(!wasSelected);
             buttonGroup.add(doNothingRadioButton);
-            
+
             constraints.insets = new Insets(12, 12, 6, 12);
             constraints.anchor = GridBagConstraints.NORTHWEST;
             constraints.gridx = GridBagConstraints.REMAINDER;
@@ -225,7 +217,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
             constraints.weighty = 0.0;
             constraints.fill = GridBagConstraints.HORIZONTAL;
             add(doNothingRadioButton, constraints);
-            
+
             JPanel spacer = new JPanel();
             constraints.insets = new Insets(0, 0, 0, 0);
             constraints.anchor = GridBagConstraints.NORTHWEST;
@@ -236,7 +228,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
             constraints.fill = GridBagConstraints.BOTH;
             add(spacer, constraints);
         }
-        
+
         public void updateModels(List<DesignComponent> components, int modelType, PropertyValue value) {
             for (PropertyEditorEventHandlerElement element : elements) {
                 element.updateModel(components, modelType);
@@ -244,7 +236,7 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                 checkDoNothing(value);
             }
         }
-        
+
         public void setExitMidletEnabled(boolean enabled) {
             for (PropertyEditorEventHandlerElement element : elements) {
                 if (element instanceof ExitMidletElement) {
@@ -253,17 +245,17 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
                 }
             }
         }
-        
+
         private void checkDoNothing(PropertyValue value) {
             if (value == null || value.getComponent() == null) {
                 doNothingRadioButton.setSelected(true);
             }
         }
-        
+
         private void resetEventHandler(DesignComponent eventSource) {
             MidpDocumentSupport.updateEventHandlerWithNew(eventSource, null);
         }
-        
+
         public void createEventHandler(DesignComponent eventSource) {
             if (doNothingRadioButton.isSelected()) {
                 resetEventHandler(eventSource);

@@ -31,10 +31,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
-import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
-import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.FontCD;
 import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
@@ -48,35 +46,34 @@ import org.openide.util.NbBundle;
  * @author Karol Harezlak
  */
 public final class PropertyEditorComboBox extends PropertyEditorUserCode implements PropertyEditorElement {
-    
-    private long componentID;
+
     private final Map<String, PropertyValue> values;
     private String[] tags;
-    
+
     private TypeID typeID;
     private TypeID enableTypeID;
-    
+
     private CustomEditor customEditor;
     private JRadioButton radioButton;
-    
+
     private PropertyEditorComboBox(Map<String, PropertyValue> values, TypeID typeID, TypeID enableTypeID) {
         super();
-        
+
         this.values = values;
         this.typeID = typeID;
         this.enableTypeID = enableTypeID;
         createTags();
         initComponents();
-        
+
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
         elements.add(this);
         initElements(elements);
     }
-    
+
     public static PropertyEditorComboBox createInstance(Map<String, PropertyValue> values, TypeID typeID) {
         return createInstance(values, typeID, null);
     }
-    
+
     public static PropertyEditorComboBox createInstance(Map<String, PropertyValue> values, TypeID typeID, TypeID enableTypeID) {
         if (values == null) {
             throw new IllegalArgumentException("Argument values can't be null"); // NOI18N
@@ -87,41 +84,41 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
                 throw new IllegalArgumentException("PropertyValue for " + key + " key can't be null"); // NOI18N
             }
         }
-        
+
         PropertyEditorComboBox instance = new PropertyEditorComboBox(values, typeID, enableTypeID);
         return instance;
     }
-    
+
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorComboBox.class, "LBL_VALUE_STR")); // NOI18N
         customEditor = new CustomEditor();
         customEditor.updateModel();
     }
-    
+
     public JComponent getCustomEditorComponent() {
         return customEditor;
     }
-    
+
     public JRadioButton getRadioButton() {
         return radioButton;
     }
-    
+
     public boolean isInitiallySelected() {
         return true;
     }
-    
+
     public boolean isVerticallyResizable() {
         return false;
     }
-    
+
     @Override
     public String getAsText() {
         String superText = super.getAsText();
         if (superText != null) {
             return superText;
         }
-        
+
         PropertyValue value = (PropertyValue) super.getValue();
         for (String key : values.keySet()) {
             PropertyValue tmpValue = values.get(key);
@@ -131,15 +128,15 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         }
         return NbBundle.getMessage(PropertyEditorComboBox.class, "LBL_MULTIPLE"); // NOI18N
     }
-    
-    public void setTextForPropertyValue (String text) {
+
+    public void setTextForPropertyValue(String text) {
         saveValue(text);
     }
-    
-    public String getTextForPropertyValue () {
+
+    public String getTextForPropertyValue() {
         return null;
     }
-    
+
     public void updateState(PropertyValue value) {
         if (isCurrentValueANull() || value == null) {
             // clear customEditor if needed
@@ -148,7 +145,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         }
         radioButton.setSelected(!isCurrentValueAUserCodeType());
     }
-    
+
     private void saveValue(String text) {
         if (text.length() > 0) {
             PropertyValue value = values.get(text);
@@ -157,7 +154,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
             }
         }
     }
-    
+
     @Override
     public void customEditorOKButtonPressed() {
         super.customEditorOKButtonPressed();
@@ -165,12 +162,12 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
             saveValue(customEditor.getText());
         }
     }
-    
+
     @Override
     public String[] getTags() {
         return isCurrentValueAUserCodeType() ? null : tags;
     }
-    
+
     private void createTags() {
         int i = 0;
         tags = new String[values.size()];
@@ -178,13 +175,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
             tags[i++] = valueAsText;
         }
     }
-    
-    @Override
-    public void init(DesignComponent component) {
-        super.init(component);
-        this.componentID = component.getComponentID();
-    }
-    
+
     @Override
     public Boolean canEditAsText() {
         if (isCurrentValueAUserCodeType()) {
@@ -192,20 +183,20 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         }
         return null;
     }
-    
+
     @Override
     public boolean canWrite() {
-        final boolean[] canWrite = new boolean[] { true };
+        final boolean[] canWrite = new boolean[]{true};
         if (!MidpPropertyEditorSupport.singleSelectionEditAsTextOnly()) {
             canWrite[0] = false;
         } else if (enableTypeID != null) {
             if (enableTypeID == FontCD.TYPEID) {
-                final DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
-                if (document != null) {
-                    document.getTransactionManager().readAccess( new Runnable() {
+                if (component != null && component.get() != null) {
+                    final DesignComponent _component = component.get();
+                    _component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
                         public void run() {
-                            DesignComponent component = document.getComponentByUID(componentID);
-                            int kind = MidpTypes.getInteger(component.readProperty(FontCD.PROP_FONT_KIND));
+                            int kind = MidpTypes.getInteger(_component.readProperty(FontCD.PROP_FONT_KIND));
                             canWrite[0] = kind == FontCD.VALUE_KIND_CUSTOM;
                         }
                     });
@@ -214,14 +205,15 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
         }
         return canWrite[0];
     }
-    
+
     private class CustomEditor extends JPanel implements ActionListener {
+
         private JComboBox combobox;
-        
+
         public CustomEditor() {
             initComponents();
         }
-        
+
         private void initComponents() {
             setLayout(new BorderLayout());
             combobox = new JComboBox();
@@ -229,7 +221,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);
         }
-        
+
         public void setValue(PropertyValue value) {
             for (String key : values.keySet()) {
                 if (values.get(key).getPrimitiveValue().equals(value.getPrimitiveValue())) {
@@ -238,11 +230,11 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
                 }
             }
         }
-        
+
         public String getText() {
             return (String) combobox.getSelectedItem();
         }
-        
+
         public void updateModel() {
             DefaultComboBoxModel model = (DefaultComboBoxModel) combobox.getModel();
             model.removeAllElements();
@@ -250,7 +242,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
                 model.addElement(tag);
             }
         }
-        
+
         public void actionPerformed(ActionEvent evt) {
             radioButton.setSelected(true);
         }
