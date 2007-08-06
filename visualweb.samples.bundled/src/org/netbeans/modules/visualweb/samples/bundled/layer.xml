@@ -8,7 +8,7 @@
             <folder name="Samples">
                 <folder name="Web">
                     <folder name="VisualJsf">
-                        <attr name="position" intvalue="100" />
+                        <attr name="position" intvalue="500" />
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/webSamplesCategory.html"/>
                         <file name="TravelCenter" url="TravelCenter.zip">
