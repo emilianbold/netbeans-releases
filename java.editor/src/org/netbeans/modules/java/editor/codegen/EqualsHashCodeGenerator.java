@@ -390,7 +390,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                             et, make.Parenthesized(make.Binary(Tree.Kind.UNSIGNED_RIGHT_SHIFT, et, make.Literal(32)))))); //NOI18N
                     break;
                 case BOOLEAN:
-                    variableRead = make.ConditionalExpression(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(1), make.Literal(0)); //NOI18N
+                    variableRead = make.Parenthesized(make.ConditionalExpression(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(1), make.Literal(0))); //NOI18N
                     break;
                 default:
                     variableRead = make.Parenthesized(
