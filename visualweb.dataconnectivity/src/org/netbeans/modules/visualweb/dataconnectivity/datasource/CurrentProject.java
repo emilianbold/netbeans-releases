@@ -180,14 +180,16 @@ public class CurrentProject {
     /**
      * getOpenedProject returns the project that is being opened 
      */     
-     public Project getOpenedProject() {
-        Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
-        DataObject obj = lookup.lookup(DataObject.class);
-        
-        if (obj != null) {
-            FileObject fileObject = obj.getPrimaryFile();
-            project = FileOwnerQuery.getOwner(fileObject);
-            setPreviousProject(project);
+    public Project getOpenedProject() {
+        if (TopComponent.getRegistry().getActivated() != null) {
+            Lookup lookup = TopComponent.getRegistry().getActivated().getLookup();
+            DataObject obj = lookup.lookup(DataObject.class);
+
+            if (obj != null) {
+                FileObject fileObject = obj.getPrimaryFile();
+                project = FileOwnerQuery.getOwner(fileObject);
+                setPreviousProject(project);
+            }
         }
 
         return project;
