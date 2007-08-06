@@ -101,18 +101,30 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
     public void componentShowing() {
         super.componentShowing();
         if (needInit){
-            repaintView();
-            needInit = false;
+            needInit = !repaintView();
         }
-        puDataObject.viewCanBeDisplayed();
     }
-    
-    private void repaintView(){
-        view = new PersistenceView(puDataObject);
+
+    /**
+     * Tries to repaint the current view.
+     * 
+     * @return true if repainting succeeded, false otherwise.
+     */ 
+    private boolean repaintView(){
+        
+        view = new PersistenceView();
+        
+        if (!puDataObject.viewCanBeDisplayed()){
+            view.setRoot(Node.EMPTY);
+            comp.setContentView(view);
+            return false;
+        }
+        
+        view.initialize(puDataObject);
         comp.setContentView(view);
         Object lastActive = comp.getLastActive();
         if (lastActive!=null) {
-            ((SectionView)view).openPanel(lastActive);
+            view.openPanel(lastActive);
         } else {
             Node initialNode = view.getPersistenceUnitsNode();
             Children ch = initialNode.getChildren();
@@ -122,7 +134,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             view.selectNode(initialNode);
         }
         view.checkValidity();
-        
+        return true;
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
@@ -151,9 +163,20 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             return persistenceUnitsNode;
         }
         
-        PersistenceView(PUDataObject dObj) {
+        PersistenceView(){
             super(factory);
-            Persistence persistence = dObj.getPersistence();
+        }
+
+        /**
+         * Initializes the view.
+         * 
+         * @param pudo the <code>PUDataObject</code> that should be used
+         * for initializing this view. Must represent a parseable persistence.xml 
+         * deployment descriptor file.
+         */ 
+        void initialize(PUDataObject pudo){
+            
+            Persistence persistence = pudo.getPersistence();
             
             PersistenceUnit[] persistenceUnits = persistence.getPersistenceUnit();
             Node[] persistenceUnitNode = new Node[persistenceUnits.length];
@@ -184,7 +207,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             addSection(persistenceUnitsCont);
             setRoot(root);
         }
-        
+
         public Error validateView() {
             PersistenceValidator validator = new PersistenceValidator((PUDataObject)dObj);
             List<Error> result = validator.validate();

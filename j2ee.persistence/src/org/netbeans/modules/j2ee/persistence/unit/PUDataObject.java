@@ -145,9 +145,9 @@ public class PUDataObject extends XmlMultiViewDataObject {
      * the preferred view is the design view, it
      * can be displayed if <ol><li>document is valid (parseable) and</li>
      *<li>the target server is attached></li></ol>.
-     *@return true if the preferred view can be displayed.
+     *@return true if the preferred view can be displayed, false otherwise.
      */
-    public void viewCanBeDisplayed() {
+    public boolean viewCanBeDisplayed() {
         
         boolean switchView = false;
         NotifyDescriptor nd = null;
@@ -177,13 +177,19 @@ public class PUDataObject extends XmlMultiViewDataObject {
                     goToXmlView();
                 }
             });
-            
         }
+        return !switchView;
+
     }
     
     
     /**
-     * @return the persistence object associated with this.
+     * Gets the object graph representing the contents of the 
+     * persistence.xml deployment desciptor with which this data object 
+     * is associated.
+     *
+     * @return the persistence graph.
+     *
      */
     public Persistence getPersistence(){
         if (persistence==null) {
