@@ -148,4 +148,7 @@ public final class RubyBreakpoint extends Breakpoint implements IRubyBreakpoint 
         return getLine().getLineNumber() + 1;
     }
     
+    public @Override String toString() {
+        return getFilePath() + ":" + getLineNumber();
+    }
 }
