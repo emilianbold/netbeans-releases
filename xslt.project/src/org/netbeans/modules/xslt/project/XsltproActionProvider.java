@@ -29,9 +29,7 @@ import java.util.Properties;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
-//import org.netbeans.modules.xslt.project.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.VisualClassPathItem;
-import org.netbeans.modules.xslt.project.ui.customizer.XsltproProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
@@ -188,7 +186,7 @@ public class XsltproActionProvider implements ActionProvider{
     }
     
     private void buildDependentProjectsAndRunTask(String[] targetNames, Properties p) throws IOException  {
-   	XsltproProjectProperties app = this.project.getProjectProperties();
+   	IcanproProjectProperties app = this.project.getProjectProperties();
         List items = (List) app.get(IcanproProjectProperties.JAVAC_CLASSPATH);
         ArrayList artifacts = new ArrayList();
 
