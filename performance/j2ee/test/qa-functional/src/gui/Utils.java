@@ -31,14 +31,15 @@ public class Utils {
     
     public static void startStopServer(boolean start) {
         RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
-        Node serverNode = new Node(runtimeTab.getRootNode(), SERVER_REGISTRY+"|Sun Java System Application Server");
+        Node serverNode = new Node(runtimeTab.getRootNode(), SERVER_REGISTRY+"|Glassfish V2");
         try {
+	    new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
             if (start)
 	        serverNode.performPopupAction("Start");
 	    else
 	        serverNode.performPopupAction("Stop");
 	    new org.netbeans.jemmy.EventTool().waitNoEvent(5000);
-	    ProgressSupport.waitFinished((start?"Starting":"Stopping") + " Sun Java System Application Server", 300000);
+	    ProgressSupport.waitFinished((start?"Starting":"Stopping") + "Glassfish V2", 300000);
         } catch (org.netbeans.jemmy.TimeoutExpiredException tee) {
         }
         new org.netbeans.jemmy.EventTool().waitNoEvent(2000);
