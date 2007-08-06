@@ -138,9 +138,7 @@ public class ProviderConfigurator extends Configurator {
         
         //System.out.println("providerConfig = " + providerConfig);
         setConfiguration(providerConfig);
-        
-        disabled = !providerConfig.isProviderExists();
-        
+     
         // Initialize keyStoreLocation and keyStorePassword fields
         keystoreLocation = (String) getValue(Configurable.KEYSTORE_LOCATION);
         keystorePassword = (String) getValue(Configurable.KEYSTORE_PASSWORD);
