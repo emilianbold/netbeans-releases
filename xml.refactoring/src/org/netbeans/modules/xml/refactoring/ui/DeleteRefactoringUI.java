@@ -199,6 +199,7 @@ public class DeleteRefactoringUI implements org.netbeans.modules.refactoring.spi
         Graph graph = gh.loadGraph(nodes);
         view.setGraph(graph);
         AnalysisViewer analysisViewer = new AnalysisViewer();
+        analysisViewer.setCurrentView(view);
         analysisViewer.getPanel().setMinimumSize(new Dimension(10,10));
         analysisViewer.getPanel().setPreferredSize(new Dimension(10,10));
         view.showView(analysisViewer);

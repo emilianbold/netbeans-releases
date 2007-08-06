@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -69,7 +69,7 @@ public class AnalysisViewer extends JPanel implements
     }
     
     public void removeToolBar() {
-       // remove(toolbarPnl);
+        remove(toolbarPnl);
         validate();
         repaint();
     }
@@ -154,22 +154,53 @@ public class AnalysisViewer extends JPanel implements
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        toolbarPnl = new javax.swing.JPanel();
+        jToolBar1 = new javax.swing.JToolBar();
+        layoutBtn = new javax.swing.JButton();
         displayContainerPnl = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
 
         setBackground(java.awt.Color.white);
         setPreferredSize(new java.awt.Dimension(200, 200));
+        toolbarPnl.setLayout(new java.awt.BorderLayout());
+
+        jToolBar1.setFloatable(false);
+        jToolBar1.setOrientation(1);
+        layoutBtn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/nbprefuse/resources/relayout.png")));
+        layoutBtn.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/nbprefuse/Bundle").getString("LBL_Relayout_graph"));
+        layoutBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                layoutBtnActionPerformed(evt);
+            }
+        });
+
+        jToolBar1.add(layoutBtn);
+
+        toolbarPnl.add(jToolBar1, java.awt.BorderLayout.CENTER);
+
+        add(toolbarPnl, java.awt.BorderLayout.WEST);
+
         displayContainerPnl.setLayout(null);
 
         displayContainerPnl.setBorder(javax.swing.BorderFactory.createLineBorder(java.awt.Color.gray));
         add(displayContainerPnl, java.awt.BorderLayout.CENTER);
 
     }// </editor-fold>//GEN-END:initComponents
+
+    private void layoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layoutBtnActionPerformed
+// TODO add your handling code here:
+        if (currentView != null){
+            showView(currentView);
+        }
+    }//GEN-LAST:event_layoutBtnActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel displayContainerPnl;
+    private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JButton layoutBtn;
+    private javax.swing.JPanel toolbarPnl;
     // End of variables declaration//GEN-END:variables
     
 }

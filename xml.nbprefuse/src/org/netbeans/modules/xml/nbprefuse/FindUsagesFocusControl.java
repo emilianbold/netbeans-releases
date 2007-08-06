@@ -211,8 +211,8 @@ public class FindUsagesFocusControl extends NbFocusControl{
                 else if (item.canGet(AnalysisConstants.REFACTORING_ELEMENT, RefactoringElement.class)) {
                     RefactoringElement comp = (RefactoringElement) item.get(AnalysisConstants.REFACTORING_ELEMENT);
                     
-                   // if(comp != null)
-                      //  comp.openInEditor();
+                    if(comp != null)
+                        comp.openInEditor();
                 }
   
             if (item instanceof NodeItem){
