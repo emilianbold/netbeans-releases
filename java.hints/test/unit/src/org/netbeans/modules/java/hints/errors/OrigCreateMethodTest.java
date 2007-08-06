@@ -29,47 +29,47 @@ public class OrigCreateMethodTest extends HintsTestBase {
     }
     
     public void testCreateElement1() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateElement1", "method", 23, 16);
+        performTest("org.netbeans.test.java.hints.CreateElement1", "Method", 23, 16);
     }
 
     public void testCreateElement2() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateElement2", "method", 23, 16);
+        performTest("org.netbeans.test.java.hints.CreateElement2", "Method", 23, 16);
     }
 
     public void testCreateElement3() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateElement3", "method", 24, 16);
+        performTest("org.netbeans.test.java.hints.CreateElement3", "Method", 24, 16);
     }
 
     public void testCreateElement4() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateElement4", "method", 23, 16);
+        performTest("org.netbeans.test.java.hints.CreateElement4", "Method", 23, 16);
     }
 
     public void testCreateElement5() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateElement5", "method", 23, 16);
+        performTest("org.netbeans.test.java.hints.CreateElement5", "Method", 23, 16);
     }
 
     public void testCreateElement6() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateElement6", "method", 23, 16);
+        performTest("org.netbeans.test.java.hints.CreateElement6", "Method", 23, 16);
     }
 
     public void testCreateElement7() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateElement7", "method", 23, 16);
+        performTest("org.netbeans.test.java.hints.CreateElement7", "Method", 23, 16);
     }
 
     public void testCreateElement8() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateElement8", "method", 24, 16);
+        performTest("org.netbeans.test.java.hints.CreateElement8", "Method", 24, 16);
     }
 
     public void testCreateElement9() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateElement9", "method", 23, 16);
+        performTest("org.netbeans.test.java.hints.CreateElement9", "Method", 23, 16);
     }
 
     public void testCreateElementa() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateElementa", "method", 23, 16);
+        performTest("org.netbeans.test.java.hints.CreateElementa", "Method", 23, 16);
     }
     
     public void testCreateConstructor1() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateConstructor1", "constructor", 9, 16);
+        performTest("org.netbeans.test.java.hints.CreateConstructor1", "Constructor", 9, 16);
     }
 
     @Override
