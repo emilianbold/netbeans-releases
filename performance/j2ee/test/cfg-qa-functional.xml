@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ====================== -->
     
     <!-- common testbag to setup userdir-->
-    <testbag testattribs="measure_all or measure_once or measure_dialogs or measure_menus or measure_actions or deployment" prio="2"
+    <testbag testattribs="measure_all or ui_responsiveness or measure_once or measure_dialogs or measure_menus or measure_actions or deployment" prio="2"
     compiler="qa-perf-compiler" executor="ide_perf_setup" name="Setup IDE">
         <testset dir="qa-functional/src">
             <patternset>
@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
     
     
     <!-- 1st round -->
-    <testbag testattribs="measure_all or measure_once or measure_dialogs" prio="3"
+    <testbag testattribs="measure_all or ui_responsiveness or measure_once or measure_dialogs" prio="3"
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Dialogs">
         <testset dir="qa-functional/src">
             <patternset>
@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- 2nd round -->
-    <testbag testattribs="measure_all or measure_dialogs" prio="4"
+    <testbag testattribs="measure_all or ui_responsiveness or measure_dialogs" prio="4"
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Dialogs">
         <testset dir="qa-functional/src">
             <patternset>
@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- 3rd round -->
-    <testbag testattribs="measure_all or measure_dialogs" prio="5"
+    <testbag testattribs="measure_all or ui_responsiveness or measure_dialogs" prio="5"
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Dialogs">
         <testset dir="qa-functional/src">
             <patternset>
@@ -68,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <!-- 1st round -->
-    <testbag testattribs="measure_all or measure_once or measure_menus" prio="13"
+    <testbag testattribs="measure_all or ui_responsiveness or measure_once or measure_menus" prio="13"
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Menus">
         <testset dir="qa-functional/src">
             <patternset>
@@ -79,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <!-- 2st round -->
-    <testbag testattribs="measure_all or measure_menus" prio="14"
+    <testbag testattribs="measure_all or ui_responsiveness or measure_menus" prio="14"
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Menus">
         <testset dir="qa-functional/src">
             <patternset>
@@ -89,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <!-- 3st round -->
-    <testbag testattribs="measure_all or measure_menus" prio="15"
+    <testbag testattribs="measure_all or ui_responsiveness or measure_menus" prio="15"
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Menus">
         <testset dir="qa-functional/src">
             <patternset>
@@ -99,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- 1st round -->
-    <testbag testattribs="measure_all or measure_once or measure_actions" prio="23"
+    <testbag testattribs="measure_all or ui_responsiveness or measure_once or measure_actions" prio="23"
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Actions">
         <testset dir="qa-functional/src">
             <patternset>
@@ -111,7 +111,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <!-- 2st round -->
-    <testbag testattribs="measure_all or measure_actions" prio="24"
+    <testbag testattribs="measure_all or ui_responsiveness or measure_actions" prio="24"
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Actions">
         <testset dir="qa-functional/src">
             <patternset>
@@ -121,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
 
     <!-- 3st round -->
-    <testbag testattribs="measure_all or measure_actions" prio="25"
+    <testbag testattribs="measure_all or ui_responsiveness or measure_actions" prio="25"
     compiler="qa-perf-compiler" executor="ide_perf_as" name="Measure J2EE Actions">
         <testset dir="qa-functional/src">
             <patternset>
