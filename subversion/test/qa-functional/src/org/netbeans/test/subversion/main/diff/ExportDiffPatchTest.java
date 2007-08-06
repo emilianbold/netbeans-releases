@@ -140,12 +140,12 @@ public class ExportDiffPatchTest extends JellyTestCase {
             assertEquals("Wrong annotation of node - file status should be new!!!", TestKit.MODIFIED_STATUS, status);
             assertEquals("Wrong number of records in Versioning view!!!", 1, vo.tabFiles().getRowCount());
             
-            new ProjectsTabOperator().tree().clearSelection();
+            //new ProjectsTabOperator().tree().clearSelection();
             node = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             comOperator = new Operator.DefaultStringComparator(true, true);
             oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
             Operator.setDefaultStringComparator(comOperator);
-            node.performMenuActionNoBlock("Versioning|Subversion|Export Diff Patch...");
+            node.performMenuActionNoBlock("Versioning|Export Diff Patch...");
             Operator.setDefaultStringComparator(oldOperator);
             
             //node.select();
