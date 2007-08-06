@@ -338,6 +338,16 @@ public final class RubySession {
         return result;
     }
 
+    public boolean isSuspended(final RubyThreadInfo ti) {
+        RubyThread thread = proxy.getDebugTarged().getThreadById(ti.getId());
+        if (thread != null) {
+            return thread.isSuspended();
+        } else {
+            Util.warning("There is no thread for: " + ti);
+            return false; // 'default'
+        }
+    }
+    
     private void annotateCallStack(final RubyThread thread) {
         if (TEST) return;
         try {

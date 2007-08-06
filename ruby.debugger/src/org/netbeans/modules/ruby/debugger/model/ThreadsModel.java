@@ -41,12 +41,13 @@ import static org.netbeans.spi.debugger.ui.Constants.THREAD_STATE_COLUMN_ID;
  */
 public final class ThreadsModel implements TreeModel, TableModel, NodeModel, NodeActionsProvider {
     
-    public static final String RUNNING =
-            "org/netbeans/modules/debugger/resources/threadsView/SuspendedThread"; // NOI18N
-    
-    public static final String SUSPENDED =
-            "org/netbeans/modules/debugger/resources/threadsView/RunningThread"; // NOI18N
-    
+    private static final String CURRENT =
+        "org/netbeans/modules/debugger/resources/threadsView/CurrentThread"; // NOI18N
+    private static final String RUNNING =
+        "org/netbeans/modules/debugger/resources/threadsView/RunningThread"; // NOI18N
+    private static final String SUSPENDED =
+        "org/netbeans/modules/debugger/resources/threadsView/SuspendedThread"; // NOI18N
+
     private ContextProviderWrapper contextProvider;
     private final RubySession rubySession;
     private final List<ModelListener> listeners;
@@ -112,7 +113,7 @@ public final class ThreadsModel implements TreeModel, TableModel, NodeModel, Nod
             return NbBundle.getMessage(ThreadsModel.class, "CTL_ThreadsModel.Column.Name.Name");
         } else if (node instanceof RubyThreadInfo) {
             RubyThreadInfo ti = (RubyThreadInfo) node;
-            String threadName = "RubyThread - " + ti.getId(); // NOI18N
+            String threadName = getThreadName(ti);
             return rubySession.isActiveThread(ti.getId()) ?
                 "<html><b>" + threadName + "</b></html>" : threadName; // NOI18N
         } else {
@@ -122,9 +123,14 @@ public final class ThreadsModel implements TreeModel, TableModel, NodeModel, Nod
     
     public String getIconBase(Object node) throws UnknownTypeException {
         if (node == ROOT || node instanceof RubyThreadInfo) {
-            // XXX return icon based on a thread's status. Either SUSPENDED or
-            // RUNNING depending on RubyThreadInfo's state
-            return SUSPENDED;
+            RubyThreadInfo ti = (RubyThreadInfo) node;
+            if (rubySession.isActiveThread(ti.getId())) {
+                return CURRENT;
+            } else if (rubySession.isSuspended(ti)) {
+                return SUSPENDED;
+            } else {
+                return RUNNING;
+            }
         } else {
             throw new UnknownTypeException(node);
         }
@@ -135,7 +141,7 @@ public final class ThreadsModel implements TreeModel, TableModel, NodeModel, Nod
         if (node == ROOT) {
             return NbBundle.getMessage(ThreadsModel.class, "CTL_ThreadsModel.Column.Name.Desc");
         } else if (node instanceof RubyThreadInfo) {
-            return null; // XXX
+            return getThreadName((RubyThreadInfo) node);
         } else {
             throw new UnknownTypeException(node);
         }
@@ -182,5 +188,8 @@ public final class ThreadsModel implements TreeModel, TableModel, NodeModel, Nod
             throws UnknownTypeException {
         return new Action [] {};
     }
-    
+
+    private String getThreadName(final RubyThreadInfo ti) {
+        return "RubyThread - " + ti.getId();
+    }
 }
