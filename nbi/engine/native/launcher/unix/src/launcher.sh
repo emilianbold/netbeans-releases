@@ -1096,6 +1096,7 @@ prepareClasspath() {
 
 resolvePropertyStrings() {
 	args="$1"
+	escapeReplacedString="$2"
 	propertyStart=`echo "$args" | sed "s/^.*\\$P{//"`
 	propertyValue=""
 	propertyName=""
@@ -1108,9 +1109,7 @@ resolvePropertyStrings() {
 
 			if [ 0 -eq `ifEquals "$propertyValue" "$propertyName"` ] ; then				
 				propertyName="\$P{$propertyName}"
-				propertyValue=`escapeString "$propertyValue"`
-				propertyValue=`escapeString "$propertyValue"`
-				args=`replaceString "$args" "$propertyName" "$propertyValue"`
+				args=`replaceString "$args" "$propertyName" "$propertyValue" "$escapeReplacedString"`
 			fi
 		fi
 	fi
@@ -1120,6 +1119,8 @@ resolvePropertyStrings() {
 
 
 resolveLauncherSpecialProperties() {
+	args="$1"
+	escapeReplacedString="$2"
 	propertyValue=""
 	propertyName=""
 	propertyStart=`echo "$args" | sed "s/^.*\\$L{//"`
@@ -1149,9 +1150,7 @@ resolveLauncherSpecialProperties() {
 			esac
 			if [ 0 -eq `ifEquals "$propertyValue" "$propertyName"` ] ; then				
 				propertyName="\$L{$propertyName}"
-				propertyValue=`escapeString "$propertyValue"`
-				propertyValue=`escapeString "$propertyValue"`
-				args=`replaceString "$args" "$propertyName" "$propertyValue"`
+				args=`replaceString "$args" "$propertyName" "$propertyValue" "$escapeReplacedString"`
 			fi      
 		fi
 	fi            
@@ -1160,13 +1159,14 @@ resolveLauncherSpecialProperties() {
 
 resolveString() {
  	args="$1"
+	escapeReplacedString="$2"
 	last="$args"
 	repeat=1
 
 	while [ 1 -eq $repeat ] ; do
 		repeat=1
-		args=`resolvePropertyStrings "$args"`
-		args=`resolveLauncherSpecialProperties "$args"`		
+		args=`resolvePropertyStrings "$args" "$escapeReplacedString"`
+		args=`resolveLauncherSpecialProperties "$args" "$escapeReplacedString"`		
 		if [ 1 -eq `ifEquals "$last" "$args"` ] ; then
 		    repeat=0
 		fi
@@ -1179,29 +1179,60 @@ replaceString() {
 	initialString="$1"	
 	fromString="$2"
 	toString="$3"
+	if [ -n "$4" ] && [ 0 -eq `ifEquals "$4" "false"` ] ; then
+		toString=`escapeString "$toString"`
+	fi
 	fromString=`echo "$fromString" | sed "s/\\\//\\\\\\\\\//g" 2>/dev/null`
 	toString=`echo "$toString" | sed "s/\\\//\\\\\\\\\//g" 2>/dev/null`
         replacedString=`echo "$initialString" | sed "s/${fromString}/${toString}/g" 2>/dev/null`        
 	echo "$replacedString"
 }
 
-prepareArguments() {
-    debug "Prepare JVM and Application arguments... "
-    LAUNCHER_JVM_ARGUMENTS="$LAUNCHER_JVM_ARGUMENTS $JVM_ARGUMENTS"
-    LAUNCHER_APP_ARGUMENTS="$LAUNCHER_APP_ARGUMENTS $APP_ARGUMENTS"
+prepareJVMArguments() {
+    debug "Prepare JVM arguments... "    
 
-    debug "... resolving jvm arguments : $LAUNCHER_JVM_ARGUMENTS"
-    LAUNCHER_JVM_ARGUMENTS=`resolveString "$LAUNCHER_JVM_ARGUMENTS"`
-    debug ".... resolved jvm arguments : $LAUNCHER_JVM_ARGUMENTS"
-
-    debug "... resolving app arguments : $LAUNCHER_APP_ARGUMENTS"
-    LAUNCHER_APP_ARGUMENTS=`resolveString "$LAUNCHER_APP_ARGUMENTS"`
-    debug ".... resolved app arguments : $LAUNCHER_APP_ARGUMENTS"
+    jvmArgCounter=0
+    debug "... resolving string : $LAUNCHER_JVM_ARGUMENTS"
+    LAUNCHER_JVM_ARGUMENTS=`resolveString "$LAUNCHER_JVM_ARGUMENTS" true`
+    debug "... resolved  string :  $LAUNCHER_JVM_ARGUMENTS"
+    while [ $jvmArgCounter -lt $JVM_ARGUMENTS_NUMBER ] ; do		
+         arg=`eval echo "$""JVM_ARGUMENT_$jvmArgCounter"`
+	 debug "... jvm argument [$jvmArgCounter] [initial]  : $arg"
+	 arg=`resolveString "$arg"`
+	 debug "... jvm argument [$jvmArgCounter] [resolved] : $arg"
+	 arg=`escapeString "$arg"`
+	 debug "... jvm argument [$jvmArgCounter] [escaped] : $arg"
+	 LAUNCHER_JVM_ARGUMENTS="$LAUNCHER_JVM_ARGUMENTS $arg"	
+ 	 jvmArgCounter=`expr "$jvmArgCounter" + 1`
+    done                
+    debug "Final JVM arguments : $LAUNCHER_JVM_ARGUMENTS"            
 }
+
+prepareAppArguments() {
+    debug "Prepare Application arguments... "    
+
+    appArgCounter=0
+    debug "... resolving string : $LAUNCHER_APP_ARGUMENTS"
+    LAUNCHER_APP_ARGUMENTS=`resolveString "$LAUNCHER_APP_ARGUMENTS" true`
+    debug "... resolved  string :  $LAUNCHER_APP_ARGUMENTS"
+    while [ $appArgCounter -lt $APP_ARGUMENTS_NUMBER ] ; do		
+         arg=`eval echo "$""APP_ARGUMENT_$appArgCounter"`
+	 debug "... app argument [$appArgCounter] [initial]  : $arg"
+	 arg=`resolveString "$arg"`
+	 debug "... app argument [$appArgCounter] [resolved] : $arg"
+	 arg=`escapeString "$arg"`
+	 debug "... app argument [$appArgCounter] [escaped] : $arg"
+	 LAUNCHER_APP_ARGUMENTS="$LAUNCHER_APP_ARGUMENTS $arg"	
+ 	 appArgCounter=`expr "$appArgCounter" + 1`
+    done
+    debug "Final application arguments : $LAUNCHER_APP_ARGUMENTS"            
+}
+
 
 executeMainClass() {
 	prepareClasspath
-	prepareArguments
+	prepareJVMArguments
+	prepareAppArguments
 	debug "Running main jar..."
 	message "$MSG_RUNNING"
 	classpathEscaped=`escapeString "$LAUNCHER_CLASSPATH"`

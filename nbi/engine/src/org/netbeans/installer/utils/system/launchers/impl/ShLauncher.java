@@ -138,18 +138,25 @@ public class ShLauncher extends CommonLauncher {
             LogManager.log("TestJVM Class : " + testJVMClass);
             addStringVariable(sb, "TEST_JVM_CLASS", testJVMClass);
             
-            String jvmArgs = ((jvmArguments!=null) ?
-                escapeVarSign(escapeSlashes(StringUtils.asString(jvmArguments,StringUtils.SPACE))):
-                StringUtils.EMPTY_STRING);
-            LogManager.log("JVM args : " + jvmArgs);
-            addStringVariable(sb, "JVM_ARGUMENTS", jvmArgs);
+            addNumberVariable(sb, "JVM_ARGUMENTS_NUMBER", jvmArguments.size());
+            int counter = 0;
+            for(String arg : jvmArguments) {
+                addStringVariable(sb, "JVM_ARGUMENT_" + (counter), 
+                        escapeVarSign(escapeSlashes(arg)));
+                LogManager.log("... jvm argument [" + counter + "] = " + arg);
+                counter++;
+            }
+            
+            addNumberVariable(sb, "APP_ARGUMENTS_NUMBER", appArguments.size());
+            counter = 0;
+            for(String arg : appArguments) {
+                addStringVariable(sb, "APP_ARGUMENT_" + (counter), 
+                        escapeVarSign(escapeSlashes(arg)));
+                LogManager.log("... app argument [" + counter + "] = " + arg);
+                counter++;
+            }
             
             
-            String appArgs = ((jvmArguments!=null) ?
-                escapeVarSign(escapeSlashes(StringUtils.asString(appArguments,StringUtils.SPACE))):
-                StringUtils.EMPTY_STRING);
-            LogManager.log("Application args : " + appArgs);
-            addStringVariable(sb, "APP_ARGUMENTS", appArgs);
             
             String token = "_^_^_^_^_^_^_^_^"; // max size: (10^16-1) bytes
             
