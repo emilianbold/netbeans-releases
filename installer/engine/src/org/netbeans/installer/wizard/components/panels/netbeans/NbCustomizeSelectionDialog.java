@@ -196,9 +196,10 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 KEYBOARD_TOGGLE_ACTION_NAME);
         
         // componentsScrollPane /////////////////////////////////////////////////////
-        componentsScrollPane = new NbiScrollPane(componentsList);
+        componentsScrollPane = new NbiScrollPane(componentsList);        
         componentsScrollPane.setVerticalScrollBarPolicy(
                 NbiScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        messageLabel.setLabelFor(componentsScrollPane);
         
         // descriptionPane //////////////////////////////////////////////////////////
         descriptionPane = new NbiTextPane();
