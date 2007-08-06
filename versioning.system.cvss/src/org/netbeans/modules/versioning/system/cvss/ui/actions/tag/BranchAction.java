@@ -26,6 +26,7 @@ import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorSupport;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.lib.cvsclient.command.tag.TagCommand;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
@@ -41,6 +42,7 @@ import javax.swing.*;
 import java.awt.Dialog;
 import java.io.File;
 import java.text.MessageFormat;
+import java.util.*;
 
 /**
  * Performs the CVS 'tag -b' command on selected nodes.
@@ -132,7 +134,16 @@ public class BranchAction extends AbstractSystemAction {
             group.execute();
         }
 
-        private UpdateExecutor[] update(Context context, String revision) {
+        private ExecutorSupport[] update(Context context, String revision) {
+            File[][] files = Utils.splitFlatOthers(context.getRootFiles());
+            List<ExecutorSupport> executors = new ArrayList<ExecutorSupport>();
+            executors.addAll(update(files[0], revision, false));
+            executors.addAll(update(files[1], revision, true));
+            return (ExecutorSupport[]) executors.toArray(new ExecutorSupport[executors.size()]);
+        }
+
+        private List<UpdateExecutor> update(File[] roots, String revision, boolean recursive) {
+            if (roots.length == 0) return Collections.emptyList();
             UpdateCommand cmd = new UpdateCommand();
 
             GlobalOptions options = CvsVersioningSystem.createGlobalOptions();
@@ -140,28 +151,36 @@ public class BranchAction extends AbstractSystemAction {
                 options.setExclusions((File[]) context.getExclusions().toArray(new File[context.getExclusions().size()]));
             }
             cmd.setUpdateByRevision(revision);
-            cmd.setFiles(context.getRootFiles());
-        
-            return UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, null);
-        }
-
-        private ExecutorSupport[] branch(File[] roots, String branchName) {
-            TagCommand cmd = new TagCommand();
-
-            cmd.setMakeBranchTag(true);
             cmd.setFiles(roots);
-            cmd.setTag(branchName);
+            cmd.setRecursive(recursive);
         
-            return TagExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            return Arrays.asList(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), options, null));
+        }
+        
+        private ExecutorSupport[] branch(File[] roots, String branchName) {
+            File[][] files = Utils.splitFlatOthers(roots);
+            List<ExecutorSupport> executors = new ArrayList<ExecutorSupport>();
+            executors.addAll(tag(files[0], branchName, true, false));
+            executors.addAll(tag(files[1], branchName, true, true));
+            return (ExecutorSupport[]) executors.toArray(new ExecutorSupport[executors.size()]);
         }
 
         private ExecutorSupport[] tag(File[] roots, String tagName) {
+            File[][] files = Utils.splitFlatOthers(roots);
+            List<ExecutorSupport> executors = new ArrayList<ExecutorSupport>();
+            executors.addAll(tag(files[0], tagName, false, false));
+            executors.addAll(tag(files[1], tagName, false, true));
+            return (ExecutorSupport[]) executors.toArray(new ExecutorSupport[executors.size()]);
+        }
+
+        private List<TagExecutor> tag(File[] roots, String branchName, boolean isBranch, boolean recursive) {
+            if (roots.length == 0) return Collections.emptyList();
             TagCommand cmd = new TagCommand();
-        
+            cmd.setMakeBranchTag(isBranch);
             cmd.setFiles(roots);
-            cmd.setTag(tagName);
-        
-            return TagExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null);
+            cmd.setTag(branchName);
+            cmd.setRecursive(recursive);
+            return Arrays.asList(TagExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null));
         }
     }
 }
