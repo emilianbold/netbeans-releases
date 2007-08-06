@@ -78,7 +78,7 @@ public class LoadGenPluginImpl implements LoadGenPlugin {
     public ProcessInstance getProcessInstance() {
       return processInstance.get();
     }
-    
+
     private void cleanup() {
       ProcessInstance pi = processInstance.get();
       if (pi != null) {
@@ -162,7 +162,7 @@ public class LoadGenPluginImpl implements LoadGenPlugin {
    */
   public void stop() {
     Set<ProcessInstance> piSet = new HashSet<ProcessInstance>(runningScripts.size());
-    for(RunningScript script : runningScripts) {
+    for (RunningScript script : runningScripts) {
       piSet.add(script.getProcessInstance());
     }
     stopProcesses(piSet);
@@ -194,12 +194,12 @@ public class LoadGenPluginImpl implements LoadGenPlugin {
       return new HashSet<String>();
     }
     Set<String> extensions = new HashSet<String>();
-    for(Engine engine : manager.findEngines()) {
+    for (Engine engine : manager.findEngines()) {
       extensions.addAll(engine.getSupportedExtensions());
     }
     return extensions;
   }
-  
+
   private void stopProcesses(Collection<ProcessInstance> processes) {
     EngineManager manager = Lookup.getDefault().lookup(EngineManager.class);
 
@@ -214,16 +214,15 @@ public class LoadGenPluginImpl implements LoadGenPlugin {
 
   private static Collection<FileObject> findScripts(final Project project, final Set<String> extensions) {
     Collection<FileObject> scripts = new ArrayList<FileObject>();
-    for (FileObject root : getSourceRoots(project)) {
-      Enumeration<? extends FileObject> children = root.getChildren(true);
-      while (children.hasMoreElements()) {
-        FileObject child = children.nextElement();
-        if (child.isData()) {
-          String extLow = child.getExt().toLowerCase();
-          String extUp = extLow.toUpperCase();
-          if (extensions.contains(extLow) || extensions.contains(extUp)) {
-            scripts.add(child);
-          }
+    FileObject root = project.getProjectDirectory();
+    Enumeration<? extends FileObject> children = root.getChildren(true);
+    while (children.hasMoreElements()) {
+      FileObject child = children.nextElement();
+      if (child.isData()) {
+        String extLow = child.getExt().toLowerCase();
+        String extUp = extLow.toUpperCase();
+        if (extensions.contains(extLow) || extensions.contains(extUp)) {
+          scripts.add(child);
         }
       }
     }
