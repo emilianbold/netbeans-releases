@@ -36,12 +36,18 @@ public final class InstanceNameResolver {
     }
 
     public static PropertyValue createFromSuggested (DesignComponent component, String suggestedMainName) {
+        return createFromSuggested (component, suggestedMainName, null);
+    }
+
+    public static PropertyValue createFromSuggested (DesignComponent component, String suggestedMainName, Collection<String> additionalReservedNames) {
         assert component.getDocument ().getTransactionManager ().isAccess ();
         Collection<? extends CodeNamePresenter> presenters = component.getPresenters (CodeNamePresenter.class);
         if (presenters.isEmpty ())
             Debug.warning ("CodeNamePresenter is missing for", component); // NOI18N
         HashSet<String> names = new HashSet<String> ();
         gatherNames (component.getDocument ().getRootComponent (), component, names);
+        if (additionalReservedNames != null)
+            names.addAll (additionalReservedNames);
 
         suggestedMainName = checkForJavaIdentifierCompliant (suggestedMainName);
         if (checkIfNameAlreadyReserved (presenters, suggestedMainName, names)) {
@@ -120,11 +126,6 @@ public final class InstanceNameResolver {
 
     private static void checkValidity (DesignDocument document) {
         checkValidity (document.getRootComponent (), new HashSet<String> (), new HashSet<String> ());
-    }
-
-    // used for checking validity against the names used in the sources
-    private static void checkValidity (DesignComponent component, HashSet<String> instanceNames, HashSet<String> getterNames) {
-        // TODO
     }
 
 }
