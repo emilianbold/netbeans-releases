@@ -1389,12 +1389,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                             Set<? extends TypeMirror> smarts = env.getSmartTypes();
                             if (smarts != null)
                                 for (TypeMirror smart : smarts) {
-                                    if (smart.getKind() == TypeKind.DECLARED) {
-                                        addSubtypesOf(env, (DeclaredType)smart, true);
-                                    } else if (smart.getKind() == TypeKind.ARRAY) {
-                                        try {
-                                            results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));                                            
-                                        } catch (IllegalArgumentException iae) {}
+                                    if (smart != null) {
+                                        if (smart.getKind() == TypeKind.DECLARED) {
+                                            addSubtypesOf(env, (DeclaredType)smart, true);
+                                        } else if (smart.getKind() == TypeKind.ARRAY) {
+                                            try {
+                                                results.add(JavaCompletionItem.createArrayItem((ArrayType)smart, anchorOffset, env.getController().getElements()));                                            
+                                            } catch (IllegalArgumentException iae) {}
+                                        }
                                     }
                                 }
                         }
@@ -3346,7 +3348,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
                         int idEndPos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
-                        if (controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
+                        if (idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
                             break;
                         argTypes = getArgumentsUpToPos(env, nc.getArguments(), idEndPos, lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset);
                         if (argTypes != null) {
