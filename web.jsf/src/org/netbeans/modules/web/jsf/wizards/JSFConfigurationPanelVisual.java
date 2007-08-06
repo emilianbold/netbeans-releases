@@ -142,17 +142,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         cbValidate.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_cbValidate").charAt(0));
         cbValidate.setSelected(true);
         cbValidate.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Validate_XML")); // NOI18N
-        cbValidate.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbValidate.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         cbVerify.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_cbVerify").charAt(0));
         cbVerify.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Verify_Objects")); // NOI18N
-        cbVerify.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbVerify.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         cbPackageJars.setSelected(true);
         cbPackageJars.setText(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "CB_Package_JARs")); // NOI18N
-        cbPackageJars.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbPackageJars.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         jPanel1.setEnabled(false);
@@ -170,7 +167,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         .add(11, 11, 11)
                         .add(lServletName)
                         .add(37, 37, 37)
-                        .add(tServletName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE))
+                        .add(tServletName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE))
                     .add(confPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -179,7 +176,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(cbVerify)
-                            .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)))
+                            .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)))
                     .add(confPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(cbPackageJars)))
@@ -206,11 +203,11 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
 
-        tServletName.getAccessibleContext().setAccessibleDescription(null);
-        tURLPattern.getAccessibleContext().setAccessibleDescription(null);
-        cbValidate.getAccessibleContext().setAccessibleDescription(null);
-        cbVerify.getAccessibleContext().setAccessibleDescription(null);
-        cbPackageJars.getAccessibleContext().setAccessibleDescription(null);
+        tServletName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ServletName")); // NOI18N
+        tURLPattern.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_Mapping")); // NOI18N
+        cbValidate.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_ValidateXML")); // NOI18N
+        cbVerify.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_VerifyObjects")); // NOI18N
+        cbPackageJars.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ACSD_PackageJarToWar")); // NOI18N
 
         jsfTabbedPane.addTab(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_TAB_Configuration"), confPanel); // NOI18N
 
@@ -218,9 +215,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         libPanel.setAlignmentY(0.2F);
 
         buttonGroup1.add(rbRegisteredLibrary);
+        rbRegisteredLibrary.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_rbRegLibs").charAt(0));
+        rbRegisteredLibrary.setSelected(true);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle"); // NOI18N
         rbRegisteredLibrary.setText(bundle.getString("LBL_REGISTERED_LIBRARIES")); // NOI18N
-        rbRegisteredLibrary.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rbRegisteredLibrary.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rbRegisteredLibrary.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -236,8 +234,9 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         });
 
         buttonGroup1.add(rbNewLibrary);
+        rbNewLibrary.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_rbCrNewLib").charAt(0));
         rbNewLibrary.setText(bundle.getString("LBL_CREATE_NEW_LIBRARY")); // NOI18N
-        rbNewLibrary.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        rbNewLibrary.setToolTipText(bundle.getString("MSG_CreatingLibraries")); // NOI18N
         rbNewLibrary.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rbNewLibrary.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -245,14 +244,19 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             }
         });
 
+        lDirectory.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_lJSFDir").charAt(0));
+        lDirectory.setLabelFor(jtFolder);
         lDirectory.setText(bundle.getString("LBL_INSTALL_DIR")); // NOI18N
+        lDirectory.setToolTipText(bundle.getString("HINT_JSF_Directory")); // NOI18N
 
+        jtFolder.setToolTipText(bundle.getString("HINT_JSF_Directory")); // NOI18N
         jtFolder.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 jtFolderKeyPressed(evt);
             }
         });
 
+        jbBrowse.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_Browse").charAt(0));
         jbBrowse.setText(bundle.getString("LBL_Browse")); // NOI18N
         jbBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -260,8 +264,12 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
             }
         });
 
+        lVersion.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_lJSFVer").charAt(0));
+        lVersion.setLabelFor(jtVersion);
         lVersion.setText(bundle.getString("LBL_VERSION")); // NOI18N
+        lVersion.setToolTipText(bundle.getString("HINT_Version")); // NOI18N
 
+        jtVersion.setToolTipText(bundle.getString("HINT_Version")); // NOI18N
         jtVersion.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 jtVersionKeyReleased(evt);
@@ -269,8 +277,8 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         });
 
         buttonGroup1.add(rbNoneLibrary);
+        rbNoneLibrary.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_rbNoAppend").charAt(0));
         rbNoneLibrary.setText(bundle.getString("LBL_Any_Library")); // NOI18N
-        rbNoneLibrary.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         rbNoneLibrary.setMargin(new java.awt.Insets(0, 0, 0, 0));
         rbNoneLibrary.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -288,20 +296,20 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                     .add(libPanelLayout.createSequentialGroup()
                         .add(rbRegisteredLibrary)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbLibraries, 0, 326, Short.MAX_VALUE))
-                    .add(rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE)
+                        .add(cbLibraries, 0, 298, Short.MAX_VALUE))
+                    .add(rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
                     .add(libPanelLayout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lDirectory)
                             .add(lVersion))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 43, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 18, Short.MAX_VALUE)
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                             .add(jtVersion)
                             .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jbBrowse))
-                    .add(rbNoneLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 476, Short.MAX_VALUE))
+                    .add(rbNoneLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
                 .addContainerGap())
         );
         libPanelLayout.setVerticalGroup(
@@ -324,12 +332,13 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                     .add(jtVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rbNoneLibrary)
-                .addContainerGap(138, Short.MAX_VALUE))
+                .addContainerGap(100, Short.MAX_VALUE))
         );
 
         jsfTabbedPane.addTab(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_TAB_Libraries"), libPanel); // NOI18N
 
         add(jsfTabbedPane, "card10");
+        jsfTabbedPane.getAccessibleContext().setAccessibleName("");
     }// </editor-fold>//GEN-END:initComponents
 
 private void rbNoneLibraryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbNoneLibraryItemStateChanged
