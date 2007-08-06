@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
@@ -70,6 +70,10 @@
 
 	<!-- CSH topics for merge conflicts resolver -->
 	<mapID target="org.netbeans.modules.merge.builtin.visualizer.MergeDialogComponent" url="cvsmodule/csh/cvs-lite_merge_resolver.html" />
+
+        <!-- CSH topics for Versioning Panel in Options Window -->
+        <mapID target="org.netbeans.modules.versioning.system.cvss.options.CvsOptionsController" url="cvsmodule/csh/cvs-lite_options_window.html" />
+        <mapID target="netbeans.optionsDialog.advanced.ant" url="cvsmodule/cvs/cvs-lite_add_var_dialog.html" />
 
 	<!-- TODO: where is this one -->
 	<mapID target="cvs-lite_importfolder_dialog" url="cvsmodule/csh/cvs-lite_importfolder_dialog.html" />
