@@ -18,12 +18,14 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
@@ -36,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -352,8 +355,9 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         }
         statements.add(make.Return(make.Identifier("true")));
         BlockTree body = make.Block(statements, false);
+        ModifiersTree modifiers = prepareModifiers(wc, mods,make);
         
-        return make.Method(make.Modifiers(mods), "equals", make.PrimitiveType(TypeKind.BOOLEAN), Collections.<TypeParameterTree> emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
+        return make.Method(modifiers, "equals", make.PrimitiveType(TypeKind.BOOLEAN), Collections.<TypeParameterTree> emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
     }    
     
     private static MethodTree createHashCodeMethod(WorkingCopy wc, Iterable<? extends VariableElement> hashCodeFields, DeclaredType type) {
@@ -402,8 +406,9 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         }
         statements.add(make.Return(make.Identifier("hash"))); //NOI18N        
         BlockTree body = make.Block(statements, false);
+        ModifiersTree modifiers = prepareModifiers(wc, mods,make);
         
-        return make.Method(make.Modifiers(mods), "hashCode", make.PrimitiveType(TypeKind.INT), Collections.<TypeParameterTree> emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
+        return make.Method(modifiers, "hashCode", make.PrimitiveType(TypeKind.INT), Collections.<TypeParameterTree> emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
     }
 
     private static boolean isPrimeNumber(int n) {
@@ -429,4 +434,22 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         }
         return proposed;
     }
+    
+    private static ModifiersTree prepareModifiers(WorkingCopy wc, Set<Modifier> mods, TreeMaker make) {
+
+        List<AnnotationTree> annotations = new LinkedList<AnnotationTree>();
+
+        if (GeneratorUtils.supportsOverride(wc.getFileObject())) {
+            TypeElement override = wc.getElements().getTypeElement("java.lang.Override");
+
+            if (override != null) {
+                annotations.add(wc.getTreeMaker().Annotation(wc.getTreeMaker().QualIdent(override), Collections.<ExpressionTree>emptyList()));
+            }
+        }
+
+        ModifiersTree modifiers = make.Modifiers(mods, annotations);
+
+        return modifiers;
+    }
+
 }
