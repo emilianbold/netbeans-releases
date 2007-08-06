@@ -370,7 +370,6 @@ public final class SearchScopeRegistry {
     }
     
     boolean hasProjectSearchScopes() {
-        assert EventQueue.isDispatchThread();
         return projectSearchScopesCount > 0;
     }
 
