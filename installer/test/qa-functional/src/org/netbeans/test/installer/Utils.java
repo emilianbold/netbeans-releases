@@ -74,6 +74,8 @@ public class Utils {
 
     public static String getInstaller(TestData data) {
         data.setBuildNumber(determineBuildNumber(data, NB_DOWNLOAD_PAGE));
+        data.getLogger().log(Level.INFO, "Build number => " + data.getBuildNumber());
+        
         //File sourceBandle = new File(data.getInstallerFileName());
         File destBundle = new File(data.getTestWorkDir() + File.separator + "installer" + "." + data.getPlatformExt());
 
@@ -279,25 +281,13 @@ public class Utils {
         JFrameOperator installerMain = new JFrameOperator(MAIN_FRAME_TITLE);
 
         new JButtonOperator(installerMain, INSTALL_BUTTON_LABEL).push();
-        new JLabelOperator(installerMain, "Installing"); //dirty hack
-        JProgressBarOperator installingProgress = new JProgressBarOperator(installerMain);
-
-        long waitingTime;
-        for (waitingTime = 0; waitingTime < Utils.MAX_INSTALATION_WAIT; waitingTime += Utils.DELAY) {
-            int val = ((JProgressBar) installingProgress.getSource()).getValue();
-            if (val >= 100) {
-                break;
-            }
-            Utils.waitSecond(data, 5);
-        }
-
-        if (waitingTime >= Utils.MAX_INSTALATION_WAIT) {
-            NbTestCase.fail("Installation timeout");
-        }
+        watchProgressBar(data, installerMain, "Installing");
     }
 
-    public static void stepUninstall() {
-        new JButtonOperator(new JFrameOperator(MAIN_FRAME_TITLE), UNINSTALL_BUTTON_LABEL).push();
+    public static void stepUninstall(TestData data) {
+        JFrameOperator uninstallMain = new JFrameOperator(MAIN_FRAME_TITLE);
+        new JButtonOperator(uninstallMain, UNINSTALL_BUTTON_LABEL).push();
+        watchProgressBar(data, uninstallMain, "Uninstalling");
     }
 
     public static void stepFinish() {
@@ -337,7 +327,7 @@ public class Utils {
         NbTestCase.assertEquals("Load engine classes", OK, Utils.loadEngineClasses(data));
         NbTestCase.assertEquals("Run uninstaller main class", OK, Utils.runUninstaller(data));
 
-        Utils.stepUninstall();
+        Utils.stepUninstall(data);
 
         Utils.stepFinish();
 
@@ -410,5 +400,23 @@ public class Utils {
 
     private static String toString(Exception ex) {
         return ex.getClass().getName() + "=>" + ex.getMessage();
+    }
+    
+    private static void watchProgressBar(TestData data, JFrameOperator frame, String label) {
+        new JLabelOperator(frame, label); //dirty hack
+        JProgressBarOperator progressBar = new JProgressBarOperator(frame);
+
+        long waitingTime;
+        for (waitingTime = 0; waitingTime < Utils.MAX_INSTALATION_WAIT; waitingTime += Utils.DELAY) {
+            int val = ((JProgressBar) progressBar.getSource()).getValue();
+            if (val >= 100) {
+                break;
+            }
+            Utils.waitSecond(data, 5);
+        }
+
+        if (waitingTime >= Utils.MAX_INSTALATION_WAIT) {
+            NbTestCase.fail("Installation timeout");
+        }
     }
 }
