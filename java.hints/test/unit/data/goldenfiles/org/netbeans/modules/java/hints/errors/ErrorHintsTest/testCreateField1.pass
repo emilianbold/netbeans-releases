@@ -14,6 +14,7 @@ package org.netbeans.test.java.hints;
  *
  */
 public class CreateField1 {
+    private String test;
     
     /** Creates a new instance of CreateElement1 */
     public CreateField1() {
@@ -22,6 +23,5 @@ public class CreateField1 {
     public final void main(String[] args) {
         test = "";
     }
-private String test;
 
 }

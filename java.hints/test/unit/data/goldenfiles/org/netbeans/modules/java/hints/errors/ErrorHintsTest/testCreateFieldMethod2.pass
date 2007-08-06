@@ -16,6 +16,7 @@ import java.util.List;
  *
  */
 public class CreateFieldMethod2 {
+    private List<String> t;
     
     /** Creates a new instance of CreateElement1 */
     public CreateFieldMethod2() {
@@ -24,6 +25,5 @@ public class CreateFieldMethod2 {
     public final void main(String[] args) {
         t = java.util.Collections.<String>emptyList();
     }
-private List<String> t;
 
 }

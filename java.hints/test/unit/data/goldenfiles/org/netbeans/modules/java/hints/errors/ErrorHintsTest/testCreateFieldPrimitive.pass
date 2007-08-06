@@ -14,6 +14,7 @@ package org.netbeans.test.java.hints;
  *
  */
 public class CreateFieldPrimitive {
+    private int t;
     
     /** Creates a new instance of CreateElement1 */
     public CreateFieldPrimitive() {
@@ -22,6 +23,5 @@ public class CreateFieldPrimitive {
     public final void main(String[] args) {
         t = 1;
     }
-private int t;
 
 }

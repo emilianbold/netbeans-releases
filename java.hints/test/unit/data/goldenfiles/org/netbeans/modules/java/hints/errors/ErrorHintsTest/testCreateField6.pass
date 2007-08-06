@@ -15,6 +15,7 @@ import java.util.List;
  *
  */
 public class CreateField6 {
+    private List t;
     
     /** Creates a new instance of CreateElement1 */
     public CreateField6() {
@@ -24,6 +25,5 @@ public class CreateField6 {
         List l;
         t = l;
     }
-private List t;
 
 }

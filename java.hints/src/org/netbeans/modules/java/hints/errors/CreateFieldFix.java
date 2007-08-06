@@ -29,6 +29,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
@@ -115,7 +116,7 @@ public final class CreateFieldFix implements Fix {
                 }
                 
                 assert var != null : tm.getKind();
-                ClassTree decl = make.addClassMember(targetTree, var);
+                ClassTree decl = GeneratorUtilities.get(working).insertClassMember(targetTree, var);
                 working.rewrite(targetTree, decl);
             }
         }).commit();

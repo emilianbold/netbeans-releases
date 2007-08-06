@@ -1,3 +1,2 @@
-Suppress Warning unchecked
+Suppress Warning - unchecked
 Cast ...toArray(...) to JButton[]
-Change type of s to Object[]
