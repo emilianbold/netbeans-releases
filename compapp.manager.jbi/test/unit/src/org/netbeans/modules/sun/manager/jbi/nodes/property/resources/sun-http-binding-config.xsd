@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://com.sun.jbi.component/schema/configuration"
+            xmlns:tns="http://com.sun.jbi.component/schema/configuration"
+            attributeFormDefault="unqualified"
+            elementFormDefault="qualified">
+   
+    <xsd:element name="Configuration"
+                 type="tns:ConfigurationType"/>
+   
+    <xsd:complexType name="ConfigurationType">
+        <xsd:sequence>
+            <xsd:element type="tns:ThreadType" name="OutboundThreads">
+            </xsd:element>
+           
+            <xsd:element type="tns:HttpPortType" name="HttpDefaultPort">
+            </xsd:element>
+           
+            <xsd:element type="tns:HttpPortType" name="HttpsDefaultPort">
+            </xsd:element>
+           
+            <xsd:element type="tns:UseJVMProxySettingsType" name="UseJVMProxySettings">
+            </xsd:element>
+           
+            <xsd:element type="tns:ProxyTypeType" name="ProxyType">
+            </xsd:element>
+           
+            <xsd:element type="tns:ProxyHostType" name="ProxyHost">
+            </xsd:element>
+           
+            <xsd:element type="tns:ProxyPortType" name="ProxyPort">
+            </xsd:element>
+           
+            <xsd:element type="tns:nonProxyHostsType" name="NonProxyHosts">
+            </xsd:element>
+           
+            <xsd:element type="tns:ProxyUserNameType" name="ProxyUserName">
+            </xsd:element>
+           
+            <xsd:element type="tns:ProxyPasswordType" name="ProxyPassword">
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute type="xsd:string" name="name"/>
+    </xsd:complexType>
+   
+    <xsd:complexType name="ThreadType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:SimpleRestrictedThreadType">
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+   
+     <xsd:simpleType name="SimpleRestrictedThreadType">
+        <xsd:restriction base="xsd:int">
+            <xsd:minInclusive value="1"/>
+            <xsd:maxInclusive value="2147483647"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+   
+    <xsd:complexType name="HttpPortType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:HttpPortSimpleType">
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+   
+    <xsd:simpleType name="HttpPortSimpleType">
+        <xsd:restriction base="xsd:int">
+            <xsd:totalDigits value="5"/>
+            <xsd:minInclusive value="-1"/>
+            <xsd:maxInclusive value="65536"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+   
+    <xsd:complexType name="ProxyPortType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:ProxyPortSimpleType">
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+   
+    <xsd:simpleType name="ProxyPortSimpleType">
+        <xsd:restriction base="xsd:int">
+            <xsd:totalDigits value="5"/>
+            <xsd:minInclusive value="0"/>
+            <xsd:maxInclusive value="65536"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+   
+    <xsd:complexType name="UseJVMProxySettingsType">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:boolean">
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+   
+    <xsd:complexType name="ProxyTypeType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:ProxyTypeSimpleType">
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+   
+    <xsd:simpleType name="ProxyTypeSimpleType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="SOCKS"/>
+            <xsd:enumeration value="HTTP"/>
+            <xsd:enumeration value="DIRECT"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+   
+    <xsd:complexType name="ProxyHostType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:SimpleStringType">
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+   
+    <xsd:complexType name="nonProxyHostsType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:SimpleStringType">
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+   
+    <xsd:complexType name="ProxyUserNameType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:SimpleStringType">
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+   
+   
+    <xsd:complexType name="ProxyPasswordType">
+        <xsd:simpleContent>
+            <xsd:extension base="tns:SimpleStringType">
+                <xsd:attribute type="xsd:string" name="displayName"/>
+                <xsd:attribute type="xsd:string" name="displayDescription"/>
+                <xsd:attribute type="xsd:boolean" name="isPasswordField"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+   
+    <xsd:simpleType name="SimpleStringType">
+        <xsd:restriction base="xsd:string">
+        </xsd:restriction>
+    </xsd:simpleType>
+   
+</xsd:schema>

@@ -26,6 +26,7 @@
 package org.netbeans.modules.sun.manager.jbi.editors;
 
 import java.beans.PropertyEditorSupport;
+import java.util.Arrays;
 
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -98,6 +99,14 @@ public class ComboBoxPropertyEditor extends PropertyEditorSupport implements ExP
         @Override
         public void setAsText(String t) {
             setValue(t);
+        }
+
+        @Override
+        public void setValue(Object t) {
+            if (!Arrays.asList(vals).contains(t)) {
+                throw new IllegalArgumentException("Illegal argument: " + t);
+            }
+            super.setValue(t);
         }
 
         /**
