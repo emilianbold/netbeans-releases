@@ -1069,7 +1069,8 @@ public final class BorderEditor extends PropertyEditorSupport
     // ------------------------------------------------------------------------
     // CompoundBorder XML persistence - compatible with former CompoundBorderInfo
 
-    private static final String XML_COMPOUND_BORDER = "CompundBorder"; // NOI18N
+    private static final String XML_COMPOUND_BORDER_TYPO = "CompundBorder"; // NOI18N // Issue 73244
+    private static final String XML_COMPOUND_BORDER = "CompoundBorder"; // NOI18N
     private static final String ID_BI_COMPOUND // "ID" of former CompoundBorderInfo
         = "org.netbeans.modules.form.compat2.border.CompoundBorderInfo"; // NOI18N
 
@@ -1100,7 +1101,8 @@ public final class BorderEditor extends PropertyEditorSupport
     }
 
     public void readCompoundBorder(org.w3c.dom.Node element) throws IOException {
-        if (!XML_COMPOUND_BORDER.equals(element.getNodeName()))
+        String nodeName = element.getNodeName();
+        if (!XML_COMPOUND_BORDER.equals(nodeName) && !XML_COMPOUND_BORDER_TYPO.equals(nodeName))
             throw new IOException("Invalid format: missing \""+XML_COMPOUND_BORDER+"\" element."); // NOI18N
 
         try {
