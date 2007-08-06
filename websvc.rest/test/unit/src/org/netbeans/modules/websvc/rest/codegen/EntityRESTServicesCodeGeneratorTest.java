@@ -20,6 +20,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -63,5 +64,16 @@ public class EntityRESTServicesCodeGeneratorTest extends TestBase {
         
         //FIXME faile on generic java template processing on include of default-license.text
         //gen.generate();
+    }
+
+    public void testSingularize() {
+        //assertEquals("Product", Util.singularize("Products"));
+        assertEquals("Product", Util.singularize("Product"));
+        //assertEquals("Products", Util.pluralize("Products"));
+        assertEquals("Products", Util.pluralize("Product"));
+        //assertEquals("Address", Util.singularize("Addresses"));
+        //assertEquals("Address", Util.singularize("Address"));
+        assertEquals("Addresses", Util.pluralize("Address"));
+        //assertEquals("Addresses", Util.pluralize("Addresses"));
     }
 }
