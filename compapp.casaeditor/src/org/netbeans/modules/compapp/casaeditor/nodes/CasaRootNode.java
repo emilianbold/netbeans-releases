@@ -36,6 +36,7 @@ import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddWSDLPortsAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AutoLayoutAction;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddExternalServiceUnitAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddJBIModuleAction;
 import org.netbeans.modules.compapp.casaeditor.properties.LookAndFeelProperty;
 import org.netbeans.modules.compapp.casaeditor.properties.PropertyUtils;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
@@ -145,16 +146,12 @@ public class CasaRootNode extends CasaNode {
     }
 
     protected void addCustomActions(List<Action> actions) {
-        try {
-            final Project jbiProject = getModel().getJBIProject();
-            actions.add(new AddJBIModuleAction(jbiProject));
-            actions.add(SystemAction.get(AddWSDLPortsAction.class));
-            actions.add(SystemAction.get(AddExternalServiceUnitAction.class));
-            actions.add(null);
-            actions.add(new AutoLayoutAction(getDataObject()));
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
+        final Project jbiProject = getModel().getJBIProject();
+        actions.add(new AddJBIModuleAction(jbiProject));
+        actions.add(SystemAction.get(AddWSDLPortsAction.class));
+        actions.add(SystemAction.get(AddExternalServiceUnitAction.class));
+        actions.add(null);
+        actions.add(new AutoLayoutAction(getDataObject()));
     }
 
 
@@ -187,25 +184,6 @@ public class CasaRootNode extends CasaNode {
         }
         public Object getChildKeys(Object data)  {
             return CHILD_TYPES;
-        }
-    }
-
-
-
-    private static class AddJBIModuleAction extends AbstractAction {
-
-        private WeakReference mProjectReference;
-
-        public AddJBIModuleAction(Project jbiProject) {
-            super(NbBundle.getMessage(CasaRootNode.class, "LBL_AddProjectAction_Name"), null);
-            mProjectReference = new WeakReference<Project>(jbiProject);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            Project jbiProject = (Project) mProjectReference.get();
-            if (jbiProject != null) {
-                new AddProjectAction().perform(jbiProject);
-            }
         }
     }
 }

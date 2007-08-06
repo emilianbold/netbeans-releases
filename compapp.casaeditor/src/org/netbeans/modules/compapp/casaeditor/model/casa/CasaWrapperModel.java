@@ -28,7 +28,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
@@ -47,8 +56,6 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectHelper;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.AddProjectAction;
 import org.netbeans.modules.compapp.projects.jbi.ui.actions.DeleteModuleAction;
-import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
-import org.netbeans.modules.xml.wsdl.model.*;
 import org.netbeans.modules.xml.wsdl.model.visitor.FindWSDLComponent;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.ExtensibilityElementTemplateFactory;
 import org.netbeans.modules.xml.wsdl.bindingsupport.template.TemplateGroup;
@@ -57,6 +64,18 @@ import org.netbeans.modules.xml.wsdl.bindingsupport.template.localized.Localized
 import org.netbeans.modules.xml.wsdl.ui.wizard.BindingGenerator;
 import org.netbeans.modules.xml.wsdl.ui.wizard.WizardBindingConfigurationStep;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ValidationInfo;
+import org.netbeans.modules.xml.wsdl.model.Binding;
+import org.netbeans.modules.xml.wsdl.model.BindingOperation;
+import org.netbeans.modules.xml.wsdl.model.Definitions;
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.Import;
+import org.netbeans.modules.xml.wsdl.model.Port;
+import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.Service;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
+import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
@@ -64,6 +83,7 @@ import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -104,8 +124,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     private static final String NEWLINE = System.getProperty("line.separator");
     private static final String CASA_WSDL_TNS_PREFIX = "http://enterprise.netbeans.org/casa/"; 
     
-//    private static JarCatalogModel acm = new JarCatalogModel();
-    private static CatalogWriteModel catalogModel;
+    //private static CatalogWriteModel catalogModel;
     
     private PropertyChangeSupport mSupport = new PropertyChangeSupport(this);
     
@@ -1287,14 +1306,12 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     private String getCompAppWSDLFileName() {
-        try {
-            Project jbiProject = getJBIProject(); 
+        Project jbiProject = getJBIProject(); 
+        if (jbiProject != null) {
             return JbiProjectHelper.getJbiProjectName(jbiProject) + ".wsdl"; // NOI18N
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } else {
+            return null;
         }
-        
-        return null;
     }
     
     private JbiBindingInfo getBindingInfo(final Port port) {
@@ -2162,11 +2179,16 @@ public class CasaWrapperModel extends CasaModelImpl {
     /**
      * Gets the owning compapp project.
      */
-    public Project getJBIProject() throws IOException {
-        Lookup lookup = getModelSource().getLookup();
-        FileObject casaFO = lookup.lookup(FileObject.class);
-        FileObject projectFO = casaFO.getParent().getParent().getParent();
-        return ProjectManager.getDefault().findProject(projectFO);
+    public Project getJBIProject() {
+        try {
+            Lookup lookup = getModelSource().getLookup();
+            FileObject casaFO = lookup.lookup(FileObject.class);
+            FileObject projectFO = casaFO.getParent().getParent().getParent();
+            return ProjectManager.getDefault().findProject(projectFO);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(e);
+        }
+        return null;
     }      
     
     /**
@@ -2387,14 +2409,8 @@ public class CasaWrapperModel extends CasaModelImpl {
     }
     
     private String getCompAppWSDLTargetNamespace() {
-        String projName = "unknown";  // NOI18N
-        try {
-            Project jbiProject = getJBIProject();
-            projName = JbiProjectHelper.getJbiProjectName(jbiProject);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return CASA_WSDL_TNS_PREFIX + projName;
+        Project jbiProject = getJBIProject();
+        return JbiProjectHelper.getJbiProjectName(jbiProject);
     }
     
     private void createEmptyCompAppWSDLFile(File file) {

@@ -22,9 +22,11 @@ package org.netbeans.modules.compapp.casaeditor.nodes;
 import java.awt.Image;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaServiceEngineServiceUnit;
 import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddExternalServiceUnitAction;
+import org.netbeans.modules.compapp.casaeditor.nodes.actions.AddJBIModuleAction;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -50,6 +52,8 @@ public class ServiceEnginesNode extends CasaNode {
 
     @Override
     protected void addCustomActions(List<Action> actions) {
+        Project project = getModel().getJBIProject();
+        actions.add(new AddJBIModuleAction(project));
         actions.add(SystemAction.get(AddExternalServiceUnitAction.class));
     }
 
