@@ -59,6 +59,11 @@ public abstract class XsltNodesTreeModel implements TreeModel {
             newRootNode.getDataObject() == myRootNode.getDataObject()){
             return;
         }
+        
+        if (myRootNode != null){
+            myRootNode.removeFromTree();
+        }
+        
         myRootNode = newRootNode;
     }
     public int getIndexOfChild(Object parent, Object requiredChild) {

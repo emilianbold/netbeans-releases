@@ -185,12 +185,19 @@ public abstract class TreeNode extends Node {
         return (((IMapperTreeNode)getMapperNode()) != null) && ((IMapperTreeNode)getMapperNode()).isSourceTreeNode();
     }
     
-    private void removeFromTree(){
+    public  void removeFromTree(){
         
         getMapper().getBuilder().destroyDiagramRecursive(this);
         
+       
         if (oldChildren != null){
             for (TreeNode child: oldChildren){
+                child.removeFromTree();
+            }
+        }
+        
+        if (children != null){
+            for (TreeNode child: children){
                 child.removeFromTree();
             }
         }
