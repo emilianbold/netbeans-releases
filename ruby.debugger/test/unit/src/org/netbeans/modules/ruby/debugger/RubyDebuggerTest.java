@@ -250,8 +250,7 @@ public final class RubyDebuggerTest extends TestBase {
         FileObject testFO = FileUtil.toFileObject(testF);
         addBreakpoint(testFO, 2);
         Process p = startDebugging(testF);
-        DebuggerEngine engine;
-        while ((engine = getEngineManager()) != null) {
+        while ((getEngineManager()) != null) {
             Thread.sleep(10);
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
