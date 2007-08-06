@@ -262,17 +262,17 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
 
         return nodeWidget;
     }
-    private WidgetAction actionMapAction = null;
+    private WidgetAction pageSpecificActionMapAction = null;
 
     public final void updateNodeWidgetActions(Page page) {
         Widget nodeWidget = findWidget(page);
         if (nodeWidget != null) {
-            if (actionMapAction != null) {
-                nodeWidget.getActions().removeAction(actionMapAction);
+            if (pageSpecificActionMapAction != null) {
+                nodeWidget.getActions().removeAction(pageSpecificActionMapAction);
             }
-            actionMapAction = createActionMapAction(page);
-            if (actionMapAction != null) {
-                nodeWidget.getActions().addAction(actionMapAction);
+            pageSpecificActionMapAction = createActionMapAction(page);
+            if (pageSpecificActionMapAction != null) {
+                nodeWidget.getActions().addAction(pageSpecificActionMapAction);
             }
             
         }
@@ -292,7 +292,12 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         if (actionMap.size() < 1) {
             return null;
         }
-        return new MyActionMapAction(inputMap, actionMap);
+        /* Not sure if it is the right thing to create a new action map
+         * should I be adding it?
+         */
+        return new MyActionMapAction(inputMap, actionMap);  
+
+        
         //return  ActionFactory.createActionMapAction(inputMap, actionMap);
     }
 
