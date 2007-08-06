@@ -105,7 +105,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
     }
     
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx("netbeans.optionsDialog.advanced.subversion");
+        return new org.openide.util.HelpCtx(getClass());
     }
     
     public javax.swing.JComponent getComponent(org.openide.util.Lookup masterLookup) {

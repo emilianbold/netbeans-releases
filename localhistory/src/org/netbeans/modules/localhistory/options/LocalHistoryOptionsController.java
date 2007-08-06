@@ -68,7 +68,7 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
     }
 
     public HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx("netbeans.optionsDialog.advanced.localhistory");
+        return new HelpCtx(getClass());
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
