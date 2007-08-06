@@ -154,6 +154,7 @@ public class PolicyModelHelper {
     /* Used to get specific domain elements under top of the policy - under POLICY/ExactlyOne/All/*SPECIFICELEMENT*
      * Does not create any elements
      */
+    @SuppressWarnings("unchecked")
     public static <T extends ExtensibilityElement> T getTopLevelElement(WSDLComponent c, Class elementClass) {
         ExtensibilityElement e = null;
         if (c == null) return null;
@@ -190,7 +191,6 @@ public class PolicyModelHelper {
 
     /* Returns policy with specific uri */
     private static Policy getPolicyForPolicyUri(String policyURI, Definitions d) {
-        String uri = policyURI;
         if ((policyURI != null) && (policyURI.startsWith("#"))) {   //NOI18N
             policyURI = policyURI.substring(1);
         }
@@ -271,6 +271,7 @@ public class PolicyModelHelper {
      *  Creates element with QName qname, of type cl, under wsdlcomponent c and returns it; if such element already exists, 
      * returns the existing element
      */
+    @SuppressWarnings("unchecked")
     public static <T extends WSDLComponent> T createElement(WSDLComponent c, QName qname, Class cl, boolean withPolicy) {
         if (c == null) return null;
         
@@ -318,6 +319,7 @@ public class PolicyModelHelper {
                     c = policies.get(0);
                 }
             }
+            @SuppressWarnings("unchecked")
             List<ExtensibilityElement> l = c.getExtensibilityElements(cl);
             if ((l != null) && (!l.isEmpty())) {
                 ExtensibilityElement tok = l.get(0);

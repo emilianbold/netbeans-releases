@@ -30,13 +30,8 @@ import org.openide.util.NbBundle;
  */
 public class CallbackClientNode extends org.openide.nodes.AbstractNode {
     
-    private SectionView view;
-    private Binding binding;
-    
-    public CallbackClientNode(SectionView view, Binding binding) {
+    public CallbackClientNode() {
         super(org.openide.nodes.Children.LEAF);
-        this.view = view;
-        this.binding = binding;
         setDisplayName(NbBundle.getMessage(CallbackClientNode.class, "LBL_Section_Callback_Client"));//NOI18N
     }
     

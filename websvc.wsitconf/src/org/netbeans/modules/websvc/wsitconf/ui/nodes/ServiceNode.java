@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.nodes;
 
-import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -30,13 +29,8 @@ import org.openide.util.NbBundle;
  */
 public class ServiceNode extends org.openide.nodes.AbstractNode {
     
-    private SectionView view;
-    private Binding binding;
-    
-    public ServiceNode(SectionView view, Binding binding) {
+    public ServiceNode( Binding binding) {
         super(org.openide.nodes.Children.LEAF);
-        this.view = view;
-        this.binding = binding;
         setDisplayName(NbBundle.getMessage(ServiceNode.class, "LBL_Section_Service", binding.getName()));
     }
 

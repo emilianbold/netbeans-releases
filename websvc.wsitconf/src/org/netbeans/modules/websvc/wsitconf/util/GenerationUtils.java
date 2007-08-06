@@ -225,7 +225,6 @@ public final class GenerationUtils extends SourceUtils {
     // <editor-fold desc="Public methods">
 
     public Tree createType(String typeName) {
-        TreeMaker make = getTreeMaker();
         TypeKind primitiveTypeKind = null;
         if ("boolean".equals(typeName)) {           // NOI18N
             primitiveTypeKind = TypeKind.BOOLEAN;

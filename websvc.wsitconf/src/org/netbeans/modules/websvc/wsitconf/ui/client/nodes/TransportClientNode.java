@@ -29,14 +29,9 @@ import org.openide.util.NbBundle;
  * @author Martin Grebac
  */
 public class TransportClientNode extends org.openide.nodes.AbstractNode {
-    
-    private SectionView view;
-    private Binding binding;
-    
-    public TransportClientNode(SectionView view, Binding binding) {
+       
+    public TransportClientNode() {
         super(org.openide.nodes.Children.LEAF);
-        this.view = view;
-        this.binding = binding;
         setDisplayName(NbBundle.getMessage(TransportClientNode.class, "LBL_Section_Transport_Client"));//NOI18N
     }
     

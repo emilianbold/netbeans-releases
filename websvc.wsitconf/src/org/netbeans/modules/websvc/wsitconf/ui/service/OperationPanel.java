@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.service;
 
-import javax.swing.undo.UndoManager;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.TxModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
@@ -32,9 +31,7 @@ import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.nodes.Node;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
-import org.netbeans.modules.xml.wsdl.model.Binding;
 
 /**
  *
@@ -44,22 +41,16 @@ public class OperationPanel extends SectionInnerPanel {
 
     private WSDLModel model;
     private Node node;
-    private Binding binding;
     private BindingOperation operation;
-    private UndoManager undoManager;
     private boolean inSync = false;
     private Project project;
-    private JaxWsModel jaxwsmodel;
     
-    public OperationPanel(SectionView view, Node node, Project p, BindingOperation operation, UndoManager undoManager, JaxWsModel jaxwsmodel) {
+    public OperationPanel(SectionView view, Node node, Project p, BindingOperation operation) {
         super(view);
         this.model = operation.getModel();
         this.node = node;
-        this.binding = (Binding)operation.getParent();
-        this.undoManager = undoManager;
         this.project = p;
         this.operation = operation;
-        this.jaxwsmodel = jaxwsmodel;
         initComponents();
         
         txCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());

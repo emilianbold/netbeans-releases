@@ -130,7 +130,7 @@ public class WSITModelSupport {
             String wsdlUrl = service.getWsdlUrl();
             if (wsdlUrl == null) { // WS from Java
                 if (implClass == null) {
-                    logger.log(Level.INFO, "Implementation class is null: " + implClass);
+                    logger.log(Level.INFO, "Implementation class is null");
                     return null;
                 }
                 JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(implClass);

@@ -31,7 +31,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPoli
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.STSConfiguration;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.ServiceProvider;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -50,7 +49,6 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
     };
     
     private ServiceProvidersTableModel tablemodel;
-    private WSDLModel model;
     private STSConfiguration stsConfig;
     
     private Map<String, ServiceProviderElement> addedProviders;
@@ -60,9 +58,8 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
     /**
      * Creates a new instance of ServiceProvidersTablePanel
      */
-    public ServiceProvidersTablePanel(ServiceProvidersTableModel tablemodel, WSDLModel model, STSConfiguration stsConfig) {
+    public ServiceProvidersTablePanel(ServiceProvidersTableModel tablemodel, STSConfiguration stsConfig) {
         super(tablemodel);
-        this.model = model;
         this.stsConfig = stsConfig;
         this.tablemodel = tablemodel;
         
@@ -176,9 +173,7 @@ public class ServiceProvidersTablePanel extends DefaultTablePanel {
         
         public void setData(STSConfiguration stsConfig) {
             
-            children = new ArrayList<ServiceProviderElement>();
-            List<ServiceProviderElement> list = new ArrayList<ServiceProviderElement>();
-            
+            children = new ArrayList<ServiceProviderElement>();            
             List<ServiceProvider> spList = ProprietarySecurityPolicyModelHelper.getSTSServiceProviders(stsConfig);
             
             if ((spList != null) && !(spList.isEmpty())) {

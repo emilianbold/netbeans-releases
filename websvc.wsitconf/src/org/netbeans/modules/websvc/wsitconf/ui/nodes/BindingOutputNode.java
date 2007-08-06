@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.nodes;
 
-import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -30,13 +29,8 @@ import org.openide.util.NbBundle;
  */
 public class BindingOutputNode extends org.openide.nodes.AbstractNode {
     
-    private SectionView view;
-    private BindingOutput bo;
-    
-    public BindingOutputNode(SectionView view, BindingOutput bo) {
+    public BindingOutputNode( BindingOutput bo) {
         super(org.openide.nodes.Children.LEAF);
-        this.view = view;
-        this.bo = bo;
         setDisplayName(NbBundle.getMessage(BindingOutputNode.class, "LBL_Section_BindingOutput", bo.getName()));
     }
 

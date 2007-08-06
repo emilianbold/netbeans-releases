@@ -79,7 +79,6 @@ public class ProprietarySecurityPolicyModelHelper {
 //    }
 
     public static String getSTSLifeTime(Binding b) {
-        WSDLModel model = b.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         WSDLComponent sc = getSTSConfiguration(p);
         if (sc != null) {

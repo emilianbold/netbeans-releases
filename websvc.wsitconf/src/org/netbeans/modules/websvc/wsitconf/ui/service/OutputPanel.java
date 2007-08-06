@@ -32,8 +32,6 @@ import org.netbeans.modules.xml.wsdl.model.BindingOutput;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.nodes.Node;
-
 import javax.swing.*;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.xml.xam.ComponentEvent;
@@ -47,26 +45,20 @@ import org.openide.util.NbBundle;
 public class OutputPanel extends SectionInnerPanel {
 
     private WSDLModel model;
-    private Node node;
     private BindingOperation operation;
     private BindingOutput output;
     private Binding binding;
     private UndoManager undoManager;
-    private boolean inSync = false;
+//    private boolean inSync = false;
 
-    public OutputPanel(SectionView view, Node node, BindingOutput output, UndoManager undoManager) {
+    public OutputPanel(SectionView view, BindingOutput output, UndoManager undoManager) {
         super(view);
         this.model = output.getModel();
-        this.node = node;
         this.output = output;
         this.operation = (BindingOperation)output.getParent();
         this.binding = (Binding)operation.getParent();
         this.undoManager = undoManager;
         initComponents();
-        
-        inSync = true;
-        inSync = false;
-
         sync();
         
         model.addComponentListener(new ComponentListener() {
@@ -84,11 +76,11 @@ public class OutputPanel extends SectionInnerPanel {
     }
 
     private void sync() {
-        inSync = true;
+//        inSync = true;
 
         enableDisable();
         
-        inSync = false;
+//        inSync = false;
     }
 
     @Override

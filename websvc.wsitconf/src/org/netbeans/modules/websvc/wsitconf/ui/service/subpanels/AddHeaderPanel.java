@@ -20,7 +20,6 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 
 import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.MessageHeader;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 
 /**
@@ -40,10 +39,10 @@ public class AddHeaderPanel extends javax.swing.JPanel {
 
         this.binding = b;
 
-        boolean rm = true;
-        if (binding != null) {
-            rm = RMModelHelper.isRMEnabled(binding);
-        }
+//        boolean rm = true;
+//        if (binding != null) {
+//            rm = RMModelHelper.isRMEnabled(binding);
+//        }
         
         headerCombo.addItem(MessageHeader.ADDRESSING_TO);
         headerCombo.addItem(MessageHeader.ADDRESSING_FROM);

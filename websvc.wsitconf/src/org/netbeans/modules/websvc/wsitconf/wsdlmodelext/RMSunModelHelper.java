@@ -91,10 +91,12 @@ public class RMSunModelHelper {
             model.startTransaction();
         }
         try {
-            if ((value == null) && (ri != null)) {
-                PolicyModelHelper.removeElement(ri);
-            } else {
-                ri.setResendInterval(value);
+            if (ri != null) {
+                if (value == null) {
+                    PolicyModelHelper.removeElement(ri);
+                } else {
+                    ri.setResendInterval(value);
+                }
             }
         } finally {
             if (!isTransaction) {
@@ -122,10 +124,12 @@ public class RMSunModelHelper {
             model.startTransaction();
         }
         try {
-            if ((value == null) && (ct != null)) {
-                PolicyModelHelper.removeElement(ct);
-            } else {
-                ct.setCloseTimeout(value);
+            if (ct != null) {
+                if (value == null) {
+                    PolicyModelHelper.removeElement(ct);
+                } else {
+                    ct.setCloseTimeout(value);
+                }
             }
         } finally {
             if (!isTransaction) {
@@ -153,10 +157,12 @@ public class RMSunModelHelper {
             model.startTransaction();
         }
         try {
-            if ((value == null) && (ri != null)) {
-                PolicyModelHelper.removeElement(ri);
-            } else {
-                ri.setAckRequestInterval(value);
+            if (ri != null) {
+                if (value == null) {
+                    PolicyModelHelper.removeElement(ri);
+                } else {
+                    ri.setAckRequestInterval(value);
+                }
             }
         } finally {
             if (!isTransaction) {

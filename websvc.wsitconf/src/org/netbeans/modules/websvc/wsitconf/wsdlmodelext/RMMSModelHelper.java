@@ -77,13 +77,11 @@ public class RMMSModelHelper {
     }
 
     public static void setMaxReceiveBufferSize(Binding b, String value) {
-        WSDLModel model = b.getModel();
         FlowControl fc = getFlowControl(b);
         setMaxReceiveBufferSize(fc, value);
     }
     
     public static String getMaxReceiveBufferSize(Binding b) {
-        WSDLModel model = b.getModel();
         FlowControl fc = getFlowControl(b);
         return getMaxReceiveBufferSize(fc);
     }

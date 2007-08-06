@@ -80,7 +80,7 @@ public class STSConfigServicePanel extends JPanel {
         if (stsConfig == null) {
             stsConfig = ProprietarySecurityPolicyModelHelper.createSTSConfiguration(binding);
         }
-        serviceProvidersPanel = new ServiceProvidersTablePanel(tablemodel, model, stsConfig);
+        serviceProvidersPanel = new ServiceProvidersTablePanel(tablemodel, stsConfig);
         ((ServiceProvidersTablePanel)serviceProvidersPanel).populateModel();
         inSync = false;
 

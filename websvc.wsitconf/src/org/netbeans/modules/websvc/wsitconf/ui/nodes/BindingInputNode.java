@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.nodes;
 
-import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.wsdl.model.BindingInput;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -30,13 +29,8 @@ import org.openide.util.NbBundle;
  */
 public class BindingInputNode extends org.openide.nodes.AbstractNode {
     
-    private SectionView view;
-    private BindingInput bi;
-    
-    public BindingInputNode(SectionView view, BindingInput bi) {
+    public BindingInputNode( BindingInput bi) {
         super(org.openide.nodes.Children.LEAF);
-        this.view = view;
-        this.bi = bi;
         setDisplayName(NbBundle.getMessage(BindingInputNode.class, "LBL_Section_BindingInput", bi.getName()));
     }
 

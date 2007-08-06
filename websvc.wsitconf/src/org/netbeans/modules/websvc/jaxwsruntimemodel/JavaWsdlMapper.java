@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.lang.model.element.AnnotationMirror;
@@ -126,13 +127,16 @@ public class JavaWsdlMapper {
                             String serviceNameAnnot = null;
                             String targetNamespaceAnnot = null;
 
-                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = m.getElementValues();
-                            for(ExecutableElement ex:expressions.keySet()) {
-                                if (ex.getSimpleName().contentEquals("serviceName")) {         //NOI18N
-                                    serviceNameAnnot = (String)expressions.get(ex).getValue();
+                            @SuppressWarnings("unchecked")
+                            Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) m.getElementValues();
+                            for (Entry<ExecutableElement, AnnotationValue> ex : expressions.entrySet()) {
+                                ExecutableElement el = ex.getKey();
+                                String val = (String) ex.getValue().getValue();
+                                if (el.getSimpleName().contentEquals("serviceName")) {         //NOI18N
+                                    serviceNameAnnot = val;
                                     if (serviceNameAnnot!=null) serviceNameAnnot = URLEncoder.encode(serviceNameAnnot,"UTF-8"); //NOI18N
-                                } else if (ex.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
-                                    targetNamespaceAnnot = (String)expressions.get(ex).getValue();
+                                } else if (el.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
+                                    targetNamespaceAnnot = val;
                                     if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,"UTF-8"); //NOI18N
                                 }
                                 if (targetNamespaceAnnot!=null && serviceNameAnnot!=null) break;
@@ -177,8 +181,7 @@ public class JavaWsdlMapper {
              return Collections.EMPTY_LIST;
         }
                 
-        final List<String> faults = new ArrayList();
-        if (implClass == null) return null;
+        final List<String> faults = new ArrayList<String>();
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
             js.runUserActionTask(new AbstractTask<CompilationController>() {
@@ -198,10 +201,13 @@ public class JavaWsdlMapper {
                                 TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                                 if (webMethodEl!=null && controller.getTypes().isSameType(webMethodEl.asType(), an.getAnnotationType())) {
                                     hasWebMethodAnnotation=true;
-                                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = an.getElementValues();
-                                    for(ExecutableElement ex:expressions.keySet()) {
-                                        if (ex.getSimpleName().contentEquals("operationName")) {         //NOI18N
-                                            nameAnnot = (String)expressions.get(ex).getValue();
+                                    @SuppressWarnings("unchecked")
+                                    Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) an.getElementValues();
+                                    for (Entry<ExecutableElement, AnnotationValue> ex : expressions.entrySet()) {
+                                        ExecutableElement el = ex.getKey();
+                                        String val = (String) ex.getValue().getValue();
+                                        if (el.getSimpleName().contentEquals("operationName")) {         //NOI18N
+                                            nameAnnot = val;
                                             if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
                                         }
                                         if (nameAnnot!=null) break;
@@ -265,7 +271,7 @@ public class JavaWsdlMapper {
     }
     
     public static List<String> getOperationNames(FileObject implClass) {
-        final List<String> operations = new ArrayList();
+        final List<String> operations = new ArrayList<String>();
         if (implClass == null) return null;
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
@@ -288,10 +294,13 @@ public class JavaWsdlMapper {
                                 TypeElement webMethodEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                                 if (webMethodEl!=null && controller.getTypes().isSameType(webMethodEl.asType(), an.getAnnotationType())) {
                                     hasWebMethodAnnotation=true;
-                                    Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = an.getElementValues();
-                                    for(ExecutableElement ex:expressions.keySet()) {
-                                        if (ex.getSimpleName().contentEquals("operationName")) {         //NOI18N
-                                            nameAnnot = (String)expressions.get(ex).getValue();
+                                    @SuppressWarnings("unchecked")
+                                    Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) an.getElementValues();
+                                    for(Entry<ExecutableElement, AnnotationValue> ex : expressions.entrySet()) {
+                                        ExecutableElement el = ex.getKey();
+                                        String val = (String) ex.getValue().getValue();
+                                        if (el.getSimpleName().contentEquals("operationName")) {         //NOI18N
+                                            nameAnnot = val;
                                             if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
                                         }
                                         if (nameAnnot!=null) break;
@@ -343,13 +352,16 @@ public class JavaWsdlMapper {
                             String nameAnnot = null;
                             String targetNamespaceAnnot = null;
 
-                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = m.getElementValues();
-                            for(ExecutableElement ex:expressions.keySet()) {
-                                if (ex.getSimpleName().contentEquals("name")) {         //NOI18N
-                                    nameAnnot = (String)expressions.get(ex).getValue();
+                            @SuppressWarnings("unchecked")
+                            Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) m.getElementValues();
+                            for(Entry<ExecutableElement, AnnotationValue> ex : expressions.entrySet()) {
+                                ExecutableElement el = ex.getKey();
+                                String val = (String) ex.getValue().getValue();
+                                if (el.getSimpleName().contentEquals("name")) {         //NOI18N
+                                    nameAnnot = val;
                                     if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
-                                } else if (ex.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
-                                    targetNamespaceAnnot = (String)expressions.get(ex).getValue();
+                                } else if (el.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
+                                    targetNamespaceAnnot = val;
                                     if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,"UTF-8"); //NOI18N
                                 }
                                 if (targetNamespaceAnnot!=null && nameAnnot!=null) break;
@@ -393,10 +405,13 @@ public class JavaWsdlMapper {
                         Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
                         if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
                             String wsdlLoc = null;
-                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = m.getElementValues();
-                            for(ExecutableElement ex:expressions.keySet()) {
-                                if (ex.getSimpleName().contentEquals("wsdlLocation")) {     //NOI18N
-                                    wsdlLoc = (String)expressions.get(ex).getValue();
+                            @SuppressWarnings("unchecked")
+                            Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) m.getElementValues();
+                            for(Entry<ExecutableElement, AnnotationValue> ex : expressions.entrySet()) {
+                                ExecutableElement el = ex.getKey();
+                                String val = (String) ex.getValue().getValue();
+                                if (el.getSimpleName().contentEquals("wsdlLocation")) {     //NOI18N
+                                    wsdlLoc = val;
                                     if (wsdlLoc!=null) wsdlLoc = URLEncoder.encode(wsdlLoc,"UTF-8"); //NOI18N
                                 }
                                 if (wsdlLoc != null) break;
@@ -438,16 +453,19 @@ public class JavaWsdlMapper {
                             String nameAnnot = null;
                             String targetNamespaceAnnot = null;
 
-                            Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = m.getElementValues();
-                            for(ExecutableElement ex:expressions.keySet()) {
-                                if (ex.getSimpleName().contentEquals("name")) {         //NOI18N
-                                    nameAnnot = (String)expressions.get(ex).getValue();
+                            @SuppressWarnings("unchecked")
+                            Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) m.getElementValues();
+                            for(Entry<ExecutableElement, AnnotationValue> ex:expressions.entrySet()) {
+                                ExecutableElement el = ex.getKey();
+                                String val = (String) ex.getValue().getValue();
+                                if (el.getSimpleName().contentEquals("name")) {         //NOI18N
+                                    nameAnnot = val;
                                     if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
-                                } else if (ex.getSimpleName().contentEquals("portName")) {   //NOI18N
-                                    portNameAnnot = (String)expressions.get(ex).getValue();
+                                } else if (el.getSimpleName().contentEquals("portName")) {   //NOI18N
+                                    portNameAnnot = val;
                                     if (portNameAnnot!=null) portNameAnnot = URLEncoder.encode(portNameAnnot,"UTF-8"); //NOI18N
-                                } else if (ex.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
-                                    targetNamespaceAnnot = (String)expressions.get(ex).getValue();
+                                } else if (el.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
+                                    targetNamespaceAnnot = val;
                                     if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,"UTF-8"); //NOI18N
                                 }
                                 if (targetNamespaceAnnot!=null && nameAnnot!=null && portNameAnnot != null) break;

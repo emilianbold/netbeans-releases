@@ -29,14 +29,9 @@ import org.openide.util.NbBundle;
  * @author Martin Grebac
  */
 public class STSClientNode extends org.openide.nodes.AbstractNode {
-    
-    private SectionView view;
-    private Binding binding;
-    
-    public STSClientNode(SectionView view, Binding binding) {
+       
+    public STSClientNode() {
         super(org.openide.nodes.Children.LEAF);
-        this.view = view;
-        this.binding = binding;
         setDisplayName(NbBundle.getMessage(STSClientNode.class, "LBL_Section_STS_Client"));//NOI18N
     }
     

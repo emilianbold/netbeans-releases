@@ -39,7 +39,6 @@ import org.openide.nodes.Node;
 public class ServicePanelFactory implements org.netbeans.modules.xml.multiview.ui.InnerPanelFactory {
     
     private ToolBarDesignEditor editor;
-    private boolean isFromJava;
     private Node node;
     private UndoManager undoManager;
     private Project project;
@@ -54,7 +53,6 @@ public class ServicePanelFactory implements org.netbeans.modules.xml.multiview.u
         this.project = p;
         this.jaxwsmodel = jxwsmodel;
         this.undoManager = undoManager;
-        this.isFromJava = false;
     }
 
     public SectionInnerPanel createInnerPanel(Object key) {
@@ -64,19 +62,19 @@ public class ServicePanelFactory implements org.netbeans.modules.xml.multiview.u
         }
         if (key instanceof BindingOperation) {
             BindingOperation o = (BindingOperation)key;
-            return new OperationPanel((SectionView) editor.getContentView(), node, project, o, undoManager, jaxwsmodel);
+            return new OperationPanel((SectionView) editor.getContentView(), node, project, o);
         }
         if (key instanceof BindingInput) {
             BindingInput i = (BindingInput)key;
-            return new InputPanel((SectionView) editor.getContentView(), node, i, undoManager);
+            return new InputPanel((SectionView) editor.getContentView(), i, undoManager);
         }
         if (key instanceof BindingOutput) {
             BindingOutput o = (BindingOutput)key;
-            return new OutputPanel((SectionView) editor.getContentView(), node, o, undoManager);
+            return new OutputPanel((SectionView) editor.getContentView(), o, undoManager);
         }
         if (key instanceof BindingFault) {
             BindingFault f = (BindingFault)key;
-            return new FaultPanel((SectionView) editor.getContentView(), node, f, undoManager);
+            return new FaultPanel((SectionView) editor.getContentView(), f, undoManager);
         }
         return null;
     }

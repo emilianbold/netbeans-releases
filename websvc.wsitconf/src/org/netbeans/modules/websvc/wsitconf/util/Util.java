@@ -479,7 +479,7 @@ public class Util {
             if (project != null) {
                 FileObject tomcatLocation = getTomcatLocation(project);
                 try {
-                FileObject targetFolder = FileUtil.createFolder(tomcatLocation, STORE_FOLDER_NAME);
+                    FileObject targetFolder = FileUtil.createFolder(tomcatLocation, STORE_FOLDER_NAME);
                     DataFolder folderDO = (DataFolder) DataObject.find(targetFolder);
                     FileSystem fs = Repository.getDefault().getDefaultFileSystem();
                     FileObject foClientKey = fs.findResource("Templates/WebServices/client-keystore.jks"); // NOI18N

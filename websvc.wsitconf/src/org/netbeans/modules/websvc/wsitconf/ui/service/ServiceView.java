@@ -26,7 +26,6 @@ import org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.ServiceNode;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.OperationContainerServiceNode;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
-import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
@@ -37,8 +36,6 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.RequestProcessor;
-
 import java.util.Collection;
 import java.util.Set;
 import org.netbeans.modules.websvc.wsitconf.ui.nodes.BindingContainerServiceNode;
@@ -52,10 +49,6 @@ import org.openide.filesystems.FileObject;
  */
 public class ServiceView extends SectionView {
 
-    private SectionNode rootNode;
-    
-    private WSDLModel model;
-       
     ServiceView(InnerPanelFactory factory, WSDLModel model, Node node, Service s) {
         this(factory,  model, node,  null, s, null, false);
     }
@@ -63,9 +56,6 @@ public class ServiceView extends SectionView {
     ServiceView(InnerPanelFactory factory, WSDLModel model, Node node, FileObject implClass, Service s, Collection<Binding> bs, boolean serviceOnly) {
         super(factory);
 
-        if (model == null) return;
-        this.model = model;
-        
         if ((implClass == null) && (node == null)) {
             return;
         }
@@ -127,7 +117,7 @@ public class ServiceView extends SectionView {
     private ArrayList<Node> initOperationView(SectionContainer bindingCont, Binding binding, boolean serviceOnly) {
         ArrayList<Node> nodes = new ArrayList<Node>();
 
-        Node serviceNode = new ServiceNode(this, binding);
+        Node serviceNode = new ServiceNode(binding);
         nodes.add(serviceNode);
         SectionPanel servicePanel = new SectionPanel(this, serviceNode, binding, true);
         if (bindingCont != null) {
@@ -150,28 +140,28 @@ public class ServiceView extends SectionView {
 
                 ArrayList<Node> subNodes = new ArrayList<Node>();
 
-                Node opNode = new OperationNode(this, op);
+                Node opNode = new OperationNode(op);
                 subNodes.add(opNode);
                 SectionPanel opPanel = new SectionPanel(this, opNode, op, false);
                 opCont.addSection(opPanel, false);
 
                 BindingInput bi = op.getBindingInput();
                 if (bi != null) {
-                    Node biNode = new BindingInputNode(this, bi);
+                    Node biNode = new BindingInputNode(bi);
                     subNodes.add(biNode);
                     SectionPanel biPanel = new SectionPanel(this, biNode, bi, false);
                     opCont.addSection(biPanel, false);
                 }
                 BindingOutput bo = op.getBindingOutput();
                 if (bo != null) {
-                    Node boNode = new BindingOutputNode(this, bo);
+                    Node boNode = new BindingOutputNode(bo);
                     subNodes.add(boNode);
                     SectionPanel boPanel = new SectionPanel(this, boNode, bo, false);
                     opCont.addSection(boPanel, false);
                 }
                 Collection<BindingFault> bfs = op.getBindingFaults();
                 for (BindingFault bf : bfs) {
-                    Node bfNode = new BindingFaultNode(this, bf);
+                    Node bfNode = new BindingFaultNode(bf);
                     subNodes.add(bfNode);
                     SectionPanel bfPanel = new SectionPanel(this, bfNode, bf, false);
                     opCont.addSection(bfPanel, false);

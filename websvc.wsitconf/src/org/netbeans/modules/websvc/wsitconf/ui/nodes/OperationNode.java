@@ -30,13 +30,8 @@ import org.openide.util.NbBundle;
  */
 public class OperationNode extends org.openide.nodes.AbstractNode {
     
-    private SectionView view;
-    private BindingOperation operation;
-    
-    public OperationNode(SectionView view, BindingOperation operation) {
+    public OperationNode( BindingOperation operation) {
         super(org.openide.nodes.Children.LEAF);
-        this.view = view;
-        this.operation = operation;
         setDisplayName(NbBundle.getMessage(OperationNode.class, "LBL_Section_Operation", operation.getName()));
     }
 

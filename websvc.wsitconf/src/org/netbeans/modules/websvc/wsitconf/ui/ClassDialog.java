@@ -96,7 +96,6 @@ public class ClassDialog {
     }
     
     static class SelectClassDialogDesc extends DialogDescriptor{
-        Project project;
         String extendingClass;
         final SelectClassPanel sPanel;
         

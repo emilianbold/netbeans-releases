@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.nodes;
 
-import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.wsdl.model.BindingFault;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -30,13 +29,8 @@ import org.openide.util.NbBundle;
  */
 public class BindingFaultNode extends org.openide.nodes.AbstractNode {
     
-    private SectionView view;
-    private BindingFault bf;
-    
-    public BindingFaultNode(SectionView view, BindingFault bf) {
+    public BindingFaultNode( BindingFault bf) {
         super(org.openide.nodes.Children.LEAF);
-        this.view = view;
-        this.bf = bf;
         setDisplayName(NbBundle.getMessage(BindingFaultNode.class, "LBL_Section_BindingFault", bf.getName()));
     }
 

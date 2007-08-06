@@ -94,14 +94,14 @@ public class ClientView extends SectionView {
                         bindingNodeContainer, 
                         NbBundle.getMessage(ClientView.class, "LBL_Binding", binding.getName()));
 
-                Node transportNode = new TransportClientNode(this, binding);
+                Node transportNode = new TransportClientNode();
                 SectionPanel transportPanel = new SectionPanel(this, transportNode, 
                         TRANSPORT_NODE_ID + binding.getName(), false);
                 bindingCont.addSection(transportPanel);
                 nodes.add(transportNode);
     
                 if (isCallBackConfigRequired(binding, serviceModel) || isStoreConfigRequired(binding, serviceModel)) {
-                    Node callbackNode = new CallbackClientNode(this, binding);
+                    Node callbackNode = new CallbackClientNode();
                     SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
                             CALLBACK_NODE_ID + binding.getName(), true);
                     bindingCont.addSection(callbackPanel);
@@ -109,7 +109,7 @@ public class ClientView extends SectionView {
                 }
 
                 if (isClientSTSConfigRequired(binding, serviceModel)) {
-                    Node stsNode = new STSClientNode(this, binding);
+                    Node stsNode = new STSClientNode();
                     SectionPanel stsPanel = new SectionPanel(this, stsNode, 
                             STS_NODE_ID + binding.getName());
                     bindingCont.addSection(stsPanel);
@@ -117,7 +117,7 @@ public class ClientView extends SectionView {
                 }
 
                 if (isClientAdvancedConfigRequired(binding, serviceModel)) {
-                    Node advancedConfigNode = new AdvancedConfigurationClientNode(this, binding);    
+                    Node advancedConfigNode = new AdvancedConfigurationClientNode();    
                     SectionPanel advancedConfigPanel = new SectionPanel(this, advancedConfigNode, 
                             ADVANCEDCONFIG_NODE_ID + binding.getName());
                     bindingCont.addSection(advancedConfigPanel);
@@ -133,14 +133,14 @@ public class ClientView extends SectionView {
             Binding binding = (Binding) bindings.toArray()[0];
             ArrayList<Node> nodes = new ArrayList<Node>();
 
-            Node transportNode = new TransportClientNode(this, binding);
+            Node transportNode = new TransportClientNode();
             SectionPanel transportPanel = new SectionPanel(this, transportNode, 
                     TRANSPORT_NODE_ID + binding.getName(), false);
             addSection(transportPanel);
             nodes.add(transportNode);
             
             if (isCallBackConfigRequired(binding, serviceModel) || isStoreConfigRequired(binding, serviceModel)) {
-                Node callbackNode = new CallbackClientNode(this, binding);
+                Node callbackNode = new CallbackClientNode();
                 SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
                         CALLBACK_NODE_ID + binding.getName(), true);
                 addSection(callbackPanel);
@@ -148,7 +148,7 @@ public class ClientView extends SectionView {
             }
 
             if (isClientSTSConfigRequired(binding, serviceModel)) {
-                Node stsNode = new STSClientNode(this, binding);
+                Node stsNode = new STSClientNode();
                 SectionPanel stsPanel = new SectionPanel(this, stsNode, 
                         STS_NODE_ID + binding.getName());
                 addSection(stsPanel);
@@ -156,7 +156,7 @@ public class ClientView extends SectionView {
             }
 
             if (isClientAdvancedConfigRequired(binding, serviceModel)) {
-                Node advancedConfigNode = new AdvancedConfigurationClientNode(this, binding);
+                Node advancedConfigNode = new AdvancedConfigurationClientNode();
                 SectionPanel advancedConfigPanel = new SectionPanel(this, advancedConfigNode, 
                         ADVANCEDCONFIG_NODE_ID + binding.getName());
                 addSection(advancedConfigPanel);

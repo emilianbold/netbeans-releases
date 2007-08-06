@@ -374,7 +374,6 @@ public class SecurityTokensModelHelper {
 
     public static void setTokenInclusionLevel(WSDLComponent tokenType, String incLevel) {
         WSDLModel model = tokenType.getModel();
-        WSDLComponentFactory wcf = model.getFactory();
         
         boolean isTransaction = model.isIntransaction();
         if (!isTransaction) {

@@ -39,7 +39,6 @@ import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.nodes.Node;
 
 import javax.swing.*;
 import org.openide.util.NbBundle;
@@ -51,7 +50,6 @@ import org.openide.util.NbBundle;
 public class InputPanel extends SectionInnerPanel {
 
     private WSDLModel model;
-    private Node node;
     private BindingInput input;
     private BindingOperation operation;
     private Binding binding;
@@ -63,10 +61,9 @@ public class InputPanel extends SectionInnerPanel {
 
     private WSDLComponent tokenElement = null;
     
-    public InputPanel(SectionView view, Node node, BindingInput input, UndoManager undoManager) {
+    public InputPanel(SectionView view, BindingInput input, UndoManager undoManager) {
         super(view);
         this.model = input.getModel();
-        this.node = node;
         this.input = input;
         this.operation = (BindingOperation)input.getParent();
         this.binding = (Binding)input.getParent().getParent();

@@ -79,7 +79,6 @@ public class STSWizard implements TemplateWizard.Iterator {
     private WsdlModel wsdlModel;
     private WsdlService service;
     private WsdlPort port;
-    private WsdlServiceHandler wsdlServiceHandler;
     
     /** Create a new wizard iterator. */
     public STSWizard() {
@@ -176,12 +175,8 @@ public class STSWizard implements TemplateWizard.Iterator {
             public void modelCreated(WsdlModel model) {
                 wsdlModel=model;
                 if (wsdlModel==null) {
-                    String serviceName=null;
-                    String portName=null;
                     try {
-                        wsdlServiceHandler = WsdlServiceHandler.parse(wsdlURL.toExternalForm());
-                        serviceName = wsdlServiceHandler.getServiceName();
-                        portName = wsdlServiceHandler.getPortName();
+                        WsdlServiceHandler.parse(wsdlURL.toExternalForm());
                     } catch (ParserConfigurationException ex) {
                     } catch (SAXException ex) {
                     } catch (IOException ex) {}
@@ -291,7 +286,7 @@ public class STSWizard implements TemplateWizard.Iterator {
     
     public String name() {
         return MessageFormat.format(NbBundle.getMessage(STSWizard.class, "LBL_WizardStepsCount"),
-                new String[] {(Integer.valueOf(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
+                new String[] {(Integer.valueOf(index + 1)).toString(), Integer.valueOf(panels.length).toString()}); //NOI18N
     }
     
     public boolean hasNext() {

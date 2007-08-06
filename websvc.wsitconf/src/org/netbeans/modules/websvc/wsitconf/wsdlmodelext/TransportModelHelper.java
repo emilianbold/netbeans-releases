@@ -136,7 +136,7 @@ public class TransportModelHelper {
                                 if (serviceName == null) {
                                     serviceName = servletClassName.substring(servletClassName.lastIndexOf(".")+1) + JavaWsdlMapper.SERVICE;
                                 }
-                                ServletMapping servletMapping = (ServletMapping)wApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"}, //NOI18N
+                                wApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"}, //NOI18N
                                         new Object[]{servletName, "/" + serviceName}, "ServletName");                               //NOI18N
                                 wApp.write(wm.getDeploymentDescriptor());
                             } catch (NameAlreadyUsedException ex) {
