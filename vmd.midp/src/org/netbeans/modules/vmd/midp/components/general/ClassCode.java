@@ -146,8 +146,7 @@ public class ClassCode {
         return GETTER_PREFIX + Character.toUpperCase(instanceName.charAt(0)) + instanceName.substring(1);
     }
     
-    static String getSuggestedMainName(DesignComponent component) {
-        TypeID type = component.getType();
+    public static String getSuggestedMainName(TypeID type) {
         String instanceName = type.getString();
         int index = instanceName.lastIndexOf('.');
         if (index >= 0)

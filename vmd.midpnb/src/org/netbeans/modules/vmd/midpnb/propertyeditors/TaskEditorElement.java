@@ -17,15 +17,16 @@
 
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
-import java.lang.ref.WeakReference;
-import java.util.Arrays;
-import java.util.List;
-import javax.swing.JComponent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.actions.GoToSourceSupport;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleCancellableTaskCD;
+
+import javax.swing.*;
+import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *
@@ -48,7 +49,7 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
     }
 
     public List<String> getPropertyValueNames() {
-        return Arrays.asList(new String[] {SimpleCancellableTaskCD.PROP_CODE});
+        return Arrays.asList(SimpleCancellableTaskCD.PROP_CODE);
     }
     
     @Override

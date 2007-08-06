@@ -56,7 +56,7 @@ public final class ClassCD extends ComponentDescriptor {
     }
 
     public void postInitialize (DesignComponent component) {
-        component.writeProperty (PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested (component, ClassCode.getSuggestedMainName (component)));
+        component.writeProperty (PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested (component, ClassCode.getSuggestedMainName (component.getType ())));
     }
 
     public VersionDescriptor getVersionDescriptor () {
