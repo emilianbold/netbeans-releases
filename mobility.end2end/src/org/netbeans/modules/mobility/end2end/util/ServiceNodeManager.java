@@ -44,6 +44,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ *
+ * @author Jirka Prazak
+ */
+
 public class ServiceNodeManager {
 
     final static String DEFAULT_PACKAGE = "<default package>"; // NOI18N
@@ -83,7 +88,7 @@ public class ServiceNodeManager {
 
         int i = 0;
         for ( String packageName : packages ) {
-            nodes[i] = new PackageNode( packageName, createClassNodes( registry.getClassesForPackage( packageName ) ) );
+            nodes[i] = new PackageNode( packageName, createClassNodes( registry.getBaseClassesForPackage( packageName ) ) );
             int nOfInvalidClasses=0;
             for (Node node:nodes[i].getChildren().getNodes()) {
                 Boolean isValid=(Boolean) node.getValue( NODE_VALIDITY_ATTRIBUTE);

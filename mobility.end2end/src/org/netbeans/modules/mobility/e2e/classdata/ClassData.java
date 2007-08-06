@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  *
- * @author Michal Skvor
+ * @author Michal Skvor, Jirka Prazak
  */
 public class ClassData {
     
@@ -46,36 +46,57 @@ public class ClassData {
     private ClassData componentType;
     private List<ClassData> typeParameters = new ArrayList<ClassData>();
     
-    public static final ClassData java_lang_Object = new ClassData( "java.lang", "Object", false, false, false );
+    public static final ClassData java_lang_Object = new ClassData( "java.lang", "Object", false, false );
     
-    public ClassData( String packageName, String className, boolean primitive, boolean array, boolean generics ) {
+    private ClassData( String packageName, String className, boolean primitive, boolean array ) {
         this.packageName = packageName;
         this.className = className;
         this.primitive = primitive;
         this.array = array;
-        this.generics = generics;
 
         parent = java_lang_Object;
     }
 
-    public ClassData( String packageName, String className, boolean primitive, boolean array, boolean generics, JavonSerializer serializer ) {
-        this( packageName, className, primitive, array, generics);
+    public ClassData( ClassData cd) {
+        this.packageName=cd.getPackage();
+        this.className=cd.getName();
+        this.primitive=cd.isPrimitive();
+        this.array=cd.isArray();
+        this.generics=cd.getParameterTypes().isEmpty() ? true : false;
+        this.componentType=cd.getComponentType();
+        this.parent=cd.getParent();
+        this.supportingSerializer=cd.getSerializer();
+        this.fields=cd.getFields();
+        this.methods=cd.getMethods();
+        this.typeParameters=cd.getParameterTypes();
+    }
 
+    public ClassData( String packageName, String className, boolean primitive, boolean array, JavonSerializer serializer ) {
+        this( packageName, className, primitive, array);
+
+        this.generics = false;
         this.supportingSerializer=serializer;
     }
 
-    public ClassData( String packageName, String className, boolean primitive, boolean array, boolean generics,
-            List<FieldData> fields, List<MethodData> methods ) 
+    public ClassData( String packageName, String className, boolean array, List<FieldData> fields, List<MethodData> methods, JavonSerializer serializer )
     {
-        this( packageName, className, primitive, array, generics );
+        this( packageName, className, false, array, serializer );
+        this.generics = false;
         this.fields = fields;
         this.methods = methods;
     }
 
-    public ClassData( String packageName, String className, boolean primitive, boolean array, boolean generics,
-            List<FieldData> fields, List<MethodData> methods, JavonSerializer serializer) {
-        this( packageName, className, primitive, array, generics, fields, methods );
-        this.supportingSerializer=serializer;
+    public ClassData( String packageName, String className, boolean array, List<ClassData> typeParams, JavonSerializer serializer ) {
+        this( packageName, className, false, array, serializer);
+        this.generics=true;
+        this.typeParameters=typeParams;
+    }
+
+    public ClassData( String packageName, String className, boolean array, List<FieldData> fields, List<MethodData> methods, List<ClassData> typeParams,
+                      JavonSerializer serializer) {
+        this( packageName, className, array, fields, methods, serializer );
+        this.generics = true;
+        this.typeParameters=typeParams;
     }
 
     public String getPackage() {
@@ -109,9 +130,9 @@ public class ClassData {
      */
     public String getFullyQualifiedName() {
         if( packageName == "" ) {
-            return className;
+            return getName();
         }
-        return packageName + "." + className;
+        return packageName + "." + getName();
     }
     
     public void setParent( ClassData parent ) {
@@ -121,11 +142,11 @@ public class ClassData {
     public ClassData getParent() {
         return parent;
     }
-    
+
     /**
      * Returns true when the ClassData structure represents
      * primitive type
-     * 
+     *
      * @return true when the ClassData structure represents primitive type
      */
     public boolean isPrimitive() {
@@ -160,8 +181,17 @@ public class ClassData {
         return Collections.unmodifiableList( methods );
     }
     
+
+    /**
+     * Returns all parameter type specified for this class
+     *
+     * @return List of all parameter types, EmptyList if no parameter types are specified
+     */
     public List<ClassData> getParameterTypes() {
-        return Collections.unmodifiableList( typeParameters );
+        if (this.generics)
+            return Collections.unmodifiableList( typeParameters );
+        else
+            return Collections.unmodifiableList( Collections.EMPTY_LIST );
     }
     
     public void setParameterTypes( List<ClassData> parameters ) {

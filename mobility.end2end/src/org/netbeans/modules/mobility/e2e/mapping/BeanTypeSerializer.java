@@ -114,7 +114,7 @@ public class BeanTypeSerializer implements JavonSerializer {
                 return cd; 
             }
             
-            cd = new ClassData( packageName, shortName, false, false, false, this );
+            cd = new ClassData( packageName, shortName, false, false, this );
             beanTypes.put( classFullQualifiedName, cd );
             typeCache.put( classFullQualifiedName, cd );
             

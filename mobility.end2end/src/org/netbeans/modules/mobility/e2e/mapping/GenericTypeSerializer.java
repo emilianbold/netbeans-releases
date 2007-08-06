@@ -67,7 +67,7 @@ public class GenericTypeSerializer implements JavonSerializer {
         if( isTypeSupported( traversable, type, typeCache )) {
             TypeElement clazz = (TypeElement)((DeclaredType) type).asElement();
             if( "java.util.List".equals( clazz.getQualifiedName().toString())) {
-                ClassData cd = new ClassData( "java.util", "List", false, false, true );
+                ClassData cd = new ClassData( "java.util", "List", false, false, this );
                 List<? extends TypeMirror> typeParams = ((DeclaredType) type).getTypeArguments();
                 List<ClassData> typeParameters = new ArrayList<ClassData>();
                 for( TypeMirror typeParam : typeParams ) {

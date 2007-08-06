@@ -80,7 +80,7 @@ public class AllJavaSerializer implements JavonSerializer {
         }
         //add the new class info to the type cache, including its methods and fields
         else {
-            ClassData clsData = new ClassData( pkgName, clsName, false, false, false, this );
+            ClassData clsData = new ClassData( pkgName, clsName, false, false, this );
             typeCache.put( fqName, clsData );
             return clsData;
         }
@@ -110,7 +110,7 @@ public class AllJavaSerializer implements JavonSerializer {
                 if (component.isArray())
                     return component;
             } else {
-                ClassData result=new ClassData (pkgName, componentClsName, false, true, false, this);
+                ClassData result=new ClassData (pkgName, componentClsName, false, false, this);
                 typeCache.put( componentFqName, result);
                 return result;
             }

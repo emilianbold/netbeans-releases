@@ -26,14 +26,14 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
-import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
+import org.netbeans.modules.mobility.e2e.classdata.Utils;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.JavonSerializer;
 import org.netbeans.modules.mobility.javon.Traversable;
 
 /**
  *
- * @author Michal Skvor
+ * @author Michal Skvor, Jirka Prazak
  */
 public class ArrayTypeSerializer implements JavonSerializer {
     
@@ -59,17 +59,16 @@ public class ArrayTypeSerializer implements JavonSerializer {
             TypeMirror componentType = array.getComponentType();
             ClassData cCD = traversable.traverseType( componentType, typeCache );
 
-            if( cCD != null ) {
-                
-                ClassData cd = new ClassData( cCD.getPackage(), cCD.getName(), cCD.isPrimitive(), true, false, this );
+            if( cCD != null) {
+                ClassData cd = new ClassData( cCD.getPackage(), cCD.getClassName(), cCD.isPrimitive(), true, this );
                 cd.setComponentType( cCD );
-                if( !arrayTypes.contains( cd )) {
-                    arrayTypes.add( cd );
-                }
+                traversable.registerType( cCD );
+                //TODO: ??? shouldn't this be cCD instead of cd ???
+                arrayTypes.add( cd );
                 return cd;
             }
         }
-        
+
         return null;
     }
 
@@ -86,7 +85,7 @@ public class ArrayTypeSerializer implements JavonSerializer {
 
     public String fromObject( ClassData type, String object ) {
         if( arrayTypes.contains( type )) {
-            return "(" + type.getFullyQualifiedName() + "[])" + object;
+            return "(" + type.getFullyQualifiedName() + ")" + object;
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        
     }

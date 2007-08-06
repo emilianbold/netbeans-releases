@@ -19,20 +19,9 @@
 
 package org.netbeans.modules.mobility.e2e.classdata;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.element.Modifier;
+import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -52,7 +41,7 @@ import org.netbeans.modules.mobility.javon.Traversable;
 import org.openide.util.Lookup;
 
 /**
- * @author Michal Skvor
+ * @author Jirka Prazak, Michal Skvor
  */
 public class ClassDataRegistry {
 
@@ -61,18 +50,8 @@ public class ClassDataRegistry {
 
     private List<ClasspathInfo> classpaths;
 
-    private Map<String, ClassData> typeMap;
-    private Map<String, ClassData> baseClasses;
-    private Set<String> basePackages;      //skrt
-
-    private Map<ClassData, JavonSerializer> serializerRegistry = new HashMap<ClassData, JavonSerializer>();
-
-    // All types from parameters and return types
-    private Set<ClassData> registeredTypes = new HashSet<ClassData>();
-    // Types used in parameters
-    private Set<ClassData> parameterTypes = new HashSet<ClassData>();
-    // Types used as return types from methods
-    private Set<ClassData> returnTypes = new HashSet<ClassData>();
+    private Map<String, ClassData> typeMap = null;
+    private Map<String, ClassData> baseClasses = null;
 
     private Map<ClassData, Integer> idMapping = new HashMap<ClassData, Integer>();
 
@@ -136,10 +115,10 @@ public class ClassDataRegistry {
      * @return ClassData structure or null when the class is not to be found
      */
     public ClassData getClassData( String fqn ) {
-        if ( typeMap == null ) {
+        if ( baseClasses == null ) {
             updateClassDataTree();
         }
-        return typeMap.get( fqn );
+        return baseClasses.get( fqn );
     }
 
     /**
@@ -161,34 +140,61 @@ public class ClassDataRegistry {
      */
 
     public Set<String> getBasePackages() {
-        if ( basePackages == null )
+        if ( baseClasses == null )
             updateClassDataTree();
-        return Collections.unmodifiableSet( basePackages );
+
+        Set<String> result=new HashSet<String>();
+
+        for (ClassData clsData: baseClasses.values())
+            result.add( Utils.getPackage( clsData));
+
+        return Collections.unmodifiableSet( result );
     }
 
     public boolean isRegisteredType( ClassData clsData ) {
-        if ( baseClasses == null )
+        if ( typeMap == null )
             updateClassDataTree();
-        return this.registeredTypes.contains( clsData );
+        return this.typeMap.values().contains( clsData );
     }
 
+
     /**
-     * Returns set of all classes present in a specified package
+     * Returns set of all classes present in a specified package registered in the ClassDataRegistry
      *
      * @param String packageName
      * @return Set<ClassData> classes
      */
-
     public Set<ClassData> getClassesForPackage( String packageName ) {
-        if ( basePackages == null )
+        if ( typeMap == null )
             updateClassDataTree();
+
+        HashSet<ClassData> result = new HashSet<ClassData>();
+
+        Set<String> fqClassNames = this.typeMap.keySet();
+        for ( String fqClassName : fqClassNames )
+            if ( fqClassName.startsWith( packageName ) )
+                result.add( this.typeMap.get( fqClassName ) );
+
+        return result;
+    }
+
+    /**
+     * Returns set of all base classes present in a specified package registered in the ClassDataRegistry
+     *
+     * @param String packageName
+     * @return Set<ClassData> base classes
+     */
+    public Set<ClassData> getBaseClassesForPackage( String packageName ) {
+        if (baseClasses == null )
+        updateClassDataTree();
+
         HashSet<ClassData> result = new HashSet<ClassData>();
 
         Set<String> fqClassNames = this.baseClasses.keySet();
-        for ( String fqClassName : fqClassNames ) {
-            if ( fqClassName.startsWith( packageName ) )
-                result.add( this.baseClasses.get( fqClassName ) );
-        }
+        for (String fqClassName : fqClassNames)
+            if ( fqClassName.startsWith( packageName ))
+                result.add( this.baseClasses.get( fqClassName));
+
         return result;
     }
 
@@ -200,23 +206,20 @@ public class ClassDataRegistry {
      */
 
     public JavonSerializer getTypeSerializer( ClassData type ) {
-        if ( serializerRegistry == null ) {
-            updateClassDataTree();
-        }
-        return serializerRegistry.get( type );
+        return type.getSerializer();
     }
 
     /**
      * Rescans all classpaths and updates map of ClassData
      */
     public void updateClassDataTree() {
-        typeMap = new HashMap();
-        baseClasses = new HashMap<String, ClassData>();
-        basePackages = new HashSet<String>();
+        if (typeMap==null)
+            typeMap = new HashMap<String,ClassData>();
+        if (baseClasses==null)
+            baseClasses = new HashMap<String, ClassData>();
 
         // Gather all instance names
         Set<String> instanceNames = new HashSet<String>();
-        registeredTypes = new HashSet<ClassData>();
         int id = 1;
         for ( ClasspathInfo cpi : classpaths ) {
             try {
@@ -224,19 +227,15 @@ public class ClassDataRegistry {
                 TraversingTask tt = new TraversingTask( profileProvider, cpi );
                 JavaSource.create( cpi ).runWhenScanFinished( tt, false );
 
-                // Assign numbers to all registered types for serialization
-                registeredTypes.addAll( returnTypes );
-                registeredTypes.addAll( parameterTypes );
-
-
-                for ( ClassData cd : registeredTypes ) {
-                    instanceNames.add( serializerRegistry.get( cd ).instanceOf( cd ) );
+                for ( ClassData cd : typeMap.values()) {
+                    if (cd.getSerializer()!=null)
+                    instanceNames.add(cd.getSerializer().instanceOf( cd));
                 }
                 // Assign id to all types
                 idMapping = new HashMap<ClassData, Integer>();
-                for ( ClassData cd : registeredTypes ) {
+                for ( ClassData cd : typeMap.values() ) {
                     for ( String instanceName : instanceNames ) {
-                        if ( serializerRegistry.get( cd ).instanceOf( cd ).equals( instanceName ) ) {
+                        if ( cd.getSerializer().instanceOf( cd ).equals( instanceName ) ) {
                             break;
                         }
                         id++;
@@ -257,9 +256,9 @@ public class ClassDataRegistry {
      * @return
      */
     public Set<ClassData> getRegisteredTypes() {
-        if ( baseClasses == null )
+        if ( typeMap == null )
             updateClassDataTree();
-        return Collections.unmodifiableSet( registeredTypes );
+        return Collections.unmodifiableSet(new HashSet(typeMap.values()));
     }
 
     /**
@@ -268,9 +267,15 @@ public class ClassDataRegistry {
      * @return Set of return ClassData types
      */
     public Set<ClassData> getReturnTypes() {
-        if ( baseClasses == null )
+        if ( typeMap == null )
             updateClassDataTree();
-        return Collections.unmodifiableSet( returnTypes );
+        Set<ClassData> result=new HashSet();
+
+        for (ClassData clsData: typeMap.values()) {
+            for (MethodData mthData : clsData.getMethods())
+                result.add( mthData.getReturnType());
+        }
+        return Collections.unmodifiableSet( result );
     }
 
     /**
@@ -279,13 +284,18 @@ public class ClassDataRegistry {
      * @return Set of parameter ClassData types
      */
     public Set<ClassData> getParameterTypes() {
-        if ( baseClasses == null )
+        if ( typeMap == null )
             updateClassDataTree();
-        return Collections.unmodifiableSet( parameterTypes );
+        Set<ClassData> result=new HashSet();
+
+        for (ClassData clsData:typeMap.values())
+            for (MethodData mthData : clsData.getMethods())
+                result.addAll( mthData.getReturnType().getParameterTypes());
+        return Collections.unmodifiableSet( result );
     }
 
     public int getRegisteredTypeId( ClassData type ) {
-        if ( baseClasses == null )
+        if ( typeMap == null )
             updateClassDataTree();
         return idMapping.get( type );
     }
@@ -308,14 +318,8 @@ public class ClassDataRegistry {
             this.profileProvider = profileProvider;
             this.cpi = cpi;
 
-//            baseClasses = new HashMap<String, ClassData>();
-//            basePackages = new HashSet<String>();
-//            typeMap = new HashMap();
-
-            serializerRegistry = new HashMap<ClassData, JavonSerializer>();
-
-//            parameterTypes = new HashSet<ClassData>();
-//            returnTypes = new HashSet<ClassData>();
+            if (typeMap==null)
+                typeMap=new HashMap<String,ClassData>();
         }
 
         public void cancel() {
@@ -325,71 +329,79 @@ public class ClassDataRegistry {
             Set<ElementHandle<TypeElement>> elements = cpi.getClassIndex().getDeclaredTypes( "", NameKind.PREFIX, EnumSet.of( SearchScope.SOURCE ) );
             for ( ElementHandle<TypeElement> eh : elements ) {
                 TypeElement te = eh.resolve( parameter );
-                if ( te == null ) continue;
-                ClassData cd = getServiceType( te.asType() );
+                ClassData clsData=null;
+                if ( te != null )
+                    clsData = getServiceType( te.asType() );
                 // Skip unsupported types
-                if ( cd == null ) continue;
-                typeMap.put( cd.getFullyQualifiedName(), cd );
-                baseClasses.put( cd.getFullyQualifiedName(), cd );
-                // Add package if needed
-                basePackages.add( getPackage( cd ) );
+                if ( clsData != null )
+                    //typeMap.put( clsData.getFullyQualifiedName(), clsData );
+                    baseClasses.put( clsData.getFullyQualifiedName(), clsData);
             }
         }
 
-        private String getPackage( ClassData cd ) {
-            int index = cd.getFullyQualifiedName().lastIndexOf( '.' );
-            if ( index > 0 )
-                return cd.getFullyQualifiedName().substring( 0, index );
-            else
-                return "<default package>";
-        }
-
+        //scans a given base class for all fields and service methods and adds their types to the type map if supported
         private ClassData getServiceType( TypeMirror type ) {
             if ( TypeKind.DECLARED == type.getKind() ) {
                 TypeElement clazz = (TypeElement) ( (DeclaredType) type ).asElement();
 
-                int packageLength = clazz.getQualifiedName().toString().length() - clazz.getSimpleName().toString().length() - 1;
-                String packageName = "";
-                if ( packageLength > 0 )
-                    packageName = clazz.getQualifiedName().toString().substring( 0, packageLength );
+                String packageName=Utils.getPackage( clazz);
+                JavonSerializer serializer=Utils.findSupportingSerializer( type, this.profileProvider, this, new HashMap<String,ClassData>());
 
-
-                ClassData serviceType = new ClassData( packageName, clazz.getSimpleName().toString(), false, false, false);                      
-
-                // Test methods
+                // Process methods
+                List<MethodData> methods=new ArrayList<MethodData>(0);
                 for ( ExecutableElement e : ElementFilter.methodsIn( clazz.getEnclosedElements() ) ) {
                     if ( e.getModifiers().contains( Modifier.PUBLIC ) ) {
-                        status = RETURN_TYPES;
-                        boolean validReturnType = false, validParameters = true;
+                        boolean validReturnType;
+                        boolean validParameters=true;
+
                         Map<String, ClassData> typeCache = new HashMap<String, ClassData>();
                         ClassData returnClass = traverseType( e.getReturnType(), typeCache );
+
                         if ( returnClass != null ) {
-                            returnTypes.add( returnClass );
-                            validReturnType = true;
+                            typeMap.put( returnClass.getFullyQualifiedName(), returnClass );
+                            validReturnType=true;
+                        } else {
+                            validReturnType=false;
                         }
-                        List<MethodParameter> parameters = new ArrayList();
-                        status = PARAMETERS_TYPES;
+                        List<MethodParameter> parameters = new ArrayList<MethodParameter>();
                         for ( VariableElement var : e.getParameters() ) {
                             typeCache = new HashMap<String, ClassData>();
                             ClassData paramClass = traverseType( var.asType(), typeCache );
-                            if ( paramClass == null ) {
-                                validParameters = false;
+                            if ( paramClass != null ) {
+                                typeMap.put( paramClass.getFullyQualifiedName(), paramClass);
+                                parameters.add( new MethodParameter( var.getSimpleName().toString(), paramClass));
+                                validParameters=true;
+                            } else {
+                                validParameters=false;
                                 break;
                             }
-                            parameterTypes.add( paramClass );
-                            //System.err.println(" - parameter:" + paramClass.getName());
-                            MethodParameter parameter = new MethodParameter( var.getSimpleName().toString(), paramClass );
-                            parameters.add( parameter );
                         }
                         if ( validReturnType && validParameters ) {
-                            MethodData method = new MethodData( e.getSimpleName().toString(),
-                                    returnClass, parameters );
-                            serviceType.addMethod( method );
+                            methods.add( new MethodData(e.getSimpleName().toString(),returnClass,parameters));
                         }
                     }
                 }
-//                System.err.print( this.displayClassData( serviceType ) );
-                return serviceType;
+
+                // Process fields but do not add them to the type map as we do support direct access to fields
+                List<FieldData> fields=new ArrayList<FieldData>(0);
+                for (VariableElement ve: ElementFilter.fieldsIn( clazz.getEnclosedElements())) {
+
+                    Map<String,ClassData> typeCache=new HashMap<String, ClassData>();
+                    ClassData fieldType=traverseType( ve.asType(), typeCache);
+
+                    if (fieldType!=null) {
+                        FieldData fieldData=new FieldData(fieldType.getName(), fieldType);
+                        if (ve.getModifiers().contains( Modifier.PUBLIC))
+                            fieldData.setModifier( ClassData.Modifier.PUBLIC);
+                        if (ve.getModifiers().contains( Modifier.PRIVATE))
+                            fieldData.setModifier( ClassData.Modifier.PRIVATE);
+                        fields.add(fieldData);
+                    }
+                }
+
+                ClassData result=new ClassData(packageName, clazz.getSimpleName().toString(), false, fields, methods, serializer);
+                System.err.print( this.displayClassData( result ) );
+                return result;
             }
             return null;
         }
@@ -397,9 +409,7 @@ public class ClassDataRegistry {
         public ClassData traverseType( TypeMirror type, Map<String, ClassData> typeCache ) {
             for ( JavonSerializer serializer : profileProvider.getSerializers() ) {
                 if ( serializer.isTypeSupported( this, type, typeCache ) ) {
-                    ClassData cd = serializer.getType( this, type, typeCache );
-                    serializerRegistry.put( cd, serializer );
-                    //registeredTypes.add( cd);
+                    ClassData cd = serializer.getType( this, type, typeCache );                                        
                     return cd;
                 }
             }
@@ -413,21 +423,13 @@ public class ClassDataRegistry {
                 return false;
         }
 
-        public void registerType( ClassData type, JavonSerializer serializer ) {
-            if ( status == PARAMETERS_TYPES ) {
-                parameterTypes.add( type );
-            } else if ( status == RETURN_TYPES ) {
-                returnTypes.add( type );
-            }
-            serializerRegistry.put( type, serializer );
-        }
-
-        public JavonSerializer registerType( ClassData type ) {
-            JavonSerializer supportingSerializer = getTypeSerializer( type );
-            if ( supportingSerializer == null )
+        public JavonSerializer registerType(ClassData type) {
+            if (type.getSerializer()==null)
                 return null;
-            returnTypes.add( type );
-            return supportingSerializer;
+            else {
+                typeMap.put( type.getFullyQualifiedName(), type);
+                return type.getSerializer();
+            }
         }
 
         private String displayClassData( ClassData clsData ) {

@@ -44,19 +44,12 @@ public interface Traversable {
      * @return true if type is supported
      */
     public boolean isTypeSupported( TypeMirror type, Map<String, ClassData> typeCache );
-    
-    /**
-     * Register type
-     * 
-     * @param type to registered
-     */
-    public void registerType( ClassData type, JavonSerializer serializer );
 
-    /**
-     *  Register type with its default serializer
+     /**
+     *  Register type with its serializer
      *
      *  @param type to be registered
-     *  @return serializer that registered it
+     *  @return serializer that registered it or null type has no serializer associated with it
      */
 
     public JavonSerializer registerType( ClassData type );

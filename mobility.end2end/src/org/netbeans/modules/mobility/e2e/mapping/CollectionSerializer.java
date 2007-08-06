@@ -35,7 +35,7 @@ import org.netbeans.modules.mobility.javon.Traversable;
  */
 public class CollectionSerializer implements JavonSerializer {
     
-    private final ClassData vectorClassData = new ClassData( "java.util", "Vector", false, false, false, this );
+    private final ClassData vectorClassData = new ClassData( "java.util", "Vector", false, false, this );
     
     /** Creates a new instance of CollectionSerializer */
     public CollectionSerializer() {

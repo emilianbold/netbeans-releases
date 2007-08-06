@@ -42,20 +42,20 @@ import org.netbeans.modules.mobility.javon.Traversable;
  */
 public class PrimitiveTypeSerializer implements JavonSerializer {
     
-    private final ClassData voidClassData        = new ClassData( "", "void", true, false, false , this);
-    private final ClassData booleanClassData     = new ClassData( "", "boolean", true, false, false, this );
-    private final ClassData BooleanClassData     = new ClassData( "java.lang", "Boolean", false, false, false, this );
-    private final ClassData byteClassData        = new ClassData( "", "byte", true, false, false, this );
-    private final ClassData ByteClassData        = new ClassData( "java.lang", "Byte", false, false, false, this );
-    private final ClassData charClassData        = new ClassData( "", "char", true, false, false, this );
-    private final ClassData CharClassData        = new ClassData( "java.lang", "Character", true, false, false, this );
-    private final ClassData intClassData         = new ClassData( "", "int", true, false, false, this );
-    private final ClassData IntClassData         = new ClassData( "java.lang", "Integer", false, false, false, this );
-    private final ClassData longClassData        = new ClassData( "", "long", true, false, false, this );
-    private final ClassData LongClassData        = new ClassData( "java.lang", "Long", false, false, false, this );
-    private final ClassData shortClassData       = new ClassData( "", "short", true, false, false, this );
-    private final ClassData ShortClassData       = new ClassData( "java.lang", "Short", false, false, false, this );
-    private final ClassData stringClassData      = new ClassData( "java.lang", "String", false, false, false, this );
+    private final ClassData voidClassData        = new ClassData( "", "void", true, false , this);
+    private final ClassData booleanClassData     = new ClassData( "", "boolean", true, false, this );
+    private final ClassData BooleanClassData     = new ClassData( "java.lang", "Boolean", false, false, this );
+    private final ClassData byteClassData        = new ClassData( "", "byte", true, false, this );
+    private final ClassData ByteClassData        = new ClassData( "java.lang", "Byte", false, false, this );
+    private final ClassData charClassData        = new ClassData( "", "char", true, false, this );
+    private final ClassData CharClassData        = new ClassData( "java.lang", "Character", false, false, this );
+    private final ClassData intClassData         = new ClassData( "", "int", true, false, this );
+    private final ClassData IntClassData         = new ClassData( "java.lang", "Integer", false, false, this );
+    private final ClassData longClassData        = new ClassData( "", "long", true, false, this );
+    private final ClassData LongClassData        = new ClassData( "java.lang", "Long", false, false, this );
+    private final ClassData shortClassData       = new ClassData( "", "short", true, false, this );
+    private final ClassData ShortClassData       = new ClassData( "java.lang", "Short", false, false, this );
+    private final ClassData stringClassData      = new ClassData( "java.lang", "String", false, false, this );
 
 
     /** Creates a new instance of PrimitiveTypeSerializer */
