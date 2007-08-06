@@ -181,7 +181,7 @@ public class ServerLocationPanel extends JPanel implements WizardDescriptor.Pane
         setLayout(new GridBagLayout());
         
         // add server installation directory field label
-        locationLabel.setText(NbBundle.getMessage(ServerLocationPanel.class, "LBL_SERVER_LOCATION")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(locationLabel, NbBundle.getMessage(ServerLocationPanel.class, "LBL_SERVER_LOCATION")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
