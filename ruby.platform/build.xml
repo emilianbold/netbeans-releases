@@ -32,6 +32,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- Ruby module additions -->
             <include name="preindexed/**"/>
             <include name="rubystubs/**"/>
+            <include name="jruby-1.0/**/netbeans-index-*.zip"/>
         </patternset>
     </target>    
     
