@@ -61,11 +61,15 @@ public class CustomizerStartup extends javax.swing.JPanel {
         Font font = jTextField1.getFont();
         jSpinner1TextField.setFont(font);
         
-        // mnemonics generated in the guarded block do not work
-        jCheckBox1.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "MNE_CustomScript").charAt(0));
-        jCheckBox4.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "MNE_ForceShutdown").charAt(0));
-        jRadioButton1.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "MNE_SharedMemName").charAt(0));
-        jRadioButton2.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "MNE_SocketPort").charAt(0));
+        /*
+         * mnemonics generated in the guarded block do not work
+         * because of change of the model after mnemonic setting
+         * remove the workaround after completion of issue 111094
+         */
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_CustomScript")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox4, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_ForceShutdown")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_SharedMemName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_SocketPort")); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -93,15 +97,15 @@ public class CustomizerStartup extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(jTextField1);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_StartupScript"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_StartupScript")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 17, 0, 0);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_CatalinaScript"));
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_CatalinaScript"));
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_CatalinaScript")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_CatalinaScript")); // NOI18N
 
         jTextField1.setColumns(20);
         jTextField1.setDocument(custData.getScriptPathModel());
@@ -114,18 +118,16 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jTextField1, gridBagConstraints);
-        jTextField1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_Script"));
-        jTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_Script"));
+        jTextField1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_Script")); // NOI18N
+        jTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_Script")); // NOI18N
 
-        jCheckBox1.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "MNE_CustomScript").charAt(0));
-        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_CustomScript"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_CustomScript")); // NOI18N
         jCheckBox1.setModel(custData.getCustomScriptModel());
         jCheckBox1.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 jCheckBox1StateChanged(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -133,10 +135,10 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jCheckBox1, gridBagConstraints);
-        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_CustomScript"));
-        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_CustomScript"));
+        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_CustomScript")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_CustomScript")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_DebugTransport"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_DebugTransport")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -144,11 +146,10 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(jLabel4, gridBagConstraints);
-        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSN_DebugTrans"));
-        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSN_DebugTrans"));
+        jLabel4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSN_DebugTrans")); // NOI18N
+        jLabel4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSN_DebugTrans")); // NOI18N
 
-        jCheckBox4.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "MNE_ForceShutdown").charAt(0));
-        jCheckBox4.setText(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_ForceShutdown"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox4, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_ForceShutdown")); // NOI18N
         jCheckBox4.setModel(custData.getForceStopModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -157,12 +158,11 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jCheckBox4, gridBagConstraints);
-        jCheckBox4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_ForceStop"));
-        jCheckBox4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_ForceStop"));
+        jCheckBox4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_ForceStop")); // NOI18N
+        jCheckBox4.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_ForceStop")); // NOI18N
 
         buttonGroup1.add(jRadioButton1);
-        jRadioButton1.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "MNE_SharedMemName").charAt(0));
-        jRadioButton1.setText(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_SharedMemName"));
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton1, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_SharedMemName")); // NOI18N
         jRadioButton1.setModel(custData.getSharedMemModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -171,12 +171,11 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jRadioButton1, gridBagConstraints);
-        jRadioButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSN_SharedMem"));
-        jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSD_SharedMem"));
+        jRadioButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSN_SharedMem")); // NOI18N
+        jRadioButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSD_SharedMem")); // NOI18N
 
         buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "MNE_SocketPort").charAt(0));
-        jRadioButton2.setText(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_SocketPort"));
+        org.openide.awt.Mnemonics.setLocalizedText(jRadioButton2, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_SocketPort")); // NOI18N
         jRadioButton2.setModel(custData.getSocketModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -184,8 +183,8 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(jRadioButton2, gridBagConstraints);
-        jRadioButton2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSN_SocketPort"));
-        jRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSD_SocektPort"));
+        jRadioButton2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSN_SocketPort")); // NOI18N
+        jRadioButton2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSD_SocektPort")); // NOI18N
 
         jTextField4.setColumns(15);
         jTextField4.setDocument(custData.getSharedMemNameModel());
@@ -197,26 +196,25 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jTextField4, gridBagConstraints);
-        jTextField4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSD_SharedMemName"));
+        jTextField4.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ACSD_SharedMemName")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_BrowseCatalinaScript"));
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_BrowseCatalinaScript")); // NOI18N
         browseButton.setEnabled(false);
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         add(browseButton, gridBagConstraints);
-        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_Browse"));
-        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_Browse"));
+        browseButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_Browse")); // NOI18N
+        browseButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_Browse")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_NoteChangesTakeAffect"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "TXT_NoteChangesTakeAffect")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -226,8 +224,8 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 12, 0);
         add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_Note"));
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_Note"));
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCN_Note")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerStartup.class, "ASCD_Note")); // NOI18N
 
         jSpinner1.setFont(new java.awt.Font("Dialog", 0, 12));
         jSpinner1.setModel(custData.getDebugPortModel());
@@ -238,7 +236,6 @@ public class CustomizerStartup extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jSpinner1, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed

@@ -34,9 +34,14 @@ public class CustomizerJVM extends javax.swing.JPanel {
     public CustomizerJVM(CustomizerDataSupport custData) {
         this.custData = custData;
         initComponents();
-        // mnemonics generated in the guarded block do not work
-        jCheckBox1.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "MNE_SecurityMan").charAt(0));
-        proxyCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "MNE_HttpProxy").charAt(0));
+        
+        /*
+         * mnemonics generated in the guarded block do not work
+         * because of change of the model after mnemonic setting
+         * remove the workaround after completion of issue 111094
+         */
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_SecurityMan")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(proxyCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_HttpProxy", new Object[] {})); // NOI18N
     }
     
     /** This method is called from within the constructor to
@@ -64,31 +69,30 @@ public class CustomizerJVM extends javax.swing.JPanel {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jvmLabel.setLabelFor(jvmComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(jvmLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_JVM"));
+        org.openide.awt.Mnemonics.setLocalizedText(jvmLabel, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_JVM")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         jPanel1.add(jvmLabel, gridBagConstraints);
-        jvmLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_JVM"));
-        jvmLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_JavaPlatform"));
+        jvmLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_JVM")); // NOI18N
+        jvmLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_JavaPlatform")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jvmButton, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_ManagePlatforms"));
+        org.openide.awt.Mnemonics.setLocalizedText(jvmButton, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_ManagePlatforms")); // NOI18N
         jvmButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jvmButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 12);
         jPanel1.add(jvmButton, gridBagConstraints);
-        jvmButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_ManagerPlatform"));
-        jvmButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_JavaPlatform"));
+        jvmButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_ManagerPlatform")); // NOI18N
+        jvmButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_JavaPlatform")); // NOI18N
 
         jvmComboBox.setModel(custData.getJvmModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -100,8 +104,7 @@ public class CustomizerJVM extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 0);
         jPanel1.add(jvmComboBox, gridBagConstraints);
 
-        jCheckBox1.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "MNE_SecurityMan", new Object[] {}).charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_SecurityMan"));
+        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_SecurityMan")); // NOI18N
         jCheckBox1.setIconTextGap(5);
         jCheckBox1.setModel(custData.getSecManagerModel());
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -113,19 +116,19 @@ public class CustomizerJVM extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 8, 0, 0);
         jPanel1.add(jCheckBox1, gridBagConstraints);
-        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_SecManager"));
-        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_SecManager"));
+        jCheckBox1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_SecManager")); // NOI18N
+        jCheckBox1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_SecManager")); // NOI18N
 
         jLabel1.setLabelFor(jTextField1);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_VMOptions"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_VMOptions")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         jPanel1.add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_VMOpts"));
-        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_VMOpts"));
+        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_VMOpts")); // NOI18N
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_VMOpts")); // NOI18N
 
         jTextField1.setColumns(30);
         jTextField1.setDocument(custData.getJavaOptsModel());
@@ -138,7 +141,7 @@ public class CustomizerJVM extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 12);
         jPanel1.add(jTextField1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_VMOptionsEG"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_VMOptionsEG")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -146,10 +149,10 @@ public class CustomizerJVM extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         jPanel1.add(jLabel2, gridBagConstraints);
-        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_VMOptEG"));
-        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_VmOptsEG"));
+        jLabel2.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_VMOptEG")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_VmOptsEG")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_NoteChangesTakeAffect"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "TXT_NoteChangesTakeAffect")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -157,11 +160,10 @@ public class CustomizerJVM extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 12, 0);
         jPanel1.add(jLabel3, gridBagConstraints);
-        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_Note"));
-        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_Note"));
+        jLabel3.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCN_Note")); // NOI18N
+        jLabel3.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ASCD_Note")); // NOI18N
 
-        proxyCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "MNE_HttpProxy", new Object[] {}).charAt(0));
-        org.openide.awt.Mnemonics.setLocalizedText(proxyCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_HttpProxy", new Object[] {}));
+        org.openide.awt.Mnemonics.setLocalizedText(proxyCheckBox, org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "LBL_HttpProxy", new Object[] {})); // NOI18N
         proxyCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         proxyCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         proxyCheckBox.setModel(custData.getProxyModel());
@@ -173,11 +175,10 @@ public class CustomizerJVM extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         jPanel1.add(proxyCheckBox, gridBagConstraints);
-        proxyCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACCSName_HttpProxy", new Object[] {}));
-        proxyCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACCSDesc_HttpProxy", new Object[] {}));
+        proxyCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACCSName_HttpProxy", new Object[] {})); // NOI18N
+        proxyCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJVM.class, "ACCSDesc_HttpProxy", new Object[] {})); // NOI18N
 
         add(jPanel1, java.awt.BorderLayout.CENTER);
-
     }// </editor-fold>//GEN-END:initComponents
 
     private void jvmButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jvmButtonActionPerformed

@@ -400,26 +400,21 @@ public final class CustomizerSupport {
             setLayout(new GridBagLayout());
             JLabel label = new JLabel ();
             String key = null;
-            String mneKey = null;
             String ad = null;
             if (type.equals(CLASSPATH)) {
                 key = "TXT_Classes";       // NOI18N
-                mneKey = "MNE_Classes";    // NOI18N
                 ad = "AD_Classes";       // NOI18N                
             } else if (type.equals(SOURCES)) {
                 key = "TXT_Sources";        // NOI18N
-                mneKey = "MNE_Sources";     // NOI18N
                 ad = "AD_Sources";          // NOI18N
             } else if (type.equals(JAVADOC)) {
                 key = "TXT_Javadoc";        // NOI18N
-                mneKey = "MNE_Javadoc";     // NOI18N
                 ad = "AD_Javadoc";          // NOI18N                
             } else {
                 assert false : "Illegal type of panel"; //NOI18N
                 return;
             }
-            label.setText(NbBundle.getMessage(CustomizerSupport.class,key));
-            label.setDisplayedMnemonic(NbBundle.getMessage(CustomizerSupport.class,mneKey).charAt(0));
+            org.openide.awt.Mnemonics.setLocalizedText(label, NbBundle.getMessage(CustomizerSupport.class,key));
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;
@@ -455,19 +450,15 @@ public final class CustomizerSupport {
             if (type == SOURCES || type == JAVADOC) {
                 this.addButton = new JButton ();
                 String text;
-                char mne;
                 if (type == SOURCES) {
                     text = NbBundle.getMessage(CustomizerSupport.class, "CTL_Add");
-                    mne = NbBundle.getMessage(CustomizerSupport.class, "MNE_Add").charAt(0);
                     ad = NbBundle.getMessage(CustomizerSupport.class, "AD_Add");
                 }
                 else {
                     text = NbBundle.getMessage(CustomizerSupport.class, "CTL_AddZip");
-                    mne = NbBundle.getMessage(CustomizerSupport.class, "MNE_AddZip").charAt(0);
                     ad = NbBundle.getMessage(CustomizerSupport.class, "AD_AddZip");
                 }
-                this.addButton.setText(text);
-                this.addButton.setMnemonic(mne);
+                org.openide.awt.Mnemonics.setLocalizedText(addButton, text);
                 this.addButton.getAccessibleContext().setAccessibleDescription (ad);
                 addButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
@@ -484,8 +475,8 @@ public final class CustomizerSupport {
                 ((GridBagLayout)this.getLayout()).setConstraints(addButton,c);
                 this.add (addButton);
 //                if (this.type == JAVADOC) {
-//                    addURLButton  = new JButton (NbBundle.getMessage(CustomizerSupport.class, "CTL_AddURL"));
-//                    addURLButton.setMnemonic(NbBundle.getMessage(CustomizerSupport.class, "MNE_AddURL").charAt(0));
+//                    addURLButton  = new JButton();
+//                    org.openide.awt.Mnemonics.setLocalizedText(addURLButton, NbBundle.getMessage(CustomizerSupport.class, "CTL_AddURL")); // NOI18N
 //                    addURLButton.addActionListener(new ActionListener () {
 //                        public void actionPerformed(ActionEvent e) {
 //                            addURLElement ();
@@ -501,8 +492,8 @@ public final class CustomizerSupport {
 //                    ((GridBagLayout)this.getLayout()).setConstraints(addURLButton,c);
 //                    this.add (addURLButton);
 //                }
-                removeButton = new JButton (NbBundle.getMessage(CustomizerSupport.class, "CTL_Remove"));
-                removeButton.setMnemonic(NbBundle.getMessage(CustomizerSupport.class, "MNE_Remove").charAt(0));
+                removeButton = new JButton();
+                org.openide.awt.Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerStartup.class, "CTL_Remove")); // NOI18N
                 removeButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(CustomizerSupport.class,"AD_Remove"));
                 removeButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
@@ -519,8 +510,8 @@ public final class CustomizerSupport {
                 c.insets = new Insets (12,6,0,6);
                 ((GridBagLayout)this.getLayout()).setConstraints(removeButton,c);
                 this.add (removeButton);
-                moveUpButton = new JButton (NbBundle.getMessage(CustomizerSupport.class, "CTL_Up"));
-                moveUpButton.setMnemonic(NbBundle.getMessage(CustomizerSupport.class, "MNE_Up").charAt(0));
+                moveUpButton = new JButton();
+                org.openide.awt.Mnemonics.setLocalizedText(moveUpButton, NbBundle.getMessage(CustomizerSupport.class, "CTL_Up")); // NOI18N
                 moveUpButton.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(CustomizerSupport.class,"AD_Up"));
                 moveUpButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
@@ -537,8 +528,8 @@ public final class CustomizerSupport {
                 c.insets = new Insets (12,6,0,6);
                 ((GridBagLayout)this.getLayout()).setConstraints(moveUpButton,c);
                 this.add (moveUpButton);
-                moveDownButton = new JButton (NbBundle.getMessage(CustomizerSupport.class, "CTL_Down"));
-                moveDownButton.setMnemonic (NbBundle.getMessage(CustomizerSupport.class, "MNE_Down").charAt(0));
+                moveDownButton = new JButton();
+                org.openide.awt.Mnemonics.setLocalizedText(moveDownButton, NbBundle.getMessage(CustomizerSupport.class, "CTL_Down")); // NOI18N
                 moveDownButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSupport.class,"AD_Down"));
                 moveDownButton.addActionListener( new ActionListener () {
                     public void actionPerformed(ActionEvent e) {
@@ -584,11 +575,11 @@ public final class CustomizerSupport {
 //            lm.setConstraints(text,c);
 //            p.add (text);            
 //            JButton[] options = new JButton[] {
-//                new JButton (NbBundle.getMessage(CustomizerSupport.class,"CTL_AddJavadocURLTitle")),
-//                new JButton (NbBundle.getMessage(CustomizerSupport.class,"CTL_Cancel"))
+//                new JButton(),
+//                new JButton()
 //            };
-//            options[0].setMnemonic(NbBundle.getMessage(CustomizerSupport.class,"MNE_Add").charAt(0));
-//            options[1].setMnemonic(NbBundle.getMessage(CustomizerSupport.class,"MNE_Cancel").charAt(0));
+//            org.openide.awt.Mnemonics.setLocalizedText(options[0], NbBundle.getMessage(CustomizerSupport.class,"CTL_AddJavadocURLTitle")); // NOI18N
+//            org.openide.awt.Mnemonics.setLocalizedText(options[1], NbBundle.getMessage(CustomizerSupport.class,"CTL_Cancel")); // NOI18N        
 //            DialogDescriptor input = new DialogDescriptor (
 //                p,
 //                NbBundle.getMessage(CustomizerSupport.class,"CTL_AddJavadocURLTitle"),
@@ -618,13 +609,13 @@ public final class CustomizerSupport {
             String approveButtonNameMne = null;
             if (this.type == SOURCES) {
                 title = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenSources");
-                message = NbBundle.getMessage (CustomizerSupport.class,"TXT_Sources");
+                message = NbBundle.getMessage (CustomizerSupport.class,"TXT_FilterSources");
                 approveButtonName = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenSources");
                 approveButtonNameMne = NbBundle.getMessage (CustomizerSupport.class,"MNE_OpenSources");
             }
             else if (this.type == JAVADOC) {
                 title = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenJavadoc");
-                message = NbBundle.getMessage (CustomizerSupport.class,"TXT_Javadoc");
+                message = NbBundle.getMessage (CustomizerSupport.class,"TXT_FilterJavadoc");
                 approveButtonName = NbBundle.getMessage (CustomizerSupport.class,"TXT_OpenJavadoc");
                 approveButtonNameMne = NbBundle.getMessage (CustomizerSupport.class,"MNE_OpenJavadoc");
             }
