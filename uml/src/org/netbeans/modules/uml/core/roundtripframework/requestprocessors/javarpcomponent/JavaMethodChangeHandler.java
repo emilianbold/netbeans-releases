@@ -223,8 +223,9 @@ public class JavaMethodChangeHandler extends JavaChangeHandler implements IJavaM
         //Executes the redefinition up and down
         discoverRedefinitions(pOperation,pClass);
         checkIfConstructor(pOperation, pClass);
-        String classType = pClass.getElementType();
-        if (classType != null && classType.equals("Interface"))
+        // 78868, check implementing classifier instead of element type, e.g.
+        // interface in design pattern has partfacade_interface type
+        if (m_Utilities.getImplementingClassifiers(pClass,null).size() > 0)
         {
             boolean noAbstractProcessing = false; // This means "no abstract processing". Just a variable for readability.
             transformToInterface( requestValidator, pOperation, pClass, noAbstractProcessing );
