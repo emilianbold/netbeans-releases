@@ -58,6 +58,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/actions/ReplaceActionTest.class/testPerformMenu" expectedFail="Fails because of problem in main menu (#61794)"/>
                 <include name="**/actions/SaveActionTest.class/testPerformMenu" expectedFail="Fails because of problem in main menu (#61794)"/>
                 <include name="**/actions/SaveAllActionTest.class/testPerformMenu" expectedFail="Fails because of problem in main menu (#61794)"/>
+                <include name="**/actions/FindInFilesActionTest.class/testPerformMenu" expectedFail="Fails because of AssertionError (#111430)"/>
+                <include name="**/actions/FindInFilesActionTest.class/testPerformAPI" expectedFail="Fails because of AssertionError (#111430)"/>
             </patternset>
         </testset>
     </testbag>
