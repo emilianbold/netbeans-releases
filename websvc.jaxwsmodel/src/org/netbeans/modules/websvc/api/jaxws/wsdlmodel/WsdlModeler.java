@@ -236,16 +236,12 @@ public class WsdlModeler {
             modelListeners.add(listener);
     }
     
-    private synchronized void removeListeners() {
-        modelListeners.clear();
-    }
-    
-    private void fireModelCreated(WsdlModel model) {
+    private synchronized void fireModelCreated(WsdlModel model) {
         for (WsdlModelListener l:modelListeners) {
             l.modelCreated(model);
         }
         // Removing all listeners
-        removeListeners();
+        modelListeners.clear();
     }
     
     private class IdeErrorReceiver extends ErrorReceiver{
