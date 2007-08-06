@@ -42,6 +42,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.openide.util.RequestProcessor;
 
 /**
  * @author David Kaspar, Anton Chechel
@@ -210,16 +211,20 @@ public final class PaletteMap implements ActiveDocumentSupport.Listener, FileCha
         if (info == null) {
             return;
         }
-        try {
-            Future future = JavaSource.create(info).runWhenScanFinished(new Task<CompilationController>() {
 
-                public void run(CompilationController controller) throws Exception {
-                    kit.update();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    JavaSource.create(info).runWhenScanFinished(new Task<CompilationController>() {
+                        public void run(CompilationController controller) throws Exception {
+                            kit.update();
+                        }
+                    }, true);
+                } catch (IOException ex) {
+                    Debug.warning(ex);
                 }
-            }, true);
-        } catch (IOException ex) {
-            Debug.warning(ex);
-        }
+            }
+        });
     }
 
     private void registerClassPathListener(DesignDocument document) {
