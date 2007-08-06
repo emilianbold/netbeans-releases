@@ -424,6 +424,7 @@ public class HintsUI implements MouseListener, KeyListener, PropertyChangeListen
     }
     
     boolean invokeDefaultAction() {
+        JTextComponent comp = this.comp;
         if (comp == null) {
             Logger.getLogger(HintsUI.class.getName()).log(Level.WARNING, "HintsUI.invokeDefaultAction called, but comp == null");
             return false;
