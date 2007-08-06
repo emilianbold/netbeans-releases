@@ -38,7 +38,7 @@ public class ShellScriptResolver extends MIMEResolver {
         if (fo.hasExt("sh")) {
             return "text/sh";
         }
-        if (fo.hasExt("")) {
+        if (fo.isData() && fo.hasExt("")) {
             try {
                 InputStream is = fo.getInputStream();
                 try {
