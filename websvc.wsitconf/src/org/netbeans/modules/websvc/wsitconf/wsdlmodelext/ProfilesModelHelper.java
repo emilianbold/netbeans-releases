@@ -655,7 +655,7 @@ public class ProfilesModelHelper {
                                 QName qname = port.getBinding().getQName();
                                 String bName = ((Binding)c).getName();
                                 if (bName.equals(qname.getLocalPart())) {
-                                    urlPattern += s.getName() + "/*";
+                                    urlPattern = urlPattern.concat(s.getName() + "/*");
                                 }
                             }
                         }

@@ -31,7 +31,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RequiredConfigurationHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
-import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Port;
@@ -41,7 +40,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
@@ -66,24 +64,9 @@ public class ClientView extends SectionView {
     static final String TRANSPORT_NODE_ID = "transpotr";                        //NOI18N
     static final String ADVANCEDCONFIG_NODE_ID = "advancedconfig";              //NOI18N
 
-    private SectionNode rootNode = null;
-    
-    private static final int REFRESH_DELAY = 40;
-            
-    private WSDLModel clientModel = null;
-    private WSDLModel serviceModel = null;
-    private Service service = null;
-    private Node node = null;
-    private Project project = null;
-    
     ClientView(InnerPanelFactory factory, WSDLModel clientModel, WSDLModel serviceModel, Service s, Project project, Node node) {
     
         super(factory);
-        this.clientModel = clientModel;
-        this.serviceModel = serviceModel;
-        this.service = s;
-        this.node = node;
-        this.project = project;
 
         //create root node
         Children rootChildren = new Children.Array();
@@ -184,28 +167,6 @@ public class ClientView extends SectionView {
         setRoot(root);
     }
     
-    private final RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(new Runnable() {
-        public void run() {
-            getRootNode().refreshSubtree();
-        }
-    });
-
-    public void refreshView() {
-        rootNode.refreshSubtree();
-    }
-    
-    public void scheduleRefreshView() {
-        refreshTask.schedule(REFRESH_DELAY);
-    }
-
-    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
-        rootNode.dataModelPropertyChange(source, propertyName, oldValue, newValue);
-    }
-    
-    public SectionNode getRootNode() {
-        return rootNode;
-    }    
-
     private boolean isClientSTSConfigRequired(Binding binding, WSDLModel serviceModel) {        
         Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
         String profile = ProfilesModelHelper.getWSITSecurityProfile(serviceBinding);

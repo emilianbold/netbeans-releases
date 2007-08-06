@@ -532,7 +532,14 @@ public class WSITModelSupport {
     }
     
     public static boolean isServiceFromWsdl(Node node) {
-        Service service = node.getLookup().lookup(Service.class);
+        if (node != null) {
+            Service service = node.getLookup().lookup(Service.class);
+            return isServiceFromWsdl(service);
+        }
+        return false;
+    }
+    
+    public static boolean isServiceFromWsdl(Service service) {
         if (service != null) { //it is a service
             String wsdlUrl = service.getWsdlUrl();
             if (wsdlUrl != null) { // it is a web service from wsdl

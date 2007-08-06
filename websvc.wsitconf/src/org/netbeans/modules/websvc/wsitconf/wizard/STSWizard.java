@@ -220,7 +220,6 @@ public class STSWizard implements TemplateWizard.Iterator {
     private transient int index;
     private transient WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private transient TemplateWizard wiz;
-    private transient WizardDescriptor.Panel bottomPanel;
     
     public void initialize(TemplateWizard wiz) {
         this.wiz = wiz;
@@ -231,9 +230,9 @@ public class STSWizard implements TemplateWizard.Iterator {
         SourceGroup[] sourceGroups = Util.getJavaSourceGroups(project);
         WizardDescriptor.Panel firstPanel; //special case: use Java Chooser
         if (sourceGroups.length == 0)
-            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, bottomPanel));
+            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, null));
         else
-            firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, bottomPanel, true));
+            firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, null, true));
         
         JComponent comp = (JComponent) firstPanel.getComponent();
         Util.changeLabelInComponent(comp, NbBundle.getMessage(STSWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"),
@@ -258,7 +257,7 @@ public class STSWizard implements TemplateWizard.Iterator {
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", Integer.valueOf(i)); // NOI18N
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
@@ -292,7 +291,7 @@ public class STSWizard implements TemplateWizard.Iterator {
     
     public String name() {
         return MessageFormat.format(NbBundle.getMessage(STSWizard.class, "LBL_WizardStepsCount"),
-                new String[] {(new Integer(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
+                new String[] {(Integer.valueOf(index + 1)).toString(), (new Integer(panels.length)).toString()}); //NOI18N
     }
     
     public boolean hasNext() {

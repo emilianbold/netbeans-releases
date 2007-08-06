@@ -185,7 +185,7 @@ public class SAMLHolderOfKeyProfile extends SecurityProfile {
         
         Sources sources = ProjectUtils.getSources(p);
         SourceGroup[] sourceGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if ((sourceGroups != null) || (sourceGroups.length > 0)) {
+        if ((sourceGroups != null) && (sourceGroups.length > 0)) {
             targetFolder = sourceGroups[0].getRootFolder();
         }
         

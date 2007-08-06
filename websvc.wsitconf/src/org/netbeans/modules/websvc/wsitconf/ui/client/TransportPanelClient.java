@@ -35,9 +35,6 @@ import org.openide.nodes.Node;
  */
 public class TransportPanelClient extends SectionInnerPanel {
 
-    private WSDLModel clientModel;
-    private WSDLModel serviceModel;
-    
     private Node node;
     private Binding binding;
     private boolean inSync = false;
@@ -45,8 +42,6 @@ public class TransportPanelClient extends SectionInnerPanel {
    
     public TransportPanelClient(SectionView view, Node node, Binding binding, WSDLModel serviceModel, JaxWsModel jaxWsModel) {
         super(view);
-        this.clientModel = binding.getModel();
-        this.serviceModel = serviceModel;
         this.node = node;
         this.binding = binding;
         this.jaxwsmodel = jaxWsModel;

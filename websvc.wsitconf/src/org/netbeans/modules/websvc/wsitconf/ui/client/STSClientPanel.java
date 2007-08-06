@@ -35,7 +35,6 @@ import org.openide.nodes.Node;
  */
 public class STSClientPanel extends SectionInnerPanel {
 
-    private WSDLModel model;
     private Node node;
     private Binding binding;
     private boolean inSync = false;
@@ -43,7 +42,6 @@ public class STSClientPanel extends SectionInnerPanel {
 
     public STSClientPanel(SectionView view, Node node, Binding binding, JaxWsModel jaxWsModel) {
         super(view);
-        this.model = binding.getModel();
         this.node = node;
         this.binding = binding;
         this.jaxwsmodel = jaxWsModel;

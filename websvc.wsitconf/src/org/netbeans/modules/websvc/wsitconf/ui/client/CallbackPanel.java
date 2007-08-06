@@ -74,7 +74,6 @@ import org.openide.util.NbBundle;
  */
 public class CallbackPanel extends SectionInnerPanel {
 
-    private WSDLModel model;
     private Node node;
     private Binding binding;
 
@@ -91,7 +90,6 @@ public class CallbackPanel extends SectionInnerPanel {
     public CallbackPanel(SectionView view, WSDLModel model, Node node, Binding binding, JaxWsModel jaxWsModel, WSDLModel serviceModel) {
         super(view);
         this.view = view;
-        this.model = model;
         this.node = node;
         this.binding = binding;
         this.jaxwsmodel = jaxWsModel;

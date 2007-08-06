@@ -25,7 +25,6 @@ import javax.swing.text.NumberFormatter;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMMSModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.openide.nodes.Node;
 
 import javax.swing.*;
 
@@ -35,7 +34,6 @@ import javax.swing.*;
  */
 public class AdvancedRMPanel extends JPanel {
 
-    private Node node;
     private Binding binding;
     private boolean inSync = false;
 
@@ -43,7 +41,6 @@ public class AdvancedRMPanel extends JPanel {
     private DefaultFormatterFactory maxBufff = null;
     
     public AdvancedRMPanel(Binding binding) {
-        this.node = node;
         this.binding = binding;
         
         inactff = new DefaultFormatterFactory();

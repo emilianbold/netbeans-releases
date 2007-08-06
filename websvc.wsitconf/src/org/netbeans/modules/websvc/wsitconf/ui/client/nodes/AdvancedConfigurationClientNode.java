@@ -30,13 +30,8 @@ import org.openide.util.NbBundle;
  */
 public class AdvancedConfigurationClientNode extends org.openide.nodes.AbstractNode {
     
-    private SectionView view;
-    private Binding binding;
-    
     public AdvancedConfigurationClientNode(SectionView view, Binding binding) {
         super(org.openide.nodes.Children.LEAF);
-        this.view = view;
-        this.binding = binding;
         setDisplayName(NbBundle.getMessage(AdvancedConfigurationClientNode.class, "LBL_Section_AdvancedConfiguration_Client"));//NOI18N
     }
     

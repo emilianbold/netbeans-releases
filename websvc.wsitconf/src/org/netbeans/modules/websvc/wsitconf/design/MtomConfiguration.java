@@ -139,7 +139,7 @@ public class MtomConfiguration  implements WSConfiguration{
     }
     
     @Override
-    public void finalize() {
+    protected void finalize() {
         if (binding != null) {
             binding.getModel().removeComponentListener(cl);
         }

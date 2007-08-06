@@ -1434,9 +1434,9 @@ public class ProprietarySecurityPolicyModelHelper {
     }
     
     public static Validator createValidator(ValidatorConfiguration vc, boolean client) {
-        WSDLModel model = vc.getModel();
         Validator v = null;
         if (vc != null) {
+            WSDLModel model = vc.getModel();
             boolean isTransaction = model.isIntransaction();
             if (!isTransaction) {
                 model.startTransaction();
@@ -1459,9 +1459,9 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static LifeTime createLifeTime(WSDLComponent c, boolean client) {
-        WSDLModel model = c.getModel();
         LifeTime lt = null;
         if (c != null) {
+            WSDLModel model = c.getModel();
             boolean isTransaction = model.isIntransaction();
             if (!isTransaction) {
                 model.startTransaction();
@@ -1484,9 +1484,9 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static LifeTime createSTSLifeTime(WSDLComponent c) {
-        WSDLModel model = c.getModel();
         LifeTime lt = null;
         if (c != null) {
+            WSDLModel model = c.getModel();
             boolean isTransaction = model.isIntransaction();
             if (!isTransaction) {
                 model.startTransaction();
@@ -1505,9 +1505,9 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static Issuer createSTSIssuer(WSDLComponent c) {
-        WSDLModel model = c.getModel();
         Issuer i = null;
         if (c != null) {
+            WSDLModel model = c.getModel();
             boolean isTransaction = model.isIntransaction();
             if (!isTransaction) {
                 model.startTransaction();
@@ -1526,9 +1526,9 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static Contract createSTSContract(WSDLComponent c) {
-        WSDLModel model = c.getModel();
         Contract contract = null;
         if (c != null) {
+            WSDLModel model = c.getModel();
             boolean isTransaction = model.isIntransaction();
             if (!isTransaction) {
                 model.startTransaction();
@@ -1578,9 +1578,9 @@ public class ProprietarySecurityPolicyModelHelper {
     }
 
     public static CallbackHandler createCallbackHandler(CallbackHandlerConfiguration chc, boolean client) {
-        WSDLModel model = chc.getModel();
         CallbackHandler h = null;
         if (chc != null) {
+            WSDLModel model = chc.getModel();
             boolean isTransaction = model.isIntransaction();
             if (!isTransaction) {
                 model.startTransaction();

@@ -309,7 +309,7 @@ public class TargetsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_addHeaderButtonActionPerformed
 
-    public class XPathTableCellEditor extends AbstractCellEditor implements TableCellEditor {
+    public static class XPathTableCellEditor extends AbstractCellEditor implements TableCellEditor {
         // This is the component that will handle the editing of the cell value
         JTextField component = new JTextField();
     

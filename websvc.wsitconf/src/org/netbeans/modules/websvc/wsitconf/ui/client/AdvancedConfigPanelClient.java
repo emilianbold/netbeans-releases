@@ -42,10 +42,8 @@ import org.openide.nodes.Node;
  */
 public class AdvancedConfigPanelClient extends SectionInnerPanel {
 
-    private WSDLModel clientModel;
     private WSDLModel serviceModel;
     
-    private Node node;
     private Binding binding;
     private boolean inSync = false;
 
@@ -63,9 +61,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
 
     public AdvancedConfigPanelClient(SectionView view, Node node, Binding binding, WSDLModel serviceModel) {
         super(view);
-        this.clientModel = binding.getModel();
         this.serviceModel = serviceModel;
-        this.node = node;
         this.binding = binding;
         
         lifetimeDff = new DefaultFormatterFactory();

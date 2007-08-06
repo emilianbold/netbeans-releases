@@ -200,10 +200,6 @@ public class EndorsingCertificate extends javax.swing.JPanel {
         }
     }
 
-    private void setCombo(JComboBox combo, boolean second) {
-        combo.setSelectedIndex(second ? 1 : 0);
-    }
-        
     private void setChBox(JCheckBox chBox, Boolean enable) {
         if (enable == null) {
             chBox.setSelected(false);

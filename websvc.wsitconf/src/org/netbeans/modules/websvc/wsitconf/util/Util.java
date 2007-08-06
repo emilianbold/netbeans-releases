@@ -55,6 +55,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -272,7 +274,7 @@ public class Util {
     
     public static List<String> getAliases(String storePath, char[] password, String type) throws IOException {
         if ((storePath == null) || (type == null)) return null;
-        FileInputStream iStream;
+        FileInputStream iStream = null;
         try {
             File f = new File(storePath);
             if ((f == null) || (!f.exists())) {
@@ -298,6 +300,8 @@ public class Util {
             logger.log(Level.INFO, null, ex);
         } catch (CertificateException ex) {
             logger.log(Level.INFO, null, ex);
+        } finally {
+            if (iStream != null) iStream.close();
         }
         return null;
     }
@@ -568,19 +572,25 @@ public class Util {
         KeyStore srcStore = KeyStore.getInstance("JKS");
         KeyStore dstStore = KeyStore.getInstance("JKS");
         srcStore.load(Util.class.getResourceAsStream(srcPath), srcPasswd.toCharArray());
-        dstStore.load(new FileInputStream(dstPath), dstPasswd.toCharArray());
-        Key privKey = srcStore.getKey(srcAlias, srcKeyPasswd.toCharArray());
-     
-        if (privKey == null || trustedCertEntry) {
-            //this is a cert-entry
-            dstStore.setCertificateEntry(dstAlias, srcStore.getCertificate(srcAlias));
-        } else {              
-	    Certificate cert = srcStore.getCertificate(srcAlias);
-            Certificate[] chain = new Certificate[] {cert};
-            dstStore.setKeyEntry(dstAlias, privKey, srcKeyPasswd.toCharArray(), chain);
+        InputStream is = new FileInputStream(dstPath);
+        OutputStream os = new FileOutputStream(dstPath);
+        try {
+            dstStore.load(is, dstPasswd.toCharArray());
+            Key privKey = srcStore.getKey(srcAlias, srcKeyPasswd.toCharArray());
+
+            if (privKey == null || trustedCertEntry) {
+                //this is a cert-entry
+                dstStore.setCertificateEntry(dstAlias, srcStore.getCertificate(srcAlias));
+            } else {              
+                Certificate cert = srcStore.getCertificate(srcAlias);
+                Certificate[] chain = new Certificate[] {cert};
+                dstStore.setKeyEntry(dstAlias, privKey, srcKeyPasswd.toCharArray(), chain);
+            }
+            dstStore.store(os, dstPasswd.toCharArray());
+        } finally {
+            if (is != null) is.close();
+            if (os != null) os.close();
         }
-	dstStore.store(new FileOutputStream(dstPath), dstPasswd.toCharArray());
-       
     }
     
     public static final boolean isTomcat(Project project) {
@@ -659,8 +669,12 @@ public class Util {
     
     public static Collection<BindingOperation> refreshOperations(Binding binding, FileObject jc) {
         
+        if (binding == null) {
+            return null;
+        }
+        
         Collection<BindingOperation> operations = binding.getBindingOperations();
-        if ((binding == null) || (jc == null)) {
+        if (jc == null) {
             return operations;
         }
         

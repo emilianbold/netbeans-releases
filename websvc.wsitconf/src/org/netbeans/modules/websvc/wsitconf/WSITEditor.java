@@ -221,7 +221,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                             mainModel.endTransaction();
                             FileObject mainFO = Utilities.getFileObject(mainModel.getModelSource());
                             if (mainFO == null) {
-                                logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + model.getModelSource());
+                                logger.log(Level.INFO, "Cannot find fileobject in lookup for: " + mainModel.getModelSource());
                             }
                             try {
                                 DataObject mainDO = DataObject.find(mainFO);
@@ -307,7 +307,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
             case UNKNOWN: 
             case CLIENT:
             case WEB: {
-                    if ((sourceGroups != null) || (sourceGroups.length > 0)) {
+                    if ((sourceGroups != null) && (sourceGroups.length > 0)) {
                         folder = sourceGroups[0].getRootFolder();
                         if (folder != null) {
                             folder = folder.getFileObject("META-INF");
@@ -322,7 +322,7 @@ public class WSITEditor implements WSEditor, UndoManagerHolder {
                     }
                 } break;            
             case EJB: {
-                    if ((sourceGroups != null) || (sourceGroups.length > 0)) {
+                    if ((sourceGroups != null) && (sourceGroups.length > 0)) {
                         folder = sourceGroups[0].getRootFolder().getParent();
                         if (folder != null) {
                             folder = folder.getFileObject("conf");

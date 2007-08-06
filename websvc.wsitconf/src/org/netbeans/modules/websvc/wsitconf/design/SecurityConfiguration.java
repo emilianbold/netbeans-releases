@@ -178,7 +178,7 @@ public class SecurityConfiguration implements WSConfiguration {
     }
     
     @Override
-    public void finalize() {
+    protected void finalize() {
         if ((scl != null) && (serviceModel != null)) {
             serviceModel.removeServiceChangeListener(scl);
         }

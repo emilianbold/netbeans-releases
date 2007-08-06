@@ -54,8 +54,6 @@ public class ServiceView extends SectionView {
 
     private SectionNode rootNode;
     
-    private static final int REFRESH_DELAY = 40;
-    
     private WSDLModel model;
        
     ServiceView(InnerPanelFactory factory, WSDLModel model, Node node, Service s) {
@@ -184,28 +182,5 @@ public class ServiceView extends SectionView {
         }
         servicePanel.open();
         return nodes;
-    }
-    
-    private final RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(new Runnable() {
-        public void run() {
-            getRootNode().refreshSubtree();
-        }
-    });
-
-    public void refreshView() {
-        rootNode.refreshSubtree();
-    }
-    
-    public void scheduleRefreshView() {
-        refreshTask.schedule(REFRESH_DELAY);
-    }
-
-    public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
-        rootNode.dataModelPropertyChange(source, propertyName, oldValue, newValue);
-    }
-    
-    public SectionNode getRootNode() {
-        return rootNode;
-    }    
-
+    } 
 }
