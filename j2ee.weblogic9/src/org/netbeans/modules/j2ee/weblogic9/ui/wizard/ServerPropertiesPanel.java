@@ -273,7 +273,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         
         // add local instances field label
         localInstanceLabel.setLabelFor(localInstancesCombo);
-        localInstanceLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_LOCAL_INSTANCE")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(localInstanceLabel, NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_LOCAL_INSTANCE")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -293,7 +293,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         
         // add domain path field label
         domainPathLabel.setLabelFor(domainPathField);
-        domainPathLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_DOMAIN_LOCATION")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(domainPathLabel, NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_DOMAIN_LOCATION")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -316,7 +316,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         
         // add host field label
         hostLabel.setLabelFor(hostField);
-        hostLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_HOST")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_HOST")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -353,7 +353,7 @@ public class ServerPropertiesPanel extends JPanel implements WizardDescriptor.Pa
         
         // add port field label
         portLabel.setLabelFor(portField);
-        portLabel.setText(NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_PORT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(ServerPropertiesPanel.class, "LBL_PORT")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
