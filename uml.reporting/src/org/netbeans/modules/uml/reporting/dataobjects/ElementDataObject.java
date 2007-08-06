@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.Stack;
 
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint;
@@ -656,22 +658,28 @@ public class ElementDataObject implements Report
         
         StringBuilder buff = new StringBuilder();
         
-        ArrayList<INamedElement> clients = new ArrayList();
-        ArrayList<INamedElement> suppliers = new ArrayList();
-        HashMap map = new HashMap();
+        HashMap<INamedElement, ArrayList<String>> clients = 
+            new HashMap<INamedElement, ArrayList<String>>();
+        
+        HashMap<INamedElement, ArrayList<String>> suppliers = 
+            new HashMap<INamedElement, ArrayList<String>>();
         
         // client dependency
         ETList<IDependency> dependencies = ((INamedElement)getElement()).getClientDependencies();
         if (dependencies.size() > 0)
         {
-            for (int i=0; i<dependencies.size(); i++)
+            for (int i=0; i < dependencies.size(); i++)
             {
                 INamedElement dependent = dependencies.get(i).getSupplier();
+
                 // filter out self
                 if (dependent != null && !dependent.getXMIID().equals(getElement().getXMIID()))
                 {
-                    suppliers.add(dependent);
-                    map.put(dependent, dependencies.get(i).getExpandedElementType());
+                    if (suppliers.get(dependent) == null)
+                        suppliers.put(dependent, new ArrayList<String>());
+                            
+                    suppliers.get(dependent).add(
+                        dependencies.get(i).getExpandedElementType());
                 }
             }
         }
@@ -683,17 +691,21 @@ public class ElementDataObject implements Report
             for (int i=0; i<dependencies.size(); i++)
             {
                 INamedElement dependent = dependencies.get(i).getClient();
+
                 // filter out self
                 if (dependent != null && !dependent.getXMIID().equals(getElement().getXMIID()))
                 {
-                    clients.add(dependent);
-                    map.put(dependent, dependencies.get(i).getExpandedElementType());
+                    if (clients.get(dependent) == null)
+                        clients.put(dependent, new ArrayList<String>());
+                            
+                    clients.get(dependent).add(
+                        dependencies.get(i).getExpandedElementType());
                 }
             }
         }
         
         // list all client classes
-        if (clients.size()>0)
+        if (clients.size() > 0)
         {
             buff.append("<DL>\r\n"); // NOI18N
             
@@ -701,34 +713,44 @@ public class ElementDataObject implements Report
                 NbBundle.getMessage(ElementDataObject.class, 
                 "All_Dependency_Clients") + ":</B><DD>"); // NOI18N
             
-            for (int i=0; i<clients.size(); i++)
+            Iterator<INamedElement> keys = clients.keySet().iterator();
+            
+            while (keys.hasNext())
             {
-                INamedElement client = clients.get(i);
-                String type = (String)map.get(client);
-                String name = client.getName();
+                INamedElement client = keys.next();
+                ArrayList<String> links = clients.get(client);
                 
-                if (name == null || name.equals("")) // NOI18N
-                    name = client.getExpandedElementType();
+                int i = 0;
                 
-                String imageName = CommonResourceManager.instance()
-                    .getIconDetailsForElementType(type);
+                for (String type: links)
+                {
+                    if (i > 0)
+                        buff.append(", "); // NOI18N
 
-                if (imageName.lastIndexOf("/") > -1)
-                    imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
-                
-                ReportTask.addToImageList(imageName);
-                
-                String img = "<IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
-                    getElement()) + "images/" + imageName + // NOI18N
-                    "\" ALT=\"(" + type + ") \">"; // NOI18N
-                
-                buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
-                    getLinkTo(client) + "\" title=\"dependency in " + // NOI18N
-                    client.getOwningPackage().getFullyQualifiedName(false) +
-                    "\">" + name + "</A>"); // NOI18N
-                
-                if (i < clients.size()-1)
-                    buff.append(", "); // NOI18N
+                    String name = client.getName();
+
+                    if (name == null || name.equals("")) // NOI18N
+                        name = client.getExpandedElementType();
+
+                    String imageName = CommonResourceManager.instance()
+                        .getIconDetailsForElementType(type);
+
+                    if (imageName.lastIndexOf("/") > -1) // NOI18N
+                        imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
+
+                    ReportTask.addToImageList(imageName);
+
+                    String img = "<IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
+                        getElement()) + "images/" + imageName + // NOI18N
+                        "\" ALT=\"(" + type + ") \">"; // NOI18N
+
+                    buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
+                        getLinkTo(client) + "\" title=\"dependency in " + // NOI18N
+                        client.getOwningPackage().getFullyQualifiedName(false) +
+                        "\">" + name + "</A>"); // NOI18N
+                    
+                    i++;
+                }
             }
             
             buff.append("</DD>\r\n"); // NOI18N
@@ -743,34 +765,43 @@ public class ElementDataObject implements Report
             buff.append("<DT><B>" + NbBundle.getMessage(ElementDataObject.class,  // NOI18N
                 "All_Dependency_Suppliers") + ":</B><DD>"); // NOI18N
             
-            for (int i=0; i<suppliers.size(); i++)
+            Iterator<INamedElement> keys = suppliers.keySet().iterator();
+            
+            while (keys.hasNext())
             {
-                INamedElement supplier = suppliers.get(i);
-                String type = (String)map.get(supplier);
-                String name = supplier.getName();
-
-                if (name==null || name.equals(""))
-                    name = supplier.getExpandedElementType();
-
-                String imageName = CommonResourceManager.instance()
-                    .getIconDetailsForElementType(type);
-
-                if (imageName.lastIndexOf("/") > -1)
-                    imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
+                INamedElement supplier = keys.next();
+                ArrayList<String> links = suppliers.get(supplier);
                 
-                ReportTask.addToImageList(imageName);
+                int i = 0;
+                for (String type: links)
+                {
+                    if (i > 0)
+                        buff.append(", "); // NOI18N
 
-                String img = "<IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
-                    getElement()) + "images/" + imageName +  // NOI18N
-                    "\" ALT=\"(" + type + ") \">"; // NOI18N
-                
-                buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
-                    getLinkTo(supplier) + "\" title=\"dependency in " + // NOI18N
-                    supplier.getOwningPackage().getFullyQualifiedName(false) +
-                    "\">" + name + "</A>"); // NOI18N
-                
-                if (i < suppliers.size()-1)
-                    buff.append(", "); // NOI18N
+                    String name = supplier.getName();
+
+                    if (name==null || name.equals(""))// NOI18N
+                        name = supplier.getExpandedElementType();
+
+                    String imageName = CommonResourceManager.instance()
+                        .getIconDetailsForElementType(type);
+
+                    if (imageName.lastIndexOf("/") > -1) // NOI18N
+                        imageName = imageName.substring(imageName.lastIndexOf("/")+1); // NOI18N
+
+                    ReportTask.addToImageList(imageName);
+
+                    String img = "<IMG SRC=\"" + ReportTask.getPathToReportRoot( // NOI18N
+                        getElement()) + "images/" + imageName +  // NOI18N
+                        "\" ALT=\"(" + type + ") \">"; // NOI18N
+
+                    buff.append(img + "&nbsp;" + type + "&nbsp;<A HREF=\"" +  // NOI18N
+                        getLinkTo(supplier) + "\" title=\"dependency in " + // NOI18N
+                        supplier.getOwningPackage().getFullyQualifiedName(false) +
+                        "\">" + name + "</A>"); // NOI18N
+                    
+                    i++;
+                }
             }
             
             buff.append("</DD>\r\n"); // NOI18N
