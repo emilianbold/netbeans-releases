@@ -52,7 +52,7 @@ public class UtilityClassTest extends TreeRuleTestBase {
             "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:27-0:31:verifier:Create private constructor"
+            "0:27-0:31:verifier:Utility class without constructor"
         );
     }
     public void testClassWithOnlyStaticMethodsAndFields() throws Exception {
@@ -65,7 +65,7 @@ public class UtilityClassTest extends TreeRuleTestBase {
         
         String gold = before + after + " private Test() { } }";
         performFixTest("test/Test.java", before + after + "}", before.length(), 
-            "0:27-0:31:verifier:Create private constructor",
+            "0:27-0:31:verifier:Utility class without constructor",
             "FixUtilityClass",
             gold
         );

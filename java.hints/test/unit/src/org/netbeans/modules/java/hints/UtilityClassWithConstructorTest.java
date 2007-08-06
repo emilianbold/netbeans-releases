@@ -82,7 +82,7 @@ public class UtilityClassWithConstructorTest extends TreeRuleTestBase {
         
         String golden = (before + after).replace("public Test()", "private Test()");
         performFixTest("test/Test.java", before + after, before.length(), 
-            "0:56-0:60:hint:Make constructor private",
+            "0:56-0:60:hint:Utility class with visible constructor",
             "FixUtilityClass",
             golden
         );
