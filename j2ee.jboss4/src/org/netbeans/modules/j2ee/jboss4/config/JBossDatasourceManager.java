@@ -137,7 +137,7 @@ public final class JBossDatasourceManager implements DatasourceManager {
             if (!(o instanceof JBossDatasource))
                 continue;
             JBossDatasource ds = (JBossDatasource)o;
-            String jndiName = ds.getJndiName();
+            String jndiName = JBossDatasource.getRawName(ds.getJndiName());
             if (ddsMap.keySet().contains(jndiName)) { // conflicting ds found
                 if (!ddsMap.get(jndiName).equals(ds)) { // found ds is not equal
                     conflictDS.add(ddsMap.get(jndiName)); // NOI18N
@@ -178,7 +178,7 @@ public final class JBossDatasourceManager implements DatasourceManager {
             JBossDatasource ds = (JBossDatasource) it.next();
             
             LocalTxDatasource lds = new LocalTxDatasource();
-            lds.setJndiName(ds.getJndiName());
+            lds.setJndiName(JBossDatasource.getRawName(ds.getJndiName()));
             lds.setConnectionUrl(ds.getUrl());
             lds.setDriverClass(ds.getDriverClassName());
             lds.setUserName(ds.getUsername());
