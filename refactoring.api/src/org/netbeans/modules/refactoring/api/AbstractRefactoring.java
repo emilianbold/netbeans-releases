@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
@@ -39,8 +41,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.InstanceContent;
 
@@ -312,11 +316,34 @@ public abstract class AbstractRefactoring {
         while(pIt.hasNext()) {
             RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
             
-            problem=chainProblems(plugin.preCheck(),problem);
+            try {
+                problem=chainProblems(plugin.preCheck(),problem);
+            } catch (Throwable t) {
+                problem =createProblemAndLog(problem, t, plugin.getClass());
+            }
             if (problem!=null && problem.isFatal())
                 return problem;
         }
         return problem;
+    }
+    
+    private ModuleInfo getModuleInfo(Class c) {
+        for (ModuleInfo info:Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (info.owns(c)) {
+                return info;
+            }
+        }
+        throw new IllegalArgumentException("Class " + c + "is not from known NB module");//NOI18N
+    }
+    
+    private String createMessage(Class c, Throwable t) {
+        return NbBundle.getMessage(RefactoringPanel.class, "ERR_ExceptionInModule", getModuleInfo(c).getDisplayName(), t.toString());
+    }
+    
+    private Problem createProblemAndLog(Problem p, Throwable t, Class source) {
+        Problem newProblem = new Problem(false, createMessage(source, t));
+        Logger.global.log(Level.INFO, "Refactoring plugin throwed exception:", t);
+        return chainProblems(newProblem, p);
     }
     
     private Problem pluginsPrepare(Problem problem, RefactoringSession session) {
@@ -326,7 +353,11 @@ public abstract class AbstractRefactoring {
         while(pIt.hasNext()) {
             RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
             
-            problem=chainProblems(plugin.prepare(elements),problem);
+            try {
+                problem=chainProblems(plugin.prepare(elements),problem);
+            } catch (Throwable t) {
+                problem =createProblemAndLog(problem, t, plugin.getClass());
+            }
             if (problem!=null && problem.isFatal())
                 return problem;
         }
@@ -381,7 +412,11 @@ public abstract class AbstractRefactoring {
         while(pIt.hasNext()) {
             RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
             
-            problem=chainProblems(plugin.checkParameters(),problem);
+            try {
+                problem=chainProblems(plugin.checkParameters(),problem);
+            } catch (Throwable t) {
+                problem =createProblemAndLog(problem, t, plugin.getClass());
+            }
             if (problem!=null && problem.isFatal())
                 return problem;
         }
@@ -394,7 +429,11 @@ public abstract class AbstractRefactoring {
         while(pIt.hasNext()) {
             RefactoringPlugin plugin=(RefactoringPlugin)pIt.next();
             
-            problem=chainProblems(plugin.fastCheckParameters(),problem);
+            try {
+                problem=chainProblems(plugin.fastCheckParameters(),problem);
+            } catch (Throwable t) {
+                problem =createProblemAndLog(problem, t, plugin.getClass());
+            }
             if (problem!=null && problem.isFatal())
                 return problem;
         }
