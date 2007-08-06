@@ -17,11 +17,9 @@
     <target name="gather-samples" depends="-init">
         <echo message="Zipping up and copying sample web app projects." />
         <!-- sample webapps -->
-        <!--
         <mkdir dir="${webapps.desc.dest}" />
-        <copy file="${webapps.desc}/ExampleOne.html" todir="${webapps.desc.dest}" />
-        <zip basedir="${webapps.repos}/ExampleOne" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/ExampleOne.zip" />   
-        -->
+        <copy file="${webapps.desc}/TravelCenter.html" todir="${webapps.desc.dest}" />
+        <zip basedir="${webapps.repos}/TravelCenter" excludes="CVS,private,.cvsignore" destfile="${webapps.dest}/TravelCenter.zip" />   
     </target>
     
     <target name="netbeans-extra" depends="-init">

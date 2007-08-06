@@ -2,20 +2,20 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <!-- Sample web applications in the New Project wizard. -->
-    <!--
+
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
                 <folder name="Web">
                     <folder name="VisualJsf">
-                        <attr name="position" intvalue="500" />
+                        <attr name="position" intvalue="100" />
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/webSamplesCategory.html"/>
-                        <file name="ExampleOne" url="ExampleOne.zip">
+                        <file name="TravelCenter" url="TravelCenter.zip">
                            <attr name="template" boolvalue="true"/>
                            <attr name="templateCategory" stringvalue="web-types"/>
                            <attr name="position" intvalue="100"/>
-                           <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/ExampleOne.html"/>
+                           <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/descriptions/TravelCenter.html"/>
                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.samples.bundled.Bundle"/>
                            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/visualweb/samples/bundled/ui/resources/webProjectIcon.gif"/>
                            <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.visualweb.samples.bundled.wizard.SamplesWebWizardIterator.createIterator"/>
@@ -25,7 +25,6 @@
             </folder>
         </folder>
     </folder>  
-    -->
 
     <!-- Java Code Clips in palette -->
     <folder name="CreatorJavaPalette">
