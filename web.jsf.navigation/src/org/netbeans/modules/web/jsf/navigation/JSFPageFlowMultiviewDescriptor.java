@@ -177,12 +177,18 @@ public class JSFPageFlowMultiviewDescriptor implements MultiViewDescription, Ser
             
             if ( storageFile != null && storageFile.isValid() ){
                 tc.serializeNodeLocations(storageFile);
-            } else {
+            } else if (storageFile != null ) {
                 DialogDescriptor dialog = new DialogDescriptor(
                         NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoFileToSave", storageFile),
                         NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "TLE_NoFileToSave"));
                 java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
                 d.setVisible(true);
+            } else {
+                DialogDescriptor dialog = new DialogDescriptor(
+                        NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "MSG_NoProjectToSave"),
+                        NbBundle.getMessage(JSFPageFlowMultiviewDescriptor.class, "TLE_NoFileToSave"));
+                java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
+                d.setVisible(true);                
             }
             LOG.finest("PageFlowEditor componentClosed");
         }
