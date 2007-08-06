@@ -614,6 +614,21 @@ public class ActionManager {
             actions.remove(found);
         }
     }
+
+    //returns true if the action was found and replaced
+    private boolean safeReplace(List<ProxyAction> actions, ProxyAction action) {
+        for(int i=0; i<actionList.size(); i++) {
+            ProxyAction target = actionList.get(i);
+            p("special remove: testing: " + target + " " + target.getId() + " " + target.getClassname());
+            if(actionsMatch(action, target)) {
+                p("special remove matched!");
+                actionList.remove(target);
+                actionList.add(i,action);
+                return true;
+            }
+        }
+        return false;
+    }
     
     private static void p(String s) {
         if(DEBUG) {
@@ -622,10 +637,14 @@ public class ActionManager {
     }
     
     public void updateAction(ProxyAction action) {
+        p("updating: " + action + " " + action.getId() + " " + action.getClassname() + " " + action.getKey());
         List<ProxyAction> actions = getActions(action.getClassname(), false);
+        p("got some actions for it");
         boolean replaced = false;
         for(ProxyAction a : actions) {
+            p("testing against action: " + a + " " + a.getId()  + " " + action.getClassname());
             if(a.getId().equals(action.getId())) {
+                p("they are equal");
                 //actions.remove(a);
                 // do a replace instead of a remove
                 int n = actions.indexOf(a);
@@ -637,7 +656,9 @@ public class ActionManager {
                 //safeRemove(actionList,a);
                 for(int i=0; i<actionList.size(); i++) {
                     ProxyAction target = actionList.get(i);
+                    p("special remove: testing: " + target + " " + target.getId() + " " + target.getClassname());
                     if(actionsMatch(action, target)) {
+                        p("special remove matched!");
                         actionList.remove(target);
                         actionList.add(i,action);
                     }
@@ -645,6 +666,11 @@ public class ActionManager {
                 replaced = true;
                 break;
             }
+        }
+
+        //if there is no class file, then it's an action from the framework itself
+        if(getFileForClass(action.getClassname()) == null) {
+            replaced = safeReplace(actionList,action);
         }
         
         if(!replaced) {
