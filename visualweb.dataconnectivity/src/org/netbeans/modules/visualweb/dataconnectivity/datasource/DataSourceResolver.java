@@ -124,12 +124,7 @@ public class DataSourceResolver implements DataSourceInfoListener {
     public JDBCDriver findMatchingDriver(String driverClass) {
         int i = 0;
         JDBCDriver[] newDrivers;
-        newDrivers = JDBCDriverManager.getDefault().getDrivers();
-
-        // hack for bug in Creator 110472 - wrong Oracle driver class name
-        if (driverClass.equals("oracle.jdbc.OracleDriver")) { //NOI18N
-            driverClass = "oracle.jdbc.driver.OracleDriver"; //NOI18N
-        }
+        newDrivers = JDBCDriverManager.getDefault().getDrivers();       
 
         for (i = 0; i < newDrivers.length; i++) {
             if (newDrivers[i].getClassName().equals(driverClass)) {
