@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 
@@ -38,8 +39,11 @@ import javax.swing.text.StyledDocument;
 
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
@@ -66,6 +70,9 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
     protected UndoManager undoManager;
     private DataObject dataObject = null;
     private EditorCookie ec = null;
+    
+    protected Date lastModified;
+    private FileChangeListener lastModifiedTracker;
 
     //--------------------------------------------------------------------------------- Construction
 
@@ -106,6 +113,23 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
             // only to the StyledDocument events.
             fobj.addFileChangeListener(this);
         }
+        lastModified = fobj.lastModified();
+        lastModifiedTracker = new FileChangeListener() {
+            public void fileAttributeChanged(FileAttributeEvent fe) {}
+            public void fileChanged(FileEvent fe) {
+                lastModified = SourceUnit.this.fobj.lastModified();
+            }
+            public void fileDataCreated(FileEvent fe) {}
+            
+            public void fileDeleted(FileEvent fe) {}
+
+            public void fileFolderCreated(FileEvent fe) {}
+
+            public void fileRenamed(FileRenameEvent fe) {
+                lastModified = SourceUnit.this.fobj.lastModified();
+            }
+        };
+        fobj.addFileChangeListener(lastModifiedTracker);
     }
 
     /*
@@ -113,10 +137,11 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
      */
     public void destroy() {
         releaseDocument();
-		// Make sure FileObject listener is also removed that was added by the
-		// above releaseDocument() call
+        // Make sure FileObject listener is also removed that was added by the
+        // above releaseDocument() call
         if (fobj != null) {
-	        fobj.removeFileChangeListener(this);
+            fobj.removeFileChangeListener(this);
+            fobj.removeFileChangeListener(lastModifiedTracker);
         }
         listeners = null;
 
@@ -157,13 +182,13 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
             
             //need to tell the undo manager to clear events on the Undo/Redo stack
             if (undoManager != null) { // XXX Prevent NPE from leaked unit?
-            	undoManager.notifyBufferEdited(this);
+                undoManager.notifyBufferEdited(this);
             }
             
             // Add back the FileObject change listener, now that we no longer 
             // listen to the StyledDocument changes
             if (fobj != null) { // XXX Prevent NPE from leaked unit?
-            	fobj.addFileChangeListener(this);
+                fobj.addFileChangeListener(this);
             }
         }
     }
@@ -176,13 +201,18 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
         if (EditorCookie.Observable.PROP_DOCUMENT.equals(event.getPropertyName())) {
             if (event.getNewValue() == null) {
 /*//NB6.0
-            	// Bug Fix # 6473201 llegalStateException, When renaming a page
-            	// When a document (e.g. managed-beans.xml) is reloaded during refactoring
-            	// do not set the source dirty. The changes to the model will be flushed
-            	// at the end of refactoring.
-            	if (!MdrInSyncSynchronizer.get().isRefactoringSessionInProgress()) {
+                // Bug Fix # 6473201 llegalStateException, When renaming a page
+                // When a document (e.g. managed-beans.xml) is reloaded during refactoring
+                // do not set the source dirty. The changes to the model will be flushed
+                // at the end of refactoring.
+                if (!MdrInSyncSynchronizer.get().isRefactoringSessionInProgress()) {
 */
-                setSourceDirty();
+                Date newLastModified = fobj.lastModified();
+                if (lastModified.equals(newLastModified)) {
+                    setSourceDirty();
+                } else {
+                    lastModified = newLastModified;
+                }
 /*
                 }
 //*/
@@ -338,7 +368,7 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
      */
     public void removeUpdate(DocumentEvent e) {
         assert Trace.trace("insync-listener", "SU.removeUpdate");
-    	undoManager.notifyBufferEdited(this);
+        undoManager.notifyBufferEdited(this);
         setSourceDirty();
     }
     
@@ -346,9 +376,9 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
      * @see javax.swing.event.UndoableEditListener#undoableEditHappened(javax.swing.event.UndoableEditEvent)
      */
     public void undoableEditHappened(UndoableEditEvent e) {
-    	if (undoManager != null) {
-    		undoManager.notifyUndoableEditEvent(this);
-    	}
+        if (undoManager != null) {
+            undoManager.notifyUndoableEditEvent(this);
+        }
     }
     
     //-------------------------------------------------------------------------------------- Locking

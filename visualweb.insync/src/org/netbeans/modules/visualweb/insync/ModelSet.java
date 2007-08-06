@@ -54,7 +54,6 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.netbeans.modules.visualweb.insync.java.ReadTaskWrapper;
-import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileAttributeEvent;
@@ -67,17 +66,12 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataLoaderPool;
-import org.openide.loaders.DataObject;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationListener;
-import org.openide.nodes.Node;
-import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.Lookup.Result;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 //NB60 import org.netbeans.modules.visualweb.insync.faces.refactoring.MdrInSyncSynchronizer;
 
@@ -91,141 +85,6 @@ import org.openide.windows.WindowManager;
  * @author cquinn
  */
 public abstract class ModelSet implements FileChangeListener {
-
-    /**
-     * Utility that will be instantiated and registed on WindowManager in order to process changes to the
-     * TopComponent.Registry.PROP_CURRENT_NODES, which indicates which nodes are losing and gaining
-     * focus.
-     * !EAT TODO: Find a way to not need this !!!
-     */
-    protected static class WindowManagerPropertyRegistry implements PropertyChangeListener {
-        protected TopComponent previousTopComponent;
-        /**
-         * Go through nodes and see if any of them map to a model we know about.  If so, then
-         * hasFocus indicates whether the nodes have focus or not.  If not, then assume they just
-         * lost focus and process accordingly.
-         *
-         * @param nodes
-         * @param old
-         */
-        protected void processNodes(Node[] nodes, boolean makeActive) {
-            if (nodes == null)
-                return;
-            for (int i=0; i < nodes.length; i++) {
-                Node node = nodes[i];
-                DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
-                if (dataObject != null) {
-                    FileObject fileObject = dataObject.getPrimaryFile();
-                    // Get the model corresponding to the fileObject
-                    Model model = FacesModelSet.getFacesModelIfAvailable(fileObject);
-                    // Well, if its not a model, lets not forget that ModeSet breaks up config models and "document" models
-                    // sync model if the top component is losing focus
-                    if (model != null && !makeActive) {
-                        model.sync();
-                    }
-                }
-            }
-        }
-        
-        public void propertyChange(PropertyChangeEvent event) {
-            if (TopComponent.Registry.PROP_CURRENT_NODES.equals(event.getPropertyName())) {
-                TopComponent topComponent = getActiveTopComponent();
-                // If the same top component is active, then ignore the event as it means that focus has not really changed
-                // There seems to be some spurious events being fired off
-                if (topComponent == previousTopComponent)
-                    return;
-                previousTopComponent = topComponent;
-                boolean isTopComponentEditor = WindowManager.getDefault().isEditorTopComponent(topComponent);
-                Node[] nodes;
-                nodes = (Node[]) event.getOldValue();
-                processNodes(nodes, false);
-                nodes = (Node[]) event.getNewValue();
-                // It seems that when the Java button is selected the very first time, that we get notified
-                // of 0 nodes selected.  Lets treat this case as if there were no previous component to force
-                // the topComponent == previousTopcomponent to fail
-                if (nodes == null || nodes.length ==0)
-                    previousTopComponent = null;
-                // Only if the new top component is an editor do we want to set the model active
-                // When the top component is an editor, we need to prevent sync() to occur while
-                // the user is typing or making edits manually.  So tell the model it is active and therefore
-                // apt to receive edits that it does not need to sync.  A sync() will occur once the node
-                // loses focus.
-                if (isTopComponentEditor) {
-                    processNodes(nodes, true);
-                }
-                return;
-            }
-        }
-
-        // <HACK> XXX NB#49507 Hack until multiview will be able to provide its selected (all) components
-        protected TopComponent getActiveTopComponent() {
-            TopComponent topComponent = TopComponent.getRegistry().getActivated();
-            topComponent = getMultiViewTopComponent(topComponent);
-            return topComponent;
-        }
-        
-        protected TopComponent getMultiViewTopComponent(TopComponent topComponent) {
-            if(isMultiViewTopComponent(topComponent)) {
-                TopComponent selected = getSelectedMultiView(topComponent);
-                if(selected == null) {
-                    return null;
-                }
-                topComponent = selected;
-            }
-            return topComponent;
-        }
-        
-        protected void processTopComponent(TopComponent topComponent, boolean activated) {
-            if (topComponent == null)
-                return;
-            // XXX NB#49507 Hack until multiview will be able to provide its selected (all) components
-            topComponent = getMultiViewTopComponent(topComponent);
-            // If it is an editor, then assume that if any of its nodes are attached to models,
-            // that these models are activated.
-            if (topComponent instanceof CloneableEditor) {
-                Node[] nodes = topComponent.getActivatedNodes();
-                processNodes(nodes, activated);
-            }
-        }
-        
-        // XXX NB#49507 Hack until multiview will be able to provide its selected (all) components
-        protected boolean isMultiViewTopComponent(TopComponent tc) {
-            return tc != null
-                && "org.netbeans.core.multiview.MultiViewCloneableTopComponent".equals(tc.getClass().getName()); // NOI18N
-        }
-        
-        // XXX Ugly hack, demand NB to provide API -> NB #49507
-        protected TopComponent getSelectedMultiView(TopComponent tc) {
-            java.awt.Component[] cs = findDescendantsOfClass(tc, TopComponent.class);
-            for(int i = 0; i < cs.length; i++) {
-                if(cs[i].isVisible()) { // XXX Means is selected in that multiview (terrible hack)
-                    return (TopComponent)cs[i];
-                }
-            }
-            return null;
-        }
-
-        
-        // XXX NB#49507 Hack until multiview will be able to provide its selected (all) components
-        protected Component[] findDescendantsOfClass(Container parent, Class clazz) {
-            List list = new ArrayList();
-            Component[] children = parent.getComponents();
-            for(int i = 0; i < children.length; i++) {
-                Component child = children[i];
-                if(clazz.isAssignableFrom(child.getClass())) {
-                    list.add(child);
-                    continue;
-                }
-                if(child instanceof Container) {
-                    list.addAll(java.util.Arrays.asList(findDescendantsOfClass((Container)child, clazz)));
-                }
-            }
-            return (Component[])list.toArray(new Component[0]);
-        }
-        // </HACK>
-    }
-    
-    private static WindowManagerPropertyRegistry windowManagerPropertyRegistry = new WindowManagerPropertyRegistry();
     
     protected static class OpenProjectsListener implements PropertyChangeListener {
 
@@ -391,7 +250,6 @@ public abstract class ModelSet implements FileChangeListener {
     
     private static ModelSet createInstance(Project project, Class ofType) {
     	try {
-            WindowManager.getDefault().getRegistry().removePropertyChangeListener(windowManagerPropertyRegistry);
             Constructor constructor = ofType.getConstructor(new Class[] {Project.class});
             ModelSet set = (ModelSet) constructor.newInstance(new Object[] {project});
             set.setInitialized();
@@ -401,8 +259,6 @@ public abstract class ModelSet implements FileChangeListener {
             return set;
         } catch (Exception e) {
             throw new RuntimeException(e);
-        } finally {
-            WindowManager.getDefault().getRegistry().addPropertyChangeListener(windowManagerPropertyRegistry);
         }
     }
     

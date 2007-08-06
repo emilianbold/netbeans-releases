@@ -853,6 +853,10 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
      * name.)
      */
     public final String getDisplayName() {
+		// if the project is closing/closed return null
+    	if (((LiveUnit)liveBean.getDesignContext()).getModel() == null) {
+    		return null;
+    	}
         String instanceName = liveBean.getInstanceName();
         if (instanceName == null) {
             instanceName = NbBundle.getMessage(DesignBeanNode.class, "LBL_InvalidDisplayName", liveBean);
