@@ -22,19 +22,25 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
+import org.netbeans.editor.GuardedDocument;
+import org.netbeans.editor.MarkBlock;
+import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.TreeRule;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -76,7 +82,7 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
         }
         
         private void runAndAdd(TreePath path, List<TreeRule> rules, List<ErrorDescription> d) {
-            if (rules != null) {
+            if (rules != null && !isInGuarded(info, path)) {
                 for (TreeRule tr : rules) {
                     if (isCanceled()) {
                         return ;
@@ -130,4 +136,25 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
         
     }
 
+    static boolean isInGuarded(CompilationInfo info, TreePath tree) {
+        try {
+            Document doc = info.getDocument();
+
+            if (doc instanceof GuardedDocument) {
+                int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tree.getLeaf());
+                int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tree.getLeaf());
+                GuardedDocument gdoc = (GuardedDocument) doc;
+                MarkBlockChain guardedBlockChain = gdoc.getGuardedBlockChain();
+
+                if ((guardedBlockChain.compareBlock(start, end) & MarkBlock.INSIDE) != 0) {
+                    return true;
+                }
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+        return false;
+    }
+    
 }

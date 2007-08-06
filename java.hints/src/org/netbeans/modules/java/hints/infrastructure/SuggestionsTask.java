@@ -87,7 +87,7 @@ public class SuggestionsTask extends ScanningCancellableTask<CompilationInfo> {
                 Kind k = tp.getLeaf().getKind();
                 List<TreeRule> rules = suggestions.get(k);
                 
-                if (rules != null) {
+                if (rules != null && !HintsTask.isInGuarded(info, tp)) {
                     for (TreeRule rule : rules) {
                         if (isCancelled())
                             return ;
