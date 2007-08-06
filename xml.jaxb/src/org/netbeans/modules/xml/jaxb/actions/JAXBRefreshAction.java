@@ -26,31 +26,19 @@ import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author lgao
  */
-public class JAXBRefreshAction extends CookieAction {
+public class JAXBRefreshAction extends NodeAction  {
     
     /** Creates a new instance of JAXBRefreshAction */
     public JAXBRefreshAction() {
-    }
-
-    protected int mode() {
-        return CookieAction.MODE_SOME;
-    }
-
-    protected Class[] cookieClasses() {
-        return new Class[] {
-            DataObject.class,
-            FileObject.class,
-        };
     }
 
     protected void performAction(Node[] nodes) {
@@ -104,11 +92,7 @@ public class JAXBRefreshAction extends CookieAction {
         return null;
     }
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
+    @Override 
     protected boolean enable(Node[] node) {
         return true;
     }

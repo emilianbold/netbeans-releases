@@ -22,25 +22,19 @@ package org.netbeans.modules.xml.jaxb.actions;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.NodeAction;
 
 /**
  * @author $Author$
  * @author lgao
  */
-public class JAXBRegenerateCodeAction extends CookieAction {
+public class JAXBRegenerateCodeAction extends NodeAction {
     public JAXBRegenerateCodeAction() {
     }
-    
-    protected int mode() {
-        return CookieAction.MODE_SOME;
-    }
-    
+        
     protected void performAction(Node[] nodes) {
         Node nd = nodes[0];        
         Project project = nd.getLookup().lookup(Project.class);
@@ -48,19 +42,6 @@ public class JAXBRegenerateCodeAction extends CookieAction {
         if ( project != null ){
             ProjectHelper.compileXSDs(project);
         }
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-    
-    protected Class[] cookieClasses() {
-        return new Class[] {
-            DataObject.class,
-            FileObject.class,
-            Project.class,
-        };
     }
     
     public HelpCtx getHelpCtx() {
@@ -72,6 +53,7 @@ public class JAXBRegenerateCodeAction extends CookieAction {
                 "LBL_CodeRegenerateActionName"); //NOI18N
     }
     
+    @Override
     protected boolean enable(Node[] node) {
         return true;
     }
