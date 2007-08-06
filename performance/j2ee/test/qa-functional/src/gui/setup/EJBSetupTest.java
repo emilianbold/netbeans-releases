@@ -68,7 +68,7 @@ public class EJBSetupTest extends org.netbeans.junit.NbTestCase {
         Node node = new Node(new RuntimeTabOperator().getRootNode(),"Servers");
         node.performPopupActionNoBlock("Add Server...");
         NbDialogOperator dialog = new NbDialogOperator("Add Server");
-        new JComboBoxOperator(dialog).selectItem("Application Server");
+        new JComboBoxOperator(dialog).selectItem("Glassfish V2");
         new JButtonOperator(dialog,"Next").push();
         
         //"Enter the Application Server location" or "Define Application Server Instance Properties"

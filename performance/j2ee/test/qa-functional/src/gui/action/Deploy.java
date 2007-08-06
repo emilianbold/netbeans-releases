@@ -71,7 +71,7 @@ public class Deploy extends org.netbeans.performance.test.utilities.PerformanceT
         JTreeOperator tree = ProjectsTabOperator.invoke().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
         node = new ProjectRootNode(tree, "DeployTest");
-        node.performPopupAction("Build Project");
+        node.performPopupAction("Build");
         MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 120000);
         MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (dist)");
     }
@@ -79,7 +79,7 @@ public class Deploy extends org.netbeans.performance.test.utilities.PerformanceT
     public void shutdown() {
         RuntimeTabOperator runtimeTab = RuntimeTabOperator.invoke();
         Node node = new Node(runtimeTab.getRootNode(), Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE")
-                +"|Application Server|"
+                +"|Glassfish V2|"
                 + Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_Applications") + "|"
                 + Bundle.getStringTrimmed("org.netbeans.modules.j2ee.sun.ide.j2ee.runtime.nodes.Bundle", "LBL_AppModules") + "|"
                 + "DeployTest");
@@ -94,12 +94,12 @@ public class Deploy extends org.netbeans.performance.test.utilities.PerformanceT
     }
     
     public ComponentOperator open(){
-        node.performPopupAction("Deploy Project");
+        node.performPopupAction("Undeploy and Deploy");
         return null;
     }
     
     public void close() {
-        MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (run-deploy)");
+        MainWindowOperator.getDefault().waitStatusText("Finished building build.xml (run-deploy).");
         try {
             URL url = new URL("http://localhost:8080/DeployTest-WebModule/TestServlet");
             InputStream stream = url.openStream();

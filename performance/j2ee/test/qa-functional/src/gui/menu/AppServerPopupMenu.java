@@ -13,27 +13,32 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.menu;
 
-import org.netbeans.jellytools.Bundle;
+import gui.Utils;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JFrameOperator;
+
+import org.netbeans.junit.NbTestSuite;
 
 /**
  * Test of popup menu on nodes in Runtime View
  * @author  juhrik@netbeans.org, mmirilovic@netbeans.org
  */
+
+
 public class AppServerPopupMenu extends ValidatePopupMenuOnNodes{
     
     private static RuntimeTabOperator runtimeTab;
     
-    private final String SERVER_REGISTRY = Bundle.getStringTrimmed(
-            "org.netbeans.modules.j2ee.deployment.impl.ui.Bundle",
-            "SERVER_REGISTRY_NODE");
+    private final String SERVER_REGISTRY = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.Bundle", "SERVER_REGISTRY_NODE");
     
     /**
      * Creates a new instance of AppServerPopupMenu 
@@ -51,7 +56,7 @@ public class AppServerPopupMenu extends ValidatePopupMenuOnNodes{
     
     
     public void testAppServerPopupMenuRuntime(){
-        testMenu(SERVER_REGISTRY + "|" + "GlassFish");
+        testMenu(SERVER_REGISTRY + "|" + "GlassFish V2");
     }
     
     private void testMenu(String path){
