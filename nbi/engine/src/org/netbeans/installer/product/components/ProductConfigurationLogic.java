@@ -62,7 +62,11 @@ public abstract class ProductConfigurationLogic {
     public String validateInstallation() {
         if (getProduct().getStatus() == Status.INSTALLED) {
             final File installLocation = getProduct().getInstallationLocation();
-            
+            if (installLocation == null) {
+                return ResourceUtils.getString(
+                        ProductConfigurationLogic.class,
+                        "PCL.validation.directory.null");
+            }
             if (!installLocation.exists()) {
                 return ResourceUtils.getString(
                         ProductConfigurationLogic.class,

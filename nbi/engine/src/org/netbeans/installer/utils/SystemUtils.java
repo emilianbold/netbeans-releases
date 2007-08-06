@@ -99,7 +99,10 @@ public final class SystemUtils {
     
     public static String resolveString(String string, ClassLoader loader) {
         String parsed = string;
-        
+            
+        if (parsed == null) {
+            return null;
+        }
         // N for Name
         try {
             parsed = parsed.replaceAll("(?<!\\\\)\\$N\\{install\\}", StringUtils.escapeRegExp(getDefaultApplicationsLocation().getAbsolutePath()));
