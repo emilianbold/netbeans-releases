@@ -225,11 +225,29 @@ public class CommitAction extends AbstractSystemAction {
         List<File> addKbBucket = new ArrayList<File>();
         List<File> addKvBucket = new ArrayList<File>();
         List<File> removeBucket = new ArrayList<File>();
+                
+        String ks = System.getProperty("cvs.keywordsubstitution", "");
         for (int i = 0; i < files.length; i++) {
             CommitSettings.CommitFile file = files[i];
             if (file.getOptions() == CommitOptions.EXCLUDE) continue;
             if (file.getOptions() == CommitOptions.ADD_TEXT) {
-                addDefaultBucket.add(file.getNode().getFile());
+                List<File> bucket;
+                if(ks.equals("kkv")) {
+                    bucket = addKkvBucket;                
+                } else if (ks.equals("kkvl")) {
+                    bucket = addKkvlBucket;
+                } else if (ks.equals("kk")) {
+                    bucket = addKkBucket;
+                } else if (ks.equals("ko")) {
+                    bucket = addKoBucket;
+                } else if (ks.equals("kb")) {
+                    bucket = addKbBucket;
+                } else if (ks.equals("kv")) {
+                    bucket = addKvBucket;
+                } else {
+                    bucket = addDefaultBucket;   
+                }         
+                bucket.add(file.getNode().getFile());
             } else if (file.getOptions() == CommitOptions.ADD_BINARY) {
                 addKbBucket.add(file.getNode().getFile());
             } else if (file.getOptions() == CommitOptions.COMMIT_REMOVE) {
