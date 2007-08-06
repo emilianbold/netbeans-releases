@@ -20,6 +20,7 @@
 package org.netbeans.modules.uml.drawingarea.dataobject;
 
 
+import java.io.IOException;
 import java.util.Arrays;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -30,6 +31,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -59,11 +61,24 @@ public class DiagramEditorSupport extends DataEditorSupport
     
     public void openDiagramEditor()
     {
-        FileObject fo = diagramDataObject.getDiagramFile();
-        Project p = FileOwnerQuery.getOwner(fo);
-        Project[] projects = OpenProjects.getDefault().getOpenProjects();
-        if (Arrays.asList(projects).contains(p))
-            ProductHelper.getProductDiagramManager().openDiagram(fo.getPath(), false, null);
+        try 
+        {
+            FileObject fo = diagramDataObject.getDiagramFile();
+            Project p = FileOwnerQuery.getOwner(fo);
+            Project[] projects = OpenProjects.getDefault().getOpenProjects();
+            //Fixed IZ=104742. 
+            // Modified to call FileUtil.toFile(fo).getCanonicalPath() instead of 
+            // calling fo.getPath()
+            String diagFileName = FileUtil.toFile(fo).getCanonicalPath();
+            if (Arrays.asList(projects).contains(p)) 
+            {
+                ProductHelper.getProductDiagramManager().openDiagram(diagFileName, false, null);
+            }
+        } 
+        catch (IOException ex) 
+        {
+            ex.printStackTrace();
+        }
     }
     
     
