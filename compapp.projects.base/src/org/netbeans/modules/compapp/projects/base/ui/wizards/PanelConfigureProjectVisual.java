@@ -20,6 +20,7 @@
 
 package org.netbeans.modules.compapp.projects.base.ui.wizards;
 
+import java.awt.Dimension;
 import javax.swing.JPanel;
 
 import org.openide.WizardDescriptor;
@@ -33,6 +34,8 @@ public class PanelConfigureProjectVisual
 
     private PanelProjectLocationVisual projectLocationPanel;
     private PanelOptionsVisual optionsPanel;
+    /** prefered dimmension of the panels */
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
 
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual(PanelConfigureProject panel) {
@@ -72,6 +75,11 @@ public class PanelConfigureProjectVisual
         // Provide a name in the title bar.
         setName(NbBundle.getBundle(WIZARD_BUNDLE).getString("LBL_NWP1_ProjectTitleName")); //NOI18N
         putClientProperty ("NewProjectWizard_Title", panel.getDefaultTitle()); //NOI18N
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        return PREF_DIM;
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
