@@ -26,10 +26,10 @@ Microsystems, Inc. All Rights Reserved.
     <localizing-bundle>org.netbeans.modules.form.resources.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.swingapp/modules/ext/beansbinding-0.6.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.form/modules/ext/beansbinding-0.6.1.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.swingapp/docs/beansbinding-0.6.1-doc.zip!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.form/docs/beansbinding-0.6.1-doc.zip!/</resource>
     </volume>
 </library>
