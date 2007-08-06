@@ -334,8 +334,8 @@ public class JMeterIntegrationEngine {
     final String jmeterExecutable = jmeterRoot + File.separator + "jmeter" + (Utilities.isWindows() ? ".bat" : "");
     
     String[] params = null;
-    System.out.println("Userdir = " + jmeterRoot);
-    System.out.println("Scirptpath = " + decoratePath(scriptPath));
+//    System.out.println("Userdir = " + jmeterRoot);
+//    System.out.println("Scirptpath = " + decoratePath(scriptPath));
     
     if (Utilities.isWindows()) {
       params = new String[]{
@@ -392,9 +392,9 @@ public class JMeterIntegrationEngine {
     File userDir = InstalledFileLocator.getDefault().locate("modules/jmeter/bin/jmeter.properties", "org.apache.jmeter.module", false); // NOI18N
     try {
       jmeterPath = userDir.getCanonicalPath();
-      System.out.println("Calculated JMeter path = " + jmeterPath);
+//      System.out.println("Calculated JMeter path = " + jmeterPath);
       jmeterPath = jmeterPath.substring(0, jmeterPath.lastIndexOf("modules" + File.separator + "jmeter") + ("modules" + File.separator + "jmeter").length()); // NOI18N
-      System.out.println("Modified JMeter path = " + jmeterPath);
+//      System.out.println("Modified JMeter path = " + jmeterPath);
       // change user.dir property - it's required by JMeter
       //      System.setProperty("user.dir", jmeterPath + File.separator + "bin"); // NOI18N
       // set JMeter home
