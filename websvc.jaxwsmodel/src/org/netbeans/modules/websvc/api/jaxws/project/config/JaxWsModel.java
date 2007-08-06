@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.websvc.api.jaxws.project.config;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,6 +41,7 @@ public final class JaxWsModel {
     private FileObject fo;
     private Object initLock = new Object();
     private List<ServiceListener> serviceListeners;
+    private List<PropertyChangeListener> propertyChangeListeners;
     
     JaxWsModel(org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws) {
         this(jaxws,null);
@@ -48,6 +50,7 @@ public final class JaxWsModel {
     JaxWsModel(org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws, FileObject fo) {
         this.jaxws=jaxws;
         this.fo=fo;
+        propertyChangeListeners = new ArrayList<PropertyChangeListener>();
         serviceListeners = new ArrayList<ServiceListener>();
     }
     
@@ -224,12 +227,20 @@ public final class JaxWsModel {
         return new Client(client);
     }
     
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-        jaxws.addPropertyChangeListener(l);
+    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
+        JaxWsPCL jaxWsPcl = new JaxWsPCL(l);
+        propertyChangeListeners.add(jaxWsPcl);
+        jaxws.addPropertyChangeListener(jaxWsPcl);
     }
     
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-        jaxws.removePropertyChangeListener(l);
+    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
+        for (PropertyChangeListener pcl:propertyChangeListeners) {
+            if (l == ((JaxWsPCL)pcl).getOriginalListener()) {
+                jaxws.removePropertyChangeListener(pcl);
+                propertyChangeListeners.remove(pcl);
+                break;
+            }
+        }
     }
     
     public void merge(JaxWsModel newJaxWs) {
@@ -269,16 +280,6 @@ public final class JaxWsModel {
         } else throw new IOException("No FileObject for writing specified"); //NOI18N
     }
     
-    //retouche:
-//    private static MetadataUnit findJAXWSMetadata(Project project) {
-//        JAXWSMetadataProvider metadataProvider = (JAXWSMetadataProvider)project.getLookup().lookup(JAXWSMetadataProvider.class);
-//        if(metadataProvider != null) {
-//            return metadataProvider.getJAXWSMetadata();
-//        } else {
-//            return null;
-//        }
-//    }
-    
     public synchronized void addServiceListener(ServiceListener listener) {
         if (listener!=null)
             serviceListeners.add(listener);
@@ -303,6 +304,41 @@ public final class JaxWsModel {
         public void serviceAdded(String name, String implementationClass);
         
         public void serviceRemoved(String name);
+        
+    }
+    
+    private class JaxWsPCL implements PropertyChangeListener {
+
+        PropertyChangeListener originalListener;
+        JaxWsPCL(PropertyChangeListener originalListener) {
+            this.originalListener = originalListener;
+            
+        }
+        public void propertyChange(PropertyChangeEvent evt) {
+           Object oldValue = evt.getOldValue();
+           if (oldValue != null) {
+               if (oldValue instanceof org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client) {
+                   oldValue = new Client((org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client)oldValue);
+               }
+               if (oldValue instanceof org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service) {
+                   oldValue = new Service((org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service)oldValue);
+               }
+           }
+           Object newValue = evt.getNewValue();
+           if (newValue != null) {
+               if (newValue instanceof org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client) {
+                   newValue = new Client((org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Client)newValue);
+               }
+               if (newValue instanceof org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service) {
+                   newValue = new Service((org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.Service)newValue);
+               }
+           }
+           originalListener.propertyChange(new PropertyChangeEvent(evt.getSource(), evt.getPropertyName(), oldValue, newValue));
+        }
+        
+        PropertyChangeListener getOriginalListener() {
+            return originalListener;
+        }
         
     }
     
