@@ -1,6 +1,8 @@
 #!/bin/sh
+
 ANT_OPTS='-Xmx512m -XX:MaxPermSize=128m'
 export ANT_OPTS
+
 if [ `ant -f nbbuild/build.xml -Dcluster.config=experimental print-cvs-modules | perl -ne 'print sort split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'` \!= `perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'` ]
 then
     echo "Set of modules changed, getting fresh checkout..."
@@ -11,6 +13,14 @@ then
     echo "Previous build failed, running clean build this time..."
     ant -f nbbuild/build.xml cvs-clean || exit
 fi
+
+for www in */www ; do
+    if [ \! -f $www/.IGNOREME ] ; then
+        rm -rf $www
+        cp -r nbbuild/dummy $www
+    fi
+done
+
 mydir=`cd $(dirname $0); pwd`
 keystore=$mydir/NBstore
 storepass=`cat $mydir/storepass`
