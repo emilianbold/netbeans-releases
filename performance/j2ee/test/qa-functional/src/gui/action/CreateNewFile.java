@@ -93,7 +93,7 @@ public class CreateNewFile extends org.netbeans.performance.test.utilities.Perfo
         project = "TestApplication-ejb";
         category = "Web Services";
         fileType = "Web Service";
-        fileName = "NewTestWebService";
+        fileName = "NewWebService";
         packageName = "test.newfiles";
         doMeasurement();
     }
@@ -121,12 +121,11 @@ public class CreateNewFile extends org.netbeans.performance.test.utilities.Perfo
         else
              eBname = new JTextFieldOperator(wizard);
         eBname.setText(fileName+Utils.getTimeIndex());
-        new JComboBoxOperator(wizard,1).clearText();
-        new JComboBoxOperator(wizard,1).typeText(packageName);
+        new JComboBoxOperator(wizard,1).enterText(packageName);
     }
 
     public ComponentOperator open() {
-        wizard.finish();
+//        wizard.finish();
         return new EditorOperator(fileName);
     }
     
