@@ -50,32 +50,32 @@ class FilesystemHandler extends VCSInterceptor {
      * @param file File, we are only interested in files inside CVS directory
      */ 
     public boolean beforeDelete(File file) {
-        if (ignoringEvents()) return false;
-        return org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(file) || file.isDirectory() && hasMetadata(file);
+        return !ignoringEvents();
     }
 
     public void doDelete(File file) throws IOException {
         if (file.isDirectory() && hasMetadata(file)) {
             CvsVisibilityQuery.hideFolder(file);
             cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN, true);
-            return;
-        }
-        if (!org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(file)) {
+        } else if (org.netbeans.modules.versioning.system.cvss.util.Utils.isPartOfCVSMetadata(file)) {
+            // medatada are never deleted
+        } else {
             if (!file.delete()) {
                 throw new IOException("Failed to delete file: " + file.getAbsolutePath());
             }
+            fileDeletedImpl(file);
         }
     }
 
-    public void afterDelete(final File file) {
-        if (ignoringEvents()) return;
-        Utils.post(new Runnable() {
-            public void run() {
-                fileDeletedImpl(file);
-            }
-        });
+    public void afterDelete(File file) {
+        refreshDeleted(file);
     }
     
+    private void refreshDeleted(File file) {
+        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN, false);
+        if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
+    }
+
     /**
      * We handle directory renames that are managed by CVS.
      */
@@ -234,8 +234,7 @@ class FilesystemHandler extends VCSInterceptor {
             cvsRemoveLocally(sah, file, entry);    
         }
 
-        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-        if (file.getName().equals(CvsVersioningSystem.FILENAME_CVSIGNORE)) cache.directoryContentChanged(file.getParentFile());
+        refreshDeleted(file);
     }
     
     /**

@@ -385,7 +385,7 @@ public class FileStatusCache {
         if (originalFiles != null) {
             for (Iterator i = originalFiles.keySet().iterator(); i.hasNext();) {
                 File file = (File) i.next();
-                refresh(file, REPOSITORY_STATUS_UNKNOWN);
+                refresh(file, REPOSITORY_STATUS_UNKNOWN, false);
             }
         }
     }
