@@ -59,7 +59,7 @@ import org.openide.util.actions.NodeAction;
 public final class GenerateAction extends NodeAction {
     private boolean forcing;
     private boolean preview;
-
+    
     @Override
     protected void performAction(Node[] activatedNodes) {
         Lookup lookup = activatedNodes[0].getLookup();
@@ -88,14 +88,38 @@ public final class GenerateAction extends NodeAction {
             generator = Generator.CONTROLLER;
         }
 
+        generate(project, generator, null, null, false, false);
+    }
+    
+    public void generate(Project project, String generatorName, String name, String params) {
+        assert generatorName.equals("controller") : "Only the controller generator is supported"; // NOI18N
+        Generator generator = Generator.CONTROLLER;
+        
+        if (project != null) {
+            generate((RailsProject)project, generator, name, params, true, true);
+        } else {
+            assert false;
+        }
+    }
+
+    public void generate(RailsProject project, Generator generator, String initialName, 
+            String initialParams, boolean initialEnabled, boolean noOverwrite) {
         boolean cancelled;
         final JButton okButton = new JButton(NbBundle.getMessage(GenerateAction.class, "Ok"));
         okButton.getAccessibleContext()
                 .setAccessibleDescription(NbBundle.getMessage(GenerateAction.class, "AD_Ok"));
 
         final GeneratorPanel panel = new GeneratorPanel(project, generator);
-        panel.setForcing(forcing);
+        if (noOverwrite) {
+            panel.setForcing(false);
+        } else {
+            panel.setForcing(forcing);
+        }
         panel.setPretend(preview);
+        
+        if (initialName != null) {
+            panel.setInitialState(initialName, initialParams);
+        }
 
         Object[] options = new Object[] { okButton, DialogDescriptor.CANCEL_OPTION };
 
@@ -105,7 +129,7 @@ public final class GenerateAction extends NodeAction {
                 }
             });
 
-        okButton.setEnabled(false);
+        okButton.setEnabled(initialEnabled);
 
         DialogDescriptor desc =
             new DialogDescriptor(panel,
@@ -123,7 +147,9 @@ public final class GenerateAction extends NodeAction {
         }
 
         dlg.dispose();
-        forcing = panel.isForce(); // Persist state for next invocation (this session only)
+        if (!noOverwrite) {
+            forcing = panel.isForce(); // Persist state for next invocation (this session only)
+        }
         preview = panel.isPretend();
 
         if (!cancelled) {
@@ -286,7 +312,7 @@ public final class GenerateAction extends NodeAction {
         public FileLocation processLine(String line) {
             FileLocation loc = recognizer.processLine(line);
 
-            if (loc != null) {
+            if (loc != null && !line.trim().startsWith("skip")) { // NOI18N
                 locations.add(loc);
             }
 

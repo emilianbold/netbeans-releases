@@ -35,6 +35,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.rubyproject.gems.GemAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -97,6 +98,14 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
             public void changedUpdate(DocumentEvent ev) {
             }
         });
+    }
+    
+    void setInitialState(String name, String params) {
+        assert name != null;
+        nameText.setText(name);
+        if (params != null) {
+            parameter1Text.setText(params);
+        }
     }
         
     private Generator getSelectedGenerator() {
@@ -429,6 +438,14 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
             return true;
         }
 
+        String msg = RubyUtils.getIdentifierWarning(name, 0);
+        if (msg != null) {
+            //wizardDescriptor.putProperty("WizardPanel_errorMessage", // NOI18N
+            //        msg);
+            // warning only, don't return false
+        }
+        
+        
         // TODO - if getArgsRequired > 0, validate on the additional parameter fields
         
         return false;

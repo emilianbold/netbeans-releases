@@ -21,8 +21,8 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jScrollPane1" alignment="0" pref="566" max="32767" attributes="0"/>
-                  <Component id="jSeparator1" alignment="1" pref="566" max="32767" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="0" pref="615" max="32767" attributes="0"/>
+                  <Component id="jSeparator1" alignment="1" pref="615" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="forceLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -30,7 +30,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="overwriteRadio" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="optionsPanel" alignment="1" pref="566" max="32767" attributes="0"/>
+                  <Component id="optionsPanel" alignment="1" pref="615" max="32767" attributes="0"/>
                   <Component id="pretendCB" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="generateLabel" min="-2" max="-2" attributes="0"/>
@@ -39,7 +39,7 @@
                       <EmptySpace pref="354" max="32767" attributes="0"/>
                       <Component id="installGeneratorsButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jSeparator2" alignment="0" pref="566" max="32767" attributes="0"/>
+                  <Component id="jSeparator2" alignment="0" pref="615" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -88,11 +88,6 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="GeneratorPanel.pretendCB.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
@@ -115,11 +110,6 @@
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="GeneratorPanel.skipRadio.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
-        </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
         </Property>
@@ -132,11 +122,6 @@
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/ruby/railsprojects/Bundle.properties" key="GeneratorPanel.overwriteRadio.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-          </Border>
         </Property>
         <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
           <Insets value="[0, 0, 0, 0]"/>
