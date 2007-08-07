@@ -576,10 +576,42 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             String type = target.type;
             if (type.indexOf("partial") != -1) { // NOI18N
                 
-                String name = "_" + target.name; // NOI18N
+                FileObject dir;
+                String name;
+                int slashIndex = target.name.lastIndexOf('/');
+                if (slashIndex != -1) {
+                    
+                    // Find app dir, and build up a relative path to the view file in the process
+                    FileObject app = info.getFileObject().getParent();
+
+                    while (app != null) {
+                        if (app.getName().equals("views") && // NOI18N
+                                ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
+                            app = app.getParent();
+
+                            break;
+                        }
+
+                        app = app.getParent();
+                    }
+                    
+                    if (app == null) {
+                        return DeclarationLocation.NONE;
+                    }
+                    
+                    String relativePath = target.name.substring(0, slashIndex);
+                    dir = app.getFileObject("views/" + relativePath); // NOI18N
+                    if (dir == null) {
+                        return DeclarationLocation.NONE;
+                    }
+                    name = "_" + target.name.substring(slashIndex+1); // NOI18N
+                    
+                } else {
+                    dir = info.getFileObject().getParent();
+                    name = "_" + target.name; // NOI18N
+                }
                 
                 // Try to find the partial file
-                FileObject dir = info.getFileObject().getParent();
                 // TODO - any other filetypes I should check
                 String[] extensions = { ".rhtml", ".erb", ".html.erb" }; // NOI18N
                 FileObject partial = null;
@@ -691,7 +723,7 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             Node n = it.next();
             
             if (n instanceof HashNode) {
-                if (prev instanceof ListNode) {
+                if (prev instanceof ListNode) { // uhm... why am I going back to prev?
                     List<Node> hashItems = (List<Node>)prev.childNodes();
 
                     Iterator<Node> hi = hashItems.iterator();
