@@ -139,13 +139,6 @@ public class StandardWorkFlow extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         crso.next();
               
-        try {
-           JProgressBarOperator progress = new JProgressBarOperator(crso);
-           JButtonOperator btnStop = new JButtonOperator(crso);
-        } catch (TimeoutExpiredException e) {
-            throw e;
-        }
-        
         //second step of checkoutwizard
         //2nd step of CheckOutWizard
         

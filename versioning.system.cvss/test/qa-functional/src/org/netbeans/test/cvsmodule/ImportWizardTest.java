@@ -304,14 +304,7 @@ public class ImportWizardTest extends JellyTestCase {
         cvss.ignoreProbe();
         crso.setCVSRoot(cvss.getCvsRoot());
         
-        crso.next();
-              
-        try {
-           JProgressBarOperator progress = new JProgressBarOperator(crso);
-           JButtonOperator btnStop = new JButtonOperator(crso);
-        } catch (TimeoutExpiredException e) {
-            throw e;
-        }
+        crso.next();             
         
         //Wizard proceeded to 2nd step.
         FolderToImportStepOperator folderToImportOper = new FolderToImportStepOperator();
@@ -501,13 +494,6 @@ public class ImportWizardTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", cvss.getCvsRoot());
         crso.next();
               
-        try {
-           JProgressBarOperator progress = new JProgressBarOperator(crso);
-           JButtonOperator btnStop = new JButtonOperator(crso);
-        } catch (TimeoutExpiredException e) {
-            throw e;
-        }
-        
         //Wizard proceeded to 2nd step.
         
         FolderToImportStepOperator folderToImportOper = new FolderToImportStepOperator();
@@ -570,13 +556,6 @@ public class ImportWizardTest extends JellyTestCase {
         crso.setCVSRoot(CVSroot);
         crso.next();
               
-        try {
-           JProgressBarOperator progress = new JProgressBarOperator(crso);
-           JButtonOperator btnStop = new JButtonOperator(crso);
-        } catch (TimeoutExpiredException e) {
-            throw e;
-        }
-        
         //Wizard proceeded to 2nd step.
         
         FolderToImportStepOperator folderToImportOper = new FolderToImportStepOperator();

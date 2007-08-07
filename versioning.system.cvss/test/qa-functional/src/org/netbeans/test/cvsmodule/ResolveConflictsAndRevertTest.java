@@ -123,12 +123,7 @@ public class ResolveConflictsAndRevertTest extends JellyTestCase {
         crso.setCVSRoot(CVSroot);
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         crso.next();
-        try {
-            JProgressBarOperator progress = new JProgressBarOperator(crso);
-            JButtonOperator btnStop = new JButtonOperator(crso);
-        } catch (TimeoutExpiredException e) {
-            throw e;
-        }
+        
         //2nd step of CheckOutWizard
         File tmp = new File("/tmp"); // NOI18N
         File work = new File(tmp, "" + File.separator + System.currentTimeMillis());

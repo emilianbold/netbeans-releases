@@ -550,13 +550,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         crso.setCVSRoot(cvss.getCvsRoot());
            
         crso.next();
-         
-        try {
-           JProgressBarOperator progress = new JProgressBarOperator(crso);
-           JButtonOperator btnStop = new JButtonOperator(crso);
-        } catch (TimeoutExpiredException e) {
-            throw e;
-        }
         
         //JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", 3000);
         try {
@@ -593,9 +586,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         cvss.ignoreProbe();
         crso.setCVSRoot(cvss.getCvsRoot());
         crso.next();
-        
-        JProgressBarOperator progress = new JProgressBarOperator(crso);
-        JButtonOperator btnStop = new JButtonOperator(crso);
         
         //Wizard proceeded to 2nd step.
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
@@ -636,9 +626,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         crso.next();
               
-        JProgressBarOperator progress = new JProgressBarOperator(crso);
-        JButtonOperator btnStop = new JButtonOperator(crso);
-        
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
         in.close();
@@ -690,9 +677,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         crso.setCVSRoot(cvss.getCvsRoot());
         
         crso.next();
-              
-        JProgressBarOperator progress = new JProgressBarOperator(crso);
-        JButtonOperator btnStop = new JButtonOperator(crso);
         
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
@@ -744,9 +728,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         crso.next();
               
-        JProgressBarOperator progress = new JProgressBarOperator(crso);
-        JButtonOperator btnStop = new JButtonOperator(crso);
-        
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
         in.close();
@@ -803,10 +784,7 @@ public class CheckOutWizardTest extends JellyTestCase {
         cvss.ignoreProbe();
         crso.setCVSRoot(cvss.getCvsRoot());
         
-        crso.next();
-              
-        JProgressBarOperator progress = new JProgressBarOperator(crso);
-        JButtonOperator btnStop = new JButtonOperator(crso);
+        crso.next();              
         
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
@@ -879,9 +857,6 @@ public class CheckOutWizardTest extends JellyTestCase {
         
         crso.next();
               
-        JProgressBarOperator progress = new JProgressBarOperator(crso);
-        JButtonOperator btnStop = new JButtonOperator(crso);
-        
         //second step of checkoutwizard
         //2nd step of CheckOutWizard
         File file = new File("/tmp"); // NOI18N
@@ -966,13 +941,6 @@ public class CheckOutWizardTest extends JellyTestCase {
             System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
             crso.next();
               
-            try {
-                JProgressBarOperator progress = new JProgressBarOperator(crso);
-                JButtonOperator btnStop = new JButtonOperator(crso);
-            } catch (TimeoutExpiredException e) {
-                throw e;
-            }
-        
             //second step of checkoutwizard
             //2nd step of CheckOutWizard
         
