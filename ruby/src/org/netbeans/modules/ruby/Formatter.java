@@ -608,5 +608,8 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         if (formatter.getTabSize() != style.getTabSize()) {
             formatter.setTabSize(style.getTabSize());
         }
+        if (formatter.getSpacesPerTab() != style.getIndentSize()) {
+            formatter.setSpacesPerTab(style.getIndentSize());
+        }
     }
 }

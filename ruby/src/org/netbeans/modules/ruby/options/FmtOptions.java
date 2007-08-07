@@ -393,6 +393,8 @@ public class FmtOptions {
                                 }
                             } else if (optionID.equals(tabSize)) { // NOI18N
                                 options.setTabSize(i);
+                            } else if (optionID.equals(indentSize)) {
+                                options.setSpacesPerTab(i);
                             }
                         }
                     } catch (NumberFormatException e) {
