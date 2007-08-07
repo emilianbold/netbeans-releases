@@ -356,6 +356,12 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
+            CodeStyle style = codeStyle;
+            if (style == null) {
+                style = CodeStyle.getDefault(null);
+            }
+            syncOptions(doc, style);
+
             if (endOffset > doc.getLength()) {
                 endOffset = doc.getLength();
             }
@@ -453,11 +459,6 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                     }
                 }
                 
-                CodeStyle style = codeStyle;
-                if (style == null) {
-                    style = CodeStyle.getDefault(null);
-                }
-
                 if (!indentOnly && style != null && style.reformatComments()) {
                     reformatComments(doc, startOffset, endOffset);
                 }
@@ -592,5 +593,20 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
         ReflowParagraphAction action = new ReflowParagraphAction();
         action.reflowComments(doc, start, end, rightMargin);
+    }
+    
+    /**
+     * Ensure that the editor-settings for tabs match our code style, since the
+     * primitive "doc.getFormatter().changeRowIndent" calls will be using
+     * those settings
+     */
+    private static void syncOptions(BaseDocument doc, CodeStyle style) {
+        org.netbeans.editor.Formatter formatter = doc.getFormatter();
+        if (formatter.expandTabs() != style.expandTabToSpaces()) {
+            formatter.setExpandTabs(style.expandTabToSpaces());
+        }
+        if (formatter.getTabSize() != style.getTabSize()) {
+            formatter.setTabSize(style.getTabSize());
+        }
     }
 }

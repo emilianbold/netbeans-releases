@@ -369,6 +369,8 @@ public class FmtOptions {
         }
         
         private void storeData( JComponent jc, String optionID, Preferences p ) {
+            Lookup lookup = MimeLookup.getLookup(MimePath.parse(RubyInstallation.RUBY_MIME_TYPE));
+            BaseOptions options = lookup.lookup(BaseOptions.class);
             
             Preferences node = p == null ? getPreferences(getCurrentProfileId()) : p;
             
@@ -381,16 +383,16 @@ public class FmtOptions {
                     try {
                         int i = Integer.parseInt(text);
                         
-                        if (optionID.equals("rightMargin")) { // NOI18N
-                            // HACK! Synchronize with textline property such that users can see
-                            // the wrapping line
+                        if (options != null && i > 0) {
+                            if (optionID.equals(rightMargin)) { // NOI18N
+                                // HACK! Synchronize with textline property such that users can see
+                                // the wrapping line
 
-                            if (i > 5) {
-                                Lookup lookup = MimeLookup.getLookup(MimePath.parse(RubyInstallation.RUBY_MIME_TYPE));
-                                BaseOptions options = lookup.lookup(BaseOptions.class);
-                                if (options != null) {
+                                if (i > 5) {
                                     options.setTextLimitWidth(i);
                                 }
+                            } else if (optionID.equals(tabSize)) { // NOI18N
+                                options.setTabSize(i);
                             }
                         }
                     } catch (NumberFormatException e) {
@@ -403,6 +405,9 @@ public class FmtOptions {
             }
             else if ( jc instanceof JCheckBox ) {
                 JCheckBox checkBox = (JCheckBox)jc;
+                if (options != null && optionID.equals(expandTabToSpaces)) { // NOI18N
+                    options.setExpandTabs(checkBox.isSelected());
+                }
                 node.putBoolean(optionID, checkBox.isSelected());
             } 
             else if ( jc instanceof JComboBox) {
