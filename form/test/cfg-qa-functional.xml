@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="issues" executor="ide" name="testbag_issues">
         <testset dir="qa-functional/src">
             <patternset>               
-                <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
                 <include name="org/netbeans/qa/form/visualDevelopment/MenuAndPopupMenuTest.class"/>
                 <include name="org/netbeans/qa/form/issues/*.class"/>             
                 <include name="org/netbeans/qa/form/binding/AdvancedBeansBinding.class"/>
@@ -41,13 +40,14 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
- <!--   <testbag testattribs="almoststable, validation" executor="ide" name="testbag_refactoring">
+    <testbag testattribs="jv" executor="ide" name="testbag_refactoring">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
+                <include name="org/netbeans/qa/form/refactoring/RenameFormClassTest.class"/>
             </patternset>
         </testset>
-    </testbag> -->
+    </testbag>
     
     <testbag testattribs="validation" executor="ide" name="testbag_binding">
         <testset dir="qa-functional/src">
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
 
     
     
-    <testbag testattribs="jv" executor="ide" name="testbag_databinding">
+    <testbag testattribs="_jv" executor="ide" name="testbag_databinding">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/databinding/SetUpDerbyDatabaseTest.class"/>
