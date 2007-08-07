@@ -25,6 +25,7 @@ import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 import java.util.logging.Level;
@@ -101,7 +102,8 @@ public class URLUtil {
                 String urlWithoutRef = urlStr.substring(0, ind);
                 String anchorOrg = url.getRef();
                 try {
-                    String anchorEscaped  = URLEncoder.encode(anchorOrg, "UTF8"); //NOI18N
+                    String anchorEscaped  = URLEncoder.encode(
+                            URLDecoder.decode(anchorOrg, "UTF8"), "UTF8"); //NOI18N
                     
                     // browsers seems to like %20 more...
                     anchorEscaped = anchorEscaped.replaceAll("\\+", "%20"); // NOI18N
