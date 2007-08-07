@@ -2620,8 +2620,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     TreePath tp = controller.getTreeUtilities().pathFor(offset);
                     while (t == null && tp != null) {
                         switch(tp.getLeaf().getKind()) {
-                            case IMPORT:
                             case EXPRESSION_STATEMENT:
+                                ExpressionTree expr = ((ExpressionStatementTree)tp.getLeaf()).getExpression();
+                                if (expr != null && expr.getKind() == Tree.Kind.ERRONEOUS)
+                                    break;
+                            case IMPORT:                                
                                 t = tp.getLeaf();
                                 break;
                             case RETURN:
@@ -2640,6 +2643,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                         if (ts != null) {
                             ret[0] = ts.token().id() == JavaTokenId.SEMICOLON ? -1 : ts.offset() + ts.token().length();
                         }
+                    } else {
+                        TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                        ts.move(offset);
+                        if (ts.moveNext() &&  ts.token().id() == JavaTokenId.SEMICOLON)
+                            ret[0] = -1;
                     }
                 }
             }, true);
