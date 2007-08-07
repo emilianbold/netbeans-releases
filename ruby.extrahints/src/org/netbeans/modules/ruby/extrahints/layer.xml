@@ -22,6 +22,10 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="org-netbeans-modules-ruby-hints">
         <folder name="rules">
             <folder name="hints">
+                <folder name="rails">
+                    <file name="org-netbeans-modules-ruby-extrahints-RailsViews.instance"/>
+                </folder>    
+
                 <folder name="experimental">
                     <attr name="position" intvalue="300"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.extrahints.Bundle"/>
