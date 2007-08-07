@@ -36,8 +36,10 @@ import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
  */
 
 public class PasswordEditor extends PropertyEditorSupport
-        implements EnhancedPropertyEditor {
+        implements EnhancedPropertyEditor /*, ExPropertyEditor*/ {
 
+//    private PropertyEnv mEnv;
+    
     private String value;
 
     public String getAsText() {
@@ -49,14 +51,13 @@ public class PasswordEditor extends PropertyEditorSupport
     }
     
     public void setAsText(String value) throws IllegalArgumentException {        
-        if (value != null && !value.trim().equals("")){ // NOI18N
+        if (value != null){ 
             this.value = value;
             firePropertyChange();
         }
     }
     
     public void setValue(Object value) {
-//        this.value = (String) value;
         setAsText((String)value);
     }
     
@@ -95,7 +96,16 @@ public class PasswordEditor extends PropertyEditorSupport
     
     public boolean supportsEditingTaggedValues() {
         return false;
-    }    
+    }
+
+//    /**
+//     * This method is called by the IDE to pass
+//     * the environment to the property editor.
+//     * @param env Environment passed by the ide.
+//     */
+//    public void attachEnv(PropertyEnv env) {
+//        mEnv = env;
+//    }
 }
 
 

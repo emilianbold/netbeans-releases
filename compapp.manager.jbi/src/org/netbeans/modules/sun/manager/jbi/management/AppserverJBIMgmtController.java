@@ -20,7 +20,6 @@
 package org.netbeans.modules.sun.manager.jbi.management;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.io.File;
 import java.net.InetAddress;
@@ -28,11 +27,7 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
-import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
-import org.netbeans.modules.sun.manager.jbi.management.JBIFrameworkService;
 import org.netbeans.modules.sun.manager.jbi.management.connectors.HTTPServerConnector;
-import org.netbeans.modules.sun.manager.jbi.management.JBIClassLoader;
 import org.netbeans.modules.sun.manager.jbi.util.ComparableAttribute;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
@@ -90,20 +85,6 @@ public class AppserverJBIMgmtController {
         // doesn't do the job either.
         // See ControllerUtil.java in org.netbeans.modules.j2ee.sun.ide.controllers
         // in appserverplugin.
-        
-        // Use HTTPServerConnector instead.
-        
-//        MBeanServerConnection connection = getMBeanServerConnection();
-//        AdministrationService adminService = new AdministrationService(connection);
-        
-//        DeploymentManager deploymentManager = controller.getDeploymentManager();
-//        if (deploymentManager instanceof SunDeploymentManagerInterface) {
-//            SunDeploymentManager sunDeploymentManager = (SunDeploymentManager) deploymentManager;
-//            String host = sunDeploymentManager.getHost();
-//            String userName = sunDeploymentManager.getUserName();
-//            String password = sunDeploymentManager.getPassword();
-//            String adminPortNumber = sunDeploymentManager.getAdminPortNumber();
-//        }
         
         if (adminService == null) {
             String netBeansUserDir = System.getProperty("netbeans.user"); // NOI18N
@@ -174,22 +155,22 @@ public class AppserverJBIMgmtController {
     public Map<Attribute, MBeanAttributeInfo> getJBIComponentLoggerProperties(
             String componentName, boolean sort)
             throws Exception {
-        AdministrationService adminService = getJBIAdministrationService();
-        Map propertyMap = adminService.getComponentLoggerProperties(componentName);
+        Map<Attribute, MBeanAttributeInfo> propertyMap = 
+                getJBIAdministrationService().getComponentLoggerProperties(componentName);
         return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
     }
     
     public Map<Attribute, MBeanAttributeInfo> getJBIComponentIdentificationProperties(
             String componentName, boolean sort) throws Exception {
-        AdministrationService adminService = getJBIAdministrationService();
-        Map propertyMap = adminService.getComponentIdentificationProperties(componentName);
+        Map<Attribute, MBeanAttributeInfo> propertyMap = 
+                getJBIAdministrationService().getComponentIdentificationProperties(componentName);
         return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
     }
     
     public Map<Attribute, MBeanAttributeInfo> getSharedLibraryIdentificationProperties(
             String componentName, boolean sort) throws Exception {
-        AdministrationService adminService = getJBIAdministrationService();
-        Map propertyMap = adminService.getSharedLibraryIdentificationProperties(componentName);
+        Map<Attribute, MBeanAttributeInfo> propertyMap = 
+                getJBIAdministrationService().getSharedLibraryIdentificationProperties(componentName);
         return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
     }
     
@@ -198,9 +179,8 @@ public class AppserverJBIMgmtController {
         Map<Attribute, MBeanAttributeInfo> sortedMap =
                 new TreeMap<Attribute, MBeanAttributeInfo>();
         
-        Set<Attribute> attrSet = propertyMap.keySet();
-        for (Attribute attr : attrSet) {
-            MBeanAttributeInfo info = (MBeanAttributeInfo) propertyMap.get(attr);
+        for (Attribute attr : propertyMap.keySet()) {
+            MBeanAttributeInfo info = propertyMap.get(attr);
             sortedMap.put(new ComparableAttribute(attr), info);
         }
         return sortedMap;
@@ -243,8 +223,8 @@ public class AppserverJBIMgmtController {
     public void setJBIComponentLoggerProperty(
             String componentName, String attrName, Object value) 
             throws Exception {
-        AdministrationService adminService = getJBIAdministrationService();
-        adminService.setComponentLoggerProperty(componentName, attrName, value);
+        getJBIAdministrationService().setComponentLoggerProperty(
+                componentName, attrName, value);
     }
     
     public JBIComponentConfigurator getComponentConfigurator(
