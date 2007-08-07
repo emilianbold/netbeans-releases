@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -82,6 +82,8 @@ public final class InsertModuleAllTargets extends Task {
                     throw new BuildException("Can't file 'nb_all' property, probably not in the NetBeans build system");
                 File nbRoot = new File(nb_all);
                 for( String cluster: clusters) {
+                    if (props.get(cluster) == null) 
+                        throw new BuildException("Cluster '"+cluster+"' has got empty list of modules. Check configuration of that cluster.",getLocation());
                     String[] clusterModules = props.get(cluster).split(", *");
                     for( String module: clusterModules) {
                         File moduleBuild = new File(nbRoot, module + File.separator + "build.xml");
