@@ -51,8 +51,8 @@ public class SMSComposerProducer extends MidpComponentProducer {
         smsEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(smsComposer));
         smsEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(sendCommand));
         MidpDocumentSupport.addEventSource(smsComposer, DisplayableCD.PROP_COMMANDS, smsEventSource);
-        smsComposer.writeProperty(SMSComposerCD.PROP_BGK_COLOR, MidpTypes.createIntegerValue(0x00));
-        smsComposer.writeProperty(SMSComposerCD.PROP_FRG_COLOR, MidpTypes.createIntegerValue(0xCCCCCC));
+        smsComposer.writeProperty(SMSComposerCD.PROP_BGK_COLOR, MidpTypes.createIntegerValue(-3355444));
+        smsComposer.writeProperty(SMSComposerCD.PROP_FRG_COLOR, MidpTypes.createIntegerValue(-16777216));
         smsComposer.writeProperty(SMSComposerCD.PROP_PHONE_NUMEBR_LABEL, MidpTypes.createStringValue(SMSComposerCD.PHONE_NUMBER_LABEL));
         smsComposer.writeProperty(SMSComposerCD.PROP_MESSAGE_LABEL, MidpTypes.createStringValue(SMSComposerCD.MESSAGE_LABEL));
         return new Result(smsComposer, sendCommand, smsEventSource);

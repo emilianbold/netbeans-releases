@@ -62,20 +62,24 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
 
     @Override
     public Collection<ScreenPropertyDescriptor> getPropertyDescriptors() {
-        Collection<ScreenPropertyDescriptor> desciptors = new ArrayList(super.getPropertyDescriptors());
-        desciptors.addAll(Arrays.asList(new ScreenPropertyDescriptor(getComponent(), loginView.getPasswordLabel(), new ScreenStringPropertyEditor(LoginScreenCD.PROP_PASSWORD_LABEL, JTextField.CENTER)), new ScreenPropertyDescriptor(getComponent(), loginView.getPasswordTextField(), new ScreenStringPropertyEditor(LoginScreenCD.PROP_PASSWORD, JTextField.CENTER)), new ScreenPropertyDescriptor(getComponent(), loginView.getUsernameLabel(), new ScreenStringPropertyEditor(LoginScreenCD.PROP_USERNAME_LABEL, JTextField.CENTER)), new ScreenPropertyDescriptor(getComponent(), loginView.getUsernameTextField(), new ScreenStringPropertyEditor(LoginScreenCD.PROP_USERNAME, JTextField.CENTER))));
+        Collection<ScreenPropertyDescriptor> desciptors = new ArrayList<ScreenPropertyDescriptor>(super.getPropertyDescriptors());
+        desciptors.addAll(Arrays.asList(new ScreenPropertyDescriptor(getComponent(), loginView.loginButton, new ScreenStringPropertyEditor(LoginScreenCD.PROP_PASSWORD_LABEL, JTextField.CENTER)),
+                                        new ScreenPropertyDescriptor(getComponent(), loginView.passwordTextField, new ScreenStringPropertyEditor(LoginScreenCD.PROP_PASSWORD, JTextField.CENTER)),
+                                        new ScreenPropertyDescriptor(getComponent(), loginView.passwordLabel, new ScreenStringPropertyEditor(LoginScreenCD.PROP_PASSWORD_LABEL, JTextField.CENTER)),
+                                        new ScreenPropertyDescriptor(getComponent(), loginView.usernameLabel, new ScreenStringPropertyEditor(LoginScreenCD.PROP_USERNAME_LABEL, JTextField.CENTER)),
+                                        new ScreenPropertyDescriptor(getComponent(), loginView.usernameTextField, new ScreenStringPropertyEditor(LoginScreenCD.PROP_USERNAME, JTextField.CENTER))));
         return desciptors;
     }
 
     private class LoginView extends JPanel {
 
         // Variables declaration - do not modify
-        private JButton loginButton;
-        private JLabel passwordLabel;
-        private JTextField passwordTextField;
-        private JLabel usernameLabel;
-        private JTextField usernameTextField;
-        private GridBagConstraints gridBagConstraints;
+        JButton loginButton;
+        JLabel passwordLabel;
+        JTextField passwordTextField;
+        JLabel usernameLabel;
+        JTextField usernameTextField;
+        GridBagConstraints gridBagConstraints;
         
         LoginView() {
             initComponents();
@@ -165,24 +169,5 @@ public class LoginScreenDisplayPresenter extends DisplayableDisplayPresenter {
             });
         }
 
-        JButton getPasswordButton() {
-            return loginButton;
-        }
-
-        JLabel getUsernameLabel() {
-            return usernameLabel;
-        }
-
-        JLabel getPasswordLabel() {
-            return passwordLabel;
-        }
-
-        JTextField getUsernameTextField() {
-            return usernameTextField;
-        }
-
-        JTextField getPasswordTextField() {
-            return passwordTextField;
-        }
     }
 }

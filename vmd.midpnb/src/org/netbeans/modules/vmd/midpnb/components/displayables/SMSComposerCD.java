@@ -53,8 +53,8 @@ import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorNumber;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorString;
 import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
+import org.netbeans.modules.vmd.midpnb.screen.display.SMSComposerDisplayPresenter;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * @author Karol Harezlak
@@ -67,7 +67,7 @@ public final class SMSComposerCD extends ComponentDescriptor {
     public static final String ICON_PATH = "org/netbeans/modules/vmd/midpnb/resources/sms_composer_16.png"; // NOI18N
     public static final String ICON_LARGE_PATH = "org/netbeans/modules/vmd/midpnb/resources/sms_composer_32.png"; // NOI18N
 
-    private static final String ICON_PATH_SD = "org/netbeans/modules/vmd/midpnb/resources/sms_composer_sd.png"; // NOI18N
+    //private static final String ICON_PATH_SD = "org/netbeans/modules/vmd/midpnb/resources/sms_composer_sd.png"; // NOI18N
 
     public static final String PROP_PHONE_NUMBER = "phoneNumber"; //NOI18N
     public static final String PROP_MESSAGE = "message"; //NOI18N
@@ -82,8 +82,6 @@ public final class SMSComposerCD extends ComponentDescriptor {
     public static final String MESSAGE_LABEL = NbBundle.getMessage(LoginScreenCD.class, "LBL_SMSComposer_messageLabel"); //NOI18N 
     
     private static final String CATEGORIES_SMS = "SMS Properties"; //NOI18N
-    
-    
     
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -102,8 +100,8 @@ public final class SMSComposerCD extends ComponentDescriptor {
             new PropertyDescriptor(PROP_MESSAGE, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_PHONE_NUMBER, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_PORT_NUMBER, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(50000), true, true, MidpVersionable.MIDP_2),            
-            new PropertyDescriptor(PROP_BGK_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(0xCCCCCC), true, true, MidpVersionable.MIDP_2),
-            new PropertyDescriptor(PROP_FRG_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(0x00), true, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_BGK_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(-3355444), true, true, MidpVersionable.MIDP_2),
+            new PropertyDescriptor(PROP_FRG_COLOR, MidpTypes.TYPEID_INT, MidpTypes.createIntegerValue(-16777216), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_SEND_AUTOMATICALLY, MidpTypes.TYPEID_BOOLEAN, MidpTypes.createBooleanValue(true), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_PHONE_NUMEBR_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2),
             new PropertyDescriptor(PROP_MESSAGE_LABEL, MidpTypes.TYPEID_JAVA_LANG_STRING, PropertyValue.createNull(), true, true, MidpVersionable.MIDP_2)
@@ -150,12 +148,13 @@ public final class SMSComposerCD extends ComponentDescriptor {
             // actions
             AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, CommandCD.TYPEID),
             // screen
-            new DisplayableDisplayPresenter(Utilities.loadImage(ICON_PATH_SD))
+            new SMSComposerDisplayPresenter()
         );
     }
 
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC);
         MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_WMA);
     }
 
