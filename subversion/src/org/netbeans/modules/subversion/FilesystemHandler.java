@@ -147,13 +147,13 @@ class FilesystemHandler extends VCSInterceptor {
     public void afterMove(final File from, final File to) {
         Utils.post(new Runnable() {
             public void run() {
-                cache.refresh(to, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                cache.onNotify(to, null); // as if there were an event
                 File parent = to.getParentFile();
                 if (parent != null) {
                     if (from.equals(to)) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING, "Wrong (identity) rename event for " + from.getAbsolutePath()); // NOI18N
                     }
-                    cache.refresh(from, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                    cache.onNotify(from, null); // as if there were an event
                 }
             }
         });
