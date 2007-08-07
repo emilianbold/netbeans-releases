@@ -41,6 +41,7 @@ public class WebServicesRulesEngine extends RulesEngine {
     
     static{
         //class rules
+        classRules.add(new NoOperations());
         classRules.add(new InvalidJSRAnnotations());
         classRules.add(new InvalidNameAttribute());
         classRules.add(new DefaultPackage());
