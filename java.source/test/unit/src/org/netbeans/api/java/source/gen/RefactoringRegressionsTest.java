@@ -22,6 +22,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
@@ -48,8 +49,9 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
     }
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-//        suite.addTestSuite(RefactoringRegressionsTest.class);
-        suite.addTest(new RefactoringRegressionsTest("testRenameTypeParameterInInvocation"));
+        suite.addTestSuite(RefactoringRegressionsTest.class);
+//        suite.addTest(new RefactoringRegressionsTest("testRenameTypeParameterInInvocation"));
+//        suite.addTest(new RefactoringRegressionsTest("testRenameInNewClassExpressionWithSpaces"));
         return suite;
     }
 
@@ -134,6 +136,63 @@ public class RefactoringRegressionsTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    /**
+     * #111966
+     */
+    public void testRenameInNewClassExpressionWithSpaces() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class A{\n" +
+            "	A	( ){};\n" +
+            "};\n" +
+            "\n" +
+            "class C{\n" +
+            "	void s(){\n" +
+            "	new javaapplication1 . A ( );\n" +
+            "	}\n" +
+            "};\n"
+            );
+        String golden =
+            "package javaapplication1;\n" +
+            "\n" +
+            "public class B{\n" +
+            "	B	( ){};\n" +
+            "};\n" +
+            "\n" +
+            "class C{\n" +
+            "	void s(){\n" +
+            "	new javaapplication1 . B ( );\n" +
+            "	}\n" +
+            "};\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                workingCopy.rewrite(clazz, make.setLabel(clazz, "B"));
+                workingCopy.rewrite(method, make.setLabel(method, "B"));
+                
+                method = (MethodTree) ((ClassTree) cut.getTypeDecls().get(2)).getMembers().get(1);
+                ExpressionStatementTree est = (ExpressionStatementTree) method.getBody().getStatements().get(0);
+                NewClassTree nct = (NewClassTree) est.getExpression();
+                MemberSelectTree mst = (MemberSelectTree) nct.getIdentifier();
+                workingCopy.rewrite(mst, make.setLabel(mst, "B"));
+            }
+            
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }
