@@ -23,13 +23,17 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.NbUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 
 /**
@@ -39,36 +43,81 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class GotoActionView extends AbstractAction {
+    private static final String[] RUBY_VIEW_EXTS = { "mab", "rjs", "haml" }; // NOI18N
+    
     public GotoActionView() {
         super(NbBundle.getMessage(GotoActionView.class, "rails-goto-action-view")); // NOI18N
         putValue("PopupMenuText", // NOI18N
             NbBundle.getBundle(GotoActionView.class).getString("editor-popup-goto-action-view")); // NOI18N
     }
+    
+    private FileObject getCurrentFile() {
+        Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
+        if (activatedNodes == null || activatedNodes.length != 1) {
+            return null;
+        }
+
+        DataObject dobj = activatedNodes[0].getLookup().lookup(DataObject.class);
+        if (dobj == null) {
+            return null;
+        }
+
+        FileObject fo = dobj.getPrimaryFile();
+        
+        return fo;
+    }
 
     @Override
     public boolean isEnabled() {
-        return true;
+        // This action is enabled based on the activated nodes in the TopComponent registry.
+        // A seemingly cleaner solution would be to use a NodeAction, but that doesn't 
+        // work because this action is ALSO registered into the Editor Popup menus;
+        // and those actions need to be AbstractActions.
+        FileObject fo = getCurrentFile();
+        if (fo == null) {
+            return false;
+        }
+
+        String mimeType = fo.getMIMEType();
+        if (RubyInstallation.RHTML_MIME_TYPE.equals(mimeType)) {
+            return true;
+        } else if (RubyInstallation.RUBY_MIME_TYPE.equals(mimeType)) {
+            String name = fo.getName();
+            if (name.endsWith("_controller") || name.endsWith("_helper")) { // NOI18N
+                return true;
+            } else {
+                String ext = fo.getExt();
+                if (!(ext.equals("rb"))) {
+                    for (String e : RUBY_VIEW_EXTS) {
+                        if (ext.equals(e)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 
     public void actionPerformed(ActionEvent ev) {
         JEditorPane pane = NbUtilities.getOpenPane();
-
-        if (pane != null) {
-            actionPerformed(pane);
+        FileObject fo = getCurrentFile();
+        if (fo != null && pane != null) {
+            actionPerformed(pane, fo);
         }
     }
 
-    private void actionPerformed(final JTextComponent target) {
-        FileObject fo = NbUtilities.findFileObject(target);
-
+    private void actionPerformed(final JTextComponent target, final FileObject fo) {
         if (fo != null) {
             // TODO - Look up project and complain if it's not a Rails project
 
             // See if it's a controller:
             if (fo.getName().endsWith("_controller")) { // NOI18N
-                gotoView(target, fo, "_controller", "controllers"); // NOI18N
+                gotoView(target, fo, false, "_controller"); // NOI18N
             } else if (fo.getName().endsWith("_helper")) { // NOI18N
-                gotoView(target, fo, "_helper", "helpers"); // NOI18N
+                gotoView(target, fo, true, "_helper"); // NOI18N
             } else {
                 String ext = fo.getExt();
                 if (RubyUtils.isRhtmlFile(fo) || ext.equalsIgnoreCase("mab") || // NOI18N
@@ -89,20 +138,20 @@ public class GotoActionView extends AbstractAction {
         Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoActionView.class, "ControllerNotFound"));
     }
 
-    // Move from something like app/controllers/credit_card_controller.rb#debit()
-    // to app/views/credit_card/debit.rhtml
-    private void gotoView(JTextComponent target, FileObject file, String fileSuffix, String parentAppDir) {
+    /** 
+     * Move from something like app/controllers/credit_card_controller.rb#debit()
+     * to app/views/credit_card/debit.rhtml
+     */
+    private void gotoView(JTextComponent target, FileObject file, boolean isHelper, String fileSuffix) {
         // This should be a view.
         if (!file.getName().endsWith(fileSuffix)) {
             Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoActionView.class, "AppliesToActions"));
 
             return;
         }
-
         FileObject controllerFile = file;
 
         int offset = 0;
-
         // Find the offset of the file we're in, if any
         if (target.getCaret() != null) {
             offset = target.getCaret().getDot();
@@ -111,92 +160,15 @@ public class GotoActionView extends AbstractAction {
         // Get the name of the method corresponding to the offset
         String methodName = AstUtilities.getMethodName(controllerFile, offset);
 
-        FileObject viewFile = null;
-
-        try {
-            String controllerName =
-                file.getName().substring(0, file.getName().length() - fileSuffix.length());
-
-            String path = controllerName;
-
-            // Find app dir, and build up a relative path to the view file in the process
-            FileObject app = file.getParent();
-
-            while (app != null) {
-                if (app.getName().equals(parentAppDir) && // NOI18N
-                        ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
-                    app = app.getParent();
-
-                    break;
-                }
-
-                path = app.getNameExt() + "/" + path; // NOI18N
-                app = app.getParent();
-            }
-
-            if (app == null) {
-                notFound(target);
-                
-                return;
-            }
-
-            FileObject viewsFolder = app.getFileObject("views/" + path); // NOI18N
-
-            if (viewsFolder == null) {
-                notFound(target);
-                
-                return;
-            }
-
-            if (methodName != null) {
-                String[] exts = { "rhtml", "html.erb", "erb", "rjs", "mab", "haml" }; // NOI18N
-                for (String ext : exts) {
-                    viewFile = viewsFolder.getFileObject(methodName, ext);
-                    if (viewFile != null) {
-                        break;
-                    }
-                }
-            }
-
-            if (viewFile == null) {
-                // The caret was likely not inside any of the methods, or in a method that
-                // isn't directly tied to a view
-                // Just pick one of the views. Try index first.
-                viewFile = viewsFolder.getFileObject("index.rhtml"); // NOI18N
-                if (viewFile == null) {
-                    for (FileObject child : viewsFolder.getChildren()) {
-                        String ext = child.getExt();
-                        if (RubyUtils.isRhtmlFile(child) || ext.equalsIgnoreCase("mab") || // NOI18N
-                                ext.equalsIgnoreCase("rjs") || ext.equalsIgnoreCase("haml")) { // NOI18N
-                            viewFile = child;
-
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            if (viewFile == null) {
-                Utilities.setStatusBoldText(target, NbBundle.getMessage(GotoActionView.class, "ViewNotFound"));
-
-                return;
-            }
-
-        } catch (Exception e) {
-            notFound(target);
-
-            return;
-        }
+        FileObject viewFile = RubyUtils.getRailsViewFor(file, methodName, isHelper, false);
 
         if (viewFile == null) {
             notFound(target);
-
-            return;
+        } else {
+            NbUtilities.open(viewFile, 0, null);
         }
-
-        NbUtilities.open(viewFile, 0, null);
     }
-
+        
     // Move from something like app/views/credit_card/debit.rhtml to
     //  app/controllers/credit_card_controller.rb#debit()
     private void gotoAction(JTextComponent target, FileObject file) {
@@ -242,7 +214,7 @@ public class GotoActionView extends AbstractAction {
 
             if (app == null) {
                 notFound(target);
-                
+
                 return;
             }
 

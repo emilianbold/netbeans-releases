@@ -339,4 +339,122 @@ public class RubyUtils {
             "nil", "not", "or", "redo", "rescue", "retry", "return", "self", "super", "then", "true",
             "undef", "unless", "until", "when", "while", "yield"
         };
+    
+    public static String getControllerName(FileObject file) {
+        String fileSuffix = "_controller"; // NOI18N
+        String parentAppDir = "controllers"; // NOI18N
+        String controllerName =
+            file.getName().substring(0, file.getName().length() - fileSuffix.length());
+
+        String path = controllerName;
+
+        // Find app dir, and build up a relative path to the view file in the process
+        FileObject app = file.getParent();
+
+        while (app != null) {
+            if (app.getName().equals(parentAppDir) && // NOI18N
+                    ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
+                app = app.getParent();
+
+                break;
+            }
+
+            path = app.getNameExt() + "/" + path; // NOI18N
+            app = app.getParent();
+        }
+
+        return path;
+    }
+    
+    /**  
+     * Move from something like app/controllers/credit_card_controller.rb#debit()
+     * to app/views/credit_card/debit.rhtml
+     * 
+     * @param strict If true, limit view searches to the given method name, don't find other views
+     * @param isHelper If false, it's a controller, else it's a helper
+     * 
+     */
+    public static FileObject getRailsViewFor(FileObject file, String methodName, boolean isHelper, boolean strict) {
+        String fileSuffix = isHelper ? "_helper" : "_controller"; // NOI18N
+        String parentAppDir = isHelper ? "helpers" : "controllers"; // NOI18N
+        
+        FileObject viewFile = null;
+
+        try {
+            String controllerName =
+                file.getName().substring(0, file.getName().length() - fileSuffix.length());
+
+            String path = controllerName;
+
+            // Find app dir, and build up a relative path to the view file in the process
+            FileObject app = file.getParent();
+
+            while (app != null) {
+                if (app.getName().equals(parentAppDir) && // NOI18N
+                        ((app.getParent() == null) || app.getParent().getName().equals("app"))) { // NOI18N
+                    app = app.getParent();
+
+                    break;
+                }
+
+                path = app.getNameExt() + "/" + path; // NOI18N
+                app = app.getParent();
+            }
+
+            if (app == null) {
+                return null;
+            }
+
+            FileObject viewsFolder = app.getFileObject("views/" + path); // NOI18N
+
+            if (viewsFolder == null) {
+                return null;
+            }
+
+            if (methodName != null) {
+                String[] exts = { "rhtml", "html.erb", "erb", "rjs", "mab", "haml" }; // NOI18N
+                for (String ext : exts) {
+                    viewFile = viewsFolder.getFileObject(methodName, ext);
+                    if (viewFile != null) {
+                        break;
+                    }
+                }
+                
+                if (viewFile == null && strict) {
+                    return null;
+                }
+            }
+
+            if (viewFile == null) {
+                // The caret was likely not inside any of the methods, or in a method that
+                // isn't directly tied to a view
+                // Just pick one of the views. Try index first.
+                viewFile = viewsFolder.getFileObject("index.rhtml"); // NOI18N
+                if (viewFile == null) {
+                    for (FileObject child : viewsFolder.getChildren()) {
+                        String ext = child.getExt();
+                        if (RubyUtils.isRhtmlFile(child) || ext.equalsIgnoreCase("mab") || // NOI18N
+                                ext.equalsIgnoreCase("rjs") || ext.equalsIgnoreCase("haml")) { // NOI18N
+                            viewFile = child;
+
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (viewFile == null) {
+                return null;
+            }
+
+        } catch (Exception e) {
+            return null;
+        }
+
+        if (viewFile == null) {
+            return null;
+        }
+        
+        return viewFile;
+    }
 }
