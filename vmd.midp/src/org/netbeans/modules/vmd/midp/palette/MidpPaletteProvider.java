@@ -24,17 +24,14 @@ import org.netbeans.modules.vmd.api.palette.PaletteProvider;
 import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
 import org.netbeans.modules.vmd.midp.palette.wizard.AddToPaletteWizardAction;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
+import org.openide.filesystems.Repository;
 import org.openide.util.actions.SystemAction;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
-import java.net.URL;
 
 /**
  *
@@ -57,29 +54,33 @@ public class MidpPaletteProvider implements PaletteProvider {
     public MidpPaletteProvider() {
     }
 
-    public void initPaletteCategories(String projectType, DataFolder rootFolder) {
-        if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType)) {
-            List<DataObject> order = new ArrayList<DataObject>(Arrays.asList(rootFolder.getChildren()));
-            // create category folders
+    public void initPaletteCategories(String projectType) {
+        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType))
+            return;
+
+        try {
+            FileObject paletteFolder = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/palette");  // NOI18N
+            if (paletteFolder == null) {
+                FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+                assert root != null;
+                FileObject projectFolder = root.getFileObject (projectType);
+                if (projectFolder == null)
+                    projectFolder = root.createFolder (projectType);
+                paletteFolder = projectFolder.createFolder ("palette");  // NOI18N
+            }
+            paletteFolder.refresh (true);
+
             for (String categoryName : paletteCategories) {
-                try {
-                    FileObject catFO = rootFolder.getPrimaryFile().getFileSystem().findResource(rootFolder.getName() + '/' + categoryName); // NOI18N
-                    if (catFO == null) {
-                        DataFolder categoryFolder = DataFolder.create(rootFolder, categoryName);
-                        categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midp.palette.Bundle"); // NOI18N
-                        categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", new URL ("nbresloc:/org/netbeans/modules/vmd/midp/resources/components/category_" + categoryName + "_16.png")); // NOI18N
-                        categoryFolder.getPrimaryFile().setAttribute("isExpanded", "true"); // NOI18N
-                        order.add(categoryFolder);
-                    }
-                } catch (IOException e) {
-                    Debug.error("Can't create directory for palette category: " + e); // NOI18N
-                }
+                FileObject catFO = paletteFolder.getFileObject (categoryName);
+                if (catFO == null)
+                    catFO = paletteFolder.createFolder (categoryName);
+                catFO.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midp.palette.Bundle"); // NOI18N
+                catFO.setAttribute("SystemFileSystem.icon", new URL ("nbresloc:/org/netbeans/modules/vmd/midp/resources/components/category_" + categoryName + "_16.png")); // NOI18N
+                catFO.setAttribute("isExpanded", "true"); // NOI18N
+                catFO.setAttribute("position", 100); // TODO - resolve position // NOI18N
             }
-            try {
-                rootFolder.setOrder(order.toArray(new DataObject[order.size()]));
-            } catch (IOException e) {
-                Debug.error("Can't set attribute for palette category directory: " + e); // NOI18N
-            }
+        } catch (IOException e) {
+            throw Debug.error (e);
         }
     }
 

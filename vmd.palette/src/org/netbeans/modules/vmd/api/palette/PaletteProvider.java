@@ -19,9 +19,7 @@
 
 package org.netbeans.modules.vmd.api.palette;
 
-import org.openide.loaders.DataFolder;
-
-import javax.swing.Action;
+import javax.swing.*;
 import java.util.List;
 
 /**
@@ -35,9 +33,8 @@ public interface PaletteProvider {
      * Initializes palette categories as a directories provided by particular implementation of project type.
      *
      * @param projectType type of project
-     * @param rootFolder folder categories to be created
      */
-    void initPaletteCategories(String projectType, DataFolder rootFolder);
+    void initPaletteCategories(String projectType);
 
     /**
      * Returns a list of actions that are available in the palette manager

@@ -19,16 +19,10 @@
 
 package org.netbeans.modules.vmd.midpnb.palette;
 
-import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.palette.PaletteProvider;
-import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
 
 import javax.swing.*;
-import java.io.IOException;
 import java.util.List;
-import java.net.URL;
 
 /**
  *
@@ -41,20 +35,20 @@ public class MidpNbPaletteProvider implements PaletteProvider {
     public MidpNbPaletteProvider() {
     }
 
-    public void initPaletteCategories(String projectType, DataFolder rootFolder) {
-        if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType)) {
-            try {
-                FileObject catFO = rootFolder.getPrimaryFile().getFileSystem().findResource(rootFolder.getName() + '/' + CATEGORY_SVG); // NOI18N
-                if (catFO == null) {
-                    DataFolder categoryFolder = DataFolder.create(rootFolder, CATEGORY_SVG);
-                    categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midpnb.palette.Bundle"); // NOI18N
-                    categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", new URL ("nbresloc:/org/netbeans/modules/vmd/midpnb/resources/category_svg_16.png")); // NOI18N
-                    categoryFolder.getPrimaryFile().setAttribute("isExpanded", "true"); // NOI18N
-                }
-            } catch (IOException e) {
-                Debug.error("Can't create directory for palette category: " + e); // NOI18N
-            }
-        }
+    public void initPaletteCategories(String projectType) {
+//        if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType)) {
+//            try {
+//                FileObject catFO = rootFolder.getPrimaryFile().getFileSystem().findResource(rootFolder.getName() + '/' + CATEGORY_SVG); // NOI18N
+//                if (catFO == null) {
+//                    DataFolder categoryFolder = DataFolder.create(rootFolder, CATEGORY_SVG);
+//                    categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midpnb.palette.Bundle"); // NOI18N
+//                    categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", new URL ("nbresloc:/org/netbeans/modules/vmd/midpnb/resources/category_svg_16.png")); // NOI18N
+//                    categoryFolder.getPrimaryFile().setAttribute("isExpanded", "true"); // NOI18N
+//                }
+//            } catch (IOException e) {
+//                Debug.error("Can't create directory for palette category: " + e); // NOI18N
+//            }
+//        }
     }
 
     public List<? extends Action> getActions (String projectType) {

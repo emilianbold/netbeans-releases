@@ -122,7 +122,7 @@ public class PaletteKit implements Runnable {
         Collection<? extends PaletteProvider> providers = Lookup.getDefault().lookupAll(PaletteProvider.class);
         for (PaletteProvider provider : providers) {
             if (provider != null) {
-                provider.initPaletteCategories(projectType, rootFolder);
+                provider.initPaletteCategories(projectType);
                 initPalette(producers);
             }
         }
@@ -375,7 +375,7 @@ public class PaletteKit implements Runnable {
         
         public boolean isValidItem(Lookup lkp) {
             PaletteItemDataNode node = lkp.lookup(PaletteItemDataNode.class);
-            return node != null ? node.isValid() : true;
+            return node == null || node.isValid ();
         }
     }
     
