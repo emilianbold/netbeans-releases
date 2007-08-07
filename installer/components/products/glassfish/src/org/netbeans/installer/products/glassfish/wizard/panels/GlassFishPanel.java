@@ -729,6 +729,8 @@ public class GlassFishPanel extends DestinationPanel {
             fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setMultiSelectionEnabled(false);
+            fileChooser.setDialogTitle(component.getProperty(FILECHOOSER_TITLE_PROPERTY));
+            
             
             final Dimension longFieldSize = new Dimension(
                     200,
