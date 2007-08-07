@@ -86,6 +86,7 @@ entryPoint() {
 	parseCommandLineArguments "$@"
 	initializeVariables            
 	setLauncherLocale	
+	debugLauncherArguments "$@"
 	if [ 1 -eq $SHOW_HELP_ONLY ] ; then
 		showHelp
 	fi
@@ -109,6 +110,15 @@ entryPoint() {
 	fi
 }
 
+debugLauncherArguments() {
+	debug "Launcher Command : $0"
+	argCounter=1
+        while [ $# != 0 ] ; do
+		debug "... argument [$argCounter] = $1"
+		argCounter=`expr "$argCounter" + 1`
+		shift
+	done
+}
 isLauncherCommandArgument() {
 	case "$1" in
 	    $ARG_VERBOSE | $ARG_NOSPACECHECK | $ARG_OUTPUT | $ARG_HELP | $ARG_JAVAHOME | $ARG_TEMPDIR | $ARG_EXTRACT | $ARG_SILENT | $ARG_LOCALE | $ARG_CLASSPATHP | $ARG_CLASSPATHA)
