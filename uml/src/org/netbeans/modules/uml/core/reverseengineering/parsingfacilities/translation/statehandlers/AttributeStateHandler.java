@@ -41,6 +41,8 @@ public class AttributeStateHandler extends TypeElementStateHandler
     private Expression m_Expression = new Expression();
     private boolean m_InInitializer = false;
     private boolean m_PrimitiveType = false;
+    private boolean defaultStatic = false;
+    private boolean defaultFinal = false;
 
     public AttributeStateHandler(String language)
     {
@@ -110,6 +112,15 @@ public class AttributeStateHandler extends TypeElementStateHandler
 
         setNodeAttribute("isLeaf", false);
         setNodeAttribute("ownerScope", "instance");
+
+	if (defaultStatic) 
+	{
+	    setNodeAttribute("isStatic", true);
+	}
+	if (defaultFinal) 
+	{
+	    setNodeAttribute("isFinal", true);
+	}
     }
 
     /**
@@ -276,6 +287,17 @@ public class AttributeStateHandler extends TypeElementStateHandler
                 }
             }
         }
+    }
+
+
+    void setDefaultStatic(boolean isStatic) 
+    {
+	defaultStatic = isStatic;
+    }
+
+    void setDefaultFinal(boolean isFinal) 
+    {
+	defaultFinal = isFinal;
     }
 
 

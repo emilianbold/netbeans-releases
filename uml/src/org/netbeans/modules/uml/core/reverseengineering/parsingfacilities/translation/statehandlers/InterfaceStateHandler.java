@@ -115,6 +115,17 @@ public class InterfaceStateHandler extends ClassStateHandler
         {
             AttributeStateHandler handler = new AttributeStateHandler(language, stateName);
             handler.setDefaultVisibility("public");
+	    
+	    // an interface attribute is static final in Java even in the absense 
+	    // of explicit modifiers stating that, whereis static final 
+	    // characteristics of the attribute in the model is rather the 
+	    // characteristics of the attribute, not characterictics of 
+	    // the source code it was REd from
+	    if (language != null && language.equalsIgnoreCase("Java")) 
+	    {
+		handler.setDefaultStatic(true);
+		handler.setDefaultFinal(true);
+	    }
             retVal = handler;
         }
         else if(("Method Definition".equals(stateName)) ||           
