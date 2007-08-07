@@ -51,7 +51,14 @@ public class WebParamHolder extends Rule<VariableElement> implements WebServiceA
         AnnotationMirror paramAnn = Utilities.findAnnotation(subject, ANNOTATION_WEBPARAM);
         if(paramAnn!=null) {
             AnnotationValue val = Utilities.getAnnotationAttrValue(paramAnn, ANNOTATION_ATTRIBUTE_MODE);
-            Mode value = val==null?null:Mode.valueOf(val.getValue().toString());
+            Mode value = null;
+            if(val!=null) {
+                try {
+                    value = Mode.valueOf(val.getValue().toString());
+                } catch (Exception e) {
+                    // we dont need to worry as hints for invalid enum value kicks in.
+                }
+            }
             if((Mode.INOUT == value || Mode.OUT == value) && 
                     !"javax.xml.ws.Holder".equals(getVariableType(subject))) {
                 String label = NbBundle.getMessage(WebParamHolder.class, "MSG_WebParam_HolderRequired");
