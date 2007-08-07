@@ -149,6 +149,11 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     private RequestProcessor.Task latestAnnotationTask = null;
 
     /**
+     * Rendering hints for annotations sidebar inherited from editor settings.
+     */
+    private final Map renderingHints;
+
+    /**
      * Creates new instance initializing final fields.
      */
     public AnnotationBar(JTextComponent target) {
@@ -157,6 +162,14 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.foldHierarchy = FoldHierarchy.get(editorUI.getComponent());
         this.doc = editorUI.getDocument();
         this.caret = textComponent.getCaret();
+        if (textComponent instanceof JEditorPane) {
+            JEditorPane jep = (JEditorPane) textComponent;
+            Class kitClass = jep.getEditorKit().getClass();
+            Object userSetHints = Settings.getValue(kitClass, SettingsNames.RENDERING_HINTS);
+            renderingHints = (userSetHints instanceof Map && ((Map)userSetHints).size() > 0) ? (Map)userSetHints : null;
+        } else {
+            renderingHints = null;
+        }
     }
     
     // public contract ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -810,6 +823,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         g.setColor(backgroundColor());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
 
+        if (renderingHints != null) {
+            ((Graphics2D) g).addRenderingHints(renderingHints);
+        }
+        
         AbstractDocument doc = (AbstractDocument)component.getDocument();
         doc.readLock();
         try{

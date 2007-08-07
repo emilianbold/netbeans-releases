@@ -58,6 +58,11 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
 
     private final String  lineNumberPadding = "        "; // NOI18N
 
+    /**
+     * Rendering hints for annotations sidebar inherited from editor settings.
+     */
+    private Map renderingHints;
+
     private int     linesWidth;
     private int     actionsWidth;
     
@@ -288,6 +293,16 @@ class LineNumbersActionsBar extends JComponent implements Scrollable, MouseMotio
         Stroke cs = g.getStroke();
 
         if (checkLinesWidth(gr)) return;
+        
+        if (renderingHints == null) {
+            DecoratedEditorPane jep = master.getEditorPane();
+            Class kitClass = jep.getEditorKit().getClass();
+            Object userSetHints = Settings.getValue(kitClass, SettingsNames.RENDERING_HINTS);
+            renderingHints = (userSetHints instanceof Map && ((Map)userSetHints).size() > 0) ? (Map)userSetHints : null;
+        }
+        if (renderingHints != null) {
+            g.addRenderingHints(renderingHints);
+        }
         
         EditorUI editorUI = org.netbeans.editor.Utilities.getEditorUI(master.getEditorPane());
         int lineHeight = editorUI.getLineHeight();
