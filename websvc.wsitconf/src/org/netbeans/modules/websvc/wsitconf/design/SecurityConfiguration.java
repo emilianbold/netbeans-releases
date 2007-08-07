@@ -23,10 +23,7 @@ import java.awt.Component;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -59,7 +56,7 @@ import org.openide.util.Utilities;
 public class SecurityConfiguration implements WSConfiguration {
   
     private Service service;
-    private FileObject implementationFile;
+    private DataObject implementationFile;
     private Project project;
     
     private ServiceModel serviceModel;
@@ -73,31 +70,39 @@ public class SecurityConfiguration implements WSConfiguration {
     /** Creates a new instance of WSITWsConfiguration */
 
     public SecurityConfiguration(Service service, FileObject implementationFile) {
-        this.service = service;
-        this.implementationFile = implementationFile;
-        this.project = FileOwnerQuery.getOwner(implementationFile);
-        this.serviceModel = ServiceModel.getServiceModel(implementationFile);
-        setListener();
-        this.cl = new ComponentListener() {
-            private void update() {
-                boolean enabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
-                for (PropertyChangeListener pcl : listeners) {
-                    PropertyChangeEvent pce = new PropertyChangeEvent(SecurityConfiguration.this, WSConfiguration.PROPERTY, null, enabled);
-                    pcl.propertyChange(pce);
+        try {
+            this.service = service;
+            this.implementationFile = DataObject.find(implementationFile);
+            this.project = FileOwnerQuery.getOwner(implementationFile);
+            this.serviceModel = ServiceModel.getServiceModel(implementationFile);
+            setListener();
+            this.cl = new ComponentListener() {
+
+                private void update() {
+                    boolean enabled = SecurityPolicyModelHelper.isSecurityEnabled(binding);
+                    for (PropertyChangeListener pcl : listeners) {
+                        PropertyChangeEvent pce = new PropertyChangeEvent(SecurityConfiguration.this, WSConfiguration.PROPERTY, null, enabled);
+                        pcl.propertyChange(pce);
+                    }
                 }
+
+                public void valueChanged(ComponentEvent evt) {
+                    update();
+                }
+
+                public void childrenAdded(ComponentEvent evt) {
+                    update();
+                }
+
+                public void childrenDeleted(ComponentEvent evt) {
+                    update();
+                }
+            };
+            if (binding != null) {
+                binding.getModel().addComponentListener(cl);
             }
-            public void valueChanged(ComponentEvent evt) {
-                update();
-            }
-            public void childrenAdded(ComponentEvent evt) {
-                update();
-            }
-            public void childrenDeleted(ComponentEvent evt) {
-                update();
-            }
-        };
-        if (binding != null) {
-            binding.getModel().addComponentListener(cl);
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -119,7 +124,7 @@ public class SecurityConfiguration implements WSConfiguration {
   
     private void setListener() {
         if (scl == null) {
-            scl = new  WsitServiceChangeListener(service, implementationFile, project);
+            scl = new  WsitServiceChangeListener(service, implementationFile.getPrimaryFile(), project);
         }
         if ((scl != null) && (serviceModel != null)) {
             serviceModel.addServiceChangeListener(scl);
@@ -128,7 +133,7 @@ public class SecurityConfiguration implements WSConfiguration {
     
     public boolean isSet() {
         boolean set = false;
-        this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, null);
+        this.binding = WSITModelSupport.getBinding(service, implementationFile.getPrimaryFile(), project, false, null);
         if (binding != null) {
             set = SecurityPolicyModelHelper.isSecurityEnabled(binding);
         }
@@ -136,7 +141,7 @@ public class SecurityConfiguration implements WSConfiguration {
     }
         
     public void set() {
-        binding = WSITModelSupport.getBinding(service, implementationFile, project, true, null);
+        binding = WSITModelSupport.getBinding(service, implementationFile.getPrimaryFile(), project, true, null);
         if (binding == null) return;
 
         if (!(SecurityPolicyModelHelper.isSecurityEnabled(binding))) {
@@ -189,15 +194,12 @@ public class SecurityConfiguration implements WSConfiguration {
 
     public boolean isEnabled() {
         boolean enabled =  false;
-        try {
-            Node n = DataObject.find(implementationFile).getNodeDelegate();
-            JaxWsModel model = project.getLookup().lookup(JaxWsModel.class);
-            enabled = !SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(n, model);
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        if ((implementationFile == null) || (!implementationFile.isValid())) {
+            return false;
         }
+        Node n = implementationFile.getNodeDelegate();
+        JaxWsModel model = project.getLookup().lookup(JaxWsModel.class);
+        enabled = !SecurityCheckerRegistry.getDefault().isNonWsitSecurityEnabled(n, model);
         return enabled;
     }
 }

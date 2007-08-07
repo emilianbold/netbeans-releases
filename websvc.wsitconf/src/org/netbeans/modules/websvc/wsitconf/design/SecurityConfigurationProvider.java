@@ -20,11 +20,15 @@
 package org.netbeans.modules.websvc.wsitconf.design;
 
 
-import java.util.HashMap;
+import java.util.Hashtable;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.design.configuration.WSConfiguration;
 import org.netbeans.modules.websvc.design.configuration.WSConfigurationProvider;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 
 /**
  *
@@ -32,7 +36,7 @@ import org.openide.filesystems.FileObject;
  */
 public class SecurityConfigurationProvider implements WSConfigurationProvider {
     
-    private HashMap<String, WSConfiguration> configProviders = new HashMap<String, WSConfiguration>();
+    private Hashtable<String, WSConfiguration> configProviders = new Hashtable<String, WSConfiguration>();
     
     /** Creates a new instance of SecurityConfigurationProvider */
     public SecurityConfigurationProvider() {
@@ -45,7 +49,30 @@ public class SecurityConfigurationProvider implements WSConfigurationProvider {
         if (!configProviders.containsKey(key)) {
             configProviders.put(key, new SecurityConfiguration(service, implementationFile));
         }
+        implementationFile.addFileChangeListener(new FCListener());
         return configProviders.get(key);
+    }
+    
+    private class FCListener implements FileChangeListener {
+
+        public void fileDeleted(FileEvent fe) {
+            if (fe == null) return;
+            FileObject f = fe.getFile();
+            if (f == null) return;
+            
+            for (String s : configProviders.keySet()) {
+                if (s.contains(f.getPath())) {
+                    configProviders.remove(s);
+                    break;
+                }
+            }
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {}
+        public void fileFolderCreated(FileEvent fe) {}
+        public void fileDataCreated(FileEvent fe) {}
+        public void fileChanged(FileEvent fe) {}
+        public void fileAttributeChanged(FileAttributeEvent fe) {}
     }
     
 }

@@ -36,6 +36,9 @@ import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -46,7 +49,7 @@ import org.openide.util.Utilities;
 public class RMConfiguration implements WSConfiguration {
   
     private Service service;
-    private FileObject implementationFile;
+    private DataObject implementationFile;
     private Project project;
     
     private ArrayList<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
@@ -59,30 +62,38 @@ public class RMConfiguration implements WSConfiguration {
     /** Creates a new instance of WSITWsConfiguration */
 
     public RMConfiguration(Service service, FileObject implementationFile) {
-        this.service = service;
-        this.implementationFile = implementationFile;
-        this.project = FileOwnerQuery.getOwner(implementationFile);
-        this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
-        this.cl = new ComponentListener() {
-            private void update() {
-                boolean enabled = RMModelHelper.isRMEnabled(binding);
-                for (PropertyChangeListener pcl : listeners) {
-                    PropertyChangeEvent pce = new PropertyChangeEvent(RMConfiguration.this, WSConfiguration.PROPERTY, null, enabled);
-                    pcl.propertyChange(pce);
+        try {
+            this.service = service;
+            this.implementationFile = DataObject.find(implementationFile);
+            this.project = FileOwnerQuery.getOwner(implementationFile);
+            this.binding = WSITModelSupport.getBinding(service, implementationFile, project, false, createdFiles);
+            this.cl = new ComponentListener() {
+
+                private void update() {
+                    boolean enabled = RMModelHelper.isRMEnabled(binding);
+                    for (PropertyChangeListener pcl : listeners) {
+                        PropertyChangeEvent pce = new PropertyChangeEvent(RMConfiguration.this, WSConfiguration.PROPERTY, null, enabled);
+                        pcl.propertyChange(pce);
+                    }
                 }
+
+                public void valueChanged(ComponentEvent evt) {
+                    update();
+                }
+
+                public void childrenAdded(ComponentEvent evt) {
+                    update();
+                }
+
+                public void childrenDeleted(ComponentEvent evt) {
+                    update();
+                }
+            };
+            if (binding != null) {
+                binding.getModel().addComponentListener(cl);
             }
-            public void valueChanged(ComponentEvent evt) {
-                update();
-            }
-            public void childrenAdded(ComponentEvent evt) {
-                update();
-            }
-            public void childrenDeleted(ComponentEvent evt) {
-                update();
-            }
-        };
-        if (binding != null) {
-            binding.getModel().addComponentListener(cl);
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -110,7 +121,7 @@ public class RMConfiguration implements WSConfiguration {
     }
         
     public void set() {
-        binding = WSITModelSupport.getBinding(service, implementationFile, project, true, createdFiles);
+        binding = WSITModelSupport.getBinding(service, implementationFile.getPrimaryFile(), project, true, createdFiles);
         if (binding == null) return;
         binding.getModel().addComponentListener(cl);
         if (!(RMModelHelper.isRMEnabled(binding))) {
