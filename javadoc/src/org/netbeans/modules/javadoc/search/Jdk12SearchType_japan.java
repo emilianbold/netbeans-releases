@@ -13,16 +13,18 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 
 package org.netbeans.modules.javadoc.search;
 
-
-
-
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
@@ -38,6 +40,8 @@ public class Jdk12SearchType_japan extends Jdk12SearchType {
 
     /** generated Serialized Version UID */
     static final long serialVersionUID =-2453877778724454324L;
+    
+    private static final String JDK12_ALLCLASSES_JA = "SUBETENOKURASU"; // NOI18N
 
     /** Returns human presentable name
      * @return human presentable name
@@ -86,22 +90,48 @@ public class Jdk12SearchType_japan extends Jdk12SearchType {
             return false;
         }
         encoding = encoding.toLowerCase();
-        String acceptedEncoding = getJapanEncoding().toLowerCase();
         
-        if ("jisautodetect".equals(acceptedEncoding)) {     //NOI18N
-            return "iso-2022-jp".equals (encoding) ||       //NOI18N
-                   "sjis".equals (encoding) ||              //NOI18N
-                   "euc-jp".equals (encoding);              //NOI18N
-                   // || "utf-".equals (encoding);  XXX Probably not, UTF-8 can be anything ????
-                   
+        // if Japanese encoding, return true quickly
+        if ("iso-2022-jp".equals(encoding) // NOI18N
+                || "sjis".equals(encoding) // NOI18N
+                || "euc-jp".equals(encoding) ) { // NOI18N
+            
+            setJapanEncoding(encoding);
+            return true;
         }
-        else {
-            return  encoding.equals (acceptedEncoding);   //NOI18N
-        }        
-    }
-    
-    
+        
+        if ("utf-8".equals(encoding)) { // NOI18N
+            try {
+                FileObject fo = root.getFileObject("allclasses-frame.html"); // NOI18N
+                if (fo == null) {
+                    return false;
+                }
+                InputStream is = fo.getInputStream();
+                boolean jazip = false;
+                try {
+                    BufferedReader r = new BufferedReader(new InputStreamReader(is, encoding));
+                    String line;
+                    while ((line = r.readLine()) != null) {
+                        if (line.contains(JDK12_ALLCLASSES_JA)) {
+                            jazip = true;
+                        }
+                        if (line.toLowerCase().contains("</title>")) { // NOI18N
+                            break;
+                        }
+                    }
+                } finally {
+                    is.close();
+                }
+                if (jazip) {
+                    setJapanEncoding(encoding);
+                }
+                return jazip;
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
 
-    
-    
+        return false;
+    }
+
 }
