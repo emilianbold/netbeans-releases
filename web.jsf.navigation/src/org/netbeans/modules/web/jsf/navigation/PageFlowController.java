@@ -137,6 +137,7 @@ public class PageFlowController {
         }
     }
     private static final String PROP_SHOW_NO_WEB_FOLDER = "showNoWebFolder"; // NOI18N
+
     public void setShowNoWebFolderDialog(boolean show) {
         getPreferences().putBoolean(PROP_SHOW_NO_WEB_FOLDER, show);
     }
@@ -359,8 +360,8 @@ public class PageFlowController {
             aConfigModel.removePropertyChangeListener(otherFacesConfigListener);
         }
     }
-    
-    public int getPageCount(){
+
+    public int getPageCount() {
         return webFiles.size();
     }
 
@@ -403,27 +404,36 @@ public class PageFlowController {
             createAllProjectPages(pagesInConfig);
         } else if (isCurrentScope(Scope.SCOPE_ALL_FACESCONFIG)) {
             List<NavigationRule> allRules = new ArrayList<NavigationRule>();
-            WebModule webModule = WebModule.getWebModule(getWebFolder());
-            FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
-            for (FileObject aConfigFile : configFiles) {
-                JSFConfigModel aConfigModel = ConfigurationUtils.getConfigModel(aConfigFile, true);
-                allRules.addAll(aConfigModel.getRootComponent().getNavigationRules());
-                if (!configModel.equals(aConfigModel)) {
-                    aConfigModel.addPropertyChangeListener(getOtherFacesConfigListener());
+            FileObject webFolder = getWebFolder();
+            if (webFolder != null) {
+                WebModule webModule = WebModule.getWebModule(webFolder);
+                FileObject[] configFiles = ConfigurationUtils.getFacesConfigFiles(webModule);
+                for (FileObject aConfigFile : configFiles) {
+                    JSFConfigModel aConfigModel = ConfigurationUtils.getConfigModel(aConfigFile, true);
+                    allRules.addAll(aConfigModel.getRootComponent().getNavigationRules());
+                    if (!configModel.equals(aConfigModel)) {
+                        aConfigModel.addPropertyChangeListener(getOtherFacesConfigListener());
+                    }
                 }
+                for (NavigationRule navRule : allRules) {
+                    navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
+                }
+                Collection<String> pagesInConfig = getFacesConfigPageNames(allRules);
+                createFacesConfigPages(pagesInConfig);
+                rules = allRules;
+            } else {
+                /* If no web module exists don't worry about other faces-config files */
+                rules = facesConfig.getNavigationRules();
+                for (NavigationRule navRule : rules) {
+                    navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
+                }
+                Collection<String> pagesInConfig = getFacesConfigPageNames(rules);
+                createAllProjectPages(pagesInConfig);
             }
-            for (NavigationRule navRule : allRules) {
-                navRule2String.put(navRule, FacesModelUtility.getFromViewIdFiltered(navRule));
-            }
-            Collection<String> pagesInConfig = getFacesConfigPageNames(allRules);
-            createFacesConfigPages(pagesInConfig);
-            rules = allRules;
         }
         createAllEdges(rules);
         view.validateGraph();
-        LOGGER.log(new LogRecord(Level.INFO, "PageFlowEditor # Rules: " + rules.size() +"\n" +
-                                             "               # WebPages: " + webFiles.size() + "\n" +
-                                             "               # TotalPages: " + pageName2Page.size()));    
+        LOGGER.log(new LogRecord(Level.INFO, "PageFlowEditor # Rules: " + rules.size() + "\n" + "               # WebPages: " + webFiles.size() + "\n" + "               # TotalPages: " + pageName2Page.size()));
         LOGGER.exiting(PageFlowController.class.toString(), "setupGraphNoSaveData()");
 
         return true;
@@ -650,7 +660,7 @@ public class PageFlowController {
     }
 
     public void putPageName2Page(String displayName, Page pageNode) {
-        
+
         LOGGER.finest("PageName2Page: put " + displayName);
         printThreadInfo();
         if (pageNode == null) {
@@ -669,11 +679,11 @@ public class PageFlowController {
              */
             /* Page pageNode = pageName2Page.remove(displayName);
             if (pageNode != null) {
-                Page pageNode2 = pageName2Page.get(displayName);
-                if (pageNode2 != null) {
-                    throw new RuntimeException("Why are there two of the same page?: " + displayName + "\n PageNode1: " + pageNode + "\n PageNode2:" + pageNode2);
-                }
-                putPageName2Page(displayName, pageNode);
+            Page pageNode2 = pageName2Page.get(displayName);
+            if (pageNode2 != null) {
+            throw new RuntimeException("Why are there two of the same page?: " + displayName + "\n PageNode1: " + pageNode + "\n PageNode2:" + pageNode2);
+            }
+            putPageName2Page(displayName, pageNode);
             } */
             /*
              * End Test
@@ -886,7 +896,7 @@ public class PageFlowController {
         NavigationRule navRule = (NavigationRule) navCase.getParent();
         if (navRule != null && navRule.getNavigationCases().contains(navCase)) {
             //Only delete if it is still valid.
-navRule.removeNavigationCase(navCase);
+            navRule.removeNavigationCase(navCase);
             if (navRule.getNavigationCases().size() < 1) {
                 configModel.removeChildComponent(navRule); //put this back once you remove hack
             }
