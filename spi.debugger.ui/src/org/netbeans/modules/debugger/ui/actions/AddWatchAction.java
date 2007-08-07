@@ -42,21 +42,11 @@ public class AddWatchAction extends CallableSystemAction {
     private static String watchHistory = ""; // NOI18N
 
     
-//    public AddWatchAction () {
-//        putValue (
-//            Action.NAME, 
-//            NbBundle.getMessage (
-//                AddWatchAction.class, 
-//                "CTL_New_Watch"
-//            )
-//        );
-//        putValue (
-//            Action.SMALL_ICON, 
-//            Utils.getIcon (
-//                "org/netbeans/modules/debugger/resources/actions/NewWatch" // NOI18N
-//            )
-//        );
-//    }
+    public AddWatchAction () {
+        // The action is not in the toolbar by default, so it should not have the
+        // icon in the menu.
+        putValue("noIconInMenu", Boolean.TRUE);
+    }
 
     protected boolean asynchronous () {
         return false;
@@ -81,15 +71,6 @@ public class AddWatchAction extends CallableSystemAction {
         return "org/netbeans/modules/debugger/resources/actions/NewWatch.gif"; // NOI18N
     }
     
-    // This is necessary so that the icon is not displayed in the menu.
-    // The action is not in the toolbar by default, so it should not have the icon
-    // in the menu.
-    public JMenuItem getMenuPresenter() {
-        JMenuItem menuItem = new JMenuItem();
-        Mnemonics.setLocalizedText(menuItem, getName());
-        return menuItem;
-    }
-
     public void performAction () {
         ResourceBundle bundle = NbBundle.getBundle (AddWatchAction.class);
 
