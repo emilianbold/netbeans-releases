@@ -25,22 +25,16 @@
 package org.netbeans.modules.mobility.project.ui.wizard;
 
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
-import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
-import org.openide.ErrorManager;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -160,20 +154,7 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     public static void openPlatformInstallWizard() {
-        try {
-            final TemplateWizard wiz = new TemplateWizard();
-            final DataObject template = DataObject.find(
-                    Repository.getDefault().getDefaultFileSystem().findResource(
-                    "Templates/Services/Platforms/org-netbeans-api-java-Platform/j2meplatform.xml"));   //NOI18N
-            final DataFolder folder = DataFolder.findFolder(
-                    Repository.getDefault().getDefaultFileSystem().findResource(
-                    "Services/Platforms/org-netbeans-api-java-Platform"));                              //NOI18N
-            wiz.instantiate(template, folder);
-        } catch (DataObjectNotFoundException dfne) {
-            ErrorManager.getDefault().notify(dfne);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
+        PlatformsCustomizer.showCustomizer(null);
     }
     
     public static boolean isPlatformInstalled(String subType,String platformType) {
