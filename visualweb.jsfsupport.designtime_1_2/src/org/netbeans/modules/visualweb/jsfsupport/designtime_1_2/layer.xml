@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Tools">
             <folder name="PaletteManager">
                 <file name="org-netbeans-modules-visualweb-designer-jsf-palette-JSF1_2PaletteCustomizerAction.instance">
-                    <attr name="position" intvalue="400"/>
+                    <attr name="position" intvalue="600"/>
                 </file>
             </folder>
         </folder>
