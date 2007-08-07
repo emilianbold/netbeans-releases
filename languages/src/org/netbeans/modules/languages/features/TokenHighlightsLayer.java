@@ -70,17 +70,17 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
         private Document            document;
         
         private Highlights (
-            Document document,
-            Highlighting highlighting, 
-            TokenHierarchy hierarchy, 
-            int startOffset, 
-            int endOffset
+            Document                document,
+            Highlighting            highlighting, 
+            TokenHierarchy          hierarchy, 
+            int                     startOffset, 
+            int                     endOffset
         ) {
-            this.document = document;
-            this.endOffset = endOffset;
-            this.highlighting = highlighting;
-            this.hierarchy = hierarchy;
-            endOffset1 = startOffset;
+            this.document =         document;
+            this.endOffset =        endOffset;
+            this.highlighting =     highlighting;
+            this.hierarchy =        hierarchy;
+            endOffset1 =            startOffset;
         }
         
         public boolean moveNext () {

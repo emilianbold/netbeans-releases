@@ -16,6 +16,8 @@
  */
 package org.netbeans.modules.languages.features;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -30,6 +32,9 @@ import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.Highlighting;
 import org.netbeans.api.languages.ParseException;
+import org.netbeans.api.languages.ParserManager;
+import org.netbeans.api.languages.ParserManager.State;
+import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.ParserManagerImpl;
@@ -44,16 +49,33 @@ import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
  */
 class SemanticHighlightsLayer extends AbstractHighlightsContainer {
 
-    private Document document;
+    private Document            document;
+    private Highlighting        highlighting;
+    private ParserManager       parserManager;
+    
     
     SemanticHighlightsLayer (Document document) {
         this.document = document;
+        Listener listener = new Listener ();
+        highlighting = Highlighting.getHighlighting (document);
+        highlighting.addPropertyChangeListener (listener);
+        parserManager = ParserManagerImpl.get (document);
+        parserManager.addListener (listener);
     }
 
     public HighlightsSequence getHighlights (int startOffset, int endOffset) {
-        return new Highlights (document, startOffset, endOffset);
+        return new Highlights (document, highlighting, parserManager, startOffset, endOffset);
     }
 
+    private class Listener implements PropertyChangeListener, ParserManagerListener {
+        public void propertyChange (final PropertyChangeEvent evt) {
+            fireHighlightsChange ((Integer) evt.getOldValue (), (Integer) evt.getNewValue ());
+        }
+
+        public void parsed (State state, ASTNode root) {
+            fireHighlightsChange (0, document.getLength ());
+        }
+    }
     
     private static class Highlights implements HighlightsSequence {
 
@@ -66,14 +88,20 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
         private ASTNode             ast;
         
         
-        private Highlights (Document document, int startOffset, int endOffset) {
+        private Highlights (
+            Document        document, 
+            Highlighting    highlighting, 
+            ParserManager   parserManager,
+            int             startOffset, 
+            int             endOffset
+        ) {
             this.document = document;
+            this.highlighting = highlighting;
             this.endOffset = endOffset;
             startOffset1 = startOffset;
             endOffset1 = startOffset;
-            highlighting = Highlighting.getHighlighting (document);
             try {
-                ast = ParserManagerImpl.get (document).getAST ();
+                ast = parserManager.getAST ();
             } catch (ParseException ex) {
                 ast = ex.getASTNode ();
             }

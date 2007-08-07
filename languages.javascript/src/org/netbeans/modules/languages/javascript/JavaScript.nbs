@@ -292,7 +292,7 @@ RegularExpression = <js_regularExpression>;
 #PARSE:RegularExpression:org.netbeans.modules.languages.javascript.JavaScript.parseRegularExpression
 
 AST {
-    removeSimple:"!FunctionBody,Statement,VariableDeclaration";
+    removeSimple:"!FunctionBody,Statement,VariableDeclaration,Parameter";
     #process:org.netbeans.modules.languages.javascript.Semantic.process;
 }
 
