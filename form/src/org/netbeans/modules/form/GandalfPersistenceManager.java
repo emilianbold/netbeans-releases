@@ -322,44 +322,44 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if ("".equals(formInfoName)) // NOI18N
             formInfoName = null; // not available
 
-        try { // try declared superclass from java source first
-            if (!underTest) {
+        if (!underTest) { // try declared superclass from java source first
+            // (don't scan java source in tests, we only use the basic form types)
+            try { 
                 declaredSuperclassName = getSuperClassName(javaFile);
-            }
-
-            if (declaredSuperclassName != null) {
-                Class designClass = getFormDesignClass(declaredSuperclassName);
-                if (designClass == null) {
-                    Class superclass = FormUtils.loadClass(declaredSuperclassName, formFile);
-                    designClass = getFormDesignClass(superclass);
+                if (declaredSuperclassName != null) {
+                    Class designClass = getFormDesignClass(declaredSuperclassName);
                     if (designClass == null) {
-                        formBaseClass = checkDeclaredSuperclass(superclass, formInfoName);
-                        if (formBaseClass != superclass && !underTest) {
-                            System.err.println(FormUtils.getFormattedBundleString(
-                                "FMT_IncompatibleFormTypeWarning", // NOI18N
-                                new Object[] { javaFile.getName() }));
+                        Class superclass = FormUtils.loadClass(declaredSuperclassName, formFile);
+                        designClass = getFormDesignClass(superclass);
+                        if (designClass == null) {
+                            formBaseClass = checkDeclaredSuperclass(superclass, formInfoName);
+                            if (formBaseClass != superclass && !underTest) {
+                                System.err.println(FormUtils.getFormattedBundleString(
+                                    "FMT_IncompatibleFormTypeWarning", // NOI18N
+                                    new Object[] { javaFile.getName() }));
+                            }
+                        } else {
+                            formBaseClass = designClass;
+                            if (!superclass.isAssignableFrom(designClass)) {
+                                System.err.println("WARNING: Design class not compatible with declared form base class:"); // NOI18N
+                                System.err.println("-> "+designClass.getName() + " is not subclass of " + superclass.getName()); // NOI18N
+                            }
                         }
                     } else {
                         formBaseClass = designClass;
-                        if (!superclass.isAssignableFrom(designClass)) {
-                            System.err.println("WARNING: Design class not compatible with declared form base class:"); // NOI18N
-                            System.err.println("-> "+designClass.getName() + " is not subclass of " + superclass.getName()); // NOI18N
-                        }
                     }
                 } else {
-                    formBaseClass = designClass;
+                    formBaseClass = Object.class;
                 }
-            } else {
-                formBaseClass = Object.class;
-            }
 
-            formModel.setFormBaseClass(formBaseClass);
-        }
-        catch (Exception ex) {
-            formBaseClassEx = ex;
-        }
-        catch (LinkageError ex) {
-            formBaseClassEx = ex;
+                formModel.setFormBaseClass(formBaseClass);
+            }
+            catch (Exception ex) {
+                formBaseClassEx = ex;
+            }
+            catch (LinkageError ex) {
+                formBaseClassEx = ex;
+            }
         }
 
         if (formModel.getFormBaseClass() == null) {
@@ -377,16 +377,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 try {
                     formModel.setFormBaseClass(substClass);
 
-                    // print a warning about using fallback type
-                    String msg = FormUtils.getFormattedBundleString(
-                        "FMT_FormTypeWarning", // NOI18N
-                        new Object[] { javaFile.getName(),
-                                       substClass.getName(),
-                                       declaredSuperclassName != null ?
-                                         declaredSuperclassName : "<unknown class>" }); // NOI18N
-                    System.err.println(msg);
-                    if (formBaseClassEx != null)
-                        formBaseClassEx.printStackTrace();
+                    if (!underTest) { // print a warning about using fallback type (OK for tests)
+                        String msg = FormUtils.getFormattedBundleString(
+                            "FMT_FormTypeWarning", // NOI18N
+                            new Object[] { javaFile.getName(),
+                                           substClass.getName(),
+                                           declaredSuperclassName != null ?
+                                             declaredSuperclassName : "<unknown class>" }); // NOI18N
+                        System.err.println(msg);
+                        if (formBaseClassEx != null)
+                            formBaseClassEx.printStackTrace();
+                    }
                 }
                 catch (Exception ex) { // should not happen for the substitute types
                     ex.printStackTrace();
