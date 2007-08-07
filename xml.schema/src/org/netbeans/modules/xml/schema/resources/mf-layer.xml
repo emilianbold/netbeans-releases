@@ -179,19 +179,11 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                     <file name="org-openide-actions-DeleteAction.instance">
                         <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="RefactoringRename.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.renameAction"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>                    
-                    <file name="sep-5.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1600"/>
-                    </file>
+                    </file>                                   
                     <file name="org-openide-actions-SaveAsTemplateAction.instance">
                         <attr name="position" intvalue="1700"/>
                     </file>
-                    <file name="sep-6.instance">
+                    <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1800"/>
                     </file>                           
@@ -203,14 +195,14 @@ Microsystems, Inc. All Rights Reserved.
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
                         <attr name="position" intvalue="2000"/>
                     </file>                                  
-                    <file name="sep-7.instance">
+                    <file name="sep-6.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="2100"/>
                     </file>                    
                     <file name="org-openide-actions-FileSystemAction.instance">
                         <attr name="position" intvalue="2200"/>
                     </file>
-                    <file name="sep-8.instance">
+                    <file name="sep-7.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="2300"/>
                     </file>
@@ -220,7 +212,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-openide-actions-PropertiesAction.instance">
                         <attr name="position" intvalue="2500"/>
                     </file>
-                    <file name="org-openide-actions-RenameAction.instance_hidden"/>
+                    
                 </folder>
             </folder>
         </folder>
