@@ -111,10 +111,13 @@ class DropTargetLayer extends JComponent {
     
     
     public static boolean isMenuRightEdge(Point pt, JComponent menu) {
-        return pt.x > menu.getWidth()-15;
+        return pt.x > menu.getWidth()-8;
     }
     public static boolean isMenuLeftEdge(Point pt, JComponent menu) {
-        return pt.x < 15;
+        return pt.x < 8;
+    }
+    public static boolean isSubMenuRightEdge(Point pt, JComponent menu) {
+        return pt.x > menu.getWidth()-30;
     }
     
     protected void paintComponent(Graphics g) {

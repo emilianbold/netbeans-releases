@@ -327,7 +327,7 @@ class DragOperation {
             }
             p("on a jmenu. could be in or above");
             p("converted point = " + pt2);
-            if(pt2.x > menu.getWidth()-30) {
+            if(DropTargetLayer.isSubMenuRightEdge(pt2, menu)) {
                 p("doing 'in' menu drop");
                 menuEditLayer.moveRadComponentInto(payloadComponent, menu);
             } else {
@@ -411,20 +411,11 @@ class DragOperation {
                 } else {
                     p("else in the center");
                     menuEditLayer.addRadComponentToEnd(targetComponent, creator);
-                    /*
-                    RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(targetComponent);
-                    //RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
-                    boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
-                    //menuEditLayer.addRadComponentToBefore(newRad, targetComponent);*/
                 }
             } else {
-                if(pt2.x > targetComponent.getWidth()-30) {
+                if(DropTargetLayer.isSubMenuRightEdge(pt2, targetComponent)) {
                     p("doing in menu drop");
                     menuEditLayer.addRadComponentToEnd(targetComponent, creator);
-                    /*
-                    RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(targetComponent);
-                    p("target container = " + targetContainer);
-                    boolean added = creator.addPrecreatedComponent(targetContainer, constraints);*/
                 } else {
                     p("doing above menu drop");
                     RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
@@ -437,12 +428,7 @@ class DragOperation {
                 p("======= doing a new comp directly to the jmenubar");
                 menuEditLayer.addRadComponentToEnd(targetComponent, creator);
             } else {
-                /*
                 // add the new component to the target's containing menu
-                JComponent menuParent = menuEditLayer.getMenuParent(targetComponent);
-                RADVisualContainer targetContainer = (RADVisualContainer) menuEditLayer.formDesigner.getMetaComponent(menuParent);
-                boolean added = creator.addPrecreatedComponent(targetContainer, constraints);
-                */
                 p("doing the new kind of add");
                 RADVisualComponent newRad = creator.getPrecreatedMetaComponent();
                 p("new rad = " + newRad);
