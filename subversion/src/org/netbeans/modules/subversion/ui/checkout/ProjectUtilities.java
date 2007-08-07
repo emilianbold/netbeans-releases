@@ -29,9 +29,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.cookies.InstanceCookie;
 import org.openide.ErrorManager;
 
 import javax.swing.*;
@@ -53,11 +50,6 @@ import java.io.File;
 final class ProjectUtilities {
 
     private static final String ProjectTab_ID_LOGICAL = "projectTabLogical_tc"; // NOI18N
-
-    private static final String NEW_PROJECT_ACTION = "Actions/Project/org-netbeans-modules-project-ui-NewProject.instance";  // NOI18N
-
-    private static final String INITIAL_SOURCE_ROOT = "EXISTING_SOURCES_CURRENT_DIRECTORY";  // NOI18N
-
 
     public static void selectAndExpandProject( final Project p ) {
 
@@ -122,6 +114,7 @@ final class ProjectUtilities {
      * @return List of {@link Project}s never <code>null</code>.
      */
     public static List<Project> scanForProjects(FileObject scanRoot) {
+        ProjectManager.getDefault().clearNonProjectCache();
         return scanForProjectsRecursively(scanRoot, 5);
     }
 
@@ -153,35 +146,6 @@ final class ProjectUtilities {
         }
         return projects;
     }
-
-    private static Action findAction (String key) {
-        FileObject fo =
-            Repository.getDefault().getDefaultFileSystem().findResource(key);
-
-        if (fo != null && fo.isValid()) {
-            try {
-                DataObject dob = DataObject.find (fo);
-                InstanceCookie ic =
-                    (InstanceCookie) dob.getCookie(InstanceCookie.class);
-
-                if (ic != null) {
-                    Object instance = ic.instanceCreate();
-                    if (instance instanceof Action) {
-                        Action a = (Action) instance;
-                        // NewProject action reads the properties PRESELECT_CATEGORY and PRESELECT_TEMPLATE
-                        a.putValue ("PRESELECT_CATEGORY", "General");  // NOI18N
-                        a.putValue ("PRESELECT_TEMPLATE", null); // NOI18N
-                        return a;
-                    }
-                }
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
-                return null;
-            }
-        }
-        return null;
-    }
-
 
     private static boolean performAction (Action a) {
         if (a == null) {
