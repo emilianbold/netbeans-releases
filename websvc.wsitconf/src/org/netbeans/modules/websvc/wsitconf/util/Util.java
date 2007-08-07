@@ -280,10 +280,10 @@ public class Util {
             if ((f == null) || (!f.exists())) {
                 throw new IOException();
             }
-            iStream = new FileInputStream(new File(storePath));
+            iStream = new FileInputStream(f);
             java.security.KeyStore keyStore;
             keyStore = java.security.KeyStore.getInstance(type);
-            keyStore.load(iStream, password);
+            keyStore.load(iStream, password); 
             Enumeration<String> e = keyStore.aliases();
             ArrayList<String> arr = new ArrayList<String>(keyStore.size());
             while (e.hasMoreElements()) {
@@ -573,23 +573,28 @@ public class Util {
         KeyStore dstStore = KeyStore.getInstance("JKS");
         srcStore.load(Util.class.getResourceAsStream(srcPath), srcPasswd.toCharArray());
         InputStream is = new FileInputStream(dstPath);
-        OutputStream os = new FileOutputStream(dstPath);
         try {
             dstStore.load(is, dstPasswd.toCharArray());
             Key privKey = srcStore.getKey(srcAlias, srcKeyPasswd.toCharArray());
 
-            if (privKey == null || trustedCertEntry) {
-                //this is a cert-entry
-                dstStore.setCertificateEntry(dstAlias, srcStore.getCertificate(srcAlias));
-            } else {              
-                Certificate cert = srcStore.getCertificate(srcAlias);
-                Certificate[] chain = new Certificate[] {cert};
-                dstStore.setKeyEntry(dstAlias, privKey, srcKeyPasswd.toCharArray(), chain);
+            if (is != null) is.close();
+            
+            OutputStream os = new FileOutputStream(dstPath);
+            try {
+                if (privKey == null || trustedCertEntry) {
+                    //this is a cert-entry
+                    dstStore.setCertificateEntry(dstAlias, srcStore.getCertificate(srcAlias));
+                } else {              
+                    Certificate cert = srcStore.getCertificate(srcAlias);
+                    Certificate[] chain = new Certificate[] {cert};
+                    dstStore.setKeyEntry(dstAlias, privKey, srcKeyPasswd.toCharArray(), chain);
+                }
+                dstStore.store(os, dstPasswd.toCharArray());
+            } finally {
+                if (os != null) os.close();
             }
-            dstStore.store(os, dstPasswd.toCharArray());
         } finally {
             if (is != null) is.close();
-            if (os != null) os.close();
         }
     }
     
