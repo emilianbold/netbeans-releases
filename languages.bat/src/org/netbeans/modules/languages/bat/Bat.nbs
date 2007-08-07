@@ -106,6 +106,14 @@ TOKEN:string: (
     "\""
 )
 
+TOKEN:string: (
+    "\'"
+        ( [^ "\"" "\n" "\r"] |
+          ("\\" ["r" "n" "t" "\\" "\'" "\""])
+        )*
+    "\'"
+)
+
 COLOR:command: {
     color_name: "command";
     default_coloring: "keyword";
