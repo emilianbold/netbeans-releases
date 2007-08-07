@@ -20,9 +20,11 @@
 package org.netbeans.beaninfo.editors;
 
 import java.awt.Color;
+import java.util.Locale;
 import javax.xml.parsers.DocumentBuilderFactory;
 import junit.framework.TestCase;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -48,10 +50,10 @@ public class ColorEditorTest extends TestCase {
         Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         Node element = propEd.storeToXML(doc);
 
-        NamedNodeMap nodeMap = element.getAttributes();
-        for (int i = 0; i < nodeMap.getLength(); i++) {
-            System.out.println("attr "+i+", "+nodeMap.item(i));
-        }
+//        NamedNodeMap nodeMap = element.getAttributes();
+//        for (int i = 0; i < nodeMap.getLength(); i++) {
+//            System.out.println("attr "+i+", "+nodeMap.item(i));
+//        }
         
         propEd.readFromXML(element);
         Color restoredColor = (Color)propEd.getValue();
@@ -59,6 +61,40 @@ public class ColorEditorTest extends TestCase {
         assertEquals("Restored value has to be the same", sc, restoredColor);
         assertTrue("It is SuperColor", restoredColor instanceof ColorEditor.SuperColor);
         assertEquals ("Generate Java source with UI color.", "javax.swing.UIManager.getDefaults().getColor(\"TextField.inactiveBackground\")", propEd.getJavaInitializationString ());
+    }
+    
+    public void testStoreToXmlWithVaryingLocale() throws Exception {
+        Locale loc = Locale.getDefault();
+        Locale.setDefault(new Locale("cs", "CZ"));
+        ColorEditor.SuperColor sc = new ColorEditor.SuperColor(
+                NbBundle.getMessage(ColorEditor.class, "LAB_Blue"), 
+                ColorEditor.AWT_PALETTE, 
+                Color.BLUE);
+        XMLPropertyEditor propEd = new ColorEditor();
+        propEd.setValue(sc);
+        System.out.println("original "+sc + " Java "+ propEd.getJavaInitializationString ());
+        String javaCode = propEd.getJavaInitializationString ();
+        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        Node element = propEd.storeToXML(doc);
+
+        NamedNodeMap nodeMap = element.getAttributes();
+        for (int i = 0; i < nodeMap.getLength(); i++) {
+            System.out.println("attr "+i+", "+nodeMap.item(i));
+        }
+        
+        Locale.setDefault(new Locale("en"));
+        ColorEditor.awtColorNames = null; // clear the cache of localized names
+        
+        propEd.readFromXML(element);
+        Color restoredColor = (Color)propEd.getValue();
+        System.out.println("restoredColor "+restoredColor + " Java "+ propEd.getJavaInitializationString ());
+        assertEquals(sc.getBlue(), restoredColor.getBlue());
+        assertEquals(sc.getGreen(), restoredColor.getGreen());
+        assertEquals(sc.getBlue(), restoredColor.getBlue());
+        assertTrue("It is SuperColor", restoredColor instanceof ColorEditor.SuperColor);
+        assertEquals("Java code works", javaCode, propEd.getJavaInitializationString ());
+//        assertEquals("Restored value has to be the same", sc, restoredColor);
+        Locale.setDefault(loc);
     }
     
     public void testStoreToXmlWhenUIResourceIsMissing() throws Exception {

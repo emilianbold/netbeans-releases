@@ -75,7 +75,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     public static final int SWING_PALETTE = 3;
 
     /** Localized names of AWT colors. */
-    private static String awtColorNames[];
+    /* package */ static String awtColorNames[]; // for testing
 
     /** AWT colors used in AWT Palette. */
     private static final Color awtColors[] = {
@@ -775,6 +775,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
              * @return Standard method returned preferredSize
              * (depends on font size only).
              */
+            @Override
             public Dimension getPreferredSize () {
                 try {
                     FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
@@ -787,7 +788,8 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 }
             }
 
-            /** Paints this component. Overrides superclass method. */
+            /** Paints this component. */
+            @Override
             public void paint (Graphics g) {
                 ((Graphics2D)g).setRenderingHints (getHints ());
                 
@@ -890,9 +892,13 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 String green = attributes.getNamedItem (ATTR_GREEN).getNodeValue ();
                 String blue = attributes.getNamedItem (ATTR_BLUE).getNodeValue ();
                 if (VALUE_PALETTE.equals (type)) {
+                    int palette = Integer.parseInt (attributes.getNamedItem (ATTR_PALETTE).getNodeValue ());
                     String id = attributes.getNamedItem (ATTR_ID).getNodeValue ();
-                    String palette = attributes.getNamedItem (ATTR_PALETTE).getNodeValue ();
-                    setValue (new SuperColor (id, Integer.parseInt (palette), new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
+                    if (palette == AWT_PALETTE) {
+                        int idx = getIndex(awtGenerate, id);
+                        id = idx >= 0? getAWTColorNames()[idx]: null;
+                    }
+                    setValue (new SuperColor (id,  palette, new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
                 } else {
                     setValue (new SuperColor (new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
                 }
@@ -916,7 +922,12 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
             el.setAttribute (ATTR_GREEN, Integer.toHexString (superColor.getGreen ()));
             el.setAttribute (ATTR_BLUE, Integer.toHexString (superColor.getBlue ()));
             if (superColor.getID () != null) {
-                el.setAttribute (ATTR_ID, superColor.getID ());
+                if (superColor.getPalette () == AWT_PALETTE) {
+                    el.setAttribute (ATTR_ID, awtGenerate[getIndex(getAWTColorNames(), superColor.getID ())]);
+                }
+                else {
+                    el.setAttribute (ATTR_ID, superColor.getID ());
+                }
                 el.setAttribute (ATTR_PALETTE, Integer.toString (superColor.getPalette ()));
             }
         }
