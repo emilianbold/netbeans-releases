@@ -20,7 +20,7 @@ package org.netbeans.modules.ruby.railsprojects.plugins;
 
 
 /**
- * A descriptor of a Ruby On Rails Plugin.
+ * A descriptor of a Ruby on Rails Plugin.
  *
  * @author Tor Norbye
  */

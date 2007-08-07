@@ -51,7 +51,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 
 /**
- * Support for the builtin Ruby On Rails web server: WEBrick, Mongrel, Lighttpd
+ * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
  *
  * This is really primitive at this point; I should talk to the people who
  * write Java web server plugins and take some pointers. Perhaps it can
