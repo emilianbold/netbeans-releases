@@ -69,7 +69,9 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         setProperty(LOCATION_BUTTON_TEXT_PROPERTY, 
                 DEFAULT_LOCATION_BUTTON_TEXT);
         setProperty(LIST_LABEL_TEXT_PROPERTY, 
-                DEFAULT_LIST_LABEL_TEXT);
+                DEFAULT_LIST_LABEL_TEXT);        
+        setProperty(FILECHOOSER_TITLE_PROPERTY, 
+                DEFAULT_FILECHOOSER_TITLE);
         
         setProperty(ERROR_NOTHING_FOUND_PROPERTY, 
                 DEFAULT_ERROR_NOTHING_FOUND);
@@ -250,6 +252,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             fileChooser.setMultiSelectionEnabled(false);
+            fileChooser.setDialogTitle(component.getProperty(FILECHOOSER_TITLE_PROPERTY));
             
             // this /////////////////////////////////////////////////////////////////
             add(locationLabel, new GridBagConstraints(
@@ -591,6 +594,8 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             "location.button.text"; // NOI18N
     public static final String LIST_LABEL_TEXT_PROPERTY = 
             "list.label.text"; // NOI18N
+    public static final String FILECHOOSER_TITLE_PROPERTY = 
+            "filechooser.title";
     
     public static final String DEFAULT_LOCATION_LABEL_TEXT = 
             ResourceUtils.getString(ApplicationLocationPanel.class, 
@@ -601,6 +606,10 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     public static final String DEFAULT_LIST_LABEL_TEXT = 
             ResourceUtils.getString(ApplicationLocationPanel.class, 
             "ALP.list.label.text"); // NOI18N
+    public static final String DEFAULT_FILECHOOSER_TITLE =
+            ResourceUtils.getString(ApplicationLocationPanel.class, 
+            "ALP.filechooser.title"); // NOI18N
+            
     
     public static final String ERROR_NOTHING_FOUND_PROPERTY = 
             "error.nothing.found"; // NOI18N
