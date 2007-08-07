@@ -76,7 +76,7 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
         initComponents();
         initAccessibility();
         treeView = new BeanTreeView();
-        jLabel1.setLabelFor(treeView);
+        jLabel2.setLabelFor(treeView);
         treeView.setPopupAllowed(false);
         treeView.setRootVisible(false);
         treeView.setDefaultActionAllowed(false);
@@ -245,24 +245,24 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jTextFieldName = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jTextFieldName = new javax.swing.JTextField();
         errorPanel = new org.netbeans.modules.mobility.project.ui.customizer.ErrorPanel();
 
         setMinimumSize(new java.awt.Dimension(450, 200));
         setPreferredSize(new java.awt.Dimension(480, 350));
         setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setLabelFor(jTextFieldName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_ConfigurationName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_ConfigTemplate")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(jLabel1, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 12);
+        add(jLabel2, gridBagConstraints);
 
         jPanel1.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
         jPanel1.setLayout(new java.awt.BorderLayout());
@@ -275,6 +275,15 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(jPanel1, gridBagConstraints);
+
+        jLabel1.setLabelFor(jTextFieldName);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_ConfigurationName")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        add(jLabel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -286,14 +295,6 @@ public class NewConfigurationPanel extends JPanel implements DocumentListener, P
         add(jTextFieldName, gridBagConstraints);
         jTextFieldName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConfigurationPanel.class, "ACSD_NewCfg_Name")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(NewConfigurationPanel.class, "LBL_NewConfigPanel_ConfigTemplate")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 12);
-        add(jLabel2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
