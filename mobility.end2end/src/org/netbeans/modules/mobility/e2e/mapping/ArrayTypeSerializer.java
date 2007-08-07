@@ -115,12 +115,14 @@ public class ArrayTypeSerializer implements JavonSerializer {
     public String fromStream( JavonMapping mapping, ClassData type, String stream, String object ) {
         if( arrayTypes.contains( type )) {
             String deserializationCode = "";
-            deserializationCode += "int a_size = " + stream + ".readInt();\n";
-            deserializationCode += "Object a_result[] = new Object[ a_size ];\n";
-            deserializationCode += "for( int a_i = 0; a_i < a_size; a_i++ ) {\n";
-            deserializationCode += "a_result[a_i] = readObject( " + stream + ");\n";
+            String id = "" + mapping.getRegistry().getRegisteredTypeId( type );
+            deserializationCode += "int a_size_" + id + " = " + stream + ".readInt();\n";
+            deserializationCode += "Object a_result_" + id + "[] = new Object[ a_size_" + id + " ];\n";
+            deserializationCode += "for( int a_i = 0; a_i < a_size_" + id + "; a_i++ ) {\n";
+            deserializationCode += "a_result_" + id + "[a_i] = readObject( " + stream + " );\n";
             deserializationCode += "}\n";
-            deserializationCode += "result = (Object)a_result;\n";
+            deserializationCode += ( object == null ? "" :  object + " = a_result_" + id + ";\n" );
+            //deserializationCode += "result = (Object)a_result;\n";
             return deserializationCode;
         }
         throw new IllegalArgumentException( "Invalid type: " + type.getName());        

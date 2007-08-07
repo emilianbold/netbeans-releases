@@ -51,11 +51,7 @@ public class Javon {
     /**
      * Generate output
      */
-    public void generate() {
-        final ProgressHandle ph = ProgressHandleFactory.createHandle( "Javon" );
-//                NbBundle.getMessage( Javon.class, "MSG_GeneratingJavon" ));
-        ph.start();
-        ph.switchToIndeterminate();        
+    public void generate( ProgressHandle ph ) {
         // Get providers
         Lookup.Result<JavonProfileProvider> providersResult = 
                 Lookup.getDefault().lookup( new Lookup.Template<JavonProfileProvider>(
@@ -70,7 +66,7 @@ public class Javon {
         }
         
         // TODO: Hack for default provider. Name should be set from the dialog
-        JavonProfileProvider provider = providers.get( "default" );
+        JavonProfileProvider provider = providers.get( "default" ); // NOI18N
         
         List<JavonTemplate> templates = provider.getTemplates( mapping );
         
@@ -78,7 +74,7 @@ public class Javon {
         for( JavonTemplate template : templates ) {
             Set<String> targets = template.getTargets();
             for( String target : targets ) {
-                template.generateTarget( target );
+                template.generateTarget( ph, target );
             }
         }
         

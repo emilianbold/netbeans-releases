@@ -131,6 +131,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         saveCallbacks.remove( callBack );
     }
     
+    @Override
     protected Node createNodeDelegate() {
         Node node;
         
@@ -138,6 +139,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
         return node;
     }
     
+    @Override
     public void setModified( final boolean modif ) {
         super.setModified( modif );
         if( modif ) {
@@ -290,7 +292,7 @@ public class E2EDataObject extends XmlMultiViewDataObject {
 //        } else {
 //            m.setClientTraceLevel( 0 );
 //        }
-        ;
+        
         jsc.setLocation( Util.getServerLocation( getServerProject()));
         jsc.setPort( Util.getServerPort( getServerProject()) );
         jsc.setServletLocation( configuration.getServerConfigutation().getProjectName() + "/servlet/" + //NOI18N

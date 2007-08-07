@@ -182,39 +182,19 @@ public class ${service.getClassName()} {
         <#assign hasArrays = false/>
         <#list utils.getReturnTypeInstances( service ) as type>
             <#assign serializer = mapping.getRegistry().getTypeSerializer( type )/>
-            <#if type.getName() != "void" && !type.isArray()>
+            <#if type.getName() != "void">
                 case ${registry.getRegisteredTypeId( type )}:
-                    <#if type.isPrimitive()>
+                    <#if type.isPrimitive() && !type.isArray()>
                         <#assign typeFromStream = serializer.fromStream( mapping, type, "in", null )/>
+                        // Primitive
                         return ${serializer.toObject( type, typeFromStream )};
                     <#else>
+                        // COmplex
                         ${serializer.fromStream( mapping, type, "in", "result" )}
                         return result;
                     </#if>
             </#if>
-            <#if type.isArray()>
-                <#assign hasArrays = true/>
-                <#assign arrayTypeID = registry.getRegisteredTypeId( type )/>
-            </#if>
         </#list>
-        <#if hasArrays>
-            case ${arrayTypeID}:
-                short elementType = in.readShort();
-                length = in.readInt();
-                switch (elementType) {
-                <#list service.getReturnTypes() as type>
-                    <#if type.isArray() && type.getName() != "void">
-                        case ${registry.getRegisteredTypeId( type.getComponentType())}:
-                            ${type.getName()} data = new ${type.getComponentType().getName()}[length];
-                            for (int i = 0; i < length; i++) {
-                                data[i] = ${registry.getTypeSerializer( type.getComponentType()).toObject( type.getComponentType(), "readObject( in )" )};
-                            }
-                            return data;
-                    </#if>
-                </#list>
-                }
-                break;
-        </#if>
             case -1: /* NULL */
                 return null;
         }

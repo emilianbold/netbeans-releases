@@ -31,6 +31,7 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.JavonTemplate;
@@ -38,6 +39,7 @@ import org.netbeans.modules.mobility.javon.OutputFileFormatter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -64,8 +66,9 @@ public class ClientJavonTemplate extends JavonTemplate {
         return Collections.unmodifiableSet( targets );
     }
 
-    public boolean generateTarget( String target ) {
+    public boolean generateTarget( ProgressHandle ph, String target ) {
         if( mapping.getServiceMapping( target ) != null ) {
+            ph.progress( NbBundle.getMessage( ClientJavonTemplate.class, "MSG_Client" ));   // NOI18N
             try {
                 mapping.setProperty( "target", "client" );
                 

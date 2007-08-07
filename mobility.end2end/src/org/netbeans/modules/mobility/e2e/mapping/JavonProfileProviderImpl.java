@@ -63,7 +63,7 @@ public class JavonProfileProviderImpl implements JavonProfileProvider {
         serializers.add( new RealTypeSerializer());
         serializers.add( new ArrayTypeSerializer());
         serializers.add( new CollectionSerializer());
-        serializers.add( new GenericTypeSerializer());
+//        serializers.add( new GenericTypeSerializer());
         serializers.add( new BeanTypeSerializer());
         return Collections.unmodifiableList( serializers );
     }

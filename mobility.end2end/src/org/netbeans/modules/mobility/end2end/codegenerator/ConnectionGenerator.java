@@ -80,7 +80,7 @@ public class ConnectionGenerator {
         }
         
         // Call save before generate
-        final SaveCookie saveCookie = (SaveCookie)dataObject.getCookie( SaveCookie.class );
+        final SaveCookie saveCookie = dataObject.getCookie( SaveCookie.class );
         if( saveCookie != null ) {
             try {
                 saveCookie.save();
@@ -114,7 +114,8 @@ public class ConnectionGenerator {
         // FIXME: check for proper type
 //        config.getServices();
 //        
-        if( Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())){
+        if( Configuration.WSDLCLASS_TYPE.equals( config.getServiceType())) {
+            ph.progress( NbBundle.getMessage( ConnectionGenerator.class, "MSG_GeneratingProxyStubs" ));
             final ProxyGenerator pg = new ProxyGenerator(dataObject);
             final String className = pg.generate();
             if( className == null ) {
@@ -138,7 +139,7 @@ public class ConnectionGenerator {
             ph.progress( NbBundle.getMessage( ConnectionGenerator.class, "MSG_CreatingJavaFiles" )); // NOI18N
 //            
             Javon javon = new Javon( mapping );
-            javon.generate();
+            javon.generate( ph );
 //            Streams.setOut(ow);
 //            Streams.setErr(ow);
 //            outputs = new Main().run( mapping, "" ); // NOI18N

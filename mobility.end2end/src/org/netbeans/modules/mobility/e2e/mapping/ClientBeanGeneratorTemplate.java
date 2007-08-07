@@ -34,6 +34,7 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mobility.e2e.classdata.ClassData;
 import org.netbeans.modules.mobility.javon.JavonMapping;
 import org.netbeans.modules.mobility.javon.JavonMapping.Service;
@@ -44,6 +45,7 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,8 +65,9 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
         return targets;
     }
 
-    public boolean generateTarget( String target ) {
+    public boolean generateTarget( ProgressHandle ph, String target ) {
         if( BEANS_OUTPUT.equals( target )) {
+            ph.progress( NbBundle.getMessage( ClientBeanGeneratorTemplate.class, "MSG_Bean_Generation" ));
             Set<Service> services = mapping.getServiceMappings();
             Map<String, ClassData> types = new HashMap<String, ClassData>();
             for( Service service : services ) {
@@ -72,7 +75,10 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                     types.put( type.getFullyQualifiedName(), type);
                 }
             }
+            ph.start( types.keySet().size());
+            int progress = 0;
             for( String typeName : types.keySet()) {
+                progress++;
                 ClassData type = types.get( typeName );
                 JavonSerializer serializer = mapping.getRegistry().getTypeSerializer( type );
                 if( serializer instanceof BeanTypeSerializer ) {
@@ -91,12 +97,13 @@ public class ClientBeanGeneratorTemplate extends JavonTemplate {
                         }
                         
                         generateBean( beanFile, type );
-                        
+                        ph.progress( progress );
                     } catch( IOException e ) {
                         ErrorManager.getDefault().notify( e );
                     }
                 }
             }
+            ph.switchToIndeterminate();
             return true;
         }
         return false;

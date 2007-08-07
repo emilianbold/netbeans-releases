@@ -31,6 +31,7 @@ import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -42,6 +43,7 @@ import org.netbeans.modules.mobility.javon.OutputFileFormatter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -77,7 +79,7 @@ public class ServerJavonTemplate extends JavonTemplate {
         return new HashSet( Arrays.asList( OUTPUTS ));
     }
 
-    public boolean generateTarget( String target ) {
+    public boolean generateTarget( ProgressHandle ph, String target ) {
         if( !outputSet.contains( target )) return false;
         
         String templateName = "";
@@ -85,20 +87,24 @@ public class ServerJavonTemplate extends JavonTemplate {
         String outputFileName = "";
         
         if( SERVLET.equals( target )) {
-            templateName = "Templates/Server/Servlet.java";
+            templateName = "Templates/Server/Servlet.java";     // NOI18N
             outputFileName = mapping.getServerMapping().getClassName();
+            ph.progress( NbBundle.getMessage( ServerJavonTemplate.class, "MSG_Servlet" ));
         } else if( GATEWAYS.equals( target )) {
-            templateName = "Templates/Server/Gateways.java";
-            outputFileName = "JavonGateways";
+            templateName = "Templates/Server/Gateways.java"; // NOI18N
+            outputFileName = "JavonGateways"; // NOI18N
+            ph.progress( NbBundle.getMessage( ServerJavonTemplate.class, "MSG_Gateways" ));
         } else if( INVOCATION.equals( target )) {
-            templateName = "Templates/Server/InvocationAbstraction.java";
-            outputFileName = "InvocationAbstraction";
+            templateName = "Templates/Server/InvocationAbstraction.java"; // NOI18N
+            outputFileName = "InvocationAbstraction"; // NOI18N
+            ph.progress( NbBundle.getMessage( ServerJavonTemplate.class, "MSG_Invocation" ));
         } else if( UTILITY.equals( target )) {
-            templateName = "Templates/Server/Utility.java";
-            outputFileName = "Utility";
+            templateName = "Templates/Server/Utility.java"; // NOI18N
+            outputFileName = "Utility"; // NOI18N
+            ph.progress( NbBundle.getMessage( ServerJavonTemplate.class, "MSG_Utility" ));
         }
         try {            
-            mapping.setProperty( "target", "server" );
+            mapping.setProperty( "target", "server" ); // NOI18N
             
             FileObject outputDir = FileUtil.toFileObject( FileUtil.normalizeFile( new File( outputDirectoryName )));
             outputDir = outputDir.getFileObject( mapping.getServerMapping().getPackageName().replace( '.', '/' ));

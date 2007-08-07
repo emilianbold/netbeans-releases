@@ -144,17 +144,29 @@ public class PrimitiveTypeSerializer implements JavonSerializer {
     }
 
     public String instanceOf( ClassData type ) {
-        if( booleanClassData.equals( type ) || BooleanClassData.equals( type )) {
+        if( booleanClassData.equals( type )) { 
+            return "boolean";
+        } else if( BooleanClassData.equals( type )) {
             return "Boolean";
-        } else if( byteClassData.equals( type ) || ByteClassData.equals( type )) {
+        } else if( byteClassData.equals( type )) {
+            return "byte";
+        } else if( ByteClassData.equals( type )) {
             return "Byte";
-        } else if( charClassData.equals( type ) || CharClassData.equals( type )) {
+        } else if( charClassData.equals( type )) { 
+            return "char";
+        } else if( CharClassData.equals( type )) {
             return "Char";
-        } else if( intClassData.equals( type ) || IntClassData.equals( type )) {
+        } else if( intClassData.equals( type )) {
+            return "int";
+        } else if( IntClassData.equals( type )) {
             return "Integer";
-        } else if( longClassData.equals( type ) || LongClassData.equals( type )) {
+        } else if( longClassData.equals( type )) { 
+            return "long";
+        } else if( LongClassData.equals( type )) {
             return "Long";
-        } else if( shortClassData.equals( type ) || ShortClassData.equals( type )) {
+        } else if( shortClassData.equals( type )) {
+            return "short";
+        } else if( ShortClassData.equals( type )) {
             return "Short";
         } else if( stringClassData.equals( type )) {
             return "String";

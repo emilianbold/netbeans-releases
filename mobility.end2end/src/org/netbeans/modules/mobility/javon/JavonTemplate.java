@@ -20,6 +20,7 @@
 package org.netbeans.modules.mobility.javon;
 
 import java.util.Set;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mobility.e2e.mapping.*;
 import org.netbeans.modules.mobility.e2e.classdata.ClassDataRegistry;
 
@@ -56,8 +57,9 @@ public abstract class JavonTemplate {
     /**
      * Generate file for given output
      * 
+     * @param ph progress handle 
      * @param target for generation
      * @return true when the operation ended succesfuly
      */
-    public abstract boolean generateTarget( String target );    
+    public abstract boolean generateTarget( ProgressHandle ph, String target );    
 }
