@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.visual.action.RectangularSelectDecorator;
 import org.netbeans.api.visual.router.RouterFactory;
+import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.modules.compapp.casaeditor.CasaDataEditorSupport;
 import org.netbeans.modules.compapp.casaeditor.CasaDataObject;
 import org.netbeans.modules.compapp.casaeditor.Constants;
@@ -128,6 +129,7 @@ implements PropertyChangeListener {
     
     
     public CasaModelGraphScene(CasaDataObject dataObject, CasaWrapperModel model, CasaNodeFactory nodeFactory) {
+        setKeyEventProcessingType(EventProcessingType.FOCUSED_WIDGET_AND_ITS_CHILDREN_AND_ITS_PARENTS);
         mDataObject = dataObject;
         mModel = model;
         mNodeFactory = nodeFactory;
@@ -197,7 +199,7 @@ implements PropertyChangeListener {
         }
     }
     
-    private void finalizeModelPositions() {
+    public void finalizeModelPositions() {
         boolean anyBadPositions = false;
         for (CasaComponent component : getNodes()) {
             CasaNodeWidget nodeWidget = (CasaNodeWidget) findWidget(component);
@@ -785,26 +787,27 @@ implements PropertyChangeListener {
         if(object == null || object instanceof CasaRegion) {
             return null;
         }
-        String idCode = "";
+        StringBuffer idCode = null;
         if(object instanceof CasaPort) {
-            idCode = getIdentityCode((CasaPort) object).toString();
+            idCode = getIdentityCode((CasaPort) object);
         } else if(object instanceof CasaConnection) {
-            idCode = getIdentityCode((CasaConnection) object).toString();
+            idCode = getIdentityCode((CasaConnection) object);
         } else if(object instanceof CasaServiceEngineServiceUnit) {
-            idCode = getIdentityCode((CasaServiceEngineServiceUnit) object).toString();
+            idCode = getIdentityCode((CasaServiceEngineServiceUnit) object);
         } else if(object instanceof CasaConsumes) {
-            idCode = getIdentityCode((CasaConsumes) object).toString();
+            idCode = getIdentityCode((CasaConsumes) object);
         } else if(object instanceof CasaProvides) {
-            idCode = getIdentityCode((CasaProvides) object).toString();
+            idCode = getIdentityCode((CasaProvides) object);
         } else {
         }
-        return idCode;
+        return idCode == null ? null : idCode.toString();
     }
     
     private StringBuffer getIdentityCode(CasaPort casaPort) {
         StringBuffer retString = new StringBuffer("A");
         retString.append(String.format("%010d",casaPort.getX()));
         retString.append(String.format("%010d",casaPort.getY()));
+        retString.append(String.format("%010d",casaPort.findPosition()));
         return retString;
     }
     
@@ -813,6 +816,7 @@ implements PropertyChangeListener {
         StringBuffer retString = new StringBuffer(code);
         retString.append(String.format("%010d",casaSU.getY()));
         retString.append(String.format("%010d",casaSU.getX()));
+        retString.append(String.format("%010d",casaSU.findPosition()));
         return retString;
     }
     private StringBuffer getIdentityCode(CasaConsumes casaConsumes) {
@@ -821,6 +825,9 @@ implements PropertyChangeListener {
         if(parent instanceof CasaPort) {
             retString = getIdentityCode((CasaPort) parent);
         } else if(parent instanceof CasaServiceEngineServiceUnit) {
+            if(isMinimizedSU((CasaServiceEngineServiceUnit) parent)) {
+                return null;
+            }
             retString = getIdentityCode((CasaServiceEngineServiceUnit) parent);
         }
         retString.append("C");
@@ -833,12 +840,20 @@ implements PropertyChangeListener {
         if(parent instanceof CasaPort) {
             retString = getIdentityCode((CasaPort) parent);
         } else if(parent instanceof CasaServiceEngineServiceUnit) {
+            if(isMinimizedSU((CasaServiceEngineServiceUnit) parent)) {
+                return null;
+            }
             retString = getIdentityCode((CasaServiceEngineServiceUnit) parent);
         }
         retString.append("P");
         retString.append(String.format("%010d",casaProvides.findPosition()));
         return retString;
     }
+    
+    private boolean isMinimizedSU(CasaServiceEngineServiceUnit su) {
+        return ((CasaNodeWidgetEngine) findWidget(su)).isMinimized();
+    }
+
     private StringBuffer getIdentityCode(CasaConnection casaConnection) {
         StringBuffer retString = new StringBuffer("G");
         retString.append(String.format("%010d",casaConnection.findPosition()));

@@ -98,7 +98,7 @@ public class CycleCasaSceneSelectProvider implements CycleFocusProvider {
             scene.setFocusedObject (bestObject);
             Set selectedObjects = new HashSet();
             selectedObjects.add(bestObject);
-            scene.setSelectedObjects(selectedObjects);
+            scene.userSelectionSuggested(selectedObjects, false);
             Widget w = scene.findWidget(bestObject);
             scene.getView().scrollRectToVisible(w.convertLocalToScene(w.getBounds()));
             return true;

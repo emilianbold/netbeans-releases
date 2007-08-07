@@ -20,8 +20,12 @@
 package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.WidgetAction;
@@ -81,37 +85,54 @@ public class CasaPopupMenuAction extends WidgetAction.Adapter {
         // signal that an event is a PopupTrigger.  So, the mousePressed(...)
         // and mouseReleased(...) methods delegate to this method to
         // handle the MouseEvent.
+        State retState = State.REJECTED;
         if (event.isPopupTrigger ()) {
-            
-            CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
-            Object widgetData = null;
-            if (widget instanceof CasaModelGraphScene) {
-                widgetData = scene.getModel();
-            } else {
-                widgetData = scene.findObject(widget);
-            }
-            if (
-                    !(widgetData instanceof CasaComponent) &&
-                    !(widgetData instanceof CasaWrapperModel)) {
-                return State.REJECTED;
-            }
-            
-            // First select the widgets, fire necessary selection events.
-            if (widgetData instanceof CasaComponent) {
-                CasaComponent component = (CasaComponent) widgetData;
-                Set<CasaComponent> objectsToSelect = new HashSet<CasaComponent>();
-                objectsToSelect.add((CasaComponent) widgetData);
-                scene.userSelectionSuggested(objectsToSelect, false);
-            }
-
-            JPopupMenu popupMenu = provider.getPopupMenu (widget, event.getPoint ());
-            if (popupMenu != null) {
-                Point point = 
-                        scene.convertSceneToView (widget.convertLocalToScene(event.getPoint()));
-                popupMenu.show(scene.getView(), point.x, point.y);
-            }
-            return State.CONSUMED;
+            retState = bringPopupMenu(widget, event.getPoint());
         }
-        return State.REJECTED;
+        return retState;
     }
+    
+    private State bringPopupMenu(Widget widget, Point localLocation) {
+        CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
+        Object widgetData = null;
+        if (widget instanceof CasaModelGraphScene) {
+            widgetData = scene.getModel();
+        } else {
+            widgetData = scene.findObject(widget);
+        }
+        if (
+                !(widgetData instanceof CasaComponent) &&
+                !(widgetData instanceof CasaWrapperModel)) {
+            return State.REJECTED;
+        }
+
+        // First select the widgets, fire necessary selection events.
+        if (widgetData instanceof CasaComponent) {
+            CasaComponent component = (CasaComponent) widgetData;
+            Set<CasaComponent> objectsToSelect = new HashSet<CasaComponent>();
+            objectsToSelect.add((CasaComponent) widgetData);
+            scene.userSelectionSuggested(objectsToSelect, false);
+        }
+
+        JPopupMenu popupMenu = provider.getPopupMenu (widget, localLocation);
+        if (popupMenu != null) {
+            Point point = 
+                    scene.convertSceneToView (widget.convertLocalToScene(localLocation));
+            popupMenu.show(scene.getView(), point.x, point.y);
+        }
+        return State.CONSUMED;
+    }
+
+    public State keyPressed (Widget widget, WidgetKeyEvent event) {
+        State retState = State.REJECTED;
+        //widget = widget.getScene().getFocusedWidget();
+        if ((event.getModifiers () & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK  &&  event.getKeyCode () == KeyEvent.VK_F10) {
+            Point location = new Point();
+            location.setLocation(widget.getBounds().getCenterX(), widget.getBounds().getY());
+            retState = bringPopupMenu(widget, location);
+            //retState = bringPopupMenu(widget, widget.getBounds().getLocation());
+        }
+        return retState;
+    }
+
 }

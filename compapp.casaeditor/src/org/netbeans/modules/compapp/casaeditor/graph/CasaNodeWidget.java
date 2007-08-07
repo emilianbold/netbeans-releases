@@ -20,7 +20,6 @@
 package org.netbeans.modules.compapp.casaeditor.graph;
 
 import java.awt.Rectangle;
-import org.netbeans.api.visual.action.CycleFocusProvider;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.widget.*;
 
@@ -32,7 +31,7 @@ import org.netbeans.api.visual.widget.*;
  *
  * @author David Kaspar
  */
-public abstract class CasaNodeWidget extends Widget implements CycleFocusProvider {
+public abstract class CasaNodeWidget extends Widget {
     
     protected Widget mContainerWidget;
     
@@ -120,13 +119,4 @@ public abstract class CasaNodeWidget extends Widget implements CycleFocusProvide
             getScene().validate();
         }
     }
-
-    public boolean switchPreviousFocus(Widget widget) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public boolean switchNextFocus(Widget widget) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
 }

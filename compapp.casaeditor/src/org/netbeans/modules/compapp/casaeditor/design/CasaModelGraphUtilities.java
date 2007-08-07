@@ -72,6 +72,7 @@ public class CasaModelGraphUtilities {
             ErrorManager.getDefault().notify(t);
         } finally {
             scene.setIsAdjusting(false);
+            scene.finalizeModelPositions();
             setSceneEnabled(scene, scene.canEdit());
         }
     }

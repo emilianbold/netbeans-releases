@@ -24,15 +24,11 @@ import org.netbeans.api.visual.widget.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.border.Border;
-import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.model.ObjectState;
-import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.openide.util.NbBundle;
 
 /**
@@ -111,8 +107,6 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
         mNameWidget.setForeground(CasaFactory.getCasaCustomizer().getCOLOR_BC_LABEL());
         
         regenerateHeaderBorder();
-        
-        //getActions().addAction(ActionFactory.createCycleFocusAction(this));
     }
     
     
@@ -379,91 +373,5 @@ public class CasaNodeWidgetBinding extends CasaNodeWidget {
             return new BorderDefinition(
                 CasaFactory.getCasaCustomizer().getCOLOR_SELECTION());
         }
-    }
-
-    public boolean switchPreviousFocus(Widget widget) {
-        boolean bSwitchSuccessful = true;
-        CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
-        widget = scene.getFocusedWidget();
-        Object nextSelectedObject = null;
-        Set selectedObjects = new HashSet();
-
-        if (widget instanceof CasaPinWidgetBindingProvides) {
-            nextSelectedObject = scene.findObject(getConsumesPinWidget((CasaPinWidgetBindingProvides) widget));
-        } else if(widget instanceof CasaPinWidgetBindingConsumes) {
-            nextSelectedObject = scene.findObject(getCasaNodeWidgetBinding((CasaPinWidgetBindingConsumes) widget));
-        }
-        if(widget instanceof CasaNodeWidgetBinding) {
-            nextSelectedObject = scene.findObject(((CasaNodeWidgetBinding)widget).getConsumesPinWidget());
-        } else if (widget instanceof CasaPinWidgetBindingConsumes) {
-            nextSelectedObject = scene.findObject(getProvidesPinWidget((CasaPinWidgetBindingConsumes) widget));
-        } else {
-            bSwitchSuccessful = false;
-        }
-        if(bSwitchSuccessful) {
-            selectedObjects.add(nextSelectedObject);
-            scene.setSelectedObjects(selectedObjects);
-            scene.setFocusedObject(nextSelectedObject);
-        }
-        return bSwitchSuccessful;
-    }
-
-    public boolean switchNextFocus(Widget widget) {
-        boolean bSwitchSuccessful = true;
-        CasaModelGraphScene scene = (CasaModelGraphScene) widget.getScene();
-        widget = scene.getFocusedWidget();
-        Object nextSelectedObject = null;
-        Set selectedObjects = new HashSet();
-        if(widget instanceof CasaNodeWidgetBinding) {
-            nextSelectedObject = scene.findObject(((CasaNodeWidgetBinding)widget).getConsumesPinWidget());
-        } else if (widget instanceof CasaPinWidgetBindingConsumes) {
-            //nextSelectedObject = scene.findObject(getCasaBindingodeWidgetBinding((CasaPinWidgetBindingConsumes)widget).getProvidesPinWdiget());
-            nextSelectedObject = scene.findObject(getProvidesPinWidget((CasaPinWidgetBindingConsumes)widget));
-        } else {
-            bSwitchSuccessful = false;
-        }
-        if(bSwitchSuccessful) {
-            selectedObjects.add(nextSelectedObject);
-            scene.setSelectedObjects(selectedObjects);
-            scene.setFocusedObject(nextSelectedObject);
-        }
-        return bSwitchSuccessful;
-    }
-    
-    public CasaPinWidget getConsumesPinWidget() {
-        CasaPinWidget consumes = null;
-        for (Widget child : mPinsHolderWidget.getChildren()) {
-            if (child instanceof CasaPinWidgetBindingConsumes) {
-                consumes = (CasaPinWidgetBindingConsumes) child;
-                break;
-            }
-        }
-        return consumes;
-    }
-    
-    public CasaPinWidget getConsumesPinWidget(CasaPinWidgetBindingProvides provides) {
-        return getCasaNodeWidgetBinding(provides).getConsumesPinWidget();
-    }
-    
-    public CasaPinWidget getProvidesPinWidget() {
-        CasaPinWidget provides = null;
-        for (Widget child : mPinsHolderWidget.getChildren()) {
-            if (child instanceof CasaPinWidgetBindingProvides) {
-                provides = (CasaPinWidgetBindingProvides) child;
-                break;
-            }
-        }
-        return provides;
-    }
-
-    public CasaPinWidget getProvidesPinWidget(CasaPinWidgetBindingConsumes consumes) {
-        return getCasaNodeWidgetBinding(consumes).getProvidesPinWidget();
-    }
-    public CasaNodeWidgetBinding getCasaNodeWidgetBinding(CasaPinWidgetBinding pinWidget) {
-        Widget parentWidget = pinWidget.getParentWidget();
-        while(!(parentWidget instanceof CasaNodeWidgetBinding)) {
-            parentWidget = parentWidget.getParentWidget();
-        }
-        return (CasaNodeWidgetBinding) parentWidget;
     }
 }

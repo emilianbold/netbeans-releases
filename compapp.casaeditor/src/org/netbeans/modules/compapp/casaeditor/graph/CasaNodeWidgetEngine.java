@@ -184,6 +184,9 @@ public class CasaNodeWidgetEngine extends CasaNodeWidget implements StateModel.L
         getScene().validate();
     }
 
+    public boolean isMinimized() {
+        return mStateModel.getBooleanState();
+    }
     protected Color getBackgroundColor() {
         return CasaFactory.getCasaCustomizer().getCOLOR_REGION_ENGINE();
     }
