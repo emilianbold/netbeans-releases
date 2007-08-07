@@ -25,15 +25,15 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 import javax.lang.model.element.Element;
 import javax.swing.text.Document;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
+import org.netbeans.api.lexer.Token;
 
 /**
  *
@@ -42,7 +42,7 @@ import org.netbeans.modules.editor.highlights.spi.Highlight;
 public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack<Tree>> {
     
     private CompilationInfo info;
-    private Set<Highlight> usages;
+    private Set<Token<JavaTokenId>> usages;
     private Element toFind;
     private Document doc;
     
@@ -50,9 +50,9 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
     public FindLocalUsagesQuery() {
     }
     
-    public Set<Highlight> findUsages(Element element, CompilationInfo info, Document doc) {
+    public Set<Token<JavaTokenId>> findUsages(Element element, CompilationInfo info, Document doc) {
         this.info = info;
-        this.usages = new HashSet<Highlight>();
+        this.usages = new HashSet<Token<JavaTokenId>>();
         this.toFind = element;
         this.doc = doc;
         
@@ -60,15 +60,14 @@ public class FindLocalUsagesQuery extends CancellableTreePathScanner<Void, Stack
         return usages;
     }
 
-    private Highlight createHighlight(TreePath tree) {
-        return Utilities.createHighlight(info, doc, tree, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES), MarkOccurrencesHighlighter.ES_COLOR);
-    }
-    
     private void handlePotentialVariable(TreePath tree) {
         Element el = info.getTrees().getElement(tree);
         
         if (toFind.equals(el)) {
-            usages.add(createHighlight(tree));
+            Token<JavaTokenId> t = Utilities.getToken(info, doc, tree);
+            
+            if (t != null)
+                usages.add(t);
         }
     }
     

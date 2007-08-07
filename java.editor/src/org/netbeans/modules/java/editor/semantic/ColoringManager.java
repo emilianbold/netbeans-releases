@@ -18,15 +18,15 @@
  */
 package org.netbeans.modules.java.editor.semantic;
 
-import java.awt.Color;
 import java.awt.Font;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,12 +34,10 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.editor.Coloring;
 import org.netbeans.editor.SettingsDefaults;
 import static org.netbeans.modules.java.editor.semantic.ColoringAttributes.*;
 
@@ -95,20 +93,31 @@ public final class ColoringManager {
         type2Coloring.put(attribs, coloring);
     }
     
-    public static Coloring getColoring(Collection<ColoringAttributes> colorings) {
+    public static AttributeSet getColoringImpl(Coloring colorings) {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class);
         
-        Coloring c = new Coloring(null, 0, null, null);
+        if (fcs == null) {
+            //in tests:
+            return AttributesUtilities.createImmutable();
+        }
         
-        colorings = colorings.size() > 0 ? EnumSet.copyOf(colorings) : EnumSet.noneOf(ColoringAttributes.class);
+        assert fcs != null;
+        
+        List<AttributeSet> attribs = new LinkedList<AttributeSet>();
+        
+        EnumSet<ColoringAttributes> es = EnumSet.noneOf(ColoringAttributes.class);
+        
+        es.addAll(colorings);
+        
+//        colorings = colorings.size() > 0 ? EnumSet.copyOf(colorings) : EnumSet.noneOf(ColoringAttributes.class);
         
         for (Entry<Set<ColoringAttributes>, String> attribs2Colorings : type2Coloring.entrySet()) {
 //            System.err.println("type = " + type );
-            if (colorings.containsAll(attribs2Colorings.getKey())) {
+            if (es.containsAll(attribs2Colorings.getKey())) {
 //                System.err.println("type2Coloring.get(type)=" + type2Coloring.get(type));
                 String key = attribs2Colorings.getValue();
                 
-                colorings.removeAll(attribs2Colorings.getKey());
+                es.removeAll(attribs2Colorings.getKey());
                 
                 if (key != null) {
                     AttributeSet colors = fcs.getTokenFontColors(key);
@@ -118,53 +127,34 @@ public final class ColoringManager {
                         continue;
                     }
                     
-                    Color foreColor = (Color) colors.getAttribute(StyleConstants.Foreground);
-                    Color backColor = (Color) colors.getAttribute(StyleConstants.Background);
-                    Color strikeThroughColor = (Color) colors.getAttribute(StyleConstants.StrikeThrough);
-                    Color underlineColor = (Color) colors.getAttribute(StyleConstants.Underline);
-                    Color waveUnderlineColor = (Color) colors.getAttribute(EditorStyleConstants.WaveUnderlineColor);
-                    boolean isBold  = colors.getAttribute(StyleConstants.Bold) == Boolean .TRUE;
-                    boolean isItalic = colors.getAttribute(StyleConstants.Italic) == Boolean .TRUE;
-                    
-                    Font font = c.getFont();
-                    int  fontMode = font != null ? c.getFontMode() : 0;
-                    
-                    if (foreColor == null)
-                        foreColor = c.getForeColor();
-                    if (backColor == null)
-                        backColor = c.getBackColor();
-                    if (isBold) {
-                        if (font != null) {
-                            font = font.deriveFont(font.isItalic() ? (Font.BOLD | Font.ITALIC) : Font.BOLD);
-                        } else {
-                            font = BOLD;
-                        }
-                        fontMode |= Coloring.FONT_MODE_APPLY_STYLE;
-                    }
-                    if (isItalic) {
-                        if (font != null) {
-                            font = font.deriveFont(font.isBold() ? (Font.BOLD | Font.ITALIC) : Font.ITALIC);
-                        } else {
-                            font = ITALIC;
-                        }
-                        fontMode |= Coloring.FONT_MODE_APPLY_STYLE;
-                    }
-                    if (underlineColor == null)
-                        underlineColor = c.getUnderlineColor();
-                    if (strikeThroughColor == null)
-                        strikeThroughColor = c.getStrikeThroughColor();
-                    if (waveUnderlineColor == null)
-                        waveUnderlineColor = c.getWaveUnderlineColor();
-                    
-                    c = new Coloring(font, fontMode, foreColor, backColor, underlineColor, strikeThroughColor, waveUnderlineColor);
+                    attribs.add(adjustAttributes(colors));
                 }
                 
 //                System.err.println("c = " + c );
             }
         }
         
+        Collections.reverse(attribs);
+        
 //        System.err.println("c = " + c );
-        return c;
+        AttributeSet result = AttributesUtilities.createComposite(attribs.toArray(new AttributeSet[0]));
+        
+        return result;
     }
     
+    private static AttributeSet adjustAttributes(AttributeSet as) {
+        Collection<Object> attrs = new LinkedList<Object>();
+        
+        for (Enumeration<?> e = as.getAttributeNames(); e.hasMoreElements(); ) {
+            Object key = e.nextElement();
+            Object value = as.getAttribute(key);
+            
+            if (value != Boolean.FALSE) {
+                attrs.add(key);
+                attrs.add(value);
+            }
+        }
+        
+        return AttributesUtilities.createImmutable(attrs.toArray());
+    }
 }

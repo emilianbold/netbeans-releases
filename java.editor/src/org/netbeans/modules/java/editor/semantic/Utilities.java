@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.editor.semantic;
@@ -28,9 +28,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -45,8 +43,12 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.java.source.CompilationInfo;
 
 /**
  *
@@ -59,45 +61,53 @@ public class Utilities {
     @Deprecated
     private static final boolean DEBUG = false;
     
-    private static final int[] NO_SPAN = {-1, -1};
-    
     /** Creates a new instance of Utilities */
     public Utilities() {
     }
     
-    private static int[] findIdentifierSpanImpl(Tree decl, Tree lastLeft, String name, CompilationInfo ci) {
-        return findIdentifierSpanImpl(decl, lastLeft, Collections.<Tree>emptyList(), name, ci);
+    private static Token<JavaTokenId> findTokenWithText(CompilationInfo info, String text, int start, int end) {
+        TokenHierarchy<Void> th = info.getTokenHierarchy();
+        TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language()).subSequence(start, end);
+        
+        while (ts.moveNext()) {
+            Token<JavaTokenId> t = ts.token();
+            
+            if (text.equals(t.text().toString())) {
+                return t;
+            }
+        }
+        
+        return null;
     }
-
-    private static int[] findIdentifierSpanImpl(Tree decl, Tree lastLeft, List<? extends Tree> firstRight, String name, CompilationInfo ci) {
-        SourcePositions positions = ci.getTrees().getSourcePositions();
-        CompilationUnitTree cu = ci.getCompilationUnit();
+    
+    
+    private static Token<JavaTokenId> findIdentifierSpanImpl(CompilationInfo info, Tree decl, Tree lastLeft, List<? extends Tree> firstRight, String name, CompilationUnitTree cu, SourcePositions positions) {
         int declStart = (int) positions.getStartPosition(cu, decl);
         int start = lastLeft != null ? (int)positions.getEndPosition(cu, lastLeft) : declStart;
         
         if (start == (-1)) {
             start = declStart;
             if (start == (-1)) {
-                return NO_SPAN;
+                return null;
             }
         }
         
         int end = (int)positions.getEndPosition(cu, decl);
-        
+
         for (Tree t : firstRight) {
             if (t == null)
                 continue;
-            
+
             int proposedEnd = (int)positions.getStartPosition(cu, t);
-            
+
             if (proposedEnd != (-1) && proposedEnd < end)
                 end = proposedEnd;
         }
-        
+
         if (end == (-1)) {
-            return NO_SPAN;
+            return null;
         }
-        
+
         if (start > end) {
             //may happend in case:
             //public static String s() [] {}
@@ -105,68 +115,39 @@ public class Utilities {
             //use a conservative start value:
             start = (int) positions.getStartPosition(cu, decl);
         }
-        
-        String text = ci.getText();
-        
-        if (start > text.length() || end > text.length()) {
-            if (DEBUG) {
-                System.err.println("Log: position outside document: ");
-                System.err.println("lastLeft = " + lastLeft );
-                System.err.println("decl = " + decl);
-                System.err.println("startOffset = " + start);
-                System.err.println("endOffset = " + end);
-                Thread.dumpStack();
-            }
-            
-            return NO_SPAN;
-        }
-        
-        text = text.substring(start, end);
-        
-        int index = text.lastIndexOf(name.toString());
-        
-        if (index != (-1)) {
-            return new int[] {start + index, start + index + name.length()};
-        }
-        
-        return NO_SPAN;
+
+        return findTokenWithText(info, name, start, end);
     }
     
-    private static int[] findIdentifierSpanImpl(MemberSelectTree tree, CompilationInfo ci) {
-        SourcePositions positions = ci.getTrees().getSourcePositions();
-        CompilationUnitTree cu = ci.getCompilationUnit();
+    private static Token<JavaTokenId> findIdentifierSpanImpl(CompilationInfo info, MemberSelectTree tree, CompilationUnitTree cu, SourcePositions positions) {
+        int start = (int)positions.getStartPosition(cu, tree);
+        int endPosition = (int)positions.getEndPosition(cu, tree);
         
-        int start = (int)positions.getStartPosition(cu, tree);        
-        int end = (int)positions.getEndPosition(cu, tree);
-        
-        if (start == (-1) || end == (-1))
-            return NO_SPAN;
-        
-        String text = ci.getText();
+        if (start == (-1) || endPosition == (-1))
+            return null;
+
         String member = tree.getIdentifier().toString();
-        
-        if (start > text.length() || end > text.length()) {
-            if (DEBUG) {
-                System.err.println("Log: position outside document: ");
-                System.err.println("tree = " + tree );
-                System.err.println("member = " + member);
-                System.err.println("startOffset = " + start);
-                System.err.println("endOffset = " + end);
-                Thread.dumpStack();
+
+        TokenHierarchy<Void> th = info.getTokenHierarchy();
+        TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
+
+        if (ts.move(endPosition) == Integer.MAX_VALUE) {
+            return null;
+        }
+
+        ts.moveNext();
+
+        while (ts.offset() >= start) {
+            Token<JavaTokenId> t = ts.token();
+
+            if (member.equals(t.text().toString())) {
+                return t;
             }
-            
-            return NO_SPAN;
+
+            if (!ts.movePrevious())
+                break;
         }
-        
-        text = text.substring(start, end);
-        
-        int index = text.lastIndexOf(member);
-        
-        if (index != (-1)) {
-            return new int[] {start + index, start + index + member.length()};
-        }
-        
-        return NO_SPAN;
+        return null;
     }
     
     private static final Map<Class, List<Kind>> class2Kind;
@@ -186,15 +167,13 @@ public class Utilities {
         }
     }
     
-    private static int[] findIdentifierSpanImpl(TreePath decl, CompilationInfo ci) {
-        SourcePositions positions = ci.getTrees().getSourcePositions();
-        CompilationUnitTree cu = ci.getCompilationUnit();
+    private static Token<JavaTokenId> findIdentifierSpanImpl(CompilationInfo info, TreePath decl) {
+        if (info.getTreeUtilities().isSynthetic(decl))
+            return null;
+        
         Tree leaf = decl.getLeaf();
         
         if (class2Kind.get(MethodTree.class).contains(leaf.getKind())) {
-            if (positions.getStartPosition(cu, leaf) == (-1) || positions.getEndPosition(cu, leaf) == (-1))
-                return NO_SPAN; //syntetic methods
-            
             MethodTree method = (MethodTree) leaf;
             List<Tree> rightTrees = new ArrayList<Tree>();
 
@@ -207,67 +186,57 @@ public class Utilities {
             if (method.getReturnType() == null)
                 name = ((ClassTree) decl.getParentPath().getLeaf()).getSimpleName();
             
-            return findIdentifierSpanImpl(leaf, method.getReturnType(), rightTrees, name.toString(), ci);
+            return findIdentifierSpanImpl(info, leaf, method.getReturnType(), rightTrees, name.toString(), info.getCompilationUnit(), info.getTrees().getSourcePositions());
         }
         if (class2Kind.get(VariableTree.class).contains(leaf.getKind())) {
             VariableTree var = (VariableTree) leaf;
 
-            return findIdentifierSpanImpl(leaf, var.getType(), Collections.singletonList(var.getInitializer()), var.getName().toString(), ci);
+            return findIdentifierSpanImpl(info, leaf, var.getType(), Collections.singletonList(var.getInitializer()), var.getName().toString(), info.getCompilationUnit(), info.getTrees().getSourcePositions());
         }
         if (class2Kind.get(MemberSelectTree.class).contains(leaf.getKind())) {
-            return findIdentifierSpanImpl((MemberSelectTree) leaf, ci);
+            return findIdentifierSpanImpl(info, (MemberSelectTree) leaf, info.getCompilationUnit(), info.getTrees().getSourcePositions());
         }
         if (class2Kind.get(ClassTree.class).contains(leaf.getKind())) {
             String name = ((ClassTree) leaf).getSimpleName().toString();
             
             if (name.length() == 0)
-                return NO_SPAN;
+                return null;
             
-            //very inefficient:
+            SourcePositions positions = info.getTrees().getSourcePositions();
+            CompilationUnitTree cu = info.getCompilationUnit();
             int start = (int)positions.getStartPosition(cu, leaf);
             int end   = (int)positions.getEndPosition(cu, leaf);
             
             if (start == (-1) || end == (-1)) {
-                return NO_SPAN;
+                return null;
             }
             
-            String text = ci.getText();
-                
-            if (start > text.length() || end > text.length()) {
-                if (DEBUG) {
-                    System.err.println("Log: position outside document: ");
-                    System.err.println("decl = " + decl);
-                    System.err.println("startOffset = " + start);
-                    System.err.println("endOffset = " + end);
-                    Thread.dumpStack();
-                }
-                
-                return NO_SPAN;
-            }
-            
-            text = text.substring(start, end);
-            
-            int index = text.indexOf(name);
-            
-            if (index == (-1)) {
-                return NO_SPAN;
-                //                    throw new IllegalStateException("Should NEVER happen.");
-            }
-            
-            start += index;
-            
-            int exactEnd   = start + name.length();
-            
-            return new int[] {start, exactEnd};
+            return findTokenWithText(info, name, start, end);
         }
         throw new IllegalArgumentException("Only MethodDecl, VariableDecl and ClassDecl are accepted by this method.");
     }
 
-    public static int[] findIdentifierSpan(final TreePath decl, final CompilationInfo ci, Document doc) {
-        final int[][] result = new int[1][];
+    public static int[] findIdentifierSpan( final TreePath decl, final CompilationInfo info, final Document doc) {
+        final int[] result = new int[] {-1, -1};
         doc.render(new Runnable() {
             public void run() {
-                result[0] = findIdentifierSpanImpl(decl, ci);
+                Token<JavaTokenId> t = findIdentifierSpan(info, doc, decl);
+                if (t != null) {
+                    result[0] = t.offset(null);
+                    result[1] = t.offset(null) + t.length();
+                }
+            }
+        });
+        
+        return result;
+    }
+    
+    public static Token<JavaTokenId> findIdentifierSpan(final CompilationInfo info, final Document doc, final TreePath decl) {
+        @SuppressWarnings("unchecked")
+        final Token<JavaTokenId>[] result = new Token[1];
+        doc.render(new Runnable() {
+            public void run() {
+                result[0] = findIdentifierSpanImpl(info, decl);
             }
         });
         
@@ -371,69 +340,41 @@ public class Utilities {
         return result[0];
     }
     
-    private static Highlight createHighlightImpl(CompilationInfo ci, Document doc, int startOffset, int endOffset, Collection<ColoringAttributes> c, Color es) {
-        try {
-            startOffset = ci.getPositionConverter().getOriginalPosition(startOffset);
-            endOffset = ci.getPositionConverter().getOriginalPosition(endOffset);
-            if (startOffset > doc.getLength() || endOffset > doc.getLength()) {
-                if (DEBUG) {
-                    System.err.println("Log: position outside document: ");
-//                  System.err.println("tree = " + tree );
-                    System.err.println("startOffset = " + startOffset );
-                    System.err.println("endOffset = " + endOffset );
-                    Thread.dumpStack();
-                }
-                
-                return null;
-            }
-            
-            return new HighlightImpl(doc, startOffset, endOffset, c, es);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    private static Highlight createHighlightImpl(CompilationInfo ci, Document doc, TreePath tree, Collection<ColoringAttributes> c, Color es) {
-        CompilationUnitTree cu = tree.getCompilationUnit();
-        assert ci.getCompilationUnit() == cu;
+    private static Token<JavaTokenId> createHighlightImpl(CompilationInfo info, Document doc, TreePath tree) {
         Tree leaf = tree.getLeaf();
-        SourcePositions positions = ci.getTrees().getSourcePositions();
-        int startOffset = (int)positions.getStartPosition(cu, leaf);
-        int endOffset   = (int)positions.getEndPosition(cu, leaf);
+        SourcePositions positions = info.getTrees().getSourcePositions();
+        CompilationUnitTree cu = info.getCompilationUnit();
         
         //XXX: do not use instanceof:
         if (leaf instanceof MethodTree || leaf instanceof VariableTree || leaf instanceof ClassTree || leaf instanceof MemberSelectTree) {
-            int[] span = findIdentifierSpan(tree, ci, doc);
-            
-            startOffset = span[0];
-            endOffset   = span[1];
+            return findIdentifierSpan(info, doc, tree);
         }
         
-        if (startOffset == (-1) || endOffset == (-1))
+        int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), leaf);
+        
+        TokenHierarchy<Void> th = info.getTokenHierarchy();
+        TokenSequence<JavaTokenId> ts = th.tokenSequence(JavaTokenId.language());
+        
+        if (ts.move(start) == Integer.MAX_VALUE) {
             return null;
+        }
         
-        return createHighlightImpl(ci, doc, startOffset, endOffset, c, es);
+        ts.moveNext();
+        
+        if (ts.offset() == start && ts.token().id() == JavaTokenId.IDENTIFIER) {
+             return ts.token();
+        }
+        
+        return null;
     }
     
-    public static Highlight createHighlight(final CompilationInfo ci, final Document doc, final TreePath tree, final Collection<ColoringAttributes> c, final Color es) {
-        final Highlight[] result = new Highlight[1];
+    public static Token<JavaTokenId> getToken(final CompilationInfo info, final Document doc, final TreePath tree) {
+        @SuppressWarnings("unchecked")
+        final Token<JavaTokenId>[] result = new Token[1];
         
         doc.render(new Runnable() {
             public void run() {
-                result[0] = createHighlightImpl(ci, doc, tree, c, es);
-            }
-        });
-        
-        return result[0];
-    }
-    
-    public static Highlight createHighlight(final CompilationInfo ci, final Document doc, final int startOffset, final int endOffset, final Collection<ColoringAttributes> c, final Color es) {
-        final Highlight[] result = new Highlight[1];
-        
-        doc.render(new Runnable() {
-            public void run() {
-                result[0] = createHighlightImpl(ci, doc, startOffset, endOffset, c, es);
+                result[0] = createHighlightImpl(info, doc, tree);
             }
         });
         
@@ -443,7 +384,7 @@ public class Utilities {
     private static final Set<String> keywords;
     
     static {
-        keywords = new HashSet();
+        keywords = new HashSet<String>();
         
         keywords.add("true");
         keywords.add("false");

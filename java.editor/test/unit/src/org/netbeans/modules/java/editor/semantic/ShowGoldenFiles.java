@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.java.editor.semantic;
 
+import org.netbeans.modules.java.editor.semantic.HighlightImpl;
 import java.awt.Dialog;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;

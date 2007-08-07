@@ -47,14 +47,17 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
-import org.netbeans.modules.editor.highlights.spi.Highlighter;
+import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
+import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -103,8 +106,8 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         Preferences node = MarkOccurencesSettings.getCurrentNode();
         
         if (!node.getBoolean(MarkOccurencesSettings.ON_OFF, true)) {
-            Highlighter.getDefault().setHighlights(file, "occurrences", Collections.<Highlight>emptySet());
-            OccurrencesMarkProvider.get(doc).setOccurrences(Collections.<Highlight>emptySet());
+            getHighlightsBag(doc).clear();
+            OccurrencesMarkProvider.get(doc).setOccurrences(Collections.<Mark>emptySet());
             return ;
         }
         
@@ -115,7 +118,7 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         if (isCancelled())
             return;
         
-        Set<Highlight> highlights = processImpl(info, node, doc, caretPosition);
+        OffsetsBag bag = processImpl(info, node, doc, caretPosition);
         
         if (isCancelled())
             return;
@@ -123,30 +126,33 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         Logger.getLogger("TIMER").log(Level.FINE, "Occurrences",
             new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), (System.currentTimeMillis() - start)});
         
-        if (highlights == null) {
+        if (bag == null) {
             if (node.getBoolean(MarkOccurencesSettings.KEEP_MARKS, true)) {
                 return ;
             }
             
-            highlights = Collections.<Highlight>emptySet();
+            bag = new OffsetsBag(doc);
         }
         
-        Highlighter.getDefault().setHighlights(file, "occurrences", highlights);
-        OccurrencesMarkProvider.get(doc).setOccurrences(highlights);
+        getHighlightsBag(doc).setHighlights(bag);
+        OccurrencesMarkProvider.get(doc).setOccurrences(OccurrencesMarkProvider.createMarks(doc, bag, ES_COLOR, "Mark Occurrences"));
     }
     
     private boolean isIn(CompilationUnitTree cu, SourcePositions sp, Tree tree, int position) {
         return sp.getStartPosition(cu, tree) <= position && position <= sp.getEndPosition(cu, tree);
     }
     
-    private boolean isIn(int caretPosition, int[] span) {
+    private boolean isIn(int caretPosition, Token span) {
 //        System.err.println("caretPosition = " + caretPosition );
 //        System.err.println("span[0]= " + span[0]);
 //        System.err.println("span[1]= " + span[1]);
-        return span[0] <= caretPosition && caretPosition <= span[1];
+        if (span == null)
+            return false;
+        
+        return span.offset(null) <= caretPosition && caretPosition <= span.offset(null) + span.length();
     }
     
-    Set<Highlight> processImpl(CompilationInfo info, Preferences node, Document doc, int caretPosition) {
+    OffsetsBag processImpl(CompilationInfo info, Preferences node, Document doc, int caretPosition) {
         CompilationUnitTree cu = info.getCompilationUnit();
         TreePath tp = info.getTreeUtilities().pathFor(caretPosition);
         TreePath typePath = findTypePath(tp);
@@ -281,16 +287,23 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         //variable declaration:
         Element el = info.getTrees().getElement(tp);
         if (   el != null
-                && (!(tree.getKind() == Kind.CLASS) || isIn(caretPosition, Utilities.findIdentifierSpan(tp, info, doc)))
+                && (!(tree.getKind() == Kind.CLASS) || isIn(caretPosition, Utilities.findIdentifierSpan(info, doc, tp)))
                 && !Utilities.isKeyword(tree)
-                && (!(tree.getKind() == Kind.METHOD) || isIn(caretPosition, Utilities.findIdentifierSpan(tp, info, doc)))
+                && (!(tree.getKind() == Kind.METHOD) || isIn(caretPosition, Utilities.findIdentifierSpan(info, doc, tp)))
                 && isEnabled(node, el)) {
             FindLocalUsagesQuery fluq = new FindLocalUsagesQuery();
             
             setLocalUsages(fluq);
             
             try {
-                return fluq.findUsages(el, info, doc);
+                OffsetsBag bag = new OffsetsBag(doc);
+                AttributeSet attributes = ColoringManager.getColoringImpl(MO);
+                
+                for (Token t : fluq.findUsages(el, info, doc)) {
+                    bag.addHighlight(t.offset(null), t.offset(null) + t.length(), attributes);
+                }
+                
+                return bag;
             } finally {
                 setLocalUsages(null);
             }
@@ -378,12 +391,15 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         canceled = false;
     }
     
-    private Set<Highlight> detectMethodsForClass(CompilationInfo info, Document document, TreePath clazz, TypeElement superType, TypeElement thisType) {
+    private OffsetsBag detectMethodsForClass(CompilationInfo info, Document document, TreePath clazz, TypeElement superType, TypeElement thisType) {
         return detectMethodsForClass(info, document, clazz, Collections.singletonList(superType), thisType);
     }
     
-    private Set<Highlight> detectMethodsForClass(CompilationInfo info, Document document, TreePath clazz, List<TypeElement> superTypes, TypeElement thisType) {
-        Set<Highlight> highlights = new HashSet<Highlight>();
+    static Coloring MO = ColoringAttributes.add(ColoringAttributes.empty(), ColoringAttributes.MARK_OCCURRENCES);
+    
+    private OffsetsBag detectMethodsForClass(CompilationInfo info, Document document, TreePath clazz, List<TypeElement> superTypes, TypeElement thisType) {
+        OffsetsBag highlights = new OffsetsBag(document);
+        AttributeSet attributes = ColoringManager.getColoringImpl(MO);
         ClassTree clazzTree = (ClassTree) clazz.getLeaf();
         TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
         
@@ -400,7 +416,11 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
                     for (TypeElement superType : superTypes) {
                         for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getAllMembers(superType))) {
                             if (info.getElements().overrides((ExecutableElement) el, ee, thisType) && (superType.getKind().isClass() || !ee.getEnclosingElement().equals(jlObject))) {
-                                highlights.add(Utilities.createHighlight(info, document, path, EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
+                                Token t = Utilities.getToken(info, document, path);
+                                
+                                if (t != null) {
+                                    highlights.addHighlight(t.offset(null), t.offset(null) + t.length(), attributes);
+                                }
                                 continue OUTER;
                             }
                         }
@@ -412,8 +432,9 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         return highlights;
     }
     
-    private Set<Highlight> detectBreakOrContinueTarget(CompilationInfo info, Document document, TreePath breakOrContinue) {
-        Set<Highlight> result = new HashSet<Highlight>();
+    private OffsetsBag detectBreakOrContinueTarget(CompilationInfo info, Document document, TreePath breakOrContinue) {
+        OffsetsBag result = new OffsetsBag(document);
+        AttributeSet attributes = ColoringManager.getColoringImpl(MO);
         StatementTree target = info.getTreeUtilities().getBreakContinueTarget(breakOrContinue);
         
         if (target == null)
@@ -424,7 +445,7 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
         ts.move((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), target));
         
         if (ts.moveNext()) {
-            result.add(Utilities.createHighlight(info, document, ts.offset(), ts.offset() + ts.token().length(), EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
+            result.addHighlight(ts.offset(), ts.offset() + ts.token().length(), attributes);
         }
         
         StatementTree statement = target.getKind() == Kind.LABELED_STATEMENT ? ((LabeledStatementTree) target).getStatement() : target;
@@ -452,11 +473,34 @@ public class MarkOccurrencesHighlighter implements CancellableTask<CompilationIn
             ts.move((int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), block));
             
             if (ts.movePrevious() && ts.token().id() == JavaTokenId.RBRACE) {
-                result.add(Utilities.createHighlight(info, document, ts.offset(), ts.offset() + ts.token().length(), EnumSet.of(ColoringAttributes.MARK_OCCURRENCES),MarkOccurrencesHighlighter.ES_COLOR));
+                result.addHighlight(ts.offset(), ts.offset() + ts.token().length(), attributes);
             }
         }
         
         return result;
     }
     
+    static OffsetsBag getHighlightsBag(Document doc) {
+        OffsetsBag bag = (OffsetsBag) doc.getProperty(MarkOccurrencesHighlighter.class);
+        
+        if (bag == null) {
+            doc.putProperty(MarkOccurrencesHighlighter.class, bag = new OffsetsBag(doc));
+            
+            Object stream = doc.getProperty(Document.StreamDescriptionProperty);
+            
+            if (stream instanceof DataObject) {
+                Logger.getLogger("TIMER").log(Level.FINE, "MarkOccurrences Highlights Bag", new Object[] {((DataObject) stream).getPrimaryFile(), bag}); //NOI18N
+            }
+        }
+        
+        return bag;
+    }
+    
+    private static void addHighlightFor(CompilationInfo info, OffsetsBag highlights, Tree t, AttributeSet attributes) {
+        int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t);
+        int end   = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t);
+        
+        highlights.addHighlight(start, end, attributes);
+    }
 }
+

@@ -54,7 +54,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import java.awt.Color;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,10 +62,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -74,29 +77,24 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
-import javax.swing.text.BadLocationException;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
-import org.netbeans.modules.editor.highlights.spi.Highlighter;
-import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.text.NbDocument;
 
 
 /**
@@ -109,10 +107,12 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         SemanticHighlighter sh = new SemanticHighlighter(info.getFileObject());
         final List<TreePathHandle> result = new ArrayList<TreePathHandle>();
         
-        sh.process(info, sh.getDocument(), new ErrorDescriptionSetter() {
+        sh.process(info, sh.getDocument(),new ErrorDescriptionSetter() {
             public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports) {
                 result.addAll(allUnusedImports);
             }
+            public void setHighlights(Document doc, OffsetsBag highlights) {}
+            public void setColorings(Document doc, Map<Token, Coloring> colorings, Set<Token> addedTokens, Set<Token> removedTokens) {}
         });
         
         return result;
@@ -149,13 +149,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             return ;
         }
 
-        Set<Highlight> highlights = process(info, doc);
-        
-        if (isCancelled())
-            return;
-        
-        Highlighter.getDefault().setHighlights(file, "semantic", highlights);
-        OccurrencesMarkProvider.get(doc).setSematic(highlights);
+        process(info, doc);
     }
     
     private static class FixAllImportsFixList implements LazyFixList {
@@ -199,16 +193,26 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         }
     }
     
-    Set<Highlight> process(CompilationInfo info, final Document doc) {
-        return process(info, doc, ERROR_DESCRIPTION_SETTER);
+    void process(CompilationInfo info, final Document doc) {
+        process(info, doc, ERROR_DESCRIPTION_SETTER);
     }
     
-    Set<Highlight> process(CompilationInfo info, final Document doc, ErrorDescriptionSetter setter) {
-        DetectorVisitor v = new DetectorVisitor(info, doc);
+    static Coloring collection2Coloring(Collection<ColoringAttributes> attr) {
+        Coloring c = ColoringAttributes.empty();
+        
+        for (ColoringAttributes a : attr) {
+            c = ColoringAttributes.add(c, a);
+        }
+        
+        return c;
+    }
+    
+    void process(CompilationInfo info, final Document doc, ErrorDescriptionSetter setter) {
+        DetectorVisitor v = new DetectorVisitor(info, doc, canceled);
         
         long start = System.currentTimeMillis();
         
-        Set<Highlight> result = new HashSet();
+        Map<Token, Coloring> newColoring = new IdentityHashMap<Token, Coloring>();
         List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
 
         CompilationUnitTree cu = info.getCompilationUnit();
@@ -216,27 +220,29 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         scan(v, cu, null);
         
         if (isCancelled())
-            return Collections.emptySet();
+            return ;
         
         final List<TreePathHandle> allUnusedImports = new ArrayList<TreePathHandle>();
         final Fix removeAllUnusedImports = RemoveUnusedImportFix.create(file, allUnusedImports);
         
+        OffsetsBag imports = new OffsetsBag(doc);
+        Coloring unused = ColoringAttributes.add(ColoringAttributes.empty(), ColoringAttributes.UNUSED);
+
         for (Element el : v.type2Highlight.keySet()) {
             if (isCancelled())
-                return Collections.emptySet();
+                return ;
 
             final TreePath tree = v.type2Highlight.get(el);
             
             if (el == null || el.getSimpleName() == null)
                 continue;
+    
+            //XXX: finish
+            final int startPos = (int)info.getTrees().getSourcePositions().getStartPosition(cu, tree.getLeaf());
+            final int endPos   = (int)info.getTrees().getSourcePositions().getEndPosition(cu, tree.getLeaf());
             
-            Highlight h = Utilities.createHighlight(info, doc, tree, EnumSet.of(ColoringAttributes.UNUSED), Color.GRAY);
+            imports.addHighlight(startPos, endPos, ColoringManager.getColoringImpl(unused));
             
-            if (h != null) {
-                result.add(h);
-            }
-            
-            final long startPos = info.getTrees().getSourcePositions().getStartPosition(cu, tree.getLeaf());
             int line     = (int) info.getCompilationUnit().getLineMap().getLineNumber(startPos);
             
             TreePathHandle handle = TreePathHandle.create(tree, info);
@@ -249,9 +255,13 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             }
         }
         
+        Map<Token, Coloring> oldColors = LexerBasedHighlightLayer.getLayer(SemanticHighlighter.class, doc).getColorings();
+        Set<Token> removedTokens = new HashSet<Token>(oldColors.keySet());
+        Set<Token> addedTokens = new HashSet<Token>();
+        
         for (Element decl : v.type2Uses.keySet()) {
             if (isCancelled())
-                return Collections.emptySet();
+                return ;
             
             List<Use> uses = v.type2Uses.get(decl);
             
@@ -279,26 +289,32 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                     }
                 }
                 
-                Collection<ColoringAttributes> c = EnumSet.copyOf(u.spec);
-                Highlight h = Utilities.createHighlight(info, doc, u.tree, c, null);
+                Coloring c = collection2Coloring(u.spec);
                 
-                if (h != null) {
-                    result.add(h);
+                Token t = v.tree2Token.get(u.tree.getLeaf());
+                
+                if (t != null) {
+                    newColoring.put(t, c);
+                    
+                    if (!removedTokens.remove(t)) {
+                        addedTokens.add(t);
+                    }
                 }
             }
         }
-            
+        
         if (isCancelled())
-            return Collections.emptySet();
+            return ;
         
         setter.setErrors(doc, errors, allUnusedImports);
+        setter.setHighlights(doc, imports);
+        setter.setColorings(doc, newColoring, addedTokens, removedTokens);
         
         Logger.getLogger("TIMER").log(Level.FINE, "Semantic",
             new Object[] {((DataObject) doc.getProperty(Document.StreamDescriptionProperty)).getPrimaryFile(), System.currentTimeMillis() - start});
-        
-        return result;
     }
     
+        
     private boolean hasAllTypes(List<Use> uses, Collection<UseTypes> types) {
         EnumSet e = EnumSet.copyOf(types);
         
@@ -343,17 +359,31 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         private Document doc;
         private Map<Element, List<Use>> type2Uses;
         private Map<Element, TreePath/*ImportTree*/> type2Highlight;
-//        private Set<Highlight> highlights;
+        private Set<Element> additionalUsedTypes; //types used *before* the imports has been processed (ie. annotations in package-info.java)
         
-//        private int pos;
+        private Map<Tree, Token> tree2Token;
+        private TokenList tl;
+        private long memberSelectBypass = -1;
+        
         private SourcePositions sourcePositions;
         
-        private DetectorVisitor(org.netbeans.api.java.source.CompilationInfo info, Document doc/*, int pos*/) {
+        private DetectorVisitor(org.netbeans.api.java.source.CompilationInfo info, final Document doc, AtomicBoolean cancel) {
             this.info = info;
             this.doc  = doc;
             type2Uses = new HashMap<Element, List<Use>>();
             this.type2Highlight = new HashMap<Element, TreePath/*ImportTree*/>();
+            this.additionalUsedTypes = new HashSet<Element>();
+            
+            tree2Token = new IdentityHashMap<Tree, Token>();
+            
+            tl = new TokenList(info, doc, cancel);
+            
+            this.sourcePositions = info.getTrees().getSourcePositions();
 //            this.pos = pos;
+        }
+        
+        private void firstIdentifier(String name) {
+            tl.firstIdentifier(getCurrentPath(), name, tree2Token);
         }
         
         @Override
@@ -371,7 +401,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             scan(tree.getVariable(), EnumSet.of(UseTypes.WRITE));
             scan(tree.getExpression(), null);
             
-            return super.visitAssignment(tree, null);
+            return null;
         }
 
         @Override
@@ -389,7 +419,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             scan(tree.getVariable(), EnumSet.of(UseTypes.WRITE));
             scan(tree.getExpression(), null);
             
-            return super.visitCompoundAssignment(tree, null);
+            return null;
         }
 
         @Override
@@ -404,6 +434,10 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, EnumSet<UseTypes> d) {
+            long memberSelectBypassLoc = memberSelectBypass;
+            
+            memberSelectBypass = -1;
+            
             Tree expr = tree.getExpression();
             
             if (expr instanceof IdentifierTree) {
@@ -421,6 +455,15 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 //            System.err.println("YYYY=" + info.getElement(tree));
             
             super.visitMemberSelect(tree, null);
+            
+            tl.moveToEnd(tree.getExpression());
+            
+            if (memberSelectBypassLoc != (-1)) {
+                tl.moveToOffset(memberSelectBypassLoc);
+            }
+            
+            firstIdentifier(tree.getIdentifier().toString());
+            
             return null;
         }
         
@@ -620,12 +663,24 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         public Void visitCompilationUnit(CompilationUnitTree tree, EnumSet<UseTypes> d) {
 	    //ignore package X.Y.Z;:
 	    //scan(tree.getPackageDecl(), p);
-	    scan(tree.getImports(), d);
 	    scan(tree.getPackageAnnotations(), d);
+	    scan(tree.getImports(), d);
 	    scan(tree.getTypeDecls(), d);
 	    return null;
         }
 
+        private void handleMethodTypeArguments(List<? extends Tree> tArgs) {
+            //the type arguments are before the last identifier in the select, so we should return there:
+            //not very efficient, though:
+            tl.moveBefore(tArgs);
+            
+            for (Tree expr : tArgs) {
+                if (expr instanceof IdentifierTree) {
+                    resolveType(new TreePath(getCurrentPath(), expr));
+                }
+            }
+        }
+        
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, EnumSet<UseTypes> d) {
             Tree possibleIdent = tree.getMethodSelect();
@@ -647,23 +702,46 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), possibleIdent), EnumSet.of(UseTypes.EXECUTE));
             }
             
+            List<? extends Tree> ta = tree.getTypeArguments();
+            long afterTypeArguments = ta.isEmpty() ? -1 : info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), ta.get(ta.size() - 1));
+            
+            switch (tree.getMethodSelect().getKind()) {
+                case IDENTIFIER:
+                case MEMBER_SELECT:
+                    memberSelectBypass = afterTypeArguments;
+                    scan(tree.getMethodSelect(), null);
+                    memberSelectBypass = -1;
+                    break;
+                default:
+                    //todo: log
+                    scan(tree.getMethodSelect(), null);
+            }
+
+            handleMethodTypeArguments(ta);
+            
+            scan(tree.getTypeArguments(), null);
+            
+//            if (tree.getMethodSelect().getKind() == Kind.MEMBER_SELECT && tree2Token.get(tree.getMethodSelect()) == null) {
+////                if (ts.moveNext()) ???
+//                    firstIdentifier(((MemberSelectTree) tree.getMethodSelect()).getIdentifier().toString());
+//            }
+            
             for (Tree expr : tree.getArguments()) {
                 if (expr instanceof IdentifierTree) {
                     handlePossibleIdentifier(new TreePath(getCurrentPath(), expr), EnumSet.of(UseTypes.READ));
                 }
             }
-            for (Tree expr : tree.getTypeArguments()) {
-                if (expr instanceof IdentifierTree) {
-                    resolveType(new TreePath(getCurrentPath(), expr));
-                }
-            }
             
-            super.visitMethodInvocation(tree, null);
+            scan(tree.getArguments(), null);
+            
+//            super.visitMethodInvocation(tree, null);
             return null;
         }
 
         @Override
         public Void visitIdentifier(IdentifierTree tree, EnumSet<UseTypes> d) {
+            if (info.getTreeUtilities().isSynthetic(getCurrentPath()))
+                return null;
 //            if ("l".equals(tree.toString())) {
 //                Thread.dumpStack();
 //            }
@@ -671,6 +749,15 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 //            //also possible type: (like in Collections.EMPTY_LIST):
 //            resolveType(tree);
 //            Thread.dumpStack();
+            
+            tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+            
+            if (memberSelectBypass != (-1)) {
+                tl.moveToOffset(memberSelectBypass);
+                memberSelectBypass = -1;
+            }
+            
+            tl.identifierHere(tree, tree2Token);
             
             if (d != null) {
                 handlePossibleIdentifier(getCurrentPath(), d);
@@ -681,6 +768,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 //
         @Override
         public Void visitMethod(MethodTree tree, EnumSet<UseTypes> d) {
+            if (info.getTreeUtilities().isSynthetic(getCurrentPath()))
+                return null;
 //            Element decl = pi.getAttribution().getElement(tree);
 //            
 //            if (decl != null) {
@@ -715,8 +804,36 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             }
         
             scan(tree.getModifiers(), null);
-            scan(tree.getReturnType(), EnumSet.of(UseTypes.CLASS_USE));
+            tl.moveToEnd(tree.getModifiers());
             scan(tree.getTypeParameters(), null);
+            tl.moveToEnd(tree.getTypeParameters());
+            scan(tree.getReturnType(), EnumSet.of(UseTypes.CLASS_USE));
+            tl.moveToEnd(tree.getReturnType());
+            
+            String name;
+            
+            if (tree.getReturnType() != null) {
+                //method:
+                name = tree.getName().toString();
+            } else {
+                //constructor:
+                TreePath tp = getCurrentPath();
+                
+                while (tp != null && tp.getLeaf().getKind() != Kind.CLASS) {
+                    tp = tp.getParentPath();
+                }
+                
+                if (tp != null && tp.getLeaf().getKind() == Kind.CLASS) {
+                    name = ((ClassTree) tp.getLeaf()).getSimpleName().toString();
+                } else {
+                    name = null;
+                }
+            }
+            
+            if (name != null) {
+                firstIdentifier(name);
+            }
+            
             scan(tree.getParameters(), paramsUseTypes);
             scan(tree.getThrows(), null);
             scan(tree.getBody(), null);
@@ -764,7 +881,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             if (!tree.isStatic()) {
                 Element decl = info.getTrees().getElement(new TreePath(getCurrentPath(), tree.getQualifiedIdentifier()));
                 
-                if (decl != null && decl.asType().getKind() != TypeKind.ERROR) { //unresolvable imports should not be marked as unused
+                if (   decl != null
+                    && decl.asType().getKind() != TypeKind.ERROR //unresolvable imports should not be marked as unused
+                    && !additionalUsedTypes.contains(decl)) {
                     type2Highlight.put(decl, getCurrentPath());
                 }
 //                } else {
@@ -776,18 +895,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             return null;
         }
         
-        private String getSimple(String fqn) {
-            int lastDot = fqn.lastIndexOf('.');
-            
-            if (lastDot != (-1)) {
-                return fqn.substring(lastDot + 1);
-            } else {
-                return fqn;
-            }
-        }
-        
         @Override
         public Void visitVariable(VariableTree tree, EnumSet<UseTypes> d) {
+            tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
             TreePath type = new TreePath(getCurrentPath(), tree.getType());
             
             if (type.getLeaf() instanceof ArrayTypeTree) {
@@ -800,7 +910,6 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 handlePossibleIdentifier(type, EnumSet.of(UseTypes.CLASS_USE));
             
             Collection<UseTypes> uses = null;
-            boolean isParameter = false;
             
             if (tree.getInitializer() != null) {
                 uses = EnumSet.of(UseTypes.DECLARATION, UseTypes.WRITE);
@@ -817,7 +926,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             }
             
             if (d != null) {
-                Set<UseTypes> ut = new HashSet();
+                Set<UseTypes> ut = new HashSet<UseTypes>();
                 
                 ut.addAll(uses);
                 ut.addAll(d);
@@ -827,17 +936,21 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             
             handlePossibleIdentifier(getCurrentPath(), uses);
             
-            super.visitVariable(tree, null);
-            return null;
-        }
-        
-        private boolean isParameter(VariableTree var, MethodTree decl) {
-            for (VariableTree declVar : decl.getParameters()) {
-                if (var == declVar)
-                    return true;
-            }
+            scan(tree.getModifiers(), null);
             
-            return false;
+            tl.moveToEnd(tree.getModifiers());
+            
+            scan(tree.getType(), null);
+            
+            tl.moveToEnd(tree.getType());
+            
+//            System.err.println("tree.getName().toString()=" + tree.getName().toString());
+            
+            firstIdentifier(tree.getName().toString());
+            
+            scan(tree.getInitializer(), null);
+            
+            return null;
         }
         
         @Override
@@ -855,6 +968,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 
         @Override
         public Void visitNewClass(NewClassTree tree, EnumSet<UseTypes> d) {
+//            if (info.getTreeUtilities().isSynthetic(getCurrentPath()))
+//                return null;
+//            
             TreePath tp;
             Tree ident = tree.getIdentifier();
             
@@ -931,6 +1047,15 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
 
         @Override
         public Void visitClass(ClassTree tree, EnumSet<UseTypes> d) {
+            tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+            for (TypeParameterTree t : tree.getTypeParameters()) {
+                for (Tree bound : t.getBounds()) {
+                    TreePath tp = new TreePath(new TreePath(getCurrentPath(), t), bound);
+                    resolveType(tp);
+                    handlePossibleIdentifier(tp, EnumSet.of(UseTypes.CLASS_USE));
+                }
+            }
+            
             Tree extnds = tree.getExtendsClause();
             
             if (extnds != null) {
@@ -945,18 +1070,23 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 handlePossibleIdentifier(tp, EnumSet.of(UseTypes.CLASS_USE));
             }
             
-            for (TypeParameterTree t : tree.getTypeParameters()) {
-                for (Tree bound : t.getBounds()) {
-                    TreePath tp = new TreePath(new TreePath(getCurrentPath(), t), bound);
-                    resolveType(tp);
-                    handlePossibleIdentifier(tp, EnumSet.of(UseTypes.CLASS_USE));
-                }
-            }
-            
             handlePossibleIdentifier(getCurrentPath(), EnumSet.of(UseTypes.DECLARATION));
             
-            super.visitClass(tree, null);
-            //TODO: maybe should be considered
+            scan(tree.getModifiers(), null);
+            
+//            System.err.println("tree.getModifiers()=" + tree.getModifiers());
+//            System.err.println("mod end=" + sourcePositions.getEndPosition(info.getCompilationUnit(), tree.getModifiers()));
+//            System.err.println("class start=" + sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
+            tl.moveToEnd(tree.getModifiers());
+            firstIdentifier(tree.getSimpleName().toString());
+            
+            //XXX:????
+            scan(tree.getTypeParameters(), null);
+            scan(tree.getExtendsClause(), null);
+            scan(tree.getImplementsClause(), null);
+            scan(tree.getMembers(), null);
+            //XXX: end ???
+            
             return null;
         }
         
@@ -1073,7 +1203,9 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 return ;
             }
             
-            type2Highlight.remove(decl);
+            if (type2Highlight.remove(decl) == null) {
+                additionalUsedTypes.add(decl);
+            }
         }
         
         private static class FirstIdentTypeVisitor extends TreePathScanner<Void, Void> {
@@ -1093,7 +1225,8 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
     public static interface ErrorDescriptionSetter {
         
         public void setErrors(Document doc, List<ErrorDescription> errors, List<TreePathHandle> allUnusedImports);
-        
+        public void setHighlights(Document doc, OffsetsBag highlights);
+        public void setColorings(Document doc, Map<Token, Coloring> colorings, Set<Token> addedTokens, Set<Token> removedTokens);
     }
     
     static ErrorDescriptionSetter ERROR_DESCRIPTION_SETTER = new ErrorDescriptionSetter() {
@@ -1102,6 +1235,32 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             HintsController.setErrors(doc, "semantic-highlighter", errors);
         }
         
+        public void setHighlights(final Document doc, final OffsetsBag highlights) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    getImportHighlightsBag(doc).setHighlights(highlights);
+                }
+            });
+        }
+    
+        public void setColorings(Document doc, Map<Token, Coloring> colorings, Set<Token> addedTokens, Set<Token> removedTokens) {
+            LexerBasedHighlightLayer.getLayer(SemanticHighlighter.class, doc).setColorings(colorings, addedTokens, removedTokens);
+        }
     };
 
+    static OffsetsBag getImportHighlightsBag(Document doc) {
+        OffsetsBag bag = (OffsetsBag) doc.getProperty(FixAllImportsFixList.class);
+        
+        if (bag == null) {
+            doc.putProperty(FixAllImportsFixList.class, bag = new OffsetsBag(doc));
+            
+            Object stream = doc.getProperty(Document.StreamDescriptionProperty);
+            
+            if (stream instanceof DataObject) {
+//                TimesCollector.getDefault().reportReference(((DataObject) stream).getPrimaryFile(), "ImportsHighlightsBag", "[M] Imports Highlights Bag", bag);
+            }
+        }
+        
+        return bag;
+    }
 }

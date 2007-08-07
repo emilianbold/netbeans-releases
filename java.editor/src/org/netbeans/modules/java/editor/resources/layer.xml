@@ -89,9 +89,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Editors">
         <folder name="text">
+            <folder name="x-jsp">
+                <file name="org-netbeans-modules-java-editor-semantic-HighlightsLayerFactoryImpl.instance" />
+            </folder>
             <folder name="x-java">
 
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.editor.resources.Bundle"/>
+                
+                <file name="org-netbeans-modules-java-editor-semantic-HighlightsLayerFactoryImpl.instance" />
                 
                 <folder name="FontsColors">
                     <folder name="NetBeans">
@@ -258,7 +263,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-editor-java-overrides.xml" url="overrides-annotation.xml"/>
             <file name="org-netbeans-modules-editor-java-implements.xml" url="implements-annotation.xml"/>
         </folder>
-        
     </folder>
 
     <folder name="OptionsDialog">

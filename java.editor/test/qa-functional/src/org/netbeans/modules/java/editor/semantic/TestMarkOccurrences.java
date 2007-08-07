@@ -21,10 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Set;
 import java.util.prefs.Preferences;
-import javax.print.CancelablePrintJob;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
@@ -42,7 +39,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
+import org.netbeans.spi.editor.highlighting.HighlightsSequence;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 
 
 /**
@@ -225,7 +223,7 @@ public class TestMarkOccurrences extends NbTestCase {
         super.tearDown();
     }
     
-    private Set<Highlight> foundMarks;
+    private OffsetsBag foundMarks;
     
     class MyTask implements Task<CompilationController> {
         
@@ -239,7 +237,7 @@ public class TestMarkOccurrences extends NbTestCase {
             else return;
             int caretPosition = MarkOccurrencesHighlighterFactory.getLastPosition(fileObject);
             Preferences node = MarkOccurencesSettings.getCurrentNode();
-            Set<Highlight> highlights = moh.processImpl(parameter, node, doc, caretPosition);
+            OffsetsBag highlights = moh.processImpl(parameter, node, doc, caretPosition);
             foundMarks  = highlights;
         }
     }
@@ -288,16 +286,7 @@ public class TestMarkOccurrences extends NbTestCase {
         sleep(2500);
         js.runUserActionTask(new MyTask() ,false);
         sleep(500);
-        Highlight[] highlights = null;
-        if(foundMarks!=null) highlights = foundMarks.toArray(new Highlight[0]);
-        else highlights = new Highlight[0];
         Arrays.sort(marks);
-        Arrays.sort(highlights,new Comparator<Highlight>() {
-            
-            public int compare(Highlight o1, Highlight o2) {
-                return new Integer(o1.getStart()).compareTo(o2.getStart());
-            }
-        });
         //assertEquals("Wrong number of highlight marks",marks.length,highlights.length);
         String etalon = "";
         for (int i = 0; i < marks.length; i++) {
@@ -305,9 +294,10 @@ public class TestMarkOccurrences extends NbTestCase {
             etalon = etalon + "["+m.start+","+m.end+"] ";
         }
         String ref = "";
-        for (int i = 0; i < highlights.length; i++) {
-            Highlight h = highlights[i];
-            ref = ref + "["+h.getStart()+","+h.getEnd()+"] ";
+        //not locking, should be fine in tests:
+        HighlightsSequence hs = foundMarks.getHighlights(0, editorPane.getDocument().getLength());
+        while (hs.moveNext()) {
+            ref = ref + "["+hs.getStartOffset()+","+hs.getEndOffset()+"] ";
             
         }
         assertEquals(etalon, ref);

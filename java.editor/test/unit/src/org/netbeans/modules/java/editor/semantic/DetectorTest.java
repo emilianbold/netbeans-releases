@@ -21,10 +21,9 @@ package org.netbeans.modules.java.editor.semantic;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -35,12 +34,15 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.editor.highlights.HighlightComparator;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
+import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
+import org.netbeans.modules.java.editor.semantic.SemanticHighlighter.ErrorDescriptionSetter;
 import org.netbeans.modules.java.editor.semantic.TestBase.Performer;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -53,7 +55,13 @@ public class DetectorTest extends TestBase {
     public DetectorTest(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        LifecycleManager.getDefault().saveAll();
+    }
+
     public void testUnusedImports() throws Exception {
         performTest("UnusedImports");
     }
@@ -292,8 +300,10 @@ public class DetectorTest extends TestBase {
     
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
-            public Collection<Highlight> compute(CompilationController parameter, Document doc) {
-                return new SemanticHighlighter(parameter.getFileObject()).process(parameter, doc);
+            public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {
+                SemanticHighlighter.ERROR_DESCRIPTION_SETTER = setter;
+                
+                new SemanticHighlighter(parameter.getFileObject()).process(parameter, doc);
             }
         });
     }
@@ -361,7 +371,6 @@ public class DetectorTest extends TestBase {
         SourceUtilsTestUtil.compileRecursively(FileUtil.toFileObject(dataFolder));
 
         final Document doc = getDocument(testSourceFO);
-        final Set<Highlight> highlights = new TreeSet<Highlight>(new HighlightComparator());
         
         JavaSource source = JavaSource.forFileObject(testSourceFO);
         
@@ -375,6 +384,15 @@ public class DetectorTest extends TestBase {
             SemanticHighlighter.ERROR_DESCRIPTION_SETTER = new SemanticHighlighter.ErrorDescriptionSetter() {
                 public void setErrors(Document doc, List<ErrorDescription> errs, List<TreePathHandle> allUnusedImports) {
                     errors.addAll(errs);
+                }
+            
+                public void setHighlights(Document doc, OffsetsBag highlights) {
+                }
+
+                public void setColorings(Document doc,
+                                         Map<Token, Coloring> colorings,
+                                         Set<Token> addedTokens,
+                                         Set<Token> removedTokens) {
                 }
             };
             

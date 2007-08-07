@@ -19,6 +19,7 @@
 package org.netbeans.modules.java.editor.semantic;
 
 import com.sun.source.tree.Tree;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.java.source.support.CancellableTreeScanner;
@@ -29,14 +30,14 @@ import org.netbeans.api.java.source.support.CancellableTreeScanner;
  */
 public abstract class ScanningCancellableTask<T> implements CancellableTask<T> {
 
-    private boolean canceled;
+    protected AtomicBoolean canceled = new AtomicBoolean();
 
     /** Creates a new instance of ScanningCancellableTask */
     protected ScanningCancellableTask() {
     }
 
     public final synchronized void cancel() {
-        canceled = true;
+        canceled.set(true);
         
         if (pathScanner != null) {
             pathScanner.cancel();
@@ -49,11 +50,11 @@ public abstract class ScanningCancellableTask<T> implements CancellableTask<T> {
     public abstract void run(T parameter) throws Exception;
     
     protected final synchronized boolean isCancelled() {
-        return canceled;
+        return canceled.get();
     }
     
     protected final synchronized void resume() {
-        canceled = false;
+        canceled.set(false);
     }
     
     private CancellableTreePathScanner pathScanner;
