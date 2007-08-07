@@ -37,10 +37,10 @@ public class ASTItem {
     private String          mimeType;
     private int             offset;
     private int             length = -1;
-
     private List<ASTItem>   children;
-    private ASTPath         path;
 
+    
+    @SuppressWarnings("unchecked")
     ASTItem (
         String              mimeType,
         int                 offset,
@@ -52,21 +52,20 @@ public class ASTItem {
         this.length =       length;
 
         // [PENDING]
-//        int lastOffset = offset;
-        this.children = new ArrayList<ASTItem> ();
-        if (children != null) {
-            Iterator<? extends ASTItem> it = children.iterator ();
-            while (it.hasNext ()) {
-                ASTItem item = it.next ();
-                if (item == null)
-                    throw new NullPointerException ();
-//                if (item.getOffset () != lastOffset)
-//                    throw new IllegalArgumentException ();
-                this.children.add (item);
-//                lastOffset += item.getLength ();
-            }
-        }
-        this.children = Collections.unmodifiableList (this.children);
+//        this.children = new ArrayList<ASTItem> ();
+//        if (children != null) {
+//            Iterator<ASTItem> it = children.iterator ();
+//            while (it.hasNext ()) {
+//                ASTItem item = it.next ();
+//                if (item == null)
+//                    throw new NullPointerException ();
+//                this.children.add (item);
+//            }
+//        }
+        if (children != null) 
+            this.children = (List<ASTItem>) children;
+        else
+            this.children = Collections.<ASTItem>emptyList ();
     }
 
     /**
@@ -94,6 +93,55 @@ public class ASTItem {
      */
     public List<ASTItem> getChildren () {
         return children;
+    }
+    
+    /**
+     * Adds child to the end of list of children.
+     * 
+     * @param item a child to be added
+     */
+    void addChildren (ASTItem item) {
+        if (children == Collections.<ASTItem>emptyList ())
+            children = new ArrayList<ASTItem> ();
+        children.add (item);
+        if (childrenMap != null)
+            childrenMap.put (item.getOffset (), item);
+    }
+    
+    /**
+     * Adds child to the end of list of children.
+     * 
+     * @param item a child to be added
+     */
+    void removeChildren (ASTItem item) {
+        if (children == Collections.<ASTItem>emptyList ())
+            return;
+        children.remove (item);
+        if (childrenMap != null)
+            childrenMap.remove (item.getOffset ());
+    }
+    
+    /**
+     * Adds child to the end of list of children.
+     * 
+     * @param item a child to be added
+     */
+    void setChildren (int index, ASTItem item) {
+        if (children == Collections.<ASTItem>emptyList ())
+            return;
+        int oldOffset = children.get (index).getOffset ();
+        children.set (index, item);
+        if (childrenMap != null) {
+            childrenMap.remove (oldOffset);
+            childrenMap.put (item.getOffset (), item);
+        }
+    }
+    
+    /**
+     * Locks children for any modifications.
+     */
+    public void lock () {
+        children = Collections.<ASTItem>unmodifiableList (children);
     }
     
     /**
@@ -181,3 +229,8 @@ public class ASTItem {
         return childrenMap;
     }
 }
+
+
+
+
+

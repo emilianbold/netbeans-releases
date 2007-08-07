@@ -102,6 +102,9 @@ public class ASTNode extends ASTItem {
         List<ASTItem> children
     ) {
         super (mimeType, offset, -1, children);
+        if ( (!getClass ().equals (ASTNode.class)) &&
+             (!getClass ().equals (CompoundNode.class))
+        ) throw new IllegalArgumentException ("Do not extend ASTNode!");
         this.nt =       nt;
     }
 
@@ -113,15 +116,6 @@ public class ASTNode extends ASTItem {
     public String getNT () {
         return nt;
     }
-
-    /**
-     * Returns id of rule that has created this node.
-     * 
-     * @return id of rule that has created this node
-     */
-//    public int getRule () {
-//        return rule;
-//    }
 
     /**
      * Finds path to the first token defined by type and identifier or null.
@@ -168,9 +162,9 @@ public class ASTNode extends ASTItem {
      */
     public ASTNode findNode (String nt, int offset) {
         if (nt.equals (getNT ())) return this;
-        Iterator it = getChildren ().iterator ();
+        Iterator<ASTItem> it = getChildren ().iterator ();
         while (it.hasNext ()) {
-            Object e = (Object) it.next ();
+            ASTItem e = it.next ();
             if (e instanceof ASTNode) {
                 ASTNode node = (ASTNode) e;
                 if (node.getOffset () <= offset &&
@@ -231,6 +225,72 @@ public class ASTNode extends ASTItem {
             e = path.indexOf ('.', s);
         }
         return (ASTNode) node.getChild ("node-" + path.substring (s));
+    }
+    
+    /**
+     * Adds child to the end of list of children.
+     * 
+     * @param item a child to be added
+     */
+    public void addChildren (ASTItem item) {
+        super.addChildren (item);
+        if (nameToChild != null)
+            if (item instanceof ASTToken) {
+                ASTToken t = (ASTToken) item;
+                nameToChild.put ("token-type-" + t.getType (), t);
+            } else {
+                nameToChild.put (
+                    "node-" + ((ASTNode) item).getNT (), 
+                    item
+                );
+            }
+    }
+    
+    /**
+     * Removes child.
+     * 
+     * @param item a child to be added
+     */
+    public void removeChildren (ASTItem item) {
+        super.removeChildren (item);
+        if (nameToChild != null)
+            if (item instanceof ASTToken) {
+                ASTToken t = (ASTToken) item;
+                nameToChild.remove ("token-type-" + t.getType ());
+            } else {
+                nameToChild.remove (
+                    "node-" + ((ASTNode) item).getNT ()
+                );
+            }
+    }
+    
+    /**
+     * Removes child.
+     * 
+     * @param item a child to be added
+     */
+    public void setChildren (int index, ASTItem item) {
+        ASTItem old = getChildren ().get (index);
+        if (nameToChild != null)
+            if (old instanceof ASTToken) {
+                ASTToken t = (ASTToken) old;
+                nameToChild.remove ("token-type-" + t.getType ());
+            } else {
+                nameToChild.remove (
+                    "node-" + ((ASTNode) old).getNT ()
+                );
+            }
+        super.setChildren (index, item);
+        if (nameToChild != null)
+            if (item instanceof ASTToken) {
+                ASTToken t = (ASTToken) item;
+                nameToChild.put ("token-type-" + t.getType (), item);
+            } else {
+                nameToChild.put (
+                    "node-" + ((ASTNode) item).getNT (),
+                    item
+                );
+            }
     }
     
     private Map<String,ASTItem> nameToChild = null;
@@ -321,7 +381,7 @@ public class ASTNode extends ASTItem {
     
     // innerclasses ............................................................
     
-    private static class CompoundNode extends ASTNode {
+    private static final class CompoundNode extends ASTNode {
         
         CompoundNode (String mimeType, String nt, int offset, List<ASTItem> children) {
             super (mimeType, nt, offset, children);
