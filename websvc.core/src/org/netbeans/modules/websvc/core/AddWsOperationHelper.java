@@ -21,6 +21,7 @@ package org.netbeans.modules.websvc.core;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
@@ -35,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -211,7 +213,8 @@ public class AddWsOperationHelper {
                         
                         handle.progress(70);
                         // create new (annotated) method
-                        MethodTree  annotatedMethod = make.Method(
+                        MethodTree  annotatedMethod = genUtils.getTypeElement().getKind() == ElementKind.CLASS ?
+                            make.Method(
                                 modifiersTree,
                                 method.getName(),
                                 method.getReturnType(),
@@ -219,6 +222,15 @@ public class AddWsOperationHelper {
                                 newParameters,
                                 method.getThrows(),
                                 getMethodBody(method.getReturnType()), //NOI18N
+                                (ExpressionTree)method.getDefaultValue()) :
+                            make.Method(
+                                modifiersTree,
+                                method.getName(),
+                                method.getReturnType(),
+                                method.getTypeParameters(),
+                                newParameters,
+                                method.getThrows(),
+                                (BlockTree)null,
                                 (ExpressionTree)method.getDefaultValue());
                         Comment comment = Comment.create(Style.JAVADOC, 0,0,0,NbBundle.getMessage(AddWsOperationHelper.class, "TXT_WSOperation"));
                         make.addComment(annotatedMethod, comment, true);
