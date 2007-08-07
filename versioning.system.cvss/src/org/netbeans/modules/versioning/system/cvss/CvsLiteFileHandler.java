@@ -103,30 +103,6 @@ class CvsLiteFileHandler extends DefaultFileHandler implements FileReadOnlyHandl
         }
     }
 
-    public void renameLocalFile(String pathname, String newName) throws IOException {
-        File sourceFile = new File(pathname);
-        FileObject fo = FileUtil.toFileObject(sourceFile);
-        if (fo == null) {
-            // #69639: Try File I/O instead
-            sourceFile.renameTo(new File(sourceFile.getParentFile(), newName));
-            return;
-        }
-        FileLock lock = null;
-        try {
-            lock = fo.lock();
-            try {
-                FilesystemHandler.ignoreEvents(true);
-                fo.rename(lock, newName, null);
-            } finally {
-                FilesystemHandler.ignoreEvents(false);
-            }
-        } finally {
-            if (lock != null) {
-                lock.releaseLock();
-            }
-        }
-    }
-
     public void setFileReadOnly(File file, boolean readOnly) throws IOException {
         String [] command = new String[3];
         // TODO: update for JDK 6
@@ -141,7 +117,7 @@ class CvsLiteFileHandler extends DefaultFileHandler implements FileReadOnlyHandl
         try {
             Runtime.getRuntime().exec(command);
         } catch (Exception e) {
-            
+            // probably does not work, ignore
         }
     }
         
