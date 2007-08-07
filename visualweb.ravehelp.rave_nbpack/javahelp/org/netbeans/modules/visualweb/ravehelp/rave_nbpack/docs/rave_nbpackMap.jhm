@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1'?>
-<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 1.0//EN"
-                     "http://java.sun.com/products/javahelp/map_1_0.dtd">
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN"
+                     "http://java.sun.com/products/javahelp/map_2_0.dtd">
 
 <map version="1.0">
 	<mapID target="about_build" url="web/build/about_build.html"/>
@@ -583,7 +583,6 @@
 	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_dist_node_props" url="ui_elements/project_nav/node_prop_sheets/dist_node_props.html"/>
 	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_java_sources_node_props" url="ui_elements/project_nav/node_prop_sheets/java_sources_node_props.html"/>
 	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_man_beans_node_props" url="ui_elements/project_nav/node_prop_sheets/man_beans_node_props.html"/>
-	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_page_nav_node_props" url="ui_elements/project_nav/node_prop_sheets/page_nav_node_props.html"/>
 	<mapID target="projrave_ui_elements_project_nav_node_prop_sheets_web_pages_node_props" url="ui_elements/project_nav/node_prop_sheets/web_pages_node_props.html"/>
 	<mapID target="projrave_ui_elements_project_nav_portfoliofilesystem" url="ui_elements/project_nav/projectfilesystem.html"/>
 	<mapID target="projrave_ui_elements_project_nav_portfoliological" url="ui_elements/project_nav/projectlogical.html"/>

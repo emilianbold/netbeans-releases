@@ -456,7 +456,6 @@
 					<tocitem text="Dist Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_dist_node_props" />
 					<tocitem text="Source Packages Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_java_sources_node_props" />
 					<tocitem text="Managed Beans Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_man_beans_node_props" />
-					<tocitem text="Page Navigation Node Properties" target="projrave_ui_elements_project_nav_node_prop_sheets_page_nav_node_props" />
 					<tocitem text="Project Properties: Build Category" target="projrave_ui_elements_project_nav_project_props_build" />
 					<tocitem text="Project Properties: Libraries Category" target="projrave_ui_elements_project_nav_project_props_libraries" />
 					<tocitem text="Project Properties: Run Category" target="projrave_ui_elements_project_nav_project_props_run" />

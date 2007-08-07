@@ -1,1 +1,91 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!--       *     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.*     Use is subject to license terms.--><html><head><title>New Web Project with Existing Sources Wizard: Existing Sources and Libraries</title><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>New Web Project with Existing Sources Wizard: Existing Sources and Libraries</h2><p> <small><a href="#seealso">See Also</a>&nbsp; </small> <p>The New Web Project with Existing Sources wizard creates a new <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">    <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/glossary_standard.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="400,220">    <param name="text" value="standard project">    <param name="textFontSize" value="medium">    <param name="textFontFamily" value="SansSerif">    <param name="textFontStyle" value="italic">    <param name="textFontWeight" value="bold">    <param name="textColor" value="blue">  </object>&nbsp; from an existing web application source folder. You open the   New Web Project with Existing Sources wizard by opening the <a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New   Project wizard</a> and selecting the Web Project with Existing Sources template   from the Web category. <p>Your existing web application source does not have to adhere to any particular directory   structure. You specify the locations of the configuration files, libraries,   and source roots. The only requirement is that the module contain a valid <tt>web.xml</tt>   deployment descriptor. </p><p>In the Existing Sources and Libraries page, you specify the following properties: </p><ul><li><b>Web Pages. </b>Specifies the location of your web pages.   You must have at least a valid <tt>web.xml</tt>    deployment descriptor in the web pages folder to complete the wizard.     <ul class="note">      <li>The IDE does not convert deployment descriptors for unsupported application         servers to the Sun Java System Application Server deployment descriptors. There are external         tools you can use for this purpose.</li>    </ul>  </li>  <li><b>Libraries.</b> Specifies the location of the class libraries that the    web application depends on. All JAR files in this folder are added to the web application     project's classpath and packaged with the application for deployment.     <ul class="note">      <li>The IDE only scans this folder once when you create the project. After         the project is created, adding JAR files to this folder outside the IDE         does not add them to the module's classpath. You have to add them manually         through the Libraries tab of the module's Project Properties dialog box.</li>    </ul>  </li>  <li><b>Source Package Folders.</b><br>  <b>Test Package Folders.</b> Specifies each of the project's source package folders (containing   source packages) and test package folders (containing JUnit tests). You can   have multiple source roots in a standard project, with the following exceptions: </p><ul>  <li>The source root cannot already exist in another IDE project. </li>  <li>The source root cannot already be added to another compilation unit of the     same project. For example, a source root that is registered under Test Packages     cannot be added to the list of Source Packages.</li>    <li>All of the source roots are packaged into the same WAR file and share the     same classpath.</li></ul><ul class="note">  <li>If you have a source root that needs to be used by several projects, you     should create a separate project for the source root and <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">set     up compilation dependencies</a> between the projects.</li></ul></li></ul><dl>    <dt><a name="seealso">See Also</a></dt><dd>   <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd><dd><a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New Project Wizard:</a></dd> <dd>   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ThePanel.html">Add Existing Sources</a></dd>    </dl><hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font><table border="0" cellpadding="20"><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr></table></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>New Web Project with Existing Sources Wizard: Existing Sources and Libraries</title>
+<link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+<h2>New Web Project with Existing Sources Wizard: Existing Sources and Libraries</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>The New Web Project with Existing Sources wizard creates a new <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/glossary_standard.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="standard project">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>&nbsp; from an existing web application source folder. You open the 
+  New Web Project with Existing Sources wizard by opening the <a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New 
+  Project wizard</a> and selecting the Web Project with Existing Sources template 
+  from the Web category. 
+<p>Your existing web application source does not have to adhere to any particular directory 
+  structure. You specify the locations of the configuration files, libraries, 
+  and source roots. The only requirement is that the module contain a valid <tt>web.xml</tt> 
+  deployment descriptor. 
+</p><p>In the Existing Sources and Libraries page, you specify the following properties: 
+</p><ul>
+<li><b>Web Pages Folder. </b>Specifies the location of your web pages.
+   You must have at least a valid <tt>web.xml</tt> 
+   deployment descriptor in the web pages folder to complete the wizard. 
+    <ul class="note">
+
+      <li>The IDE does not convert deployment descriptors for unsupported application 
+        servers to the Sun Java System Application Server deployment descriptors. There are external 
+        tools you can use for this purpose.</li>
+    </ul>
+  </li>
+  <li><b>WEB-INF Content.</b> Specifies the location of the application's WEB-INF content. </li>
+  <li><b>Libraries Folder.</b> Specifies the location of the class libraries that the 
+     web application depends on. All JAR files in this folder are added to the web application 
+      project's classpath and packaged with the application for deployment. 
+    <ul class="note">
+      <li>The IDE only scans this folder once when you create the project. After 
+          the project is created, adding JAR files to this folder outside the IDE 
+          does not add them to the module's classpath. You have to add them manually 
+        through the Libraries tab of the module's Project Properties dialog box.</li>
+    </ul>
+  </li>
+  <li><b>Source Package Folders.</b><br>
+  <b>Test Package Folders.</b> Specifies each of the project's source package folders (containing 
+  source packages) and test package folders (containing JUnit tests). You can 
+  have multiple source roots in a standard project, with the following exceptions: 
+</p><ul>
+  <li>The source root cannot already exist in another IDE project. </li>
+  <li>The source root cannot already be added to another compilation unit of the 
+    same project. For example, a source root that is registered under Test Packages 
+    cannot be added to the list of Source Packages.</li>
+    <li>All of the source roots are packaged into the same WAR file and share the 
+    same classpath.</li>
+</ul>
+<ul class="note">
+  <li>If you have a source root that needs to be used by several projects, you 
+    should create a separate project for the source root and <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">set 
+    up compilation dependencies</a> between the projects.</li>
+
+</ul>
+</li></ul>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+
+<dd>   <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd>
+<dd><a href="nbdocs:/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New Project Wizard:</a></dd>
+ <dd>   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="ThePanel.html">Add Existing Sources</a></dd>
+</dl>
+
+<hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
