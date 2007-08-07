@@ -24,18 +24,19 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
  * @author Pavel Benes
  */
 public final class PatchedRadialGradient extends RadialGradient implements PatchedTransformableElement {
-    private String m_idBackup = null;
+    private String    m_idBackup  = null;
+    private SVGObject m_svgObject = null; 
     
     public PatchedRadialGradient(final DocumentNode ownerDocument) {
         super(ownerDocument);
     }
     
     public void attachSVGObject(SVGObject obj) {
-        
+        m_svgObject = obj;
     }
 
     public SVGObject getSVGObject() {
-        return null;
+        return m_svgObject;
     }
     
     public void setNullId(boolean isNull) {

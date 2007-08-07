@@ -26,7 +26,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  */
 public class DeleteActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction  m_deleteAction = 
-        new AbstractSVGAction("delete_element.png", "HINT_DeleteElement", "LBL_DeleteElement") {
+        new AbstractSVGAction("delete_element.png", "HINT_DeleteElement", "LBL_DeleteElement") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null) {
@@ -47,8 +47,8 @@ public class DeleteActionFactory extends AbstractComposerActionFactory implement
         sceneMgr.addSelectionListener(this);
     }
 
-    public AbstractSVGAction getMenuAction() {
-        return m_deleteAction;
+    public AbstractSVGAction [] getMenuActions() {
+        return new AbstractSVGAction [] { null, m_deleteAction };
     }
 
     public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {

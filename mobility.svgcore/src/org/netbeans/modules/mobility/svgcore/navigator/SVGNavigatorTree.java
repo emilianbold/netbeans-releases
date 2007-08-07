@@ -21,7 +21,6 @@ import java.awt.Rectangle;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JTree;
-import javax.swing.text.AttributeSet;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
@@ -32,7 +31,7 @@ import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
  *
  * @author Pavel Benes
  */
-public class SVGNavigatorTree extends JTree {
+public final class SVGNavigatorTree extends JTree {
     public static byte VISIBILITY_DIRECT     = 1;
     public static byte VISIBILITY_UNDIRECT   = 2;
     public static byte VISIBILITY_NO         = 3;
@@ -54,7 +53,7 @@ public class SVGNavigatorTree extends JTree {
         setShowsRootHandles(true);
         setRootVisible(false);
         setCellRenderer(new SVGNavigatorTreeCellRenderer());
-        putClientProperty("JTree.lineStyle", "Angled");        
+        putClientProperty("JTree.lineStyle", "Angled");  //NOI18N       
         initialize();
     }
     
@@ -99,8 +98,7 @@ public class SVGNavigatorTree extends JTree {
     }
     
     public static boolean isTreeElement(DocumentElement de) {
-        return de.getType().equals(SVGNavigatorNode.XML_TAG) ||
-               de.getType().equals(SVGNavigatorNode.XML_EMPTY_TAG);
+        return SVGFileModel.isTagElement(de);
     }
     
     public TreePath selectNode( String id) {
@@ -139,7 +137,7 @@ public class SVGNavigatorTree extends JTree {
     
     byte checkVisibility(DocumentElement docElem, boolean deepCheck) {
         boolean isVisible = isVisible(docElem);
-                
+        
         if ( !isVisible && deepCheck) {
             // check if node should be visible because of its visible children
             for ( Iterator i = docElem.getChildren().iterator(); i.hasNext(); ) {  
@@ -157,10 +155,9 @@ public class SVGNavigatorTree extends JTree {
     
     private static boolean isVisible(DocumentElement docElem) {
         if (showIdOnly) {
-            AttributeSet attrs     = docElem.getAttributes();
-            String       attrValue = (String) attrs.getAttribute("id");
+            String id = SVGFileModel.getIdAttribute(docElem);
 
-            if (attrValue == null || attrValue.length() == 0) {
+            if (id == null || id.length() == 0) {
                 return false;
             }
         }

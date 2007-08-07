@@ -14,7 +14,6 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.actions;
 
-import com.sun.perseus.j2d.Point;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
@@ -36,7 +35,7 @@ public class CursorPositionActionFactory extends AbstractComposerActionFactory {
         if ( !isOutsideEvent) {
             switch( e.getID()) {
                 case MouseEvent.MOUSE_EXITED:
-                    setStatusText("");
+                    setStatusText("");  //NOI18N
                     break;
                 case MouseEvent.MOUSE_DRAGGED:
                 case MouseEvent.MOUSE_MOVED:

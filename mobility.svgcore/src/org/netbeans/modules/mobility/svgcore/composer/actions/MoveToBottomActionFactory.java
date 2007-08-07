@@ -26,7 +26,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  */
 public class MoveToBottomActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction  m_moveToBottomAction = 
-        new AbstractSVGAction("move_to_bottom.png", "HINT_MoveToBottom", "LBL_MoveToBottom") {
+        new AbstractSVGAction("move_to_bottom.png", "HINT_MoveToBottom", "LBL_MoveToBottom") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null) {
@@ -45,8 +45,8 @@ public class MoveToBottomActionFactory extends AbstractComposerActionFactory imp
         sceneMgr.addSelectionListener(this);        
     }
 
-    public AbstractSVGAction getMenuAction() {
-        return m_moveToBottomAction;
+    public AbstractSVGAction [] getMenuActions() {
+        return new AbstractSVGAction [] { m_moveToBottomAction};
     }
     
     public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {

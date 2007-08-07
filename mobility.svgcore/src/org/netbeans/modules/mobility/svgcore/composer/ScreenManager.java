@@ -38,7 +38,7 @@ import org.w3c.dom.svg.SVGSVGElement;
  *
  * @author Pavel Benes
  */
-public class ScreenManager {
+public final class ScreenManager {
     private static final Image PEN_ICON            = org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/pen.png"); // NOI18N        
     private static final Color VIEWBOXBORDER_COLOR = Color.DARK_GRAY;
 
@@ -256,11 +256,13 @@ public class ScreenManager {
             svgImage.setViewportHeight(size.height);        
 
             if ( showAll) {
-                double xRatio = viewBoxRect.getWidth() / rect.getWidth();
-                double yRatio = viewBoxRect.getHeight() / rect.getHeight();
-                float  ratio  = (float) Math.max(xRatio, yRatio);
-                //System.out.println("Scale ratio: " + ratio);
-                svg.setCurrentScale( ratio);
+                if (viewBoxRect != null) {
+                    double xRatio = viewBoxRect.getWidth() / rect.getWidth();
+                    double yRatio = viewBoxRect.getHeight() / rect.getHeight();
+                    float  ratio  = (float) Math.max(xRatio, yRatio);
+                    //System.out.println("Scale ratio: " + ratio);
+                    svg.setCurrentScale( ratio);
+                }
 
                 SVGRect screenBBox = svg.getScreenBBox();
                 //System.out.println("Actual TotalScreenBBox: " + screenBBox);
@@ -279,7 +281,7 @@ public class ScreenManager {
         return m_changeTicker;
     }
     
-    private void incrementChangeTicker() {
+    public void incrementChangeTicker() {
         if (++m_changeTicker < 0) {
             m_changeTicker = 0;
         }

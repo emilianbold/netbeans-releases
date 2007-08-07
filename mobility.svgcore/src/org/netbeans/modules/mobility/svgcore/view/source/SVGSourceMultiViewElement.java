@@ -37,22 +37,19 @@ import org.openide.windows.TopComponent;
 public class SVGSourceMultiViewElement extends XmlMultiViewElement {
     private static final long serialVersionUID = 7525761714575627761L;        
     
-    //protected final int index;
-    
     /** Creates a new instance of SVGXmlMultiViewElement */
     public SVGSourceMultiViewElement( SVGDataObject dObj) {
         super(dObj);
-        //this.index = index;
     }    
-
+    
     public Lookup getLookup() {
         try {
             PaletteController pc = SVGXMLPaletteFactory.getPalette();
 
-            return new ProxyLookup(new org.openide.util.Lookup[] {
-                
+            return new ProxyLookup(new org.openide.util.Lookup[] {                
                 dObj.getNodeDelegate().getLookup(),
-                Lookups.singleton(pc),Lookups.singleton( new SelectionCookie() {
+                Lookups.singleton(pc),
+                Lookups.singleton( new SelectionCookie() {
                     public void updateSelection(SVGDataObject doj, DocumentElement de, boolean doubleClick) {
                         if (de != null) {
                             selectElement(doj, de, doubleClick);
@@ -68,8 +65,10 @@ public class SVGSourceMultiViewElement extends XmlMultiViewElement {
 
     public void componentOpened() {
         super.componentOpened();
+        ((SVGDataObject) dObj).getModel().initialize();
+        
         //tell the model that real document is available
-        ((SVGDataObject) dObj).getModel().refresh();
+        //((SVGDataObject) dObj).getModel().refresh();
     }
 
     public void componentShowing() {

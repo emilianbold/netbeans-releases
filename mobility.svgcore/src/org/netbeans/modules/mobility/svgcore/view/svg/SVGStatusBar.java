@@ -142,8 +142,8 @@ public class SVGStatusBar extends JPanel {
             setBorder(CELL_BORDER);
             setOpaque(true);
             this.widestStrings = widestStrings;
-            setForeground((Color) UIManager.get("Label.foreground"));
-            setBackground((Color) UIManager.get("Label.background"));
+            setForeground((Color) UIManager.get("Label.foreground")); //NOI18N
+            setBackground((Color) UIManager.get("Label.background")); //NOI18N
 
             updateSize();
         }

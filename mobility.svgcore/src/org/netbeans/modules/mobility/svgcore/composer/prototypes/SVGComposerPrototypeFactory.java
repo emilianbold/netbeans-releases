@@ -32,7 +32,6 @@ public abstract class SVGComposerPrototypeFactory  {
     //TODO Hack - leaks memory
     private static final Map<DocumentNode, Vector> s_prototypeMap = new HashMap<DocumentNode, Vector>();
     
-    //TODO implement other tags' prototypes
     public static synchronized Vector getPrototypes(final DocumentNode doc) {
        assert doc != null;
        

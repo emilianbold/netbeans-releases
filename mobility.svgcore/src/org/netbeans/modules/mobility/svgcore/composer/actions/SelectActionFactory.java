@@ -33,7 +33,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  */
 public class SelectActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction       m_navigateBackAction = 
-        new AbstractSVGAction("back.png", "HINT_SelectionBack", "LBL_SelectionBack", false) {
+        new AbstractSVGAction("back.png", "HINT_SelectionBack", "LBL_SelectionBack", false) {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 if ( m_selectionHistoryIndex > 0){
                     String [] selection = m_selectionHistory.get(--m_selectionHistoryIndex);
@@ -44,7 +44,7 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
     };            
 
     private final AbstractSVGAction       m_navigateForwardAction = 
-        new AbstractSVGAction("forward.png", "HINT_SelectionForward", "LBL_SelectionForward", false) {
+        new AbstractSVGAction("forward.png", "HINT_SelectionForward", "LBL_SelectionForward", false) {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 if ( m_selectionHistoryIndex < m_selectionHistory.size() - 1){
                     String [] selection = m_selectionHistory.get(++m_selectionHistoryIndex);
@@ -55,7 +55,7 @@ public class SelectActionFactory extends AbstractComposerActionFactory implement
     };            
 
     private final AbstractSVGAction       m_navigateUpAction = 
-        new AbstractSVGAction("up.png", "HINT_SelectionUp", "LBL_SelectionUp", false) {
+        new AbstractSVGAction("up.png", "HINT_SelectionUp", "LBL_SelectionUp", false) {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null && selected.length > 0) {

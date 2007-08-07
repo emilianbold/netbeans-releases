@@ -38,21 +38,21 @@ import org.openide.util.Utilities;
  * @version 1.0
  */
 class SVGNavigatorTreeCellRenderer extends DefaultTreeCellRenderer {    
-    private static final String TAG_16      = "org/netbeans/modules/xml/text/navigator/resources/tag.png";
-    private static final String PI_16       = "org/netbeans/modules/xml/text/navigator/resources/xml_declaration.png";
-    private static final String DOCTYPE_16  = "org/netbeans/modules/xml/text/navigator/resources/doc_type.png";
-    private static final String CDATA_16    = "org/netbeans/modules/xml/text/navigator/resources/cdata.png";    
-    private static final String ERROR_16    = "org/netbeans/modules/xml/text/navigator/resources/badge_error.png";
-    private static final String ANIMATE_16  = "org/netbeans/modules/mobility/svgcore/resources/badge_animate.png";
-    private static final String TAG_GRAY_16 = "org/netbeans/modules/mobility/svgcore/resources/tag_gray.png";
+    private static final String TAG_16      = "org/netbeans/modules/xml/text/navigator/resources/tag.png";  //NOI18N
+//    private static final String PI_16       = "org/netbeans/modules/xml/text/navigator/resources/xml_declaration.png"; //NOI18N
+//    private static final String DOCTYPE_16  = "org/netbeans/modules/xml/text/navigator/resources/doc_type.png"; //NOI18N
+//    private static final String CDATA_16    = "org/netbeans/modules/xml/text/navigator/resources/cdata.png";    
+    private static final String ERROR_16    = "org/netbeans/modules/xml/text/navigator/resources/badge_error.png"; //NOI18N
+    private static final String ANIMATE_16  = "org/netbeans/modules/mobility/svgcore/resources/badge_animate.png"; //NOI18N
+    private static final String TAG_GRAY_16 = "org/netbeans/modules/mobility/svgcore/resources/tag_gray.png"; //NOI18N
     
     private final Image  ERROR_IMAGE   = Utilities.loadImage(ERROR_16, true);   
     private final Image  ANIMATE_IMAGE = Utilities.loadImage(ANIMATE_16, true);   
     private final Icon[] TAG_GRAY_ICON = new Icon[]{getImageIcon(TAG_GRAY_16, false), getImageIcon(TAG_GRAY_16, true)};
     private final Icon[] TAG_ICON      = new Icon[]{getImageIcon(TAG_16, false), getImageIcon(TAG_16, true)};
-    private final Icon[] PI_ICON       = new Icon[]{getImageIcon(PI_16, false), getImageIcon(PI_16, true)};
-    private final Icon[] DOCTYPE_ICON  = new Icon[]{getImageIcon(DOCTYPE_16, false), getImageIcon(DOCTYPE_16, true)};
-    private final Icon[] CDATA_ICON    = new Icon[]{getImageIcon(CDATA_16, false), getImageIcon(CDATA_16, true)};
+    //private final Icon[] PI_ICON       = new Icon[]{getImageIcon(PI_16, false), getImageIcon(PI_16, true)};
+    //private final Icon[] DOCTYPE_ICON  = new Icon[]{getImageIcon(DOCTYPE_16, false), getImageIcon(DOCTYPE_16, true)};
+    //private final Icon[] CDATA_ICON    = new Icon[]{getImageIcon(CDATA_16, false), getImageIcon(CDATA_16, true)};
 
     private final Icon[] ANIMATE_TAG_ICON = new Icon[]{
         new ImageIcon(Utilities.mergeImages( Utilities.loadImage(TAG_16), ANIMATE_IMAGE, 5, 3)),
@@ -83,20 +83,13 @@ class SVGNavigatorTreeCellRenderer extends DefaultTreeCellRenderer {
             setIcon( TAG_GRAY_ICON, containsError);
         } else {
             //normal icons
-            if(de.getType().equals(SVGNavigatorNode.XML_TAG)
-            || de.getType().equals(SVGNavigatorNode.XML_EMPTY_TAG)) {
+            if( SVGNavigatorTree.isTreeElement(de)) {
                 if (SVGFileModel.isAnimation(de)) {
                     setIcon(ANIMATE_TAG_ICON, containsError);
                 } else {
                     setIcon(TAG_ICON, containsError);
                 }
-            } else if(de.getType().equals(SVGNavigatorNode.XML_PI)) {
-                setIcon(PI_ICON, containsError);
-            } else if(de.getType().equals(SVGNavigatorNode.XML_DOCTYPE)) {
-                setIcon(DOCTYPE_ICON, containsError);
-            } else if(de.getType().equals(SVGNavigatorNode.XML_CDATA)) {
-                setIcon(CDATA_ICON, containsError);
-            }            
+            }          
         }
         
         return comp;

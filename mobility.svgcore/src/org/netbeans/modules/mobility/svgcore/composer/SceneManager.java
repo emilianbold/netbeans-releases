@@ -13,7 +13,6 @@
  */
 package org.netbeans.modules.mobility.svgcore.composer;
 
-import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -39,21 +38,20 @@ import org.netbeans.modules.mobility.svgcore.composer.actions.RotateActionFactor
 import org.netbeans.modules.mobility.svgcore.composer.actions.ScaleActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.SelectAction;
 import org.netbeans.modules.mobility.svgcore.composer.actions.SelectActionFactory;
+import org.netbeans.modules.mobility.svgcore.composer.actions.SkewActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.actions.TranslateActionFactory;
-import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
 import org.netbeans.modules.mobility.svgcore.view.svg.SVGStatusBar;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.w3c.dom.Node;
 import org.w3c.dom.svg.SVGLocatableElement;
 
 /**
  *
  * @author Pavel Benes
  */
-public class SceneManager {   
+public final class SceneManager {   
     private transient SVGDataObject               m_dObj = null;
     private transient InstanceContent             m_lookupContent;
     private transient Lookup                      m_lookup;   
@@ -96,6 +94,7 @@ public class SceneManager {
         m_registeredActions.add( new HighlightActionFactory(this));
         m_registeredActions.add( m_selectActionFactory);
         m_registeredActions.add( new TranslateActionFactory(this));
+        m_registeredActions.add( new SkewActionFactory(this));
         m_registeredActions.add( new ScaleActionFactory(this));
         m_registeredActions.add( new RotateActionFactory(this));
         m_registeredActions.add( new DeleteActionFactory(this));
@@ -109,7 +108,7 @@ public class SceneManager {
         updateStatusBar();
     }
 
-    public void setImage(SVGImage svgImage) {
+    public synchronized void setImage(SVGImage svgImage) {
         if (m_svgImage != null) {
             resetImage();
         }
@@ -127,7 +126,7 @@ public class SceneManager {
         m_screenMgr.refresh();
     }
     
-    public void resetImage() {
+    public synchronized void resetImage() {
         if (m_svgImage != null) {
             m_lookupContent.remove(m_svgImage);
             m_svgImage          = null;
@@ -137,10 +136,13 @@ public class SceneManager {
         m_screenMgr.reset();
         m_inputControlMgr   = null;
         // remove all running actions
-        m_activeActions.clear();
-        
+        m_activeActions.clear();        
     }
-        
+      
+    public synchronized boolean isImageLoaded() {
+        return m_svgImage != null;
+    }
+    
     public void saveSelection() {
         SVGObject [] selected = getSelected();
         if ( selected != null && selected.length > 0 && selected[0] != null) {
@@ -171,9 +173,11 @@ public class SceneManager {
         List<Action> factoryMenuActions = new ArrayList(Arrays.asList(actions));
             
         for (ComposerActionFactory factory : m_registeredActions) {
-            Action a;
-            if ( (a=factory.getMenuAction()) != null) {
-                factoryMenuActions.add(a);
+            Action [] factoryActions;
+            if ( (factoryActions=factory.getMenuActions()) != null) {
+                for (Action action : factoryActions) {
+                    factoryMenuActions.add(action);
+                }
             }
         }
         
@@ -186,9 +190,11 @@ public class SceneManager {
         List<Action> factoryMenuActions = new ArrayList();
         
         for (ComposerActionFactory factory : m_registeredActions) {
-            Action a;
-            if ( (a=factory.getMenuAction()) != null) {
-                factoryMenuActions.add(a);
+            Action [] actions;
+            if ( (actions=factory.getMenuActions()) != null) {
+                for (Action action : actions) {
+                    factoryMenuActions.add(action);
+                }
             }
         } 
         return factoryMenuActions.toArray( new Action[factoryMenuActions.size()]);
@@ -260,7 +266,7 @@ public class SceneManager {
 
             //TODO implement better selection change handling
             SVGObject [] newSelection = getSelected();
-            if (!areSame(newSelection, oldSelection)) {
+            if (!SVGObject.areSame(newSelection, oldSelection)) {
                 selectionChanged(newSelection, oldSelection);
             }        
         }
@@ -316,7 +322,7 @@ public class SceneManager {
 
         //TODO implement better selection change handling
         SVGObject [] newSelection = getSelected();
-        if (!areSame(newSelection, oldSelection)) {
+        if (!SVGObject.areSame(newSelection, oldSelection)) {
             selectionChanged(newSelection, oldSelection);
         }                    
     }
@@ -352,7 +358,7 @@ public class SceneManager {
         SVGObject [] oldSelection = getSelected();
         svgObj.delete();
         SVGObject [] newSelection = getSelected();
-        if (!areSame(newSelection, oldSelection)) {
+        if (!SVGObject.areSame(newSelection, oldSelection)) {
             selectionChanged(newSelection, oldSelection);
         }                    
     }
@@ -400,35 +406,7 @@ public class SceneManager {
         }
     }    
     
-    //TODO move to SVGObject class
-    protected static boolean areSame(SVGObject [] arr1,SVGObject [] arr2) {
-        if (arr1 == arr2) {
-            return true;
-        } else if (arr1 == null || arr2 == null) {
-            return false;
-        } else if (arr1.length != arr2.length) {
-            return false;
-        } else {
-            for (int i = 0; i < arr1.length; i++) {
-                if ( arr1[i] != arr2[i]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-
     private void updateStatusBar() {
         m_screenMgr.getStatusBar().setText( SVGStatusBar.CELL_MODE, m_isReadOnly ? SVGStatusBar.LOCKED : SVGStatusBar.UNLOCKED);
     }
-    
-/*    
-    private void writeObject(ObjectOutputStream s) throws IOException {
-        assert false : "WriteObject"; 
-    }
-    
-    private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundException {
-        assert false : "ReadObject";
-    }
-*/    
 }   

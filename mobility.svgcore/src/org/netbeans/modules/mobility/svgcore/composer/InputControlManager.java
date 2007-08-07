@@ -24,7 +24,7 @@ import java.awt.event.MouseMotionListener;
  *
  * @author Pavel Benes
  */
-public class InputControlManager {
+public final class InputControlManager {
     private final SceneManager       m_sceneMgr;
     private final MouseController    m_mouseCtrl;
     private final KeyboardController m_keyCtrl;

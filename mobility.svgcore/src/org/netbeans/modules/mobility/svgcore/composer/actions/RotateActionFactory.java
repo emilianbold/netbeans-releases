@@ -41,7 +41,7 @@ public class RotateActionFactory extends AbstractComposerActionFactory {
     private static final Color COLOR_ROTATE_PIVOT_OUTLINE = Color.WHITE;
     private static final ActionMouseCursor ROTATE_MOUSE_CURSOR = new ActionMouseCursor( 
                 Toolkit.getDefaultToolkit().createCustomCursor(org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/rotate_cursor.png"), // NOI18N
-                new Point(8,8), "rotateCursor"), 3);
+                new Point(8,8), "rotateCursor"), 3);  //NOI18N
     
     private class RotateAction extends AbstractComposerAction {
         private final SVGObject m_rotated;

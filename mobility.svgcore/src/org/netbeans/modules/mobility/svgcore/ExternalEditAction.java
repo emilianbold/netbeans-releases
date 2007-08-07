@@ -53,11 +53,10 @@ public class ExternalEditAction extends CookieAction {
     }
 
     public String getName() {
-         return NbBundle.getMessage(ExternalEditAction.class, "CTL_ExternalEditAction");
+         return NbBundle.getMessage(ExternalEditAction.class, "CTL_ExternalEditAction");  //NOI18N
     }
 
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-
 }

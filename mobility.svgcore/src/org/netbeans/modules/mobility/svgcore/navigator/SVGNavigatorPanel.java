@@ -15,7 +15,6 @@ package org.netbeans.modules.mobility.svgcore.navigator;
 import java.util.Collection;
 import javax.swing.JComponent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
-import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -54,11 +53,11 @@ public class SVGNavigatorPanel implements NavigatorPanel {
     }
     
     public String getDisplayHint() {
-        return NbBundle.getMessage(SVGNavigatorPanel.class, "SVG_files_navigator");
+        return NbBundle.getMessage(SVGNavigatorPanel.class, "SVG_files_navigator");  //NOI18N
     }
     
     public String getDisplayName() {
-        return NbBundle.getMessage(SVGNavigatorPanel.class, "SVG_View");
+        return NbBundle.getMessage(SVGNavigatorPanel.class, "SVG_View");  //NOI18N
     }
     
     public JComponent getComponent() {

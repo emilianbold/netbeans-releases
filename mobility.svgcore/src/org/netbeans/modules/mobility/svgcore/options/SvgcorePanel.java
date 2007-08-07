@@ -41,6 +41,8 @@ final class SvgcorePanel extends javax.swing.JPanel {
         pathTextField = new javax.swing.JTextField();
         jButtonBrowse = new javax.swing.JButton();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 8));
+
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SvgcorePanel.class, "LBL_AnimatorPath")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonBrowse, org.openide.util.NbBundle.getMessage(SvgcorePanel.class, "LBL_ButtonChange")); // NOI18N
@@ -57,7 +59,7 @@ final class SvgcorePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(pathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 145, Short.MAX_VALUE)
+                .add(pathTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 137, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jButtonBrowse))
         );

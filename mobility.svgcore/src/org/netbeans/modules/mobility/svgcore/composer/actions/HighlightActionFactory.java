@@ -40,8 +40,8 @@ public class HighlightActionFactory extends AbstractComposerActionFactory {
             SVGObject [] objects = m_sceneMgr.getPerseusController().getObjectsAt(me.getX(), me.getY());
             if (objects != null && objects.length > 0 && objects[0] != null)  {
                 return new HighlightAction(this, objects[0]);
-            }    
-        }
+            }
+        }   
         return null;
     }
 }

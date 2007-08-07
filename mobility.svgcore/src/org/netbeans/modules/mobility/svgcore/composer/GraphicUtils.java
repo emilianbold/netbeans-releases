@@ -31,6 +31,17 @@ public abstract class GraphicUtils {
         g.setColor(body);
         g.drawOval(x - (size - 1),y - (size - 1),(size - 1) * 2,(size - 1) * 2);
     }
+
+    public static void drawDiamondSelectorCorner(Graphics g, Color outline, Color body,
+                                               int x, int y, int size) {
+        int [] xs = new int[] {x, x + size, x, x - size};
+        int [] ys = new int[] {y - size, y, y + size, y};
+        
+        g.setColor(body);
+        g.fillPolygon(xs, ys, xs.length);
+        g.setColor(outline);
+        g.drawPolygon(xs, ys, xs.length);
+    }
     
     public static boolean areNear(float x1, float y1, float x2, float y2, float dist) {
         float dx = x1 - x2;

@@ -24,7 +24,8 @@ import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
  * @author Pavel Benes
  */
 public final class PatchedGlyph extends Glyph implements PatchedElement {
-    private String m_idBackup = null;
+    private String    m_idBackup  = null;
+    private SVGObject m_svgObject = null; 
     
     public PatchedGlyph(final DocumentNode ownerDocument) {
         super(ownerDocument);
@@ -35,11 +36,11 @@ public final class PatchedGlyph extends Glyph implements PatchedElement {
     }
     
     public void attachSVGObject(SVGObject obj) {
-        
+        m_svgObject = obj;
     }
 
     public SVGObject getSVGObject() {
-        return null;
+        return m_svgObject;
     }
     
     public void setNullId(boolean isNull) {

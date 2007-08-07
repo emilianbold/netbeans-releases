@@ -68,7 +68,7 @@ public class HighlightAction extends AbstractComposerAction {
     }
     
     private String getTooltipText() {
-        String text       = "";
+        String text       = "";  //NOI18N
         String selectedId = m_highlighted.getElementId();
         
         if (getScreenManager().getShowTooltip()) {
@@ -80,7 +80,7 @@ public class HighlightAction extends AbstractComposerAction {
                prefix = elem.getLocalName();
             }
             StringBuilder sb = new StringBuilder();
-            sb.append("<html>");
+            sb.append("<html>");  //NOI18N
             sb.append(NbBundle.getMessage(SVGViewTopComponent.class, "LBL_Type", prefix)); //NOI18N
             sb.append("<br>"); //NOI18N
 

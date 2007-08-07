@@ -58,6 +58,7 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
 
     public void componentOpened() {
         super.componentOpened();
+        ((SVGDataObject) dObj).getModel().initialize();
         if (svgView != null) {
             svgView.componentOpened();
         }
@@ -67,10 +68,12 @@ public class SVGViewMultiViewElement extends AbstractMultiViewElement {
         svgView.onShow();
         dObj.setLastOpenView( SVGDataObject.SVG_VIEW_INDEX);
     }
-    
+
+    /*    
     public Action[] getActions() {
         return dObj.getNodeDelegate().getActions(false);
     }
+     */    
     
     public Lookup getLookup() {
         return new ProxyLookup( new Lookup[] {

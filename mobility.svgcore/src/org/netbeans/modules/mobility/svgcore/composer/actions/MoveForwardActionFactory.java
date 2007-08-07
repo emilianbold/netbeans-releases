@@ -26,7 +26,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  */
 public class MoveForwardActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener{
     private final AbstractSVGAction  m_moveForwardAction = 
-        new AbstractSVGAction("move_forward.png", "HINT_MoveForward", "LBL_MoveForward") {
+        new AbstractSVGAction("move_forward.png", "HINT_MoveForward", "LBL_MoveForward") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null) {
@@ -45,8 +45,8 @@ public class MoveForwardActionFactory extends AbstractComposerActionFactory impl
         sceneMgr.addSelectionListener(this);        
     }
 
-    public AbstractSVGAction getMenuAction() {
-        return m_moveForwardAction;
+    public AbstractSVGAction [] getMenuActions() {
+        return new AbstractSVGAction [] { m_moveForwardAction};
     }
     
     public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {

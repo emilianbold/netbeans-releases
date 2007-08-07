@@ -49,8 +49,6 @@ public class TranslateAction extends AbstractComposerAction {
         m_x = diffs[0];
         m_y = diffs[1];
         translate(m_x, m_y, true);
-        System.out.println("Action started.");
-        //m_selected.repaint(GraphicUtils.SELECTOR_OVERLAP);
     }
     
     public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
@@ -86,9 +84,6 @@ public class TranslateAction extends AbstractComposerAction {
         m_factory.getSceneManager().getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
     }
     
-    public void paint(Graphics g, int x, int y) {
-    }
-
     public void actionCompleted() {
         m_translated.applyTextChanges();
         m_translated.commitChanges();        

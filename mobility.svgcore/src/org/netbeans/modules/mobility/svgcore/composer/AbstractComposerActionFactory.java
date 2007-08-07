@@ -50,7 +50,7 @@ public abstract class AbstractComposerActionFactory implements ComposerActionFac
         return null;
     }   
 
-    public AbstractSVGAction getMenuAction() {
+    public AbstractSVGAction [] getMenuActions() {
         return null;
     }    
 }

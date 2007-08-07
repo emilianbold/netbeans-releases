@@ -18,7 +18,6 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.SimpleBeanInfo;
 import org.openide.loaders.UniFileLoader;
-import org.openide.util.Utilities;
 
 /**
  *

@@ -23,7 +23,6 @@ import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerAction;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.ActionMouseCursor;
 import org.netbeans.modules.mobility.svgcore.composer.ComposerAction;
-import org.netbeans.modules.mobility.svgcore.composer.ComposerActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
@@ -32,22 +31,21 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
  *
  * @author Pavel Benes
  */
-public class ScaleActionFactory extends AbstractComposerActionFactory {
-    private static final ActionMouseCursor SCALE_MOUSE_CURSOR = new ActionMouseCursor( 
-                Toolkit.getDefaultToolkit().createCustomCursor(org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/resize_cursor.png"), // NOI18N
-                new Point(8,8), "rotateCursor"), 2);  //NOI18N
+public class SkewActionFactory extends AbstractComposerActionFactory {
+    private static final ActionMouseCursor SKEW_MOUSE_CURSOR = new ActionMouseCursor( 
+                Toolkit.getDefaultToolkit().createCustomCursor(org.openide.util.Utilities.loadImage ("org/netbeans/modules/mobility/svgcore/resources/skew_cursor.png"), // NOI18N
+                new Point(8,8), "skewCursor"), 3);  //NOI18N
     
-    //TODO make it non-static inner class
-    private static class ScaleAction extends AbstractComposerAction {
-        private final SVGObject m_scaled;
-        private final int       m_x;
-        private final int       m_y;
+    private class SkewAction extends AbstractComposerAction {
+        private final SVGObject m_skewed;
+        private final int       m_initialX;
+        private final int       m_initialY;
 
-        public ScaleAction(ComposerActionFactory factory, SVGObject selected, MouseEvent me) {
-            super(factory);
-            m_scaled = selected;
-            m_x = me.getX();
-            m_y = me.getY();
+        public SkewAction(SVGObject skewed, MouseEvent me) {
+            super(SkewActionFactory.this);
+            m_skewed = skewed;
+            m_initialX = me.getX();
+            m_initialY = me.getY();
         }
 
         public boolean consumeEvent(InputEvent evt, boolean isOutsideEvent) {
@@ -55,38 +53,43 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
                 MouseEvent me = (MouseEvent)evt;
                 
                 //calculate area to repaint
-                Rectangle bBox = m_scaled.getScreenBBox();
-                m_scaled.scale(calculateScale(me.getX(), me.getY()));
-                bBox.add(m_scaled.getScreenBBox());
+                Rectangle bBox = m_skewed.getScreenBBox();
+                int   diff;
+                float skewX = 0;
+                float skewY = 0;
+                
+                if ( bBox.height > 0 && (diff=me.getX()-m_initialX) != 0) {
+                    double a = Math.atan( (double) diff / bBox.height);
+                    skewX = (float) java.lang.Math.toDegrees(a);
+                }
+                if ( bBox.width > 0 && (diff=m_initialY - me.getY()) != 0) {
+                    double a = Math.atan( (double) diff / bBox.width);
+                    skewY = (float) java.lang.Math.toDegrees(a);
+                }
+                
+                m_skewed.skew(skewX, skewY);
+                bBox.add(m_skewed.getScreenBBox());
                 
                 m_factory.getSceneManager().getScreenManager().repaint(bBox, SVGObjectOutline.SELECTOR_OVERLAP);
             } else {
                 actionCompleted();
-                m_scaled.commitChanges();
+                m_skewed.commitChanges();
             }
             return false;
         }
-        
+
         public ActionMouseCursor getMouseCursor(boolean isOutsideEvent) {
-            return isOutsideEvent ? null : SCALE_MOUSE_CURSOR;
+            return isOutsideEvent ? null : SKEW_MOUSE_CURSOR;
         }        
         
-        protected float calculateScale( int x, int y) {
-            float[] pt = m_scaled.getOutline().getScalePivotPoint();
-            float d1,d2;
-                    
-            d1 = pt[0] - m_x;
-            d2 = pt[1] - m_y;
-            float dist1 = d1*d1 + d2*d2;
-            d1 = pt[0] - x;
-            d2 = pt[1] - y;
-            float dist2 = d1*d1 + d2*d2;
-            
-            return dist2 / dist1;
+        public void actionCompleted() {
+            m_skewed.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
+            m_skewed.applyTextChanges();
+            super.actionCompleted();
         }
     }
     
-    public ScaleActionFactory(SceneManager sceneMgr) {
+    public SkewActionFactory(SceneManager sceneMgr) {
         super(sceneMgr);
     }
     
@@ -95,26 +98,26 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
              !m_sceneMgr.isReadOnly() &&
              e.getID() == MouseEvent.MOUSE_PRESSED) {
             MouseEvent me = (MouseEvent)e;
-            SVGObject selObj = getObjectToScaleAt(me);
+            SVGObject selObj = getObjectToSkewAt(me);
             if ( selObj != null) {
-                return new ScaleAction(this, selObj, me);
+                return new SkewAction(selObj, me);
             }
         } 
         return null;
     }
 
     public ActionMouseCursor getMouseCursor(MouseEvent evt, boolean isOutsideEvent) {
-        if ( !isOutsideEvent && getObjectToScaleAt(evt) != null) {
-            return SCALE_MOUSE_CURSOR;
+        if ( !isOutsideEvent && getObjectToSkewAt(evt) != null) {
+            return SKEW_MOUSE_CURSOR;
         }
         return null;
     }
     
-    private SVGObject getObjectToScaleAt( MouseEvent me) {
+    private SVGObject getObjectToSkewAt( MouseEvent me) {
         SVGObject [] selectedObjects = m_sceneMgr.getSelected();
         if (selectedObjects != null && selectedObjects.length > 0) {
             SVGObject selObj = selectedObjects[0];
-            if ( selObj.getOutline().isAtScaleHandlePoint((float) me.getX(), (float) me.getY())) {
+            if ( selObj.getOutline().isAtSkewHandlePoint((float) me.getX(), (float) me.getY())) {
                 return selObj;
             }
         }

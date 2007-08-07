@@ -16,44 +16,51 @@ package org.netbeans.modules.mobility.svgcore.composer;
 
 import com.sun.perseus.j2d.Transform;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.mobility.svgcore.composer.prototypes.PatchedTransformableElement;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 import org.openide.util.Exceptions;
+import org.w3c.dom.Node;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGMatrix;
 import org.w3c.dom.svg.SVGRect;
 
 /**
  *
  * @author Pavel Benes
  */
-public class SVGObject {
+public final class SVGObject {
     private final SceneManager        m_sceneMgr;
     private final SVGLocatableElement m_elem;
-    private final Transform           m_initialTransform;
+    public final Transform            m_initialTransform;
     private       SVGObjectOutline    m_outline = null;
     private       boolean             m_isDeleted = false;
 
     private       float               m_translateDx = 0;
     private       float               m_translateDy = 0;
+    private       float               m_skewX       = 0;
+    private       float               m_skewY       = 0;
     private       float               m_scale       = 1;
     private       float               m_rotate      = 0;
     
-    private       float               m_tempTranslateDx  = 0;
+    private       float               m_tempTranslateDx = 0;
     private       float               m_tempTranslateDy = 0;
-    private       float               m_tempScale  = 1;
-    private       float               m_tempRotate = 0;
-
-    private static final String ATTR_TRANSFORM = "transform";
+    private       float               m_tempSkewX       = 0;
+    private       float               m_tempSkewY       = 0;
+    private       float               m_tempScale       = 1;
+    private       float               m_tempRotate      = 0;
+   
+    private static final String ATTR_TRANSFORM = "transform"; //NOI18N
     
     public SVGObject(SceneManager sceneMgr, SVGLocatableElement elem) {
-        m_sceneMgr = sceneMgr;
-        m_elem     = elem;
+        assert sceneMgr != null;
+        assert elem != null;
         
-        if (m_elem instanceof PatchedTransformableElement) {
-            m_initialTransform = ((PatchedTransformableElement) m_elem).getTransform();
-        } else {
-            m_initialTransform = null;
-        }
+        m_sceneMgr         = sceneMgr;
+        m_elem             = elem;
+        m_initialTransform = new Transform( m_elem instanceof PatchedTransformableElement ? 
+            ((PatchedTransformableElement) m_elem).getTransform() : null);
     }
     
     public SceneManager getSceneManager() {
@@ -73,43 +80,20 @@ public class SVGObject {
         assert id != null : "Null ID of SVGElement " + m_elem;
         return id;
     }       
-
-    public synchronized SVGRect getInitialScreenBBox() {
-        SVGLocatableElement elem = getSVGElement();
-        
-        PatchedTransformableElement pg  = null;
-        Transform                   tfm = null;
-        
-        if (elem instanceof PatchedTransformableElement) {
-            pg = (PatchedTransformableElement) elem;
-            tfm = pg.getTransform();
-            pg.setTransform(m_initialTransform);
-        } 
-        
-        SVGRect rect = PerseusController.getSafeScreenBBox(elem);
-        
-        if (tfm != null) {
-            pg.setTransform(tfm);
-        }
-        
-        return rect;
-    }
     
+    public SVGRect getSafeBBox() {
+        return PerseusController.getSafeBBox(m_elem);
+    }
+/*    
     public synchronized SVGRect getSVGScreenBBox() {
         return PerseusController.getSafeScreenBBox(m_elem);
     }
-    
+*/    
     public Rectangle getScreenBBox() {
-        SVGRect bBox = getSVGScreenBBox();
-        if (bBox != null) {
-            return new Rectangle( (int) bBox.getX(), (int) bBox.getY(),
-                                  (int) bBox.getWidth(), (int) bBox.getHeight());
-        } else {
-            return null;
-        }
-    }
-        
+        return getOutline().getScreenBoundingBox();
+    }        
 
+    
     public boolean isDeleted() {
         return m_isDeleted;
     }
@@ -125,9 +109,8 @@ public class SVGObject {
     public void repaint(int overlap) {
         if ( !m_isDeleted) {
             Rectangle rect = getScreenBBox();
-            if (rect != null) {
-                m_sceneMgr.getScreenManager().repaint( rect, overlap);
-            }
+            assert rect != null;
+            m_sceneMgr.getScreenManager().repaint( rect, overlap);
         }
     }
     
@@ -138,16 +121,60 @@ public class SVGObject {
         return m_outline;
     }
     
+    public SVGMatrix getParentTransformation() {
+        Node            node       = m_elem.getParentNode();
+        List<SVGMatrix> transforms = null;
+        
+        
+        while(node != null) {
+            if ( (node instanceof PatchedTransformableElement) ) {
+                Transform temp = ((PatchedTransformableElement) node).getTransform();
+                if (temp != null) {
+                    if (transforms == null) {
+                        transforms = new ArrayList<SVGMatrix>();
+                    }
+                    transforms.add( new Transform(temp));
+                }
+            }
+            node = node.getParentNode();
+       }
+        SVGMatrix total = null;
+        
+        if (transforms != null) {
+            total = transforms.get(0);
+            for (int i = 1; i < transforms.size(); i++) {
+                total = total.mMultiply(transforms.get(i));
+            }
+        }
+
+        return total;
+    }
+    
     public void translate(final float dx, final float dy, final boolean isRelative) {
         m_sceneMgr.getPerseusController().execute(new Runnable() {
             public void run() {
+                float _dx = dx,
+                      _dy = dy;
+                
                 try {
+                    Transform txf = (Transform) getParentTransformation();
+                    
+                    if ( txf != null) {
+                        txf = (Transform) txf.inverse();
+                        float [] point  = new float[2];
+                        txf.transformPoint( new float[] {dx, dy}, point);
+                        _dx = point[0] - txf.getComponent(4);
+                        _dy = point[1] - txf.getComponent(5);
+                    } 
+                    
+                    //System.out.println("Dx=" + _dx + ", Dy=" + _dy);
+                    
                     if ( isRelative) {
-                        m_tempTranslateDx += dx;
-                        m_tempTranslateDy += dy;
+                        m_tempTranslateDx += _dx;
+                        m_tempTranslateDy += _dy;
                     } else {
-                        m_tempTranslateDx = dx;
-                        m_tempTranslateDy = dy;
+                        m_tempTranslateDx = _dx;
+                        m_tempTranslateDy = _dy;
                     }
                     applyUserTransform();
                 } catch (Exception ex) {
@@ -186,6 +213,21 @@ public class SVGObject {
         });
     }
 
+    public void skew(final float skewX, final float skewY ) {
+        m_sceneMgr.getPerseusController().execute(new Runnable() {
+            public void run() {
+                try {
+                    m_tempSkewX = skewX;
+                    m_tempSkewY = skewY;
+                    applyUserTransform();
+                } catch (Exception ex) {
+                    System.err.println("Skew operation failed!");
+                    Exceptions.printStackTrace(ex);
+                }
+            }            
+        });
+    }
+    
     public void moveToTop() {
         String id = getElementId();
         getPerseusController().moveToTop(m_elem);
@@ -243,7 +285,10 @@ public class SVGObject {
         m_translateDy = getCurrentTranslateY();
         m_scale       = getCurrentScale();
         m_rotate      = getCurrentRotate();
+        m_skewX       = getCurrentSkewX();
+        m_skewY       = getCurrentSkewY();
         m_tempTranslateDx = m_tempTranslateDy = 0;
+        m_tempSkewX = m_tempSkewY = 0;
         m_tempScale = 1;
         m_tempRotate = 0;
         applyUserTransform();
@@ -253,10 +298,15 @@ public class SVGObject {
     public void rollbackChanges() {
         repaint(SVGObjectOutline.SELECTOR_OVERLAP);          
         m_tempTranslateDx = m_tempTranslateDy = 0;
+        m_tempSkewX = m_tempSkewY = 0;
         m_tempScale = 1;
         m_tempRotate = 0;
         applyUserTransform();
         repaint(SVGObjectOutline.SELECTOR_OVERLAP);        
+    }
+    
+    public float [] getCurrentTranslate() {
+        return new float [] { getCurrentTranslateX(), getCurrentTranslateY() };
     }
     
     public float getCurrentTranslateX() {
@@ -274,50 +324,76 @@ public class SVGObject {
     public float getCurrentRotate() {
         return (m_rotate + m_tempRotate) % 360;
     }
+
+    public float getCurrentSkewX() {
+        return m_skewX + m_tempSkewX;
+    }
+
+    public float getCurrentSkewY() {
+        return m_skewY + m_tempSkewY;
+    }
     
-    /*
-    protected synchronized boolean isWrappedObject() {
-        return PatchedGroup.getWrapper(m_elem) != null;
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append( "SVGObject( tag="); //NOI18N
+        sb.append( m_elem.getLocalName());
+        sb.append( " id="); //NOI18N
+        sb.append( m_elem.getId());
+        sb.append( " isDeleted="); //NOI18N
+        sb.append( m_isDeleted);
+        sb.append( " translateX="); //NOI18N
+        sb.append( m_translateDx);
+        sb.append( " translateY="); //NOI18N
+        sb.append( m_translateDy);
+        sb.append( " skewX="); //NOI18N
+        sb.append( m_skewX);
+        sb.append( " skewY="); //NOI18N
+        sb.append( m_skewY);
+        sb.append( " scale="); //NOI18N
+        sb.append( m_scale);
+        sb.append( " rotate="); //NOI18N
+        sb.append( m_rotate);
+        sb.append(")"); //NOI18N
+
+        return sb.toString();
     }
-    */  
-    /*
-    protected void checkWrapped() throws BadLocationException {
-        if (!isWrappedObject()) {
-            _wrapObject();
-        }
-        assert isWrappedObject() : "Wrapping failed";
-    }
-    */
-    /*
-    protected synchronized void _wrapObject() throws BadLocationException {
-        String id = getElementId();
-        
-        m_elem = getPerseusController().wrapElement(this);
-        getFileModel().wrapElement(id, m_elem.getId());
-    }
-    */
     
     protected void applyUserTransform() {
         if (m_elem instanceof PatchedTransformableElement) {
-            getOutline().setDirty();
+            getScreenManager().incrementChangeTicker();
             PatchedTransformableElement pg = (PatchedTransformableElement) m_elem;
             SVGRect rect = PerseusController.getSafeBBox(m_elem);
+            
             if (rect != null) {
-                float rotatePivotX = rect.getX() + rect.getWidth() / 2;
-                float rotatePivotY = rect.getY() + rect.getHeight() / 2;
+                float [] temp = new float[] {
+                    rect.getX() + rect.getWidth() / 2,
+                    rect.getY() + rect.getHeight() / 2
+                };
+                float []  rotatePivot = new float[2];
+                m_initialTransform.transformPoint( temp, rotatePivot);
+                //System.out.println("Rotate pivot: [" + rotatePivot[0] + "," + rotatePivot[1] + "]");
 
                 Transform txf = new Transform( 1, 0, 0, 1, 0, 0);
-                                
-                txf.mTranslate(getCurrentTranslateX() + rotatePivotX,
-                    getCurrentTranslateY() + rotatePivotY);
+                txf.mTranslate(getCurrentTranslateX() + rotatePivot[0],
+                    getCurrentTranslateY() + rotatePivot[1]);
+                
+                float skew;
+                skew = getCurrentSkewX();
+                if ( skew != 0 && skew > -90 && skew < 90) {
+                    Transform skewTxf = new Transform( 1, 0, (float) Math.tan(Math.toRadians(skew)), 1, 0, 0);
+                    txf.mMultiply(skewTxf);
+                }
+                skew = getCurrentSkewY();
+                if ( skew != 0 && skew > -90 && skew < 90) {
+                    Transform skewTxf = new Transform( 1, (float) Math.tan(Math.toRadians(skew)), 0, 1, 0, 0);
+                    txf.mMultiply(skewTxf);
+                }
+                
                 txf.mScale(getCurrentScale());
                 txf.mRotate(getCurrentRotate());
-                txf.mTranslate( -rotatePivotX, -rotatePivotY);
+                txf.mTranslate( -rotatePivot[0], -rotatePivot[1]);
                 
-                if (m_initialTransform != null) {
-                    txf.mMultiply(m_initialTransform);
-                } 
-                
+                txf.mMultiply(m_initialTransform);
                 pg.setTransform(txf);
             } else {
                 System.err.println("Null BBox for " + pg);
@@ -334,18 +410,35 @@ public class SVGObject {
         return m_sceneMgr.getDataObject().getModel();
     }
     
+    public static boolean areSame(SVGObject [] arr1,SVGObject [] arr2) {
+        if (arr1 == arr2) {
+            return true;
+        } else if (arr1 == null || arr2 == null) {
+            return false;
+        } else if (arr1.length != arr2.length) {
+            return false;
+        } else {
+            for (int i = 0; i < arr1.length; i++) {
+                if ( arr1[i] != arr2[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+    
     private static String getTransformAsText(PatchedTransformableElement telem) {
         Transform     tfm = telem.getTransform();
         StringBuilder sb  = new StringBuilder();
 
         if (tfm != null) {
-            sb.append("matrix(");
+            sb.append("matrix("); //NOI18N
             for (int i = 0; i < 5; i++) {
                 sb.append( tfm.getComponent(i));
                 sb.append(',');
             }
             sb.append(tfm.getComponent(5));
-            sb.append(")");
+            sb.append(")"); //NOI18N
         }
         return sb.toString();
     }    

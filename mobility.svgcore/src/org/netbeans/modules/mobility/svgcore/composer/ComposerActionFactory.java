@@ -28,5 +28,5 @@ public interface ComposerActionFactory {
     public void              setBlocked(boolean isBlocked);
     public SceneManager      getSceneManager();
     public ActionMouseCursor getMouseCursor(MouseEvent evt, boolean isOutsideEvent);
-    public AbstractSVGAction getMenuAction();
+    public AbstractSVGAction [] getMenuActions();
 }

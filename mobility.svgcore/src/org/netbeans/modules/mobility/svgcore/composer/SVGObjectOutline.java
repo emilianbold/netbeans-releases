@@ -16,14 +16,16 @@ package org.netbeans.modules.mobility.svgcore.composer;
 import com.sun.perseus.j2d.Transform;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import org.w3c.dom.svg.SVGRect;
 
 /**
  *
  * @author Pavel Benes
  */
-public class SVGObjectOutline {
+public final class SVGObjectOutline {
     private static final int   ROUND_CORNER_SIZE   = 3;
+    private static final int   DIAMOND_CORNER_SIZE = 3;
     public static final int    SELECTOR_OVERLAP    = ROUND_CORNER_SIZE + 2;
     
     private static final float HANDLE_DIST         = 30;
@@ -31,16 +33,15 @@ public class SVGObjectOutline {
     private static final Color SELECTOR_OUTLINE    = Color.WHITE;
     private static final Color COLOR_HIGHLIGHT     = new Color( 0,0,0, 64);
     private static final int   ROTATE_CORNER_INDEX = 1;
+    private static final int   SKEW_CORNER_INDEX   = 3;
     
     private final SVGObject m_svgObject;
     private final float[][] m_coords = new float[4][2];
-    private       SVGRect   m_screenBBox;
     private       short     m_tickerCopy;
         
     public SVGObjectOutline(SVGObject svgObject) {
         assert svgObject != null : "The SVGObject reference cannot be null";
         m_svgObject  = svgObject;
-        //m_screenBBox = m_svgObject.getInitialScreenBBox();
         setDirty();
     }
     
@@ -65,12 +66,16 @@ public class SVGObjectOutline {
         }
 
         for (int i = 0; i < 4; i++) {
-            if ( i != ROTATE_CORNER_INDEX) {
-                drawRectSelectorCorner(g, (int)m_coords[i][0] + xOff,(int)m_coords[i][1] + yOff);
-            } else {
+            if ( i == ROTATE_CORNER_INDEX) {
                 GraphicUtils.drawRoundSelectorCorner(g, SELECTOR_OUTLINE, SELECTOR_BODY,
                         (int)m_coords[i][0] + xOff,(int)m_coords[i][1] + yOff,
                         ROUND_CORNER_SIZE);
+            } else if ( i == SKEW_CORNER_INDEX) {
+                GraphicUtils.drawDiamondSelectorCorner(g, SELECTOR_OUTLINE, SELECTOR_BODY,
+                        (int)m_coords[i][0] + xOff,(int)m_coords[i][1] + yOff,
+                        DIAMOND_CORNER_SIZE);
+            } else {
+                drawRectSelectorCorner(g, (int)m_coords[i][0] + xOff,(int)m_coords[i][1] + yOff);
             }
         }
     }
@@ -87,6 +92,32 @@ public class SVGObjectOutline {
         }
         g.fillPolygon( xPoints, yPoints, 4);        
     }
+    
+    public Rectangle getScreenBoundingBox() {
+        checkObject();
+        
+        float min_x, max_x, min_y, max_y;
+        min_x = max_x = m_coords[0][0]; 
+        min_y = max_y = m_coords[0][1];
+        
+        for (int i = 1; i < m_coords.length; i++) {
+            float x = m_coords[i][0];
+            float y = m_coords[i][1];
+            
+            if ( x < min_x) {
+                min_x = x;
+            } else if ( x > max_x) {
+                max_x = x;
+            }
+            if ( y < min_y) {
+                min_y = y;
+            } else if ( y > max_y) {
+                max_y = y;
+            }
+        }
+        return new Rectangle( Math.round(min_x), Math.round(min_y),
+                              Math.round(max_x - min_x), Math.round(max_y - min_y));
+    }
 
     public float[] getRotatePivotPoint() {
         return getCenter();
@@ -98,14 +129,13 @@ public class SVGObjectOutline {
     
     public float [] getCenter() {
         checkObject();
-        float sx, sy;
-        sx = sy = 0;
+        float sx = 0, sy = 0;
         
         for (int i = 0; i < m_coords.length; i++) {
             sx += m_coords[i][0];
             sy += m_coords[i][1];
         }
-        return new float[] { sx /4, sy/4 };
+        return new float[] { sx/4, sy/4 };
     }
     
     public boolean isAtRotateHandlePoint(float x, float y) {
@@ -121,11 +151,22 @@ public class SVGObjectOutline {
     public boolean isAtScaleHandlePoint(float x, float y) {
         checkObject();
         for (int i = 0; i < 4; i++) {
-            if ( i != ROTATE_CORNER_INDEX) {
+            if ( i != ROTATE_CORNER_INDEX && i != SKEW_CORNER_INDEX) {
                 if (GraphicUtils.areNear(x, y, m_coords[i][0], m_coords[i][1],HANDLE_DIST)) {
                     return true;
                 }
             }
+        }
+        
+        return false;        
+    }
+
+    public boolean isAtSkewHandlePoint(float x, float y) {
+        checkObject();
+        float [] pt = m_coords[SKEW_CORNER_INDEX];
+
+        if (GraphicUtils.areNear(x, y, pt[0], pt[1], HANDLE_DIST)) {
+            return true;
         }
         
         return false;        
@@ -138,49 +179,27 @@ public class SVGObjectOutline {
         g.drawRect(x-3, y-3, 6, 6);
     }
     
-    private float getZoomRatio() {
-        return m_svgObject.getSceneManager().getScreenManager().getZoomRatio();
-    }
-    
     private synchronized void checkObject() {
         assert m_svgObject != null : "SVGObject reference cannot be null";
         short ticker = m_svgObject.getScreenManager().getChangeTicker();
         
         if (ticker != m_tickerCopy) {
-            float zoomRatio = getZoomRatio();
-            m_screenBBox = m_svgObject.getInitialScreenBBox();
+            SVGRect bBox = m_svgObject.getSafeBBox();
+            Transform txf = (Transform) m_svgObject.getSVGElement().getScreenCTM();
             
-            //SVGRect bBox = GraphicUtils.scale(m_screenBBox, zoomRatio);
-            //SVGRect bBox = m_screenBBox;
-            float px = m_screenBBox.getX() + m_screenBBox.getWidth()  / 2;
-            float py = m_screenBBox.getY() + m_screenBBox.getHeight() / 2;
+            float x = bBox.getX(),
+                  y = bBox.getY(),
+                  w = bBox.getWidth(),
+                  h = bBox.getHeight();
+            
+            float [][] points = new float[][] {
+                {x, y}, {x+w, y}, {x+w, y+h}, {x, y+h}
+            };
 
-            float scale = m_svgObject.getCurrentScale();
-            Transform txf = new Transform( scale, 0, 0, scale, 0, 0);
-            txf.mRotate(m_svgObject.getCurrentRotate());
-
-            float [] point = new float[2];
-
-            point[0] = (m_screenBBox.getX() - px);
-            point[1] = (m_screenBBox.getY() - py);
-            txf.transformPoint(point, m_coords[0]);
-
-            point[0] += m_screenBBox.getWidth();
-            txf.transformPoint(point, m_coords[1]);
-
-            point[1] += m_screenBBox.getHeight();
-            txf.transformPoint(point, m_coords[2]);
-
-            point[0] -= m_screenBBox.getWidth();
-            txf.transformPoint(point, m_coords[3]);
-
-            px += m_svgObject.getCurrentTranslateX() * zoomRatio;
-            py += m_svgObject.getCurrentTranslateY() * zoomRatio;
-
-            for (int i = 0; i < 4; i++) {
-                m_coords[i][0] += px;
-                m_coords[i][1] += py;
-            }          
+            for (int i = 0; i < m_coords.length; i++) {
+                txf.transformPoint(points[i], m_coords[i]);
+            }
+            
 
             m_tickerCopy = ticker;
         }        

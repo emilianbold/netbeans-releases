@@ -14,31 +14,29 @@
 
 package org.netbeans.modules.mobility.svgcore.composer.prototypes;
 
-import com.sun.perseus.j2d.Transform;
 import com.sun.perseus.model.DocumentNode;
 import com.sun.perseus.model.ElementNode;
-import com.sun.perseus.model.ModelNode;
 import com.sun.perseus.model.Text;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
-import org.w3c.dom.svg.SVGRect;
 
 /**
  *
  * @author Pavel Benes
  */
 public final class PatchedText extends Text implements PatchedTransformableElement {
-    private String m_idBackup = null;
+    private String    m_idBackup  = null;
+    private SVGObject m_svgObject = null; 
     
     public PatchedText(final DocumentNode ownerDocument) {
         super(ownerDocument);
     }
     
     public void attachSVGObject(SVGObject obj) {
-        setTransform(txf);
+        m_svgObject = obj;
     }
 
     public SVGObject getSVGObject() {
-        return null;
+        return m_svgObject;
     }
     
     public void setNullId(boolean isNull) {
@@ -53,25 +51,4 @@ public final class PatchedText extends Text implements PatchedTransformableEleme
     public ElementNode newInstance(final DocumentNode doc) {
         return new PatchedText(doc);
     }   
-    public boolean contributeBBox() {
-        return super.contributeBBox();
-    }
-    
- /*   
-    public ModelNode nextSibling() {
-        return super.nextSibling;
-    }
-*/    
-    public Transform appendTransform(Transform tx,
-                                        final Transform workTx) {    
-        return super.appendTransform( tx, workTx); 
-    }
-    
-    public SVGRect getScreenBBox() {
-        SVGRect bBox = super.getScreenBBox();
-        if (bBox == null) {
-            System.err.println("Null text bbox!");
-        }
-        return bBox;
-    }
 }

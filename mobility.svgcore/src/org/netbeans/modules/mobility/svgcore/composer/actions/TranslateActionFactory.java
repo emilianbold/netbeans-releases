@@ -21,9 +21,7 @@ import java.awt.event.MouseEvent;
 import org.netbeans.modules.mobility.svgcore.composer.AbstractComposerActionFactory;
 import org.netbeans.modules.mobility.svgcore.composer.ActionMouseCursor;
 import org.netbeans.modules.mobility.svgcore.composer.ComposerAction;
-import org.netbeans.modules.mobility.svgcore.composer.GraphicUtils;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
-import org.netbeans.modules.mobility.svgcore.composer.SVGObjectOutline;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 
 /**

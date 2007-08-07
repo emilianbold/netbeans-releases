@@ -26,7 +26,7 @@ import org.netbeans.modules.mobility.svgcore.view.svg.AbstractSVGAction;
  */
 public class MoveBackwardActionFactory extends AbstractComposerActionFactory implements SceneManager.SelectionListener {
     private final AbstractSVGAction  m_moveBackwardAction = 
-        new AbstractSVGAction("move_backward.png", "HINT_MoveBackward", "LBL_MoveBackward") {
+        new AbstractSVGAction("move_backward.png", "HINT_MoveBackward", "LBL_MoveBackward") {  //NOI18N
             public void actionPerformed(ActionEvent e) {
                 SVGObject [] selected = m_sceneMgr.getSelected();
                 if (selected != null) {
@@ -45,8 +45,8 @@ public class MoveBackwardActionFactory extends AbstractComposerActionFactory imp
         sceneMgr.addSelectionListener(this);        
     }
 
-    public AbstractSVGAction getMenuAction() {
-        return m_moveBackwardAction;
+    public AbstractSVGAction [] getMenuActions() {
+        return new AbstractSVGAction [] { m_moveBackwardAction};
     }
     
     public void selectionChanged(SVGObject[] newSelection, SVGObject[] oldSelection, boolean isReadOnly) {

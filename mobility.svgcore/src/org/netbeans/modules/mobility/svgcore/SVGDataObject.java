@@ -13,7 +13,6 @@
 package org.netbeans.modules.mobility.svgcore;
 
 import java.awt.Image;
-import java.awt.KeyboardFocusManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
@@ -48,6 +47,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
@@ -64,7 +64,7 @@ public class SVGDataObject extends XmlMultiViewDataObject {
     
     public static final int    XML_VIEW_INDEX   = 0;
     public static final int    SVG_VIEW_INDEX   = 1;
-    public static final String PROP_EXT_CHANGE  = "external_change";
+    public static final String PROP_EXT_CHANGE  = "external_change"; //NOI18N
     
     private static final Image SVGFILE_ICON = org.openide.util.Utilities.loadImage("org/netbeans/modules/mobility/svgcore/resources/svg.png"); // NOI18N
     
@@ -113,14 +113,14 @@ public class SVGDataObject extends XmlMultiViewDataObject {
             } else {
                 kit.write(new OutputStreamWriter(stream, getEncodingHelper().getEncoding()), doc, 0, doc.getLength());                
             }
-        }        
+        }
     }
     
     private static class VisualView extends DesignMultiViewDesc {
         private static final long serialVersionUID = 7526471457562776148L;
         
         VisualView(SVGDataObject dObj) {
-            super(dObj, NbBundle.getMessage(SVGDataObject.class, "LBL_MULVIEW_TITLE_VIEW"));
+            super(dObj, NbBundle.getMessage(SVGDataObject.class, "LBL_MULVIEW_TITLE_VIEW")); //NOI18N
         }
         
         public org.netbeans.core.spi.multiview.MultiViewElement createElement() {
@@ -133,7 +133,7 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         }
         
         public String preferredID() {
-            return "multiview_svgview";
+            return "multiview_svgview"; //NOI18N
         }
         
         public int getPersistenceType() {
@@ -145,7 +145,7 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         private static final long serialVersionUID = 7526471457562776147L;
         
         XMLTextView(SVGDataObject dObj) {
-            super( dObj, NbBundle.getMessage(SVGDataObject.class, "LBL_MULVIEW_TITLE_SOURCE"));
+            super( dObj, NbBundle.getMessage(SVGDataObject.class, "LBL_MULVIEW_TITLE_SOURCE")); //NOI18N
         }
         
         public MultiViewElement createElement() {
@@ -180,7 +180,11 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         //recalculate the xmlMultiViewIndex member after default
         //XML view has been suppressed.
         edSup.getMultiViewDescriptions();
-        //System.out.println("< SVGDataObject()");
+        getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            public void saveAs(FileObject folder, String fileName) throws IOException {
+                getEditorSupport().saveAs( folder, fileName );
+            }
+        });  
     }
         
     public DataCache getDataCache() {
@@ -235,7 +239,7 @@ public class SVGDataObject extends XmlMultiViewDataObject {
     }   
 
     public static boolean isSVGZ(String fileExt) {
-        return "svgz".equals(fileExt.toLowerCase());
+        return "svgz".equals(fileExt.toLowerCase()); //NOI18N
     }
     
     @SuppressWarnings({"deprecation"})
@@ -247,27 +251,27 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         }
         
         public String getName() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public String getExt() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public void rename(FileLock lock, String name, String ext) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public FileSystem getFileSystem() throws FileStateInvalidException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public FileObject getParent() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public boolean isFolder() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public Date lastModified() {
@@ -275,43 +279,43 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         }
 
         public boolean isRoot() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public boolean isData() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public boolean isValid() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public void delete(FileLock lock) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public Object getAttribute(String attrName) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public void setAttribute(String attrName, Object value) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public Enumeration<String> getAttributes() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public void addFileChangeListener(FileChangeListener fcl) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public void removeFileChangeListener(FileChangeListener fcl) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public long getSize() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public InputStream getInputStream() throws FileNotFoundException {
@@ -325,37 +329,37 @@ public class SVGDataObject extends XmlMultiViewDataObject {
         }
 
         public OutputStream getOutputStream(FileLock lock) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public FileLock lock() throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         @SuppressWarnings({"deprecation"})
         public void setImportant(boolean b) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public FileObject[] getChildren() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public FileObject getFileObject(String name, String ext) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public FileObject createFolder(String name) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
 
         public FileObject createData(String name, String ext) throws IOException {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
         
         @SuppressWarnings({"deprecation"})
         public boolean isReadOnly() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }        
     }    
 }

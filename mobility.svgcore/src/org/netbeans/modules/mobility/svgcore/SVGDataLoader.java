@@ -25,16 +25,16 @@ import org.openide.util.NbBundle;
  */
 public class SVGDataLoader extends UniFileLoader {
     
-    public static final String REQUIRED_MIME = "image/svg+xml";
+    public static final String REQUIRED_MIME = "image/svg+xml"; //NOI18N
     
     private static final long serialVersionUID = 1L;
     
     public SVGDataLoader() {
-        super("org.netbeans.modules.mobility.svgcore.SVGDataObject");
+        super("org.netbeans.modules.mobility.svgcore.SVGDataObject"); //NOI18N
     }
     
     protected String defaultDisplayName() {
-        return NbBundle.getMessage(SVGDataLoader.class, "LBL_SVG_loader_name");
+        return NbBundle.getMessage(SVGDataLoader.class, "LBL_SVG_loader_name"); //NOI18N
     }
     
     protected void initialize() {
@@ -47,6 +47,6 @@ public class SVGDataLoader extends UniFileLoader {
     }
     
     protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions";
+        return "Loaders/" + REQUIRED_MIME + "/Actions"; //NOI18N
     }    
 }

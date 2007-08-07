@@ -27,7 +27,8 @@ import javax.microedition.m2g.SVGImage;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.CharSeq;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
@@ -41,14 +42,18 @@ import org.openide.util.NbBundle;
  * @author Pavel Benes
  */
 public class ElementMapping {    
-    private static final String ID_COUPLING_PREFIX = "_";
-    private static final String ID_WRAPPER_PREFIX     = "w_";
+    private static final String ID_COUPLING_PREFIX = "_";  //NOI18N
+    private static final String ID_WRAPPER_PREFIX  = "w_"; //NOI18N
     
-    
+    private final String                      m_encoding;
     private final Map<String,DocumentElement> m_ids = new HashMap<String, DocumentElement>();
     private final Set<String>                 m_extIds = new HashSet<String>();
     private final Map<String, Runnable>       m_scheduledTasks = new HashMap<String, Runnable>();
     private       DocumentModel               m_docModel;
+    
+    public ElementMapping(String encoding) {
+        m_encoding = encoding;
+    }
     
     public String getWithUniqueIds(DocumentModel docModel, String wrapperId) throws BadLocationException {
         String          docText = null;
@@ -82,7 +87,7 @@ public class ElementMapping {
                     }
                     docText = sb.toString();
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(ElementMapping.class, "WARNING_IDConflicts"),
+                        NbBundle.getMessage(ElementMapping.class, "WARNING_IDConflicts"),  //NOI18N
                         NotifyDescriptor.Message.WARNING_MESSAGE
                     ));
                 }
@@ -93,7 +98,6 @@ public class ElementMapping {
         return docText;
     }
     
-    @SuppressWarnings({"deprecation"})
     public SVGImage parseDocument(SVGFileModel fileModel, DocumentModel docModel) throws BadLocationException, IOException {
         if (fileModel != null) {
             //wait until the DocumentModel is updated after last changes
@@ -102,8 +106,15 @@ public class ElementMapping {
                         
         synchronized(this) {
             //long time = System.currentTimeMillis();
-            Document      doc = docModel.getDocument();
-            StringBuilder sb  = new StringBuilder(doc.getText(0, doc.getLength()));
+            BaseDocument  doc    = (BaseDocument) docModel.getDocument();
+            CharSeq       charSeq = doc.getText();
+            
+            int           docLength = charSeq.length();
+            StringBuilder sb        = new StringBuilder(docLength);
+            
+            for (int i = 0; i < docLength; i++) {
+                sb.append(charSeq.charAt(i));
+            }
             
             m_docModel = docModel;
 
@@ -134,7 +145,8 @@ public class ElementMapping {
                 }
             }
             
-            InputStream in = new java.io.StringBufferInputStream(sb.toString());
+            InputStream in = new EncodingInputStream(sb, m_encoding);
+            
             try {
                 SVGImage svgImage = (SVGImage) PerseusController.createImage( in);
                 return svgImage;
@@ -145,7 +157,7 @@ public class ElementMapping {
     }
     
     public synchronized void add(String id, DocumentElement de) {
-        System.out.println("Adding mapping " + id + " <--> " + de);
+        //System.out.println("Adding mapping " + id + " <--> " + de);
         m_ids.put(id, de);
         Runnable task;
         if ( (task=m_scheduledTasks.remove(id)) != null) {
@@ -159,10 +171,10 @@ public class ElementMapping {
     
     private void refresh() {
         try {
-            long time = System.currentTimeMillis();
+            //long time = System.currentTimeMillis();
             parseDocument(null, m_docModel);
-            time = System.currentTimeMillis() - time;
-            System.out.println("Mapping refreshed in " + time + "[ms]");
+            //time = System.currentTimeMillis() - time;
+            //System.out.println("Mapping refreshed in " + time + "[ms]");
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -176,7 +188,7 @@ public class ElementMapping {
                 //System.out.println(" found.");
                 return elem;
             } else {
-                System.out.println(" refreshing");
+                //System.out.println(" refreshing");
                 refresh();
                 return id2element(id);
             }
@@ -191,7 +203,7 @@ public class ElementMapping {
         if ( (id=element2idImpl(elem)) == null) {
             //TODO possibly use some small scale refresh, that 
             // tries to refresh only part of the document
-            System.out.println("Refreshing");
+            //System.out.println("Refreshing");
             refresh();
             id = element2idImpl(elem);
         }
@@ -238,7 +250,7 @@ public class ElementMapping {
             }
         }
 
-        if ( !"ROOT_ELEMENT".equals(elem.getType())) {
+        if ( !"ROOT_ELEMENT".equals(elem.getType())) {  //NOI18N
             String id = SVGFileModel.getIdAttribute(elem);
 
             if (id != null) {
@@ -265,7 +277,7 @@ public class ElementMapping {
             }
         }
 
-        if ( !"ROOT_ELEMENT".equals(elem.getType())) {
+        if ( !"ROOT_ELEMENT".equals(elem.getType())) { //NOI18N
             String id = SVGFileModel.getIdAttribute(elem);
 
             if (id != null) {

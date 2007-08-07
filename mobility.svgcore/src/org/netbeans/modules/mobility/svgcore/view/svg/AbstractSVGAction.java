@@ -29,7 +29,7 @@ import org.openide.util.actions.Presenter;
  * @author Pavel Benes
  */
 public abstract class AbstractSVGAction extends AbstractAction implements Presenter.Popup {
-    private static final String ICON_PATH_PREFIX = "org/netbeans/modules/mobility/svgcore/resources/";
+    private static final String ICON_PATH_PREFIX = "org/netbeans/modules/mobility/svgcore/resources/"; //NOI18N
     private final String lblResId;
     
     public AbstractSVGAction(String iconName, String hintResId, String lblResId) {
@@ -38,8 +38,8 @@ public abstract class AbstractSVGAction extends AbstractAction implements Presen
 
     public AbstractSVGAction(String iconName, String hintResId, String lblResId, boolean enabled) {
         this.lblResId = lblResId;
-        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage( ICON_PATH_PREFIX + iconName))); //NOI18N
-        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SVGViewTopComponent.class, hintResId)); // NOI18N
+        putValue(Action.SMALL_ICON, new ImageIcon(Utilities.loadImage( ICON_PATH_PREFIX + iconName)));
+        putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SVGViewTopComponent.class, hintResId));
         setEnabled(enabled);
     }
     
