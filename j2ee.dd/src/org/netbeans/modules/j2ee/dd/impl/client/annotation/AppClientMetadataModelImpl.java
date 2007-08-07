@@ -52,7 +52,7 @@ public class AppClientMetadataModelImpl implements MetadataModelImplementation<A
                 metadataUnit.getBootPath(), metadataUnit.getCompilePath(), metadataUnit.getSourcePath());
         helper = AnnotationModelHelper.create(cpi);
         
-        AppClient ddRoot = null;
+        AppClient ddRoot = null;        
         FileObject ddFO = metadataUnit.getDeploymentDescriptor();
         if (ddFO != null) {
             try {
@@ -61,10 +61,10 @@ public class AppClientMetadataModelImpl implements MetadataModelImplementation<A
                 Exceptions.printStackTrace(ioe);
             }
         }
-        if (ddRoot != null /* XXX needed? && ddRoot.getVersion().doubleValue() < 3.0*/) {
+        if (ddRoot != null && ddRoot.getVersion().doubleValue() < Double.valueOf(AppClient.VERSION_5_0).doubleValue() ) {            
             root = ddRoot;
         } else {
-            root = new AppClientImpl(helper);
+            root = new AppClientImpl(helper);            
         }
         metadata = new AppClientMetadataImpl(root);
     }

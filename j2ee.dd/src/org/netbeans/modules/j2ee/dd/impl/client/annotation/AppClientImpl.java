@@ -116,6 +116,10 @@ public class AppClientImpl implements AppClient {
         ejbRefs = resultEjbRefs.toArray(new EjbRef[resultEjbRefs.size()]);
                 
     }
+
+    public BigDecimal getVersion() {
+        return BigDecimal.valueOf(5.0);
+    }
     
     // <editor-fold desc="Model implementation">
     public ResourceRef[] getResourceRef() {
@@ -409,10 +413,6 @@ public class AppClientImpl implements AppClient {
     }
 
     public ServiceRef newServiceRef() throws VersionNotSupportedException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public BigDecimal getVersion() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
