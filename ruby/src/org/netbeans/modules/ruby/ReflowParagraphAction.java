@@ -22,6 +22,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.JEditorPane;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.ruby.options.CodeStyle;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import javax.swing.text.BadLocationException;
@@ -29,6 +30,7 @@ import org.netbeans.api.gsf.EditorOptions;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -64,33 +66,37 @@ public class ReflowParagraphAction extends AbstractAction {
     }
 
     void actionPerformed(final JTextComponent target) {
-        FileObject fo = NbUtilities.findFileObject(target);
         if (target.getCaret() == null) {
             return;
         }
-        int offset = target.getCaret().getDot();
+
+        FileObject fo = NbUtilities.findFileObject(target);
 
         if (fo != null) {
-            new ParagraphFormatter(false).reflowParagraph(target, offset);
+            int offset = target.getCaret().getDot();
+            new ParagraphFormatter(false, target, null, -1).reflowParagraph(offset);
         }
     }
     
     public void reflowEditedComment(JTextComponent target) {
-        FileObject fo = NbUtilities.findFileObject(target);
         if (target.getCaret() == null) {
             return;
         }
         int offset = target.getCaret().getDot();
 
-        if (fo != null) {
-            new ParagraphFormatter(true).reflowParagraph(target, offset);
-        }
+        new ParagraphFormatter(true, target, null, -1).reflowParagraph(offset);
     }
 
+    public void reflowComments(BaseDocument doc, int start, int end, int rightMargin) {
+        // Locate all comments in the given document and format them
+         ParagraphFormatter formatter = new ParagraphFormatter(false, null, doc, rightMargin);
+         formatter.reflow(start, end);
+    }
+    
     private class ParagraphFormatter {
         private JTextComponent target;
         private BaseDocument doc;
-        private int oldCaretPosition;
+        private int oldCaretPosition = -1;
         private boolean inVerbatim;
         private boolean indentedList;
         private boolean inList;
@@ -99,21 +105,64 @@ public class ReflowParagraphAction extends AbstractAction {
         private final StringBuilder sb = new StringBuilder(500);
         private StringBuilder buffer = new StringBuilder();
         private int indent = 4;
-        private int rightMargin = EditorOptions.get(RubyInstallation.RUBY_MIME_TYPE).getRightMargin();
+        private int rightMargin;
         private boolean currentSectionOnly;
         private final char CARET_MARKER = '\u4dca'; // Random character inserted into the text and formatted to represent the caret
 
         /**
          * @param currentSectionOnly Whether it should reflow the entire paragraph or only the current section
          */
-        ParagraphFormatter(boolean currentSectionOnly) {
+        ParagraphFormatter(boolean currentSectionOnly, JTextComponent target, BaseDocument doc, int rightMargin) {
             this.currentSectionOnly = currentSectionOnly;
+            this.target = target;
+            if (rightMargin != -1) {
+                this.rightMargin = rightMargin;
+            } else {
+                this.rightMargin = CodeStyle.getDefault(null).getRightMargin();// EditorOptions.get(RubyInstallation.RUBY_MIME_TYPE).getRightMargin();
+            }
+            if (target != null) {
+                this.doc = (BaseDocument)target.getDocument();
+                this.oldCaretPosition = target.getCaret() != null ? target.getCaret().getDot() : null;
+            } else {
+                this.doc = doc;
+            }
+        }
+
+        private void reflow(int start, int end) {
+            try {
+                outer:
+                while (end >= start) {
+                    // Search backwards from end for the first comment
+                    TokenSequence<? extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, end);
+                    if (ts == null) {
+                        return;
+                    }
+                 
+                    ts.move(end);
+                    int offset = end;
+                    while (ts.movePrevious() && ts.offset() >= start) {
+                        offset = ts.offset();
+                        Token<? extends GsfTokenId> token = ts.token();
+                        if (token.id() == RubyTokenId.DOCUMENTATION || token.id() == RubyTokenId.LINE_COMMENT) {
+                            OffsetRange range = findParagraph(offset);
+
+                            if (range != OffsetRange.NONE) {
+                                end = Utilities.getRowStart(doc, range.getStart())-1;
+                                reflowParagraph(offset);
+                                continue outer;
+                            }
+                        }
+                    }
+                    
+                    end = Utilities.getRowStart(doc, offset)-1;
+                }
+            }
+            catch (BadLocationException ble){
+                Exceptions.printStackTrace(ble);
+            }
         }
         
-        private void reflowParagraph(JTextComponent target, int offset) {
-            this.target = target;
-            this.oldCaretPosition = offset;
-            this.doc = (BaseDocument)target.getDocument();
+        private void reflowParagraph(int offset) {
             try {
                 offset = Utilities.getRowFirstNonWhite(doc, offset);
                 if (offset == -1) {
@@ -279,6 +328,7 @@ public class ReflowParagraphAction extends AbstractAction {
         }
 
         private void reflow(OffsetRange range) throws BadLocationException {
+            sb.setLength(0);
             int start = range.getStart();
             int end = range.getEnd();
             indent = LexUtilities.getLineIndent(doc, start);
@@ -344,7 +394,7 @@ public class ReflowParagraphAction extends AbstractAction {
                     replaceWith = replaceWith.substring(0, index) + replaceWith.substring(index + 1);
                 }
                 doc.replace(start, end - start, replaceWith, null);
-                if (index != -1) {
+                if (index != -1 && target != null) {
                     target.getCaret().setDot(start + index);
                 }
             }

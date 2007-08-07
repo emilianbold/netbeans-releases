@@ -21,28 +21,16 @@ import org.netbeans.api.gsf.Formatter;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.spi.editor.indent.Context;
 import org.netbeans.spi.editor.indent.ExtraLock;
-import org.netbeans.spi.editor.indent.IndentTask;
+import org.netbeans.spi.editor.indent.ReformatTask;
 
-public class GsfIndentTask implements IndentTask {
+public class GsfReformatTask implements ReformatTask {
 
     private Context context;
     private Formatter formatter;
     private FormattingPreferences preferences;
     
-    GsfIndentTask(Context context) {
+    GsfReformatTask(Context context) {
         this.context = context;
-    }
-
-    public void reindent() throws BadLocationException {
-        Formatter f = getFormatter();
-        
-        if (f != null) {
-            f.reindent(context.document(), context.startOffset(), context.endOffset(), null, preferences);
-        }
-    }
-    
-    public ExtraLock indentLock() {
-        return null;
     }
 
     private synchronized Formatter getFormatter() {
@@ -53,4 +41,17 @@ public class GsfIndentTask implements IndentTask {
         }
         return formatter;
     }
+
+    public void reformat() throws BadLocationException {
+        Formatter f = getFormatter();
+        
+        if (f != null) {
+            f.reformat(context.document(), context.startOffset(), context.endOffset(), null, preferences);
+        }
+    }
+
+    public ExtraLock reformatLock() {
+        return null;
+    }
+        
 }

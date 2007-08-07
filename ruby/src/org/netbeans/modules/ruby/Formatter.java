@@ -18,25 +18,13 @@
  */
 package org.netbeans.modules.ruby;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 
-import org.jruby.ast.ArgumentNode;
-import org.jruby.ast.CommentNode;
-import org.jruby.ast.Node;
-import org.jruby.ast.visitor.rewriter.DefaultFormatHelper;
-import org.jruby.ast.visitor.rewriter.FormatHelper;
-import org.jruby.ast.visitor.rewriter.ReWriteVisitor;
-import org.jruby.ast.visitor.rewriter.ReWriterFactory;
-import org.jruby.ast.visitor.rewriter.utils.ReWriterContext;
-import org.netbeans.api.gsf.EditorOptions;
 import org.netbeans.api.gsf.FormattingPreferences;
 import org.netbeans.api.gsf.GsfTokenId;
 import org.netbeans.api.gsf.OffsetRange;
@@ -51,75 +39,51 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.ruby.lexer.LexUtilities;
 import org.netbeans.modules.ruby.lexer.RubyTokenId;
+import org.netbeans.modules.ruby.options.CodeStyle;
 import org.openide.util.Exceptions;
 
 
 /**
  * Formatting and indentation for Ruby.
  * 
- * @todo Handle RHTML!
- * @todo Create unit tests
- * @todo Use in complete file reindentation, then diff with original formatted ruby source
- *    and see where I've gotta improve matters
+ * @todo Handle RHTML! 
+ *      - 4 space indents
+ *      - conflicts with HTML formatter (HtmlIndentTask)
+ *      - The Ruby indentation should be indented into the HTML level as well!
+ *          (so I should look at the previous HTML level for my initial context
+ *           whenever the balance is 0.)
  * @todo Use configuration object to pass in Ruby conventions
  * @todo Use the provided parse tree, if any, to for example check heredoc nodes
  *   and see if they are indentable.
  * @todo If you select a complete line, the endOffset is on a new line; adjust it back
  * @todo If line ends with \ I definitely have a line continuation!
  * @todo Reflow comment text? http://ruby.netbeans.org/issues/show_bug.cgi?id=11553
-
  *
  * @author Tor Norbye
  */
 public class Formatter implements org.netbeans.api.gsf.Formatter {
     private static final int KEEP_INDENT = -1;
+    private CodeStyle codeStyle;
+    private int rightMarginOverride = -1;
 
     public Formatter() {
     }
     
-
+    public Formatter(CodeStyle codeStyle, int rightMarginOverride) {
+        this.codeStyle = codeStyle;
+        this.rightMarginOverride = rightMarginOverride;
+    }
+    
+    // Compatibility only - remove soon
     public void reformat(Document document, ParserResult result, FormattingPreferences preferences,
         Caret caret) {
-        // TODO - preserve caret position
-        RubyParseResult parseResult = (RubyParseResult)result;
+        reformat(document, 0, document.getLength(), result, preferences);
+    }
 
-        if ((parseResult == null) || (parseResult.getRealRoot() == null)) {
-            // just reindent instead
-            reindent(document, 0, document.getLength(), result, preferences);
+    public void reformat(Document document, int startOffset, int endOffset, ParserResult result,
+        FormattingPreferences preferences) {
 
-            return;
-        }
-
-        if (!parseResult.isCommentsAdded()) {
-            new StructureAnalyzer().addComments(parseResult);
-        }
-
-        BaseDocument doc = (BaseDocument)document;
-
-        StringWriter stringWriter = new StringWriter(document.getLength() * 2);
-        PrintWriter output = new PrintWriter(stringWriter);
-        String source = parseResult.getSource();
-        FormatHelper formatHelper = new DefaultFormatHelper();
-        ReWriterContext context = new ReWriterContext(output, source, formatHelper);
-        ReWriterFactory factory = new ReWriterFactory(context);
-
-        //ReWriteVisitor visitor = factory.createReWriteVisitor();
-        ReWriteVisitor visitor = new CommentRewriter(context);
-
-        Node root = parseResult.getRealRoot();
-        root.accept(visitor);
-        visitor.flushStream();
-
-        String reformatted = stringWriter.toString();
-
-        try {
-            doc.atomicLock();
-            doc.replace(0, doc.getLength(), reformatted, null);
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
-        } finally {
-            doc.atomicUnlock();
-        }
+        reindent(document, startOffset, endOffset, result, preferences, false);
     }
     
     public int indentSize() {
@@ -130,77 +94,6 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         return 2;
     }
 
-    private static class CommentRewriter extends ReWriteVisitor {
-        public CommentRewriter(ReWriterContext config) {
-            super(config);
-        }
-
-        @Override
-        public void visitNode(Node iVisited) {
-            if (iVisited == null) {
-                return;
-            }
-
-            printCommentsBefore(iVisited);
-
-            if (iVisited instanceof ArgumentNode) {
-                print(((ArgumentNode)iVisited).getName());
-            } else {
-                iVisited.accept(this);
-            }
-
-            printCommentsAfter(iVisited);
-            config.setLastPosition(iVisited.getPosition());
-        }
-
-        private static int getEndLine(Node n) {
-            return n.getPosition().getEndLine();
-        }
-
-        private static int getStartLine(Node n) {
-            return n.getPosition().getStartLine();
-        }
-
-        //        protected void printNewlineAndIndentation() {
-        //                if (config.hasHereDocument()) config.fetchHereDocument().print();
-        //
-        //                print('\n');
-        //                config.getIndentor().printIndentation(config.getOutput());
-        //        }
-        private void printCommentsBefore(Node iVisited) {
-            for (Iterator it = iVisited.getComments().iterator(); it.hasNext();) {
-                CommentNode n = (CommentNode)it.next();
-
-                if (getStartLine(n) < getStartLine(iVisited)) {
-                    String comment = n.getContent();
-                    visitNode(n);
-                    print(comment);
-                    printNewlineAndIndentation();
-                }
-            }
-        }
-
-        @Override
-        protected boolean printCommentsAfter(Node iVisited) {
-            boolean hasComment = false;
-
-            for (Iterator it = iVisited.getComments().iterator(); it.hasNext();) {
-                CommentNode n = (CommentNode)it.next();
-
-                if (getStartLine(n) >= getEndLine(iVisited)) {
-                    print(' ');
-                    visitNode(n);
-
-                    String comment = n.getContent();
-                    print(comment);
-                    hasComment = true;
-                }
-            }
-
-            return hasComment;
-        }
-    }
-    
     /** Compute the initial balance of brackets at the given offset. */
     private int getFormatStableStart(BaseDocument doc, int offset) {
         TokenSequence<?extends GsfTokenId> ts = LexUtilities.getRubyTokenSequence(doc, offset);
@@ -455,6 +348,11 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
      */
     public void reindent(Document document, int startOffset, int endOffset, ParserResult result,
         FormattingPreferences preferences) {
+        reindent(document, startOffset, endOffset, result, preferences, true);
+    }
+    
+    private void reindent(Document document, int startOffset, int endOffset, ParserResult result,
+        FormattingPreferences preferences, boolean indentOnly) {
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
@@ -554,6 +452,15 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
                         doc.getFormatter().changeRowIndent(doc, lineBegin, indent);
                     }
                 }
+                
+                CodeStyle style = codeStyle;
+                if (style == null) {
+                    style = CodeStyle.getDefault(null);
+                }
+
+                if (!indentOnly && style != null && style.reformatComments()) {
+                    reformatComments(doc, startOffset, endOffset);
+                }
             } finally {
                 doc.atomicUnlock();
             }
@@ -588,10 +495,28 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
 
             // State:
             int offset = Utilities.getRowStart(doc, startOffset); // The line's offset
-            int end = endOffset; //Utilities.getRowEnd(doc, endOffset); // The line's end
+            int end = endOffset;
             
-            int indentSize = preferences != null ? preferences.getIndentation() : 2;
-            int hangingIndentSize = preferences != null ? preferences.getHangingIndentation() : indentSize;
+            int indentSize;
+            int hangingIndentSize;
+            
+            if (codeStyle != null) {
+                //CodeStyle style = CodeStyle.getDefault(null);
+                //assert style != null;
+                indentSize = codeStyle.getIndentSize();
+                hangingIndentSize = codeStyle.getContinuationIndentSize();
+            } else if (preferences != null) {
+                indentSize = preferences.getIndentation();
+                hangingIndentSize = preferences.getHangingIndentation();
+            } else {
+                CodeStyle style = CodeStyle.getDefault(null);
+                assert style != null;
+                indentSize = style.getIndentSize();
+                hangingIndentSize = style.getContinuationIndentSize();
+            }
+            
+            // Pending - apply comment formatting too?
+
             // XXX Look up RHTML too
             //int indentSize = EditorOptions.get(RubyInstallation.RUBY_MIME_TYPE).getSpacesPerTab();
             //int hangingIndentSize = indentSize;
@@ -654,30 +579,18 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
         }
     }
     
-    public void reflowParagraph(Document document, int offset) {
-        BaseDocument doc = (BaseDocument)document;
-        try {
-            offset = Utilities.getRowFirstNonWhite(doc, offset);
-            if (offset == -1) {
-                // XXX be smarter about empty lines -- do previous line for example? Or next?
-                return;
+    void reformatComments(BaseDocument doc, int start, int end) {
+        int rightMargin = rightMarginOverride;
+        if (rightMargin == -1) {
+            CodeStyle style = codeStyle;
+            if (style == null) {
+                style = CodeStyle.getDefault(null);
             }
-            Token<? extends GsfTokenId> token = LexUtilities.getToken(doc, offset);
-            if (token == null) {
-                return;
-            }
-            
-            if (token.id() != RubyTokenId.LINE_COMMENT) {
-                // Currently only reflows comments
-                // In RHTML I could reflow text too...
-                
-                // I could compute the surrounding block (e.g. look for empty lines
-                // on both sides?, or {start}/end
-                // blocks, and reindent that as a "paragraph"
-                return;
-            }
-        } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+
+            rightMargin = style.getRightMargin();
         }
+
+        ReflowParagraphAction action = new ReflowParagraphAction();
+        action.reflowComments(doc, start, end, rightMargin);
     }
 }

@@ -41,10 +41,11 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 
     private static final int EDITOR_KIT_ID = 1;
     private static final int INDENT_ID = 2;
-    private static final int BRACES_ID = 3;
+    private static final int FORMAT_ID = 3;
+    private static final int BRACES_ID = 4;
 
     private String[] mimeTypes;
-    private Map<String, Lookup.Result> children = new HashMap(); //<mimetype, child Lookup.Result>
+    private Map<String, Lookup.Result> children = new HashMap<String,Lookup.Result>(); //<mimetype, child Lookup.Result>
     private Lookup lookup;
 
     public MimeLookupInitializerImpl() {
@@ -106,22 +107,22 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
                 // related to the language.
                 LanguageRegistry.getInstance().initializeLanguageForEditor(language);
 
-                lookup = Lookups.fixed(new Integer[]{Integer.valueOf(EDITOR_KIT_ID), Integer.valueOf(INDENT_ID)}, new InstanceContent.Convertor<Integer, Object>() {
+                lookup = Lookups.fixed(new Integer[]{Integer.valueOf(EDITOR_KIT_ID), Integer.valueOf(INDENT_ID), Integer.valueOf(FORMAT_ID)}, new InstanceContent.Convertor<Integer, Object>() {
 
                     public Object convert(Integer i) {
                         switch (i.intValue()) {
-                            case EDITOR_KIT_ID:
-                                {
-                                    GsfEditorKitFactory outer = new GsfEditorKitFactory(language);
+                        case EDITOR_KIT_ID: {
+                            GsfEditorKitFactory outer = new GsfEditorKitFactory(language);
 
-                                    return outer.kit();
-                                }
-                                //case BRACES_ID: {
-                                //    return new BraceHighlighting(mimeTypes[0]);
-                                //}
-                                case INDENT_ID: {
-                                    return new GsfIndentTaskFactory();
-                                }
+                            return outer.kit();
+                        }
+                        //case BRACES_ID: {
+                        //    return new BraceHighlighting(mimeTypes[0]);
+                        //}
+                        case FORMAT_ID:
+                            return new GsfReformatTaskFactory();
+                        case INDENT_ID:
+                            return new GsfIndentTaskFactory();
                         }
 
                         return null;
@@ -129,16 +130,14 @@ public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 
                     public Class<? extends Object> type(Integer i) {
                         switch (i.intValue()) {
-                            case EDITOR_KIT_ID:
-                                {
-                                    return GsfEditorKitFactory.GsfEditorKit.class;
-                                }
-                                case INDENT_ID: {
-                                    return GsfIndentTaskFactory.class;
-                                }
-                                //case BRACES_ID: {
-                                //    return BracesMatcherFactory.class;
-                                //}
+                        case EDITOR_KIT_ID:
+                            return GsfEditorKitFactory.GsfEditorKit.class;
+                        case FORMAT_ID:
+                            return GsfReformatTaskFactory.class;
+                        case INDENT_ID:
+                            return GsfIndentTaskFactory.class;
+                        //case BRACES_ID:
+                        //    return BracesMatcherFactory.class;
                         }
 
 

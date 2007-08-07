@@ -298,51 +298,51 @@ public class GsfEditorKitFactory {
             }
 
             public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-                if (target != null) {
-                    if (!target.isEditable() || !target.isEnabled()) {
-                        target.getToolkit().beep();
-                        return;
-                    }
-
-                    final BaseDocument doc = (BaseDocument)target.getDocument();
-                    FileObject fo = getFileObject(doc);
-                    if (fo == null) {
-                        target.getToolkit().beep();
-                        return;
-                    }
-
-                    // Set hourglass cursor
-                    Cursor origCursor = target.getCursor();
-                    target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-                    try {
-                        Source js = Source.forFileObject(fo);
-                        final String[] result = new String[1];
-
-                        js.runUserActionTask(new CancellableTask<CompilationController>() {
-                            public void cancel() {
-                            }
-
-                            public void run(CompilationController controller)
-                                throws Exception {
-                                if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                                    return;
-                                }
-
-                                FormattingPreferences preferences = new GsfFormattingPreferences(language.getFormatter().indentSize(),
-                                        language.getFormatter().hangingIndentSize());
-                                ParserResult result = controller.getParserResult();
-                                Caret caret = target.getCaret();
-                                language.getFormatter().reformat(doc, result, preferences, caret);
-                                Language language = controller.getLanguage();
-                            }
-                        }, true);
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    } finally {
-                        target.setCursor(origCursor);
-                    }
-                }
+//                if (target != null) {
+//                    if (!target.isEditable() || !target.isEnabled()) {
+//                        target.getToolkit().beep();
+//                        return;
+//                    }
+//
+//                    final BaseDocument doc = (BaseDocument)target.getDocument();
+//                    FileObject fo = getFileObject(doc);
+//                    if (fo == null) {
+//                        target.getToolkit().beep();
+//                        return;
+//                    }
+//
+//                    // Set hourglass cursor
+//                    Cursor origCursor = target.getCursor();
+//                    target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+//
+//                    try {
+//                        Source js = Source.forFileObject(fo);
+//                        final String[] result = new String[1];
+//
+//                        js.runUserActionTask(new CancellableTask<CompilationController>() {
+//                            public void cancel() {
+//                            }
+//
+//                            public void run(CompilationController controller)
+//                                throws Exception {
+//                                if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+//                                    return;
+//                                }
+//
+//                                FormattingPreferences preferences = new GsfFormattingPreferences(language.getFormatter().indentSize(),
+//                                        language.getFormatter().hangingIndentSize());
+//                                ParserResult result = controller.getParserResult();
+//                                Caret caret = target.getCaret();
+//                                language.getFormatter().reformat(doc, result, preferences, caret);
+//                                Language language = controller.getLanguage();
+//                            }
+//                        }, true);
+//                    } catch (IOException ioe) {
+//                        Exceptions.printStackTrace(ioe);
+//                    } finally {
+//                        target.setCursor(origCursor);
+//                    }
+//                }
             }
             
             @Override

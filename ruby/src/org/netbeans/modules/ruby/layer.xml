@@ -111,6 +111,15 @@
         </file>     
     </folder>
     
+    <folder name="org.netbeans.modules.ruby">
+        <folder name="options">
+            <file name="Formatting.instance">
+                <attr name="position" intvalue="150"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.options.FormatingAdvancedOption"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="GsfPlugins">
         <folder name="text">
             <folder name="x-ruby">

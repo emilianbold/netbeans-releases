@@ -37,7 +37,7 @@ public interface Formatter {
      * You may use the provided parse tree information, if available, to guide formatting decisions.
      * The caret (if any) should be updated to the corresponding position that it was at before formatting.     * 
      */
-    void reformat(Document doc, ParserResult result, FormattingPreferences preferences, Caret caret);
+    void reformat(Document doc, int startOffset, int endOffset, ParserResult result, FormattingPreferences preferences);
 
     /**
      * Reindent the source code. Adjusts indentation and strips trailing whitespace but
