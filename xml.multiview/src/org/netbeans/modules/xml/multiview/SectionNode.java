@@ -162,10 +162,18 @@ public class SectionNode extends AbstractNode {
 
     public SectionNodePanel getSectionNodePanel() {
         if (sectionPanel == null) {
-            sectionPanel = new SectionNodePanel(this);
+            sectionPanel = createSectionNodePanel();
         }
         return sectionPanel;
     }
+    
+    /**
+     * Creates appropriate SectionNodePanel. Override in 
+     * subclasses if necessary.
+     */
+    protected SectionNodePanel createSectionNodePanel() {
+        return new SectionNodePanel(this);
+    }    
 
     public String getIconBase() {
         return iconBase;
