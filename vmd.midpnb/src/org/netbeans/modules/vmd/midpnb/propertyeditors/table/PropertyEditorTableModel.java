@@ -16,66 +16,65 @@
  */
 package org.netbeans.modules.vmd.midpnb.propertyeditors.table;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import javax.swing.JComponent;
-import javax.swing.JRadioButton;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.lang.ref.WeakReference;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
 import org.netbeans.modules.vmd.api.model.Debug;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
+import org.netbeans.modules.vmd.api.properties.DesignPropertyEditor;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElement.DesignComponentWrapper;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElementEvent;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElementListener;
-import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorElement;
-import org.netbeans.modules.vmd.midp.propertyeditors.usercode.PropertyEditorUserCode;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
-import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Anton Chechel
  */
-public class PropertyEditorTableModel extends PropertyEditorUserCode implements PropertyEditorElement, PropertyEditorResourceElementListener {
+public class PropertyEditorTableModel extends DesignPropertyEditor implements PropertyEditorResourceElementListener {
 
-    private JRadioButton radioButton;
+    private WeakReference<DesignComponent> component;
+    private JPanel customEditorPanel;
     private TableModelEditorElement customEditor;
     private PropertyValue values;
     private PropertyValue headers;
 
     private PropertyEditorTableModel() {
-        super();
         initComponents();
-        
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
     }
     
     public static PropertyEditorTableModel createInstance() {
         return new PropertyEditorTableModel();
     }
     
-        private void initComponents() {
-        radioButton = new JRadioButton();
-        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTableModel.class, "LBL_TABLE_MODEL_STR")); // NOI18N;
-        
+     private void initComponents() {
         customEditor = new TableModelEditorElement();
         customEditor.addPropertyEditorResourceElementListener(this);
+        customEditorPanel = new JPanel(new BorderLayout());
+        customEditorPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
+        customEditorPanel.add(customEditor, BorderLayout.CENTER);
     }
 
-    public void updateState(PropertyValue value) {
-        if (customEditor.isShowing()) {
-            if (value == null) {
-                customEditor.setDesignComponentWrapper(null);
-            } else if (component != null && component.get() != null) {
+    @Override
+    public void init(DesignComponent component) {
+        if (component != null) {
+            this.component = new WeakReference<DesignComponent>(component);
+        }
+    }
+        
+    @Override
+    public Component getCustomEditor() {
+        if (customEditorPanel.isShowing()) {
+            if (component != null && component.get() != null) {
                 customEditor.setDesignComponentWrapper(new DesignComponentWrapper(component.get()));
             }
             customEditor.setAllEnabled(true);
         }
-    }
-
-    public void setTextForPropertyValue(String text) {
+        return customEditorPanel;
     }
 
     @Override
@@ -114,26 +113,6 @@ public class PropertyEditorTableModel extends PropertyEditorUserCode implements 
         return false;
     }
     
-    public String getTextForPropertyValue() {
-        return null;
-    }
-
-    public JComponent getCustomEditorComponent() {
-        return customEditor;
-    }
-
-    public JRadioButton getRadioButton() {
-        return radioButton;
-    }
-
-    public boolean isInitiallySelected() {
-        return true;
-    }
-
-    public boolean isVerticallyResizable() {
-        return true;
-    }
-
     public void elementChanged(PropertyEditorResourceElementEvent event) {
         PropertyValue propertyValue = event.getPropertyValue();
         String propertyName = event.getPropertyName();
@@ -142,8 +121,7 @@ public class PropertyEditorTableModel extends PropertyEditorUserCode implements 
         } else if (SimpleTableModelCD.PROP_VALUES.equals(propertyName)) {
             values = propertyValue;
         } else {
-            Debug.illegalArgument("Illegal property value has been passed"); // NOI18N
+            throw Debug.illegalArgument("Illegal property value has been passed"); // NOI18N
         }
-        radioButton.setSelected(true);
     }
 }
