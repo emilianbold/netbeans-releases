@@ -560,7 +560,7 @@ public class Util {
                 copyKey(clientTrustStoreBundled, "xws-security-server", srcPasswd, srcPasswd, clientTrustStorePath, "xws-security-server", dstPasswd, true);
                 copyKey(clientTrustStoreBundled, "wssip", srcPasswd, srcPasswd, clientTrustStorePath, "wssip", dstPasswd, true);
             } catch (Exception ex) {
-                Logger.getLogger("global").log(Level.SEVERE, null, ex);
+                Logger.getLogger("global").log(Level.INFO, null, ex);
             }
         }
         
