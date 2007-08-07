@@ -96,9 +96,9 @@ public abstract class ShutdownAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
-    public void clearEnabledState() {
-        putProperty(PROP_ENABLED, null);
-    }
+//    void clearEnabledState() {
+//        putProperty(PROP_ENABLED, null);
+//    }
     
     protected abstract boolean isForceAction();
     

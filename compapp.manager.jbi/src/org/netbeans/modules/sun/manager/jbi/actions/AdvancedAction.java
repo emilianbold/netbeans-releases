@@ -18,9 +18,10 @@
  */
 package org.netbeans.modules.sun.manager.jbi.actions;
 
-import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -46,17 +47,26 @@ public class AdvancedAction extends NodeAction implements Presenter.Popup {
     public JMenuItem getPopupPresenter() {
         JMenu menu = new JMenu(getName());
         
-        ShutdownAction forceShutdownAction = 
-                SystemAction.get(ShutdownAction.Force.class);
-        forceShutdownAction.clearEnabledState(); // TMP FIX for #108106
+        Action forceShutdownAction = SystemAction.get(ShutdownAction.Force.class);
+        // The following hack doesn't seem to be needed any more.
+        //((ShutdownAction)forceShutdownAction).clearEnabledState(); // TMP FIX for #108106
         forceShutdownAction.setEnabled(forceShutdownAction.isEnabled());
-        menu.add(forceShutdownAction);
         
-        NodeAction forceUninstallAction = 
-                SystemAction.get(UninstallAction.Force.class);
+        // Instead of adding Action directly into JMenu, use Actions.connect instead. #~98576
+        // menu.add(forceShutdownAction);
+        JMenuItem forceShutdownMenuItem = new JMenuItem();
+        Actions.connect(forceShutdownMenuItem, forceShutdownAction, true);
+        menu.add(forceShutdownMenuItem);
+
+        Action forceUninstallAction = SystemAction.get(UninstallAction.Force.class);
         forceUninstallAction.setEnabled(forceUninstallAction.isEnabled());
-        menu.add(forceUninstallAction);
         
+        // Instead of adding Action directly into JMenu, use Actions.connect instead. #~98576
+        // menu.add(forceUninstallAction);
+        JMenuItem forceUninstallMenuItem = new JMenuItem();
+        Actions.connect(forceUninstallMenuItem, forceUninstallAction, true);
+        menu.add(forceUninstallMenuItem);
+            
         return menu;
     }
 
