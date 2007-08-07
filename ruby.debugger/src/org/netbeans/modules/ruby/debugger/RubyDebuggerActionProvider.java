@@ -58,7 +58,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
     private ContextProviderWrapper contextProvider;
     private RubyDebuggerEngineProvider engineProvider;
     private final RubySession rubySession;
-    private boolean terminated;
+    private Boolean terminated;
     
     public RubyDebuggerActionProvider(final ContextProvider contextProvider) {
         engineProvider = (RubyDebuggerEngineProvider) contextProvider.
@@ -67,6 +67,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
         rubySession = this.contextProvider.getRubySession();
         frontEndSemaphore = new Semaphore(1, true);
         backEndSemaphore = new Semaphore(1, true);
+        terminated = false;
         
         // backends comes first
         boolean acquired = frontEndSemaphore.tryAcquire();
@@ -100,10 +101,12 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             Util.severe(e);
             return;
         }
-        if (terminated) {
-            Util.info("Flushing cached actions: " + action + ", process is terminated.");
-            frontEndSemaphore.release();
-            return; // ignore cached actions
+        synchronized (terminated) {
+            if (terminated) {
+                Util.info("Flushing cached actions: " + action + ", process is terminated.");
+                frontEndSemaphore.release();
+                return; // ignore cached actions
+            }
         }
         if (action == ActionsManager.ACTION_CONTINUE) {
             rubySession.resume();
@@ -129,12 +132,6 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
     public void onDebugEvent(final RubyDebugEvent event) {
         if (event.isTerminateType()) {
             finish(false);
-            frontEndSemaphore.release();
-            int beEvents = backEndSemaphore.getQueueLength();
-            if (beEvents > 0) {
-                Util.finest("Flushing " + beEvents + " backend events.");
-                backEndSemaphore.release(beEvents);
-            }
             return;
         }
         try {
@@ -143,10 +140,12 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             Util.severe(e);
             return;
         }
-        if (terminated) {
-            Util.info("Flushing pending event: " + event + ", process is terminated."); // NOI18N
-            backEndSemaphore.release();
-            return;
+        synchronized (terminated) {
+            if (terminated) {
+                Util.info("Flushing pending event: " + event + ", process is terminated."); // NOI18N
+                backEndSemaphore.release();
+                return;
+            }
         }
         if (event.isSuspensionType()) {
             String absPath = rubySession.resolveAbsolutePath(event.getFilePath());
@@ -172,19 +171,24 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
      *        forced.
      */
     private void finish(boolean terminate) {
-        Util.finest("Finishing session: " + rubySession.getName());
-        if (terminated) {
-            Util.warning("Finish is not supposed to be called when a process is already terminated");
-            return;
+        synchronized (terminated) {
+            Util.finest("Finishing session: " + rubySession.getName());
+            if (terminated) {
+                Util.warning("Finish is not supposed to be called when a process is already terminated");
+                return;
+            }
+            terminated = true;
         }
         rubySession.finish(this, terminate);
         EditorUtil.unmarkCurrent();
         engineProvider.getDestructor().killEngine();
-        terminated = true;
+        // release semaphores -> all backend and frontend actions are flushed since now
+        frontEndSemaphore.release();
+        backEndSemaphore.release();
     }
     
     private void stopHere(final RubyDebugEvent suspensionEvent) {
         rubySession.suspend(suspensionEvent.getRubyThread(), contextProvider);
     }
-    
+
 }

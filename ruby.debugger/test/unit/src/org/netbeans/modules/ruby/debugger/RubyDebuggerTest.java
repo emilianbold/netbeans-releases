@@ -221,7 +221,24 @@ public final class RubyDebuggerTest extends TestBase {
         doAction(ActionsManager.ACTION_KILL);
         p.waitFor();
     }
-    
+
+    public void testFinish2() throws Exception {
+        // issue #109659
+        if (tryToSwitchToRDebugIDE()) {
+            String[] testContent = {
+                "Thread.start() { puts 'hello from new thread' }",
+                "puts 'main thread'"
+            };
+            File testF = createScript(testContent);
+            FileObject testFO = FileUtil.toFileObject(testF);
+            addBreakpoint(testFO, 1);
+            Process p = startDebugging(testF);
+            doAction(ActionsManager.ACTION_STEP_OVER);
+            doAction(ActionsManager.ACTION_KILL);
+            p.waitFor();
+        }
+    }
+
     public void testFinishWhenSpawnedThreadIsSuspended() throws Exception {
         if (tryToSwitchToRDebugIDE()) {
             String[] testContent = {
