@@ -188,12 +188,6 @@ public class MutualCertificates extends javax.swing.JPanel {
     private void enableDisable() {
         boolean secConvEnabled = secConvChBox.isSelected();
         derivedKeysChBox.setEnabled(secConvEnabled);
-        boolean rmEnabled = RMModelHelper.isRMEnabled(comp);
-        if (rmEnabled) {
-            secConvChBox.setEnabled(!secConvEnabled);
-        } else {
-            secConvChBox.setEnabled(true);
-        }
     }
     
     private void setCombo(JComboBox combo, String item) {
