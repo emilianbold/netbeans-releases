@@ -223,7 +223,7 @@ public class WSUtils {
     }
     
     public static void removeImplClass(Project project, String implClass) {
-        Sources sources = (Sources)project.getLookup().lookup(Sources.class);
+        Sources sources = project.getLookup().lookup(Sources.class);
         String resource = implClass.replace('.','/')+".java"; //NOI18N
         if (sources!=null) {
             SourceGroup[] srcGroup = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -263,7 +263,7 @@ public class WSUtils {
                 if (folder!=null) {
                     DataObject[] children = folder.getChildren();
                     for (int i=0;i<children.length;i++) {
-                        SaveCookie save = (SaveCookie)children[i].getCookie(SaveCookie.class);
+                        SaveCookie save = children[i].getCookie(SaveCookie.class);
                         if (save!=null) save.save();
                     }
                 }
