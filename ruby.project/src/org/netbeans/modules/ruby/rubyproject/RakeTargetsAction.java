@@ -234,18 +234,25 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
                             return;
                         }
 
-                        InputStream is = rakeTargetFile.getInputStream();
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                        BufferedReader reader = null;
+                        try {
+                            InputStream is = rakeTargetFile.getInputStream();
+                            reader = new BufferedReader(new InputStreamReader(is));
 
-                        while (true) {
-                            String line = reader.readLine();
+                            while (true) {
+                                String line = reader.readLine();
 
-                            if (line == null) {
-                                break;
+                                if (line == null) {
+                                    break;
+                                }
+
+                                sb.append(line);
+                                sb.append('\n');
                             }
-
-                            sb.append(line);
-                            sb.append('\n');
+                        } finally {
+                            if (reader != null) {
+                                reader.close();
+                            }
                         }
                     }
                 });
@@ -293,47 +300,47 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
 
         // Output from rake -T in a Rails 1.2.3 project:
         return "" + // NOI18N
-	    "rake db:fixtures:load          # Load fixtures into the current environment's database.  Load specific fixtures using FIXTURES=x,y\n" + // NOI18N
-	    "rake db:migrate                # Migrate the database through scripts in db/migrate. Target specific version with VERSION=x\n" + // NOI18N
-	    "rake db:schema:dump            # Create a db/schema.rb file that can be portably used against any DB supported by AR\n" + // NOI18N
-	    "rake db:schema:load            # Load a schema.rb file into the database\n" + // NOI18N
-	    "rake db:sessions:clear         # Clear the sessions table\n" + // NOI18N
-	    "rake db:sessions:create        # Creates a sessions table for use with CGI::Session::ActiveRecordStore\n" + // NOI18N
-	    "rake db:structure:dump         # Dump the database structure to a SQL file\n" + // NOI18N
-	    "rake db:test:clone             # Recreate the test database from the current environment's database schema\n" + // NOI18N
-	    "rake db:test:clone_structure   # Recreate the test databases from the development structure\n" + // NOI18N
-	    "rake db:test:prepare           # Prepare the test database and load the schema\n" + // NOI18N
-	    "rake db:test:purge             # Empty the test database\n" + // NOI18N
-	    "rake doc:app                   # Build the app HTML Files\n" + // NOI18N
-	    "rake doc:clobber_app           # Remove rdoc products\n" + // NOI18N
-	    "rake doc:clobber_plugins       # Remove plugin documentation\n" + // NOI18N
-	    "rake doc:clobber_rails         # Remove rdoc products\n" + // NOI18N
-	    "rake doc:plugins               # Generate documation for all installed plugins\n" + // NOI18N
-	    "rake doc:rails                 # Build the rails HTML Files\n" + // NOI18N
-	    "rake doc:reapp                 # Force a rebuild of the RDOC files\n" + // NOI18N
-	    "rake doc:rerails               # Force a rebuild of the RDOC files\n" + // NOI18N
-	    "rake log:clear                 # Truncates all *.log files in log/ to zero bytes\n" + // NOI18N
-	    "rake rails:freeze:edge         # Lock to latest Edge Rails or a specific revision with REVISION=X (ex: REVISION=4021) or a tag with TAG=Y (ex: TAG=rel_1-1-0)\n" + // NOI18N
-	    "rake rails:freeze:gems         # Lock this application to the current gems (by unpacking them into vendor/rails)\n" + // NOI18N
-	    "rake rails:unfreeze            # Unlock this application from freeze of gems or edge and return to a fluid use of system gems\n" + // NOI18N
-	    "rake rails:update              # Update both configs, scripts and public/javascripts from Rails\n" + // NOI18N
-	    "rake rails:update:configs      # Update config/boot.rb from your current rails install\n" + // NOI18N
-	    "rake rails:update:javascripts  # Update your javascripts from your current rails install\n" + // NOI18N
-	    "rake rails:update:scripts      # Add new scripts to the application script/ directory\n" + // NOI18N
-	    "rake stats                     # Report code statistics (KLOCs, etc) from the application\n" + // NOI18N
-	    "rake test                      # Test all units and functionals\n" + // NOI18N
-	    "rake test:functionals          # Run the functional tests in test/functional\n" + // NOI18N
-	    "rake test:integration          # Run the integration tests in test/integration\n" + // NOI18N
-	    "rake test:plugins              # Run the plugin tests in vendor/plugins/** /test (or specify with PLUGIN=name)\n" + // NOI18N
-	    "rake test:recent               # Test recent changes\n" + // NOI18N
-	    "rake test:uncommitted          # Test changes since last checkin (only Subversion)\n" + // NOI18N
-	    "rake test:units                # Run the unit tests in test/unit\n" + // NOI18N
-	    "rake tmp:cache:clear           # Clears all files and directories in tmp/cache\n" + // NOI18N
-	    "rake tmp:clear                 # Clear session, cache, and socket files from tmp/\n" + // NOI18N
-	    "rake tmp:create                # Creates tmp directories for sessions, cache, and sockets\n" + // NOI18N
-	    "rake tmp:pids:clear            # Clears all files in tmp/pids\n" + // NOI18N
-	    "rake tmp:sessions:clear        # Clears all files in tmp/sessions\n" + // NOI18N
-	    "rake tmp:sockets:clear         # Clears all files in tmp/sockets\n"; // NOI18N
+            "rake db:fixtures:load          # Load fixtures into the current environment's database.  Load specific fixtures using FIXTURES=x,y\n" + // NOI18N
+            "rake db:migrate                # Migrate the database through scripts in db/migrate. Target specific version with VERSION=x\n" + // NOI18N
+            "rake db:schema:dump            # Create a db/schema.rb file that can be portably used against any DB supported by AR\n" + // NOI18N
+            "rake db:schema:load            # Load a schema.rb file into the database\n" + // NOI18N
+            "rake db:sessions:clear         # Clear the sessions table\n" + // NOI18N
+            "rake db:sessions:create        # Creates a sessions table for use with CGI::Session::ActiveRecordStore\n" + // NOI18N
+            "rake db:structure:dump         # Dump the database structure to a SQL file\n" + // NOI18N
+            "rake db:test:clone             # Recreate the test database from the current environment's database schema\n" + // NOI18N
+            "rake db:test:clone_structure   # Recreate the test databases from the development structure\n" + // NOI18N
+            "rake db:test:prepare           # Prepare the test database and load the schema\n" + // NOI18N
+            "rake db:test:purge             # Empty the test database\n" + // NOI18N
+            "rake doc:app                   # Build the app HTML Files\n" + // NOI18N
+            "rake doc:clobber_app           # Remove rdoc products\n" + // NOI18N
+            "rake doc:clobber_plugins       # Remove plugin documentation\n" + // NOI18N
+            "rake doc:clobber_rails         # Remove rdoc products\n" + // NOI18N
+            "rake doc:plugins               # Generate documation for all installed plugins\n" + // NOI18N
+            "rake doc:rails                 # Build the rails HTML Files\n" + // NOI18N
+            "rake doc:reapp                 # Force a rebuild of the RDOC files\n" + // NOI18N
+            "rake doc:rerails               # Force a rebuild of the RDOC files\n" + // NOI18N
+            "rake log:clear                 # Truncates all *.log files in log/ to zero bytes\n" + // NOI18N
+            "rake rails:freeze:edge         # Lock to latest Edge Rails or a specific revision with REVISION=X (ex: REVISION=4021) or a tag with TAG=Y (ex: TAG=rel_1-1-0)\n" + // NOI18N
+            "rake rails:freeze:gems         # Lock this application to the current gems (by unpacking them into vendor/rails)\n" + // NOI18N
+            "rake rails:unfreeze            # Unlock this application from freeze of gems or edge and return to a fluid use of system gems\n" + // NOI18N
+            "rake rails:update              # Update both configs, scripts and public/javascripts from Rails\n" + // NOI18N
+            "rake rails:update:configs      # Update config/boot.rb from your current rails install\n" + // NOI18N
+            "rake rails:update:javascripts  # Update your javascripts from your current rails install\n" + // NOI18N
+            "rake rails:update:scripts      # Add new scripts to the application script/ directory\n" + // NOI18N
+            "rake stats                     # Report code statistics (KLOCs, etc) from the application\n" + // NOI18N
+            "rake test                      # Test all units and functionals\n" + // NOI18N
+            "rake test:functionals          # Run the functional tests in test/functional\n" + // NOI18N
+            "rake test:integration          # Run the integration tests in test/integration\n" + // NOI18N
+            "rake test:plugins              # Run the plugin tests in vendor/plugins/** /test (or specify with PLUGIN=name)\n" + // NOI18N
+            "rake test:recent               # Test recent changes\n" + // NOI18N
+            "rake test:uncommitted          # Test changes since last checkin (only Subversion)\n" + // NOI18N
+            "rake test:units                # Run the unit tests in test/unit\n" + // NOI18N
+            "rake tmp:cache:clear           # Clears all files and directories in tmp/cache\n" + // NOI18N
+            "rake tmp:clear                 # Clear session, cache, and socket files from tmp/\n" + // NOI18N
+            "rake tmp:create                # Creates tmp directories for sessions, cache, and sockets\n" + // NOI18N
+            "rake tmp:pids:clear            # Clears all files in tmp/pids\n" + // NOI18N
+            "rake tmp:sessions:clear        # Clears all files in tmp/sessions\n" + // NOI18N
+            "rake tmp:sockets:clear         # Clears all files in tmp/sockets\n"; // NOI18N
     }
 
     public static void refreshTargets(Project project) {
