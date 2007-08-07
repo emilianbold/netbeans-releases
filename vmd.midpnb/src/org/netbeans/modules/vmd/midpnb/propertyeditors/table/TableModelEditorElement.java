@@ -363,7 +363,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
     }// </editor-fold>//GEN-END:initComponents
 
     private void addColButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addColButtonActionPerformed
-        tableModel.addColumn("");
+        tableModel.addColumn(""); // NOI18N
     }//GEN-LAST:event_addColButtonActionPerformed
 
     private void removeColButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeColButtonActionPerformed
