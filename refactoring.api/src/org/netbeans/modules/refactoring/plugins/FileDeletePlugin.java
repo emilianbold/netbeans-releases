@@ -13,14 +13,13 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.refactoring.plugins;
 
-import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.refactoring.spi.Transaction;
+import java.net.URL;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
@@ -28,10 +27,12 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 
@@ -71,14 +72,20 @@ public class FileDeletePlugin implements RefactoringPlugin {
     
     private class DeleteFile extends SimpleRefactoringElementImplementation {
         
-        private FileObject fo;
+        private final URL res;
+        private String filename;
         private RefactoringElementsBag session;
         public DeleteFile(FileObject fo, RefactoringElementsBag session) {
-            this.fo = fo;
+            try {
+                this.res = fo.getURL();
+            } catch (FileStateInvalidException ex) {
+                throw new IllegalStateException(ex);
+            }
+            this.filename = fo.getNameExt();
             this.session = session;
         }
         public String getText() {
-            return "Delete file " + fo.getNameExt();
+            return "Delete file " + filename;
         }
 
         public String getDisplayText() {
@@ -88,16 +95,16 @@ public class FileDeletePlugin implements RefactoringPlugin {
         BackupFacility.Handle id;
         public void performChange() {
             try {
-                if (!fo.isValid()) {
-                    fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fo.getPath())));
+                FileObject fo = URLMapper.findFileObject(res);
+                if (fo == null) {
+                    throw new IOException(res.toString());
                 }
-                
                 id = BackupFacility.getDefault().backup(fo);
                 DataObject.find(fo).delete();
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
         }
         
@@ -114,7 +121,7 @@ public class FileDeletePlugin implements RefactoringPlugin {
         }
 
         public FileObject getParentFile() {
-            return fo;
+            return URLMapper.findFileObject(res);
         }
 
         public PositionBounds getPosition() {
