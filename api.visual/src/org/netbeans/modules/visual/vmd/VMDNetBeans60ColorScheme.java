@@ -128,7 +128,7 @@ public class VMDNetBeans60ColorScheme extends VMDColorScheme {
     }
 
     public Widget createPinCategoryWidget (VMDNodeWidget widget, String categoryDisplayName) {
-        return VMDFactory.getOriginalScheme ().createPinCategoryWidget (widget, categoryDisplayName);
+        return VMDOriginalColorScheme.createPinCategoryWidgetCore (widget, categoryDisplayName, false);
     }
 
 }

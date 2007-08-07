@@ -101,16 +101,7 @@ public class VMDOriginalColorScheme extends VMDColorScheme {
     }
 
     public Widget createPinCategoryWidget (VMDNodeWidget widget, String categoryDisplayName) {
-        Scene scene = widget.getScene ();
-        LabelWidget label = new LabelWidget (scene, categoryDisplayName);
-        label.setOpaque (true);
-        label.setBackground (BORDER_CATEGORY_BACKGROUND);
-        label.setForeground (Color.GRAY);
-        Font fontPinCategory = scene.getDefaultFont ().deriveFont (10.0f);
-        label.setFont (fontPinCategory);
-        label.setAlignment (LabelWidget.Alignment.CENTER);
-        label.setCheckClipping (true);
-        return label;
+        return createPinCategoryWidgetCore (widget, categoryDisplayName, true);
     }
 
     public void installUI (VMDConnectionWidget widget) {
@@ -156,6 +147,21 @@ public class VMDOriginalColorScheme extends VMDColorScheme {
 
     public int getNodeAnchorGap (VMDNodeAnchor anchor) {
         return 8;
+    }
+
+    static Widget createPinCategoryWidgetCore (VMDNodeWidget widget, String categoryDisplayName, boolean changeFont) {
+        Scene scene = widget.getScene ();
+        LabelWidget label = new LabelWidget (scene, categoryDisplayName);
+        label.setOpaque (true);
+        label.setBackground (BORDER_CATEGORY_BACKGROUND);
+        label.setForeground (Color.GRAY);
+        if (changeFont) {
+            Font fontPinCategory = scene.getDefaultFont ().deriveFont (10.0f);
+            label.setFont (fontPinCategory);
+        }
+        label.setAlignment (LabelWidget.Alignment.CENTER);
+        label.setCheckClipping (true);
+        return label;
     }
 
 }
