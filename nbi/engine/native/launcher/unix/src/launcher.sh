@@ -63,7 +63,9 @@ MSG_ERROR_USER_ERROR="nlu.jvm.usererror"
 MSG_ERROR_JVM_UNCOMPATIBLE="nlu.jvm.uncompatible"
 MSG_ERROR_INTEGRITY="nlu.integrity"
 MSG_ERROR_FREESPACE="nlu.freespace"
-MSG_ERROP_MISSING_RESOURCE="nlw.missing.external.resource"
+MSG_ERROP_MISSING_RESOURCE="nlu.missing.external.resource"
+MSG_ERROR_TMPDIR="nlu.cannot.create.tmpdir"
+
 MSG_RUNNING="nlu.running"
 MSG_STARTING="nlu.starting"
 MSG_EXTRACTING="nlu.extracting"
@@ -75,7 +77,7 @@ MSG_ARG_EXTRACT="nlu.arg.extract"
 MSG_ARG_TEMPDIR="nlu.arg.tempdir"
 MSG_ARG_CPA="nlu.arg.cpa"
 MSG_ARG_CPP="nlu.arg.cpp"
-MSG_ARG_DISABLE_FREE_SPACE_CHECK="nlw.arg.disable.space.check"
+MSG_ARG_DISABLE_FREE_SPACE_CHECK="nlu.arg.disable.space.check"
 MSG_ARG_LOCALE="nlu.arg.locale"
 MSG_ARG_HELP="nlu.arg.help"
 MSG_USAGE="nlu.msg.usage"
@@ -422,6 +424,7 @@ exitProgram() {
 		rm -rf "$LAUNCHER_EXTRACT_DIR" > /dev/null 2>&1
 	    fi
 	fi
+	debug "exitCode = $1"
 	exit $1
 }
 
@@ -446,10 +449,6 @@ message() {
         out "$msg"
 }
 
-showTempDirMessage() {
-        out "Cannot create temporary directory $1"
-        exit $ERROR_TEMP_DIRECTORY
-}
 
 createTempDirectory() {
 	if [ 0 -eq $EXTRACT_ONLY ] ; then
@@ -472,7 +471,8 @@ createTempDirectory() {
             if [ ! -d "$LAUNCHER_JVM_TEMP_DIR" ] ; then
                 mkdir -p "$LAUNCHER_JVM_TEMP_DIR" > /dev/null 2>&1
                 if [ $? -ne 0 ] ; then                        
-                        showTempDirMessage "$LAUNCHER_JVM_TEMP_DIR"
+                        message "$MSG_ERROR_TMPDIR" "$LAUNCHER_JVM_TEMP_DIR"
+                        exitProgram $ERROR_TEMP_DIRECTORY
                 fi
             fi		
             debug "Launcher TEMP ROOT = $LAUNCHER_JVM_TEMP_DIR"
@@ -487,7 +487,8 @@ createTempDirectory() {
         if [ ! -d "$LAUNCHER_EXTRACT_DIR" ] ; then
                 mkdir -p "$LAUNCHER_EXTRACT_DIR" > /dev/null 2>&1
                 if [ $? -ne 0 ] ; then                        
-                        showTempDirMessage "$LAUNCHER_EXTRACT_DIR"
+                        message "$MSG_ERROR_TMPDIR"  "$LAUNCHER_EXTRACT_DIR"
+                        exitProgram $ERROR_TEMP_DIRECTORY
                 fi
         else
                 debug "$LAUNCHER_EXTRACT_DIR is directory and exist"
