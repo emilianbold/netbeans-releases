@@ -894,9 +894,9 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
                 if (VALUE_PALETTE.equals (type)) {
                     int palette = Integer.parseInt (attributes.getNamedItem (ATTR_PALETTE).getNodeValue ());
                     String id = attributes.getNamedItem (ATTR_ID).getNodeValue ();
-                    if (palette == AWT_PALETTE) {
+                    if (palette == AWT_PALETTE) { // old colors stored localized name of color, newer has original 'en' name
                         int idx = getIndex(awtGenerate, id);
-                        id = idx >= 0? getAWTColorNames()[idx]: null;
+                        id = idx >= 0? getAWTColorNames()[idx]: (getIndex(getAWTColorNames(), id)>=0? id: null);
                     }
                     setValue (new SuperColor (id,  palette, new Color (Integer.parseInt (red, 16), Integer.parseInt (green, 16), Integer.parseInt (blue, 16))));
                 } else {
