@@ -124,7 +124,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${xtest.plugin.home}/lib/xtest-ide-testexec.jar" todir="${xtest.workdir.idejars}"/> 
         <!-- Add projects support to system classloader classpath. 
             It is added in module_harness.xml to compile classpath. --> 
-        <copy file="${xtest.home}/lib/nbjunit-ide.jar" todir="${xtest.workdir.idejars}"/>
+        <copy file="${xtest.home}/lib/nbjunit-ide.jar" todir="${xtest.workdir.idejars}" failonerror="false"/>
 
         <antcall target="copy-user-jars"/>    
     </target>    
