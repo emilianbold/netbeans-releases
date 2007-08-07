@@ -1834,6 +1834,7 @@ public class BasicCanvasView extends AbstractCanvasView {
                         }
                     });
 
+                getDocument().bringObjectToFront(obj);  
                 return super.selectObject(obj);
             }
         };
