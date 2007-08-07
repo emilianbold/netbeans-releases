@@ -89,14 +89,14 @@ public class MoveTransformer extends RefactoringVisitor {
                     if (el.getKind()!=ElementKind.PACKAGE && 
                         !move.filesToMove.contains(fo) &&
                         getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent())) && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))) {
-                            problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, SourceUtils.getEnclosingTypeElement(el).getSimpleName()));
+                            problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
                         }
                 }
                 if (!isThisFileMoving && !isElementMoving(el)) {
                     if (el.getKind()!=ElementKind.PACKAGE && 
                         move.filesToMove.contains(fo) &&
                         getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent())) && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))) {
-                            problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(),el, SourceUtils.getEnclosingTypeElement(el).getSimpleName()));
+                            problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
                         }
                 }
             }
@@ -120,7 +120,7 @@ public class MoveTransformer extends RefactoringVisitor {
                     } else if (el.getKind()!=ElementKind.PACKAGE && 
                             move.filesToMove.contains(fo) &&
                             getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent())) && !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))) {
-                                problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(), el, SourceUtils.getEnclosingTypeElement(el).getSimpleName()));
+                                problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature",workingCopy.getFileObject().getName(), el, getTypeElement(el).getSimpleName()));
                             }
                 } else {
                     if (!isThisFileReferencingOldPackage && (!isElementMoving(el) && isTopLevelClass(el)) && getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()))) {
@@ -131,13 +131,21 @@ public class MoveTransformer extends RefactoringVisitor {
                             !move.filesToMove.contains(fo) &&
                             getPackageOf(el).toString().equals(RetoucheUtils.getPackageName(workingCopy.getFileObject().getParent()))) && 
                             !(el.getModifiers().contains(Modifier.PUBLIC) || el.getModifiers().contains(Modifier.PROTECTED))) {
-                                problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, SourceUtils.getEnclosingTypeElement(el).getSimpleName()));
+                                problem = createProblem(problem, false, NbBundle.getMessage(MoveTransformer.class, "ERR_AccessesPackagePrivateFeature2",workingCopy.getFileObject().getName(),el, getTypeElement(el).getSimpleName()));
                     }
                 }
             }
         }
         
         return super.visitIdentifier(node, p);
+    }
+    
+    private TypeElement getTypeElement(Element e) {
+        TypeElement t = SourceUtils.getEnclosingTypeElement(e);
+        if (t==null && e instanceof TypeElement) {
+            return (TypeElement) e;
+        }
+        return t;
     }
     static final Problem createProblem(Problem result, boolean isFatal, String message) {
         Problem problem = new Problem(isFatal, message);
