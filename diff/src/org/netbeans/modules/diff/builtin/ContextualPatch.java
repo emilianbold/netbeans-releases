@@ -43,8 +43,9 @@ public final class ContextualPatch {
     private final Pattern binaryHeaderPattern = Pattern.compile("MIME: (.*?); encoding: (.*?); length: (-?\\d+?)"); 
     
     private final File patchFile;
-    private final File context;
+    private final File suggestedContext;
 
+    private File            context;
     private BufferedReader  patchReader;
     private String          patchLine;
     private boolean         patchLineRead;
@@ -56,7 +57,7 @@ public final class ContextualPatch {
     
     private ContextualPatch(File patchFile, File context) {
         this.patchFile = patchFile;
-        this.context = context;
+        this.suggestedContext = context;
     }
 
     /**
@@ -77,6 +78,7 @@ public final class ContextualPatch {
                 if (patch == null) break;
                 patches.add(patch);
             }
+            computeContext(patches);
             for (SinglePatch patch : patches) {
                 try {
                     applyPatch(patch, dryRun);
@@ -99,11 +101,6 @@ public final class ContextualPatch {
         if (MAGIC.equals(line)) {
             encoding = "utf8"; // NOI18N
             line = patchReader.readLine();
-            String MAGIC2 = "paths are relative to: "; // NOI18N
-            int idx = line.indexOf(MAGIC2); 
-            if (idx != -1) {
-//                patchContext = line.substring(idx + MAGIC2.length());
-            }
         }
         patchReader.close();
 
@@ -120,7 +117,7 @@ public final class ContextualPatch {
     private void applyPatch(SinglePatch patch, boolean dryRun) throws IOException, PatchException {
         lastPatchedLine = 1;
         List<String> target;
-        patch.targetFile = computeTargetFile(patch, context);
+        patch.targetFile = computeTargetFile(patch);
         if (patch.targetFile.exists() && !patch.binary) {
             target = readFile(patch.targetFile);
             if (patchCreatesNewFileThatAlreadyExists(patch, target)) return;
@@ -178,7 +175,7 @@ public final class ContextualPatch {
                 copyStreamsCloseAll(new FileOutputStream(patch.targetFile), new ByteArrayInputStream(content));
             }
         } else {
-            PrintWriter w = new PrintWriter(patch.targetFile, getEncoding(patch.targetFile).name());
+            PrintWriter w = new PrintWriter(new OutputStreamWriter(new FileOutputStream(patch.targetFile), getEncoding(patch.targetFile))); 
             try {
                 if (lines.size() == 0) return;
                 for (String line : lines.subList(0, lines.size() - 1)) {
@@ -599,7 +596,29 @@ public final class ContextualPatch {
         patchLineRead = false;
     }
     
-    private File computeTargetFile(SinglePatch patch, File context) {
+    private void computeContext(List<SinglePatch> patches) {
+        File bestContext = suggestedContext;
+        int bestContextMatched = 0;
+        for (context = suggestedContext; context != null; context = context.getParentFile()) {
+            int patchedFiles = 0;
+            for (SinglePatch patch : patches) {
+                try {
+                    applyPatch(patch, true);
+                    patchedFiles++;
+                } catch (Exception e) {
+                    // patch failed to apply
+                }
+            }
+            if (patchedFiles > bestContextMatched) {
+                bestContextMatched = patchedFiles;
+                bestContext = context;
+                if (patchedFiles == patches.size()) break;
+            }
+        }
+        context = bestContext;
+    }
+
+    private File computeTargetFile(SinglePatch patch) {
         if (patch.targetPath == null) {
             patch.targetPath = context.getAbsolutePath();
         }
