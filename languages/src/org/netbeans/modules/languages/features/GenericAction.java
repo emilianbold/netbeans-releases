@@ -25,8 +25,6 @@ import org.netbeans.api.languages.ASTNode;
 import java.awt.event.ActionEvent;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ParseException;
 import org.openide.ErrorManager;
 
@@ -66,7 +64,7 @@ public class GenericAction extends BaseAction {
     
     private ASTNode getASTNode(JTextComponent comp) {
         try {
-            return ParserManagerImpl.get((NbEditorDocument)comp.getDocument()).getAST();
+            return ParserManagerImpl.get(comp.getDocument()).getAST();
         } catch (ParseException ex) {
             ErrorManager.getDefault().notify(ex);
         } 
