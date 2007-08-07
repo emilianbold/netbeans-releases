@@ -24,6 +24,7 @@ import javax.accessibility.AccessibleContext;
 import javax.swing.JFileChooser;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -36,9 +37,13 @@ public class CustomizerStartup extends javax.swing.JPanel {
 
     private CustomizerDataSupport custData;
 
+    private final File catalinaHome;
+    
     /** Creates new form CustomizerStartup */
-    public CustomizerStartup(CustomizerDataSupport custData) {
+    public CustomizerStartup(CustomizerDataSupport custData, File catalinaHome) {
         this.custData = custData;
+        this.catalinaHome = catalinaHome;
+        
         initComponents();
         if (Utilities.isWindows()) {
             // force shutdown not supported on Windows
@@ -243,12 +248,16 @@ public class CustomizerStartup extends javax.swing.JPanel {
         File script = new File(jTextField1.getText().trim());
         File currentFolder = script.isDirectory() ? script
                                                   : script.getParentFile();
+
         if (currentFolder != null && currentFolder.exists()) {
             chooser = new JFileChooser(currentFolder);
+        } else if (catalinaHome != null && catalinaHome.exists()) {
+            chooser = new JFileChooser(catalinaHome);
         } else {
             chooser = new JFileChooser();
         }
-        int returnVal = chooser.showOpenDialog(null);
+        
+        int returnVal = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this));
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             jTextField1.setText(chooser.getSelectedFile().getAbsolutePath());
         }
