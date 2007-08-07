@@ -105,16 +105,18 @@ public class MissingHashCode extends AbstractHint {
 
                 int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
 
-                ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                    getSeverity().toEditorSeverity(), 
-                    NbBundle.getMessage(MissingHashCode.class, addHint), 
-                    fixes, 
-                    doc, 
-                    doc.createPosition((int) span[0]), 
-                    doc.createPosition((int) span[1])
-                );
+                if (span[0] != (-1) && span[1] != (-1)) {
+                    ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
+                        getSeverity().toEditorSeverity(), 
+                        NbBundle.getMessage(MissingHashCode.class, addHint), 
+                        fixes, 
+                        doc, 
+                        doc.createPosition((int) span[0]), 
+                        doc.createPosition((int) span[1])
+                    );
 
-                return Collections.singletonList(ed);
+                    return Collections.singletonList(ed);
+                }
             }
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
