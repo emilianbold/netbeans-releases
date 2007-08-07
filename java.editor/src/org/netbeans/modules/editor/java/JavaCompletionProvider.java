@@ -2526,7 +2526,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void addAllTypes(Env env, EnumSet<ElementKind> kinds) {
-            int offset = env.getOffset();
             String prefix = env.getPrefix();
             CompilationController controller = env.getController();
             LazyTypeCompletionItem lastItem = null;

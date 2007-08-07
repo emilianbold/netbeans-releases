@@ -37,6 +37,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.PositionConverter;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
@@ -73,6 +74,13 @@ public class Reformatter implements ReformatTask {
             return;
         this.startOffset = context.startOffset() - shift;
         this.endOffset = context.endOffset() - shift;
+        PositionConverter converter = controller.getPositionConverter();
+        if (converter != null) {
+            this.startOffset = converter.getJavaSourcePosition(this.startOffset);
+            this.endOffset = converter.getJavaSourcePosition(this.endOffset);
+        }
+        if (this.startOffset >= this.endOffset)
+            return;
         TreePath path = getCommonPath();
         if (path == null)
             return;
