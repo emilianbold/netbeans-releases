@@ -193,12 +193,13 @@
         <!-- copy the distributive to the distributives directory -->
         <move file="${work.dir}/${group.dist.file.name}" 
               todir="${dist.dir}"/>
-        
-        <signjar jar="${dist.dir}/${group.dist.file.name}" 
-                 keystore="${jarsigner.keystore}"
-                 storepass="${jarsigner.storepass}"
-                 alias="${jarsigner.alias}"
-                 maxmemory="${jarsigner.xmx}"/>
+        <if property="jarsigner.enabled" value="true">
+            <signjar jar="${dist.dir}/${group.dist.file.name}" 
+                     keystore="${jarsigner.keystore}"
+                     storepass="${jarsigner.storepass}"
+                     alias="${jarsigner.alias}"
+                     maxmemory="${jarsigner.xmx}"/>
+	</if>
     </target>
     
     <!-- ============================================================================

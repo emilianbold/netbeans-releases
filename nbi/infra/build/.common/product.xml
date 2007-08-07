@@ -264,11 +264,13 @@
                 tofile="${current.file}"/>
             
             <!-- sign the current jar file -->
-            <signjar jar="${current.file}" 
-                     keystore="${jarsigner.keystore}"
-                     storepass="${jarsigner.storepass}"
-                     alias="${jarsigner.alias}"
-                     maxmemory="${jarsigner.xmx}"/>
+	    <if property="jarsigner.enabled" value="true">
+                <signjar jar="${current.file}" 
+                         keystore="${jarsigner.keystore}"
+                         storepass="${jarsigner.storepass}"
+                         alias="${jarsigner.alias}"
+                         maxmemory="${jarsigner.xmx}"/>
+             </if>
             
             <!-- calculate the metadata for the file -->
             <sizeof file="${current.file}" property="product.logic.${i}.size"/>
@@ -299,12 +301,14 @@
                 usetimestamp="true"/>
             
             <!-- sign the current jar file -->
-            <signjar 
-                jar="${current.file}" 
-                keystore="${jarsigner.keystore}"
-                storepass="${jarsigner.storepass}"
-                alias="${jarsigner.alias}"
-                maxmemory="${jarsigner.xmx}"/>
+	    <if property="jarsigner.enabled" value="true">
+                <signjar 
+                    jar="${current.file}" 
+                    keystore="${jarsigner.keystore}"
+                    storepass="${jarsigner.storepass}"
+                    alias="${jarsigner.alias}"
+                    maxmemory="${jarsigner.xmx}"/>
+            </if>
             
             <!-- calculate the metadata for the file -->
             <sizeof 
@@ -471,12 +475,14 @@
             </if>
             
             <!-- sign the resulting jar file -->
-            <signjar 
-                jar="${current.file}" 
-                keystore="${jarsigner.keystore}"
-                storepass="${jarsigner.storepass}"
-                alias="${jarsigner.alias}"
-                maxmemory="${jarsigner.xmx}"/>
+            <if property="jarsigner.enabled" value="true">
+                <signjar 
+                    jar="${current.file}" 
+                    keystore="${jarsigner.keystore}"
+                    storepass="${jarsigner.storepass}"
+                    alias="${jarsigner.alias}"
+                    maxmemory="${jarsigner.xmx}"/>
+	    </if>
             
             <!-- calculate the metadata for the file -->
             <sizeof 
@@ -529,13 +535,14 @@
                     value="${package.descriptor.path}"/>
             </manifest>
         </jar>
-        
-        <signjar 
-            jar="${product.dist.file}" 
-            keystore="${jarsigner.keystore}"
-            storepass="${jarsigner.storepass}"
-            alias="${jarsigner.alias}"
-            maxmemory="${jarsigner.xmx}"/>
+        <if property="jarsigner.enabled" value="true">
+            <signjar 
+                jar="${product.dist.file}" 
+                keystore="${jarsigner.keystore}"
+                storepass="${jarsigner.storepass}"
+                alias="${jarsigner.alias}"
+                maxmemory="${jarsigner.xmx}"/>
+	</if>
     </target>
     
     <!--

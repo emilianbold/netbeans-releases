@@ -177,11 +177,13 @@
         <copy file="${nbproject.dist.file}" todir="${dist.dir}"/>
         
         <!-- digitally sign the built binary -->
-        <signjar jar="${dist.dir}/${engine.dist.file.name}" 
-                 keystore="${jarsigner.keystore}"
-                 storepass="${jarsigner.storepass}"
-                 alias="${jarsigner.alias}"
-                 maxmemory="${jarsigner.xmx}"/>
+	<if property="jarsigner.enabled" value="true">
+                <signjar jar="${dist.dir}/${engine.dist.file.name}" 
+                         keystore="${jarsigner.keystore}"
+                         storepass="${jarsigner.storepass}"
+                         alias="${jarsigner.alias}"
+                         maxmemory="${jarsigner.xmx}"/>
+	</if>
     </target>
     
     <!--

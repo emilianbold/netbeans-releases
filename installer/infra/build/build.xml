@@ -353,11 +353,14 @@ sjsas.image.token.hostname.linux=${sjsas.image.token.hostname.linux}
 sjsas.image.token.hostname.solaris-x86=${sjsas.image.token.hostname.solaris-x86}
 sjsas.image.token.hostname.solaris-sparc=${sjsas.image.token.hostname.solaris-sparc}
 sjsas.image.token.hostname.macosx=${sjsas.image.token.hostname.macosx}
-
+        </echo>
+	<if property="jarsigner.enabled" value="true">
+	    <echo>
 jarsigner.keystore=${jarsigner.keystore}
 jarsigner.alias=${jarsigner.alias}
 jarsigner.storepass=${jarsigner.storepass}
-        </echo>
+            </echo>
+	</if>
         <replace file="${environment.properties}" token="\" value="/"/>
     </target>
     

@@ -51,6 +51,7 @@
 #
 #REGISTRIES_HOME=
 #
+#USE_JARSIGNER=
 #JARSIGNER_KEYSTORE=
 #JARSIGNER_ALIAS=
 #JARSIGNER_STOREPASS=
@@ -134,6 +135,7 @@ ant build \
         \"-Dglassfish.user=${GLASSFISH_USER}\" \
         \"-Dglassfish.password=${GLASSFISH_PASSWORD}\" \
         \"-Dregistries.home=${REGISTRIES_HOME}\" \
+	\"-Djarsigner.enabled=${USE_JARSIGNER}\" \
         \"-Djarsigner.keystore=${JARSIGNER_KEYSTORE}\" \
         \"-Djarsigner.alias=${JARSIGNER_ALIAS}\" \
         \"-Djarsigner.storepass=${JARSIGNER_STOREPASS}\" \
