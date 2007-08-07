@@ -24,9 +24,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import org.netbeans.api.gsf.annotations.NonNull;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -45,7 +43,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class LanguageRegistry implements Iterable<Language> {
-    
+
     private static LanguageRegistry instance;
     private static final String DISPLAY_NAME = "displayName";
     private static final String ICON_BASE = "iconBase";
@@ -73,13 +71,13 @@ public class LanguageRegistry implements Iterable<Language> {
     public LanguageRegistry() {
         initialize();
     }
-    
+
     /** For testing only! */
     public void addLanguages(List<Language> newLanguages) {
         if (languages != null && languages.size() > 0) {
             throw new RuntimeException("This is for testing purposes only!!!");
         }
-        
+
         this.languages = newLanguages;
     }
 
@@ -148,17 +146,18 @@ public class LanguageRegistry implements Iterable<Language> {
     public Iterator<Language> iterator() {
         if (languages == null) {
             return new Iterator<Language>() {
-                    public boolean hasNext() {
-                        return false;
-                    }
 
-                    public Language next() {
-                        return null;
-                    }
+                public boolean hasNext() {
+                    return false;
+                }
 
-                    public void remove() {
-                    }
-                };
+                public Language next() {
+                    return null;
+                }
+
+                public void remove() {
+                }
+            };
         } else {
             return languages.iterator();
         }
@@ -201,7 +200,6 @@ public class LanguageRegistry implements Iterable<Language> {
             // the most expensive file to compute anyway. Luckily, this should
             // only have to be done once - it will not be updated on subsequent
             // IDE starts until the user dir is removed.
-
             // Actually, this causes some real serious problems. DataLoader registration
             // doesn't happen in just one go - and here, the call to initializeLanguageForEditor will
             // be called before all loaders have been registered (I was seeing it with RhtmlDataLoader)
@@ -211,7 +209,7 @@ public class LanguageRegistry implements Iterable<Language> {
             // Perhaps I can work around this by adding some specific MIME folder registrations
             // early, but not do full initialization? I specifically need to avoid any calls into
             // the DataObject area - which initializeLanguageForEditor will do when instantiating the
-            // registered scanners etc.            
+            // registered scanners etc.
             //            SwingUtilities.invokeLater(new Runnable() {
             //                    // Gotta invoke later because if it's done as part of DataLoader initialization,
             //                    // loader registration fails and our files are not recognized
@@ -259,13 +257,13 @@ public class LanguageRegistry implements Iterable<Language> {
                 String name = mimeType;
                 if (bundleName != null)
                 try {
-                    name = NbBundle.getBundle (bundleName).getString (mimeType);
+                name = NbBundle.getBundle (bundleName).getString (mimeType);
                 } catch (MissingResourceException ex) {}
                 mimeTypeToName.put (mimeType, name);
                 }
                 return (String) mimeTypeToName.get (mimeType);
                 }
-                  */
+                 */
                 if ((displayName != null) && (displayName.length() > 0)) {
                     language.setDisplayName(displayName);
                 }
@@ -287,7 +285,6 @@ public class LanguageRegistry implements Iterable<Language> {
                 //if ((iconBase != null) && (iconBase.length() > 0)) {
                 //    language.setIconBase(iconBase);
                 //}
-
                 // Look for extensions, scanners, parsers, etc.
                 FileObject extensionsDir = mimeFile.getFileObject(EXTENSIONS, null);
 
@@ -377,9 +374,7 @@ public class LanguageRegistry implements Iterable<Language> {
     private void initializeLanguage(Language language) {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
 
-        String oldNavFileName =
-            "Navigator/Panels/" + language.getMimeType() +
-            "/org-netbeans-modules-retouche-navigation-GsfStructurePanel.instance";
+        String oldNavFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-GsfStructurePanel.instance";
 
         // Delete the old navigator description - I have moved the class name
         FileObject fo = fs.findResource(oldNavFileName);
@@ -392,9 +387,7 @@ public class LanguageRegistry implements Iterable<Language> {
             }
         }
 
-        String navFileName =
-            "Navigator/Panels/" + language.getMimeType() +
-            "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance";
+        String navFileName = "Navigator/Panels/" + language.getMimeType() + "/org-netbeans-modules-retouche-navigation-ClassMemberPanel.instance";
 
         fo = fs.findResource(navFileName);
 
@@ -421,51 +414,43 @@ public class LanguageRegistry implements Iterable<Language> {
     void initializeLanguageForEditor(Language l) {
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         final FileObject root = fs.findResource("Editors/" + l.getMimeType()); // NOI18N
-
-        if (root.getFileObject("Settings.settings") == null) { // NOI18N
+        if (root.getFileObject("Settings.settings") == null) {
+            // NOI18N
             try {
                 fs.runAtomicAction(new AtomicAction() {
-                        public void run() {
+
+                    public void run() {
+                        try {
+                            InputStream is = getClass().getClassLoader().getResourceAsStream("org/netbeans/modules/gsf/GsfOptions.settings"); // NOI18N
                             try {
-                                InputStream is =
-                                    getClass().getClassLoader()
-                                        .getResourceAsStream("org/netbeans/modules/gsf/GsfOptions.settings"); // NOI18N
+                                FileObject fo = root.createData("Settings.settings"); // NOI18N
+                                OutputStream os = fo.getOutputStream();
 
                                 try {
-                                    FileObject fo = root.createData("Settings.settings"); // NOI18N
-                                    OutputStream os = fo.getOutputStream();
-
-                                    try {
-                                        FileUtil.copy(is, os);
-                                    } finally {
-                                        os.close();
-                                    }
+                                    FileUtil.copy(is, os);
                                 } finally {
-                                    is.close();
+                                    os.close();
                                 }
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                            } finally {
+                                is.close();
                             }
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
                         }
-                    });
+                    }
+                });
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
-        // init code folding bar
-        if ((root.getFileObject(
-                    "SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance") == null) &&
-                (l.getParser() != null)) { // XXX Don't construct a new parser just to see this!
 
+        // init code folding bar
+        if ((root.getFileObject("SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance") == null) && (l.getParser() != null)) {
+            // XXX Don't construct a new parser just to see this!
             try {
                 //FileUtil.createData (root, "FoldManager/org-netbeans-editor-CustomFoldManager$Factory.instance");
-                FileUtil.createData(root,
-                    "FoldManager/org-netbeans-modules-retouche-editor-fold-GsfFoldManagerFactory.instance");
-                FileUtil.createData(root,
-                    "SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance").
-                    // Tweak to put after org-netbeans-editor-GlyphGutter.instance:
-                    setAttribute("position", 1200);
+                FileUtil.createData(root, "FoldManager/org-netbeans-modules-retouche-editor-fold-GsfFoldManagerFactory.instance");
+                FileUtil.createData(root, "SideBar/org-netbeans-modules-editor-retouche-GsfCodeFoldingSideBarFactory.instance").setAttribute("position", 1200);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -474,12 +459,9 @@ public class LanguageRegistry implements Iterable<Language> {
         // init hyperlink provider
         if (root.getFileObject("HyperlinkProviders/GsfHyperlinkProvider.instance") == null) {
             try {
-                FileObject fo =
-                    FileUtil.createData(root, "HyperlinkProviders/GsfHyperlinkProvider.instance");
-                fo.setAttribute("instanceClass",
-                    "org.netbeans.modules.retouche.editor.hyperlink.GsfHyperlinkProvider");
-                fo.setAttribute("instanceOf",
-                    "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider");
+                FileObject fo = FileUtil.createData(root, "HyperlinkProviders/GsfHyperlinkProvider.instance");
+                fo.setAttribute("instanceClass", "org.netbeans.modules.retouche.editor.hyperlink.GsfHyperlinkProvider");
+                fo.setAttribute("instanceOf", "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -494,7 +476,7 @@ public class LanguageRegistry implements Iterable<Language> {
                 Exceptions.printStackTrace(ex);
             }
         }
-        
+
         // I can't just do popup!=null to see if I need to dynamically add gsf
         // menu items because modules may have registered additional Popup
         // items, so the layer will contain Popup already
@@ -514,28 +496,26 @@ public class LanguageRegistry implements Iterable<Language> {
                 gotoF.createData("goto").setAttribute("position", 600); // Goto by linenumber
                 // What about goto-source etc?
                 // TODO: Goto Type (integrate with Java's GotoType)
-
-        // Temporary - userdir upgrade
-        if (popup.getFileObject("SeparatorBeforeCut.instance") == null) {
-                FileObject sep = popup.createData("SeparatorBeforeCut.instance");
-                sep.setAttribute("instanceClass", "javax.swing.JSeparator");
-                // Should be before org-netbeans-modules-editor-NbSelectInPopupAction.instance & org-openide-actions-CutAction.instance:
-                sep.setAttribute("position", 1200);
-        }
-        // Temporary - userdir upgrade
-        if (popup.getFileObject("format") == null) {
-                popup.createData("format").setAttribute("position", 750);
-        }
-        FileObject sep2 = popup.createData("SeparatorAfterFormat.instance");
-        sep2.setAttribute("instanceClass", "javax.swing.JSeparator");
-        // Should be between org-openide-actions-PasteAction.instance and format
-        sep2.setAttribute("position", 780);
-        // Temporary - userdir upgrade
-        
-        // Obsolete - nuke
-        if (popup.getFileObject("pretty-print") != null) {
-            popup.delete();
-        }
+                // Temporary - userdir upgrade
+                if (popup.getFileObject("SeparatorBeforeCut.instance") == null) {
+                    FileObject sep = popup.createData("SeparatorBeforeCut.instance");
+                    sep.setAttribute("instanceClass", "javax.swing.JSeparator");
+                    // Should be before org-netbeans-modules-editor-NbSelectInPopupAction.instance & org-openide-actions-CutAction.instance:
+                    sep.setAttribute("position", 1200);
+                }
+                // Temporary - userdir upgrade
+                if (popup.getFileObject("format") == null) {
+                    popup.createData("format").setAttribute("position", 750);
+                }
+                FileObject sep2 = popup.createData("SeparatorAfterFormat.instance");
+                sep2.setAttribute("instanceClass", "javax.swing.JSeparator");
+                // Should be between org-openide-actions-PasteAction.instance and format
+                sep2.setAttribute("position", 780);
+                // Temporary - userdir upgrade
+                // Obsolete - nuke
+                if (popup.getFileObject("pretty-print") != null) {
+                    popup.getFileObject("pretty-print").delete();
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -571,22 +551,18 @@ public class LanguageRegistry implements Iterable<Language> {
         }
 
         // Service to show if file is compileable or not
-        if (root.getFileObject(
-                    "UpToDateStatusProvider/org-netbeans-modules-retouche-hints-GsfUpToDateStateProviderFactory.instance") == null) {
+        if (root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-hints-GsfUpToDateStateProviderFactory.instance") == null) {
             try {
-                FileUtil.createData(root,
-                    "UpToDateStatusProvider/org-netbeans-modules-retouche-hints-GsfUpToDateStateProviderFactory.instance");
+                FileUtil.createData(root, "UpToDateStatusProvider/org-netbeans-modules-retouche-hints-GsfUpToDateStateProviderFactory.instance");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
 
         // I'm not sure what this is used for - perhaps to turn orange when there are unused imports etc.
-        if (root.getFileObject(
-                    "UpToDateStatusProvider/org-netbeans-modules-retouche-editor-semantic-OccurrencesMarkProviderCreator.instance") == null) {
+        if (root.getFileObject("UpToDateStatusProvider/org-netbeans-modules-retouche-editor-semantic-OccurrencesMarkProviderCreator.instance") == null) {
             try {
-                FileUtil.createData(root,
-                    "UpToDateStatusProvider/org-netbeans-modules-retouche-editor-semantic-OccurrencesMarkProviderCreator.instance");
+                FileUtil.createData(root, "UpToDateStatusProvider/org-netbeans-modules-retouche-editor-semantic-OccurrencesMarkProviderCreator.instance");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -595,18 +571,17 @@ public class LanguageRegistry implements Iterable<Language> {
         /* XXX breaks ValidateLayerConsistencyTest.testInstantiateAllInstances: Editors/text/x-ruby/org-netbeans-modules-retouche-hints-GsfHintsProvider.instance thrown exception java.lang.ClassNotFoundException: Cannot instantiate org.netbeans.modules.retouche.hints.GsfHintsProvider
         // Editor hints -- this may not be necessary - might already be done from the java source tasks factory...
         String hintsFilename =
-            "Editors/" + l.getMimeType() +
-            "/org-netbeans-modules-retouche-hints-GsfHintsProvider.instance";
-
+        "Editors/" + l.getMimeType() +
+        "/org-netbeans-modules-retouche-hints-GsfHintsProvider.instance";
         if (fs.findResource(hintsFilename) == null) {
-            try {
-                FileObject fo = FileUtil.createData(fs.getRoot(), hintsFilename);
-                fo.setAttribute("instanceOf", "org.netbeans.modules.editor.hints.spi.HintsProvider");
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        try {
+        FileObject fo = FileUtil.createData(fs.getRoot(), hintsFilename);
+        fo.setAttribute("instanceOf", "org.netbeans.modules.editor.hints.spi.HintsProvider");
+        } catch (IOException ex) {
+        Exceptions.printStackTrace(ex);
         }
-        */
+        }
+         */
 
         // Code completion
         String completionProviders = "CompletionProviders";
@@ -614,44 +589,37 @@ public class LanguageRegistry implements Iterable<Language> {
 
         if (completion == null) {
             try {
-                completion = root.createFolder( completionProviders );
+                completion = root.createFolder(completionProviders);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
         if (completion != null) {
             String templates = "org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance";
-            FileObject templeteProvider = root.getFileObject( 
-                    completionProviders + "/" +templates );
+            FileObject templeteProvider = root.getFileObject(completionProviders + "/" + templates);
             if (templeteProvider == null) {
                 try {
                     completion.createData(templates);
-                }
-                catch (IOException ex) {
+                } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
             String provider = "org-netbeans-modules-retouche-editor-completion-GsfCompletionProvider.instance";
-            FileObject completionProvider = root.getFileObject( 
-                    completionProviders +"/" +provider );
+            FileObject completionProvider = root.getFileObject(completionProviders + "/" + provider);
             if (completionProvider == null) {
                 try {
-                    completion.createData( provider );
-                }
-                catch (IOException ex) {
+                    completion.createData(provider);
+                } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
-        } 
+        }
 
         // Editor toolbar: commenting and uncommenting actions
         if (root.getFileObject("Toolbars/Default/comment") == null) {
-            if (!((l.getGsfLanguage() == null) ||
-                    (l.getGsfLanguage().getLineCommentPrefix() == null))) {
+            if (!((l.getGsfLanguage() == null) || (l.getGsfLanguage().getLineCommentPrefix() == null))) {
                 try {
-                    FileObject sep =
-                        FileUtil.createData(root,
-                            "Toolbars/Default/Separator-before-comment.instance");
+                    FileObject sep = FileUtil.createData(root, "Toolbars/Default/Separator-before-comment.instance");
                     sep.setAttribute("instanceClass", "javax.swing.JSeparator");
                     sep.setAttribute("position", 30000);
 
@@ -666,9 +634,7 @@ public class LanguageRegistry implements Iterable<Language> {
         // init code templates
         if (root.getFileObject("CodeTemplateProcessorFactories") == null) {
             try {
-                FileObject fo =
-                    FileUtil.createData(root,
-                        "CodeTemplateProcessorFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance");
+                FileObject fo = FileUtil.createData(root, "CodeTemplateProcessorFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -676,9 +642,7 @@ public class LanguageRegistry implements Iterable<Language> {
         // init code templates filters
         if (root.getFileObject("CodeTemplateFilterFactories") == null) {
             try {
-                FileObject fo =
-                    FileUtil.createData(root,
-                        "CodeTemplateFilterFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance");
+                FileObject fo = FileUtil.createData(root, "CodeTemplateFilterFactories/org-netbeans-modules-retouche-editor-codetemplates-GsfCodeTemplateFilter$Factory.instance");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
