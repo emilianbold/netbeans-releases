@@ -102,11 +102,12 @@ public class TomcatProperties {
     private static final String  DEF_VALUE_JAVA_OPTS     = ""; // NOI18N
     private static final String  DEF_VALUE_DEBUG_TYPE = Utilities.isWindows() ? DEBUG_TYPE_SHARED 
                                                                               : DEBUG_TYPE_SOCKET;
-    private static final boolean DEF_VALUE_MONITOR       = true;
-    private static final boolean DEF_VALUE_PROXY_ENABLED = true;
-    private static final int     DEF_VALUE_DEBUG_PORT    = 11555;
-    private static final int     DEF_VALUE_SERVER_PORT   = 8080;
-    public  static final int     DEF_VALUE_SHUTDOWN_PORT = 8005;
+    private static final boolean DEF_VALUE_MONITOR              = true;
+    private static final boolean DEF_VALUE_PROXY_ENABLED        = true;
+    private static final int     DEF_VALUE_DEBUG_PORT           = 11550;
+    private static final int     DEF_VALUE_DEBUG_PORT_BUNDLED   = 11555;
+    private static final int     DEF_VALUE_SERVER_PORT          = 8080;
+    public  static final int     DEF_VALUE_SHUTDOWN_PORT        = 8005;
     
     public static final int      DEF_VALUE_BUNDLED_SERVER_PORT   = 8084;
     public static final int      DEF_VALUE_BUNDLED_SHUTDOWN_PORT = 8025;
@@ -480,7 +481,12 @@ public class TomcatProperties {
                 TomcatManager.ERR.log(Level.INFO, null, nfe);
             }
         }
-        return DEF_VALUE_DEBUG_PORT;
+        
+        if (tm.isBundledTomcat()) {
+            return DEF_VALUE_DEBUG_PORT_BUNDLED;
+        } else {
+            return DEF_VALUE_DEBUG_PORT;
+        }
     }
     
     public void setDebugPort(int port) {
