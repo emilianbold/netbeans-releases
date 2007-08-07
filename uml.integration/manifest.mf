@@ -3,4 +3,4 @@ OpenIDE-Module-Install: org/netbeans/modules/uml/integration/IDEIntegrationModul
 OpenIDE-Module: org.netbeans.modules.uml.integration/1
 OpenIDE-Module-Layer: org/netbeans/modules/uml/integration/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/uml/integration/Bundle.properties
-
+AutoUpdate-Show-In-Client: false

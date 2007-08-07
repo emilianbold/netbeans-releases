@@ -4,6 +4,7 @@ OpenIDE-Module-Implementation-Version: 2
 OpenIDE-Module-Layer: org/netbeans/modules/gsf/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/gsf/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/gsf/GsfModuleInstaller.class
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/gsf/GsfDataLoader.class
 OpenIDE-Module-Class: Loader

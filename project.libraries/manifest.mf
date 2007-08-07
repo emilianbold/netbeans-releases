@@ -4,4 +4,5 @@ OpenIDE-Module-Install: org/netbeans/modules/project/libraries/LibrariesModule.c
 OpenIDE-Module-Layer: org/netbeans/modules/project/libraries/resources/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.14
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/project/libraries/resources/Bundle.properties
+AutoUpdate-Show-In-Client: false
 

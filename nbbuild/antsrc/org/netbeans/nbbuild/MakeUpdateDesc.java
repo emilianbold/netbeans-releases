@@ -51,6 +51,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -204,6 +205,15 @@ public class MakeUpdateDesc extends MatchingTask {
                 targetClustersDefined |= m.xml.getAttributeNode("targetcluster") != null;
             }
         }
+        boolean use25DTD = false;
+        for (Collection<Module> modules : modulesByGroup.values()) {
+            for (Module m : modules) {
+                Element manifest = ((Element) m.xml.getElementsByTagName("manifest").item(0));
+                use25DTD |= (m.autoload || m.eager ||
+                        manifest.getAttribute("AutoUpdate-Show-In-Client") != null ||
+                        manifest.getAttribute("AutoUpdate-Essential-Module") != null);
+            }
+        }
         
         // XXX Apparently cannot create a doc with entities using DOM 2.
 	try {
@@ -229,7 +239,9 @@ public class MakeUpdateDesc extends MatchingTask {
                     }
                     File desc_ent = new File(ent_name);
                     desc_ent.delete();
-                    if (targetClustersDefined) {
+                    if (use25DTD) {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_5.dtd\" [");
+                    } else if (targetClustersDefined) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.4//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_4.dtd\" [");
                     } else {
                         // #74866: no need for targetcluster, so keep compat w/ 5.0 AU.
@@ -261,7 +273,9 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.println ();
                     
                 } else {
-                    if (targetClustersDefined) {
+                    if (use25DTD) {
+                        pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.5//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_5.dtd\">");
+                    } else if (targetClustersDefined) {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.4//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_4.dtd\">");
                     } else {
                         pw.println("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.3//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_3.dtd\">");
@@ -309,6 +323,12 @@ public class MakeUpdateDesc extends MatchingTask {
                             licenses.put(license.getAttribute("name"), license);
                             module.removeChild(license);
                         }
+                        if (m.autoload) {
+                            module.setAttribute("autoload", "true");
+                        }
+                        if (m.eager) {
+                            module.setAttribute("eager", "true");
+                        }
                         pw.flush();
                         XMLUtil.write(module, os);
                         pw.println();
@@ -343,6 +363,7 @@ public class MakeUpdateDesc extends MatchingTask {
         public Element xml;
         public File nbm;
         public String relativePath;
+        public boolean autoload, eager;
     }
     
     private Map<String,Collection<Module>> loadNBMs() throws BuildException {
@@ -393,32 +414,54 @@ public class MakeUpdateDesc extends MatchingTask {
                             if (entry == null) {
                                 throw new BuildException("NBM " + n_file + " was malformed: no Info/info.xml", getLocation());
                             }
+                            EntityResolver nullResolver = new EntityResolver() {
+                                public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                                    return new InputSource(new ByteArrayInputStream(new byte[0]));
+                                }
+                            };
+                            Module m = new Module();
                             InputStream is = zip.getInputStream(entry);
                             try {
-                                Module m = new Module();
-                                m.xml = XMLUtil.parse(new InputSource(is), false, false, null, new EntityResolver() {
-                                    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                                        return new InputSource(new ByteArrayInputStream(new byte[0]));
-                                    }
-                                }).getDocumentElement();
-                                m.nbm = n_file;
-                                m.relativePath = file.replace(File.separatorChar, '/');
-                                Collection<Module> target = modules;
-                                if (automaticGrouping && g.name == null) {
-                                    // insert modules with no explicit grouping into group acc. to manifest:
-                                    String categ = ((Element) m.xml.getElementsByTagName("manifest").item(0)).getAttribute("OpenIDE-Module-Display-Category");
-                                    if (categ.length() > 0) {
-                                        target = r.get(categ);
-                                        if (target == null) {
-                                            target = new TreeSet<Module>(moduleDisplayNameComparator);
-                                            r.put(categ, target);
-                                        }
-                                    }
-                                }
-                                target.add(m);
+                                m.xml = XMLUtil.parse(new InputSource(is), false, false, null, nullResolver).getDocumentElement();
                             } finally {
                                 is.close();
                             }
+                            m.nbm = n_file;
+                            m.relativePath = file.replace(File.separatorChar, '/');
+                            Collection<Module> moduleCollection = modules;
+                            Element manifest = ((Element) m.xml.getElementsByTagName("manifest").item(0));
+                            if (automaticGrouping && g.name == null) {
+                                // insert modules with no explicit grouping into group acc. to manifest:
+                                String categ = manifest.getAttribute("OpenIDE-Module-Display-Category");
+                                if (categ.length() > 0) {
+                                    moduleCollection = r.get(categ);
+                                    if (moduleCollection == null) {
+                                        moduleCollection = new TreeSet<Module>(moduleDisplayNameComparator);
+                                        r.put(categ, moduleCollection);
+                                    }
+                                }
+                            }
+                            String cnb = manifest.getAttribute("OpenIDE-Module").replaceFirst("/\\d+$", "");
+                            entry = zip.getEntry("netbeans/config/Modules/" + cnb.replace('.', '-') + ".xml");
+                            if (entry != null) {
+                                is = zip.getInputStream(entry);
+                                try {
+                                    NodeList nl = XMLUtil.parse(new InputSource(is), false, false, null, nullResolver).getElementsByTagName("param");
+                                    for (int i = 0; i < nl.getLength(); i++) {
+                                        String name = ((Element) nl.item(i)).getAttribute("name");
+                                        String value = ((Text) nl.item(i).getFirstChild()).getData();
+                                        if (name.equals("autoload") && value.equals("true")) {
+                                            m.autoload = true;
+                                        }
+                                        if (name.equals("eager") && value.equals("true")) {
+                                            m.eager = true;
+                                        }
+                                    }
+                                } finally {
+                                    is.close();
+                                }
+                            }
+                            moduleCollection.add(m);
                         } finally {
                             zip.close();
                         }

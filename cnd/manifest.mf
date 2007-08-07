@@ -5,6 +5,7 @@ OpenIDE-Module-Specification-Version: 1.1.1
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/cnd/resources/mf-layer.xml
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/cnd/loaders/ExeLoader.class
 OpenIDE-Module-Class: Loader

@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.vmd.inspector
 OpenIDE-Module-Layer: org/netbeans/modules/vmd/inspector/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/vmd/inspector/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
 

@@ -178,6 +178,9 @@ public class JarWithModuleAttributes extends Jar {
                     getProject().log(manifestFile + ": warning: use of non-integer OpenIDE-Module-Implementation-Version may be problematic for clients trying to use spec.version.base (see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency)", Project.MSG_WARN);
                 }
             }
+            added.addConfiguredAttribute(new Manifest.Attribute("AutoUpdate-Show-In-Client", Boolean.toString( // #110572
+                    !Project.toBoolean(getProject().getProperty("is.autoload")) && !Project.toBoolean(getProject().getProperty("is.eager")) &&
+                    "modules".equals(getProject().getProperty("module.jar.dir")))));
             // Now ask the regular <jar> task to add all this stuff to the regular manifest.mf.
             added.merge(staticManifest);
             if (!"lib".equals (getProject().getProperty("module.jar.dir"))) {

@@ -51,7 +51,18 @@ public class ModuleFactory {
     public Module createFixed(Manifest mani, Object history,
             ClassLoader loader, ModuleManager mgr, Events ev)
             throws InvalidException {
-        return new FixedModule(mgr, ev, mani, history, loader);
+        return createFixed(mani, history, loader, false, false, mgr, ev);
+    }
+    /**
+     * This method creates a "fixed" module. Fixed modules cannot be
+     * realoaded, are always enabled and are typically present on the
+     * classpath.
+     * @see FixedModule
+     * @since 2.7
+     */
+    public Module createFixed(Manifest mani, Object history, ClassLoader loader, boolean autoload, boolean eager,
+            ModuleManager mgr, Events ev) throws InvalidException {
+        return new FixedModule(mgr, ev, mani, history, loader, autoload, eager);
     }
     /**
      * Allows specifying different parent classloader of all modules classloaders.

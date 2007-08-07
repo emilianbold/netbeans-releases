@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

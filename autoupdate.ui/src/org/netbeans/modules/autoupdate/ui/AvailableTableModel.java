@@ -83,11 +83,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             res = u.getDisplayName();
             break;
         case 2 :
-            if (Utilities.modulesOnly()) {
-                res = u.getCategoryName();
-            } else {
-                res = u.getDisplayDate();
-            }
+            res = u.getCategoryName();
             break;
         case 3 :
             res = u.getAvailableVersion();
@@ -136,11 +132,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
             case 1 :
                 return getBundle ("AvailableTableModel_Columns_Name");
             case 2 :
-                if (Utilities.modulesOnly ()) {
-                    return getBundle ("AvailableTableModel_Columns_Category");            
-                } else {
-                    return getBundle ("AvailableTableModel_Columns_UpdateDate");
-                }
+                return getBundle("AvailableTableModel_Columns_Category");
             case 3 :
                 return getBundle ("AvailableTableModel_Columns_Version");
             case 4 :
@@ -180,11 +172,7 @@ public class AvailableTableModel extends UnitCategoryTableModel {
                 } else if (getColumnName(1).equals(columnIdentifier)) {
                     return Unit.compareDisplayNames(unit1, unit2);
                 } else if (getColumnName(2).equals(columnIdentifier)) {
-                    if (Utilities.modulesOnly ()) {
-                        return Unit.compareCategories(unit1, unit2);
-                    } else {
-                        return Unit.compareSimpleFormatDates (unit1, unit2);
-                    }
+                    return Unit.compareCategories(unit1, unit2);
                 } else if (getColumnName(3).equals(columnIdentifier)) {
                     return Unit.Available.compareAvailableVersion(unit1, unit2);
                 } else if (getColumnName(4).equals(columnIdentifier)) {

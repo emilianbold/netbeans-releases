@@ -20,6 +20,7 @@
 package org.netbeans.core.startup;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.jar.Manifest;
@@ -42,7 +43,7 @@ public class ConsistencyVerifierTest extends NbTestCase {
                 String[] lhsRhs = piece.split("=");
                 assert lhsRhs.length == 2 : "'" + piece + "' in '" + desc + "'";
                 m.getMainAttributes().putValue(
-                        lhsRhs[0].length() == 0 ? "OpenIDE-Module" : "OpenIDE-Module-" + lhsRhs[0],
+                        lhsRhs[0].matches("autoload|eager") ? lhsRhs[0] : lhsRhs[0].length() == 0 ? "OpenIDE-Module" : "OpenIDE-Module-" + lhsRhs[0],
                         lhsRhs[1]);
             }
             modules.add(m);
@@ -52,7 +53,7 @@ public class ConsistencyVerifierTest extends NbTestCase {
 
     private void assertProblems(String problems, String... descs) {
         assertEquals("for " + Arrays.toString(descs),
-                problems, ConsistencyVerifier.findInconsistencies(modules(descs), false).toString());
+                problems, ConsistencyVerifier.findInconsistencies(modules(descs), Collections.singleton("placeholder"), false).toString());
     }
 
     public void testBasicFunctionality() throws Exception {
@@ -99,17 +100,24 @@ public class ConsistencyVerifierTest extends NbTestCase {
 
     public void testIAE() throws Exception {
         try {
-            ConsistencyVerifier.findInconsistencies(modules("=foo; Whatever=1", "=foo; Whatever=2"), false);
+            ConsistencyVerifier.findInconsistencies(modules("=foo; Whatever=1", "=foo; Whatever=2"), null, false);
             fail();
         } catch (IllegalArgumentException x) {}
         try {
-            ConsistencyVerifier.findInconsistencies(modules("Whatever=17"), false);
+            ConsistencyVerifier.findInconsistencies(modules("Whatever=17"), null, false);
             fail();
         } catch (IllegalArgumentException x) {}
         try {
-            ConsistencyVerifier.findInconsistencies(modules("=11"), false);
+            ConsistencyVerifier.findInconsistencies(modules("=11"), null, false);
             fail();
         } catch (IllegalArgumentException x) {}
+    }
+
+    public void testCheckAutoloadsEnabled() throws Exception {
+        assertProblems("{}", "=foo; Module-Dependencies=bar", "=bar; autoload=true");
+        assertProblems("{baz=[module is autoload but would not be enabled]}", "=foo; Module-Dependencies=bar", "=bar; autoload=true", "=baz; autoload=true");
+        assertProblems("{}", "=compat; autoload=true; Deprecated=true");
+        assertProblems("{}", "=placeholder; autoload=true");
     }
 
 }

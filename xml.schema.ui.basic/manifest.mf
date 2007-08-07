@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.xml.schema.ui.basic/1
 OpenIDE-Module-Layer: org/netbeans/modules/xml/schema/ui/basic/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/schema/ui/basic/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.2
+AutoUpdate-Show-In-Client: false
 

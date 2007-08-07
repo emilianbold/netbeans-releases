@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.cnd.apt
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/apt/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1.1
+AutoUpdate-Show-In-Client: false
 

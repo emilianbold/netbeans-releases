@@ -2,3 +2,4 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.mobility.deployment.ftpscp
 OpenIDE-Module-Specification-Version: 1.1.0
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/deployment/ftpscp/Bundle.properties
+AutoUpdate-Show-In-Client: false

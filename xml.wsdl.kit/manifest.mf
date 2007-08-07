@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.xml.wsdl.kit
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/wsdl/kit/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+

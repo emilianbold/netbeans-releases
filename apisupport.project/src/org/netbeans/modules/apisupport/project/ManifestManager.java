@@ -63,6 +63,7 @@ public final class ManifestManager {
     private String[] friendNames;
     private String moduleDependencies;
     private boolean deprecated;
+    private Boolean autoUpdateShowInClient;
     
     public static final String OPENIDE_MODULE = "OpenIDE-Module"; // NOI18N
     public static final String OPENIDE_MODULE_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
@@ -76,6 +77,7 @@ public final class ManifestManager {
     public static final String OPENIDE_MODULE_FRIENDS = "OpenIDE-Module-Friends"; // NOI18N
     public static final String OPENIDE_MODULE_MODULE_DEPENDENCIES = "OpenIDE-Module-Module-Dependencies"; // NOI18N
     public static final String CLASS_PATH = "Class-Path"; // NOI18N
+    public static final String AUTO_UPDATE_SHOW_IN_CLIENT = "AutoUpdate-Show-In-Client"; // NOI18N
     
     static final PackageExport[] EMPTY_EXPORTED_PACKAGES = new PackageExport[0];
     
@@ -91,7 +93,7 @@ public final class ManifestManager {
             String implVer, String provTokensString, String requiredTokens, String neededTokens,
             String locBundle, String layer, String classPath,
             PackageExport[] publicPackages, String[] friendNames,
-            boolean deprecated, String moduleDependencies) {
+            boolean deprecated, Boolean autoUpdateShowInClient, String moduleDependencies) {
         this.codeNameBase = cnb;
         this.releaseVersion = releaseVersion;
         this.specificationVersion = specVer;
@@ -107,6 +109,7 @@ public final class ManifestManager {
                 ? EMPTY_EXPORTED_PACKAGES : publicPackages;
         this.friendNames = friendNames;
         this.deprecated = deprecated;
+        this.autoUpdateShowInClient = autoUpdateShowInClient;
         this.moduleDependencies = moduleDependencies;
     }
     
@@ -192,6 +195,7 @@ public final class ManifestManager {
             }
         }
         boolean deprecated = "true".equals(attr.getValue("OpenIDE-Module-Deprecated")); // NOI18N
+        String autoUpdateShowInClient = attr.getValue(AUTO_UPDATE_SHOW_IN_CLIENT);
         return new ManifestManager(
                 codenamebase, releaseVersion,
                 attr.getValue(OPENIDE_MODULE_SPECIFICATION_VERSION),
@@ -205,6 +209,7 @@ public final class ManifestManager {
                 publicPackages,
                 friendNames,
                 deprecated,
+                autoUpdateShowInClient != null ? Boolean.valueOf(autoUpdateShowInClient) : null,
                 attr.getValue(OPENIDE_MODULE_MODULE_DEPENDENCIES));
     }
     
@@ -335,6 +340,10 @@ public final class ManifestManager {
     
     public boolean isDeprecated() {
         return deprecated;
+    }
+
+    public Boolean getAutoUpdateShowInClient() {
+        return autoUpdateShowInClient;
     }
     
     public Set<Dependency> getModuleDependencies() {

@@ -149,6 +149,7 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
                     featureImpl.getType ());
             updateElement = Trampoline.API.createUpdateElement (featureElementImpl);
             featureElementImpl.setUpdateUnit (featureElements.get (0).getUpdateUnit ());
+            addUpdate (updateElement);
         }
         
         initialized = true;
@@ -237,4 +238,3 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
     }
 
 }
-

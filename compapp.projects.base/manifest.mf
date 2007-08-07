@@ -2,3 +2,4 @@ Manifest-Version: 1.0
 OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module: org.netbeans.modules.compapp.projects.base
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/compapp/projects/base/Bundle.properties
+AutoUpdate-Show-In-Client: false

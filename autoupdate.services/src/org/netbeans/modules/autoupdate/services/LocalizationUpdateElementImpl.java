@@ -89,6 +89,9 @@ public class LocalizationUpdateElementImpl extends UpdateElementImpl {
     }
     
     public String getCategory () {
+        if (category != null) {
+            category = UpdateUnitFactory.UNSORTED_CATEGORY;
+        }
         return category;
     }
     
@@ -117,6 +120,18 @@ public class LocalizationUpdateElementImpl extends UpdateElementImpl {
         // XXX: how to detect if localization is enabled?
         return false;
     }            
+    
+    public boolean isAutoload () {
+        return false;
+    }
+
+    public boolean isEager () {
+        return false;
+    }
+    
+    public boolean isFixed () {
+        return false;
+    }
     
     public boolean equals(Object obj) {
         if (obj == null)

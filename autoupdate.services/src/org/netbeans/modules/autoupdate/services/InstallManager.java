@@ -27,7 +27,6 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 import org.netbeans.updater.UpdateTracking;
 import org.openide.filesystems.FileObject;
@@ -50,13 +49,18 @@ public class InstallManager {
     static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update, boolean isGlobal) {
         File res = null;
         
+        // #111384: fixed modules must be installed globally
+        isGlobal |= update.isFixed ();
+        
+        // adjust isGlobal to forced global if present
+        isGlobal |= update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ();
+        
         // global or local
-        if (isGlobal || (update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ())) {
+        if (isGlobal) {
             // is global
             // new one or update?
             if (installed != null) {
-                res = getInstallDir (installed);
-                // XXX: can be null for fixed modules
+                res = getInstallDir (installed, update);
             }
             if (res == null) {
                 // does have a target cluster?
@@ -139,21 +143,38 @@ public class InstallManager {
         return res;
     }
     
-    private static File getInstallDir (UpdateElement installed) {
+    // can be null for fixed modules
+    @SuppressWarnings("deprecation")
+    private static File getInstallDir (UpdateElement installed, UpdateElementImpl update) {
         File res = null;
         UpdateElementImpl i = Trampoline.API.impl (installed);
-        if (UpdateManager.TYPE.MODULE == i.getType ()) {
-            String configFileName = "config" + '/' + "Modules" + '/' + installed.getCodeName ().replace ('.', '-') + ".xml"; // NOI18N
-            File configFile = InstalledFileLocator.getDefault ().locate (configFileName, installed.getCodeName (), false);
-            if (configFile == null) {
-                // only fixed module cannot be located
-                if (Utilities.toModule (installed.getCodeName (), installed.getSpecificationVersion ()).isFixed ()) {
-                    res = UpdateTracking.getPlatformDir (); // XXX: all fixed modules should go to platform dir?
-                } else {
-                    assert false : "Config file found for " + installed;
+        assert i instanceof ModuleUpdateElementImpl : "Impl of " + installed + " instanceof ModuleUpdateElementImpl";
+        
+        String configFileName = "config" + '/' + "Modules" + '/' + installed.getCodeName ().replace ('.', '-') + ".xml"; // NOI18N
+        File configFile = InstalledFileLocator.getDefault ().locate (configFileName, installed.getCodeName (), false);
+        if (configFile == null) {
+            // only fixed module cannot be located
+            ERR.log (Level.FINE, "No install dir for " + installed + " (It's ok for fixed). Is fixed? " + installed.isFixed ());
+            String targetCluster = update.getInstallInfo ().getTargetCluster ();
+            if (targetCluster != null) {
+                for (File cluster : UpdateTracking.clusters (false)) {
+                    if (targetCluster.equals (cluster.getName ())) {
+                        if (cluster.canWrite ()) {
+                            res = cluster;
+                            break;
+                        } else {
+                            ERR.log (Level.WARNING, "No write permision in target cluster " + targetCluster + 
+                                    " for " + update.getUpdateElement ());
+                        }
+                    }
                 }
             }
-            FileObject searchForFO = FileUtil.toFileObject (configFile);            
+            if (res == null) {
+                // go to platform if no cluster is known
+                res = UpdateTracking.getPlatformDir ();
+            }
+        } else {
+            FileObject searchForFO = FileUtil.toFileObject (configFile);
             for (File cluster : UpdateTracking.clusters (true)) {       
                 cluster = FileUtil.normalizeFile(cluster);
                 if (FileUtil.isParentOf (FileUtil.toFileObject (cluster), searchForFO)) {
@@ -163,10 +184,8 @@ public class InstallManager {
             }
             assert res != null : "Install cluster exists for UpdateElementImpl " + installed;
             ERR.log (Level.FINEST, "Install dir of " + installed + " is " + res);
-            
-        } else {
-            assert false : "Unsupported for type: " + i.getType (); // XXX
         }
+
         return res;
     }
     

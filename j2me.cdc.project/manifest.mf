@@ -3,6 +3,7 @@ OpenIDE-Module: org.netbeans.modules.j2me.cdc.project
 OpenIDE-Module-Layer: org/netbeans/modules/j2me/cdc/project/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2me/cdc/project/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/j2me/cdc/project/mbm/MBMDataLoader.class
 OpenIDE-Module-Class: Loader

@@ -3,4 +3,5 @@ OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module: org.netbeans.modules.jdbcwizard
 OpenIDE-Module-Layer: org/netbeans/modules/jdbcwizard/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jdbcwizard/resources/Bundle.properties
+AutoUpdate-Show-In-Client: false
 

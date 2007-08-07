@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.bpel.project
 OpenIDE-Module-Layer: org/netbeans/modules/bpel/project/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/bpel/project/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
+AutoUpdate-Show-In-Client: false
 

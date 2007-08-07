@@ -4,3 +4,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/editor/plain/Bundle.prope
 OpenIDE-Module-Install: org/netbeans/modules/editor/plain/PlainEditorModule.class
 OpenIDE-Module-Specification-Version: 1.4
 OpenIDE-Module-Layer: org/netbeans/modules/editor/plain/resources/layer.xml
+AutoUpdate-Show-In-Client: false

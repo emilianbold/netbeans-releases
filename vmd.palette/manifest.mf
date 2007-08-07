@@ -2,6 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.vmd.palette
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/vmd/palette/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/vmd/palette/PaletteItemDataLoader.class
 OpenIDE-Module-Class: Loader

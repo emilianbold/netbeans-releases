@@ -29,6 +29,8 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -39,6 +41,7 @@ import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -67,6 +70,8 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     private static final String TITLE_BROKEN_DEPENDENCIES = "OperationDescriptionStep_BrokenDependencies";
     private PanelBodyContainer component;
     private OperationWizardModel model = null;
+    private boolean readyToGo = false;
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     
     /** Creates a new instance of OperationDescriptionStep */
     public OperationDescriptionStep (OperationWizardModel model) {
@@ -75,6 +80,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     
     public Component getComponent() {
         if (component == null) {
+            readyToGo = false;
             JPanel body;
             String tableTitle = null;
             String dependenciesTitle = null;
@@ -123,23 +129,46 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 content = getBundle (CONTENT_DEACTIVATE);
                 break;
             }
-            if (model.hasBrokenDependencies ()) {
-                body = new OperationDescriptionPanel ("", "",
-                        prepareBrokenDependenciesForShow (model),
+            body = new OperationDescriptionPanel (tableTitle,
+                    preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getPrimaryUpdateElements (), false), model.getCustomHandledComponents ()),
+                        getBundle ("OperationDescriptionStep_PleaseWait"), // NOI18N
                         "",
                         true);
-                component = new PanelBodyContainer (head, "", body);
-            } else {
-                body = new OperationDescriptionPanel (tableTitle,
-                        preparePluginsForShow (model.getPrimaryUpdateElements (), model.getCustomHandledComponents ()),
-                        dependenciesTitle,
-                        preparePluginsForShow (model.getRequiredUpdateElements (), null),
-                        model.hasRequiredUpdateElements ());
-                component = new PanelBodyContainer (head, content, body);
-            }
+            component = new PanelBodyContainer (head, content, body);
             component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
+            component.setWaitingState (true);
+            appendDependingLazy (tableTitle, dependenciesTitle);
         }
         return component;
+    }
+    
+    private void appendDependingLazy (final String tableTitle, final String dependenciesTitle) {
+        RequestProcessor.getDefault ().post (new Runnable () {
+            public void run () {
+                JPanel body = null;
+                if (model.hasBrokenDependencies ()) {
+                    body = new OperationDescriptionPanel ("", "",
+                            prepareBrokenDependenciesForShow (model),
+                            "",
+                            true);
+                } else {
+                    body = new OperationDescriptionPanel (tableTitle,
+                            preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getPrimaryUpdateElements (), false), model.getCustomHandledComponents ()),
+                                dependenciesTitle,
+                                preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true), null),
+                                ! OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true).isEmpty ());
+                }
+                final JPanel finalPanel = body;
+                readyToGo = model != null && ! model.hasBrokenDependencies ();
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        component.setBody (finalPanel);
+                        component.setWaitingState (false);
+                        fireChange ();
+                    }
+                });
+            }
+        });
     }
     
     private String prepareBrokenDependenciesForShow (OperationWizardModel model) {
@@ -236,16 +265,29 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         }
     }
 
-    public boolean isValid() {
-        return model != null && ! model.hasBrokenDependencies ();
+    public boolean isValid () {
+        return readyToGo;
     }
 
-    public void addChangeListener(ChangeListener l) {
+    public synchronized void addChangeListener (ChangeListener l) {
+        listeners.add (l);
     }
 
-    public void removeChangeListener(ChangeListener l) {
+    public synchronized void removeChangeListener (ChangeListener l) {
+        listeners.remove (l);
     }
-    
+
+    private void fireChange () {
+        ChangeEvent e = new ChangeEvent (this);
+        List<ChangeListener> templist;
+        synchronized (this) {
+            templist = new ArrayList<ChangeListener> (listeners);
+        }
+        for (ChangeListener l : templist) {
+            l.stateChanged (e);
+        }
+    }
+
     private String getBundle (String key) {
         return NbBundle.getMessage (OperationDescriptionPanel.class, key);
     }

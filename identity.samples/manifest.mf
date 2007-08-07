@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.identity.samples/1
 OpenIDE-Module-Layer: org/netbeans/modules/identity/samples/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/identity/samples/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.2
+AutoUpdate-Show-In-Client: false
 

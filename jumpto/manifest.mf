@@ -3,3 +3,4 @@ OpenIDE-Module: org.netbeans.modules.jumpto/1
 OpenIDE-Module-Layer: org/netbeans/modules/jumpto/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jumpto/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.2
+AutoUpdate-Show-In-Client: false

@@ -3,3 +3,4 @@ OpenIDE-Module: org.netbeans.modules.ruby.javaint/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ruby/javaint/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/ruby/javaint/layer.xml
 OpenIDE-Module-Specification-Version: 0.30.0
+AutoUpdate-Show-In-Client: false

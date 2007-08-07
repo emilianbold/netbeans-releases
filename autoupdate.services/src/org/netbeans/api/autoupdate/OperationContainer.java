@@ -103,7 +103,7 @@ public final class OperationContainer<Support> {
         if (elems == null) throw new IllegalArgumentException("Cannot add null value.");
         for (UpdateElement el : elems) {
             add(el);
-        };
+        }
     }
     
     public void add (Map<UpdateUnit, UpdateElement> elems) { 
@@ -133,7 +133,7 @@ public final class OperationContainer<Support> {
         if (elems == null) throw new IllegalArgumentException ("Cannot add null value.");
         for (UpdateElement el : elems) {
             remove (el);
-        };
+        }
     }        
     public boolean remove(UpdateElement updateElement) {
         return impl.remove(updateElement);
@@ -143,7 +143,7 @@ public final class OperationContainer<Support> {
     }
 
     public List<OperationInfo<Support>> listAll () {
-        return impl.listAll ();
+        return impl.listAllWithPossibleEager ();
     }
     //returns invalid OperationInfo
     public List<OperationInfo<Support>> listInvalid () {

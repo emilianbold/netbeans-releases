@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.mobility.cldcplatform.catalog
 OpenIDE-Module-Layer: org/netbeans/modules/mobility/cldcplatform/catalog/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/cldcplatform/catalog/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1.0
+AutoUpdate-Show-In-Client: false
 

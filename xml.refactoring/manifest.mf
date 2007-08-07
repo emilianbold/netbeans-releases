@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.xml.refactoring/1
 OpenIDE-Module-Layer: org/netbeans/modules/xml/refactoring/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/refactoring/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
 

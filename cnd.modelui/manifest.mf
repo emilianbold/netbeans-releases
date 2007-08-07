@@ -3,3 +3,5 @@ OpenIDE-Module: org.netbeans.modules.cnd.modelui
 OpenIDE-Module-Layer: org/netbeans/modules/cnd/modelui/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/modelui/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1.1
+AutoUpdate-Show-In-Client: false
+

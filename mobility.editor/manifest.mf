@@ -2,6 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.mobility.editor
 OpenIDE-Module-Layer: org/netbeans/modules/mobility/editor/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/editor/Bundle.properties
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/mobility/editor/pub/J2MEDataLoader.class
 OpenIDE-Module-Class: Loader 

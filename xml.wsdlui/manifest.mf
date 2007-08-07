@@ -4,6 +4,7 @@ OpenIDE-Module-Layer: org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/Bundle.properties
 OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
 OpenIDE-Module-Specification-Version: 1.1
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/xml/wsdl/ui/netbeans/module/WSDLDataLoader.class
 OpenIDE-Module-Class: Loader

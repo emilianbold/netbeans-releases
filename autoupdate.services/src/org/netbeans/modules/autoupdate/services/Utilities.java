@@ -29,6 +29,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.security.KeyStore;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -83,10 +86,16 @@ public class Utilities {
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
     public static final String NBM_EXTENTSION = ".nbm";
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat ("yyyy/MM/dd"); // NOI18N
+    public static final String ATTR_VISIBLE = "AutoUpdate-Show-In-Client";
+    public static final String ATTR_ESSENTIAL = "AutoUpdate-Essential-Module";
+    
     
     private static Lookup.Result<KeyStoreProvider> result;
     private static Logger err = null;
     private static ModuleManager mgr = null;
+    private static Reference<Map<Module, Set<Module>>> mapModule2dependingModules = new WeakReference<Map<Module, Set<Module>>> (new HashMap<Module, Set<Module>> ());
+    private static Reference<Map<Module, Set<Module>>> mapModule2requiredModules = new WeakReference<Map<Module, Set<Module>>> (new HashMap<Module, Set<Module>> ());
+    
     
     public static Collection<KeyStore> getKeyStore () {
         if (result == null) {            
@@ -299,12 +308,12 @@ public class Utilities {
     
     private static Set<Dependency> takeDependencies(UpdateElement el) {
         UpdateElementImpl i = Trampoline.API.impl(el);
-        assert UpdateManager.TYPE.MODULE == i.getType () : "Only for UpdateElement for modules.";
+        assert UpdateManager.TYPE.MODULE == i.getType () || UpdateManager.TYPE.KIT_MODULE == i.getType () : "Only for UpdateElement for modules.";
         return takeModuleInfo (el).getDependencies();
     }
     
     @SuppressWarnings ("deprecation") //Dependency.TYPE_IDE must be handled for backward compatability
-    private static UpdateElement findRequiredModule (Dependency dep, List<ModuleInfo> installedModules) {
+    private static UpdateElement findRequiredModule (Dependency dep, Collection<ModuleInfo> installedModules) {
         switch (dep.getType ()) {
             case (Dependency.TYPE_REQUIRES) :
                 // find if some module fit the dependency
@@ -358,7 +367,7 @@ public class Utilities {
                 List<UpdateElement> elements = unit.getAvailableUpdates();
                 for (UpdateElement el : elements) {
                     UpdateElementImpl impl = Trampoline.API.impl(el);
-                    if (UpdateManager.TYPE.MODULE == impl.getType ()) {
+                    if (impl instanceof ModuleUpdateElementImpl) {
                         ModuleInfo moduleInfo = impl.getModuleInfos ().get (0);
                         if (DependencyChecker.checkDependencyModule (dep, moduleInfo)) {
                             return el;
@@ -386,7 +395,7 @@ public class Utilities {
         return null;
     }
     
-    private static Set<UpdateElement> findRequiredModules(Set<Dependency> deps, List<ModuleInfo> installedModules) {
+    static Set<UpdateElement> findRequiredModules(Set<Dependency> deps, Collection<ModuleInfo> installedModules) {
         Set<UpdateElement> requiredElements = new HashSet<UpdateElement> ();
         for (Dependency dep : deps) {
             UpdateElement el = findRequiredModule (dep, installedModules);
@@ -416,8 +425,9 @@ public class Utilities {
         UpdateElementImpl el = Trampoline.API.impl(element);
         Set<UpdateElement> retval = new HashSet<UpdateElement> ();
         switch (el.getType ()) {
+        case KIT_MODULE :
         case MODULE :
-            final Set<Dependency> deps = el.getModuleInfos ().get (0).getDependencies ();
+            final Set<Dependency> deps = ((ModuleUpdateElementImpl) el).getModuleInfo ().getDependencies ();
             final List<ModuleInfo> extendedModules = getInstalledModules ();
             extendedModules.addAll (infos);
             final Set<Dependency> brokenDeps = DependencyChecker.findBrokenDependencies (deps, extendedModules);
@@ -442,6 +452,7 @@ public class Utilities {
         Set<Dependency> retval = Collections.emptySet ();
         List<ModuleInfo> mInfos = null;
         switch (el.getType ()) {
+        case KIT_MODULE :
         case MODULE :
             mInfos = el.getModuleInfos ();
             break;
@@ -633,7 +644,7 @@ public class Utilities {
     }
     
     public static boolean canDisable (Module m) {
-            return m != null && m.isEnabled () && !m.isFixed () && !m.isAutoload () && !m.isEager ();
+            return m != null &&  m.isEnabled () && ! isEssentialModule (m) && ! m.isAutoload () && ! m.isEager ();
     }
     
     public static boolean canEnable (Module m) {
@@ -648,11 +659,88 @@ public class Utilities {
         return el.equals (el.getUpdateUnit ().getInstalled ());
     }
     
+    private static boolean isLeafModule (ModuleInfo mi) {
+        return isKitModule (mi) || isEssentialModule (mi);
+    }
+    
+    public static boolean isKitModule (ModuleInfo mi) {
+        // XXX: it test can break simple modules mode
+        // should find corresponing UpdateElement and check its type
+        Object o = mi.getAttribute (ATTR_VISIBLE);
+        return o == null || Boolean.parseBoolean (o.toString ());
+    }
+    
+    public static boolean isEssentialModule (ModuleInfo mi) {
+        Object o = mi.getAttribute (ATTR_ESSENTIAL);
+        return isFixed (mi) || (o != null && Boolean.parseBoolean (o.toString ()));
+    }
+    
     private static Logger getLogger () {
         if (err == null) {
             err = Logger.getLogger (Utilities.class.getName ());
         }
         return err;
     }
+    
+    /** Finds modules depending on given module and recursive over module's dependencies.
+     * @param m a module to start from; may be enabled or not, but must be owned by this manager
+     * @return a set (possibly empty) of modules managed by this manager, never including m
+     */
+    public static Set<Module> findDependingModules (Module m, ModuleManager mm) {
+        synchronized (Utilities.class) {
+            if (mapModule2dependingModules.get () == null) {
+                mapModule2dependingModules = new WeakReference<Map<Module, Set<Module>>> (new HashMap<Module, Set<Module>> ());
+                getLogger ().log (Level.FINEST, "Was created new reference for mapModule2dependingModules");
+            }
+        }
+        if (! mapModule2dependingModules.get ().containsKey (m)) {
+            mapModule2dependingModules.get ().put (m, doFindDependingModules (m, mm));
+        }
+        return mapModule2dependingModules.get ().get (m);
+    }
 
+    /** Finds for modules given module depends upon. Finding is recursive over module's dependencies.
+     * Finding ends on KIT_MODULE or ESSENTIAL_MODULE. Found KIT_MODULE is also included.
+     * @param m a module to start from; may be enabled or not, but must be owned by this manager
+     * @return a set (possibly empty) of modules managed by this manager, never including m
+     */
+    public static Set<Module> findRequiredModules (Module m, ModuleManager mm, boolean forceToGoDeep) {
+        synchronized (Utilities.class) {
+            if (mapModule2requiredModules.get () == null) {
+                mapModule2requiredModules = new WeakReference<Map<Module, Set<Module>>> (new HashMap<Module, Set<Module>> ());
+                getLogger ().log (Level.FINEST, "Was created new reference for mapModule2requiredModules");
+            }
+        }
+        if (! mapModule2requiredModules.get ().containsKey (m)) {
+            mapModule2requiredModules.get ().put (m, doFindRequiredModules (m, mm, forceToGoDeep));
+        }
+        return mapModule2requiredModules.get ().get (m);
+    }
+
+    private static Set<Module> doFindRequiredModules (Module m, ModuleManager mm, boolean forceToGoDeep) {
+        Set<Module> res = Collections.emptySet ();
+        if (forceToGoDeep || ! isLeafModule (m)) {
+            res = new HashSet<Module> ();
+            for (Object depO : mm.getModuleInterdependencies (m, false, false)) {
+                assert depO instanceof Module : depO + " is instanceof Module";
+                Module depM = (Module) depO;
+                if (! isEssentialModule (depM)) {
+                    res.add (depM);
+                    res.addAll (findRequiredModules (depM, mm, false));
+                }
+            }
+        }
+        return res;
+    }
+    
+    private static Set<Module> doFindDependingModules (Module m, ModuleManager mm) {
+        Set<Module> res = new HashSet<Module> ();
+        for (Object depO : mm.getModuleInterdependencies (m, true, true)) {
+            assert depO instanceof Module : depO + " is instanceof Module";
+            Module depM = (Module) depO;
+            res.add (depM);
+        }
+        return res;
+    }
+    
 }

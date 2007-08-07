@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.j2me.cdc.project.nokiaS80
 OpenIDE-Module-Layer: org/netbeans/modules/j2me/cdc/project/nokiaS80/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2me/cdc/project/nokiaS80/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
 

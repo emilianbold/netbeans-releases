@@ -207,10 +207,10 @@ public abstract class Unit {
     }
     
     public static int compareDisplayNames (Unit unit1, Unit unit2) {
-        if (! Utilities.modulesOnly ()) {
-            return Utilities.getCategoryComparator ().compare (unit1.getDisplayName (), unit2.getDisplayName ());
-        }
-        return Collator.getInstance ().compare (unit1.getDisplayName (), unit2.getDisplayName ());
+        //if (!Utilities.modulesOnly()) {
+        return Utilities.getCategoryComparator().compare(unit1.getDisplayName(), unit2.getDisplayName());
+        //}
+        //return Collator.getInstance().compare(unit1.getDisplayName(), unit2.getDisplayName());
     }
     
     public static int compareCategories (Unit unit1, Unit unit2) {

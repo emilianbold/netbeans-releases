@@ -521,10 +521,19 @@ public final class ModuleManager {
      * Will initially be disabled.
      */
     public Module createFixed(Manifest mani, Object history, ClassLoader loader) throws InvalidException, DuplicateException {
+        return createFixed(mani, history, loader, false, false);
+    }
+
+    /**
+     * Create a fixed module (e.g. from classpath) with optional autoload and eager flags.
+     * Will initially be disabled.
+     * @since 2.7
+     */
+    public Module createFixed(Manifest mani, Object history, ClassLoader loader, boolean autoload, boolean eager) throws InvalidException, DuplicateException {
         assertWritable();
         if (mani == null || loader == null) throw new IllegalArgumentException("null manifest or loader"); // NOI18N
         ev.log(Events.START_CREATE_BOOT_MODULE, history);
-        Module m = moduleFactory.createFixed(mani, history, loader, this, ev);
+        Module m = moduleFactory.createFixed(mani, history, loader, autoload, eager, this, ev);
         ev.log(Events.FINISH_CREATE_BOOT_MODULE, history);
         subCreate(m);
         return m;

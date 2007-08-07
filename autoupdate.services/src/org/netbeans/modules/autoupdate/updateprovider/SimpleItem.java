@@ -111,7 +111,6 @@ public abstract class SimpleItem {
         public static final String CODE_NAME_BASE = "codenamebase";
         public static final String HOMEPAGE = "homepage";
         public static final String DISTRIBUTION = "distribution";
-        public static final String LICENSE = "license";
         public static final String DOWNLOAD_SIZE = "downloadsize";
         public static final String NEEDS_RESTART = "needsrestart";
         public static final String MODULE_AUTHOR = "moduleauthor";
@@ -119,6 +118,8 @@ public abstract class SimpleItem {
         public static final String IS_GLOBAL = "global";
         public static final String TARGET_CLUSTER = "targetcluster";
         public static final String ATTR_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version";
+        public static final String IS_EAGER = "eager";
+        public static final String IS_AUTOLOAD = "autoload";
         
         private String moduleCodeName;
         private String specVersion;
@@ -221,6 +222,8 @@ public abstract class SimpleItem {
             String downloadSize = (nbm != null && nbm.exists()) ? String.valueOf(nbm.length()) :  getAttribute (declaratingNode, DOWNLOAD_SIZE);
             String author = getAttribute (declaratingNode, MODULE_AUTHOR);
             String publishDate = getAttribute (declaratingNode, RELEASE_DATE);
+            String eager = getAttribute (declaratingNode, IS_EAGER);
+            String autoload = getAttribute (declaratingNode, IS_AUTOLOAD);
             if (publishDate == null || publishDate.length () == 0) {
                 publishDate = catalogDate;
             }
@@ -236,6 +239,8 @@ public abstract class SimpleItem {
             
             Boolean needsRestart = needsrestart == null || needsrestart.trim ().length () == 0 ? null : Boolean.valueOf (needsrestart);
             Boolean isGlobal = global == null || global.trim ().length () == 0 ? null : Boolean.valueOf (global);
+            Boolean isEager = Boolean.parseBoolean (eager);
+            Boolean isAutoload = Boolean.parseBoolean (autoload);
             
             specVersion = getSpecificationVersion (declaratingNode);
             Manifest mf = getManifest (declaratingNode);
@@ -254,6 +259,8 @@ public abstract class SimpleItem {
                     publishDate,
                     category,
                     mf,
+                    isEager,
+                    isAutoload,
                     needsRestart,
                     isGlobal,
                     targetcluster,

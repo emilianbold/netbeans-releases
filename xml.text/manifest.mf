@@ -4,4 +4,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/text/resources/Bundle
 OpenIDE-Module-Install: org/netbeans/modules/xml/text/TextEditModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/xml/text/resources/mf-layer.xml
 OpenIDE-Module-Implementation-Version: 4
-
+AutoUpdate-Show-In-Client: false

@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.compapp.capshelp
 OpenIDE-Module-Layer: org/netbeans/modules/compapp/capshelp/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/compapp/capshelp/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
+AutoUpdate-Show-In-Client: false
 

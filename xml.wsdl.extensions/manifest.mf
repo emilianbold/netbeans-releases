@@ -2,3 +2,4 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.xml.wsdl.extensions
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/wsdl/model/extensions/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
+AutoUpdate-Show-In-Client: false

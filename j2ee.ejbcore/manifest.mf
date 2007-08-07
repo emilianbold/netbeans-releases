@@ -4,3 +4,4 @@ OpenIDE-Module-Layer: org/netbeans/modules/j2ee/ejbcore/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/ejbcore/Bundle.properties
 OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
 OpenIDE-Module-Specification-Version: 1.6
+AutoUpdate-Show-In-Client: false

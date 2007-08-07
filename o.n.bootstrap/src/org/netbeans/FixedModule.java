@@ -52,7 +52,15 @@ final class FixedModule extends Module {
 
     /** Create a special-purpose "fixed" JAR. */
     public FixedModule(ModuleManager mgr, Events ev, Manifest manifest, Object history, ClassLoader classloader) throws InvalidException {
-        super(mgr, ev, history, classloader);
+        this(mgr, ev, manifest, history, classloader, false, false);
+    }
+
+    /**
+     * Create a special-purpose "fixed" JAR which may nonetheless be marked eager or autoload.
+     * @since 2.7
+     */
+    public FixedModule(ModuleManager mgr, Events ev, Manifest manifest, Object history, ClassLoader classloader, boolean autoload, boolean eager) throws InvalidException {
+        super(mgr, ev, history, classloader, autoload, eager);
         this.manifest = manifest;
         loadLocalizedPropsClasspath();
         parseManifest();

@@ -19,12 +19,10 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 
 public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
-    private Logger err = Logger.getLogger (this.getClass ().getName ());
 
     public ModuleUpdateUnitImpl (String codename) {
         super (codename);
@@ -33,5 +31,5 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
     public TYPE getType () {
         return UpdateManager.TYPE.MODULE;
     }
+    
 }
-

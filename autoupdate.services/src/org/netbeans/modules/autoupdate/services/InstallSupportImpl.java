@@ -244,6 +244,7 @@ public class InstallSupportImpl {
                 for (OperationInfo info : infos) {
                     UpdateElementImpl toUpdateImpl = Trampoline.API.impl (info.getUpdateElement ());
                     switch (toUpdateImpl.getType ()) {
+                    case KIT_MODULE :
                     case MODULE :
                         moduleImpls.add ((ModuleUpdateElementImpl) toUpdateImpl);
                         break;
@@ -405,6 +406,7 @@ public class InstallSupportImpl {
         UpdateElementImpl impl = Trampoline.API.impl (uElement);
         boolean res = false;
         switch (impl.getType ()) {
+        case KIT_MODULE :
         case MODULE :
             res = trusted.contains (impl);
             break;
@@ -433,6 +435,7 @@ public class InstallSupportImpl {
         UpdateElementImpl impl = Trampoline.API.impl (uElement);
         boolean res = false;
         switch (impl.getType ()) {
+        case KIT_MODULE :
         case MODULE :
             res = signed.contains (impl);
             break;
@@ -484,6 +487,7 @@ public class InstallSupportImpl {
         UpdateElementImpl toUpdateImpl = Trampoline.API.impl (toUpdateElement);
         int res = 0;
         switch (toUpdateImpl.getType ()) {
+        case KIT_MODULE :
         case MODULE :
             res += doDownload (toUpdateImpl, progress, aggregateDownload, totalSize);
             break;
@@ -556,6 +560,7 @@ public class InstallSupportImpl {
         UpdateElementImpl toUpdateImpl = Trampoline.API.impl (toUpdateElement);
         int increment = 0;
         switch (toUpdateImpl.getType ()) {
+        case KIT_MODULE :
         case MODULE :
             increment = doValidate (toUpdateImpl, progress, verified);
             break;

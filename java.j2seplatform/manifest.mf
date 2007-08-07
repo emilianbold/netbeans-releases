@@ -4,6 +4,7 @@ OpenIDE-Module-Implementation-Version: 2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/java/j2seplatform/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/java/j2seplatform/resources/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/java/j2seplatform/J2SEPlatformModule.class
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/java/jarloader/JarDataLoader.class
 OpenIDE-Module-Class: Loader

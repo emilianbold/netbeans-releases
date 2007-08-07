@@ -4,6 +4,7 @@ OpenIDE-Module-Install: org/netbeans/modules/websvc/jaxrpc/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/websvc/jaxrpc/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/jaxrpc/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/websvc/wsdl/config/WsCompileConfigDataLoader.class
 OpenIDE-Module-Class: Loader

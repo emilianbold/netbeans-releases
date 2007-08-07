@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.visualweb.ravehelp.rave_nbpack
 OpenIDE-Module-Layer: org/netbeans/modules/visualweb/ravehelp/rave_nbpack/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/ravehelp/rave_nbpack/Bundle.properties
 OpenIDE-Module-Specification-Version: 2.0
+AutoUpdate-Show-In-Client: false
 

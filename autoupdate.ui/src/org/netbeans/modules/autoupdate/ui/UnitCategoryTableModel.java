@@ -139,20 +139,12 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     }
     public abstract int getPreferredWidth (JTableHeader header, int col);
     
-    protected Comparator<Unit> getDefaultComparator () {
-        if (Utilities.modulesOnly ()) {
-            return new Comparator<Unit>(){
-                public int compare (Unit o1, Unit o2) {
-                    return Unit.compareCategories (o1, o2);
-                }
-            };
-        } else {
-            return new Comparator<Unit>(){
-                public int compare (Unit o1, Unit o2) {
-                    return Unit.compareDisplayNames (o1, o2);
-                }
-            };
-        }
+    protected Comparator<Unit> getDefaultComparator() {
+        return new Comparator<Unit>() {
+            public int compare(Unit o1, Unit o2) {
+                return Unit.compareCategories(o1, o2);
+            }
+        };
     }
     
     public final void sort (Object columnIdentifier, boolean sortAscending) {
@@ -191,14 +183,12 @@ public abstract class UnitCategoryTableModel extends AbstractTableModel {
     
     
     private void computeExtensionState() {
-            boolean exp = isExpandableType (getType()) && !Utilities.modulesOnly() 
-                    && !getVisibleUnits(getFeatureList(), getFilter(), false).isEmpty()
-                    && !getVisibleUnits(standAloneModules, getFilter(), false).isEmpty();
-            if (exp) {
-                isExpanded = NbPreferences.forModule(UnitCategoryTableModel.class).getBoolean(EXPAND_STATE, false);
-            } else {
-                isExpanded = null;
-            }                    
+        boolean exp = isExpandableType(getType()) && !Utilities.modulesOnly() && !getVisibleUnits(getFeatureList(), getFilter(), false).isEmpty() && !getVisibleUnits(standAloneModules, getFilter(), false).isEmpty();
+        if (exp) {
+            isExpanded = NbPreferences.forModule(UnitCategoryTableModel.class).getBoolean(EXPAND_STATE, false);
+        } else {
+            isExpanded = null;
+        }
     }
     
     public void setUnitComparator (Comparator<Unit> comparator) {

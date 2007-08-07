@@ -84,7 +84,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     }
     
     public boolean allLicensesApproved () {
-        for (UpdateElement el : getAllUpdateElements ()) {
+        for (UpdateElement el : getVisibleUpdateElements (getAllUpdateElements (), false)) {
             if (el.getLicence () != null && ! approvedLicences.contains (el.getLicence ())) {
                 return false;
             }

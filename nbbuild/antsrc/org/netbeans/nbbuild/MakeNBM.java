@@ -625,7 +625,10 @@ public class MakeNBM extends Task {
             throw new BuildException(x, getLocation());
         }
         String pub, sys;
-        if (targetcluster != null && !("".equals(targetcluster))) {
+        if (attr.getValue("AutoUpdate-Show-In-Client") != null || attr.getValue("AutoUpdate-Essential-Module") != null) {
+            pub = "-//NetBeans//DTD Autoupdate Module Info 2.5//EN";
+            sys = "http://www.netbeans.org/dtds/autoupdate-info-2_5.dtd";
+        } else if (targetcluster != null && !("".equals(targetcluster))) {
             pub = "-//NetBeans//DTD Autoupdate Module Info 2.4//EN";
             sys = "http://www.netbeans.org/dtds/autoupdate-info-2_4.dtd";
         } else {
@@ -715,7 +718,7 @@ public class MakeNBM extends Task {
             // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-*.dtd
             //  and www/www/dtds/autoupdate-info-*.dtd):
             // XXX better would be to enumerate the attrs it *does* recognize!
-            if (! name.startsWith("OpenIDE-Module")) continue;
+            if (!name.startsWith("OpenIDE-Module") && !name.startsWith("AutoUpdate-")) continue;
             if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue;
             if (name.equals("OpenIDE-Module-Install")) continue;
             if (name.equals("OpenIDE-Module-Layer")) continue;

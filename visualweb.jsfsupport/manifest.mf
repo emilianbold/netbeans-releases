@@ -2,3 +2,4 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.visualweb.jsfsupport/1
 OpenIDE-Module-Specification-Version: 2.0
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/jsfsupport/Bundle.properties
+AutoUpdate-Show-In-Client: false

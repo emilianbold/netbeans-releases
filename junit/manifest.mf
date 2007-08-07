@@ -3,6 +3,7 @@ OpenIDE-Module: org.netbeans.modules.junit/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/junit/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/junit/resources/layer.xml
 OpenIDE-Module-Specification-Version: 2.23
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/junit/CreateTestAction.class
 OpenIDE-Module-Class: Action

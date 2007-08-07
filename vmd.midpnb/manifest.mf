@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.vmd.midpnb
 OpenIDE-Module-Layer: org/netbeans/modules/vmd/midpnb/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/vmd/midpnb/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
 

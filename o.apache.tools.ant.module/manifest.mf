@@ -3,6 +3,7 @@ OpenIDE-Module: org.apache.tools.ant.module/3
 OpenIDE-Module-Implementation-Version: 2
 OpenIDE-Module-Localizing-Bundle: org/apache/tools/ant/module/Bundle.properties
 OpenIDE-Module-Layer: org/apache/tools/ant/module/resources/AntModuleLayer.xml
+AutoUpdate-Show-In-Client: false
 
 Name: org/apache/tools/ant/module/loader/AntProjectDataLoader.class
 OpenIDE-Module-Class: Loader

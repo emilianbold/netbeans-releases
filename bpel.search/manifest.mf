@@ -3,3 +3,4 @@ OpenIDE-Module: org.netbeans.modules.bpel.search/1
 OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Layer: org/netbeans/modules/bpel/search/impl/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/bpel/search/impl/resources/Bundle.properties
+AutoUpdate-Show-In-Client: false

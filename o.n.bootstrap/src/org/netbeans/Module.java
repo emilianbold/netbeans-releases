@@ -104,13 +104,22 @@ public abstract class Module extends ModuleInfo {
     
     /** Create a special-purpose "fixed" JAR. */
     protected Module(ModuleManager mgr, Events ev, Object history, ClassLoader classloader) throws InvalidException {
+        this(mgr, ev, history, classloader, false, false);
+    }
+
+    /**
+     * Create a special-purpose "fixed" JAR which may nonetheless be marked eager or autoload.
+     * @since 2.7
+     */
+    protected Module(ModuleManager mgr, Events ev, Object history, ClassLoader classloader, boolean autoload, boolean eager) throws InvalidException {
+        if (autoload && eager) throw new IllegalArgumentException("A module may not be both autoload and eager"); // NOI18N
         this.mgr = mgr;
         this.events = ev;
         this.history = history;
         this.classloader = classloader;
         reloadable = false;
-        autoload = false;
-        eager = false;
+        this.autoload = autoload;
+        this.eager = eager;
         enabled = false;
     }
     

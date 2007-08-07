@@ -70,19 +70,19 @@ public final class ModuleDeleterImpl  {
     }
     
     public boolean canDelete (ModuleInfo moduleInfo) {
-        if (moduleInfo == null) { // XXX: how null moduleInfo?
+        if (moduleInfo == null) { // XXX: how come that moduleInfo is null?
             return false;
         }
-        if (Utilities.isFixed (moduleInfo)) {
+        if (Utilities.isEssentialModule (moduleInfo)) {
             err.log(Level.FINE,
                     "Cannot delete module because module " +
-                    moduleInfo.getCodeName() + " isFixed.");
+                    moduleInfo.getCodeName() + " isEssentialModule.");
         }
         return isUninstallAllowed (moduleInfo) && findUpdateTracking (moduleInfo, ONLY_FROM_AUTOUPDATE);
     }
     
     private static boolean isUninstallAllowed(final ModuleInfo m) {
-        return ! (Utilities.isFixed (m));
+        return ! (Utilities.isEssentialModule (m));
     }
     
     public void delete (final ModuleInfo[] modules, ProgressHandle handle) throws IOException {

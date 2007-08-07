@@ -4,4 +4,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/monitor/Bundle.proper
 OpenIDE-Module-Layer: org/netbeans/modules/web/monitor/resources/layer.xml
 OpenIDE-Module-Specification-Version: 1.17
 OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl
-
+AutoUpdate-Show-In-Client: false

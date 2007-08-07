@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.ruby.debugger
 OpenIDE-Module-Layer: org/netbeans/modules/ruby/debugger/resource/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ruby/debugger/resource/Bundle.properties
 OpenIDE-Module-Specification-Version: 0.99
+AutoUpdate-Show-In-Client: false
 

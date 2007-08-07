@@ -34,6 +34,7 @@ public final class UpdateManager {
         MODULE,
         FEATURE,
         STANDALONE_MODULE,
+        KIT_MODULE,
         CUSTOM_HANDLED_COMPONENT,
         LOCALIZATION
     }

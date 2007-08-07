@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.swingapp
 OpenIDE-Module-Layer: org/netbeans/modules/swingapp/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/swingapp/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
+AutoUpdate-Show-In-Client: false
 

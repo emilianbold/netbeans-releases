@@ -2,6 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.xml.schema/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/schema/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/xml/schema/resources/mf-layer.xml
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/xml/schema/SchemaDataLoader.class
 OpenIDE-Module-Class: Loader

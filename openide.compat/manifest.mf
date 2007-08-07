@@ -3,4 +3,5 @@ OpenIDE-Module: org.openide.compat
 OpenIDE-Module-Specification-Version: 6.5
 OpenIDE-Module-Deprecated: true
 OpenIDE-Module-Localizing-Bundle: org/openide/compat/Bundle.properties
+AutoUpdate-Essential-Module: true
 

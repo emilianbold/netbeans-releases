@@ -20,6 +20,8 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Rectangle;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -34,6 +36,7 @@ public class PanelBodyContainer extends javax.swing.JPanel {
     private String message = null;
     private JScrollPane customPanel;
     private JPanel bodyPanel = null;
+    private boolean isWaiting = false;
     
     /** Creates new form InstallPanelContainer */
     public PanelBodyContainer (String heading, String msg, JPanel bodyPanel) {
@@ -58,6 +61,37 @@ public class PanelBodyContainer extends javax.swing.JPanel {
                 bodyPanel.scrollRectToVisible (new Rectangle (0, 0, 10, 10));
             }
         });
+        if (isWaiting) {
+            setWaitingState (true);
+        }
+    }
+    
+    public void setBody (JPanel bodyPanel) {
+        pBodyPanel.removeAll ();
+        this.bodyPanel = bodyPanel;
+        customPanel = new JScrollPane ();
+        customPanel.setBorder (null);
+        pBodyPanel.add (customPanel, BorderLayout.CENTER);
+        customPanel.setViewportView (bodyPanel);
+        customPanel.getVerticalScrollBar ().setUnitIncrement (10);
+        customPanel.getHorizontalScrollBar ().setUnitIncrement (10);
+        revalidate ();
+    }
+    
+    public void setWaitingState (boolean isWaiting) {
+        this.isWaiting = isWaiting;
+        Component rootPane = getRootPane ();
+        /* Component parent = getParent ();
+        if (parent != null) {
+            parent.setEnabled (! isWaiting);
+        } */
+        if (rootPane != null) {
+            if (isWaiting) {
+                rootPane.setCursor (Cursor.getPredefinedCursor (Cursor.WAIT_CURSOR));
+            } else {
+                rootPane.setCursor (null);
+            }
+        }
     }
     
     public void setHeadAndContent (String heading, String content) {

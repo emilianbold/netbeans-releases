@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.websvc.registry
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/registry/netbeans/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/websvc/registry/netbeans/WebServiceModuleInstaller.class
 OpenIDE-Module-Specification-Version: 1.5
+AutoUpdate-Show-In-Client: false
 

@@ -4,4 +4,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/dataconnectivit
 OpenIDE-Module-Specification-Version: 2.0
 OpenIDE-Module-Install: org/netbeans/modules/visualweb/dataconnectivity/DataconnectivityModuleInstaller.class
 OpenIDE-Module-Layer: org/netbeans/modules/visualweb/dataconnectivity/mf-layer.xml
-
+AutoUpdate-Show-In-Client: false

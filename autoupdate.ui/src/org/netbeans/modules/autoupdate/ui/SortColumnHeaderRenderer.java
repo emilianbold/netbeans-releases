@@ -70,11 +70,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer{
     
     private String getDefaultColumnSelected() {
         String retval = null;
-        if (Utilities.modulesOnly ()) {
-            retval = this.model.getColumnName (2); // category
-        } else {
-            retval = this.model.getColumnName (1); // name
-        }
+        retval = this.model.getColumnName(2); // category
         return retval;
     }
         

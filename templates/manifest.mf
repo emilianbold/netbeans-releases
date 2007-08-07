@@ -3,3 +3,5 @@ OpenIDE-Module: org.netbeans.modules.templates
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/templates/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Provides: org.netbeans.modules.templates.v1_0
+AutoUpdate-Show-In-Client: false
+

@@ -2,3 +2,4 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.bpel.debugger
 OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/bpel/debugger/resources/Bundle.properties
+AutoUpdate-Show-In-Client: false

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
-import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.modules.autoupdate.services.*;
 import java.net.URL;
 import java.text.ParseException;
@@ -44,6 +43,8 @@ public class ModuleItem extends UpdateItemImpl {
     private String homepage;
     private String category;
     private Date publishDate;
+    private boolean isEager;
+    private boolean isAutoload;
     
     private URL distribution;
     private Manifest manifest;
@@ -63,6 +64,8 @@ public class ModuleItem extends UpdateItemImpl {
             String homepage,
             String category,
             Manifest manifest, 
+            Boolean isEager,
+            Boolean isAutoload,
             Boolean needsRestart,
             Boolean isGlobal,
             String targetCluster,
@@ -84,6 +87,8 @@ public class ModuleItem extends UpdateItemImpl {
         this.downloadSize = downloadSize;
         this.homepage = homepage;
         this.category = category;
+        this.isEager = isEager;
+        this.isAutoload = isAutoload;
     }
     
     public String getCodeName () {
@@ -137,5 +142,13 @@ public class ModuleItem extends UpdateItemImpl {
     public String getDate () {
         return publishDate == null ? null : Utilities.DATE_FORMAT.format (publishDate);
     }
+    
+    public boolean isAutoload () {
+        return isAutoload;
+    }
 
+    public boolean isEager () {
+        return isEager;
+    }
+    
 }

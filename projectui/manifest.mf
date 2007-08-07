@@ -8,4 +8,5 @@ OpenIDE-Module-Provides:
    org.netbeans.modules.project.uiapi.ActionsFactory, 
    org.netbeans.modules.project.uiapi.OpenProjectsTrampoline,
    org.netbeans.modules.project.uiapi.ProjectChooserFactory
+AutoUpdate-Show-In-Client: false
 

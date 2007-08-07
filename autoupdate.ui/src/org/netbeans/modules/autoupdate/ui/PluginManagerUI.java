@@ -124,9 +124,12 @@ public class PluginManagerUI extends javax.swing.JPanel implements UpdateUnitLis
                     setWaitingState (true);
                     Utilities.startAsWorkerThread (PluginManagerUI.this, new Runnable () {
                         public void run () {
-                            initTask.waitFinished ();
-                            w.removeWindowListener (waa);
-                            setWaitingState (false);
+                            try {
+                                initTask.waitFinished ();
+                                w.removeWindowListener (waa);
+                            } finally {
+                                setWaitingState (false);
+                            }
                         }
                     }, NbBundle.getMessage (PluginManagerUI.class, "UnitTab_InitAndCheckingForUpdates"));
                 }

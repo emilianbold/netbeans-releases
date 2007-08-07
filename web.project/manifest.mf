@@ -4,6 +4,7 @@ OpenIDE-Module-Specification-Version: 1.6
 OpenIDE-Module-Layer: org/netbeans/modules/web/project/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/project/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/web/project/WebProjectModule.class
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/web/project/ui/SetExecutionUriAction.class
 OpenIDE-Module-Class: Action

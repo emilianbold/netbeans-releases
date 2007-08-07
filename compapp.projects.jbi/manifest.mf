@@ -3,3 +3,4 @@ OpenIDE-Module: org.netbeans.modules.compapp.projects.jbi
 OpenIDE-Module-Layer: org/netbeans/modules/compapp/projects/jbi/ui/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/compapp/projects/jbi/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
+AutoUpdate-Show-In-Client: false

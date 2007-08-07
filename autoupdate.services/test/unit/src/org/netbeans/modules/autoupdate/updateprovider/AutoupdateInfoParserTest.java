@@ -62,7 +62,7 @@ public class AutoupdateInfoParserTest extends DefaultTestCase {
         assertEquals ("Correct content of " + LICENSE_NAME, "[NO LICENSE SPECIFIED]", licenses.get (LICENSE_NAME));
     }
 
-    public void testCreateSimpleItems () {
+    public void testCreateSimpleItems () throws IOException, SAXException {
         Map<String, UpdateItem> items = AutoupdateInfoParser.getUpdateItems (NBM_FILE);
         assertNotNull ("UpdateItems found in file " + NBM_FILE, items);
         assertEquals ("UpdateItems contains only once item in file" + NBM_FILE, 1, items.size ());

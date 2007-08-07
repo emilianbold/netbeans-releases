@@ -57,17 +57,25 @@ public class UnitDetails extends DetailsPanel{
         } else {
             String text;
             try {
-                boolean showDetailsForDevelopers = u.updateUnit != null && u.updateUnit.getInstalled() != null;
                 //text = "<h3>" + u.annotateDisplayName(u.annotate(XMLUtil.toElementContent(u.getDisplayName()))) + "</h3>"; // NOI18N
                 text = u.annotate(XMLUtil.toElementContent(u.getDisplayName())); // NOI18N
                 setTitle(text);text = "";//NOI18N
                 setActionListener(action);
-                if (Utilities.modulesOnly ()) {
-                    if (! showDetailsForDevelopers) {
-                        text += "<b>" + getBundle ("UnitDetails_Plugin_CodeName") + "</b>" + u.annotate(u.updateUnit.getCodeName() + "<br>"); // NOI18N
-                    }
-                    text += "<b>" + getBundle ("UnitDetails_Plugin_Version") + "</b>" + u.annotate(u.getDisplayVersion()) + "<br>"; // NOI18N
+                if (Utilities.modulesOnly () || Utilities.showExtendedDescription ()) {
+                    text += "<b>" + getBundle ("UnitDetails_Plugin_CodeName") + "</b>" + u.annotate (u.updateUnit.getCodeName ()); // NOI18N
+                    // XXX: Temporary only for development
+                    UpdateElement elem = u.getRelevantElement ();
+                    if (elem.isAutoload () || elem.isEager () || elem.isFixed ()) {
+                        text += " (";
+                        text += elem.isAutoload () ? "<i>" + getBundle ("UnitDetails_Plugin_Autoload") + "</i>" : ""; // NOI18N
+                        text += elem.isEager () ? "<i>" + getBundle ("UnitDetails_Plugin_Eager") + "</i>" : ""; // NOI18N
+                        text += elem.isFixed () ? "<i>" + getBundle ("UnitDetails_Plugin_Fixed") + "</i>" : ""; // NOI18N
+                        text += ")";
+                    } // enf of temporary
+                    text += "<br>";
+
                 }
+                text += "<b>" + getBundle ("UnitDetails_Plugin_Version") + "</b>" + u.annotate(u.getDisplayVersion()) + "<br>"; // NOI18N
                 if (u.getAuthor () != null && u.getAuthor ().length () > 0) {
                     text += "<b>" + getBundle ("UnitDetails_Plugin_Author") + "</b>" + u.annotate(u.getAuthor ()) + "<br>"; // NOI18N
                 }
@@ -76,45 +84,6 @@ public class UnitDetails extends DetailsPanel{
                 }
                 text += "<b>" + getBundle ("UnitDetails_Plugin_Source") + "</b>" + u.annotate(u.getSource()) + "<br>"; // NOI18N
 
-                // XXX: Temporary only for development
-                if (showDetailsForDevelopers) {
-                    UpdateElement elem = u.updateUnit.getInstalled();
-                    ModuleInfo m = ModuleProvider.getInstalledModules().get(elem.getCodeName());
-                    boolean isEnabled = m != null && m.isEnabled();
-                    OperationContainer<OperationSupport> c = null;
-                    if (isEnabled) {
-                        c = OperationContainer.createForDisable();
-                    } else {
-                        c = OperationContainer.createForEnable();
-                    }
-                    if (u.updateUnit.isAutoload() || u.updateUnit.isEager () || u.updateUnit.isFixed ()) {
-                        text += " (";
-                        text += u.updateUnit.isAutoload () ? "<i>" + getBundle ("UnitDetails_Plugin_Autoload") + "</i>" : ""; // NOI18N
-                        text += u.updateUnit.isEager () ? "<i>" + getBundle ("UnitDetails_Plugin_Eager") + "</i>" : ""; // NOI18N
-                        text += u.updateUnit.isFixed () ? "<i>" + getBundle ("UnitDetails_Plugin_Fixed") + "</i>" : ""; // NOI18N
-                        text += ")";
-                    }
-                    text += "<br>";
-                    if (c.canBeAdded (u.updateUnit, elem)) {
-                        List<UpdateElement> elems = Utilities.getRequiredElements(u.updateUnit, elem, c);
-                        if (elems.size() > 0) {
-                            StringBuffer pom = new StringBuffer();
-                            for (UpdateElement updateElement : elems) {
-                                if (pom.length() > 0) {
-                                    pom.append(", ");
-                                }
-                                pom.append(updateElement.getDisplayName());
-                            }
-                            
-                            if (isEnabled) {
-                                text += "<b>" + getBundle ("UnitDetails_Plugin_RequiredBy") + "</b>" + pom + "<br>"; // NOI18N
-                            } else {
-                                text += "<b>" + getBundle ("UnitDetails_Plugin_Requires") + "</b>" + pom + "<br>"; // NOI18N
-                            }
-                        }
-                        
-                    }
-                }
                 if (u.getHomepage() != null && u.getHomepage().length() > 0) {
                     text += "<b>" + getBundle ("UnitDetails_Plugin_Homepage") + "</b><a href=\"" + u.getHomepage() + "\">" + u.annotate(u.getHomepage()) + "</a><br>"; // NOI18N
                 }

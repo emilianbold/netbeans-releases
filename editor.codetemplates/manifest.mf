@@ -4,4 +4,4 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/lib/editor/codetemplates/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/lib/editor/codetemplates/resources/layer.xml
 OpenIDE-Module-Install: org/netbeans/lib/editor/codetemplates/CodeTemplatesModule.class
-
+AutoUpdate-Show-In-Client: false

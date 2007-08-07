@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.mobility.licensing
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/licensing/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Install: org/netbeans/modules/mobility/licensing/AcceptLicense.class
+AutoUpdate-Show-In-Client: false
 

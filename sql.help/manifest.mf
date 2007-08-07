@@ -3,3 +3,4 @@ OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module: org.netbeans.modules.jdbc.jdbchelp
 OpenIDE-Module-Layer: org/netbeans/modules/jdbc/jdbchelp/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/jdbc/jdbchelp/Bundle.properties
+AutoUpdate-Show-In-Client: false

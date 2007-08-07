@@ -136,6 +136,13 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     }
     
     public String getCategory () {
+        if (isAutoload () || isFixed ()) {
+            category = UpdateUnitFactory.LIBRARIES_CATEGORY;
+        } else if (isEager ()) {
+            category = UpdateUnitFactory.BRIDGES_CATEGORY;
+        } else if (category == null || category.length () == 0) {
+            category = UpdateUnitFactory.UNSORTED_CATEGORY;
+        }
         return category;
     }
     
@@ -200,6 +207,30 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         boolean res = false;
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
             res |= impl.isEnabled ();
+        }
+        return res;
+    }
+    
+    public boolean isAutoload () {
+        boolean res = true;
+        for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
+            res &= impl.isAutoload ();
+        }
+        return res;
+    }
+
+    public boolean isEager () {
+        boolean res = true;
+        for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
+            res &= impl.isEager ();
+        }
+        return res;
+    }
+    
+    public boolean isFixed () {
+        boolean res = true;
+        for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
+            res &= impl.isFixed ();
         }
         return res;
     }
@@ -287,7 +318,6 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
                         if (el != null) {
                             assert Trampoline.API.impl (el) instanceof ModuleUpdateElementImpl : "Impl of " + el + " is instanceof ModuleUpdateElementImpl.";
                             ModuleUpdateElementImpl impl = (ModuleUpdateElementImpl) Trampoline.API.impl (el);
-                            impl.addParentFeature (this);
                             res.add (impl);
                         } else {
                             LOG.log (Level.INFO, getUpdateUnit () + " requires a module " + name + " what is not present.");

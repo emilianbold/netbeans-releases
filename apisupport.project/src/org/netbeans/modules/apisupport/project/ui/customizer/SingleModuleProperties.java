@@ -102,6 +102,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private boolean specificationVersionChanged;
     private boolean implementationVersionChange;
     private boolean providedTokensChanged;
+    private boolean autoUpdateShowInClientChanged;
 
     private boolean moduleListRefreshNeeded;
     
@@ -130,6 +131,7 @@ public final class SingleModuleProperties extends ModuleProperties {
     private String implementationVersion;
     private String provTokensString;
     private SortedSet<String> requiredTokens;
+    private Boolean autoUpdateShowInClient;
     private NbPlatform activePlatform;
     private NbPlatform originalPlatform;
     private JavaPlatform activeJavaPlatform;
@@ -198,6 +200,7 @@ public final class SingleModuleProperties extends ModuleProperties {
         specificationVersion = manifestManager.getSpecificationVersion();
         implementationVersion = manifestManager.getImplementationVersion();
         provTokensString = manifestManager.getProvidedTokensString();
+        autoUpdateShowInClient = manifestManager.getAutoUpdateShowInClient();
         originalPlatform = activePlatform = NbPlatform.getPlatformByDestDir(
                 getHelper().resolveFile(getEvaluator().getProperty("netbeans.dest.dir"))); // NOI18N
         String activeJdk = getEvaluator().getProperty("nbjdk.active"); // NOI18N
@@ -350,6 +353,17 @@ public final class SingleModuleProperties extends ModuleProperties {
         if (!Utilities.compareObjects(provTokensString, tokens)) {
             provTokensString = tokens;
             providedTokensChanged = true;
+        }
+    }
+
+    public Boolean getAutoUpdateShowInClient() {
+        return autoUpdateShowInClient;
+    }
+
+    public void setAutoUpdateShowInClient(Boolean autoUpdateShowInClient) {
+        if (!Utilities.compareObjects(this.autoUpdateShowInClient, autoUpdateShowInClient)) {
+            this.autoUpdateShowInClient = autoUpdateShowInClient;
+            autoUpdateShowInClientChanged = true;
         }
     }
     
@@ -713,6 +727,10 @@ public final class SingleModuleProperties extends ModuleProperties {
                 result.append(reqTokens[i]);
             }
             setManifestAttribute(em, ManifestManager.OPENIDE_MODULE_REQUIRES, result.toString());
+            changed = true;
+        }
+        if (autoUpdateShowInClientChanged) {
+            setManifestAttribute(em, ManifestManager.AUTO_UPDATE_SHOW_IN_CLIENT, autoUpdateShowInClient != null ? autoUpdateShowInClient.toString() : "");
             changed = true;
         }
         if (changed) {

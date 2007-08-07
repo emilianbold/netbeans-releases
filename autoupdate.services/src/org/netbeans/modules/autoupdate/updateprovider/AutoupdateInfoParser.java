@@ -57,19 +57,13 @@ public class AutoupdateInfoParser {
     
     private static final Logger ERR = Logger.getLogger ("org.netbeans.modules.autoupdate.updateprovider.AutoupdateInfoParser");
     
-    public static Map<String, UpdateItem> getUpdateItems (File nbmFile) {
+    public static Map<String, UpdateItem> getUpdateItems (File nbmFile) throws IOException, SAXException {
         Map<String, UpdateItem> items = new HashMap<String, UpdateItem> ();
-        try {
-            Document doc = getAutoupdateInfo (nbmFile);
-            SimpleItem simple = createSimpleItem (doc, false);
-            assert ! (simple instanceof SimpleItem.License) : simple + " is not instanceof License.";
-            UpdateItem update = simple.toUpdateItem (getLicenses (nbmFile), nbmFile);
-            items.put (simple.getId (), update);
-        } catch (IOException ex) {
-            ERR.log (Level.INFO, ex.getMessage(), ex);
-        } catch (SAXException ex) {
-            ERR.log (Level.INFO, ex.getMessage(), ex);
-        };
+        Document doc = getAutoupdateInfo (nbmFile);
+        SimpleItem simple = createSimpleItem (doc, false);
+        assert ! (simple instanceof SimpleItem.License) : simple + " is not instanceof License.";
+        UpdateItem update = simple.toUpdateItem (getLicenses (nbmFile), nbmFile);
+        items.put (simple.getId (), update);
         
         return items;
     }
@@ -118,7 +112,7 @@ public class AutoupdateInfoParser {
         
         // get xml document
         InputSource xmlInputSource = new InputSource (jf.getInputStream (entry));
-        Document retval = XMLUtil.parse (xmlInputSource, false, false, null /* logger */, AutoupdateCatalogParser.createAUResolver ());
+        Document retval = XMLUtil.parse (xmlInputSource, false, false, null /* logger */, org.netbeans.updater.XMLUtil.createAUResolver ());
         if (retval != null) {
             jf.close();
             JarFileSystem jfs = new JarFileSystem();

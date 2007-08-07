@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.java.platform/1
 OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/java/platform/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/java/platform/resources/layer.xml
+AutoUpdate-Show-In-Client: false
 

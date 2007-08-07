@@ -19,19 +19,11 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
-import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
 import org.openide.modules.ModuleInfo;
@@ -41,7 +33,7 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Rechtacek
  */
-public class UpdateUnitWithOsFactoryTest extends NbTestCase {
+public class UpdateUnitWithOsFactoryTest extends NbmAdvancedTestCase {
     
     public UpdateUnitWithOsFactoryTest (String testName) {
         super (testName);
@@ -51,29 +43,34 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
     private String testModuleName = "org.netbeans.modules.applemenu";
     private String testModuleVersion = "1.111";
     
-    protected void setUp () throws IOException, URISyntaxException {
+    @Override
+    protected void setUp () throws IOException {
+        Lookup.getDefault ().lookup (ModuleInfo.class);
         clearWorkDir ();
     }
     
     public void testUpdateItemsDoesntContainAlien () throws IOException {
         String os = org.openide.util.Utilities.isUnix () ? "Windows" : "Unix";
-        System.setProperty ("netbeans.user", getWorkDirPath ());
         Lookup.getDefault ().lookup (ModuleInfo.class);
-        String catalog =    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + 
-                            "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 3.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-3_0.dtd\">" +
-                            "<module_updates timestamp=\"00/00/19/08/03/2006\">" +
-                            "<module codenamebase=\"com.sun.collablet\" homepage=\"http://collab.netbeans.org/\" distribution=\"http://www.netbeans.org/download/nbms/alpha/dev/1.18/com-sun-collablet.nbm\" license=\"standard-nbm-license.txt\" downloadsize=\"30732\" needsrestart=\"false\" moduleauthor=\"\" releasedate=\"2006/02/23\">" +
-                            "<manifest OpenIDE-Module=\"com.sun.collablet/1\" OpenIDE-Module-Display-Category=\"Collaboration\" OpenIDE-Module-Implementation-Version=\"200602231900\" OpenIDE-Module-Long-Description=\"Core multi-user collaboration API &amp; SPI\" OpenIDE-Module-Module-Dependencies=\"org.openide.filesystems &gt; 6.2, org.openide.util &gt; 6.2, org.openide.modules &gt; 6.2, org.openide.nodes &gt; 6.2, org.openide.loaders, org.openide.io\" OpenIDE-Module-Name=\"Collablet Core &amp; API\" OpenIDE-Module-Requires=\"org.openide.windows.IOProvider, org.openide.modules.ModuleFormat1\" OpenIDE-Module-Specification-Version=\"1.3\"/>" +
-                            "</module>" +
-                            "<module codenamebase=\"" + testModuleName + "\" homepage=\"http://ide.netbeans.org/\" distribution=\"http://www.netbeans.org/download/nbms/alpha/dev/1.18/org-netbeans-modules-applemenu.nbm\" license=\"standard-nbm-license.txt\" downloadsize=\"16986\" needsrestart=\"true\" moduleauthor=\"\" releasedate=\"2006/02/23\">" +
-                            "<manifest OpenIDE-Module=\"org.netbeans.modules.applemenu/1\" OpenIDE-Module-Display-Category=\"Infrastructure\" OpenIDE-Module-Implementation-Version=\"200602231900\" OpenIDE-Module-Long-Description=\"Enables Apple menu items to work properly, and moves some standard menu items there - Tools | Options becomes Preferences, Help | About becomes about, File | Exit becomes Quit.\" OpenIDE-Module-Module-Dependencies=\"org.netbeans.core.windows/2, org.netbeans.modules.editor/3, org.netbeans.modules.java.editor/1 &gt; 1.3, org.openide.filesystems &gt; 6.2, org.openide.loaders, org.openide.modules &gt; 6.2, org.openide.nodes &gt; 6.2, org.openide.util &gt; 6.2\" OpenIDE-Module-Name=\"Apple Application Menu\" OpenIDE-Module-Requires=\"org.openide.modules.os." + os + ", org.openide.modules.ModuleFormat1\" OpenIDE-Module-Short-Description=\"Enables proper support for the Apple Application menu\" OpenIDE-Module-Specification-Version=\"" + testModuleVersion + "\"/>" +
-                            "</module>" + 
-                            "</module_updates>";
-        try {
-            p = new MyProvider (catalog);
-        } catch (Exception x) {
-            x.printStackTrace ();
-        }
+        String catalog = generateCatalog (
+                generateModuleElement ("com.sun.collablet", "1.3", null, false, false,
+                    "org.openide.filesystems > 6.2",
+                    "org.openide.util > 6.2",
+                    "org.openide.modules > 6.2",
+                    "org.openide.nodes > 6.2",
+                    "org.openide.loaders",
+                    "org.openide.io"),
+                generateModuleElement (testModuleName, testModuleVersion, "org.openide.modules.os." + os, false, false,
+                    "org.netbeans.core.windows/2",
+                    "org.netbeans.modules.editor/3",
+                    "org.netbeans.modules.java.editor/1 > 1.3",
+                    "org.openide.filesystems > 6.2",
+                    "org.openide.loaders",
+                    "org.openide.modules > 6.2",
+                    "org.openide.nodes > 6.2",
+                    "org.openide.util > 6.2")
+                );
+        p = createUpdateProvider (catalog);
         p.refresh (true);
         Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
         Map<String, UpdateItem> updates = p.getUpdateItems ();
@@ -81,11 +78,7 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
         assertFalse ("Some modules are installed.", updates.isEmpty ());
         assertTrue (testModuleName + " found in parsed items.", updates.keySet ().contains (testModuleName + "_" + testModuleVersion));
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (
-                unitImpls,
-                p,
-                new HashMap<ModuleItem, String> (),
-                new HashSet<String> ());
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p);
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
@@ -94,23 +87,26 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
     
     public void testUpdateItemsContainsMyModule () throws IOException {
         String os = ! org.openide.util.Utilities.isUnix () ? "Windows" : "Unix";
-        System.setProperty ("netbeans.user", getWorkDirPath ());
-        Lookup.getDefault ().lookup (ModuleInfo.class);
-        String catalog =    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + 
-                            "<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 3.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-3_0.dtd\">" +
-                            "<module_updates timestamp=\"00/00/19/08/03/2006\">" +
-                            "<module codenamebase=\"com.sun.collablet\" homepage=\"http://collab.netbeans.org/\" distribution=\"http://www.netbeans.org/download/nbms/alpha/dev/1.18/com-sun-collablet.nbm\" license=\"standard-nbm-license.txt\" downloadsize=\"30732\" needsrestart=\"false\" moduleauthor=\"\" releasedate=\"2006/02/23\">" +
-                            "<manifest OpenIDE-Module=\"com.sun.collablet/1\" OpenIDE-Module-Display-Category=\"Collaboration\" OpenIDE-Module-Implementation-Version=\"200602231900\" OpenIDE-Module-Long-Description=\"Core multi-user collaboration API &amp; SPI\" OpenIDE-Module-Module-Dependencies=\"org.openide.filesystems &gt; 6.2, org.openide.util &gt; 6.2, org.openide.modules &gt; 6.2, org.openide.nodes &gt; 6.2, org.openide.loaders, org.openide.io\" OpenIDE-Module-Name=\"Collablet Core &amp; API\" OpenIDE-Module-Requires=\"org.openide.windows.IOProvider, org.openide.modules.ModuleFormat1\" OpenIDE-Module-Specification-Version=\"1.3\"/>" +
-                            "</module>" +
-                            "<module codenamebase=\"" + testModuleName + "\" homepage=\"http://ide.netbeans.org/\" distribution=\"http://www.netbeans.org/download/nbms/alpha/dev/1.18/org-netbeans-modules-applemenu.nbm\" license=\"standard-nbm-license.txt\" downloadsize=\"16986\" needsrestart=\"true\" moduleauthor=\"\" releasedate=\"2006/02/23\">" +
-                            "<manifest OpenIDE-Module=\"org.netbeans.modules.applemenu/1\" OpenIDE-Module-Display-Category=\"Infrastructure\" OpenIDE-Module-Implementation-Version=\"200602231900\" OpenIDE-Module-Long-Description=\"Enables Apple menu items to work properly, and moves some standard menu items there - Tools | Options becomes Preferences, Help | About becomes about, File | Exit becomes Quit.\" OpenIDE-Module-Module-Dependencies=\"org.netbeans.core.windows/2, org.netbeans.modules.editor/3, org.netbeans.modules.java.editor/1 &gt; 1.3, org.openide.filesystems &gt; 6.2, org.openide.loaders, org.openide.modules &gt; 6.2, org.openide.nodes &gt; 6.2, org.openide.util &gt; 6.2\" OpenIDE-Module-Name=\"Apple Application Menu\" OpenIDE-Module-Requires=\"org.openide.modules.os." + os + ", org.openide.modules.ModuleFormat1\" OpenIDE-Module-Short-Description=\"Enables proper support for the Apple Application menu\" OpenIDE-Module-Specification-Version=\"" + testModuleVersion + "\"/>" +
-                            "</module>" + 
-                            "</module_updates>";
-        try {
-            p = new MyProvider (catalog);
-        } catch (Exception x) {
-            x.printStackTrace ();
-        }
+        String catalog = generateCatalog (
+                generateModuleElement ("com.sun.collablet", "1.3", null, false, false,
+                    "org.openide.filesystems > 6.2",
+                    "org.openide.util > 6.2",
+                    "org.openide.modules > 6.2",
+                    "org.openide.nodes > 6.2",
+                    "org.openide.loaders",
+                    "org.openide.io"),
+                generateModuleElement (testModuleName, testModuleVersion, "org.openide.modules.os." + os, false, false,
+                    "org.netbeans.core.windows/2",
+                    "org.netbeans.modules.editor/3",
+                    "org.netbeans.modules.java.editor/1 > 1.3",
+                    "org.openide.filesystems > 6.2",
+                    "org.openide.loaders",
+                    "org.openide.modules > 6.2",
+                    "org.openide.nodes > 6.2",
+                    "org.openide.util > 6.2")
+                );
+        p = createUpdateProvider (catalog);
+        p.refresh (true);
         p.refresh (true);
         Map<String, UpdateUnit> unitImpls = new HashMap<String, UpdateUnit> ();
         Map<String, UpdateItem> updates = p.getUpdateItems ();
@@ -118,28 +114,11 @@ public class UpdateUnitWithOsFactoryTest extends NbTestCase {
         assertFalse ("Some modules are installed.", updates.isEmpty ());
         assertTrue (testModuleName + " found in parsed items.", updates.keySet ().contains (testModuleName + "_" + testModuleVersion));
         
-        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls,
-                p,
-                new HashMap<ModuleItem, String> (),
-                new HashSet<String> ());
+        Map<String, UpdateUnit> newImpls = UpdateUnitFactory.getDefault ().appendUpdateItems (unitImpls, p);
         assertNotNull ("Some units found.", newImpls);
         assertFalse ("Some units found.", newImpls.isEmpty ());
         
         assertTrue (testModuleName + " must found in generated UpdateUnits.", newImpls.keySet ().contains (testModuleName));
-    }
-    
-    private URL generateFile (String s) throws IOException {
-        File res = new File (getWorkDir (), "test-updates-with-os-provider.xml");
-        OutputStream os = new FileOutputStream (res);
-        os.write (s.getBytes ());
-        os.close ();
-        return res.toURL ();
-    }
-    
-    public class MyProvider extends AutoupdateCatalogProvider {
-        public MyProvider (String s) throws IOException {
-            super ("test-updates-with-os-provider", "test-updates-with-os-provider", generateFile (s));
-        }
     }
     
 }

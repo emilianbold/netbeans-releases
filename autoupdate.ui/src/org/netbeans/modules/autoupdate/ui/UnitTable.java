@@ -93,7 +93,7 @@ public class UnitTable extends JTable {
     void setEnableRenderer (TableCellRenderer renderer) {
         enableRenderer = renderer;
         TableColumnModel columnModel = getColumnModel();
-        columnModel.getColumn(Utilities.modulesOnly() ? 3 : 2).setCellRenderer(renderer);
+        columnModel.getColumn(3).setCellRenderer(renderer);
     }
     
     void resortByDefault () {

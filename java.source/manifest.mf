@@ -4,6 +4,7 @@ OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Install: org/netbeans/modules/java/source/JBrowseModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/java/source/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/java/source/Bundle.properties
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/java/JavaDataLoader.class
 OpenIDE-Module-Class: Loader

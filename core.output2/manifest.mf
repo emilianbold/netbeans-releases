@@ -4,4 +4,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/core/output2/Bundle.properties
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Provides: org.openide.windows.IOProvider
 OpenIDE-Module-Layer: org/netbeans/core/output2/layer.xml
+AutoUpdate-Essential-Module: true
 

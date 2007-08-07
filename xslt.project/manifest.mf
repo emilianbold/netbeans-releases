@@ -3,3 +3,4 @@ OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module: org.netbeans.modules.xslt.project/1
 OpenIDE-Module-Layer: org/netbeans/modules/xslt/project/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xslt/project/resources/Bundle.properties
+AutoUpdate-Show-In-Client: false

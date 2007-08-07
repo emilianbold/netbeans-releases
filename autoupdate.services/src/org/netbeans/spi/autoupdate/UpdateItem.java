@@ -61,6 +61,8 @@ public final class UpdateItem {
      * @param publishDate date of publish of item, in date format "yyyy/MM/dd"
      * @param category name of category
      * @param manifest <code>java.util.jar.Manifest</code> describes the module in NetBeans module system
+     * @param isEager says if the module is <code>eager</code> or not
+     * @param isAutoload says if the module is <code>autoload</code> or not
      * @param needsRestart if true then IDE must be restarted after module installation
      * @param isGlobal control if the module will be installed into the installation directory or into user's dir
      * @param targetCluster name of cluster where new module will be installed if installation isGlobal
@@ -77,13 +79,16 @@ public final class UpdateItem {
                                     String publishDate,
                                     String category,
                                     Manifest manifest,
+                                    Boolean isEager,
+                                    Boolean isAutoload,
                                     Boolean needsRestart,
                                     Boolean isGlobal,
                                     String targetCluster,
                                     UpdateLicense license) {
         ModuleItem item = new ModuleItem (codeName, specificationVersion, distribution, 
                 author, publishDate, downloadSize, homepage, category,
-                manifest, needsRestart, isGlobal, targetCluster, license.impl);
+                manifest, isEager, isAutoload,
+                needsRestart, isGlobal, targetCluster, license.impl);
         return new UpdateItem (item);
     }
     

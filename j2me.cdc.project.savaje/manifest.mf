@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.j2me.cdc.project.savaje
 OpenIDE-Module-Layer: org/netbeans/modules/j2me/cdc/project/savaje/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2me/cdc/project/savaje/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0.1
+AutoUpdate-Show-In-Client: false
 

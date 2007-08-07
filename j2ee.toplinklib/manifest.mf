@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.j2ee.toplinklib/1
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/toplinklib/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/toplinklib/Bundle.properties
 OpenIDE-Module-Specification-Version: 2.8
+AutoUpdate-Show-In-Client: false
 

@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.libs.jsr223/1
 OpenIDE-Module-Specification-Version: 1.6
 OpenIDE-Module-Implementation-Version: 6
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/jsr223/Bundle.properties
+AutoUpdate-Essential-Module: true
 

@@ -2,3 +2,4 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.jruby/1
 OpenIDE-Module-Localizing-Bundle: org/jruby/Bundle.properties
 OpenIDE-Module-Specification-Version: 0.99.23
+AutoUpdate-Show-In-Client: false

@@ -44,7 +44,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.openide.xml.XMLUtil;
-import org.xml.sax.EntityResolver;
 
 /**
  *
@@ -168,7 +167,7 @@ public class AutoupdateCatalogParser {
         Document doc = null;
         try {
             is = getInputStream (url, isGZIP (providerUrl));
-            doc = XMLUtil.parse (new InputSource (is), false, false, null /* logger */, createAUResolver ());
+            doc = XMLUtil.parse (new InputSource (is), false, false, null /* logger */, org.netbeans.updater.XMLUtil.createAUResolver ());
         } finally {
             if (is != null) is.close ();
         }
@@ -235,10 +234,14 @@ public class AutoupdateCatalogParser {
                 }
             }
             ERR.log (Level.FINEST, "Transposed time " + time); // NOI18N
-
-            DateFormat format = new SimpleDateFormat (TIME_STAMP_FORMAT);
-            timeStamp = format.parse (time);
-            ERR.log (Level.FINER, "Successfully read time " + timeStamp); // NOI18N
+            
+            if (time == null) {
+                ERR.log (Level.INFO, "No timestamp is presented in " + url); // NOI18N
+            } else {
+                DateFormat format = new SimpleDateFormat (TIME_STAMP_FORMAT);
+                timeStamp = format.parse (time);
+                ERR.log (Level.FINER, "Successfully read time " + timeStamp); // NOI18N
+            }
 
         } catch (IOException ioe) {
             ERR.log (Level.FINE, null, ioe);
@@ -301,41 +304,4 @@ public class AutoupdateCatalogParser {
         
     }
     
-    /** Entity resolver that knows about AU DTDs, so no network is needed.
-     * @author Jesse Glick
-     */
-    public static EntityResolver createAUResolver() {
-        return new EntityResolver() {
-            public InputSource resolveEntity(String publicID, String systemID) throws IOException, SAXException {
-                if ("-//NetBeans//DTD Autoupdate Catalog 1.0//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-catalog-1_0.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Module Info 1.0//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-info-1_0.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Catalog 2.0//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-catalog-2_0.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Module Info 2.0//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-info-2_0.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Catalog 2.2//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-catalog-2_2.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Module Info 2.2//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-info-2_2.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Catalog 2.3//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-catalog-2_3.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Module Info 2.3//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-info-2_3.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Catalog 2.4//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-catalog-2_4.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Module Info 2.4//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-info-2_4.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Catalog 3.0//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-catalog-3_0.dtd").toString());
-                } else if ("-//NetBeans//DTD Autoupdate Module Info 3.0//EN".equals(publicID)) { // NOI18N
-                    return new InputSource(AutoupdateCatalogParser.class.getResource ("dtds/autoupdate-info-3_0.dtd").toString());
-                } else {
-                    return null;
-                }
-            }
-        };
-    }
-
 }

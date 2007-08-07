@@ -3,6 +3,7 @@ OpenIDE-Module: org.netbeans.modules.xslt.tmap
 OpenIDE-Module-Layer: org/netbeans/modules/xslt/tmap/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xslt/tmap/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/xslt/tmap/TMapDataLoader.class
 Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject

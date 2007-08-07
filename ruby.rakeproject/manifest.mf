@@ -3,4 +3,4 @@ OpenIDE-Module: org.netbeans.modules.ruby.rakeproject/1
 OpenIDE-Module-Specification-Version: 0.11.0
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ruby/modules/project/rake/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/ruby/modules/project/rake/RakeProjectModule.class
-
+AutoUpdate-Show-In-Client: false

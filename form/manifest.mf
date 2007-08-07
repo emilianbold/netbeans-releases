@@ -8,6 +8,7 @@ OpenIDE-Module-Requires:
   org.netbeans.api.editor.guards.Java,
   org.openide.modules.InstalledFileLocator
 OpenIDE-Module-Layer: org/netbeans/modules/form/resources/layer.xml
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/form/FormDataLoader.class
 OpenIDE-Module-Class: Loader

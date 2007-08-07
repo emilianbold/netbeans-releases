@@ -3,3 +3,4 @@ OpenIDE-Module: org.netbeans.modules.ruby.help
 OpenIDE-Module-Layer: org/netbeans/modules/ruby/help/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/ruby/help/Bundle.properties
 OpenIDE-Module-Specification-Version: 0.5
+AutoUpdate-Show-In-Client: false

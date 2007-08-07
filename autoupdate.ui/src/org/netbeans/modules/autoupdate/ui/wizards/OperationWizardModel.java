@@ -37,6 +37,7 @@ import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.modules.autoupdate.ui.Containers;
+import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -168,6 +169,24 @@ public abstract class OperationWizardModel {
                 "Required [" + getRequiredUpdateElements ().size () + "] is All [" + allElements.size () + "] ";
         }
         return allElements;
+    }
+    
+    public static Set<UpdateElement> getVisibleUpdateElements (Set<UpdateElement> all, boolean canBeEmpty) {
+        if (Utilities.modulesOnly ()) {
+            return all;
+        } else {
+            Set<UpdateElement> visible = new HashSet<UpdateElement> ();
+            for (UpdateElement el : all) {
+                if (UpdateManager.TYPE.KIT_MODULE == el.getUpdateUnit ().getType ()) {
+                    visible.add (el);
+                }
+            }
+            if (visible.isEmpty () && ! canBeEmpty) {
+                // in Downloaded tab may become all NBMs are hidden
+                visible = all;
+            }
+            return visible;
+        }
     }
     
     // XXX Hack in WizardDescriptor

@@ -4,4 +4,4 @@ OpenIDE-Module-Implementation-Version: 2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/java/editor/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/java/editor/JavaEditorModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/java/editor/resources/layer.xml
-
+AutoUpdate-Show-In-Client: false

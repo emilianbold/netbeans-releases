@@ -104,9 +104,9 @@ public class LocalDownloadSupport {
                 UpdateUnitProvider provider = factory.create(file.getName(), new File[] {file});
                 List<UpdateUnit> units = Collections.emptyList ();
                 try {
-                    units = provider.getUpdateUnits(UpdateManager.TYPE.MODULE);
+                    units = provider.getUpdateUnits (UpdateManager.TYPE.MODULE);
                 } catch (RuntimeException re) {
-                    err.log (Level.INFO, re.getMessage (), re);
+                    err.log (Level.WARNING, re.getMessage (), re);
                     DialogDisplayer.getDefault().notifyLater (new NotifyDescriptor.Exception (re, getBundle ("LocalDownloadSupport_BrokenNBM_Exception", file.getName ())));
                     fileList.removeFile (file);
                 }

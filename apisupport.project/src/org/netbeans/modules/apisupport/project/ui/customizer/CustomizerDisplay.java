@@ -38,6 +38,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     
     private boolean noBundle;
     private ProjectCustomizer.Category cat;
+    private boolean showInPluginManagerCheckboxChanged;
     
     /** Creates new form CustomizerDisplay */
     CustomizerDisplay(final SingleModuleProperties props, ProjectCustomizer.Category cat) {
@@ -59,6 +60,12 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         } else {
             readFromProperties();
         }
+        Boolean autoUpdateShowInClient = ((SingleModuleProperties) props).getAutoUpdateShowInClient();
+        if (autoUpdateShowInClient == null) {
+            autoUpdateShowInClient = !getBooleanProperty(SingleModuleProperties.IS_AUTOLOAD) && !getBooleanProperty(SingleModuleProperties.IS_EAGER);
+        }
+        showInPluginManagerCheckbox.setSelected(autoUpdateShowInClient);
+        showInPluginManagerCheckboxChanged = false;
     }
     
     private void checkValidity() {
@@ -75,6 +82,9 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
             getBundle().setCategory(getSelectedCategory());
             getBundle().setShortDescription(shortDescValue.getText());
             getBundle().setLongDescription(longDescValue.getText());
+        }
+        if (showInPluginManagerCheckboxChanged) {
+            ((SingleModuleProperties) props).setAutoUpdateShowInClient(showInPluginManagerCheckbox.isSelected());
         }
     }
     
@@ -153,18 +163,18 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         hackPanel = new javax.swing.JPanel();
         longDescValueSP = new javax.swing.JScrollPane();
         longDescValue = new javax.swing.JTextArea();
+        showInPluginManagerCheckbox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
         name.setLabelFor(nameValue);
-        org.openide.awt.Mnemonics.setLocalizedText(name, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayName"));
+        org.openide.awt.Mnemonics.setLocalizedText(name, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(name, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -174,7 +184,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         add(nameValue, gridBagConstraints);
 
         category.setLabelFor(categoryValue);
-        org.openide.awt.Mnemonics.setLocalizedText(category, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayCategory"));
+        org.openide.awt.Mnemonics.setLocalizedText(category, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_DisplayCategory")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -192,14 +202,13 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         add(categoryValue, gridBagConstraints);
 
         shortDesc.setLabelFor(shortDescValue);
-        org.openide.awt.Mnemonics.setLocalizedText(shortDesc, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_ShortDescription"));
+        org.openide.awt.Mnemonics.setLocalizedText(shortDesc, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_ShortDescription")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 6);
         add(shortDesc, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -209,7 +218,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         add(shortDescValue, gridBagConstraints);
 
         longDesc.setLabelFor(longDescValue);
-        org.openide.awt.Mnemonics.setLocalizedText(longDesc, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_LongDescription"));
+        org.openide.awt.Mnemonics.setLocalizedText(longDesc, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "LBL_LongDescription")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -225,7 +234,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         longDescValue.setWrapStyleWord(true);
         longDescValueSP.setViewportView(longDescValue);
 
-        hackPanel.add(longDescValueSP, java.awt.BorderLayout.NORTH);
+        hackPanel.add(longDescValueSP, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -234,10 +243,28 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(hackPanel, gridBagConstraints);
 
-    }
-    // </editor-fold>//GEN-END:initComponents
+        org.openide.awt.Mnemonics.setLocalizedText(showInPluginManagerCheckbox, org.openide.util.NbBundle.getMessage(CustomizerDisplay.class, "CustomizerDisplay.showInPluginManagerCheckbox.text")); // NOI18N
+        showInPluginManagerCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        showInPluginManagerCheckbox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        showInPluginManagerCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showInPluginManagerCheckboxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(showInPluginManagerCheckbox, gridBagConstraints);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void showInPluginManagerCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInPluginManagerCheckboxActionPerformed
+        showInPluginManagerCheckboxChanged = true;
+    }//GEN-LAST:event_showInPluginManagerCheckboxActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -251,6 +278,7 @@ final class CustomizerDisplay extends NbPropertyPanel.Single {
     private javax.swing.JTextField nameValue;
     private javax.swing.JLabel shortDesc;
     private javax.swing.JTextField shortDescValue;
+    private javax.swing.JCheckBox showInPluginManagerCheckbox;
     // End of variables declaration//GEN-END:variables
     
     private static String getMessage(String key) {

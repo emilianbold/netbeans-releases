@@ -89,6 +89,9 @@ public class NativeComponentUpdateElementImpl extends UpdateElementImpl {
     }
     
     public String getCategory () {
+        if (category != null) {
+            category = UpdateUnitFactory.UNSORTED_CATEGORY;
+        }
         return category;
     }
     
@@ -116,6 +119,18 @@ public class NativeComponentUpdateElementImpl extends UpdateElementImpl {
         // XXX: how to detect if NativeComponent is enbaled or not
         return false;
     }            
+    
+    public boolean isAutoload () {
+        return false;
+    }
+
+    public boolean isEager () {
+        return false;
+    }
+    
+    public boolean isFixed () {
+        return false;
+    }
     
     @Override
     public boolean equals(Object obj) {

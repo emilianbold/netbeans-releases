@@ -109,7 +109,7 @@ public class UpdateItemTest extends NbTestCase {
                                                     specificationVersion,
                                                     distribution, author, downloadSize,
                                                     homepage, null, "test-category",
-                                                    manifest, true, true, "my-cluster",
+                                                    manifest, false, false, true, true, "my-cluster",
                                                     license);
 
         assertNotNull ("Module UpdateItem was created.", result);
@@ -151,7 +151,7 @@ public class UpdateItemTest extends NbTestCase {
                                                     specificationVersion,
                                                     distribution, author, downloadSize,
                                                     homepage, "2007/05/22", "test-category",
-                                                    manifest, true, true, "my-cluster",
+                                                    manifest, false, false, true, true, "my-cluster",
                                                     license);
 
         assertNotNull ("Module UpdateItem with releative path was created.", result);

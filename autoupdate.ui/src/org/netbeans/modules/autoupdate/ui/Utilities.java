@@ -76,14 +76,7 @@ public class Utilities {
             for (UpdateUnit u : units) {
                 UpdateElement el = u.getInstalled();
                 if (el != null) {
-                    String catName = el.getCategory();
-                    if (u.isAutoload () || u.isFixed ()) {
-                        catName = LIBRARIES_CATEGORY;
-                    } else if (u.isEager ()) {
-                        catName = BRIDGES_CATEGORY;
-                    } else if (catName == null || catName.length () == 0) {
-                        catName = UNSORTED_CATEGORY;
-                    }
+                    String catName = el.getCategory ();
                     Unit.Installed i = new Unit.Installed (u, catName);
                     if (names.contains(catName)) {
                         UnitCategory cat = res.get(names.indexOf(catName));
@@ -111,16 +104,6 @@ public class Utilities {
                     continue;
                 }
                 String catName = el.getCategory();
-//                if (u.isAutoload () || u.isFixed ()) {
-//                    catName = LIBRARIES_CATEGORY;
-//                } else if (u.isEager ()) {
-//                    catName = BRIDGES_CATEGORY;
-//                } else if (catName == null || catName.length () == 0) {
-//                    catName = UNSORTED_CATEGORY;
-//                }
-                if (catName == null || catName.length () == 0) {
-                    catName = UNSORTED_CATEGORY;
-                }
                 if (names.contains (catName)) {
                     UnitCategory cat = res.get (names.indexOf (catName));
                     cat.addUnit (new Unit.Update (u, isNbms, catName));
@@ -148,16 +131,6 @@ public class Utilities {
                 }
                 UpdateElement upEl = updates.get (0);
                 String catName = upEl.getCategory();
-//                if (u.isAutoload () || u.isFixed ()) {
-//                    catName = LIBRARIES_CATEGORY;
-//                } else if (u.isEager ()) {
-//                    catName = BRIDGES_CATEGORY;
-//                } else if (catName == null || catName.length () == 0) {
-//                    catName = UNSORTED_CATEGORY;
-//                }
-                if (catName == null || catName.length () == 0) {
-                    catName = UNSORTED_CATEGORY;
-                }
                 if (names.contains (catName)) {
                     UnitCategory cat = res.get (names.indexOf (catName));
                     cat.addUnit (new Unit.Available (u, isNbms, catName));
@@ -235,7 +208,7 @@ public class Utilities {
         doRefreshProviders (null, manager, force);
     }
     
-    private static void doRefreshProviders (Collection<UpdateUnitProvider> providers, PluginManagerUI manager, boolean force) {
+    public static void doRefreshProviders (Collection<UpdateUnitProvider> providers, PluginManagerUI manager, boolean force) {
         ProgressHandle handle = ProgressHandleFactory.createHandle ("refresh-providers-handle"); // NOI18N
         JComponent progressComp = ProgressHandleFactory.createProgressComponent (handle);
         JLabel detailLabel = ProgressHandleFactory.createDetailLabelComponent (handle);
@@ -313,11 +286,11 @@ public class Utilities {
         return retval;
     }    
 
-    public static UpdateManager.TYPE[] getUnitTypes() {
-        if (modulesOnly()) {
+    public static UpdateManager.TYPE [] getUnitTypes () {
+        if (modulesOnly ()) {
             return new UpdateManager.TYPE [] { UpdateManager.TYPE.MODULE };
         } else {
-            return new UpdateManager.TYPE []  { UpdateManager.TYPE.FEATURE, UpdateManager.TYPE.STANDALONE_MODULE, UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT };
+            return new UpdateManager.TYPE [] { UpdateManager.TYPE.KIT_MODULE, UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT };
         }
     }
         
@@ -333,6 +306,10 @@ public class Utilities {
         return isModulesOnly == null ? modulesOnlyDefault () : isModulesOnly;
     }
     
+    public static boolean showExtendedDescription () {
+        return Boolean.valueOf (System.getProperty ("plugin.manager.extended.description"));
+    }
+
     public static void setModulesOnly (boolean modulesOnly) {
         isModulesOnly = modulesOnly ? Boolean.TRUE : Boolean.FALSE;
         getPreferences ().putBoolean (PLUGIN_MANAGER_MODULES_ONLY, isModulesOnly);

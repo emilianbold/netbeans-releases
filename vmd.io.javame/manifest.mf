@@ -3,6 +3,7 @@ OpenIDE-Module: org.netbeans.modules.vmd.io.javame
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/vmd/io/javame/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Requires: org.netbeans.api.editor.guards.Java
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/vmd/io/javame/MEDesignDataLoader.class
 OpenIDE-Module-Class: Loader

@@ -3,3 +3,4 @@ OpenIDE-Module: org.netbeans.modules.xml.schema.abe
 OpenIDE-Module-Layer: org/netbeans/modules/xml/schema/abe/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/schema/abe/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
+AutoUpdate-Show-In-Client: false

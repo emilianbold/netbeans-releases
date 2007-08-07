@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.openide.nodes
 OpenIDE-Module-Localizing-Bundle: org/openide/nodes/Bundle.properties
+AutoUpdate-Essential-Module: true
 

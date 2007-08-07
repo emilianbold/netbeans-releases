@@ -4,4 +4,5 @@ OpenIDE-Module-Layer: org/netbeans/modules/xml/catalogsupport/resources/layer.xm
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/catalogsupport/resources/Bundle.properties
 OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
 OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
 

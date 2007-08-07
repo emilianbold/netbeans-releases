@@ -3,4 +3,4 @@ OpenIDE-Module: org.netbeans.modules.languages.manifest
 OpenIDE-Module-Layer: org/netbeans/modules/languages/manifest/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/languages/manifest/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.3
-
+AutoUpdate-Show-In-Client: false

@@ -85,11 +85,7 @@ public class UpdateTableModel extends UnitCategoryTableModel {
             res = u.getDisplayName();
             break;
         case 2 :
-            if (Utilities.modulesOnly()) {
-                res = u.getCategoryName();
-            } else {
-                res = u.getDisplayDate();
-            }
+            res = u.getCategoryName();
             break;
         case 3 :
             res = u.getInstalledVersion();
@@ -144,11 +140,7 @@ public class UpdateTableModel extends UnitCategoryTableModel {
         case 1 :
             return getBundle ("UpdateTableModel_Columns_Name");
         case 2 :
-            if (Utilities.modulesOnly ()) {
-                return getBundle ("UpdateTableModel_Columns_Category");
-            } else {
-                return getBundle ("UpdateTableModel_Columns_ReleaseDate");
-            }
+            return getBundle("UpdateTableModel_Columns_Category");
         case 3 :
             return getBundle ("UpdateTableModel_Columns_Installed");
         case 4 :
@@ -195,11 +187,7 @@ public class UpdateTableModel extends UnitCategoryTableModel {
                 } else if (getColumnName (1).equals (columnIdentifier)) {
                     return Unit.compareDisplayNames (unit1, unit2);
                 } else if (getColumnName (2).equals (columnIdentifier)) {
-                    if (Utilities.modulesOnly ()) {
-                        return Unit.compareCategories (unit1, unit2);
-                    } else {
-                        return Unit.compareSimpleFormatDates (unit1, unit2);
-                    }
+                    return Unit.compareCategories(unit1, unit2);
                 } else if (getColumnName (3).equals (columnIdentifier)) {
                     return Unit.Update.compareInstalledVersions (unit1, unit2);
                 } else if (getColumnName (4).equals (columnIdentifier)) {

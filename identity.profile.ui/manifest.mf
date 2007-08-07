@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.identity.profile.ui
 OpenIDE-Module-Layer: org/netbeans/modules/identity/profile/ui/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/identity/profile/ui/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1
+AutoUpdate-Show-In-Client: false
 

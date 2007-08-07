@@ -52,7 +52,8 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     private ModuleInfo moduleInfo;
     private ModuleItem item;
     private String date;
-    private Set<FeatureUpdateElementImpl> parentFeatures = null;
+    private boolean isEager;
+    private boolean isAutoload;
     
     public ModuleUpdateElementImpl (ModuleItem item, String providerName) {
         super (item, providerName);
@@ -80,6 +81,8 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         downloadSize = item.getDownloadSize ();
         homepage = item.getHomepage ();
         date = item.getDate ();
+        isEager = item.isEager ();
+        isAutoload = item.isAutoload ();
     }
     
     public String getCodeName () {
@@ -119,6 +122,13 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     }
     
     public String getCategory () {
+        if (isAutoload () || isFixed ()) {
+            category = UpdateUnitFactory.LIBRARIES_CATEGORY;
+        } else if (isEager ()) {
+            category = UpdateUnitFactory.BRIDGES_CATEGORY;
+        } else if (category == null || category.length () == 0) {
+            category = UpdateUnitFactory.UNSORTED_CATEGORY;
+        }
         return category;
     }
     
@@ -156,19 +166,16 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return getModuleInfo ().isEnabled ();
     }            
     
-    public boolean addParentFeature (FeatureUpdateElementImpl feature) {
-        if (parentFeatures == null) {
-            parentFeatures = new HashSet<FeatureUpdateElementImpl> ();
-        }
-        return parentFeatures.add (feature);
+    public boolean isAutoload () {
+        return isAutoload;
+    }
+
+    public boolean isEager () {
+        return isEager;
     }
     
-    public Set<FeatureUpdateElementImpl> getParentFeatures () {
-        return parentFeatures;
-    }
-    
-    public boolean isStandalone () {
-        return parentFeatures == null || parentFeatures.isEmpty ();
+    public boolean isFixed () {
+        return Utilities.toModule(getCodeName (), null) == null ? false : Utilities.toModule(getCodeName (), null).isFixed ();
     }
     
     @Override
@@ -207,5 +214,5 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         }
         return log;
     }
-
+    
 }

@@ -82,6 +82,10 @@ public abstract class UpdateElementImpl extends Object {
     
     public abstract UpdateManager.TYPE getType ();
     
+    public abstract boolean isAutoload ();
+    public abstract boolean isEager ();
+    public abstract boolean isFixed ();
+    
     // XXX: try to rid of this
     public abstract List<ModuleInfo> getModuleInfos ();
     

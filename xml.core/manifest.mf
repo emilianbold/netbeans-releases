@@ -4,6 +4,7 @@ OpenIDE-Module-Implementation-Version: 4
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/core/resources/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/xml/core/CoreModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/xml/core/resources/mf-layer.xml
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/xml/core/XMLDataLoader.class
 OpenIDE-Module-Class: Loader

@@ -5,4 +5,5 @@ OpenIDE-Module-Install: org/netbeans/modules/cnd/modelimpl/Installer.class
 OpenIDE-Module-Layer: org/netbeans/modules/cnd/modelimpl/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/modelimpl/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.1.1
+AutoUpdate-Show-In-Client: false
 

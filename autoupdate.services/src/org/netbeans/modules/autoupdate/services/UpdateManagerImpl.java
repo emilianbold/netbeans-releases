@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,10 +23,14 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.spi.autoupdate.UpdateProvider;
@@ -37,11 +41,20 @@ import org.netbeans.spi.autoupdate.UpdateProvider;
  */
 public class UpdateManagerImpl extends Object {
     private static final UpdateManagerImpl INSTANCE = new UpdateManagerImpl();
-    private static final UpdateManager.TYPE[] DEFAULT_TYPES = new UpdateManager.TYPE [] {  UpdateManager.TYPE.FEATURE, UpdateManager.TYPE.STANDALONE_MODULE };
+    private static final UpdateManager.TYPE [] DEFAULT_TYPES = new UpdateManager.TYPE [] {  UpdateManager.TYPE.KIT_MODULE };
     
     private Reference<Map<String, UpdateUnit>> updateUnitsRef = null;
+    
+    /*
+     private Reference<Set<UpdateElement>> availableEagers = new SoftReference<Set<UpdateElement>> (new HashSet<UpdateElement> ());
+    private Reference<Set<UpdateElement>> installedEagers = new SoftReference<Set<UpdateElement>> (new HashSet<UpdateElement> ());
+     */
+    private Set<UpdateElement> availableEagers = null;
+    private Set<UpdateElement> installedEagers = null;
+    
+    
     private List<UpdateUnit> holderUnits; // XXX: temporary only
-    private  Map<String, UpdateUnit> holderMap; // XXX: temporary only
+    private Map<String, UpdateUnit> holderMap; // XXX: temporary only
     private Logger logger = null;
     
     // package-private for tests only
@@ -68,29 +81,77 @@ public class UpdateManagerImpl extends Object {
     }
     
     public List<UpdateUnit> getUpdateUnits (UpdateManager.TYPE... types) {
-        if (types == null || types.length == 0) {
-            types = DEFAULT_TYPES;
-        }
-        
         if (updateUnitsRef == null) {
             getUpdateUnits ();
         }
         assert updateUnitsRef != null : "updateUnits must be initialized.";
         
-        List<UpdateUnit> askedUnits = new ArrayList<UpdateUnit> ();
-        List<UpdateManager.TYPE> typesL = Arrays.asList (types);
-        
-        for (UpdateUnit unit : unitsFromReference (updateUnitsRef)) {
-            UpdateUnitImpl impl = Trampoline.API.impl (unit);
-            if (typesL.contains (impl.getType ())) {
-                askedUnits.add (unit);
-            }
-        }
-
         holderUnits = unitsFromReference (updateUnitsRef);
         holderMap = mapFromReference (updateUnitsRef);
         
-        return askedUnits;
+        return filterUnitsByAskedTypes (unitsFromReference (updateUnitsRef), type2checkedList (types));
+    }
+    
+/*    @SuppressWarnings("deprecation")
+    public Set<UpdateElement> getAvailableEagers () {
+        Reference<Set<UpdateElement>> tmp = null;
+        synchronized (UpdateManagerImpl.class) {
+            tmp = availableEagers;
+        }
+        if (tmp == null || tmp.get () == null) {
+            tmp = new WeakReference<Set<UpdateElement>> (new HashSet<UpdateElement> ());
+            synchronized (UpdateElementImpl.class) {
+                availableEagers = tmp;
+                if (availableEagers.get ().isEmpty ()) {
+                    for (UpdateUnit unit : getUpdateUnits ()) {
+                        if (! unit.getAvailableUpdates ().isEmpty ()) {
+                            UpdateElement el = unit.getAvailableUpdates ().get (0);
+                            if (el.isEager ()) {
+                                System.out.println("availableEagers.get (): " + availableEagers.get ());
+                                availableEagers.get ().add (el);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        
+        return availableEagers.get ();
+    }
+ */ 
+    @SuppressWarnings("deprecation")
+    public Set<UpdateElement> getAvailableEagers () {
+        if (availableEagers == null) {
+            availableEagers = new HashSet<UpdateElement> ();
+            for (UpdateUnit unit : getUpdateUnits ()) {
+                if (! unit.getAvailableUpdates ().isEmpty ()) {
+                    UpdateElement el = unit.getAvailableUpdates ().get (0);
+                    if (el.isEager ()) {
+                        availableEagers.add (el);
+                    }
+                }
+            }
+        }
+
+        return availableEagers;
+    }
+    
+    @SuppressWarnings("deprecation")
+    public Set<UpdateElement> getInstalledEagers () {
+        if (installedEagers == null) {
+            installedEagers = new HashSet<UpdateElement> ();
+            for (UpdateUnit unit : getUpdateUnits ()) {
+                UpdateElement el;
+                if ((el = unit.getInstalled ()) != null) {
+                    if (el.isEager ()) {
+                        installedEagers.add (el);
+                    }
+                }
+            }
+        }
+
+        return installedEagers;
     }
     
     private static List<UpdateUnit> unitsFromReference(Reference<Map<String, UpdateUnit>> reference) {
@@ -135,21 +196,7 @@ public class UpdateManagerImpl extends Object {
     }
     
     public List<UpdateUnit> getUpdateUnits (UpdateProvider provider, UpdateManager.TYPE... types) {
-        Map<String, UpdateUnit> units = UpdateUnitFactory.getDefault().getUpdateUnits (provider);
-        List<UpdateUnit> askedUnits = new ArrayList<UpdateUnit> ();
-        
-        if (types == null || types.length == 0) {
-            types = DEFAULT_TYPES;
-        }
-        List<UpdateManager.TYPE> typesL = Arrays.asList (types);
-        
-        for (UpdateUnit unit : units.values ()) {
-            UpdateUnitImpl impl = Trampoline.API.impl (unit);
-            if (typesL.contains (impl.getType ())) {
-                askedUnits.add (unit);
-            }
-        }
-        return askedUnits;
+        return filterUnitsByAskedTypes (UpdateUnitFactory.getDefault().getUpdateUnits (provider).values (), type2checkedList (types));
     }
     
     public void cleanupUpdateUnits () {
@@ -165,5 +212,35 @@ public class UpdateManagerImpl extends Object {
             logger = Logger.getLogger (UpdateManagerImpl.class.getName ());
         }
         return logger;
+    }
+    
+    private static List<UpdateUnit> filterUnitsByAskedTypes (Collection<UpdateUnit> units, List<UpdateManager.TYPE> types) {
+        List<UpdateUnit> askedUnits = new ArrayList<UpdateUnit> ();
+
+        boolean simpleModules = types.contains (UpdateManager.TYPE.MODULE);
+        
+        for (UpdateUnit unit : units) {
+            UpdateUnitImpl impl = Trampoline.API.impl (unit);
+            if (impl instanceof KitModuleUpdateUnitImpl) {
+                ((KitModuleUpdateUnitImpl) impl).setLookLikeSimpleModule (simpleModules);
+            }
+            if (types.contains (impl.getType ())) {
+                askedUnits.add (unit);
+            }
+        }
+
+        return askedUnits;
+    }
+    
+    private static List<UpdateManager.TYPE> type2checkedList (UpdateManager.TYPE... types) {
+        List<UpdateManager.TYPE> l = Arrays.asList (types);
+        if (types != null && types.length > 1) {
+            if (l.contains (UpdateManager.TYPE.MODULE) && l.contains (UpdateManager.TYPE.KIT_MODULE)) {
+                throw new IllegalArgumentException ("Cannot mix types MODULE and KIT_MODULE into once list.");
+            }
+        } else if (types == null || types.length == 0) {
+            l = Arrays.asList (DEFAULT_TYPES);
+        }
+        return l;
     }
 }

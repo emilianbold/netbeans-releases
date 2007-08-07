@@ -88,7 +88,7 @@ public class CustomProviderFactory {
                                                     specificationVersion,
                                                     distribution, author,
                                                     downloadSize, homepage, null, "test-category",
-                                                    manifest, true, true, "my-cluster",
+                                                    manifest, false, false, true, true, "my-cluster",
                                                     license);
         return result;
     }
@@ -120,7 +120,7 @@ public class CustomProviderFactory {
                                                     specificationVersion,
                                                     distribution, author,
                                                     downloadSize, homepage, null, "test-category",
-                                                    manifest, true, true, "my-cluster", /*ci,*/
+                                                    manifest, false, false, true, true, "my-cluster",
                                                     license);
         return result;
     }

@@ -94,11 +94,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
             res = u.getDisplayName();
             break;
         case 2 :
-            if (Utilities.modulesOnly()) {
-                res = u.getCategoryName();
-            } else {
-                res = u.getRelevantElement().isEnabled();
-            }
+            res = u.getCategoryName();
             break;
         case 3 :
             res = u.getRelevantElement().isEnabled();
@@ -112,7 +108,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     }
 
     public int getColumnCount() {
-        return (Utilities.modulesOnly()) ? 4 : 3;
+        return 4;
     }
     
     public Class getColumnClass(int c) {
@@ -126,7 +122,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
             res = String.class;
             break;            
         case 2 :
-            res = (Utilities.modulesOnly ()) ?  String.class : Boolean.class;
+            res = String.class;
             break;
         case 3 :
             res = Boolean.class;
@@ -147,11 +143,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         case 1 :
             return getBundle ("InstalledTableModel_Columns_Name");
         case 2:
-            if (Utilities.modulesOnly ()) {
-                return getBundle ("InstalledTableModel_Columns_Category");            
-            } else {
-                return getBundle ("InstalledTableModel_Columns_Enabled");                        
-            }
+            return getBundle("InstalledTableModel_Columns_Category");
         case 3 :
             return getBundle ("InstalledTableModel_Columns_Enabled");                        
         case 4 :
@@ -173,7 +165,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
         case 1:
             return super.getMinWidth(header, col)*4;
         case 2:
-            return (Utilities.modulesOnly ()) ? super.getMinWidth(header, col)*2 : super.getMinWidth(header, col);
+            return super.getMinWidth(header, col)*2;
         }
         return super.getMinWidth(header, col);
     }
@@ -198,11 +190,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
                 } else if (getColumnName(1).equals(columnIdentifier)) {
                     return Unit.compareDisplayNames(unit1, unit2);
                 } else if (getColumnName(2).equals(columnIdentifier)) {
-                    if (Utilities.modulesOnly ()) {
-                        return Unit.compareCategories(unit1, unit2);
-                    } else {
-                        return Unit.Installed.compareEnabledState(unit1, unit2);
-                    }
+                    return Unit.compareCategories(unit1, unit2);
                 } else if (getColumnName(3).equals(columnIdentifier)) {
                     return Unit.Installed.compareEnabledState(unit1, unit2);
                 } else if (getColumnName(4).equals(columnIdentifier)) {

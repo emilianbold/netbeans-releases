@@ -4,6 +4,7 @@ OpenIDE-Module-Layer: org/netbeans/modules/vmd/midp/converter/resources/layer.xm
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/vmd/midp/converter/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/vmd/midp/converter/io/MVDDataLoader.class
 OpenIDE-Module-Class: Loader

@@ -3,6 +3,7 @@ OpenIDE-Module: org.netbeans.modules.html/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/html/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/html/mf-layer.xml
 OpenIDE-Module-Specification-Version: 1.21
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/html/HtmlLoader.class
 OpenIDE-Module-Class: Loader

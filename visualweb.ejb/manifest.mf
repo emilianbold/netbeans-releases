@@ -4,4 +4,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/ejb/Bundle.prop
 OpenIDE-Module-Specification-Version: 2.0
 OpenIDE-Module-Layer: org/netbeans/modules/visualweb/ejb/mf-layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/visualweb/ejb/EjbDataSourceModuleInstaller.class
-
+AutoUpdate-Show-In-Client: false

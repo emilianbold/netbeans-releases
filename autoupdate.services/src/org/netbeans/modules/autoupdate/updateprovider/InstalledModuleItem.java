@@ -19,8 +19,9 @@
 
 package org.netbeans.modules.autoupdate.updateprovider;
 
+import org.netbeans.Module;
 import org.netbeans.modules.autoupdate.services.UpdateItemDeploymentImpl;
-import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
+import org.netbeans.modules.autoupdate.services.Utilities;
 import org.openide.modules.ModuleInfo;
 
 /**
@@ -32,6 +33,7 @@ public class InstalledModuleItem extends ModuleItem {
     private String codeName;
     private String specificationVersion;
     private ModuleInfo info;
+    private Module m;
     private String author;
     private String source;
     private String installCluster;
@@ -100,4 +102,20 @@ public class InstalledModuleItem extends ModuleItem {
         return null;
     }
     
+    @Override
+    public boolean isAutoload () {
+        return getModule () != null && getModule ().isAutoload ();
+    }
+
+    @Override
+    public boolean isEager () {
+        return getModule () != null && getModule ().isEager ();
+    }
+    
+    private Module getModule () {
+        if (m == null) {
+            m = Utilities.toModule (info);
+        }
+        return m;
+    }
 }

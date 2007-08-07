@@ -4,4 +4,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/progress/module/resources/Bundle.
 OpenIDE-Module-Layer: org/netbeans/progress/module/resources/layer.xml
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Recommends: org.netbeans.progress.spi.ProgressUIWorkerProvider
+AutoUpdate-Essential-Module: true
 

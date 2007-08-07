@@ -32,7 +32,6 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
-import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 
 /**
@@ -47,6 +46,7 @@ abstract class OperationValidator {
     private final static OperationValidator FOR_DISABLE = new DisableValidator();
     private final static OperationValidator FOR_CUSTOM_INSTALL = new CustomInstallValidator();
     private static final Logger LOGGER = Logger.getLogger ("org.netbeans.modules.autoupdate.services.OperationValidator");    
+    
     /** Creates a new instance of OperationValidator */
     private OperationValidator() {}
     static boolean isValidOperation(OperationContainerImpl.OperationType type, UpdateUnit updateUnit, UpdateElement updateElement) {
@@ -126,6 +126,7 @@ abstract class OperationValidator {
         private boolean isValidOperationImpl (UpdateElementImpl impl) {
             boolean res = false;
             switch (impl.getType ()) {
+            case KIT_MODULE :
             case MODULE :
                 Module m =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
                 res = ModuleDeleterImpl.getInstance ().canDelete (m);
@@ -155,73 +156,64 @@ abstract class OperationValidator {
                 if (m == null) {
                     continue;
                 }
-                if (m.isEnabled ()) {
-                    modules.add(m);
+                if (! m.isFixed ()) {
+                    modules.add (m);
                 }
                 if (mm == null) {
                     mm = m.getManager();
                 }
             }
-            List<UpdateElement> retval = new ArrayList<UpdateElement>();
+            Set<UpdateElement> retval = new HashSet<UpdateElement>();
             if (mm != null) {
-                List<Module> toUninstall = requiredForUninstall (new ArrayList<Module> (), modules, mm.getEnabledModules (), mm);
+                Set<Module> toUninstall = requiredForUninstall (new HashSet<Module> (), new LinkedHashSet<Module> (modules), mm);
+                toUninstall.removeAll (modules);
                 for (Module module : toUninstall) {
-                    if (!modules.contains (module) && ! module.isFixed ()) {
-                        // XXX: breaks detail level features/modules
-                        retval.add (Utilities.toUpdateUnit (module).getInstalled ());
-                    }
-                }
-            }
-            // XXX: do transform to feature if possible
-            return retval;
-        }
-        
-        private static List<Module> requiredForUninstall(List<Module> resultToUninstall, final Set<Module> requestedToUninstall, final Set<Module> stillEnabled, ModuleManager mm) {
-            resultToUninstall.addAll(requestedToUninstall);            
-            stillEnabled.removeAll(resultToUninstall);
-            Set<Module> dependenciesToUninstall = new HashSet<Module>();
-            for (Module m : requestedToUninstall) {
-                for (Module other: stillEnabled) {
-                    Dependency[] dependencies = other.getDependenciesArray();
-                    boolean added = false;
-                    for (int i = 0; !added && i < dependencies.length; i++) {
-                        Dependency dep = dependencies[i];
-                        if (dep.getType() == Dependency.TYPE_MODULE) {
-                            if (dep.getName().equals(m.getCodeName())) {
-                                added = true;
-                                dependenciesToUninstall.add(other);
-                                continue;
-                            }
-                        } else if (
-                                dep.getType() == Dependency.TYPE_REQUIRES ||
-                                dep.getType() == Dependency.TYPE_NEEDS ||
-                                dep.getType() == Dependency.TYPE_RECOMMENDS
-                                ) {
-                            if (m.provides(dep.getName())) {
-                                boolean foundOne = false;
-                                for (Module third: mm.getEnabledModules()) {
-                                    if (third.isEnabled() &&
-                                            !resultToUninstall.contains(third) && !dependenciesToUninstall.contains(third) &&
-                                            third.provides(dep.getName())) {
-                                        foundOne = true;
-                                        break;
-                                    }
-                                }
-                                if (!foundOne) {
-                                    // Nope, we were the only/last one to provide it.
-                                    added = true;
-                                    dependenciesToUninstall.add(other);
-                                    continue;
-                                }                                    
-                            }
+                    if (! module.isFixed ()) { // XXX: check essential modules
+                        // !!! e.g. applemodule can be found in the list for uninstall but has UpdateUnit nowhere else MacXOS
+                        UpdateUnit unit = Utilities.toUpdateUnit (module);
+                        if (unit != null) {
+                            retval.add (unit.getInstalled ());
                         }
                     }
                 }
             }
-                
-            if (dependenciesToUninstall.size() > 0) {                    
-                requiredForUninstall(resultToUninstall, dependenciesToUninstall, stillEnabled, mm);
+            return new ArrayList<UpdateElement> (retval);
+        }
+        
+        private static Set<Module> requiredForUninstall (Set<Module> resultToUninstall, final Set<Module> requestedToUninstall, ModuleManager mm) {
+            resultToUninstall.addAll (requestedToUninstall);            
+            
+            // loop over all dependencies and add as many as possible for KIT_MODULE
+            // do traversal down
+            Set<Module> candidatesToUninstall = new HashSet<Module> ();
+            for (Module m : requestedToUninstall) {
+                if (Utilities.isKitModule (m)) {
+                    candidatesToUninstall.addAll (Utilities.findRequiredModules (m, mm, true));
+                    LOGGER.log (Level.FINE, "Inspect modules this module depends upon for KIT_MODULE " +
+                            m.getCodeNameBase () + ". The modules has added " + candidatesToUninstall.size ());
+                }
             }
+            requestedToUninstall.addAll (candidatesToUninstall);
+            for (Module depM : candidatesToUninstall) {
+                Set<Module> depends = Utilities.findDependingModules (depM, mm);
+                if (! requestedToUninstall.containsAll (depends)) {
+                    LOGGER.log (Level.FINE, "The module " + depM + " is shared and cannot be uninstalled now.");
+                    requestedToUninstall.remove (depM);
+                } else {
+                    LOGGER.log (Level.FINEST, "The module " + depM + " is not needed anymore and can be uninstalled.");
+                }
+            }
+            
+            // do traversal up
+            Set<Module> dependenciesToUninstall = new HashSet<Module> ();
+            for (Module m : resultToUninstall) {
+                dependenciesToUninstall.addAll (Utilities.findDependingModules (m, mm));
+                LOGGER.log (Level.FINE, "Inspect modules depending on this module " +
+                        m.getCodeNameBase () + ". The modules has added " + dependenciesToUninstall.size ());
+            }
+                
+            resultToUninstall.addAll (requestedToUninstall);
+            resultToUninstall.addAll (dependenciesToUninstall);
             return resultToUninstall;
         }        
     }
@@ -248,6 +240,7 @@ abstract class OperationValidator {
         private boolean isValidOperationImpl (UpdateElementImpl impl) {
             boolean res = false;
             switch (impl.getType ()) {
+            case KIT_MODULE :
             case MODULE :
                 Module module =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
                 res = Utilities.canEnable (module);
@@ -301,6 +294,7 @@ abstract class OperationValidator {
         private boolean isValidOperationImpl (UpdateElementImpl impl) {
             boolean res = false;
             switch (impl.getType ()) {
+            case KIT_MODULE :
             case MODULE :
                 Module module =  Utilities.toModule (((ModuleUpdateElementImpl) impl).getModuleInfo ());
                 res = Utilities.canDisable (module);
@@ -333,16 +327,50 @@ abstract class OperationValidator {
                     mm = m.getManager();
                 }
             }
-            List<UpdateElement> retval = new ArrayList<UpdateElement>();
-            if (mm != null) {
-                List<Module> toDisable = mm.simulateDisable(modules);
-                for (Module module : toDisable) {
-                    if (!modules.contains(module) && Utilities.canDisable (module)) {
-                        retval.add(Utilities.toUpdateUnit(module).getInstalled());
+            
+            if (mm == null) {
+                LOGGER.log (Level.WARNING, "No modules can be disabled when disabling UpdateElement " + uElement);
+                return Collections.emptyList ();
+            } 
+            
+            Set<UpdateElement> retval = new HashSet<UpdateElement> ();
+            
+            // loop over all dependencies and add as many as possible for KIT_MODULE
+            // do traversal down
+            Set<Module> requestedToDisable = new HashSet<Module> (modules);
+            Set<Module> candidatesToDisable = new HashSet<Module> ();
+            for (Module m : requestedToDisable) {
+                if (Utilities.isKitModule (m)) {
+                    candidatesToDisable.addAll (Utilities.findRequiredModules (m, mm, true));
+                    LOGGER.log (Level.FINE, "Inspect modules this module depends upon for KIT_MODULE " +
+                            m.getCodeNameBase () + ". The modules has added " + candidatesToDisable.size ());
+                }
+            }
+            
+            requestedToDisable.addAll (candidatesToDisable);
+            for (Module depM : candidatesToDisable) {
+                Set<Module> depends = Utilities.findDependingModules (depM, mm);
+                if (! requestedToDisable.containsAll (depends)) {
+                    LOGGER.log (Level.FINE, "The module " + depM + " is shared and cannot be disabled now.");
+                    requestedToDisable.remove (depM);
+                } else {
+                    LOGGER.log (Level.FINEST, "The module " + depM + " is not needed anymore and can be disabled.");
+                }
+            }
+            
+            List<Module> toDisable = mm.simulateDisable (modules);
+            requestedToDisable.addAll (toDisable);
+            for (Module module : requestedToDisable) {
+                if (! modules.contains (module) && Utilities.canDisable (module)) {
+                    // !!! e.g. applemodule can be found in the list for uninstall but has UpdateUnit nowhere else MacXOS
+                    UpdateUnit unit = Utilities.toUpdateUnit (module);
+                    if (unit != null) {
+                        retval.add (unit.getInstalled ());
                     }
                 }
             }
-            return retval;
+            
+            return new ArrayList<UpdateElement> (retval);
         }
     }
     

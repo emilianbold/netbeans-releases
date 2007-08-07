@@ -5,4 +5,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/httpserver/Bundle.propert
 OpenIDE-Module-Install: org/netbeans/modules/httpserver/HttpServerModule.class
 OpenIDE-Module-Layer: org/netbeans/modules/httpserver/layer.xml
 OpenIDE-Module-Provides: org.openide.util.HttpServer$Impl
+AutoUpdate-Show-In-Client: false
 

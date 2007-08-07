@@ -5,3 +5,4 @@ OpenIDE-Module-Implementation-Version: 5
 OpenIDE-Module-Layer: org/netbeans/modules/db/resources/mf-layer.xml
 OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/db/resources/Bundle.properties
+AutoUpdate-Show-In-Client: false

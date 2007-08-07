@@ -20,10 +20,13 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import org.netbeans.api.autoupdate.*;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
+import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import org.openide.modules.ModuleInfo;
 
 /**
@@ -62,6 +65,7 @@ public final class OperationContainerImpl<Support> {
     public static OperationContainerImpl<OperationSupport> createForUninstallNativeComponent () {
         return new OperationContainerImpl<OperationSupport> (OperationType.CUSTOM_INSTALL);
     }
+    @SuppressWarnings("unchecked")
     public OperationInfo<Support> add (UpdateUnit updateUnit, UpdateElement updateElement) throws IllegalArgumentException {
         OperationInfo<Support> retval = null;
         boolean isValid = isValid (updateUnit, updateElement);
@@ -124,7 +128,7 @@ public final class OperationContainerImpl<Support> {
     }
     
     private boolean contains (UpdateUnit unit, UpdateElement element) {
-        List<OperationInfo<Support>> infos = listAll ();
+        List<OperationInfo<Support>> infos = operations;
         for (OperationInfo info : infos) {
             if (info.getUpdateElement ().equals (element) ||
                     info.getUpdateUnit ().equals (unit)) {
@@ -135,6 +139,29 @@ public final class OperationContainerImpl<Support> {
     }
     
     public List<OperationInfo<Support>> listAll () {
+        return new ArrayList<OperationInfo<Support>>(operations);
+    }
+    
+    public List<OperationInfo<Support>> listAllWithPossibleEager () {
+        // handle eager modules
+        if (type == OperationType.INSTALL) {
+            Collection<UpdateElement> all = new HashSet<UpdateElement> ();
+            for (OperationInfo<?> i : operations) {
+                all.add (i.getUpdateElement ());
+            }
+            for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getAvailableEagers ()) {
+                UpdateElementImpl impl = Trampoline.API.impl (eagerEl);
+                assert impl instanceof ModuleUpdateElementImpl : eagerEl + " must instanceof ModuleUpdateElementImpl";
+                ModuleUpdateElementImpl eagerImpl = (ModuleUpdateElementImpl) impl;
+                ModuleInfo mi = eagerImpl.getModuleInfo ();
+                
+                Set<ModuleInfo> installed = new HashSet<ModuleInfo> (InstalledModuleProvider.getInstalledModules ().values ());
+                Set<UpdateElement> reqs = Utilities.findRequiredModules (mi.getDependencies (), installed);
+                if (! reqs.isEmpty() && all.containsAll (reqs) && ! all.contains (eagerEl)) {
+                    add (eagerEl.getUpdateUnit (), eagerEl);
+                }
+            }
+        }
         return new ArrayList<OperationInfo<Support>>(operations);
     }
     

@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
@@ -43,6 +45,8 @@ public abstract class OperationSupportImpl {
     private static final OperationSupportImpl FOR_DISABLE = new ForDisable();
     private static final OperationSupportImpl FOR_UNINSTALL = new ForUninstall();
     private static final OperationSupportImpl FOR_CUSTOM_INSTALL = new ForCustomInstall ();
+    
+    private static final Logger LOGGER = Logger.getLogger ("org.netbeans.modules.autoupdate.services.OperationSupportImpl");
     
     public static OperationSupportImpl forInstall() {
         return FOR_INSTALL;
@@ -90,6 +94,7 @@ public abstract class OperationSupportImpl {
                     Module m = Utilities.toModule (info);
                     if (Utilities.canEnable (m)) {
                         modules.add(m);
+                        LOGGER.log (Level.FINE, "Module will be enabled " + m.getCodeNameBase ());
                     }
                     if (mm == null) {
                         mm = m.getManager();
@@ -140,6 +145,7 @@ public abstract class OperationSupportImpl {
                     Module m = Utilities.toModule (info);
                     if (Utilities.canDisable (m)) {
                         modules.add(m);
+                        LOGGER.log (Level.FINE, "Module will be disabled " + m.getCodeNameBase ());
                     }
                     if (mm == null) {
                         mm = m.getManager();
@@ -175,6 +181,7 @@ public abstract class OperationSupportImpl {
                     UpdateElement updateElement = operationInfo.getUpdateElement ();
                     UpdateElementImpl updateElementImpl = Trampoline.API.impl (updateElement);
                     switch (updateElementImpl.getType ()) {
+                    case KIT_MODULE :    
                     case MODULE :
                         moduleInfos.add (((ModuleUpdateElementImpl) updateElementImpl).getModuleInfo ());
                         affectedModules.add (updateElementImpl.getUpdateUnit ());
@@ -201,11 +208,13 @@ public abstract class OperationSupportImpl {
                 
                 for (UpdateUnit unit : affectedModules) {
                     assert unit.getInstalled () != null : "Module " + unit + " is installed while doing uninstall.";
+                    LOGGER.log (Level.FINE, "Module was uninstalled " + unit.getCodeName ());
                     UpdateUnitImpl impl = Trampoline.API.impl (unit);
                     impl.setAsUninstalled();
                 }
                 for (UpdateUnit unit : affectedFeatures) {
                     assert unit.getInstalled () != null : "Feature " + unit + " is installed while doing uninstall.";
+                    LOGGER.log (Level.FINE, "Feature was uninstalled " + unit.getCodeName ());
                     UpdateUnitImpl impl = Trampoline.API.impl (unit);
                     impl.setAsUninstalled();
                 }

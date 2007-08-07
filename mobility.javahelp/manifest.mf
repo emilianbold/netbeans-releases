@@ -4,4 +4,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/mobility/javahelp/Bundle.
 OpenIDE-Module-Layer: org/netbeans/modules/mobility/javahelp/layer.xml
 OpenIDE-Module-Specification-Version: 1.2.0
 Class-Path: docs/org-netbeans-modules-mobility-javahelp.jar
+AutoUpdate-Show-In-Client: false
 

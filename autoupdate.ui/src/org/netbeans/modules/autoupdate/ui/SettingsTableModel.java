@@ -70,7 +70,7 @@ public class SettingsTableModel extends AbstractTableModel {
         
     void refreshModel () {
         Set<String> oldValue = originalProviders;
-        originalProviders = new HashSet<String> ();
+        Set<String> newValue = new HashSet<String> ();
         final List<UpdateUnitProvider> forRefresh = new ArrayList<UpdateUnitProvider> ();
         List<UpdateUnitProvider> providers = UpdateUnitProviderFactory.getDefault ().getUpdateUnitProviders (false);
         for (UpdateUnitProvider p : providers) {
@@ -80,17 +80,36 @@ public class SettingsTableModel extends AbstractTableModel {
                     forRefresh.add (p);
                 }
             }
-            originalProviders.add (p.getName ());
+            newValue.add (p.getName ());
         }
         if (! forRefresh.isEmpty ()) {
-            RequestProcessor.getDefault ().post (new Runnable () {
+            getPluginManager ().setWaitingState (true);
+            Utilities.startAsWorkerThread (new Runnable () {
                 public void run () {
-                    Utilities.presentRefreshProviders (forRefresh, getPluginManager (), true);
-                    getPluginManager ().updateUnitsChanged ();
+                    try {
+                        Utilities.doRefreshProviders (forRefresh, getPluginManager (), true);
+                        getPluginManager ().updateUnitsChanged ();
+                    } finally {
+                        getPluginManager ().setWaitingState (false);
+                    }
+                }
+            });
+        }
+        // check removed providers
+        if (oldValue != null && ! oldValue.isEmpty () && ! newValue.containsAll (oldValue)) {
+            getPluginManager ().setWaitingState (true);
+            Utilities.startAsWorkerThread (new Runnable () {
+                public void run () {
+                    try {
+                        getPluginManager ().updateUnitsChanged ();
+                    } finally {
+                        getPluginManager ().setWaitingState (false);
+                    }
                 }
             });
         }
         updateProviders = new ArrayList<UpdateUnitProvider> (providers);
+        originalProviders = newValue;
         sortAlphabetically (updateProviders);
         fireTableDataChanged ();
     }
@@ -106,14 +125,6 @@ public class SettingsTableModel extends AbstractTableModel {
     public void add (String name, String displayName, URL url, boolean state) {
         final UpdateUnitProvider uup = UpdateUnitProviderFactory.getDefault ().create (name, displayName, url);
         uup.setEnable (state);
-        if (state) {
-            RequestProcessor.getDefault ().post (new Runnable () {
-                public void run () {
-                    Utilities.presentRefreshProvider (uup, getPluginManager (), true);
-                    getPluginManager ().updateUnitsChanged ();
-                }
-            });
-        }
     }
     
     public UpdateUnitProvider getUpdateUnitProvider (int rowIndex) {
@@ -146,15 +157,29 @@ public class SettingsTableModel extends AbstractTableModel {
                     RequestProcessor.getDefault ().post (new Runnable () {
                         public void run () {
                             // was enabled and won't be more -> remove it from model
-                            getPluginManager ().updateUnitsChanged ();
+                            getPluginManager ().setWaitingState (true);
+                            Utilities.startAsWorkerThread (new Runnable () {
+                                public void run () {
+                                    try {
+                                        getPluginManager ().updateUnitsChanged ();
+                                    } finally {
+                                        getPluginManager ().setWaitingState (false);
+                                    }
+                                }
+                            });
                         }
                     });
                 } else {
                     // was enabled and won't be more -> add it from model and read its content
-                    RequestProcessor.getDefault ().post (new Runnable () {
+                    getPluginManager ().setWaitingState (true);
+                    Utilities.startAsWorkerThread (new Runnable () {
                         public void run () {
-                            Utilities.presentRefreshProvider (unitProvider, getPluginManager (), false);
-                            getPluginManager ().updateUnitsChanged ();
+                            try {
+                                Utilities.doRefreshProviders (Collections.singleton (unitProvider), getPluginManager (), false);
+                                getPluginManager ().updateUnitsChanged ();
+                            } finally {
+                                getPluginManager ().setWaitingState (false);
+                            }
                         }
                     });
                 }

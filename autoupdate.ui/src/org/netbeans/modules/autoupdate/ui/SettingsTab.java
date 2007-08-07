@@ -27,6 +27,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -90,8 +91,8 @@ public class SettingsTab extends javax.swing.JPanel {
             getMessage("CTL_Update_never")
         }));
         cbCheckPeriod.setSelectedIndex (getAutoUpdatePeriod ());
-        cbModules.setSelected(Utilities.modulesOnly());
-        cbPlugins.setSelected(!Utilities.modulesOnly());
+        //cbModules.setSelected(Utilities.modulesOnly());
+        //cbPlugins.setSelected(!Utilities.modulesOnly());
         cbGlobalInstall.setSelected(Utilities.isGlobalInstallation());
         getSettingsTableModel ().setPluginManager (manager);
         TableColumn activeColumn = table.getColumnModel ().getColumn (0);
@@ -162,9 +163,6 @@ public class SettingsTab extends javax.swing.JPanel {
         cbCheckPeriod = new javax.swing.JComboBox();
         bProxy = new javax.swing.JButton();
         lGeneral = new javax.swing.JLabel();
-        lPluginsView = new javax.swing.JLabel();
-        cbPlugins = new javax.swing.JRadioButton();
-        cbModules = new javax.swing.JRadioButton();
         cbGlobalInstall = new javax.swing.JCheckBox();
         jSeparatorAdvanced = new javax.swing.JSeparator();
 
@@ -198,26 +196,6 @@ public class SettingsTab extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lGeneral, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lGeneral.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lPluginsView, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.lPluginsView.text")); // NOI18N
-
-        pluginsViewGroup.add(cbPlugins);
-        org.openide.awt.Mnemonics.setLocalizedText(cbPlugins, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbPlugins.text")); // NOI18N
-        cbPlugins.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbPlugins.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbPluginsActionPerformed(evt);
-            }
-        });
-
-        pluginsViewGroup.add(cbModules);
-        org.openide.awt.Mnemonics.setLocalizedText(cbModules, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbModules.text")); // NOI18N
-        cbModules.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        cbModules.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbModulesActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(cbGlobalInstall, org.openide.util.NbBundle.getMessage(SettingsTab.class, "SettingsTab.cbSharedInstall.text")); // NOI18N
         cbGlobalInstall.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         cbGlobalInstall.addActionListener(new java.awt.event.ActionListener() {
@@ -233,9 +211,6 @@ public class SettingsTab extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(24, 24, 24)
-                        .add(cbGlobalInstall))
-                    .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(addButton)
@@ -246,14 +221,9 @@ public class SettingsTab extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(12, 12, 12)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(lPluginsView)
-                                    .add(lCheckPeriod))
+                                .add(lCheckPeriod)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(cbPlugins, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                    .add(cbModules)
-                                    .add(cbCheckPeriod, 0, 290, Short.MAX_VALUE))
+                                .add(cbCheckPeriod, 0, 290, Short.MAX_VALUE)
                                 .add(58, 58, 58)
                                 .add(bProxy))
                             .add(layout.createSequentialGroup()
@@ -266,7 +236,10 @@ public class SettingsTab extends javax.swing.JPanel {
                                 .add(jSeparatorConnection, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE))))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(lUpdateCenters)))
+                        .add(lUpdateCenters))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(cbGlobalInstall)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -292,14 +265,7 @@ public class SettingsTab extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(lGeneral, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 15, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jSeparatorAdvanced, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lPluginsView)
-                    .add(layout.createSequentialGroup()
-                        .add(cbPlugins)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbModules)))
-                .add(21, 21, 21)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(cbGlobalInstall)
                 .addContainerGap())
         );
@@ -312,25 +278,6 @@ public class SettingsTab extends javax.swing.JPanel {
 private void cbCheckPeriodActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbCheckPeriodActionPerformed
     setAutoUpdatePeriod (cbCheckPeriod.getSelectedIndex ());
 }//GEN-LAST:event_cbCheckPeriodActionPerformed
-
-private void cbModulesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbModulesActionPerformed
-    cbPluginsActionPerformed(evt);
-}//GEN-LAST:event_cbModulesActionPerformed
-
-    private void cbPluginsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbPluginsActionPerformed
-    if (Utilities.modulesOnly() != cbModules.isSelected()) {
-        setWaitingState(true);
-        Utilities.setModulesOnly(cbModules.isSelected());
-        Utilities.startAsWorkerThread(getSettingsTableModel().getPluginManager(), new Runnable() {
-            public void run() {
-                Utilities.presentRefreshProviders(getSettingsTableModel().getPluginManager(), false);
-                getSettingsTableModel().getPluginManager().tableStructureChanged();
-                getSettingsTableModel().getPluginManager().updateUnitsChanged();
-                setWaitingState(false);
-            }
-        }, NbBundle.getMessage (SettingsTab.class, "SettingsTab_ChangingView"));
-    }
-}//GEN-LAST:event_cbPluginsActionPerformed
     
 private void bProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bProxyActionPerformed
     OptionsDisplayer.getDefault ().open ("General"); //NOI18N
@@ -405,16 +352,31 @@ private class Listener implements ListSelectionListener,  TableModelListener {
             provider.setEnable (panel.isActive ());
             if (oldValue && ! forceRead) {
                 // was enabled and won't be more -> remove it from model
-                getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
+                getSettingsTableModel ().getPluginManager ().setWaitingState (true);
+                Utilities.startAsWorkerThread (new Runnable () {
+                    public void run () {
+                        try {
+                            getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
+                        } finally {
+                            getSettingsTableModel ().getPluginManager ().setWaitingState (false);
+                        }
+                    }
+                });
             } else {
                 // was enabled and won't be more -> add it from model and read its content
                 final boolean force = forceRead;
-                RequestProcessor.getDefault ().post (new Runnable () {
-                    public void run () {
-                        Utilities.presentRefreshProvider (provider, getSettingsTableModel ().getPluginManager (), force);
-                        getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
-                    }
-                });
+                    // was enabled and won't be more -> add it from model and read its content
+                    getSettingsTableModel ().getPluginManager ().setWaitingState (true);
+                    Utilities.startAsWorkerThread (getSettingsTableModel ().getPluginManager (), new Runnable () {
+                        public void run () {
+                            try {
+                                Utilities.doRefreshProviders (Collections.singleton (provider), getSettingsTableModel ().getPluginManager (), force);
+                                getSettingsTableModel ().getPluginManager ().updateUnitsChanged ();
+                            } finally {
+                                getSettingsTableModel ().getPluginManager ().setWaitingState (false);
+                            }
+                        }
+                    }, NbBundle.getMessage (SettingsTableModel.class,  ("UnitTab_CheckingForUpdates")));
             }
         }
     }
@@ -448,7 +410,7 @@ private class Listener implements ListSelectionListener,  TableModelListener {
                 panel.getOKButton().addActionListener(new ActionListener(){
                     public void actionPerformed(ActionEvent arg0) {
                         setData(provider, panel);
-                        getSettingsTableModel().refreshModel();
+                        //getSettingsTableModel().refreshModel();
                         table.getSelectionModel().setSelectionInterval(rowIndex, rowIndex);
                         
                     }
@@ -589,14 +551,11 @@ private class Listener implements ListSelectionListener,  TableModelListener {
     private javax.swing.JButton bProxy;
     private javax.swing.JComboBox cbCheckPeriod;
     private javax.swing.JCheckBox cbGlobalInstall;
-    private javax.swing.JRadioButton cbModules;
-    private javax.swing.JRadioButton cbPlugins;
     private javax.swing.JSeparator jSeparatorAdvanced;
     private javax.swing.JSeparator jSeparatorConnection;
     private javax.swing.JLabel lCheckPeriod;
     private javax.swing.JLabel lConnection;
     private javax.swing.JLabel lGeneral;
-    private javax.swing.JLabel lPluginsView;
     private javax.swing.JLabel lUpdateCenters;
     private javax.swing.ButtonGroup pluginsViewGroup;
     private javax.swing.JSplitPane spTab;

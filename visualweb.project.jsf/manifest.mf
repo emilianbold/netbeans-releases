@@ -4,4 +4,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/project/jsf/res
 OpenIDE-Module-Implementation-Version: 1
 OpenIDE-Module-Layer: org/netbeans/modules/visualweb/project/jsf/resources/layer.xml
 OpenIDE-Module-Needs: javax.script.ScriptEngine.freemarker
-
+AutoUpdate-Show-In-Client: false

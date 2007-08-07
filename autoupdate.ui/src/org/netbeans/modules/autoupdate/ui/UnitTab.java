@@ -697,7 +697,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         public String getActionCategory () {
-            return (Utilities.modulesOnly ()) ? getActionCategoryImpl () : "";//NOI18N
+            return getActionCategoryImpl ();//NOI18N
         }
         
         protected String getActionCategoryImpl () {
@@ -981,14 +981,12 @@ public class UnitTab extends javax.swing.JPanel {
         }
         protected boolean isEnabled (Unit u) {
             boolean retval = false;
-            if (Utilities.modulesOnly ()) {
-                String category = u.getCategoryName ();
-                List<Unit> units = model.getUnits ();
-                for (Unit unit : units) {
-                    if (unit != null && category.equals (unit.getCategoryName ()) && !unit.isMarked ()) {
-                        retval = true;
-                        break;
-                    }
+            String category = u.getCategoryName();
+            List<Unit> units = model.getUnits();
+            for (Unit unit : units) {
+                if (unit != null && category.equals(unit.getCategoryName()) && !unit.isMarked()) {
+                    retval = true;
+                    break;
                 }
             }
             return retval;
@@ -1012,10 +1010,7 @@ public class UnitTab extends javax.swing.JPanel {
                 
         @Override
         protected boolean isVisible (Unit u) {
-            if (Utilities.modulesOnly ()) {
-                return super.isVisible (u);
-            }
-            return false;
+              return super.isVisible (u);
         }
     }
     
@@ -1071,15 +1066,13 @@ public class UnitTab extends javax.swing.JPanel {
         protected boolean isEnabled (Unit uu) {
             boolean retval = false;
             
-            if (Utilities.modulesOnly ()) {
-                String category = uu.getCategoryName ();
-                List<Unit> units = model.getUnits ();
-                for (Unit u : units) {
-                    if ((u != null) && (u instanceof Unit.Installed) && category.equals (u.getCategoryName ())) {
-                        Unit.Installed installed = (Unit.Installed)u;
-                        if (!installed.getRelevantElement ().isEnabled ()) {
-                            retval = Unit.Installed.isOperationAllowed (installed.updateUnit, installed.getRelevantElement (), Containers.forEnable ());
-                        }
+            String category = uu.getCategoryName();
+            List<Unit> units = model.getUnits();
+            for (Unit u : units) {
+                if ((u != null) && (u instanceof Unit.Installed) && category.equals(u.getCategoryName())) {
+                    Unit.Installed installed = (Unit.Installed) u;
+                    if (!installed.getRelevantElement().isEnabled()) {
+                        retval = Unit.Installed.isOperationAllowed(installed.updateUnit, installed.getRelevantElement(), Containers.forEnable());
                     }
                 }
             }
@@ -1121,10 +1114,7 @@ public class UnitTab extends javax.swing.JPanel {
                 
         @Override
         protected boolean isVisible (Unit u) {
-            if (Utilities.modulesOnly ()) {
-                return  isEnabled ();
-            }
-            return false;
+            return isEnabled();
         }
     }
     
@@ -1181,15 +1171,13 @@ public class UnitTab extends javax.swing.JPanel {
         protected boolean isEnabled (Unit uu) {
             boolean retval = false;
             
-            if (Utilities.modulesOnly ()) {
-                String category = uu.getCategoryName ();
-                List<Unit> units = model.getUnits ();
-                for (Unit u : units) {
-                    if ((u != null) && (u instanceof Unit.Installed) && category.equals (u.getCategoryName ())) {
-                        Unit.Installed installed = (Unit.Installed)u;
-                        if (installed.getRelevantElement ().isEnabled ()) {
-                            retval = Unit.Installed.isOperationAllowed (installed.updateUnit, installed.getRelevantElement (), Containers.forDisable ());
-                        }
+            String category = uu.getCategoryName();
+            List<Unit> units = model.getUnits();
+            for (Unit u : units) {
+                if ((u != null) && (u instanceof Unit.Installed) && category.equals(u.getCategoryName())) {
+                    Unit.Installed installed = (Unit.Installed) u;
+                    if (installed.getRelevantElement().isEnabled()) {
+                        retval = Unit.Installed.isOperationAllowed(installed.updateUnit, installed.getRelevantElement(), Containers.forDisable());
                     }
                 }
             }
@@ -1230,10 +1218,7 @@ public class UnitTab extends javax.swing.JPanel {
         }
         @Override
         protected boolean isVisible (Unit u) {
-            if (Utilities.modulesOnly ()) {
-                return  isEnabled ();
-            }
-            return false;
+            return isEnabled();
         }
     }
     
@@ -1245,14 +1230,12 @@ public class UnitTab extends javax.swing.JPanel {
         protected boolean isEnabled (Unit u) {
             boolean retval = false;
             
-            if (Utilities.modulesOnly ()) {
-                String category = u.getCategoryName ();
-                List<Unit> units = model.getUnits ();
-                for (Unit uu : units) {
-                    if (uu != null && category.equals (uu.getCategoryName ()) && uu.isMarked ()) {
-                        retval = true;
-                        break;
-                    }
+            String category = u.getCategoryName();
+            List<Unit> units = model.getUnits();
+            for (Unit uu : units) {
+                if (uu != null && category.equals(uu.getCategoryName()) && uu.isMarked()) {
+                    retval = true;
+                    break;
                 }
             }
             return retval;
@@ -1277,10 +1260,7 @@ public class UnitTab extends javax.swing.JPanel {
         
         @Override
         protected boolean isVisible (Unit u) {
-            if (Utilities.modulesOnly ()) {
-                return super.isVisible (u);
-            }
-            return false;
+            return super.isVisible(u);
         }
         
         protected String getContextName (Unit u) {

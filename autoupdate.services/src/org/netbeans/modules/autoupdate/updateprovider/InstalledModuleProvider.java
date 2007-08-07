@@ -93,7 +93,7 @@ public class InstalledModuleProvider implements InstalledUpdateProvider {
         Map<String, UpdateItem> res = new HashMap<String, UpdateItem> ();
         for (ModuleInfo info : getModuleInfos (true).values ()) {
             SimpleItem simpleItem = new SimpleItem.InstalledModule (info);
-            Date time = Utilities.readInstallTimeFromUpdateTracking (info);
+            Date time = null; // XXX: it's too expensive, should be extracted lazy - Utilities.readInstallTimeFromUpdateTracking (info);
             String installTime = null;
             if (time != null) {
                 installTime = Utilities.DATE_FORMAT.format (time);

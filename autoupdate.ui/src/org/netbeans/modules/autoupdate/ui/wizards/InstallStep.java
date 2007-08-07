@@ -272,7 +272,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private void presentInstallDone () {
         component.setHeadAndContent (getBundle (HEAD_INSTALL_DONE), getBundle (CONTENT_INSTALL_DONE));
         model.modifyOptionsForDoClose (wd);
-        panel.setBody (getBundle ("InstallStep_InstallDone_Text"), model.getAllUpdateElements ());
+        panel.setBody (getBundle ("InstallStep_InstallDone_Text"), InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false));
     }
     
     private void presentInstallNeedsRestart (Restarter r) {
@@ -280,7 +280,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         model.modifyOptionsForDoClose (wd);
         restarter = r;
         panel.setRestartButtonsVisible (true);
-        panel.setBody (getBundle ("InstallStep_InstallDone_Text"), model.getAllUpdateElements ());
+        panel.setBody (getBundle ("InstallStep_InstallDone_Text"), InstallUnitWizardModel.getVisibleUpdateElements (model.getAllUpdateElements (), false));
     }
     
     public HelpCtx getHelp() {

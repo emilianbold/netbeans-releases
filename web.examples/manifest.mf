@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.web.examples/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/examples/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.7
 OpenIDE-Module-Layer: org/netbeans/modules/web/examples/mf-layer.xml
+AutoUpdate-Show-In-Client: false
 

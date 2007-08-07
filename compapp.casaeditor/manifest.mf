@@ -3,6 +3,7 @@ OpenIDE-Module: org.netbeans.modules.compapp.casaeditor
 OpenIDE-Module-Layer: org/netbeans/modules/compapp/casaeditor/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/compapp/casaeditor/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
+AutoUpdate-Show-In-Client: false
 
 Name: org/netbeans/modules/compapp/casaeditor/CasaDataLoader.class
 OpenIDE-Module-Class: Loader

@@ -41,6 +41,18 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.ide.kit</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.languages.yaml</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.ruby</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -51,6 +63,26 @@
                     <code-name-base>org.netbeans.modules.ruby.debugger</code-name-base>
                     <run-dependency>
                         <specification-version>0.97</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.ruby.help</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.ruby.hints</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.30</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.ruby.javaint</code-name-base>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.30</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

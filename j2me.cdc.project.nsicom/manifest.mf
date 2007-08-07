@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.j2me.cdc.project.nsicom
 OpenIDE-Module-Layer: org/netbeans/modules/j2me/cdc/project/nsicom/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2me/cdc/project/nsicom/Bundle.properties
 OpenIDE-Module-Specification-Version: 2.0
+AutoUpdate-Show-In-Client: false
 
