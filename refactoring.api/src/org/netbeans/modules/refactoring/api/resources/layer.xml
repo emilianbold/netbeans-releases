@@ -104,10 +104,10 @@ Microsystems, Inc. All Rights Reserved.
 
   <folder name="Window">
      <file name="org-netbeans-modules-refactoring-spi-impl-FindUsagesOpenAction.instance">
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/refactoring/resources/findusages.png"/> 
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/refactoring/api/resources/findusages.png"/> 
      </file>
      <file name="org-netbeans-modules-refactoring-spi-impl-RefactoringPreviewOpenAction.instance">
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/refactoring/resources/refactoringpreview.png"/> 
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/refactoring/api/resources/refactoringpreview.png"/> 
      </file>
    </folder> <!-- Window -->
   </folder>

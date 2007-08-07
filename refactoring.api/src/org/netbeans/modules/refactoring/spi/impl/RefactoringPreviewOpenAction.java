@@ -22,10 +22,7 @@ package org.netbeans.modules.refactoring.spi.impl;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Action which opens the Refactoring Preview window.
@@ -42,7 +39,7 @@ public class RefactoringPreviewOpenAction extends AbstractAction {
                 FindUsagesOpenAction.class,
                 "LBL_RefactoringWindow");                          //NOI18N
         putValue(NAME, name);
-        putValue("iconBase", "org/netbeans/modules/refactoring/resources/refactoringpreview.png"); // NOI18N
+        putValue("iconBase", "org/netbeans/modules/refactoring/api/resources/refactoringpreview.png"); // NOI18N
     }
     
     /**

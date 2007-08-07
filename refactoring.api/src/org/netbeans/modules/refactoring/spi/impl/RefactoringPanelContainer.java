@@ -33,8 +33,8 @@ import org.openide.windows.WindowManager;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
-import org.openide.awt.JPopupMenuPlus;
 import org.openide.util.NbBundle;
 
 /**
@@ -46,13 +46,13 @@ public class RefactoringPanelContainer extends TopComponent {
     private static RefactoringPanelContainer usages = null;
     private static RefactoringPanelContainer refactorings = null;
     private transient boolean isVisible = false;
-    private JPopupMenuPlus pop;
+    private JPopupMenu pop;
     /** Popup menu listener */
     private PopupListener listener;
     private CloseListener closeL;
     private boolean isRefactoring;
-    private static Image REFACTORING_BADGE = Utilities.loadImage( "org/netbeans/modules/refactoring/resources/refactoringpreview.png" ); // NOI18N
-    private static Image USAGES_BADGE = Utilities.loadImage( "org/netbeans/modules/refactoring/resources/findusages.png" ); // NOI18N
+    private static Image REFACTORING_BADGE = Utilities.loadImage( "org/netbeans/modules/refactoring/api/resources/refactoringpreview.png" ); // NOI18N
+    private static Image USAGES_BADGE = Utilities.loadImage( "org/netbeans/modules/refactoring/api/resources/findusages.png" ); // NOI18N
     
     private RefactoringPanelContainer() {
         this("", false);
@@ -66,7 +66,7 @@ public class RefactoringPanelContainer extends TopComponent {
         getAccessibleContext().setAccessibleDescription(
             NbBundle.getMessage(RefactoringPanelContainer.class, "ACSD_usagesPanel")
         );
-        pop = new JPopupMenuPlus();
+        pop = new JPopupMenu();
         pop.add(new Close());
         pop.add(new CloseAll());
         pop.add(new CloseAllButCurrent());
@@ -310,6 +310,7 @@ public class RefactoringPanelContainer extends TopComponent {
         return new HelpCtx(RefactoringPanelContainer.class.getName() + (isRefactoring ? ".refactoring-preview" : ".find-usages") ); //NOI18N
     }
 
+    @Override
     public java.awt.Image getIcon() {
         if (isRefactoring)
             return REFACTORING_BADGE;

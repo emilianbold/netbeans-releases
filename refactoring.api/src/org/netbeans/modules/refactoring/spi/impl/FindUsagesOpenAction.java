@@ -22,10 +22,7 @@ package org.netbeans.modules.refactoring.spi.impl;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Action which opens the Find Usages window.
