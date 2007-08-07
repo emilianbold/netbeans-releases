@@ -42,8 +42,8 @@ public class CssUserAgentInfoImpl implements CssUserAgentInfo {
     public CssUserAgentInfoImpl() {
     }
 
-    public float getBlockWidth(Element element) {
-        Box box = findBoxForElement(element);
+    public float getBlockWidth(Document document, Element element) {
+        Box box = findBoxForDocumentElement(document, element);
         if (box != null) {
             return box.getBlockWidth();
         }
@@ -51,8 +51,8 @@ public class CssUserAgentInfoImpl implements CssUserAgentInfo {
         return 0.0f; // if no available containing block, just use 0
     }
 
-    public float getBlockHeight(Element element) {
-        Box box = findBoxForElement(element);
+    public float getBlockHeight(Document document, Element element) {
+        Box box = findBoxForDocumentElement(document, element);
         if (box != null) {
             return box.getBlockHeight();
         }
@@ -89,15 +89,18 @@ public class CssUserAgentInfoImpl implements CssUserAgentInfo {
         return Util.getHtmlDomFragmentForDocument(document);
     }
     
-    
-    private static Box findBoxForElement(Element element) {
-        Designer[] designers = JsfForm.findDesignersForElement(element);
+
+    // XXX #110849 Be aware that elemnt might be owned by external document (fragments),
+    // not the specified one.
+    private static Box findBoxForDocumentElement(Document document, Element element) {
+        Designer[] designers = JsfForm.findDesignersForDocument(document);
         for (Designer designer : designers) {
             Box box = designer.findBoxForElement(element);
             if (box != null) {
                 return box;
             }
         }
+        
         return null;
     }
     

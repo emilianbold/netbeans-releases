@@ -524,6 +524,22 @@ public class JsfForm {
         return findDesigners(jsfForm);
     }
     
+    static Designer[] findDesignersForDocument(Document document) {
+        MarkupUnit markupUnit = MarkupUnit.getMarkupUnitForDocument(document);
+        if (markupUnit == null) {
+            return new Designer[0];
+        }
+        return findDesignersForFileObject(markupUnit.getFileObject());
+    }
+    
+    private static Designer[] findDesignersForFileObject(FileObject fileObject) {
+        JsfForm jsfForm = findJsfForm(fileObject);
+        if (jsfForm == null) {
+            return new Designer[0];
+        }
+        return findDesigners(jsfForm);
+    }
+    
     static JsfForm findJsfForm(DataObject dataObject) {
         if (dataObject == null) {
             return null;

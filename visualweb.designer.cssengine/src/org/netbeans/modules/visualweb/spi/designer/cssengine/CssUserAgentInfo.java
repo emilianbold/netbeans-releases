@@ -38,8 +38,8 @@ import org.w3c.dom.Element;
  * @author Peter Zavadsky
  */
 public interface CssUserAgentInfo {
-    public float getBlockWidth(Element element);
-    public float getBlockHeight(Element element);
+    public float getBlockWidth(Document document, Element element);
+    public float getBlockHeight(Document document, Element element);
 
     public int getDefaultFontSize();
 

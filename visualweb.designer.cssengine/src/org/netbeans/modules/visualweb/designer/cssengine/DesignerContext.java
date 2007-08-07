@@ -129,7 +129,7 @@ public class DesignerContext implements CSSContext {
      */
     public float getBlockWidth(Element elt) {
 //        return DesignerServiceHack.getDefault().getBlockWidth(elt);
-        return userAgentInfo.getBlockWidth(elt);
+        return userAgentInfo.getBlockWidth(document, elt);
     }
 
     /**
@@ -138,7 +138,7 @@ public class DesignerContext implements CSSContext {
      */
     public float getBlockHeight(Element elt) {
 //        return DesignerServiceHack.getDefault().getBlockHeight(elt);
-        return userAgentInfo.getBlockHeight(elt);
+        return userAgentInfo.getBlockHeight(document, elt);
     }
 
     /**

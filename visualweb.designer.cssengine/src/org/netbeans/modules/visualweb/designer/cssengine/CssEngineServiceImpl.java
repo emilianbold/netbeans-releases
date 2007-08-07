@@ -143,11 +143,11 @@ public final class CssEngineServiceImpl implements CssEngineService {
 
     
     private static class DummyUserAgentInfo implements CssUserAgentInfo {
-        public float getBlockWidth(Element element) {
+        public float getBlockWidth(Document document, Element element) {
             return 0F;
         }
 
-        public float getBlockHeight(Element element) {
+        public float getBlockHeight(Document document, Element element) {
             return 0F;
         }
 

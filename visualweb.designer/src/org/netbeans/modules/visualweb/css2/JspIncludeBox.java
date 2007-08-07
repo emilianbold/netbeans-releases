@@ -59,6 +59,10 @@ public class JspIncludeBox extends ExternalDocumentBox {
         // just hardcode the block formatting knowledge here
         //inline,
         false, replaced);
+
+        // XXX #110849 This is bad. The layout depends on whether the CSS was computed. Bad architecture.
+        // This needs to be cleared, because otherwise when used in fragment it would yield bad result for context page.
+        CssProvider.getEngineService().clearComputedStylesForElement(frameForm.getHtmlBody());
     }
 
     /** Create a new framebox, or provide one from a cache */
