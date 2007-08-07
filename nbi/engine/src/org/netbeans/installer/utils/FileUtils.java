@@ -1692,6 +1692,40 @@ public final class FileUtils {
             "SHA1";//NOI18N
     public static final String MD5_DIGEST_NAME =
             "MD5";//NOI18N
+    public static final String INFO_PLIST_STUB =
+    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">\n" +
+            "<plist version=\"0.9\">\n" +
+            "  <dict>\n" +
+            "    \n" +
+            "    <key>CFBundleName</key>\n" +
+            "    <string>{0}</string>\n" +
+            "    \n" +
+            "    <key>CFBundleVersion</key>\n" +
+            "    <string>{1}</string>\n" +
+            "    \n" +
+            "    <key>CFBundleExecutable</key>\n" +
+            "    <string>executable</string>\n" +
+            "    \n" +
+            "    <key>CFBundlePackageType</key>\n" +
+            "    <string>APPL</string>\n" +
+            "    \n" +
+            "    <key>CFBundleShortVersionString</key>\n" +
+            "    <string>{2}</string>\n" +
+            "    \n" +
+            "    <key>CFBundleSignature</key>\n" +
+            "    <string>????</string>\n" +
+            "    \n" +
+            "    <key>CFBundleInfoDictionaryVersion</key>\n" +
+            "    <string>6.0</string>\n" +
+            "    \n" +
+            "    <key>CFBundleIconFile</key>\n" +
+            "    <string>icon.icns</string>\n" +
+            "  </dict>\n" +
+            "</plist>\n";
+    
+    
+    
     public static final String ERROR_OUTPUT_FILE_ENTRY_KEY =
             "FU.error.output.file.entry";// NOI18N
     

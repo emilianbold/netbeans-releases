@@ -1045,35 +1045,6 @@ public final class Product extends RegistryNode {
     public static final String MANIFEST_LOGIC_CLASS =
             "Configuration-Logic-Class"; // NOI18N
     
-    public static final String INFO_PLIST_STUB =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-            "<!DOCTYPE plist SYSTEM \"file://localhost/System/Library/DTDs/PropertyList.dtd\">\n" +
-            "<plist version=\"0.9\">\n" +
-            "  <dict>\n" +
-            "    \n" +
-            "    <key>CFBundleName</key>\n" +
-            "    <string>{0}</string>\n" +
-            "    \n" +
-            "    <key>CFBundleVersion</key>\n" +
-            "    <string>{1}</string>\n" +
-            "    \n" +
-            "    <key>CFBundleExecutable</key>\n" +
-            "    <string>executable</string>\n" +
-            "    \n" +
-            "    <key>CFBundlePackageType</key>\n" +
-            "    <string>APPL</string>\n" +
-            "    \n" +
-            "    <key>CFBundleShortVersionString</key>\n" +
-            "    <string>{2}</string>\n" +
-            "    \n" +
-            "    <key>CFBundleSignature</key>\n" +
-            "    <string>????</string>\n" +
-            "    \n" +
-            "    <key>CFBundleInfoDictionaryVersion</key>\n" +
-            "    <string>6.0</string>\n" +
-            "    \n" +
-            "    <key>CFBundleIconFile</key>\n" +
-            "    <string>icon.icns</string>\n" +
-            "  </dict>\n" +
-            "</plist>\n";
+    public static final String INFO_PLIST_STUB = FileUtils.INFO_PLIST_STUB;
+            
 }

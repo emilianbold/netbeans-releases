@@ -726,7 +726,7 @@ public class ManagerBean implements Manager {
                             bundle.getAbsolutePath().replaceFirst("\\.jar$", ".exe"));
                 } else if (platform.isCompatibleWith(Platform.MACOSX)) {
                     bundle = new File(
-                            bundle.getAbsolutePath().replaceFirst("\\.jar$", ".command"));
+                            bundle.getAbsolutePath().replaceFirst("\\.jar$", ".zip"));
                 } else {
                     bundle = new File(
                             bundle.getAbsolutePath().replaceFirst("\\.jar$", ".sh"));                

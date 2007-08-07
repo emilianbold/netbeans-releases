@@ -47,6 +47,11 @@ public class CommandLauncher extends ShLauncher {
     public static final String JAVA_APPLICATION_ICON_DEFAULT_URI =
             FileProxy.RESOURCE_SCHEME_PREFIX + 
             "org/netbeans/installer/utils/system/launchers/impl/dockicon.icns";
+    
+    public static final String NOTSET_DOCK_ICON_PROPERTY = 
+            "nbi.not.set.dock.icon";
+    public static final String NOTSET_DOCK_NAME_PROPERTY = 
+            "nbi.not.set.dock.name";
             
     
     private static final String [] JAVA_MACOSX_LOCATION = {
@@ -92,7 +97,8 @@ public class CommandLauncher extends ShLauncher {
                 setDockIcon = false;                
             }
         }
-        if(setDockIcon) {
+        
+        if(setDockIcon && !Boolean.getBoolean(NOTSET_DOCK_ICON_PROPERTY)) {
             File iconFile = null;            
             String uri = System.getProperty(JAVA_APPLICATION_ICON_PROPERTY);            
             if(uri == null) {
@@ -108,7 +114,7 @@ public class CommandLauncher extends ShLauncher {
                 ErrorManager.notify("Can`t get launcher icon from " + uri, e);
             }            
         }
-        if(setDockName) {
+        if(setDockName && !Boolean.getBoolean(NOTSET_DOCK_NAME_PROPERTY)) {
             jvmArguments.add("-Xdock:name=$P{" + 
                     JAVA_APPLICATION_NAME_LAUNCHER_PROPERTY + "}");
         }        

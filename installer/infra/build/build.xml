@@ -1135,44 +1135,33 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
             -->
         </create-bundle>
-        
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.tgz" 
-             compression="gzip">
-            <tarfileset dir="${output.dir}/bundles/" mode="755">
-                <include name="netbeans-6.0-nightly-${build.number}-basic-macosx-x86.command"/>
-            </tarfileset>
-        </tar>
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.tgz" 
-             compression="gzip">
-            <tarfileset dir="${output.dir}/bundles/" mode="755" >
-                <include name="netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.command"/>
-            </tarfileset>
-        </tar>
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-x86.tgz" 
-             compression="gzip">
-            <tarfileset dir="${output.dir}/bundles/" mode="755">
-                <include name="netbeans-6.0-nightly-${build.number}-standard-macosx-x86.command"/>
-            </tarfileset>
-        </tar>
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.tgz" 
-             compression="gzip">
-            <tarfileset dir="${output.dir}/bundles/" mode="755">
-                <include name="netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.command"/>
-            </tarfileset>
-        </tar>
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-x86.tgz" 
-             compression="gzip">
-            <tarfileset dir="${output.dir}/bundles/" mode="755">
-                <include name="netbeans-6.0-nightly-${build.number}-full-macosx-x86.command"/>
-            </tarfileset>
-        </tar>
-        <tar tarfile="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-ppc.tgz" 
-             compression="gzip">
-            <tarfileset dir="${output.dir}/bundles/" mode="755">
-                <include name="netbeans-6.0-nightly-${build.number}-full-macosx-ppc.command"/>
-            </tarfileset>
-        </tar>
-        
+
+        <antcall target="unzip-bundle-to-tar">
+            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-basic-macosx-x86.zip"/>
+            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-basic-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="unzip-bundle-to-tar">
+            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.zip"/>
+            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.tgz"/>
+        </antcall>
+	<antcall target="unzip-bundle-to-tar">
+            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-standard-macosx-x86.zip"/>
+            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-standard-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="unzip-bundle-to-tar">
+            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.zip"/>
+            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.tgz"/>
+        </antcall>
+        <antcall target="unzip-bundle-to-tar">
+            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-full-macosx-x86.zip"/>
+            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-full-macosx-x86.tgz"/>
+        </antcall>
+        <antcall target="unzip-bundle-to-tar">
+            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-full-macosx-ppc.zip"/>
+            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-full-macosx-ppc.tgz"/>
+        </antcall>
+
+       
         <replace 
             dir="${nbi.netbeans.dir}/infra/build/web" 
             token="${build.number.token}" 
@@ -1227,8 +1216,27 @@ jarsigner.storepass=${jarsigner.storepass}
         <delete>
             <fileset dir="${output.dir}/bundles">
                 <include name="*.command"/>
+		<include name="*macos*zip"/>
             </fileset>
         </delete>
+    </target>
+
+    <target name="unzip-bundle-to-tar">
+	<unzip 
+		src="${output.dir}/bundles/${input.file}"
+		dest="${output.dir}/bundles/tempdir"/>
+
+        <tar tarfile="${output.dir}/bundles/${output.file}" 
+             compression="gzip">
+            <tarfileset dir="${output.dir}/bundles/tempdir" mode="644">
+                <include name="**/*.*"/>
+		<exclude name="**/executable"/>
+            </tarfileset>
+	    <tarfileset dir="${output.dir}/bundles/tempdir" mode="755">
+		<include name="**/executable"/>
+            </tarfileset>
+        </tar>
+	<delete dir="${output.dir}/bundles/tempdir"/>
     </target>
     
     <target name="replace">

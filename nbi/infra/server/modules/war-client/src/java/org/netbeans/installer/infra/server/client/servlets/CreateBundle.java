@@ -172,7 +172,7 @@ public class CreateBundle extends HttpServlet {
             if (platform == WINDOWS) {
                 filename += ".exe";
             } else if (platform.isCompatibleWith(MACOSX)) {
-                filename += ".command";
+                filename += ".zip";
             } else {
                 filename += ".sh";
             }
