@@ -41,7 +41,7 @@ public class Jdk12SearchType_japan extends Jdk12SearchType {
     /** generated Serialized Version UID */
     static final long serialVersionUID =-2453877778724454324L;
     
-    private static final String JDK12_ALLCLASSES_JA = "SUBETENOKURASU"; // NOI18N
+    private static final String JDK12_ALLCLASSES_JA = "\u3059\u3079\u3066\u306e\u30af\u30e9\u30b9"; // NOI18N
 
     /** Returns human presentable name
      * @return human presentable name
