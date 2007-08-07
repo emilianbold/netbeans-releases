@@ -213,8 +213,10 @@ public abstract class HintTestBase extends RubyTestBase {
         // Create a hint registry which contains ONLY our hint (so other registered
         // hints don't interfere with the test)
         Map<Integer, List<AstRule>> testHints = new HashMap<Integer, List<AstRule>>();
-        for (int nodeId : hint.getKinds()) {
-            testHints.put(nodeId, Collections.singletonList(hint));
+        if (hint.appliesTo(info)) {
+            for (int nodeId : hint.getKinds()) {
+                testHints.put(nodeId, Collections.singletonList(hint));
+            }
         }
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         if (RulesManager.getInstance().getSeverity(hint) == HintSeverity.CURRENT_LINE_WARNING) {
