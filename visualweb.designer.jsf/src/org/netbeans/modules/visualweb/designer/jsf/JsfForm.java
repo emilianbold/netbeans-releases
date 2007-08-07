@@ -20,6 +20,7 @@
 package org.netbeans.modules.visualweb.designer.jsf;
 
 
+import org.netbeans.modules.visualweb.designer.jsf.palette.PaletteControllerFactory;
 import org.netbeans.modules.visualweb.api.designer.Designer;
 import org.netbeans.modules.visualweb.api.designer.DesignerFactory;
 import org.netbeans.modules.visualweb.api.designer.DomProvider;

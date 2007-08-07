@@ -92,4 +92,11 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
     
+    <folder name="Menu">
+        <folder name="Tools">
+            <folder name="PaletteManager">
+                <file name="org-netbeans-modules-visualweb-designer-jsf-palette-JSF1_2PaletteCustomizerAction.instance"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
