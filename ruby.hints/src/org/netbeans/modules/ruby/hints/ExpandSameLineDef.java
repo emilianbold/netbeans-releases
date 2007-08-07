@@ -72,6 +72,12 @@ import org.openide.util.NbBundle;
  * @author Tor Norbye
  */
 public class ExpandSameLineDef implements AstRule {
+    public ExpandSameLineDef() {
+    }
+
+    public boolean appliesTo(CompilationInfo info) {
+        return true;
+    }
 
     public Set<Integer> getKinds() {
         Set<Integer> integers = new HashSet<Integer>();

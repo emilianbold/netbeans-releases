@@ -100,6 +100,16 @@ public class RailsDeprecations implements AstRule {
     public RailsDeprecations() {
     }
 
+    public boolean appliesTo(CompilationInfo info) {
+        // Only perform these checks in Rails projects
+        Project project = FileOwnerQuery.getOwner(info.getFileObject());
+        // Ugly!!
+        if (project == null || project.getClass().getName().indexOf("RailsProject") == -1) { // NOI18N
+            return false;
+        }
+
+        return true;
+    }
 
     public Set<Integer> getKinds() {
         return Collections.singleton(NodeTypes.ROOTNODE);
@@ -110,13 +120,6 @@ public class RailsDeprecations implements AstRule {
             return;
         }
         
-        // Only perform these checks in Rails projects
-        Project project = FileOwnerQuery.getOwner(info.getFileObject());
-        // Ugly!!
-        if (project == null || project.getClass().getName().indexOf("RailsProject") == -1) { // NOI18N
-            return;
-        }
-
         // This rule should only be called on the root node itself
         assert path.leaf() == root;
         

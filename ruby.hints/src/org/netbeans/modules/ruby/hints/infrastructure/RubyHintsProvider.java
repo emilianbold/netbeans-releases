@@ -66,7 +66,7 @@ public class RubyHintsProvider implements HintsProvider {
         }
         Map<Integer,List<AstRule>> hints = testHints;
         if (testHints == null) {
-            hints = RulesManager.getInstance().getHints(false);
+            hints = RulesManager.getInstance().getHints(false, info);
         }
 
         if (hints.isEmpty()) {
@@ -132,7 +132,7 @@ public class RubyHintsProvider implements HintsProvider {
         if (suggestions == null) {
             suggestions = new HashMap<Integer, List<AstRule>>();
    
-            suggestions.putAll(RulesManager.getInstance().getHints(true));
+            suggestions.putAll(RulesManager.getInstance().getHints(true, info));
 
             for (Entry<Integer, List<AstRule>> e : RulesManager.getInstance().getSuggestions().entrySet()) {
                 List<AstRule> rules = suggestions.get(e.getKey());

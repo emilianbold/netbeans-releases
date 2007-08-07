@@ -38,6 +38,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.modules.ruby.hints.options.HintsSettings;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -98,9 +99,9 @@ public class RulesManager {
         return INSTANCE;
     }
     
-    public boolean isEnabled(Rule rule) {
-        return HintsSettings.isEnabled(rule, getPreferences(rule, HintsSettings.getCurrentProfileId()));        
-    }
+//    public boolean isEnabled(Rule rule) {
+//        return HintsSettings.isEnabled(rule, getPreferences(rule, HintsSettings.getCurrentProfileId()));        
+//    }
     
     public HintSeverity getSeverity(Rule rule) {
         return HintsSettings.getSeverity(rule, getPreferences(rule, HintsSettings.getCurrentProfileId()));        
@@ -126,13 +127,17 @@ public class RulesManager {
         return hints;
     }
 
-    public Map<Integer,List<AstRule>> getHints(boolean onLine) {
+    public Map<Integer,List<AstRule>> getHints(boolean onLine, CompilationInfo info) {
         Map<Integer, List<AstRule>> result = new HashMap<Integer, List<AstRule>>();
         
         for (Entry<Integer, List<AstRule>> e : getHints().entrySet()) {
             List<AstRule> nueRules = new LinkedList<AstRule>();
             
             for (AstRule r : e.getValue()) {
+                if (!r.appliesTo(info)) {
+                    continue;
+                }
+
                 Preferences p = getPreferences(r, null);
                 
                 if (p == null) {

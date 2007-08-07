@@ -59,6 +59,10 @@ public class BlockVarReuse implements AstRule {
     public BlockVarReuse() {
     }
 
+    public boolean appliesTo(CompilationInfo info) {
+        return true;
+    }
+
     public Set<Integer> getKinds() {
         return Collections.singleton(NodeTypes.ITERNODE);
     }

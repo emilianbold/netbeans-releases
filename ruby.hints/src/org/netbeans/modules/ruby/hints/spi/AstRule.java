@@ -33,6 +33,11 @@ import org.netbeans.modules.ruby.AstPath;
  */
 public interface AstRule extends Rule {
 
+    /**
+     * Return true iff this hint applies to the given file
+     */
+    public boolean appliesTo(CompilationInfo compilationInfo);
+    
     /** 
      * Get the ElementKinds this rule should run on.
      * The integers should correspond to values in {@link org.jruby.ast.NodeTypes}
