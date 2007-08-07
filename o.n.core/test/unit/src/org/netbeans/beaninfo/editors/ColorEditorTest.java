@@ -93,7 +93,19 @@ public class ColorEditorTest extends TestCase {
         assertEquals(sc.getBlue(), restoredColor.getBlue());
         assertTrue("It is SuperColor", restoredColor instanceof ColorEditor.SuperColor);
         assertEquals("Java code works", javaCode, propEd.getJavaInitializationString ());
-//        assertEquals("Restored value has to be the same", sc, restoredColor);
+        doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        element = propEd.storeToXML(doc);
+
+        Locale.setDefault(new Locale("cs", "CZ"));
+        ColorEditor.awtColorNames = null; // clear the cache of localized names
+        
+        // back to czech is even identical
+        propEd.readFromXML(element);
+        restoredColor = (Color)propEd.getValue();
+        assertTrue("It is SuperColor", restoredColor instanceof ColorEditor.SuperColor);
+        assertEquals("Java code works", javaCode, propEd.getJavaInitializationString ());
+        assertEquals("Restored value has to be the same", sc, restoredColor);
+        
         Locale.setDefault(loc);
     }
     
