@@ -19,13 +19,11 @@
 
 package org.netbeans.modules.web.jsf.editor.jspel;
 
-import java.awt.Cursor;
 import java.awt.Toolkit;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import javax.swing.JEditorPane;
+import java.io.IOException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -40,10 +38,14 @@ import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.editor.JSFEditorUtilities;
 import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -265,54 +267,47 @@ public class JSFJSPHyperlinkProvider implements HyperlinkProvider {
             if (wm == null) return;
             
             FileObject config = ConfigurationUtils.findFacesConfigForManagedBean(wm, beanName);
-            if (config != null){
-                DataObject dobj = null;
+            if (config != null) {
                 try{
-                    dobj = DataObject.find(config);
-                } catch (DataObjectNotFoundException e){
-                    Exceptions.printStackTrace(e);
-                    return;
-                }
-                
-                if (dobj != null){
-                    final EditorCookie.Observable ec = (EditorCookie.Observable)dobj.getCookie(EditorCookie.Observable.class);
-                    if (ec != null) {
-                        StatusDisplayer.getDefault().setStatusText(/*NbBundle.getMessage(JMIUtils.class, "opening-element", element instanceof NamedElement ? ((NamedElement)element).getName() : "")*/"otvirani"); // NOI18N
-                        Utilities.runInEventDispatchThread(new Runnable() {
-                            public void run() {
-                                JEditorPane[] panes = ec.getOpenedPanes();
-                                if (panes != null && panes.length > 0) {
-                                    openPane(panes[0], beanName);
-                                    //ec.open();
-                                } else {
-                                    ec.addPropertyChangeListener(new PropertyChangeListener() {
-                                        public void propertyChange(PropertyChangeEvent evt) {
-                                            if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
-                                                final JEditorPane[] panes = ec.getOpenedPanes();
-                                                if (panes != null && panes.length > 0)
-                                                    openPane(panes[0], beanName);
-                                                ec.removePropertyChangeListener(this);
-                                            }
-                                        }
-                                    });
-                                    // ec.open();
+                    DataObject dobj = DataObject.find(config);
+                    if (dobj != null) {
+                        LineCookie lineCookie = dobj.getCookie(LineCookie.class);
+                        EditorCookie editorCookie = dobj.getCookie(EditorCookie.class);
+                        // EditCookie is needed, because we want to open the source editor.
+                        // If we use OpenCookie, then the PageFlow editor will be displayed
+                        EditCookie editCookie = dobj.getCookie(EditCookie.class);
+                        if (editorCookie != null) {
+                            StyledDocument document = editorCookie.openDocument();
+                            int[] definition = JSFEditorUtilities.getManagedBeanDefinition((BaseDocument)document, beanName);
+                            // line number in the document
+                            int lineNumber = NbDocument.findLineNumber(document, definition[0]);
+                            int lineOffset = NbDocument.findLineOffset(document, lineNumber);
+                            // column at the line
+                            int column = lineOffset - definition[0];
+
+                            if (lineNumber != -1) {
+                                Line line = lineCookie.getLineSet().getCurrent(lineNumber);
+
+                                if(line != null) {
+                                    // show the line
+                                    line.show(Line.SHOW_TOFRONT, column);
                                 }
                             }
-                        });
-                        ec.open();
+
+                            if (editCookie != null) {
+                                // open the editor with source file
+                                editCookie.edit();
+                            }
+                        }
                     }
                 }
+                catch (DataObjectNotFoundException exception) {
+                    Exceptions.printStackTrace(exception);
+                }
+                catch (IOException exception) {
+                    Exceptions.printStackTrace(exception);
+                }
             }
-        }
-        
-        private void openPane(JEditorPane pane, String beanName){
-            final Cursor editCursor = pane.getCursor();
-            pane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            int[] definition = JSFEditorUtilities.getManagedBeanDefinition((BaseDocument)pane.getDocument(), beanName);
-            if (definition [0] > -1)
-                pane.setCaretPosition(definition[0]);
-            pane.setCursor(editCursor);
-            StatusDisplayer.getDefault().setStatusText(""); //NOI18N
         }
     }
 }
