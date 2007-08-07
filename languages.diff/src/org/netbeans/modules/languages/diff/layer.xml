@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-diff">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.diff.Bundle"/>
                 <file name="language.nbs" url="Diff.nbs">
-                    <attr name="icon" stringvalue="org/netbeans/modules/languages/diff/diff.gif"/>
+                    <attr name="icon" stringvalue="org/netbeans/modules/languages/diff/diff_file_16.png"/>
                 </file>
             </folder>
         </folder>

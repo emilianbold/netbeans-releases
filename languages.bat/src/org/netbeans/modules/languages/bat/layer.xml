@@ -30,7 +30,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="bat">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.bat.Bundle"/>
-                <file name="language.nbs" url="Bat.nbs"/>
+                <file name="language.nbs" url="Bat.nbs">
+                    <attr name="icon" stringvalue="org/netbeans/modules/languages/bat/bat_script_16.png"/>
+                </file>
             </folder>
         </folder>
     </folder>

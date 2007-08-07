@@ -23,7 +23,9 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="text">
             <folder name="sh">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.sh.Bundle"/>
-                <file name="language.nbs" url="sh.nbs"/>
+                <file name="language.nbs" url="sh.nbs">
+                    <attr name="icon" stringvalue="org/netbeans/modules/languages/sh/sh_script_16.png"/>
+                </file>
             </folder>
         </folder>
     </folder>
