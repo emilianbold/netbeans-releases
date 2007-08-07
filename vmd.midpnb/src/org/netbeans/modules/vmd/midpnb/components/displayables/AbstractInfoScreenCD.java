@@ -21,6 +21,7 @@ package org.netbeans.modules.vmd.midpnb.components.displayables;
 
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.model.*;
+import org.netbeans.modules.vmd.api.model.presenters.actions.DeleteDependencyPresenter;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.properties.DefaultPropertiesPresenter;
 import org.netbeans.modules.vmd.api.properties.DesignEventFilterResolver;
@@ -111,6 +112,9 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
             // code
             createSetterPresenter (),
             MidpCodePresenterSupport.createAddImportPresenter (),
+            // delete
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_IMAGE),
+            DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_TEXT_FONT),
             // screen
             new AbstractInfoDisplayPresenter(),
             new MidpAcceptProducerKindPresenter().addType(FontCD.TYPEID, PROP_TEXT_FONT).addType(ImageCD.TYPEID, PROP_IMAGE)
