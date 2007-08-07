@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -34,15 +34,13 @@ import org.openide.windows.TopComponent;
 public class ShowWelcomeAction extends CallableSystemAction {
 
     public ShowWelcomeAction() {
-        putValue("noIconInMenu", Boolean.TRUE);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
     public void performAction() {
         WelcomeComponent topComp = null;
-        Set/*<TopComponent>*/ tcs = TopComponent.getRegistry().getOpened();
-        Iterator it = tcs.iterator();
-        while (it.hasNext()) {
-            TopComponent tc = (TopComponent)it.next();
+        Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
+        for (TopComponent tc: tcs) {
             if (tc instanceof WelcomeComponent) {                
                 topComp = (WelcomeComponent) tc;               
                 break;
@@ -60,7 +58,7 @@ public class ShowWelcomeAction extends CallableSystemAction {
         return NbBundle.getMessage(ShowWelcomeAction.class, "LBL_Action");
     }
     
-    protected String iconResource() {
+    @Override protected String iconResource() {
         return "org/netbeans/modules/welcome/resources/welcome.gif";  //NOI18N
     }
     
@@ -68,7 +66,7 @@ public class ShowWelcomeAction extends CallableSystemAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
-    protected boolean asynchronous(){
+    @Override protected boolean asynchronous(){
         return false;
     }
 

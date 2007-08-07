@@ -24,7 +24,7 @@ import org.openide.windows.WindowManager;
 public class Installer extends ModuleInstall 
 implements Runnable {
     
-    public void restored() {
+    @Override public void restored() {
         WindowManager.getDefault().invokeWhenUIReady(this);
     }
 
