@@ -1369,12 +1369,12 @@ public class MetaComponentCreator {
             if ("".equals(((AbstractButton)comp).getText())) { // NOI18N
                 changes.put("text", varName); // NOI18N
             }
-            if (comp instanceof JCheckBox || comp instanceof JRadioButton) {
-                if (((JToggleButton)comp).getBorder() instanceof javax.swing.plaf.UIResource) {
-                    changes.put("border", BorderFactory.createEmptyBorder()); // NOI18N
-                    changes.put("margin", new Insets(0, 0, 0, 0)); // NOI18N
-                }
-            }
+//            if (comp instanceof JCheckBox || comp instanceof JRadioButton) {
+//                if (((JToggleButton)comp).getBorder() instanceof javax.swing.plaf.UIResource) {
+//                    changes.put("border", BorderFactory.createEmptyBorder()); // NOI18N
+//                    changes.put("margin", new Insets(0, 0, 0, 0)); // NOI18N
+//                }
+//            }
         }
         else if (comp instanceof JTable) {
             javax.swing.table.TableModel tm = ((JTable)comp).getModel();
