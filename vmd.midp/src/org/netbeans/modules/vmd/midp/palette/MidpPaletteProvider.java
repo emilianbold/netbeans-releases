@@ -26,7 +26,6 @@ import org.netbeans.modules.vmd.midp.palette.wizard.AddToPaletteWizardAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.actions.SystemAction;
-
 import javax.swing.*;
 import java.io.IOException;
 import java.net.URL;
@@ -46,49 +45,51 @@ public class MidpPaletteProvider implements PaletteProvider {
     public static final String CATEGORY_PROCESS_FLOW = "flow"; // NOI18N
     public static final String CATEGORY_RESOURCES = "resources"; // NOI18N
     public static final String CATEGORY_CUSTOM = "custom"; // NOI18N
-
-    private String[] paletteCategories = {CATEGORY_DISPLAYABLES, CATEGORY_COMMANDS, CATEGORY_ELEMENTS,
-                                          CATEGORY_ITEMS, CATEGORY_PROCESS_FLOW, CATEGORY_RESOURCES,
-                                          CATEGORY_CUSTOM};
+    private String[] paletteCategories = {CATEGORY_DISPLAYABLES, CATEGORY_COMMANDS, CATEGORY_ELEMENTS, CATEGORY_ITEMS, CATEGORY_PROCESS_FLOW, CATEGORY_RESOURCES, CATEGORY_CUSTOM};
+    private int[] categoryPositions = {100, 200, 300, 400, 500, 600, 1000}; // custom should be the last
 
     public MidpPaletteProvider() {
     }
 
     public void initPaletteCategories(String projectType) {
-        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType))
+        if (!MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType)) {
             return;
-
+        }
+        
         try {
-            FileObject paletteFolder = Repository.getDefault ().getDefaultFileSystem ().findResource (projectType + "/palette");  // NOI18N
+            FileObject paletteFolder = Repository.getDefault().getDefaultFileSystem().findResource(projectType + "/palette"); // NOI18N
             if (paletteFolder == null) {
-                FileObject root = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+                FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
                 assert root != null;
-                FileObject projectFolder = root.getFileObject (projectType);
-                if (projectFolder == null)
-                    projectFolder = root.createFolder (projectType);
-                paletteFolder = projectFolder.createFolder ("palette");  // NOI18N
+                FileObject projectFolder = root.getFileObject(projectType);
+                if (projectFolder == null) {
+                    projectFolder = root.createFolder(projectType);
+                }
+                paletteFolder = projectFolder.createFolder("palette"); // NOI18N
             }
-            paletteFolder.refresh (true);
+            paletteFolder.refresh(true);
 
-            for (String categoryName : paletteCategories) {
-                FileObject catFO = paletteFolder.getFileObject (categoryName);
-                if (catFO == null)
-                    catFO = paletteFolder.createFolder (categoryName);
+            for (int i = 0; i < paletteCategories.length; i++) {
+                String categoryName = paletteCategories[i];
+                FileObject catFO = paletteFolder.getFileObject(categoryName);
+                if (catFO == null) {
+                    catFO = paletteFolder.createFolder(categoryName);
+                }
                 catFO.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midp.palette.Bundle"); // NOI18N
-                catFO.setAttribute("SystemFileSystem.icon", new URL ("nbresloc:/org/netbeans/modules/vmd/midp/resources/components/category_" + categoryName + "_16.png")); // NOI18N
+                catFO.setAttribute("SystemFileSystem.icon", new URL("nbresloc:/org/netbeans/modules/vmd/midp/resources/components/category_" + categoryName + "_16.png")); // NOI18N
                 catFO.setAttribute("isExpanded", "true"); // NOI18N
-                catFO.setAttribute("position", 100); // TODO - resolve position // NOI18N
+                catFO.setAttribute("position", categoryPositions[i]); // NOI18N
             }
         } catch (IOException e) {
-            throw Debug.error (e);
+            throw Debug.error(e);
         }
     }
 
-    public List<? extends Action> getActions (String projectType) {
-        if (! MidpDocumentSupport.PROJECT_TYPE_MIDP.equals (projectType))
+    public List<? extends Action> getActions(String projectType) {
+        if (!MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType)) {
             return null;
+        }
 
-        return Collections.singletonList(SystemAction.get (AddToPaletteWizardAction.class));
+        return Collections.singletonList(SystemAction.get(AddToPaletteWizardAction.class));
     }
-
 }

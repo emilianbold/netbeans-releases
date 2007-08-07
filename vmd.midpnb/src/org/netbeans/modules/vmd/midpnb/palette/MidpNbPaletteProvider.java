@@ -19,10 +19,15 @@
 
 package org.netbeans.modules.vmd.midpnb.palette;
 
+import java.io.IOException;
+import java.net.URL;
 import org.netbeans.modules.vmd.api.palette.PaletteProvider;
-
 import javax.swing.*;
 import java.util.List;
+import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.midp.components.MidpDocumentSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 
 /**
  *
@@ -31,28 +36,43 @@ import java.util.List;
 public class MidpNbPaletteProvider implements PaletteProvider {
 
     public static final String CATEGORY_SVG = "svg"; // NOI18N
+    public static final int CATEGORY_SVG_POSITION = 700;
 
     public MidpNbPaletteProvider() {
     }
 
     public void initPaletteCategories(String projectType) {
-//        if (MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType)) {
-//            try {
-//                FileObject catFO = rootFolder.getPrimaryFile().getFileSystem().findResource(rootFolder.getName() + '/' + CATEGORY_SVG); // NOI18N
-//                if (catFO == null) {
-//                    DataFolder categoryFolder = DataFolder.create(rootFolder, CATEGORY_SVG);
-//                    categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midpnb.palette.Bundle"); // NOI18N
-//                    categoryFolder.getPrimaryFile().setAttribute("SystemFileSystem.icon", new URL ("nbresloc:/org/netbeans/modules/vmd/midpnb/resources/category_svg_16.png")); // NOI18N
-//                    categoryFolder.getPrimaryFile().setAttribute("isExpanded", "true"); // NOI18N
-//                }
-//            } catch (IOException e) {
-//                Debug.error("Can't create directory for palette category: " + e); // NOI18N
-//            }
-//        }
+        if (!MidpDocumentSupport.PROJECT_TYPE_MIDP.equals(projectType)) {
+            return;
+        }
+
+        try {
+            FileObject paletteFolder = Repository.getDefault().getDefaultFileSystem().findResource(projectType + "/palette"); // NOI18N
+            if (paletteFolder == null) {
+                FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
+                assert root != null;
+                FileObject projectFolder = root.getFileObject(projectType);
+                if (projectFolder == null) {
+                    projectFolder = root.createFolder(projectType);
+                }
+                paletteFolder = projectFolder.createFolder("palette"); // NOI18N
+            }
+            paletteFolder.refresh(true);
+
+            FileObject catFO = paletteFolder.getFileObject(CATEGORY_SVG);
+            if (catFO == null) {
+                catFO = paletteFolder.createFolder(CATEGORY_SVG);
+            }
+            catFO.setAttribute("SystemFileSystem.localizingBundle", "org.netbeans.modules.vmd.midpnb.palette.Bundle"); // NOI18N
+            catFO.setAttribute("SystemFileSystem.icon", new URL("nbresloc:/org/netbeans/modules/vmd/midp/resources/components/category_" + CATEGORY_SVG + "_16.png")); // NOI18N
+            catFO.setAttribute("isExpanded", "true"); // NOI18N
+            catFO.setAttribute("position", CATEGORY_SVG_POSITION); // NOI18N
+        } catch (IOException e) {
+            throw Debug.error(e);
+        }
     }
 
-    public List<? extends Action> getActions (String projectType) {
+    public List<? extends Action> getActions(String projectType) {
         return null;
     }
-
 }
