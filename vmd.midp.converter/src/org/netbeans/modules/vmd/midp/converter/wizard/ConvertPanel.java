@@ -60,7 +60,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
         outputFileName.setText ("Converted" + inputPrimaryFile.getName ()); // NOI18N
         outputFileName.setEditable(true);
         progress.setIndeterminate(false);
-        finishMessage.setVisible(false);
+        finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_ShownMessage")); // NOI18N
         startButton.setEnabled(true);
         descriptor.setOptions(new Object[] { startButton, DialogDescriptor.CANCEL_OPTION });
         outputFileName.selectAll ();
@@ -70,12 +70,13 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
     public void switchToStarted () {
         outputFileName.setEditable(false);
         progress.setIndeterminate(true);
+        finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_StartMessage")); // NOI18N
         startButton.setEnabled(false);
     }
     
     public void switchToFinished () {
         progress.setIndeterminate(false);
-        finishMessage.setVisible(true);
+        finishMessage.setText(NbBundle.getMessage (ConvertPanel.class, "MSG_FinishMessage")); // NOI18N
         descriptor.setOptions(new Object[] { finishButton });
     }
     
@@ -112,7 +113,6 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
 
         progress.setMaximum(0);
 
-        finishMessage.setText(org.openide.util.NbBundle.getMessage(ConvertPanel.class, "ConvertPanel.finishMessage.text")); // NOI18N
         finishMessage.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -151,7 +151,7 @@ public final class ConvertPanel extends javax.swing.JPanel implements ActionList
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(progress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 292, Short.MAX_VALUE)
+                .add(finishMessage, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
