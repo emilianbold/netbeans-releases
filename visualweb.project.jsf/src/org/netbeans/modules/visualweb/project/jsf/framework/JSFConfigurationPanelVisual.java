@@ -66,6 +66,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
         initComponents();
         this.panel = panel;
+        // <RAVE>
+        remove(jsfTabbedPane);
+        add(confPanel, "card10");
+        // </RAVE>
         initLibraries();
 
         tURLPattern.getDocument().addDocumentListener(this);
@@ -607,7 +611,10 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 Library[] libs = LibraryManager.getDefault().getLibraries();
                 Library lib = null;
                 for (int i = 0; i < libs.length; i++) {
-                    if (libs[i].getDisplayName().startsWith("JSF-")) {
+                    // <RAVE>
+                    // if (libs[i].getDisplayName().startsWith("JSF-")) {
+                    if (libs[i].getName().equals("jsf-designtime")) {
+                    // </RAVE>
                         lib = libs[i];
                         break;
                     }

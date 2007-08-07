@@ -130,38 +130,26 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
             boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
             if (!isMyFaces && (cp.findResource("javax/faces/FacesException.class") == null)) { //NOI18N
-                Library jsfLib = null;
-                if (JsfProjectUtils.isJavaEE5Project(project)) {
-                    jsfLib = LibraryManager.getDefault().getLibrary("jsf12");
-                } else {
-                    JSFConfigurationPanel.LibraryType libraryType = panel.getLibraryType();
-                    if (libraryType != null && libraryType != JSFConfigurationPanel.LibraryType.NONE) {
-                        if (libraryType == JSFConfigurationPanel.LibraryType.USED) {
-                            jsfLib = panel.getLibrary();
-                        } else if (libraryType == JSFConfigurationPanel.LibraryType.NEW) {
-                            String libraryVersion = panel.getNewLibraryVersion();
-                            File installFolder = panel.getInstallFolder();
-                            if (installFolder != null && libraryVersion != null) {
-                                try {
-                                    JSFUtils.createJSFUserLibrary(installFolder, libraryVersion);
-                                    jsfLib = JSFUtils.getJSFLibrary(libraryVersion);
-                                } catch (IOException ioExceptoin) {
-                                    LOGGER.log(Level.WARNING, "Exception during extending an web project", ioExceptoin); //NOI18N
-                                }
-                            }
+                try {
+                    if (JsfProjectUtils.isJavaEE5Project(project)) {
+                        Library jsfLib = LibraryManager.getDefault().getLibrary("jsf12");
+                        if (jsfLib != null) {
+                            JsfProjectUtils.addLibraryReferences(project, new Library[] {
+                                jsfLib,
+                                LibraryManager.getDefault().getLibrary("jstl11"),
+                            });
+                        }
+                    } else {
+                        Library jsfDesignLib = LibraryManager.getDefault().getLibrary("jsf-designtime");
+                        Library jsfRuntimeLib = LibraryManager.getDefault().getLibrary("jsf-runtime");
+                        if (jsfDesignLib != null && jsfRuntimeLib != null) {
+                            JsfProjectUtils.addLibraryReferences(project, new Library[] { jsfDesignLib }, ClassPath.COMPILE);
+                            JsfProjectUtils.addLibraryReferences(project, new Library[] { jsfRuntimeLib }, ClassPath.EXECUTE);
+                            JsfProjectUtils.addLibraryReferences(project, new Library[] { LibraryManager.getDefault().getLibrary("jstl11") });
                         }
                     }
-                }
-                
-                if (jsfLib != null) {
-                    try {
-                        JsfProjectUtils.addLibraryReferences(project, new Library[] {
-                            jsfLib,
-                            LibraryManager.getDefault().getLibrary("jstl11"),
-                        });
-                    } catch (IOException ioExceptoin) {
-                        LOGGER.log(Level.WARNING, "Exception during extending an web project", ioExceptoin); //NOI18N
-                    }
+                } catch (IOException ioExceptoin) {
+                    LOGGER.log(Level.WARNING, "Exception during extending an web project", ioExceptoin); //NOI18N
                 }
             }
             template.addLibrary(project);
