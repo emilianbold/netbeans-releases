@@ -134,6 +134,11 @@ public final class TreePathHandle {
                 return false;
             }   
             final TreePathHandle other = (TreePathHandle) obj;
+            if (this.position==null && other.position==null) {
+                assert this.enclElIsCorrespondingEl;
+                assert other.enclElIsCorrespondingEl;
+                return this.enclosingElement.equals(other.enclosingElement);
+            }
             if (this.position.getPosition().getOffset() != this.position.getPosition().getOffset()) {
                 return false;
             }
@@ -148,6 +153,9 @@ public final class TreePathHandle {
     }
 
     public int hashCode() {
+        if (this.position==null) {
+            return 553 + enclosingElement.hashCode();
+        }
         int hash = 7;
         hash = 79 * hash + this.position.getOffset();
         hash = 79 * hash + (this.file != null ? this.file.hashCode() : 0);
