@@ -58,6 +58,7 @@ import javax.swing.InputMap;
 import javax.swing.KeyStroke;
 import javax.swing.Popup;
 import javax.swing.border.Border;
+import org.netbeans.api.visual.action.EditProvider;
 import org.netbeans.api.visual.action.PopupMenuProvider;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.action.TextFieldInplaceEditor;
@@ -119,6 +120,8 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
     private final WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     private final WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
+    private final WidgetAction doubleClickAction = ActionFactory.createEditAction( new PageNodeEditAction());
+    
     private PageFlowView tc;
     private PopupMenuProvider popupProvider;   //Please see POPUP_HACK below.
 
@@ -251,9 +254,11 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         mainLayer.addChild(nodeWidget);
         //updateNodeActions(nodeWidget);
         nodeWidget.getHeader().getActions().addAction(createObjectHoverAction());
+        nodeWidget.getHeader().getActions().addAction(doubleClickAction); //not still the glory from pins.
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
         nodeWidget.setMinimized(true);
+        
         /*
         if ( node.getPinNodes().size() == 0 ){
         nodeWidget.setMinimized(true);
@@ -381,6 +386,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
             actions.addAction(createObjectHoverAction());
             actions.addAction(createSelectAction());
             actions.addAction(connectAction);
+            actions.addAction(doubleClickAction);
         } else {
             System.err.println("Node widget should not be null.");
         }
@@ -429,6 +435,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         connectionWidget.getActions().addAction(createObjectHoverAction());
         connectionWidget.getActions().addAction(selectAction);
         connectionWidget.getActions().addAction(moveControlPointAction);
+        connectionWidget.getActions().addAction(doubleClickAction);
 
         connectionWidget.setLayout(new ConnectionWrapperLayout(connectionWidget, label));
         connectionWidget.setConstraint(label, LayoutFactory.ConnectionWidgetLayoutAlignment.TOP_RIGHT, 10);
@@ -533,6 +540,16 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         }
     }
 
+    
+    public final class PageNodeEditAction implements EditProvider{
+
+        public void edit(Widget widget) {
+            PageFlowScene scene = (PageFlowScene) widget.getScene();
+            PageFlowSceneElement element = (PageFlowSceneElement) scene.findObject(widget);
+            MapActionUtility.openPageFlowSceneElement(element);
+        }
+        
+    }
 
     public final class CaseNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
 

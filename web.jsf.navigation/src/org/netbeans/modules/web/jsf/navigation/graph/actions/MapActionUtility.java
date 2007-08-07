@@ -422,15 +422,19 @@ public class MapActionUtility {
 
                 for (Object obj : selectedObjs) {
                     if (obj instanceof PageFlowSceneElement) {
-                        OpenCookie openCookie = ((PageFlowSceneElement) obj).getNode().getCookie(OpenCookie.class);
-                        if (openCookie != null) {
-                            openCookie.open();
-                        }
+                        openPageFlowSceneElement((PageFlowSceneElement) obj);
                     }
                 }
             }
         }
     };
+
+    public static void openPageFlowSceneElement(PageFlowSceneElement element) {
+        OpenCookie openCookie = (element).getNode().getCookie(OpenCookie.class);
+        if (openCookie != null) {
+            openCookie.open();
+        }
+    }
 
 
     public static Action handleNewWebForm = new AbstractAction() {
@@ -616,10 +620,10 @@ public class MapActionUtility {
     /**
      * Get the first selected page
      * @return the page selected or null if no page is selected.
-     **/ 
+     **/
     public static Page getSelectedPage(PageFlowScene scene) {
         assert scene != null;
-        
+
         PageFlowSceneElement element = getSelectedPageFlowSceneElement(scene);
         if (element != null) {
             if (element instanceof Page) {
@@ -629,13 +633,13 @@ public class MapActionUtility {
         return null;
     }
 
-    /** 
+    /**
      * Get the first selected page element
      * @return a page, navigationedge or pin... null if no page is selected
      **/
     public static PageFlowSceneElement getSelectedPageFlowSceneElement(PageFlowScene scene) {
         assert scene != null;
-        
+
         for (Object selObj : scene.getSelectedObjects()) {
             return (PageFlowSceneElement) selObj;
         }
@@ -648,7 +652,7 @@ public class MapActionUtility {
     public static void movePage(PageFlowScene scene, Page page, int horizontal, int vertical) {
         assert scene != null;
         assert page != null;
-        
+
         Widget pageWidget = scene.findWidget(page);
         Point currentLocation = pageWidget.getLocation();
         currentLocation.translate(horizontal, vertical);

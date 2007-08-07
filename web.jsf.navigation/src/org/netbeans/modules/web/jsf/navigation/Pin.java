@@ -159,6 +159,10 @@ public class Pin extends PageFlowSceneElement {
         }
         return new Action[]{};
     }
+    
+    public  <T extends Cookie> T getCookie(Class<T> type) {
+        return pageContentItem.getCookie(type);
+    }
 
 
     public boolean equals(Object obj) {
@@ -200,15 +204,21 @@ public class Pin extends PageFlowSceneElement {
 
     private class PinNode extends AbstractNode {
         Page page;
+        Pin pin;
 
         public PinNode(Pin pin) {
             super(Children.LEAF);
             page = pin.getPage();
+            this.pin = pin;
         }
 
         @Override
         public <T extends Cookie> T getCookie(Class<T> type) {
             /* I needed to do this because it seems that the activatedNode requires some sort of DataObject to show things like Windows Title correctly */
+            T cookie = pin.getCookie(type);
+            if( cookie != null ){
+                return cookie;
+            }
             return page.getCookie(type);
         }
 
