@@ -226,7 +226,7 @@ public class Utilities {
             int searchStart = (int) srcPos.getEndPosition(info.getCompilationUnit(),
                     startSearchingForNameIndentifierBehindThisTree);
 
-            TokenSequence tokenSequence = info.getTreeUtilities().tokensFor(tree);
+            TokenSequence<JavaTokenId> tokenSequence = info.getTreeUtilities().tokensFor(tree);
 
             if (tokenSequence != null) {
                 boolean eob = false;
@@ -237,7 +237,7 @@ public class Utilities {
                 } while (!eob && tokenSequence.token().id() != JavaTokenId.IDENTIFIER);
 
                 if (!eob) {
-                    Token identifier = tokenSequence.token();
+                    Token<JavaTokenId> identifier = tokenSequence.token();
                     startOffset = identifier.offset(info.getTokenHierarchy());
                     endOffset = startOffset + identifier.length();
                 }
