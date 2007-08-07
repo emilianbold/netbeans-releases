@@ -914,9 +914,13 @@ public class CasualDiff {
 
     protected int diffApply(JCMethodInvocation oldT, JCMethodInvocation newT, int[] bounds) {
         int localPointer = bounds[0];
-        diffParameterList(oldT.typeargs, newT.typeargs, null, localPointer, Measure.ARGUMENT);
         int[] methBounds = getBounds(oldT.meth);
-        localPointer = diffTree(oldT.meth, newT.meth, methBounds);
+        if (oldT.typeargs.nonEmpty() && newT.typeargs.nonEmpty() && Kind.MEMBER_SELECT == oldT.meth.getKind()) {
+            localPointer = diffSelect((JCFieldAccess) oldT.meth, (JCFieldAccess) newT.meth, methBounds, oldT.typeargs, newT.typeargs);
+        } else {
+            localPointer = diffParameterList(oldT.typeargs, newT.typeargs, null, localPointer, Measure.ARGUMENT);
+            localPointer = diffTree(oldT.meth, newT.meth, methBounds);
+        }
         if (!listsMatch(oldT.args, newT.args)) {
             if (oldT.args.nonEmpty()) {
                 copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
@@ -1134,19 +1138,40 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected int diffSelect(JCFieldAccess oldT, JCFieldAccess newT, int[] bounds) {
+    protected int diffSelect(JCFieldAccess oldT, JCFieldAccess newT,
+            int[] bounds,
+            com.sun.tools.javac.util.List<JCExpression> oldTypePar,
+            com.sun.tools.javac.util.List<JCExpression> newTypePar)
+    {
         int localPointer = bounds[0];
-        copyTo(localPointer, getOldPos(oldT.selected));
-        localPointer = diffTree(oldT.selected, newT.selected, getBounds(oldT.selected));
-        if (nameChanged(oldT.name, newT.name)) {
-            copyTo(localPointer, endPos(oldT.selected));
+        int[] selectedBounds = getBounds(oldT.selected);
+        copyTo(localPointer, selectedBounds[0]);
+        localPointer = diffTree(oldT.selected, newT.selected, selectedBounds);
+        if (oldTypePar != null && newTypePar != null) {
+            int[] parBounds = getBounds(oldTypePar.head);
+            copyTo(localPointer, parBounds[0]);
+            localPointer = diffParameterList(oldTypePar, newTypePar, null, parBounds[0], Measure.ARGUMENT);
+            parBounds[1] = endPos(oldTypePar);
+            tokenSequence.move(parBounds[1]);
+            moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+            tokenSequence.moveNext();
+            copyTo(localPointer, localPointer = tokenSequence.offset());
+        } else {
+            copyTo(localPointer, localPointer = selectedBounds[1]);
             printer.print(".");
+            localPointer++;
+        }
+        if (nameChanged(oldT.name, newT.name)) {
             printer.print(newT.name);
-            diffInfo.put(endPos(oldT.selected) + 1, "Update reference to " + oldT.name);
-            localPointer = endPos(oldT.selected) + 1 +oldT.name.length();
+            diffInfo.put(localPointer, "Update reference to " + oldT.name);
+            localPointer = localPointer + oldT.name.length();
         }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
+    }
+
+    protected int diffSelect(JCFieldAccess oldT, JCFieldAccess newT, int[] bounds) {
+        return diffSelect(oldT, newT, bounds, null, null);
     }
 
     protected int diffIdent(JCIdent oldT, JCIdent newT, int[] bounds) {
