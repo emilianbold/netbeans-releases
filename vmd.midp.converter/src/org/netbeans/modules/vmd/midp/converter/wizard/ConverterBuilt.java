@@ -36,6 +36,7 @@ import org.netbeans.modules.vmd.midpnb.components.resources.TableModelCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.SplashScreenDismissCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenFailureCommandEventSourceCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.WaitScreenSuccessCommandEventSourceCD;
+import org.netbeans.modules.vmd.midpnb.producers.WaitScreenProducer;
 
 import java.util.HashMap;
 import java.util.List;
@@ -100,8 +101,7 @@ public class ConverterBuilt {
 
     // Created: YES, Adds: NO
     static void convertWaitScreen (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        ComponentProducer producer = DocumentSupport.getComponentProducer (document, WaitScreenCD.TYPEID.toString ());
-        DesignComponent screen = producer.createComponent (document).getMainComponent ();
+        DesignComponent screen = WaitScreenProducer.produceWaitScreen (document, document.createComponent (WaitScreenCD.TYPEID), false).getMainComponent ();
         convertAbstractInfoScreen (id2item, item, screen);
 
         ConverterUtil.convertConverterItemComponent (screen, WaitScreenCD.PROP_TASK, id2item, item.getPropertyValue ("task")); // NOI18N

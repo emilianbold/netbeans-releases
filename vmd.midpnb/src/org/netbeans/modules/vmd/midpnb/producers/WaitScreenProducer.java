@@ -48,28 +48,35 @@ public class WaitScreenProducer extends MidpComponentProducer {
 
 
     public Result postInitialize (DesignDocument document, DesignComponent waitScreen) {
+        return produceWaitScreen (document, waitScreen, true);
+    }
+
+    public static Result produceWaitScreen (DesignDocument document, DesignComponent waitScreen, boolean createTask) {
         DesignComponent successCommand = MidpDocumentSupport.getSingletonCommand (document, WaitScreenSuccessCommandCD.TYPEID);
         DesignComponent failureCommand = MidpDocumentSupport.getSingletonCommand (document, WaitScreenFailureCommandCD.TYPEID);
-        
+
         DesignComponent successEventSource = document.createComponent(WaitScreenSuccessCommandEventSourceCD.TYPEID);
         DesignComponent failureEventSource = document.createComponent(WaitScreenFailureCommandEventSourceCD.TYPEID);
-        
+
         successEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(waitScreen));
         successEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(successCommand));
-        
+
         failureEventSource.writeProperty(CommandEventSourceCD.PROP_DISPLAYABLE, PropertyValue.createComponentReference(waitScreen));
         failureEventSource.writeProperty(CommandEventSourceCD.PROP_COMMAND, PropertyValue.createComponentReference(failureCommand));
-       
+
         MidpDocumentSupport.addEventSource(waitScreen, DisplayableCD.PROP_COMMANDS, successEventSource);
         MidpDocumentSupport.addEventSource(waitScreen, DisplayableCD.PROP_COMMANDS, failureEventSource);
 
-        DesignComponent task = document.createComponent (SimpleCancellableTaskCD.TYPEID);
-        MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (task);
-        waitScreen.writeProperty (WaitScreenCD.PROP_TASK, PropertyValue.createComponentReference (task));
+        if (createTask) {
+            DesignComponent task = document.createComponent (SimpleCancellableTaskCD.TYPEID);
+            MidpDocumentSupport.getCategoryComponent (document, ResourcesCategoryCD.TYPEID).addComponent (task);
+            waitScreen.writeProperty (WaitScreenCD.PROP_TASK, PropertyValue.createComponentReference (task));
 
-        return new Result(waitScreen, successCommand, failureCommand, successEventSource, failureEventSource);
+            return new Result (waitScreen, successCommand, failureCommand, successEventSource, failureEventSource, task);
+        } else
+            return new Result (waitScreen, successCommand, failureCommand, successEventSource, failureEventSource);
     }
-    
+
     public boolean checkValidity(DesignDocument document) {
         return MidpJavaSupport.checkValidity(document, "javax.microedition.lcdui.Canvas"); // NOI18N
     }

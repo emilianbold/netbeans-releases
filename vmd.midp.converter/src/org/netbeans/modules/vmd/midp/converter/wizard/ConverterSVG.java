@@ -31,6 +31,7 @@ import org.netbeans.modules.vmd.midp.components.categories.ResourcesCategoryCD;
 import org.netbeans.modules.vmd.midpnb.components.displayables.WaitScreenCD;
 import org.netbeans.modules.vmd.midpnb.components.sources.*;
 import org.netbeans.modules.vmd.midpnb.components.svg.*;
+import org.netbeans.modules.vmd.midpnb.producers.SVGWaitScreenProducer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -129,8 +130,7 @@ public class ConverterSVG {
 
     // Created: YES, Adds: NO
     static void convertWaitScreen (HashMap<String, ConverterItem> id2item, ConverterItem item, DesignDocument document) {
-        ComponentProducer producer = DocumentSupport.getComponentProducer (document, SVGWaitScreenCD.TYPEID.toString ());
-        DesignComponent screen = producer.createComponent (document).getMainComponent ();
+        DesignComponent screen = SVGWaitScreenProducer.produceSVGWaitScreen (document, document.createComponent (SVGWaitScreenCD.TYPEID), false).getMainComponent ();
         convertAnimatorWrapper (id2item, item, screen);
 
         ConverterUtil.convertConverterItemComponent (screen, WaitScreenCD.PROP_TASK, id2item, item.getPropertyValue ("task")); // NOI18N
