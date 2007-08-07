@@ -2835,7 +2835,7 @@ public class LayoutDesigner implements LayoutConstants {
         if (parent == null) return;
 
         // Remove empty groups
-        if (group.getSubIntervalCount() == 0) {
+        if (LayoutInterval.getCount(group, LayoutRegion.ALL_POINTS, true) == 0) {
             takeOutInterval(group, boundary);
             return;
         }
