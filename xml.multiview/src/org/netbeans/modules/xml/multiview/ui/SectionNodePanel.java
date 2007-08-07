@@ -39,8 +39,16 @@ import java.beans.PropertyChangeEvent;
  */
 public class SectionNodePanel extends SectionPanel {
 
+    private final boolean openFirstChild;
+
     public SectionNodePanel(final SectionNode node) {
+        this(node, true);
+    }
+    
+    public SectionNodePanel(final SectionNode node, boolean openFirstChild) {
         super(node.getSectionNodeView(), node, node.getDisplayName(), node);
+        this.openFirstChild = openFirstChild;
+        
         if (node.getKey() instanceof SectionView) {
             // the section corresponding to the top level node is always expanded
             setInnerViewMode();
@@ -55,7 +63,7 @@ public class SectionNodePanel extends SectionPanel {
             }
         });
     }
-
+    
     /**
      * The expanded viev mode shows only title bar and border around inner panel,
      * The inner panel is always visible and the section cannot be collapsed
@@ -104,11 +112,13 @@ public class SectionNodePanel extends SectionPanel {
 
     protected void openInnerPanel() {
         super.openInnerPanel();
-        Node[] childNodes = ((SectionNode) getNode()).getChildren().getNodes();
-        if (childNodes != null && childNodes.length > 0) {
-            final SectionNodePanel panel = ((SectionNode) childNodes[0]).getSectionNodePanel();
-            panel.getFoldButton().setSelected(true);
-            panel.openInnerPanel();
+        if(openFirstChild) {
+            Node[] childNodes = ((SectionNode) getNode()).getChildren().getNodes();
+            if (childNodes != null && childNodes.length > 0) {
+                final SectionNodePanel panel = ((SectionNode) childNodes[0]).getSectionNodePanel();
+                panel.getFoldButton().setSelected(true);
+                panel.openInnerPanel();
+            }
         }
     }
 
