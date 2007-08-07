@@ -105,6 +105,7 @@ public class CustomizerPlatform extends JPanel implements ComposedCustomizerPane
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(defaultCheckBox, gridBagConstraints);
 
+        jLabel1.setLabelFor(jComboBox1);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CustomizerPlatform.class, "CustomizerPlatform.jLabel1.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
