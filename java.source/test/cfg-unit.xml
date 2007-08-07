@@ -106,6 +106,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/api/java/source/gen/NewClassTreeTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/ForLoopTest.class"/>
                 <include name="org/netbeans/api/java/source/gen/IfTest.class"/>
+                <include name="org/netbeans/api/java/source/gen/RefactoringRegressionsTest.class"/>
                 
                 <!--
                 Makes many operation on field declaration.
