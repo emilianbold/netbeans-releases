@@ -531,8 +531,10 @@ public class LanguageRegistry implements Iterable<Language> {
         // Should be between org-openide-actions-PasteAction.instance and format
         sep2.setAttribute("position", 780);
         // Temporary - userdir upgrade
-        if (popup.getFileObject("pretty-print") == null) {
-                popup.createData("pretty-print").setAttribute("position", 2200);
+        
+        // Obsolete - nuke
+        if (popup.getFileObject("pretty-print") != null) {
+            popup.delete();
         }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -557,9 +559,11 @@ public class LanguageRegistry implements Iterable<Language> {
                 }
             }
 
-            if (root.getFileObject("Popup/pretty-print") == null) {
+            // Obsolete - nuke
+            if (root.getFileObject("Popup/pretty-print") != null) {
                 try {
-                    popup.createData("pretty-print");
+                    FileObject d = root.getFileObject("Popup/pretty-print");
+                    d.delete();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
