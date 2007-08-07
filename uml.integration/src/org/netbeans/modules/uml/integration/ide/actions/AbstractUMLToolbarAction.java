@@ -19,40 +19,8 @@
 
 package org.netbeans.modules.uml.integration.ide.actions;
 
-import org.netbeans.modules.uml.project.UMLProject;
-import org.netbeans.modules.uml.project.ui.wizards.NewUMLProjectWizardIterator;
-import java.awt.Component;
-import java.awt.Dialog;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.ProjectManager;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.WizardDescriptor;
-import org.openide.explorer.ExplorerManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Base class for UML toolbar action that has toolbar presenter and listens to
@@ -227,9 +195,14 @@ public abstract class AbstractUMLToolbarAction extends CallableSystemAction
 		return "";
 	}
 	
-	protected String iconResource() {
-		return "";
-	}
+        // Fixed iz=112200. The API of super.iconResource() clearly says
+        // "... If you do not want an icon, do not override this to return a blank 
+        // icon. Leave it null..."; hence commented out this method.  Sub classes
+        // that want to have an icon, just overide this mehod and return a proper
+        // resource name.
+//	protected String iconResource() {
+//		return "";
+//	}
 	
 	public HelpCtx getHelpCtx() {
 		return HelpCtx.DEFAULT_HELP;
