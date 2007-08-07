@@ -318,12 +318,19 @@ public class JMeterIntegrationEngine {
   }
   
   public boolean savePlan(final JMeterPlan plan) {
+    BufferedWriter writer = null;
     try {
-      BufferedWriter writer = new BufferedWriter(new FileWriter(plan.getPath()));
+      writer = new BufferedWriter(new FileWriter(plan.getPath()));
       SaveService.saveTree(plan.getTree(), writer);
     } catch (Exception e) {
       e.printStackTrace();
       return false;
+    } finally {
+      if (writer != null) {
+        try {
+          writer.close();
+        } catch (IOException e) {}
+      }
     }
     return true;
   }

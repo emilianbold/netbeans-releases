@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.apache.jmeter.module/1
 OpenIDE-Module-Layer: org/apache/jmeter/module/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/apache/jmeter/module/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.9
+OpenIDE-Module-Specification-Version: 1.10
 
 Name: org/apache/jmeter/module/JMXTypeDataLoader.class
 OpenIDE-Module-Class: Loader

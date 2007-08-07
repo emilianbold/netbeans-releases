@@ -19,8 +19,17 @@
 
 package org.apache.jmeter.module.integration;
 
+import java.io.File;
 import org.apache.jmeter.testelement.TestPlan;
 import org.apache.jorphan.collections.HashTree;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -29,13 +38,23 @@ import org.apache.jorphan.collections.HashTree;
 public class JMeterPlan {
   final private TestPlan rootElement;
   final private HashTree planTree;
-  final private String pathToPlan;
+  private String pathToPlan;
   
   /** Creates a new instance of JMeterPlan */
   public JMeterPlan(String path, HashTree plan, TestPlan root) {
     rootElement = root;
     planTree = plan;
     pathToPlan = path;
+    
+    FileObject planFile = FileUtil.toFileObject(new File(pathToPlan));
+    if (planFile != null) {
+      planFile.addFileChangeListener(WeakListeners.create(FileChangeListener.class, new FileChangeAdapter() {
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+          pathToPlan = FileUtil.toFile(fe.getFile()).getAbsolutePath();
+        }
+      }, null));
+    }
   }
   
   public TestPlan getRoot() {
