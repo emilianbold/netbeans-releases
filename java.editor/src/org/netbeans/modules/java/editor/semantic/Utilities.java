@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.java.editor.semantic;
 
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -80,9 +81,19 @@ public class Utilities {
         return null;
     }
     
+    private static Tree normalizeLastLeftTree(Tree lastLeft) {
+        while (lastLeft != null && lastLeft.getKind() == Kind.ARRAY_TYPE) {
+            lastLeft = ((ArrayTypeTree) lastLeft).getType();
+        }
+        
+        return lastLeft;
+    }
     
     private static Token<JavaTokenId> findIdentifierSpanImpl(CompilationInfo info, Tree decl, Tree lastLeft, List<? extends Tree> firstRight, String name, CompilationUnitTree cu, SourcePositions positions) {
         int declStart = (int) positions.getStartPosition(cu, decl);
+        
+        lastLeft = normalizeLastLeftTree(lastLeft);
+        
         int start = lastLeft != null ? (int)positions.getEndPosition(cu, lastLeft) : declStart;
         
         if (start == (-1)) {
