@@ -281,7 +281,28 @@ public final class RubyDebuggerTest extends TestBase {
         }
         p.waitFor();
     }
-    
+
+    public void testDoNotStepIntoTheEval() throws Exception { // issue #106115
+        while (switchToNextEngine()) {
+            String[] testContent = {
+                "module A",
+                "  module_eval(\"def A.a; sleep 0.01\\n sleep 0.01; end\")",
+                "end",
+                "A.a",
+                "sleep 0.01",
+                "sleep 0.01"
+            };
+            File testF = createScript(testContent);
+            FileObject testFO = FileUtil.toFileObject(testF);
+            addBreakpoint(testFO, 4);
+            Process p = startDebugging(testF);
+            doAction(ActionsManager.ACTION_STEP_INTO);
+            doAction(ActionsManager.ACTION_STEP_INTO);
+            doAction(ActionsManager.ACTION_STEP_INTO);
+            p.waitFor();
+        }
+    }
+
     private DebuggerEngine getEngineManager() {
         return DebuggerManager.getDebuggerManager().getCurrentEngine();
     }

@@ -33,6 +33,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.rubyforge.debugcommons.RubyDebugEventListener;
 import org.rubyforge.debugcommons.RubyDebugEvent;
+import org.rubyforge.debugcommons.RubyDebuggerException;
 
 /**
  * @author Martin Krauskopf
@@ -148,7 +149,18 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
             }
         }
         if (event.isSuspensionType()) {
-            String absPath = rubySession.resolveAbsolutePath(event.getFilePath());
+            String path = event.getFilePath();
+            // HACK, do not try to step into the 'eval-code'. Cf. #106115.
+            if ("(eval)".equals(path)) { // NOI18N
+                try {
+                    event.getRubyThread().stepReturn();
+                } catch (RubyDebuggerException e) {
+                    Util.severe(e);
+                }
+                backEndSemaphore.release();
+                return;
+            }
+            String absPath = rubySession.resolveAbsolutePath(path);
             if (absPath != null) {
                 File file = new File(absPath);
                 FileObject fo = FileUtil.toFileObject(file);
