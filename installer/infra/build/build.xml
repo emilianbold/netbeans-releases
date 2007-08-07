@@ -355,7 +355,7 @@ sjsas.image.token.hostname.solaris-sparc=${sjsas.image.token.hostname.solaris-sp
 sjsas.image.token.hostname.macosx=${sjsas.image.token.hostname.macosx}
         </echo>
 	<if property="jarsigner.enabled" value="true">
-	    <echo>
+	    <echo file="${environment.properties}" append="true">
 jarsigner.keystore=${jarsigner.keystore}
 jarsigner.alias=${jarsigner.alias}
 jarsigner.storepass=${jarsigner.storepass}
