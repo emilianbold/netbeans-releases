@@ -73,6 +73,14 @@ public final class Arity {
         this.min = min;
         this.max = max;
     }
+    
+    public int getMinArgs() {
+        return min;
+    }
+    
+    public int getMaxArgs() {
+        return max;
+    }
 
     public static Arity getCallArity(Node call) {
         assert call instanceof CallNode || call instanceof VCallNode || call instanceof FCallNode;
@@ -92,7 +100,7 @@ public final class Arity {
 
         return getCallArity(call).min > 0;
     }
-
+    
     @SuppressWarnings(value = "unchecked")
     private void initializeFromCall(Node node) {
         if (node instanceof FCallNode) {
