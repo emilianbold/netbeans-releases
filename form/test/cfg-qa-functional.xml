@@ -43,8 +43,9 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="jv" executor="ide" name="testbag_refactoring">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
+<!--                <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
                 <include name="org/netbeans/qa/form/refactoring/RenameFormClassTest.class"/>
+-->                <include name="org/netbeans/qa/form/refactoring/MoveFormClassTest.class"/>                
             </patternset>
         </testset>
     </testbag>
@@ -119,7 +120,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Jana Maleckova -->
 
-
     <testbag testattribs="validation" executor="ide" name="testbag_opentempl_defaultpack">
         <testset dir="qa-functional/src">
             <patternset>
@@ -127,12 +127,8 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-    
-
-    
 
     <testbag testattribs="my" executor="ide" name="testbag_editor_basictest">
-
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/editor/formatting/BasicTest.*"/>                

@@ -19,7 +19,6 @@
 
 package org.netbeans.qa.form.refactoring;
 
-import java.io.File;
 import java.util.ArrayList;
 import org.netbeans.jellytools.modules.form.ComponentInspectorOperator;
 import org.netbeans.jellytools.modules.form.FormDesignerOperator;
@@ -65,7 +64,6 @@ public class RenameComponentVariableTest extends ExtJellyTestCase {
      */
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        
         suite.addTest(new RenameComponentVariableTest("testRefactoring")); // NOI18N
         suite.addTest(new RenameComponentVariableTest("testChangesInJavaFile")); // NOI18N
         suite.addTest(new RenameComponentVariableTest("testChangesInFormFile")); // NOI18N
@@ -127,9 +125,7 @@ public class RenameComponentVariableTest extends ExtJellyTestCase {
     
     /** Tests changes in form file */
     public void testChangesInFormFile() {
-        String sourceFilePath = getDataDir().getAbsolutePath() + File.separatorChar + TEST_PROJECT_NAME
-                +  File.separatorChar + "src" + File.separatorChar
-                + TEST_PACKAGE_NAME + File.separatorChar + FILE_NAME + ".form"; // NOI18N
+        String sourceFilePath = getFilePathFromDataPackage(FILE_NAME + ".form"); // NOI18N
             
         assertTrue("Old variable name \""+VARIABLE_OLD_NAME+"\" found in " + FILE_NAME + ".form file.",
                 !findInFile(VARIABLE_OLD_NAME,sourceFilePath)
@@ -138,9 +134,7 @@ public class RenameComponentVariableTest extends ExtJellyTestCase {
 
     /** Test changes in property bundle file */
     public void testChangesInPropertiesFile() {
-        String sourceFilePath = getDataDir().getAbsolutePath() + File.separatorChar + TEST_PROJECT_NAME
-                +  File.separatorChar + "src" + File.separatorChar
-                + TEST_PACKAGE_NAME + File.separatorChar + "Bundle.properties"; // NOI18N
+        String sourceFilePath = getFilePathFromDataPackage("Bundle.properties"); // NOI18N
         
         assertTrue("Old variable name \""+VARIABLE_OLD_NAME+"\" found in Bundle.properties file.",
                 !findInFile(VARIABLE_OLD_NAME,sourceFilePath)
