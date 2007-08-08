@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.versioning.util;
 
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -44,7 +43,7 @@ public class StringSelector extends javax.swing.JPanel {
         
         DialogDescriptor descriptor = new DialogDescriptor(panel, title);
         descriptor.setClosingOptions(null);
-        descriptor.setHelpCtx(new HelpCtx(StringSelector.class));
+        descriptor.setHelpCtx(null);
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(StringSelector.class, "ACSD_StringSelectorDialog"));  // NOI18N
