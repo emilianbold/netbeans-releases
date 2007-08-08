@@ -17,6 +17,11 @@ mobility/svg/nb_svg_midp_components/dist/*
 libs/external/
 j2ee/adventure/
 form/swingapp/
+
+#native library, all files inside zip under CDDL  
+uml/core/lib/DoorsIntegrationFiles.zip
+#sample under CDDL/BSD. Consider unpacking to source form and creation of project zip file on fly
+uml/samples/src/org/netbeans/modules/uml/samples/bankapp/resources/javaProject.zip
 #not 100% sure for this entry, but probably OK
 web/tlddoc/
 */www/
