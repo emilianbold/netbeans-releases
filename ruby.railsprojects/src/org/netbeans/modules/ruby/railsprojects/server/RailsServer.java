@@ -141,12 +141,14 @@ public class RailsServer {
             port++;
         }
         String projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
+        String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
         serverId = getServer();
         String displayName = getServerTabName(serverId, projectName, port);
         String serverPath = "script" + File.separator + "server"; // NOI18N
         ExecutionDescriptor desc = new ExecutionDescriptor(displayName, dir, serverPath);
         desc.additionalArgs("--port", Integer.toString(port)); // NOI18N
         desc.postBuild(finishedAction);
+        desc.classPath(classPath);
         desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
         desc.addOutputRecognizer(new WebrickMessageListener(getStartedMessage(serverId)));
         desc.frontWindow(false);
