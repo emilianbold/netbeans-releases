@@ -46,7 +46,7 @@ import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.xslt.core.multiview.source.XSLTSourceMultiViewElementDesc;
 import org.netbeans.modules.xslt.core.multiview.XsltMultiViewSupport;
 import org.netbeans.modules.xslt.core.context.MapperContextFactory;
-import org.netbeans.modules.xslt.core.util.Util;
+import org.netbeans.modules.xslt.tmap.util.Util;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.modules.xslt.model.spi.XslModelFactory;

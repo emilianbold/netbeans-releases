@@ -19,7 +19,7 @@
 package org.netbeans.modules.xslt.core;
 
 import java.io.IOException;
-import org.netbeans.modules.xslt.core.util.Util;
+import org.netbeans.modules.xslt.tmap.util.Util;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;

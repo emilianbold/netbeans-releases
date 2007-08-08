@@ -110,18 +110,18 @@ public class MapperContextFactory {
         
         FileObject tMapFo = Util.getTMapFo(project);
         TMapModel tMapModel = tMapFo == null ? null : Util.getTMapModel(tMapFo);
+        XslModel xslModel = xsltFo == null ? null 
+                : org.netbeans.modules.xslt.core.util.Util.getXslModel(xsltFo);
 
         if (xsltFo == null || tMapModel == null ) {
-            context.setSourceType(null);
-            context.setTargetType(null);
+            context.reinit(tMapModel, null, xslModel, null, null);
             return;
         }
         
         Transform transformContextComponent = getTransform(tMapModel, xsltFo);
         
         if (transformContextComponent == null) {
-            context.setSourceType(null);
-            context.setTargetType(null);
+            context.reinit(tMapModel, null, xslModel, null, null);
             return;
         }
         
@@ -129,9 +129,11 @@ public class MapperContextFactory {
         AXIComponent sourceComponent = getSourceComponent(transformContextComponent);
         AXIComponent targetComponent = getTargetComponent(transformContextComponent);
         // TODO m
-        
-        context.setSourceType(sourceComponent);
-        context.setTargetType(targetComponent);
+        context.reinit(tMapModel, 
+                transformContextComponent, 
+                xslModel, 
+                sourceComponent, 
+                targetComponent);
     }
 
     // TODO m

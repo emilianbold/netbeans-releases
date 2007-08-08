@@ -18,15 +18,9 @@
  */
 package org.netbeans.modules.xslt.core.util;
 
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xslt.model.spi.XslModelFactory;
 import org.netbeans.modules.xslt.model.XslModel;
@@ -62,24 +56,4 @@ public class Util {
         }
         return null;
     }
-
-    public static FileObject getProjectSource(Project project) {
-        FileObject projectSource = null;
-        if (project == null) {
-            return null; // sometimes project couldn't be founded for nb development project
-//            throw new IllegalArgumentException("project shouldn't be null");
-        }
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_XML);
-        if (sourceGroups != null && sourceGroups.length > 0) {
-            projectSource = sourceGroups[0].getRootFolder();
-        }
-
-        return projectSource;
-    }
-
-    public static Project getProject(FileObject projectFo) {
-        return FileOwnerQuery.getOwner(projectFo);
-    }
-
 }

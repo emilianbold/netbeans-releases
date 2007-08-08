@@ -26,7 +26,6 @@ import java.awt.GridBagConstraints;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import javax.swing.Box;
 import javax.swing.JToggleButton;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -93,6 +92,7 @@ public class MapperMultiViewElement extends TopComponent
         initializeUI();
     }
     
+    @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         out.writeObject(myDataObject);
@@ -102,6 +102,7 @@ public class MapperMultiViewElement extends TopComponent
      * we are using Externalization semantics so that we can get a hook to call
      * initialize() upon deserialization
      */
+    @Override
     public void readExternal( ObjectInput in ) throws IOException,
             ClassNotFoundException {
         super.readExternal(in);
@@ -123,6 +124,7 @@ public class MapperMultiViewElement extends TopComponent
     ////////////////////////////////////////////////////////////////////////////
     //                         MultiViewElement
     ////////////////////////////////////////////////////////////////////////////
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
@@ -149,20 +151,24 @@ public class MapperMultiViewElement extends TopComponent
         }
     }
     
+    @Override
     public void componentActivated() {
         super.componentActivated();
         addUndoManager();
     }
     
+    @Override
     public void componentClosed() {
         super.componentClosed();
         myMapperView = null;
     }
     
+    @Override
     public void componentDeactivated() {
         super.componentDeactivated();
     }
     
+    @Override
     public void componentHidden() {
         super.componentHidden();
         if (myMapperView != null) {
@@ -171,10 +177,12 @@ public class MapperMultiViewElement extends TopComponent
         updateXsltTcGroupVisibility(false);
     }
     
+    @Override
     public void componentOpened() {
         super.componentOpened();
     }
     
+    @Override
     public void componentShowing() {
         super.componentShowing();
         if (myMapperView != null) {
@@ -230,6 +238,7 @@ public class MapperMultiViewElement extends TopComponent
         return myToolBarPanel;
     }
 
+    @Override
     public UndoRedo getUndoRedo() {
         return getDataObject().getEditorSupport().getUndoManager();
     }
@@ -242,6 +251,7 @@ public class MapperMultiViewElement extends TopComponent
         myMultiViewObserver = callback;
     }
     
+    @Override
     public void requestVisible() {
         if (myMultiViewObserver != null) {
             myMultiViewObserver.requestVisible();
@@ -250,6 +260,7 @@ public class MapperMultiViewElement extends TopComponent
         }
     }
     
+    @Override
     public void requestActive() {
         if (myMultiViewObserver != null) {
             myMultiViewObserver.requestActive();
@@ -357,7 +368,7 @@ public class MapperMultiViewElement extends TopComponent
     }
     
     private Lookup createAssociateLookup() {
-        MapperContext mapperContext = (MapperContext) myDataObject.getLookup().lookup(MapperContext.class);
+        MapperContext mapperContext = myDataObject.getLookup().lookup(MapperContext.class);
 //        System.out.println("test xslt lookup: "+mapperContext);
         if (mapperContext != null) {
 //            System.out.println("sourceComponent: "+mapperContext.getSourceType());
