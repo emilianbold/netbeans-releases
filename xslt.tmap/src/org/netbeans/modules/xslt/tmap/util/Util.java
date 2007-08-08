@@ -184,6 +184,23 @@ public class Util {
         return wsdlModels;
     }
     
+    public static FileObject[] getProjectSources(Project project) {
+        List<FileObject> projectSources = new ArrayList<FileObject>();
+        if (project == null) {
+            return null; // sometimes project couldn't be founded for nb development project
+//            throw new IllegalArgumentException("project shouldn't be null");
+        }
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(ProjectConstants.SOURCES_TYPE_XML);
+        if (sourceGroups != null) {
+            for (SourceGroup sourceGroup : sourceGroups) {
+                projectSources.add(sourceGroup.getRootFolder());
+            }
+        }
+
+        return projectSources.toArray(new FileObject[projectSources.size()]);
+    }
+
     public static FileObject getProjectSource(Project project) {
         FileObject projectSource = null;
         if (project == null) {
