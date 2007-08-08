@@ -119,7 +119,6 @@ public class CreateNativeLauncherAction extends WizardAction {
                 FileUtils.mkdirs(appInsideDir);
                 FileUtils.mkdirs(macosDirectory);
                 
-                System.setProperty(CommandLauncher.NOTSET_DOCK_NAME_PROPERTY, new Boolean(true).toString());
                 properties.getJvmArguments().add("-Xdock:icon=" +
                         LauncherResource.Type.RELATIVE_LAUNCHER_PARENT.
                         getPathString("../Resources/icon.icns"));
@@ -165,10 +164,6 @@ public class CreateNativeLauncherAction extends WizardAction {
                     "-Xmx256m",
                     "-Xms64m"
                 });
-                System.setProperty(CommandLauncher.NOTSET_DOCK_ICON_PROPERTY,
-                        new Boolean(false).toString());
-                System.setProperty(CommandLauncher.NOTSET_DOCK_NAME_PROPERTY,
-                        new Boolean(false).toString());
                 
                 File file = SystemUtils.createLauncher(
                         properties, platform, progress).getOutputFile();
