@@ -18,16 +18,20 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="websvc/swdp" default="netbeans" basedir=".">
-
+    
     <import file="../../nbbuild/templates/projectized.xml"/>
     
     <target name="unzip_rest">
         <mkdir dir="build/external/rest"/>
-	<unzip src="external/rest.zip" dest="build/external/rest"/>
+        <unzip src="external/rest.zip" dest="build/external/rest"/>
     </target>
-
+    
+    <target name="zip_rest">
+        <zip basedir="build/external/rest" zipfile="external/new_rest.zip" includes="*.jar"/>
+    </target>
+    
     <target name="common-init" depends="default.init, unzip_rest"/>
-
+    
     <target name="clean" depends="init,projectized-common.clean">
         <echo message="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/"/>
         <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/"/>
