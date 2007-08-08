@@ -4,3 +4,4 @@ OpenIDE-Module: org.netbeans.modules.collab.channel.filesharing/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/collab/channel/filesharing/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/collab/channel/filesharing/resources/layer.xml
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
+AutoUpdate-Show-In-Client: false

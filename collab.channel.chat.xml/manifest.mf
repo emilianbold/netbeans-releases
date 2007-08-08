@@ -3,4 +3,5 @@ OpenIDE-Module: org.netbeans.modules.collab.channel.chat.xml/1
 OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/collab/channel/chat/xml/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/collab/channel/chat/xml/layer.xml
+AutoUpdate-Show-In-Client: false
 

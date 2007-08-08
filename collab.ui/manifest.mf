@@ -7,4 +7,5 @@ OpenIDE-Module-Install: org/netbeans/modules/collab/ui/Install.class
 OpenIDE-Module-Requires: org.openide.windows.IOProvider,
  org.netbeans.api.javahelp.Help,
  com.sun.collab.CollabManager
+AutoUpdate-Show-In-Client: false
 

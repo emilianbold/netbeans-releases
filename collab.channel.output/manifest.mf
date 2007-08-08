@@ -4,3 +4,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/collab/channel/output/Bun
 OpenIDE-Module-Layer: org/netbeans/modules/collab/channel/output/resources/layer.xml
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
 OpenIDE-Module-Specification-Version: 1.2
+AutoUpdate-Show-In-Client: false

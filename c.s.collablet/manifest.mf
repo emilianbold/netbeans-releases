@@ -5,4 +5,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/collab/core/Bundle.proper
 OpenIDE-Module-Layer: org/netbeans/modules/collab/core/resources/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/collab/core/module/Install.class
 OpenIDE-Module-Requires: org.openide.windows.IOProvider
+AutoUpdate-Show-In-Client: false
 

@@ -4,4 +4,5 @@ OpenIDE-Module: org.netbeans.modules.collab.provider.im
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/collab/provider/im/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/collab/provider/im/resources/layer.xml
 OpenIDE-Module-Provides: com.sun.collab.CollabManager
+AutoUpdate-Show-In-Client: false
 
