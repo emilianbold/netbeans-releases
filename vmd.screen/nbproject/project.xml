@@ -124,6 +124,7 @@
                 </dependency>
             </module-dependencies>
             <public-packages>
+                <package>org.netbeans.modules.vmd.api.screen</package>
                 <package>org.netbeans.modules.vmd.api.screen.actions</package>
                 <package>org.netbeans.modules.vmd.api.screen.display</package>
                 <package>org.netbeans.modules.vmd.api.screen.display.injector</package>

@@ -21,17 +21,17 @@ package org.netbeans.modules.vmd.analyzer;
 import org.netbeans.modules.vmd.api.io.DataEditorViewFactory;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.DataEditorView;
+import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
+import org.netbeans.modules.vmd.api.analyzer.AnalyzerSupport;
 
 /**
  * @author David Kaspar
  */
 public class AnalyzerEditorViewFactory implements DataEditorViewFactory {
 
-    // TODO - midp module dependency
-    private static final String PROJECT_TYPE_AVAILABILITY = "vmd-midp"; // NOI18N
-
     public DataEditorView createEditorView (DataObjectContext context) {
-        if (PROJECT_TYPE_AVAILABILITY.equals (context.getProjectType ()))
+        ProjectTypeInfo info = ProjectTypeInfo.getProjectTypeInfoFor (context.getProjectType ());
+        if (info.getTags ().contains (AnalyzerSupport.PROJECT_TYPE_TAG_ANALYZER))
             return new AnalyzerEditorView (context);
         return null;
     }

@@ -19,9 +19,15 @@
  */
 package org.netbeans.modules.vmd.midp.components;
 
+import org.netbeans.modules.vmd.api.flow.FlowSupport;
 import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
 import org.netbeans.modules.vmd.api.model.TypeID;
+import org.netbeans.modules.vmd.api.analyzer.AnalyzerSupport;
+import org.netbeans.modules.vmd.api.screen.ScreenSupport;
 import org.netbeans.modules.vmd.midp.components.general.RootCD;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * @author David Kaspar
@@ -42,6 +48,10 @@ public class MidpProjectTypeInfo extends ProjectTypeInfo {
 
     public String getDocumentVersion () {
         return "2"; // NOI18N
+    }
+
+    public Collection<String> getTags () {
+        return Arrays.asList (AnalyzerSupport.PROJECT_TYPE_TAG_ANALYZER, ScreenSupport.PROJECT_TYPE_TAG_SCREEN, FlowSupport.PROJECT_TYPE_TAG_FLOW);
     }
 
 }

@@ -24,6 +24,9 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.game.GameController;
 import org.netbeans.modules.vmd.game.model.GameRootCD;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * @author David Kaspar
  */
@@ -43,6 +46,10 @@ public class GameProjectTypeInfo extends ProjectTypeInfo {
 
     public String getDocumentVersion () {
         return "1";
+    }
+
+    public Collection<String> getTags () {
+        return Collections.emptySet ();
     }
 
 }

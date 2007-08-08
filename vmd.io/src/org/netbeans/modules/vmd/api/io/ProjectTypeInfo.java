@@ -22,6 +22,8 @@ package org.netbeans.modules.vmd.api.io;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.openide.util.Lookup;
 
+import java.util.Collection;
+
 /**
  * @author David Kaspar
  */
@@ -39,6 +41,8 @@ public abstract class ProjectTypeInfo {
     public abstract TypeID getRootCDTypeID ();
 
     public abstract String getDocumentVersion ();
+
+    public abstract Collection<String> getTags ();
     
     public static ProjectTypeInfo getProjectTypeInfoFor (String projectType) {
         for (ProjectTypeInfo info : Lookup.getDefault ().lookupAll (ProjectTypeInfo.class))

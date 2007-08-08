@@ -13,27 +13,16 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-package org.netbeans.modules.vmd.flow;
-
-import org.netbeans.modules.vmd.api.io.DataEditorView;
-import org.netbeans.modules.vmd.api.io.DataEditorViewFactory;
-import org.netbeans.modules.vmd.api.io.DataObjectContext;
-import org.netbeans.modules.vmd.api.io.ProjectTypeInfo;
-import org.netbeans.modules.vmd.api.flow.FlowSupport;
+package org.netbeans.modules.vmd.api.analyzer;
 
 /**
  * @author David Kaspar
  */
-public class FlowEditorViewFactory implements DataEditorViewFactory {
+public final class AnalyzerSupport {
 
-    public DataEditorView createEditorView (DataObjectContext context) {
-        ProjectTypeInfo info = ProjectTypeInfo.getProjectTypeInfoFor (context.getProjectType ());
-        if (info.getTags ().contains (FlowSupport.PROJECT_TYPE_TAG_FLOW))
-            return new FlowEditorView (context);
-        return null;
-    }
+    public static final String PROJECT_TYPE_TAG_ANALYZER = "analyzer"; // NOI18N
 
 }
