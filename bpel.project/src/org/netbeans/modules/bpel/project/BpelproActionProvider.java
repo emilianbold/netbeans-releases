@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.project;
 
 import java.io.File;
@@ -50,13 +49,7 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 
 import org.netbeans.modules.bpel.project.IcanproConstants;
 
-
-/** Action provider of the Web project. This is the place where to do
- * strange things to Web actions. E.g. compile-single.
- */
 class BpelproActionProvider implements ActionProvider {
-
-    // Definition of commands
 
     // Commands available from Web project
     private static final String[] supportedActions = {
@@ -162,7 +155,6 @@ class BpelproActionProvider implements ActionProvider {
 ////            }
 ////        }
 
-
 //          if build command then build any depedent project
             if(command.equals(COMMAND_BUILD)) {
                 try {
@@ -173,9 +165,6 @@ class BpelproActionProvider implements ActionProvider {
             } else {
                 runTask(targetNames, p);
             }
-
-
-
     }
 
     private void runTask(String[] targetNames, Properties p)  {
@@ -188,21 +177,22 @@ class BpelproActionProvider implements ActionProvider {
     }
 
     private void buildDependentProjectsAndRunTask(String[] targetNames, Properties p) throws IOException  {
-    IcanproProjectProperties app = this.project.getProjectProperties();
+        IcanproProjectProperties app = this.project.getProjectProperties();
         List items = (List) app.get(IcanproProjectProperties.JAVAC_CLASSPATH);
         ArrayList artifacts = new ArrayList();
 
-        for (int i = 0, size = items.size(); i < size; i++) {
-            VisualClassPathItem vi = (VisualClassPathItem) items.get(i);
-            AntArtifact aa = (AntArtifact) vi.getObject();
-            String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocations()[0].getPath();
-            File asa = new File(loc);
-            log("Dependent Project artifact jar: "+ loc + ", [" + (asa.exists()?"exist":"missing") + "]");
-            if (! asa.exists()) {
-                artifacts.add(aa);
-            }
+        if (items != null) {
+          for (int i = 0, size = items.size(); i < size; i++) {
+              VisualClassPathItem vi = (VisualClassPathItem) items.get(i);
+              AntArtifact aa = (AntArtifact) vi.getObject();
+              String loc =  aa.getProject().getProjectDirectory().getPath() + "/" +  aa.getArtifactLocations()[0].getPath();
+              File asa = new File(loc);
+              log("Dependent Project artifact jar: "+ loc + ", [" + (asa.exists()?"exist":"missing") + "]");
+              if (! asa.exists()) {
+                  artifacts.add(aa);
+              }
+          }
         }
-
         if(artifacts.size() != 0) {
             //use AntTaskListener which invokes the target on
             //current project build script after all the depedent projects
@@ -225,15 +215,8 @@ class BpelproActionProvider implements ActionProvider {
     }
 
     public boolean isActionEnabled( String command, Lookup context ) {
-
-        if ( findBuildXml() == null ) {
-            return false;
-        }
-        return true;
-
+        return findBuildXml() != null;
     }
-
-    // Private methods -----------------------------------------------------
 
     private boolean isDebugged() {
         return false;
@@ -266,5 +249,5 @@ class BpelproActionProvider implements ActionProvider {
                 runTask(this.mTargetNames, this.mProperties);
             }
         }
-}
+    }
 }
