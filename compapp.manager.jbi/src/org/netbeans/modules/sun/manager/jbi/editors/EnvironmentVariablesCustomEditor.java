@@ -425,6 +425,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
             super(new JPasswordField());
             setClickCountToStart(1);
             ((JComponent)getComponent()).setBorder(myBorder);
+            ((JPasswordField)getComponent()).setEchoChar('*'); // NOI18N
         }
     }
     
