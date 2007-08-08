@@ -1,0 +1,154 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2006 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Web Service Tasks: Quick Reference</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+<h2>Web Service Tasks: Quick Reference</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>
+This topic describes common tasks that you can perform with web services. For more detailed information, click the links in the right column. </p>
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+    <th scope="col" align="left">To perform this task...</th>
+    <th scope="col" align="left">Follow these steps</th>
+  </tr>
+  <tr valign="top">
+    <td>Add a web service to a group</td>
+    <td><ol>
+        <li>Right-click the group node and choose Add Web Service.</li>
+        <li>Follow the procedure for <a href="accessing_websvc.html">adding a web service</a>.</li>
+    </ol></td>
+  </tr>
+  <tr valign="top">
+    <td>Add a web service to a page</td>
+    <td><ol>
+        <li>In the
+            <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+              <param name="content" value="../../ui_elements/server_nav/server_navigator.html">
+              <param name="viewerActivator" value="javax.help.LinkLabel">
+              <param name="viewerStyle" value="javax.help.Popup">
+              <param name="viewerSize" value="420,520">
+              <param name="text" value="Servers window">
+              <param name="textFontFamily" value="SansSerif">
+              <param name="textFontSize" value="medium">
+              <param name="textFontWeight" value="bold">
+              <param name="textFontStyle" value="italic">
+              <param name="textColor" value="blue">
+            </object>
+        , expand the Web Services node.</li>
+        <li>If necessary, expand the node for the web service group.</li>
+        <li>Drag the web service into the page, or right-click the web service node and choose Add to Page.</li>
+    </ol></td>
+  </tr>
+  <tr valign="top">
+    <td>Add a web service to the IDE from a local file</td>
+    <td>
+          <ol>
+            <li>In the <a href="../../ui_elements/server_nav/about_servernav.html">Servers window</a>, right-click the Web Services node or the group node and choose Add Web Service.</li>
+            <li>In the<a href="../../ui_elements/server_nav/add_websvcdb.html"> Add Web Service</a> dialog box, select Local file and click Browse.</li>
+            <li>In the Open dialog box, browse to the WSDL file, select the file, and click Open.</li>
+            <li> In the Add Web Service dialog box, view the web service information to ensure that it is correct.</li>
+            <li>If desired, <a href="accessing_websvc.html">test the web service's methods</a>.</li>
+            <li> In the Add Web Service dialog box, click Add. </li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top"> 
+    <td>Add a web service to the IDE from a URL</td>
+    <td>
+  	    <ol>
+          <li>In the <a href="../../ui_elements/server_nav/about_servernav.html">Servers window</a>, right-click the Web Services node or the group node and choose Add Web Service.</li>
+          <li>In the<a href="../../ui_elements/server_nav/add_websvcdb.html"> Add Web Service</a> dialog box, select URL.</li>
+          <li>If you are behind a firewall, <a href="../../config_setup/setting_proxysrvr.html">set your HTTP proxy</a>.</li>
+          <li> In the Add Web Service dialog box, type the URL.</li>
+          <li> Click Get Web Service Information to view the web service information to ensure that it is correct.</li>
+          <li>If desired, <a href="accessing_websvc.html">test the web service's methods</a>.</li>
+          <li> Click Add. </li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td>Bind a web service to a component</td>
+    <td><ul>
+      <li>Bind the web service to a <a href="ws_bind_simple.html">simple component</a>.</li>
+      <li>Bind the web service to a <a href="ws_bind_list.html">list component</a>.</li>
+      <li>Bind the web service to a <a href="ws_bind_table.html">Table component</a>.  </li>
+    </ul></td>
+  </tr>
+  <tr valign="top">
+    <td>Create a group of web services</td>
+    <td><ol>
+        <li>In the <a href="../../ui_elements/server_nav/about_servernav.html">Servers window</a>, right-click the Web Services node and choose Create Group. </li>
+        <li>Right-click the node that appears and choose Rename.</li>
+        <li>In the Rename dialog box, type the new name. </li>
+        </ol>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td>Delete a web service from a page</td>
+    <td><ul>
+        <li>In the Outline window, right-click the web service and choose Delete.</li>
+        </ul></td>
+  </tr>
+  <tr valign="top">
+    <td>Delete a web service from the IDE</td>
+    <td><ul>
+        <li>In the <a href="../../ui_elements/server_nav/about_servernav.html">Servers window</a>, right-click the web service and choose Delete. </li>
+    </ul></td>
+  </tr>
+  
+  <tr valign="top">
+    <td>Identify and call methods of web services</td>
+    <td><ol>
+      <li>If the web service is not part of the IDE, <a href="accessing_websvc.html">add the web service to the IDE</a>. </li>
+      <li>If the web service has not been added to the page, <a href="add_websvc_to_page.html">add the web service to the page</a>. </li>
+      <li>In the Servers window, expand the <i>web-service-name</i> node and port to view a list of available methods.</li>
+      <li>If desired, select a method to see its properties in the <a href="../../ui_elements/propsheets/propsheet_win.html">Properties window</a>. </li>
+      <li>If desired, test the web service's methods by completing the following steps:
+          <ol type="a">
+            <li>Expand the <i>web-service-name</i> node and the ports node. </li>
+            <li>Right-click the method and choose Test Method.</li>
+            <li>Type a test value for the parameters and click Submit.</li>
+            <li>View the results and click Close.</li>
+          </ol>
+      </li>
+      <li>Call the methods in your Java code. </li>
+    </ol></td>
+  </tr>
+  <tr valign="top">
+  <td>View the  WSDL file for a web service</td>
+  <td><ol>
+    <li>In the <a href="../../ui_elements/server_nav/about_servernav.html">Servers window</a>, expand the Web Services node.</li>
+    <li>If necessary, expand the node for the web service group.</li>
+    <li>Right-click a web service and choose View WSDL.</li>
+    </ol>
+</td>
+  </tr>
+
+</table>
+<hr>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../aboutwebservices.html">About Web Services</a></dd>
+<dd><a href="../web_services_process.html">Working With Web Services</a></dd>
+<!--<dd><a href="../probsconnectwebser.html">Problems and Solutions</a></dd> --></dl>
+<hr>
+
+<small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

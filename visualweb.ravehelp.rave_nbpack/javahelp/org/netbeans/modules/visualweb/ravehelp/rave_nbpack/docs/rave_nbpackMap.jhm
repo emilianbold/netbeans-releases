@@ -661,9 +661,6 @@
 	<mapID target="projraveejb_howtowebservices_ws_bind_list" url="ejb/howtowebservices/ws_bind_list.html"/>
 	<mapID target="projraveejb_howtowebservices_ws_bind_simple" url="ejb/howtowebservices/ws_bind_simple.html"/>
 	<mapID target="projraveejb_howtowebservices_ws_bind_table" url="ejb/howtowebservices/ws_bind_table.html"/>
-	<mapID target="projraveweb_svc_aboutwebservices" url="web_svc/aboutwebservices.html"/>
-	<mapID target="projraveweb_svc_web_services_process" url="web_svc/web_services_process.html"/>
-	<mapID target="projraveweb_svc_howtowebservices_web_services_web_walkthru" url="web_svc/howtowebservices/web_services_web_walkthru.html"/>
 	<mapID target="projraveejb_aboutejbs" url="ejb/aboutejbs.html"/>
 	<mapID target="projraveejb_ejb_process" url="ejb/ejb_process.html"/>
 	<mapID target="projraveejb_ejb_web_walkthru" url="ejb/ejb_web_walkthru.html"/>
@@ -675,4 +672,16 @@
 	<mapID target="projraveejb_howtoejbs_ejb_delete" url="ejb/howtoejbs/ejb_delete.html"/>
 	<mapID target="projraveejb_howtoejbs_ejb_export" url="ejb/howtoejbs/ejb_export.html"/>
 	<mapID target="projraveejb_howtoejbs_ejb_quickref" url="ejb/howtoejbs/ejb_quickref.html"/>
+	<mapID target="projraveweb_svc_aboutwebservices" url="web_svc/aboutwebservices.html"/>
+	<mapID target="projraveweb_svc_web_services_process" url="web_svc/web_services_process.html"/>
+	<mapID target="projraveweb_svc_web_services_web_walkthru" url="web_svc/web_services_web_walkthru.html"/>
+	<mapID target="projraveweb_svc_howtowebservices_accessing_websvc" url="web_svc/howtowebservices/accessing_websvc.html"/>
+	<mapID target="projraveweb_svc_howtowebservices_add_websvc_to_page" url="web_svc/howtowebservices/add_websvc_to_page.html"/>
+	<mapID target="projraveweb_svc_howtowebservices_create_websvc_group" url="web_svc/howtowebservices/create_websvc_group.html"/>
+	<mapID target="projraveweb_svc_howtowebservices_delete_websvc" url="web_svc/howtowebservices/delete_websvc.html"/>
+	<mapID target="projraveweb_svc_howtowebservices_viewing_wsdl_file" url="web_svc/howtowebservices/viewing_wsdl_file.html"/>
+	<mapID target="projraveweb_svc_howtowebservices_webservices_quickref" url="web_svc/howtowebservices/webservices_quickref.html"/>
+	<mapID target="projraveweb_svc_howtowebservices_ws_bind_list" url="web_svc/howtowebservices/ws_bind_list.html"/>
+	<mapID target="projraveweb_svc_howtowebservices_ws_bind_simple" url="web_svc/howtowebservices/ws_bind_simple.html"/>
+	<mapID target="projraveweb_svc_howtowebservices_ws_bind_table" url="web_svc/howtowebservices/ws_bind_table.html"/>
 </map>

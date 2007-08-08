@@ -1,1 +1,64 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved.  *	  Use is subject to license terms.--><html><head><meta name="lastupdated" content="4Jul07"><!-- p2 --><title>About Creating Web Applications</title><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><link rel="stylesheet" href="ide.css" type="text/css"></head><body><h2>About Creating Web Applications</h2><p><small> <a href="#seealso">See Also</a> </small></p> <p>Web applications have a <a href="about_struct_webapps.html">defined folder structure</a>.A web application is usually packaged and deployed as a web archive (WAR) file,   although a web application does not always have to be packaged in order to be deployed. </p><p>A web application <i>must</i> contain a deployment descriptor file (<tt>WEB-INF/web.xml</tt>).A web application <i>can</i> contain one or more <a href="about_create_webcomps.html">web components</a>.</p><p>A visual web application is a project that uses the Visual Web JavaServer Faces framework. When you create a Visual Web  project, the IDE does the following:</p><ul>  <li>Displays the new project in the<object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../../ui_elements/project_nav/project_nav_win.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="350,560">        <param name="text" value="Projects window."></object>  If the Set as Main Project checkbox was selected in the New Project wizard, the new project becomes the main project. If necessary, you can <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_main.html">change the   main project</a>.</li>  <li>Opens a  page for you to edit in the Visual Designer.</li>  <li>Puts all the files   in the <code>$HOME/NetBeansProjects/<i>project-name</i></code> directory on   a UNIX&reg; or Mac OS system or in the <code>\Documents and Settings\<i>username</i>\My Documents\NetBeansProjects\<i>project-name</i> </code> folder on a Microsoft Windows system.</li></ul><p>After you create the project, you can view the files in the 	<a href="../../ui_elements/project_nav/projectlogical.html">Projects window</a> or 		the <a href="../../ui_elements/project_nav/projectfilesystem.html">Files window</a>.</p><ul class="note">  <li>You can add Visual Web JavaServer Faces pages to a web application project that does not initially include the Visual Web JavaServer Faces framework. To do so, right-click the project name node in the Projects window and choose New > Visual Web JSF Page.</li></ul><dl>    <dt><a name="seealso">See Also</a></dt>    <dd><a href="../tag/framework/framework_jsf_create.html">Creating a New Application with JSF Support</a></dd>    <dd><a href="../tag/framework/framework_jsf_add.html">Adding JSF Support to an Existing Application</a></dd>    <dd><a href="../tag/framework/framework_struts_create.html">Creating a New Application with Struts Support</a></dd>    <dd><a href="../tag/framework/framework_struts_add.html">Adding Struts Support to an Existing Application</a></dd></dl><hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font><table border="0" cellpadding="50"><tr><td>&nbsp;</td></tr></table></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+<html>
+<head>
+<meta name="lastupdated" content="4Jul07">
+<!-- p2 -->
+
+<title>About Creating Web Applications</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="ide.css" type="text/css">
+</head>
+
+<body>
+
+<h2>About Creating Web Applications</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+<p>Web applications have a <a href="about_struct_webapps.html">defined folder structure</a>.
+A web application is usually packaged and deployed as a web archive (WAR) file, 
+  although a web application does not always have to be packaged in order to be deployed. 
+</p>
+<p>A web application <i>must</i> contain a deployment descriptor file (<tt>WEB-INF/web.xml</tt>).
+A web application <i>can</i> contain one or more <a href="about_create_webcomps.html">web components</a>.</p>
+<p>A visual web application is a project that uses the Visual Web JavaServer Faces framework. When you create a Visual Web  project, the IDE does the following:</p>
+<ul>
+  <li>Displays the new project in the
+<object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../../ui_elements/project_nav/project_nav_win.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="350,560">
+        <param name="text" value="Projects window."></object>
+
+
+  If the Set as Main Project checkbox was selected in the New Project wizard, the new project becomes the main project. If necessary, you can <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_main.html">change the 
+  main project</a>.</li>
+  <li>Opens a  page for you to edit in the Visual Designer.</li>
+  <li>Puts all the files   in the <code>$HOME/NetBeansProjects/<i>project-name</i></code> directory on 
+  a UNIX&reg; or Mac OS system or in the <code>\Documents and Settings\<i>username</i>\My Documents\NetBeansProjects\<i>project-name</i> </code> folder on a Microsoft Windows system.</li>
+</ul>
+<p>After you create the project, you can view the files in the 
+	<a href="../../ui_elements/project_nav/projectlogical.html">Projects window</a> or 
+		the <a href="../../ui_elements/project_nav/projectfilesystem.html">Files window</a>.</p>
+<ul class="note">
+  <li>You can add Visual Web JavaServer Faces pages to a web application project that does not initially include the Visual Web JavaServer Faces framework. To do so, right-click the project name node in the Projects window and choose New > Visual Web JSF Page.</li>
+</ul>
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../tag/framework/framework_jsf_create.html">Creating a New Application with JSF Support</a></dd>
+    <dd><a href="../tag/framework/framework_jsf_add.html">Adding JSF Support to an Existing Application</a></dd>
+    <dd><a href="../tag/framework/framework_struts_create.html">Creating a New Application with Struts Support</a></dd>
+    <dd><a href="../tag/framework/framework_struts_add.html">Adding Struts Support to an Existing Application</a></dd>
+</dl>
+
+<hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

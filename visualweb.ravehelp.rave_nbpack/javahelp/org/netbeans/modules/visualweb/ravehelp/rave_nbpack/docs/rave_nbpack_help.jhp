@@ -118,7 +118,21 @@
 					<file title="Template"/>
 				</directory>
 			</directory>
-			<directory title="ejb"/>
+			<directory title="ejb">
+				<directory title="howtoejbs">
+					<file title="ejb_add_to_IDE.html"/>
+					<file title="ejb_add_to_page.html"/>
+					<file title="ejb_bind_list.html"/>
+					<file title="ejb_bind_simple.html"/>
+					<file title="ejb_bind_table.html"/>
+					<file title="ejb_delete.html"/>
+					<file title="ejb_export.html"/>
+					<file title="ejb_quickref.html"/>
+				</directory>
+				<file title="aboutejbs.html"/>
+				<file title="ejb_process.html"/>
+				<file title="ejb_web_walkthru.html"/>
+			</directory>
 			<directory title="glossary">
 				<directory title="CVS">
 					<file title="Entries"/>
@@ -1192,7 +1206,22 @@
 					<file title="yellow-ball.gif"/>
 				</directory>
 			</directory>
-			<directory title="web_svc"/>
+			<directory title="web_svc">
+				<directory title="howtowebservices">
+					<file title="accessing_websvc.html"/>
+					<file title="add_websvc_to_page.html"/>
+					<file title="create_websvc_group.html"/>
+					<file title="delete_websvc.html"/>
+					<file title="viewing_wsdl_file.html"/>
+					<file title="webservices_quickref.html"/>
+					<file title="ws_bind_list.html"/>
+					<file title="ws_bind_simple.html"/>
+					<file title="ws_bind_table.html"/>
+				</directory>
+				<file title="aboutwebservices.html"/>
+				<file title="web_services_process.html"/>
+				<file title="web_services_web_walkthru.html"/>
+			</directory>
 			<file title="credits.html"/>
 			<file title="intro_web_walkthru.html"/>
 			<file title="no_topic.html"/>

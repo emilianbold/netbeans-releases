@@ -1,0 +1,91 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright ? 2006 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Binding a Simple Component to an Enterprise JavaBean Method</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Binding a Simple Component to an Enterprise JavaBean Method</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>When you bind a simple component to an Enterprise JavaBean component (enterprise bean), you create a connection between the component and the enterprise bean method. Simple components display one value at a time. For easiest data binding, use components from the Basic category of the Palette, such as Button or Hyperlink. </p>
+<p>After you add the Enterprise JavaBean component (enterprise bean) to the IDE and to the page, you can call an enterprise bean method by
+  using either of the following techniques:</p>
+<ul>
+  <li>Bind a method to a component. You can use this technique to view the results 
+  	of the method, but you cannot update it. You do not need to write any Java 
+	code. </li>
+  <li>Call the method in your Java code. You can use this technique to view or 
+  	update the enterprise bean.</li>
+</ul>
+
+<p>The examples in the following procedures describe how to call the same  
+method using both techniques. </p>
+
+<p><b>To bind a simple component to a method:</b></p>
+    <ol>
+      <li>If the enterprise bean is not part of the IDE, <a href="ejb_add_to_IDE.html">add the 
+	  	enterprise bean to the IDE</a>. </li>
+      <li>Drag and drop the method onto the component. </li>
+      <li>Right-click the component and choose Bind to Data.</li>
+      <li>In the Bind to Data dialog box, click the Bind to Data Provider tab.</li>
+      <li>Choose the method's data provider.</li>
+      <li>Select the data field to display in the component.
+          <p>For example, consider the following scenario. You want to use the <code>getPersons</code> method of the <code>TravelEJB</code>  to display the first person's name in a static text field. </p>
+          <ol>
+            <li><a href="ejb_add_to_IDE.html">Add the <code>TravelEJB</code> </a> shipped with the IDE. </li>
+            <li>Drag the Basic &gt; Static Text component to the page.</li>
+            <li>Drag the <code>getPersons</code> method onto the static text field.</li>
+            <li>Right-click the static text and choose Bind to Data.</li>
+            <li>Select name from the data field list.</li>
+          </ol>
+      </li>
+</ol>
+	
+	
+<p><b>To call a method in your Java code:</b></p>
+<ol>
+  <li>If the enterprise bean is not part of the IDE, <a href="ejb_add_to_IDE.html">add the enterprise bean to the IDE</a>. </li>
+      <li>If the enterprise bean has not been added to the page, drag it to the Visual Designer.</li>
+      <li>If desired, select a method to see its properties in the <a href="../../ui_elements/propsheets/propsheet_win.html">Properties window.</a> </li>
+      <li>Call the method in your Java code.
+	  <p>For example, consider the following scenario. You want to use the 
+	  <code>getPersons</code> method of <code>TravelEJB</code> to display the first person's name in a static text field. </p>
+      </li>
+	  	<ol>
+		<li>Drag the Basic &gt; Static Text component to the page.</li>
+	  	<li>Drag the <code>getPersons</code> method of <code>TravelEJB</code> to the page. </li>
+	  	<li>Go to the <code>Page1.java</code> source code by selecting the Java tab.</li>
+	  	<li>In the <code>prerender()</code> method, enter the following code:</li> 	  
+<pre>try {
+      staticText1.setValue( travelClient1.getPersons()[0].getName() );
+ } catch (Exception e) {
+     log("Page1 Initialization Failure", e);
+     throw e instanceof FacesException ? (FacesException) e: new FacesException(e);
+ }</pre> 	
+	  	</ol>
+</ol>
+
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../aboutejbs.html">About Enteprise JavaBean Components</a></dd>
+  <dd><a href="ejb_add_to_IDE.html">Adding a Set of Enterprise JavaBean Components to the IDE</a></dd>
+  <dd><a href="../../ui_elements/project_nav/about_project_nav.html">About the Projects and Files Windows</a></dd>
+  <dd><a href="../../ui_elements/editors/about_java_editor.html">About the Java Editor</a></dd>
+</dl>
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
+
+

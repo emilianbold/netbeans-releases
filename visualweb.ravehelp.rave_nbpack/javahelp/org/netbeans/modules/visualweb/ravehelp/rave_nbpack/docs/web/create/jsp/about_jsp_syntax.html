@@ -1,1 +1,155 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved.  *	  Use is subject to license terms.--><html><head><meta name="lastupdated" content="4Jul07"><!-- p2 --><title>About JSP Syntax</title><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>About JSP Syntax</h2><p><small> <a href="#seealso">See Also</a> </small></p> <p>JSP files have four main characteristics:</p><ul>  <li>A host language, which is the language of the file that results when the     page is executed</li>  <li>JSP elements, which include JSP tags, directives, and comments</li>  <li>Embedded Expression Language (EL) syntax within <tt>${</tt> and <tt>}</tt>     delimiters</li>  <li>Embedded Java code in the form of scriptlets, declarations, and expressions</li></ul><p>You can compose a JSP page using either standard JSP syntax or JSP document syntax.</p><table cellpadding="3" cellspacing="0" border="0">   <tr valign="top">      <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>            <td>You can use the <tt>web.xml</tt> Visual Editor to 	      <a href="../../csh/graphic_editor/dd_multiview_pages_jspPropertyGroupsNode.html">group</a> a set of JSP files	      and redefine them as JSP documents. This has a variety of consequences.	      For example, a JSP file's <a href="about_jsp_encoding.html">page encoding</a> is interpreted differently      to that of a JSP document.</td>   </tr></table><p>This topic first describes <a href="#standard">standard JSP syntax</a> and then describes <a href="#document">JSP document syntax</a>. Whether you use standard  JSP syntax or JSP document syntax, the JSP Source   Editor provides code completion and syntax coloring facilities to help you construct   a valid JSP page.</p><h3>Standard JSP Syntax<a name="standard"></a></h3><p><b>JSP Element Syntax</b></p><p>The three types of JSP elements are:</p><ul>  <li><b>Directive elements.</b> For example <tt>&lt;%@</tt> <i>directive</i>   <tt>%&gt;</tt></li>  <li><b>Action elements.</b> For example <tt>&lt;startTag&gt;</tt> <i>body</i>     <tt>&lt;/startTag&gt;</tt> </li>    <li><b>Scripting elements.</b> For example <tt>&lt;%!</tt> <i>declaration</i> <tt>!%&gt;</tt>, <tt>&lt;%</tt> <i>scriptlet</i> <tt>%&gt;</tt>,     and <tt>&lt;%=</tt> <i>expression</i> <tt>%&gt;</tt></li></ul><p> JSP syntax is similar to XML. Action elements have a start tag, including   the element name, possibly with attributes, an optional body, and a matching   end tag. For example:</p> <blockquote><tt>&lt;mytag1 attr1=&quot;attribute value&quot; ...&gt;...&lt;/mytag1&gt;</tt></blockquote><p>or</p> <blockquote><tt>&lt;mytag2 attr1=&quot;attribute value&quot; .../../../../../../../../&gt;</tt></blockquote><p>JSP tags are case-sensitive, as in XML and XHTML.</p><p><b>Start and End Tags</b></p><p>Elements that have distinct start and end tags with an enclosed body must start   and end in the same file. You cannot begin a tag in one file and end that tag in another file.   This rule also applies to elements in the alternate syntax. For example, a scriptlet   has the syntax <tt>&lt;%</tt><i> scriptlet </i><tt>%&gt;</tt>. Both the opening <tt>&lt;%</tt>   delimiter and the closing <tt>%&gt;</tt> delimiter must be in the same   physical file.</p><p><b>Empty Elements</b></p><p>Following the XML specification, an element described using an empty tag is   indistinguishable from an element using a start tag, an empty body, and an end tag.</p><p><b>Attribute Values</b></p><p>Attribute values always appear quoted. Both single and double quotes can be used. The entities <tt>&amp;apos;</tt> and <tt>&amp;quot;</tt> are available   to describe single and double quotes in output text. You can also use <tt>\"</tt> and <tt>\'</tt> within quoted text.</p>  <p><b>Comments Within JSP Files</b></p> <p> The syntax for comments within JSP files is as follows:</p><p><tt>&lt;%-- and --%&gt; </tt> </p><h3>JSP Document Syntax<a name="document"></a></h3><p>A JSP document is a JSP page that is written using XML syntax. A JSP file identifies   itself as a JSP document using one of the following methods:</p><ul>  <li>The JSP file has a <tt>.jspx</tt> extension and the web application is using     a version 2.4 web.xml file that recognizes this extension.</li>  <li>The JSP file has a <tt>jsp:root</tt> element.</li></ul><p><b>JSP Document Elements</b></p><p>A JSP document can contain the following elements:</p><ul>  <li><b>Directive elements.</b> For example, <tt>&lt;jsp:directive.include file=&quot;</tt><i>spec</i><tt>&quot;/&gt;</tt>.</li>  <li><b>Standard action elements.</b> For example, <tt>&lt;startTag&gt;</tt>   <i>body</i> <tt>&lt;/startTag&gt;</tt> within a <tt>&lt;jsp:&gt;</tt> prefix.</li>  <li><b>Custom action elements.</b> For example, <tt>&lt;jsp:element</tt> <i>attributes</i>   <tt>&gt;</tt> <i>body</i> <tt>&lt;/jsp:element&gt;</tt>. Note that custom action elements  may not use a a <tt>&lt;jsp:&gt;</tt> prefix.</li>  <li><b>Scriptlets.</b> For example, <tt>&lt;jsp:scriptlet&gt;</tt> <i>scriptlet</i>     <tt>&lt;/jsp:scriptlet&gt;</tt>.</li>    <li><b>Scriptlet expressions.</b> For example <tt>%=</tt><i>expression</i><tt>%</tt>     and <tt>&lt;jsp:expression&gt;</tt> <i>expression</i> <tt>&lt;/jsp:expression&gt;</tt>.</li>    <li><b>Scriptlet declarations.</b> For example <tt>&lt;%!</tt> <i>declaration</i> <tt>!%&gt;</tt>     and <tt>&lt;jsp:declaration&gt;</tt> <i>declaration</i> <tt>&lt;/jsp:declaration&gt;</tt>.</li>  <li><b>EL expressions. </b>EL expressions are allowed in the body of elements     and in attribute values.</li>  <li><b>Output elements.</b> The output elements are <tt>jsp:root</tt>,     <tt>jsp:text</tt>, and <tt>jsp:output</tt>.</li>  <li><b>Template data.</b> Template data is described through <tt>jsp:text</tt>     elements and XML fragments.</li></ul><p>For more information about JSP syntax and JSP document syntax, see   <i>JavaServer Pages Specification Version</i>, available at <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">         <param name="content" value="http://java.sun.com/products/jsp/download.html">         <param name="text" value="<html><u>http://java.sun.com/products/jsp/download.html</u></html>">         <param name="textFontSize" value="medium">         <param name="textColor" value="blue"></object> </p><dl><dt><a name="seealso">See Also</a></dt><dd><a href="jsp_compile.html">Compiling a JSP File</a></dd><dd><a href="about_jsp_technology.html">About JavaServer Pages Technology</a></dd><dd><a href="about_jsp_encoding.html">About JSP Character Encoding</dd></dl> <hr><small><a href="../../../credits.html">Legal Notices</a> <table cellpadding="20" border="0"> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> </table> </small></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+
+<html>
+<head>
+<meta name="lastupdated" content="4Jul07">
+<!-- p2 -->
+
+<title>About JSP Syntax</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+
+<body>
+<h2>About JSP Syntax</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+<p>JSP files have four main characteristics:</p>
+<ul>
+  <li>A host language, which is the language of the file that results when the 
+    page is executed</li>
+  <li>JSP elements, which include JSP tags, directives, and comments</li>
+  <li>Embedded Expression Language (EL) syntax within <tt>${</tt> and <tt>}</tt> 
+    delimiters</li>
+  <li>Embedded Java code in the form of scriptlets, declarations, and expressions</li>
+</ul>
+
+<p>You can compose a JSP page using either standard JSP syntax or JSP document 
+syntax.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+   <tr valign="top">
+      <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+      
+      <td>You can use the <tt>web.xml</tt> Visual Editor to 
+	      <a href="../../csh/graphic_editor/dd_multiview_pages_jspPropertyGroupsNode.html">group</a> a set of JSP files
+	      and redefine them as JSP documents. This has a variety of consequences.
+	      For example, a JSP file's <a href="about_jsp_encoding.html">page encoding</a> is interpreted differently
+      to that of a JSP document.</td>
+   </tr>
+</table>
+<p>This topic first describes <a href="#standard">standard JSP syntax</a> 
+and then describes <a href="#document">JSP document syntax</a>. Whether you use standard 
+ JSP syntax or JSP document syntax, the JSP Source 
+  Editor provides code completion and syntax coloring facilities to help you construct 
+  a valid JSP page.</p>
+<h3>Standard JSP Syntax<a name="standard"></a></h3>
+<p><b>JSP Element Syntax</b></p>
+<p>The three types of JSP elements are:</p>
+<ul>
+  <li><b>Directive elements.</b> For example <tt>&lt;%@</tt> <i>directive</i> 
+  <tt>%&gt;</tt></li>
+  <li><b>Action elements.</b> For example <tt>&lt;startTag&gt;</tt> <i>body</i> 
+    <tt>&lt;/startTag&gt;</tt> </li>
+    <li><b>Scripting elements.</b> For example <tt>&lt;%!</tt> <i>declaration</i> <tt>!%&gt;</tt>, <tt>&lt;%</tt> <i>scriptlet</i> <tt>%&gt;</tt>, 
+    and <tt>&lt;%=</tt> <i>expression</i> <tt>%&gt;</tt></li>
+</ul>
+<p> JSP syntax is similar to XML. Action elements have a start tag, including 
+  the element name, possibly with attributes, an optional body, and a matching 
+  end tag. For example:</p>
+ <blockquote><tt>&lt;mytag1 attr1=&quot;attribute value&quot; 
+...&gt;...&lt;/mytag1&gt;</tt>
+</blockquote>
+<p>or</p>
+ <blockquote><tt>&lt;mytag2 attr1=&quot;attribute value&quot; 
+.../../../../../../../../&gt;</tt></blockquote>
+
+<p>JSP tags are case-sensitive, as in XML and XHTML.</p>
+<p><b>Start and End Tags</b></p>
+<p>Elements that have distinct start and end tags with an enclosed body must 
+start 
+  and end in the same file. You cannot begin a tag in one file and end that tag in 
+another file. 
+  This rule also applies to elements in the alternate syntax. For example, a 
+scriptlet 
+  has the syntax <tt>&lt;%</tt><i> scriptlet </i><tt>%&gt;</tt>. Both the opening 
+<tt>&lt;%</tt> 
+  delimiter and the closing <tt>%&gt;</tt> delimiter must be in the same 
+  physical file.</p>
+<p><b>Empty Elements</b></p>
+<p>Following the XML specification, an element described using an empty tag is 
+  indistinguishable from an element using a start tag, an empty body, and an end 
+tag.</p>
+<p><b>Attribute Values</b></p>
+<p>Attribute values always appear quoted. Both single and double quotes can be 
+used. The entities <tt>&amp;apos;</tt> and <tt>&amp;quot;</tt> are 
+available 
+  to describe single and double quotes in output text. You can also use 
+<tt>\"</tt> and <tt>\'</tt> 
+within quoted text.</p>
+  
+<p><b>Comments Within JSP Files</b></p>
+ <p> The syntax for comments within JSP files is as follows:</p>
+<p><tt>&lt;%-- and --%&gt; </tt> </p>
+<h3>JSP Document Syntax<a name="document"></a></h3>
+<p>A JSP document is a JSP page that is written using XML syntax. A JSP file identifies 
+  itself as a JSP document using one of the following methods:</p>
+<ul>
+  <li>The JSP file has a <tt>.jspx</tt> extension and the web application is using 
+    a version 2.4 web.xml file that recognizes this extension.</li>
+  <li>The JSP file has a <tt>jsp:root</tt> element.</li>
+</ul>
+<p><b>JSP Document Elements</b></p>
+<p>A JSP document can contain the following elements:</p>
+<ul>
+  <li><b>Directive elements.</b> For example, <tt>&lt;jsp:directive.include file=&quot;</tt><i>spec</i><tt>&quot;/&gt;</tt>.</li>
+  <li><b>Standard action elements.</b> For example, <tt>&lt;startTag&gt;</tt> 
+  <i>body</i> <tt>&lt;/startTag&gt;</tt> within a <tt>&lt;jsp:&gt;</tt> prefix.</li>
+  <li><b>Custom action elements.</b> For example, <tt>&lt;jsp:element</tt> <i>attributes</i> 
+  <tt>&gt;</tt> <i>body</i> <tt>&lt;/jsp:element&gt;</tt>. Note that custom action elements
+  may not use a a <tt>&lt;jsp:&gt;</tt> prefix.</li>
+  <li><b>Scriptlets.</b> For example, <tt>&lt;jsp:scriptlet&gt;</tt> <i>scriptlet</i> 
+    <tt>&lt;/jsp:scriptlet&gt;</tt>.</li>
+    <li><b>Scriptlet expressions.</b> For example <tt>%=</tt><i>expression</i><tt>%</tt> 
+    and <tt>&lt;jsp:expression&gt;</tt> <i>expression</i> <tt>&lt;/jsp:expression&gt;</tt>.</li>
+    <li><b>Scriptlet declarations.</b> For example <tt>&lt;%!</tt> <i>declaration</i> <tt>!%&gt;</tt> 
+    and <tt>&lt;jsp:declaration&gt;</tt> <i>declaration</i> <tt>&lt;/jsp:declaration&gt;</tt>.</li>
+  <li><b>EL expressions. </b>EL expressions are allowed in the body of elements 
+    and in attribute values.</li>
+  <li><b>Output elements.</b> The output elements are <tt>jsp:root</tt>, 
+    <tt>jsp:text</tt>, and <tt>jsp:output</tt>.</li>
+  <li><b>Template data.</b> Template data is described through <tt>jsp:text</tt> 
+    elements and XML fragments.</li>
+</ul>
+<p>For more information about JSP syntax and JSP document syntax, see 
+  <i>JavaServer Pages Specification Version</i>, available at 
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+         <param name="content" value="http://java.sun.com/products/jsp/download.html">
+         <param name="text" value="<html><u>http://java.sun.com/products/jsp/download.html</u></html>">
+         <param name="textFontSize" value="medium">
+         <param name="textColor" value="blue">
+</object> 
+</p>
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="jsp_compile.html">Compiling a JSP File</a></dd>
+<dd><a href="about_jsp_technology.html">About JavaServer Pages Technology</a></dd>
+<dd><a href="about_jsp_encoding.html">About JSP Character Encoding</dd>
+</dl>
+ 
+<hr>
+<small><a href="../../../credits.html">Legal Notices</a> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</small></body></html>
+

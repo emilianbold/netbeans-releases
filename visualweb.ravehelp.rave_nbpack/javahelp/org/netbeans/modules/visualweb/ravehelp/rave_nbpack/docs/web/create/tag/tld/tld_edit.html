@@ -1,1 +1,76 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved.  *	  Use is subject to license terms.--><html><head><meta name="lastupdated" content="9Jul07"><!-- p2 --><title>Editing a Tag Library Descriptor</title><meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>Editing a Tag Library Descriptor</h2><p><small> <a href="#seealso">See Also</a> </small></p> <p>You can use the Source Editor toedit a tag library descriptor (TLD) file.</p><p><b>To edit a TLD using the Source Editor:</b></p><ol>  <li>In the Projects window or Files window, double-click the TLD file's node. </li>  <li>The TLD file opens in the Source Editor.</li>  <li>In the Source Editor, edit the tag library discriptor by using the following main elements:</li><ul>  <li><b>&lt;short-name&gt;</b> Specifies a simple name that can be used by JSP page     authoring tools to suggest a namespace prefix for using the tag library in     a JSP page. The default is the <tt>.tld </tt>filename, without the <tt>.tld</tt>     extension. </li>  <li><b>&lt;display-name&gt;</b> Specifies a short name intended for display by tools.     It does not need to be unique.</li>  <li><b>&lt;tlib-version&gt;</b> Specifies the version of the tag library being     created. The default is 1.0. </li>  <li><b>&lt;uri&gt;</b> Specifies a public URI that uniquely identifies this version     of the tag library. JSP files that use this tag library must use this    value for the uri attribute in the taglib directive, unless there    exists a jsp-config element in the web.xml file that maps a    different URI to the tag library.</li>  <li><b>&lt;icon&gt;</b> Specifies the name of a file containing a small (16 x     16) icon image for use by tools. The file name is a relative path within the     tag library.</li>  <li><b>&lt;description&gt;</b> Specifies descriptive information about the tag library.</li>  <li><b>&lt;version&gt;</b> This is an attribute of the <b>&lt;taglib&gt;</b> element.    It specifies the JSP version that the tag library requires.     The default for J2SEE 1.3 is 1.2 and for J2SEE 1.4 is 2.0. </li></ul></ol><p>For general information about tag libraries, see <i>JavaServer Pages Specification</i> available at <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">        <param name="content" value="http://java.sun.com/products/jsp/download.html">        <param name="text" value="<html><u>http://java.sun.com/products/jsp/download.html</u></html>">        <param name="textFontSize" value="medium">        <param name="textColor" value="blue"></object> .</p><dl><dt><a name="seealso">See Also</a></dt><dd><a href="../about/about_taglib.html">About Tag Libraries</a></dd><dd><a href="../taghandler/taghandler_create.html">Creating a Tag Handler</a></dd></dl><hr><small><a href="../../../../credits.html">Legal Notices</a> <table cellpadding="20" border="0"> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> </table> </small></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2006 Sun Microsystems, Inc. All rights reserved. 
+
+ *	  Use is subject to license terms.
+-->
+<html>
+<head>
+<meta name="lastupdated" content="9Jul07">
+<!-- p2 -->
+<title>Editing a Tag Library Descriptor</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="StyleSheet" href="ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Editing a Tag Library Descriptor</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+<p>You can use the Source Editor to
+edit a tag library descriptor (TLD) file.</p>
+<p><b>To edit a TLD using the Source Editor:</b></p>
+<ol>
+  <li>In the Projects window or Files window, double-click the TLD file's node. </li>
+  <li>The TLD file opens in the Source Editor.</li>
+  <li>In the Source Editor, edit the tag library discriptor by using the following main elements:</li>
+<ul>
+  <li><b>&lt;short-name&gt;</b> Specifies a simple name that can be used by JSP page 
+    authoring tools to suggest a namespace prefix for using the tag library in 
+    a JSP page. The default is the <tt>.tld </tt>filename, without the <tt>.tld</tt> 
+    extension. </li>
+  <li><b>&lt;display-name&gt;</b> Specifies a short name intended for display by tools. 
+    It does not need to be unique.</li>
+  <li><b>&lt;tlib-version&gt;</b> Specifies the version of the tag library being 
+    created. The default is 1.0. </li>
+  <li><b>&lt;uri&gt;</b> Specifies a public URI that uniquely identifies this version 
+    of the tag library. JSP files that use this tag library must use this
+    value for the uri attribute in the taglib directive, unless there
+    exists a jsp-config element in the web.xml file that maps a
+    different URI to the tag library.</li>
+  <li><b>&lt;icon&gt;</b> Specifies the name of a file containing a small (16 x 
+    16) icon image for use by tools. The file name is a relative path within the 
+    tag library.</li>
+  <li><b>&lt;description&gt;</b> Specifies descriptive information about the tag library.</li>
+  <li><b>&lt;version&gt;</b> This is an attribute of the <b>&lt;taglib&gt;</b> element.
+    It specifies the JSP version that the tag library requires. 
+    The default for J2SEE 1.3 is 1.2 and for J2SEE 1.4 is 2.0. </li>
+</ul>
+</ol>
+<p>For general information about tag libraries, see <i>JavaServer Pages Specification</i> 
+available at 
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://java.sun.com/products/jsp/download.html">
+        <param name="text" value="<html><u>http://java.sun.com/products/jsp/download.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+</object> 
+.</p>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../about/about_taglib.html">About Tag Libraries</a></dd>
+<dd><a href="../taghandler/taghandler_create.html">Creating a Tag Handler</a></dd>
+</dl>
+
+
+<hr>
+<small><a href="../../../../credits.html">Legal Notices</a> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</small></body></html>

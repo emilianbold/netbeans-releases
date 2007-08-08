@@ -1,1 +1,198 @@
-<html> <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"> <!-- * Copyright © 2007 Sun Microsystems, Inc.  * All rights reserved.   * Use is subject to license terms. -->  <head>    <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">    <link type="text/css" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" rel="stylesheet">    <meta name="generator" content="Helen">    <title>About Components</title>  </head>  <body>    <h2>       About Components    </h2>    <p>       <small><a href="#seealso">See Also</a></small> | <small><a href=      "#tutorials">Tutorials</a></small>    </p>    <p>       Components are reusable user interface elements that you can use to build the visual      interface for your page. Components are rendered into HTML page elements such as text,      hyperlinks, or form elements. The components in the IDE are based on JavaServer Faces      technology and use JavaScript.    </p>    <ul class="note">      <li>        Because these components use JavaScript, users of your web applications must have        JavaScript enabled in their web browsers. In addition, users of your applications must        enable cookies and CSS in their web browsers.      </li>    </ul>    <p>       Components have properties, which describe the appearance, state, or other features of a      specific component on a page. You can edit properties by <a href=      "howtocomponents/set_comp_props.html">using the Properties window</a>, or you can <a href=      "howtocomponents/bind_comp_props.html">bind properties</a> to values contained in other      components or services such as databases or web services.    </p>    <p>       By default, components that you add to a page are arranged on the page by position: Where      you place them in the Visual Designer is where they will appear on the final HTML page. You      can <a href="howtocomponents/layer_comp.html">stack components</a> on top of each other using      the Bring to Front and Send to Back menu items, and you can <a href=      "howtocomponents/nest_comp.html">nest components</a> together using the Grid Panel and Group      Panel components.    </p>    <p>       Finally, components can have associated event handlers, written in the Java language, that      are executed when the page is submitted.    </p>    <h3>       Component Categories    </h3>    <p>       Components are located in the <object classid=      "java:com.sun.java.help.impl.JHSecondaryViewer">        <param name="content" value="../ui_elements/palette/palette_win_graphic.html">        <param name="viewerActivator" value="javax.help.LinkLabel">        <param name="viewerStyle" value="javax.help.Popup">        <param name="viewerSize" value="300,515">        <param name="text" value="Components view of the Palette"></object> &nbsp;and are grouped under categories. Click a category in the Components view to      see the associated components.    </p>    <p>       The Components view contains the following categories:    </p>    <ul>      <li>        <b>Basic</b>. The components that you are likely to use most often, like buttons, tables,        drop down lists, and text fields, to name only a few.      </li>      <li>        <b>Layout.</b> Components whose main purpose is organizing or formatting a page, like the        Grid Panel component that arranges components in a grid or the Group Panel component that        groups components together.      </li>      <li>        <b>Composite.</b> Components with a more complex organization and a specialized purpose,        like the Add Remove List component that displays a list of items and lets the user add them        to another list, or the Breadcrumbs component that displays a list of hyperlinks to        previous pages in a site hierarchy.      </li>      <li>        <b>Validators.</b> A set of value checkers that you can use to validate user entered data.      </li>      <li>      <b>Converters.</b> A set of data converters that you can use with components to convert      between the <code>String</code> data type and other data types as needed. </li>      <li>        <b>Standard.</b> The original set of standard JavaServer Faces components that        shipped with the IDE. They are not as sophisticated or easy to use as the Basic, Layout,        and Composite components. For example, the Standard components cannot participate in a        theme, and their structure is often more complex to work with than the Basic components.      </li>      <li>        <b>Advanced.</b> A set of JavaServer Page markup tags for advanced users. The components        have no visual appearance and are useful to developers with experience in JSP and        JavaServer Faces technologies.      </li>      <li>        <b>Data Providers.</b> A set of components that provide an interface to data sources like        database tables and JavaBeans objects.      </li>      <li>        <b>Advanced Data Providers.</b> A set of data providers for use by advanced users only.        These data providers are typically created for you and do not need to be added separately.      </li>    </ul>    <h3>       Viewing and Managing Components    </h3>    <p>       You can view or manage components in the following ways:    </p>    <ul>      <li>        Use the  to <object classid=      "java:com.sun.java.help.impl.JHSecondaryViewer">        <param name="content" value="../ui_elements/palette/palette_win_graphic.html">        <param name="viewerActivator" value="javax.help.LinkLabel">        <param name="viewerStyle" value="javax.help.Popup">        <param name="viewerSize" value="300,515">        <param name="text" value="Components view of the Palette"></object> drag components into        the Visual Designer to work with them.      </li>      <li>        Use the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>    <param name="content" value="../ui_elements/navigator_win/navigator_win_popup.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="385,450">    <param name="text" value="Navigator window"></object> to        view a hierarchical list of the components on a page. If you select a component in the        Outline window, the component is selected in the Visual Designer and vice versa. You can        sometimes select a component more easily in the Outline window than in the Visual Designer,        especially if you want to change its location in a hierarchy of subcomponents. You can        right-click a component's node in the Outline window and select the same pop-up menu items        as in the Visual Designer.      </li>    </ul>    <dl>      <dt>         <a name="seealso">See Also</a>      </dt>      <dd>        <a href="component_process.html">Working With Components</a>      </dd>      <dd>        <a href="../ui_elements/palette/palette.html">About the Visual Web Palette</a>      </dd>       <dd>        <a href="../ui_elements/navigator_win/navigator_win_popup.html">About the Navigator Window</a>      </dd>       <dd>        <a href="howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a>      </dd>      <dd>        <a href="webform.html">About Pages</a>      </dd>      <!--<dd><a href="../probscomponents.html">Problems and Solutions with Components</a></dd>-->    </dl>    <dl>      <dt>         <a name="tutorials">Tutorials</a>      </dt>      <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5"></object></dd>    </dl>    <hr><!--Start Customer Feedback Link--><!-- <p><b>Comments or questions?</b><br>       Use the link below to connect to the Visual Web Development contact page. </p>    <p>       <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">        <param name="viewerActivator" value="javax.help.LinkButton">        <param name="content" value=        "http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20About Components">        <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> -->        <!--End Customer Feedback Link--> <a href="../credits.html"><small>Legal Notices</small></a>    </p>    <table border="0" cellpadding="50">      <tr>        <td>&nbsp;                  </td>      </tr>    </table>  </body></html>
+<html> 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"> 
+<!--
+ * Copyright © 2007 Sun Microsystems, Inc. 
+ * All rights reserved.  
+ * Use is subject to license terms. 
+-->
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <link type="text/css" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" rel="stylesheet">
+    <meta name="generator" content="Helen">
+    <title>About Components</title>
+  </head>
+  <body>
+    <h2>
+       About Components
+    </h2>
+    <p>
+       <small><a href="#seealso">See Also</a></small> | <small><a href=
+      "#tutorials">Tutorials</a></small>
+    </p>
+    <p>
+       Components are reusable user interface elements that you can use to build the visual
+      interface for your page. Components are rendered into HTML page elements such as text,
+      hyperlinks, or form elements. The components in the IDE are based on JavaServer Faces
+      technology and use JavaScript.
+    </p>
+    <ul class="note">
+      <li>
+        Because these components use JavaScript, users of your web applications must have
+        JavaScript enabled in their web browsers. In addition, users of your applications must
+        enable cookies and CSS in their web browsers.
+      </li>
+    </ul>
+    <p>
+       Components have properties, which describe the appearance, state, or other features of a
+      specific component on a page. You can edit properties by <a href=
+      "howtocomponents/set_comp_props.html">using the Properties window</a>, or you can <a href=
+      "howtocomponents/bind_comp_props.html">bind properties</a> to values contained in other
+      components or services such as databases or web services.
+    </p>
+    <p>
+       By default, components that you add to a page are arranged on the page by position: Where
+      you place them in the Visual Designer is where they will appear on the final HTML page. You
+      can <a href="howtocomponents/layer_comp.html">stack components</a> on top of each other using
+      the Bring to Front and Send to Back menu items, and you can <a href=
+      "howtocomponents/nest_comp.html">nest components</a> together using the Grid Panel and Group
+      Panel components.
+    </p>
+    <p>
+       Finally, components can have associated event handlers, written in the Java language, that
+      are executed when the page is submitted.
+    </p>
+    <h3>
+       Component Categories
+    </h3>
+    <p>
+       Components are located in the <object classid=
+      "java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="../ui_elements/palette/palette_win_graphic.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="300,515">
+        <param name="text" value="Components view of the Palette"></object> &nbsp;and are grouped under categories. Click a category in the Components view to
+      see the associated components.
+    </p>
+    <p>
+       The Components view contains the following categories:
+    </p>
+    <ul>
+      <li>
+        <b>Basic</b>. The components that you are likely to use most often, like buttons, tables,
+        drop down lists, and text fields, to name only a few.
+      </li>
+      <li>
+        <b>Layout.</b> Components whose main purpose is organizing or formatting a page, like the
+        Grid Panel component that arranges components in a grid or the Group Panel component that
+        groups components together.
+      </li>
+      <li>
+        <b>Composite.</b> Components with a more complex organization and a specialized purpose,
+        like the Add Remove List component that displays a list of items and lets the user add them
+        to another list, or the Breadcrumbs component that displays a list of hyperlinks to
+        previous pages in a site hierarchy.
+      </li>
+      <li>
+        <b>Validators.</b> A set of value checkers that you can use to validate user entered data.
+      </li>
+      <li>
+      <b>Converters.</b> A set of data converters that you can use with components to convert
+      between the <code>String</code> data type and other data types as needed. </li>
+      <li>
+        <b>Standard.</b> The original set of standard JavaServer Faces components that
+        shipped with the IDE. They are not as sophisticated or easy to use as the Basic, Layout,
+        and Composite components. For example, the Standard components cannot participate in a
+        theme, and their structure is often more complex to work with than the Basic components.
+      </li>
+      <li>
+        <b>Advanced.</b> A set of JavaServer Page markup tags for advanced users. The components
+        have no visual appearance and are useful to developers with experience in JSP and
+        JavaServer Faces technologies.
+      </li>
+      <li>
+        <b>Data Providers.</b> A set of components that provide an interface to data sources like
+        database tables and JavaBeans objects.
+      </li>
+      <li>
+        <b>Advanced Data Providers.</b> A set of data providers for use by advanced users only.
+        These data providers are typically created for you and do not need to be added separately.
+      </li>
+    </ul>
+    <h3>
+       Viewing and Managing Components
+    </h3>
+    <p>
+       You can view or manage components in the following ways:
+    </p>
+    <ul>
+      <li>
+        Use the 
+ to <object classid=
+      "java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="../ui_elements/palette/palette_win_graphic.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="300,515">
+        <param name="text" value="Components view of the Palette"></object> drag components into
+        the Visual Designer to work with them.
+      </li>
+      <li>
+        Use the <object classid=java:com.sun.java.help.impl.JHSecondaryViewer>
+    <param name="content" value="../ui_elements/navigator_win/navigator_win_popup.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="385,450">
+    <param name="text" value="Navigator window"></object>
+ to
+        view a hierarchical list of the components on a page. If you select a component in the
+        Outline window, the component is selected in the Visual Designer and vice versa. You can
+        sometimes select a component more easily in the Outline window than in the Visual Designer,
+        especially if you want to change its location in a hierarchy of subcomponents. You can
+        right-click a component's node in the Outline window and select the same pop-up menu items
+        as in the Visual Designer.
+      </li>
+    </ul>
+    <dl>
+      <dt>
+         <a name="seealso">See Also</a>
+      </dt>
+      <dd>
+        <a href="component_process.html">Working With Components</a>
+      </dd>
+      <dd>
+        <a href="../ui_elements/palette/palette.html">About the Visual Web Palette</a>
+      </dd>
+       <dd>
+        <a href="../ui_elements/navigator_win/navigator_win_popup.html">About the Navigator Window</a>
+      </dd>
+       <dd>
+        <a href="howtocomponents/components_quickref.html">Component Tasks: Quick Reference</a>
+      </dd>
+      <dd>
+        <a href="webform.html">About Pages</a>
+      </dd>
+      <!--<dd><a href="../probscomponents.html">Problems and Solutions with Components</a></dd>-->
+    </dl>
+    <dl>
+      <dt>
+         <a name="tutorials">Tutorials</a>
+      </dt>
+      <dd>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+		<param name="content" value="http://www.netbeans.org/kb/55/vwp-intro.html">
+		<param name="text" value="Getting Started With NetBeans Visual Web Pack 5.5">
+</object>
+</dd>
+    </dl>
+    <hr>
+<!--Start Customer Feedback Link-->
+<!-- <p><b>Comments or questions?</b><br>
+       Use the link below to connect to the Visual Web Development contact page. </p>
+    <p>
+       <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="viewerActivator" value="javax.help.LinkButton">
+        <param name="content" value=
+        "http://www.netbeans.org/about/contact_form.html?to=4&subject=Feedback:%20Web%20Application%20Help:%20About Components">
+        <param name="text" value="<html><u>Click here to send feedback</u></html>"></object><br> --> 
+       <!--End Customer Feedback Link--> <a href="../credits.html"><small>Legal Notices</small></a>
+    </p>
+    <table border="0" cellpadding="50">
+      <tr>
+        <td>&nbsp;
+          
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

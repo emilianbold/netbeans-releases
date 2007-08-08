@@ -1,0 +1,156 @@
+<html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 2006 Sun Microsystems, Inc.
+ * All rights reserved. 
+ * Use is subject to license terms.
+-->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Enterprise JavaBean Component Tasks: Quick Reference</title>
+<link rel="stylesheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+
+<body>
+<h2>Enterprise JavaBean Component Tasks: Quick Reference</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>
+This topic describes common tasks that you can perform with Enterprise JavaBeans components (enterprise beans). For more detailed information, click the links in the right column. </p>
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the task name. The right column lists the steps to perform.">
+  <tr valign="top"> 
+    <th scope="col" align="left">To perform this task...</th>
+    <th scope="col" align="left">Follow these steps</th>
+  </tr>
+  <tr valign="top">
+    <td>Add an enterprise bean to the IDE</td>
+    <td>
+      <ul>
+        <li>To add a set of enterprise beans:</li>
+              <ol>
+                <li>In the 
+				<a href="../../ui_elements/server_nav/about_servernav.html">Servers 
+				window</a>, right-click the Enterprise JavaBeans node and choose Add 
+				Set of Session EJBs.</li>
+                <li>Step through the wizard. </li>
+              </ol>
+			  
+       <li>To add a set of enterprise beans exported by another developer:</li>
+              <ol>
+                <li>In the 
+				<a href="../../ui_elements/server_nav/about_servernav.html">Servers 
+				window</a>, right-click the Enterprise JavaBeans node and choose 
+				Import EJB Sets.</li>
+                <li>In the Open dialog box, find the file to import and click 
+				Open. </li>
+                <li>In the Import EJB Sets dialog box, select one or more enterprise beans to 
+				import.</li>
+                <li>If necessary, change the name, host, and port numbers for each 
+				enterprise bean set.</li>
+              </ol>
+      </ul>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td>Add an enterprise bean to a page </td>
+    <td><ol>
+      <li>In the
+          <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+            <param name="content" value="../../ui_elements/server_nav/server_navigator.html">
+            <param name="viewerActivator" value="javax.help.LinkLabel">
+            <param name="viewerStyle" value="javax.help.Popup">
+            <param name="viewerSize" value="420,520">
+            <param name="text" value="Servers window">
+            <param name="textFontFamily" value="SansSerif">
+            <param name="textFontSize" value="medium">
+            <param name="textFontWeight" value="bold">
+            <param name="textFontStyle" value="italic">
+            <param name="textColor" value="blue">
+          </object>
+    , expand the Enterprise JavaBeans node <img src="../../images/ejb_node_icon.gif" alt="Web Services node icon">.</li>
+      <li>Drag the enterprise bean into the page.</li>
+    </ol></td>
+  </tr>
+  <tr valign="top">
+    <td>Bind to a list component </td>
+    <td><ol>
+      <li>If the enterprise bean is not part of the IDE, <a href="ejb_add_to_IDE.html">add the enterprise bean to the IDE</a>. </li>
+      <li>Drag and drop the method onto the component. </li>
+      <li>Right-click the component and choose Bind to Data.</li>
+      <li>In the Bind to Data dialog box, click the Data Provider tab.</li>
+      <li>Choose the method's data provider.</li>
+      <li>Select the value field and display field for the component. </li>
+    </ol></td>
+  </tr>
+  <tr valign="top">
+    <td>Bind to a simple component</td>
+    <td>
+      <ol>
+          <li>If the enterprise bean is not part of the IDE, <a href="ejb_add_to_IDE.html">add the enterprise bean to the IDE</a>. </li>
+            <li>Drag and drop the method onto the component. </li>
+            <li>Right-click the component and choose Bind to Data.</li>
+            <li>In the Bind to Data dialog box, click the Data Provider tab.</li>
+            <li>Choose the method's data provider.</li>
+            <li>Select the data field to display in the component.</li>
+      </ol>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td>Bind to a Table component </td>
+    <td><ol>
+      <li>If the enterprise bean is not part of the IDE, <a href="ejb_add_to_IDE.html">add the enterprise bean to the IDE</a>. </li>
+      <li>Add the Table component to the Visual Designer. </li>
+      <li>Drag and drop the method onto the table. </li>
+    </ol></td>
+  </tr>
+  <tr valign="top">
+    <td>Call an Enterprise JavaBean method in your application  </td>
+    <td><ol>
+      <li>If the enterprise bean is not part of the IDE, <a href="ejb_add_to_IDE.html">add the enterprise bean to the IDE</a>. </li>
+      <li>If the enterprise bean has not been added to the page, drag it to the Visual Designer.</li>
+      <li>If desired, select a method to see its properties in the <a href="../../ui_elements/propsheets/propsheet_win.html">Properties window</a>. </li>
+      <li>Call the method in your Java code. </li>
+    </ol></td>
+  </tr>
+  <tr valign="top">
+    <td>Delete an enterprise bean</td>
+    <td>
+	<ul>
+	<li>To delete an enterprise bean from the page:</li>
+      <ul>
+        <li>In the Outline window, right-click the enterprise bean and choose Remove. </li>
+      </ul>
+  <li>To delete an enterprise bean from the Servers window:</li>
+      <ul>
+        <li>In the <a href="../../ui_elements/server_nav/about_servernav.html">Servers window</a>, right-click the enterprise bean and choose Remove. </li>
+    </ul>
+	</ul></td>
+  </tr>
+  <tr valign="top">
+    <td>Export a set of enterprise beans</td>
+    <td><ol>
+      <li>In the <a href="../../ui_elements/server_nav/about_servernav.html">Servers window</a>, right-click the Enterprise JavaBeans node and choose Export EJB Sets.</li>
+      <li>In the Export EJB Sets dialog box, select the enterprise beans to export.</li>
+      <li>Enter the location of the file to which to export the enterprise beans.</li>
+      <li>If necessary, edit the enterprise bean set names, server host name, and port number. </li>
+      <li>Make the exported file available to the developers who need it. </li>
+    </ol></td>
+  </tr>
+
+</table>
+<hr>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="../aboutejbs.html">About Enterprise JavaBeans Components</a></dd>
+<dd><a href="../ejb_process.html">Working With Enterprise JavaBeans Components</a></dd>
+<!--<dd><a href="../probsconnectwebser.html">Problems and Solutions</a></dd> --></dl>
+<hr>
+
+<small><a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
