@@ -28,7 +28,7 @@ import java.util.Locale;
  * "US English (en_US)".
  *
  */
-public class LocalesDomain extends EditableDomain {
+public class LocalesDomain extends Domain {
 
     private static Element[] elements;
 
@@ -42,8 +42,7 @@ public class LocalesDomain extends EditableDomain {
         Arrays.sort(elements);
     }
 
-    public LocalesDomain() {
-        super(PROJECT_STORAGE);
+    public LocalesDomain() {        
     }
 
     public Element[] getElements() {
