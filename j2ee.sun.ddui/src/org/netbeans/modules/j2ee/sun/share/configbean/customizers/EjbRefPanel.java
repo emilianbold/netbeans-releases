@@ -18,18 +18,15 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
-import java.awt.Dimension;
-import java.util.ResourceBundle;
-import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.common.EjbRef;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNodeInnerPanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDTextFieldEditorModel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EjbRefNode;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 
@@ -37,20 +34,15 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  *
  * @author Peter Williams
  */
-public class EjbRefPanel extends SectionNodeInnerPanel {
+public class EjbRefPanel extends BaseSectionNodeInnerPanel {
 	
-    private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
-            "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
-    
     // data model & version
     private EjbRefNode ejbRefNode;
-    private ASDDVersion version;
     
     public EjbRefPanel(SectionNodeView sectionNodeView, final EjbRefNode ejbRefNode, 
             final ASDDVersion version) {
-        super(sectionNodeView);
+        super(sectionNodeView, version);
         this.ejbRefNode = ejbRefNode;
-        this.version = version;
 
         initComponents();
         initUserComponents(sectionNodeView);
@@ -80,6 +72,7 @@ public class EjbRefPanel extends SectionNodeInnerPanel {
         jLblJndiName = new javax.swing.JLabel();
         jTxtJndiName = new javax.swing.JTextField();
 
+        setAlignmentX(LEFT_ALIGNMENT);
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
@@ -142,24 +135,6 @@ public class EjbRefPanel extends SectionNodeInnerPanel {
 
     public String getHelpId() {
         return "AS_CFG_EjbRef";	// NOI18N
-    }
-    
-    public void setValue(JComponent source, Object value) {
-    }
-
-    public void linkButtonPressed(Object ddBean, String ddProperty) {
-    }
-
-    public JComponent getErrorComponent(String errorId) {
-        return null;
-    }
-
-    /** Return correct preferred size.  The multiline JLabels in this panel cause
-     *  the default preferred size behavior to be incorrect (too wide).
-     */
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(getMinimumSize().width, super.getPreferredSize().height);
     }
     
     // Model class for handling updates to the text fields

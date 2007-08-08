@@ -18,21 +18,18 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
-import java.awt.Dimension;
-import java.util.ResourceBundle;
-import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNodeInnerPanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDTextFieldEditorModel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.web.ServletNode;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 
@@ -40,41 +37,28 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  *
  * @author Peter Williams
  */
-public class ServletPanel extends SectionNodeInnerPanel {
+public class ServletPanel extends BaseSectionNodeInnerPanel {
 	
-    private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
-            "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
-    
     public static final String ATTR_CLASSNAME = "ClassName";
 
     // data model & version
     private ServletNode servletNode;
-    private ASDDVersion version;
     
     // true if standard DD is servlet version 2.4 or newer
     private boolean servlet24FeaturesVisible;
 
-    // true if AS 9.0+ fields are visible.
-    private boolean as90FeaturesVisible;
-    
     public ServletPanel(SectionNodeView sectionNodeView, final ServletNode servletNode, final ASDDVersion version) {
-        super(sectionNodeView);
+        super(sectionNodeView, version);
         this.servletNode = servletNode;
-        this.version = version;
         this.servlet24FeaturesVisible = true;
-        this.as90FeaturesVisible = true;
         
         initComponents();
         initUserComponents(sectionNodeView);
     }
 
     private void initUserComponents(SectionNodeView sectionNodeView) {
-        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
-            showAS90Fields();
-        } else {
-            hideAS90Fields();
-        }
-
+        showAS90Fields(as90FeaturesVisible);
+        
 //        if(theBean.getJ2EEModuleVersion().compareTo(ServletVersion.SERVLET_2_4) >= 0) {
 //            showWebServiceEndpointInformation();
 //        } else {
@@ -113,6 +97,7 @@ public class ServletPanel extends SectionNodeInnerPanel {
         jTxtClassName = new javax.swing.JTextField();
         jLblEndpointHelp = new javax.swing.JLabel();
 
+        setAlignmentX(LEFT_ALIGNMENT);
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
@@ -320,22 +305,10 @@ public class ServletPanel extends SectionNodeInnerPanel {
         }
     }
 
-    private void showAS90Fields() {
-        if(!as90FeaturesVisible) {
-            jLblClassNameUsageDesc.setVisible(true);
-            jLblClassName.setVisible(true);
-            jTxtClassName.setVisible(true);
-            as90FeaturesVisible = true;
-        }
-    }
-
-    private void hideAS90Fields() {
-        if(as90FeaturesVisible) {
-            jLblClassNameUsageDesc.setVisible(false);
-            jLblClassName.setVisible(false);
-            jTxtClassName.setVisible(false);
-            as90FeaturesVisible = false;
-        }
+    private void showAS90Fields(boolean visible) {
+        jLblClassNameUsageDesc.setVisible(visible);
+        jLblClassName.setVisible(visible);
+        jTxtClassName.setVisible(visible);
     }
 
 //	public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
@@ -348,26 +321,8 @@ public class ServletPanel extends SectionNodeInnerPanel {
 //		}
 //	}
 	
-	public String getHelpId() {
-		return "AS_CFG_Servlet";	// NOI18N
-	}
-    
-    public void setValue(JComponent source, Object value) {
-    }
-
-    public void linkButtonPressed(Object ddBean, String ddProperty) {
-    }
-
-    public JComponent getErrorComponent(String errorId) {
-        return null;
-    }
-    
-    /** Return correct preferred size.  The multiline JLabels in this panel cause
-     *  the default preferred size behavior to be incorrect (too wide).
-     */
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(getMinimumSize().width, super.getPreferredSize().height);
+    public String getHelpId() {
+        return "AS_CFG_Servlet";	// NOI18N
     }
     
     // Model class for handling updates to the text fields

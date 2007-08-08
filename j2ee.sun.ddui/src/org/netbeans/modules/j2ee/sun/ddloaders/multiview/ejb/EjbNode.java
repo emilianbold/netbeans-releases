@@ -21,12 +21,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.DDBinding;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.EjbRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.NamedBeanNode;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceRefGroupNode;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceEnvRefGroupNode;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefGroupNode;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.MessageDestinationRefGroupNode;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.EndpointGroupNode;
 import org.netbeans.modules.j2ee.sun.share.configbean.customizers.ejbmodule.EjbPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
@@ -45,12 +40,13 @@ public class EjbNode extends NamedBeanNode {
         
         Ejb ejb = (Ejb) binding.getSunBean();
         
-        // References (should be blocked in a group)
-        addChild(new EjbRefGroupNode(sectionNodeView, ejb, version));
-        addChild(new ResourceRefGroupNode(sectionNodeView, ejb, version));                
-        addChild(new ResourceEnvRefGroupNode(sectionNodeView, ejb, version));
-        addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
-        addChild(new MessageDestinationRefGroupNode(sectionNodeView, ejb, version));
+//        // References (should be blocked in a group)
+//        addChild(new EjbRefGroupNode(sectionNodeView, ejb, version));
+//        addChild(new ResourceRefGroupNode(sectionNodeView, ejb, version));                
+//        addChild(new ResourceEnvRefGroupNode(sectionNodeView, ejb, version));
+//        addChild(new ServiceRefGroupNode(sectionNodeView, ejb, version));
+//        addChild(new MessageDestinationRefGroupNode(sectionNodeView, ejb, version));
+        addChild(new ReferencesNode(sectionNodeView, ejb, version));
 
         // Webservice endpoints.
         addChild(new EndpointGroupNode(sectionNodeView, binding.getSunBean(), version));

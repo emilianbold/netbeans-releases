@@ -25,9 +25,12 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.xml.multiview.SectionNode;
+import org.netbeans.modules.xml.multiview.ui.BoxPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.nodes.Children;
+
 
 /**
  * @author pfiala
@@ -53,6 +56,8 @@ public class BaseSectionNode extends SectionNode {
             "org/netbeans/modules/j2ee/sun/ddloaders/resources/EntityBean"; // NOI18N
     public static final String ICON_EJB_MDB_NODE =
             "org/netbeans/modules/j2ee/sun/ddloaders/resources/MessageBean"; // NOI18N
+    public static final String ICON_BASE_REFERENCES_NODE =
+            "org/netbeans/modules/j2ee/sun/ddloaders/resources/ReferencesIcon"; // NOI18N
     public static final String ICON_BASE_EJB_REF_NODE =
             "org/netbeans/modules/j2ee/sun/ddloaders/resources/EjbRefIcon"; // NOI18N
     public static final String ICON_BASE_RESOURCE_REF_NODE =
@@ -87,6 +92,15 @@ public class BaseSectionNode extends SectionNode {
     }    
     
     @Override
+    public SectionNodeInnerPanel createInnerPanel() {
+        // Ensure child panel(s) are always encapsulated in a BoxPanel regardless
+        // of number of child nodes.
+        BoxPanel boxPanel = new BoxPanel(getSectionNodeView());
+        populateBoxPanel(boxPanel);
+        return boxPanel;
+    }
+    
+    @Override
     public SectionNodePanel getSectionNodePanel() {
         SectionNodePanel nodePanel = super.getSectionNodePanel();
         
@@ -102,9 +116,12 @@ public class BaseSectionNode extends SectionNode {
             disableTitleButtonFocusListener(nodePanel);
         }
         
+        nodePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+//        nodePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("modified section node panel"));
+        
         return nodePanel;
     }
-
+    
     /**
      * Hack: I need to disable the focus listener for the title button, but cannot
      * do that via SectionNodePanel constructor because the parameter is blocked.

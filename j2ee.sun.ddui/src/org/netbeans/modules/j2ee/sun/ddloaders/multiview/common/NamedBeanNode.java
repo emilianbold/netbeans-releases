@@ -27,12 +27,15 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNode;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.CustomSectionNodePanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
+import org.netbeans.modules.xml.multiview.ui.BoxPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.openide.ErrorManager;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -77,7 +80,12 @@ public abstract class NamedBeanNode extends BaseSectionNode {
     
     @Override
     protected abstract SectionNodeInnerPanel createNodeInnerPanel();
-
+    
+    @Override
+    protected SectionNodePanel createSectionNodePanel() {
+        return new CustomSectionNodePanel(this);
+    }    
+    
     @Override
     public SectionNodePanel getSectionNodePanel() {
         SectionNodePanel nodePanel = super.getSectionNodePanel();

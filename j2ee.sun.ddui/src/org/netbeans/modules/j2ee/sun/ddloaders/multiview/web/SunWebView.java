@@ -18,8 +18,6 @@
  */
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.web;
 
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.*;
-import org.netbeans.modules.j2ee.sun.dd.api.web.SunWebApp;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.xml.multiview.SectionNode;
 
@@ -31,14 +29,14 @@ public class SunWebView extends SunWebBaseView {
 
     public SunWebView(SunDescriptorDataObject dataObject) {
         super(dataObject);
-        
+
         SectionNode [] children = new SectionNode [] { 
             new SunWebDetailsNode(this, sunWebApp, version),
             new SunWebClassLoaderNode(this, sunWebApp, version),
-////            new SunWebJspConfigPropertyNode(this, sunWebApp, version)
+//            new SunWebJspConfigPropertyNode(this, sunWebApp, version)
         };
-       
+
         setChildren(children);
     }
-    
+
 }

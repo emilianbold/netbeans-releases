@@ -42,6 +42,7 @@ public class EndpointGroupNode extends NamedBeanGroupNode {
                 NbBundle.getMessage(EndpointGroupNode.class, "LBL_EndpointGroupHeader"), // NOI18N
                 ICON_BASE_ENDPOINT_NODE, version);
         
+        setExpanded(false);
         enableAddAction(NbBundle.getMessage(EndpointGroupNode.class, "LBL_AddEndpoint")); // NOI18N
     }
 

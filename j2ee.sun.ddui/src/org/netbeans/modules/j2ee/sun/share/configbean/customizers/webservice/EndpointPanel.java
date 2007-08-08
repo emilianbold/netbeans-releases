@@ -23,7 +23,6 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
@@ -31,6 +30,7 @@ import org.netbeans.modules.j2ee.sun.dd.api.common.LoginConfig;
 import org.netbeans.modules.j2ee.sun.dd.api.common.MessageSecurityBinding;
 import org.netbeans.modules.j2ee.sun.dd.api.common.WebserviceEndpoint;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNodeInnerPanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDTextFieldEditorModel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.MappingComboBoxHelper;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.webservice.EndpointNode;
@@ -39,7 +39,6 @@ import org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.TextMap
 import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.ErrorManager;
 
@@ -48,15 +47,12 @@ import org.openide.ErrorManager;
  *
  * @author Peter Williams
  */
-public class EndpointPanel extends SectionNodeInnerPanel {
+public class EndpointPanel extends BaseSectionNodeInnerPanel {
 
     private static final int SECURITY_NONE = 0; // No security settings
     private static final int SECURITY_AUTHENTICATION = 1; // login-config/authentication is set
     private static final int SECURITY_MESSAGE = 2; // message level security is set.
     
-    private static final ResourceBundle commonBundle = ResourceBundle.getBundle(
-       "org.netbeans.modules.j2ee.sun.share.configbean.customizers.common.Bundle"); // NOI18N
-
     private static final ResourceBundle webserviceBundle = ResourceBundle.getBundle(
        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
 
@@ -77,7 +73,6 @@ public class EndpointPanel extends SectionNodeInnerPanel {
     
     // data model & version
     private EndpointNode endpointNode;
-    private ASDDVersion version;
     private boolean isWebApp;
 
     // Data storage for when these types are not selected.
@@ -91,9 +86,6 @@ public class EndpointPanel extends SectionNodeInnerPanel {
     // transport guarantee combo box model
     private DefaultComboBoxModel transportGuaranteeModel;
 
-    // true if AS 9.0+ fields are visible.
-    private boolean as90FeaturesVisible;
-
     // setup flag, disables listeners until addNotify()
     private boolean setup;
 
@@ -102,11 +94,9 @@ public class EndpointPanel extends SectionNodeInnerPanel {
     
     public EndpointPanel(SectionNodeView sectionNodeView, final EndpointNode endpointNode, 
             final ASDDVersion version) {
-        super(sectionNodeView);
+        super(sectionNodeView, version);
         this.endpointNode = endpointNode;
-        this.version = version;
         this.setup = true;
-        
         this.endpoint = (WebserviceEndpoint) endpointNode.getBinding().getSunBean();
 
         initComponents();
@@ -145,7 +135,7 @@ public class EndpointPanel extends SectionNodeInnerPanel {
     }
     
     public void handleUIVisibility() {
-        handleAS90FieldVisibility(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0);
+        handleAS90FieldVisibility(as90FeaturesVisible);
 
         // Relies on version field initialization from handleAS90FieldVisibility(), above
         showSecurityUI(isWebApp, !isWebApp);
@@ -250,7 +240,8 @@ public class EndpointPanel extends SectionNodeInnerPanel {
         jLblAuthentication = new javax.swing.JLabel();
         jCbxAuthentication = new javax.swing.JComboBox();
 
-        setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        setAlignmentX(LEFT_ALIGNMENT);
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         jLblName.setLabelFor(jTxtName);
@@ -305,12 +296,11 @@ public class EndpointPanel extends SectionNodeInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jLblDebugEnabled, gridBagConstraints);
 
-        jChkDebugEnabled.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jChkDebugEnabled.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jChkDebugEnabled.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 5);
         add(jChkDebugEnabled, gridBagConstraints);
         jChkDebugEnabled.getAccessibleContext().setAccessibleName(WebServiceDescriptorCustomizer.bundle.getString("ACSN_DebugEnabled")); // NOI18N
@@ -325,7 +315,6 @@ public class EndpointPanel extends SectionNodeInnerPanel {
 
         bgSecurity.add(jRBnNoSecurity);
         jRBnNoSecurity.setText("No Security");
-        jRBnNoSecurity.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRBnNoSecurity.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRBnNoSecurity.setOpaque(false);
         jRBnNoSecurity.addActionListener(new java.awt.event.ActionListener() {
@@ -341,7 +330,6 @@ public class EndpointPanel extends SectionNodeInnerPanel {
 
         bgSecurity.add(jRBnMessageSecurity);
         jRBnMessageSecurity.setText("Message Security");
-        jRBnMessageSecurity.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRBnMessageSecurity.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRBnMessageSecurity.setOpaque(false);
         jRBnMessageSecurity.addActionListener(new java.awt.event.ActionListener() {
@@ -361,7 +349,6 @@ public class EndpointPanel extends SectionNodeInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
         add(jLblEnableMsgSecurity, gridBagConstraints);
 
-        jChkEnableMsgSecurity.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jChkEnableMsgSecurity.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jChkEnableMsgSecurity.setOpaque(false);
         jChkEnableMsgSecurity.addItemListener(new java.awt.event.ItemListener() {
@@ -392,7 +379,6 @@ public class EndpointPanel extends SectionNodeInnerPanel {
 
         bgSecurity.add(jRBnLoginConfig);
         jRBnLoginConfig.setText("Login Configuration");
-        jRBnLoginConfig.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRBnLoginConfig.setMargin(new java.awt.Insets(0, 0, 0, 0));
         jRBnLoginConfig.setOpaque(false);
         jRBnLoginConfig.addActionListener(new java.awt.event.ActionListener() {
@@ -640,11 +626,8 @@ public class EndpointPanel extends SectionNodeInnerPanel {
     }
     
     private void handleAS90FieldVisibility(boolean visible) {
-        if(as90FeaturesVisible != visible) {
-            jLblDebugEnabled.setVisible(visible);
-            jChkDebugEnabled.setVisible(visible);
-            as90FeaturesVisible = visible;
-        }
+        jLblDebugEnabled.setVisible(visible);
+        jChkDebugEnabled.setVisible(visible);
     }
     
     /** This method displays the correct security related UI based on whether the
@@ -734,16 +717,6 @@ public class EndpointPanel extends SectionNodeInnerPanel {
         return "AS_CFG_WebserviceEndpoint"; // NOI18N
     }
 
-    public void setValue(JComponent source, Object value) {
-    }
-
-    public void linkButtonPressed(Object ddBean, String ddProperty) {
-    }
-
-    public JComponent getErrorComponent(String errorId) {
-        return null;
-    }   
-    
     // Model class for handling updates to the text fields
     private class EndpointTextFieldEditorModel extends DDTextFieldEditorModel {
 

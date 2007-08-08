@@ -18,21 +18,18 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
-import java.awt.Dimension;
-import java.util.ResourceBundle;
-import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.common.DefaultResourcePrincipal;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNodeInnerPanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDTextFieldEditorModel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.TextItemEditorModel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ResourceRefNode;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 
@@ -40,20 +37,15 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  *
  * @author Peter Williams
  */
-public class ResourceRefPanel extends SectionNodeInnerPanel {
+public class ResourceRefPanel extends BaseSectionNodeInnerPanel {
 	
-    private static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
-            "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
-    
     // data model & version
     private ResourceRefNode resourceRefNode;
-    private ASDDVersion version;
     
     public ResourceRefPanel(SectionNodeView sectionNodeView, final ResourceRefNode resourceRefNode, 
             final ASDDVersion version) {
-        super(sectionNodeView);
+        super(sectionNodeView, version);
         this.resourceRefNode = resourceRefNode;
-        this.version = version;
         
         initComponents();
         initUserComponents(sectionNodeView);
@@ -89,6 +81,7 @@ public class ResourceRefPanel extends SectionNodeInnerPanel {
         jLblPrincipalPassword = new javax.swing.JLabel();
         jTxtPrincipalPassword = new javax.swing.JTextField();
 
+        setAlignmentX(LEFT_ALIGNMENT);
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
@@ -187,24 +180,6 @@ public class ResourceRefPanel extends SectionNodeInnerPanel {
 	
     public String getHelpId() {
         return "AS_CFG_ResourceRef";	// NOI18N
-    }
-    
-    public void setValue(JComponent source, Object value) {
-    }
-
-    public void linkButtonPressed(Object ddBean, String ddProperty) {
-    }
-
-    public JComponent getErrorComponent(String errorId) {
-        return null;
-    }
-    
-    /** Return correct preferred size.  The multiline JLabels in this panel cause
-     *  the default preferred size behavior to be incorrect (too wide).
-     */
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(getMinimumSize().width, super.getPreferredSize().height);
     }
     
     // Model class for handling updates to the text fields

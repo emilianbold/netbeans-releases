@@ -19,8 +19,6 @@
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers;
 
 import java.awt.Dimension;
-import java.util.ResourceBundle;
-import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -30,12 +28,12 @@ import javax.swing.event.TableModelListener;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.common.SecurityRoleMapping;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNodeInnerPanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.TextItemEditorModel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.SecurityRoleMappingNode;
 import org.netbeans.modules.j2ee.sun.share.PrincipalNameMapping;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 
@@ -43,40 +41,25 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  *
  * @author Peter Williams
  */
-public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
+public class SecurityRoleMappingPanel extends BaseSectionNodeInnerPanel
         implements ListSelectionListener, TableModelListener {
-
-    public static final ResourceBundle customizerBundle = ResourceBundle.getBundle(
-        "org.netbeans.modules.j2ee.sun.share.configbean.customizers.Bundle");	// NOI18N
 
     // data model & version
     private SecurityRoleMappingNode mappingNode;
-    private ASDDVersion version;
 
     private SRMPrincipalTableModel principalTableModel;
     private SRMGroupTableModel groupTableModel;
 
-    // true if AS 9.0+ fields are visible.
-    private boolean as90FeaturesVisible;
-
     public SecurityRoleMappingPanel(SectionNodeView sectionNodeView, final SecurityRoleMappingNode mappingNode, final ASDDVersion version) {
-        super(sectionNodeView);
+        super(sectionNodeView, version);
 
         this.mappingNode = mappingNode;
-        this.version = version;
-        this.as90FeaturesVisible = true;
 
         initComponents();
         initUserComponents(sectionNodeView);
     }
 
     private void initUserComponents(SectionNodeView sectionNodeView) {
-        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
-            as90FeaturesVisible = true;
-        } else {
-            as90FeaturesVisible = false;
-        }
-
         SunDescriptorDataObject dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
         XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
         SecurityRoleMapping mapping = getMappingBean();
@@ -127,6 +110,8 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
         jBtnEditGroup = new javax.swing.JButton();
         jBtnRemoveGroup = new javax.swing.JButton();
 
+        setAlignmentX(LEFT_ALIGNMENT);
+        setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
         jLblSecurityRoleName.setLabelFor(jTxtSecurityRoleName);
@@ -536,16 +521,6 @@ public class SecurityRoleMappingPanel extends SectionNodeInnerPanel
 
     public String getHelpId() {
         return "AS_CFG_SecurityRoleMapping";	// NOI18N
-    }
-
-    public void setValue(JComponent source, Object value) {
-    }
-
-    public void linkButtonPressed(Object ddBean, String ddProperty) {
-    }
-
-    public JComponent getErrorComponent(String errorId) {
-        return null;
     }
 
     /** Return correct preferred size.  The tables in this are a bit territorial.

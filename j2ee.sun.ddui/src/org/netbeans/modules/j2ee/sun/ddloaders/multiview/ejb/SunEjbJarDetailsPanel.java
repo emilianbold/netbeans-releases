@@ -18,16 +18,15 @@
  */
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb;
 
-import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.sun.dd.api.ejb.SunEjbJar;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNodeInnerPanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.TextItemEditorModel;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.util.NbBundle;
 
@@ -36,23 +35,20 @@ import org.openide.util.NbBundle;
  * 
  * @author Peter Williams
  */
-public class SunEjbJarDetailsPanel extends SectionNodeInnerPanel {
+public class SunEjbJarDetailsPanel extends BaseSectionNodeInnerPanel {
 
-    private SunDescriptorDataObject dataObject;
     private SunEjbJar sunEjbJar;
-    private ASDDVersion version;
 
     public SunEjbJarDetailsPanel(SectionNodeView sectionNodeView, final SunEjbJar sunEjbJar, final ASDDVersion version) {
-        super(sectionNodeView);
-        this.dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
+        super(sectionNodeView, version);
         this.sunEjbJar = sunEjbJar;
-        this.version = version;
 
         initComponents();
-        initUserComponents();
+        initUserComponents(sectionNodeView);
     }
 
-    private void initUserComponents() {
+    private void initUserComponents(SectionNodeView sectionNodeView) {
+        SunDescriptorDataObject dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
         XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
         addRefreshable(new ItemEditorHelper(nameText, new NameEditorModel(synchronizer)));
     }
@@ -64,36 +60,30 @@ public class SunEjbJarDetailsPanel extends SectionNodeInnerPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         nameLabel = new javax.swing.JLabel();
         nameText = new javax.swing.JTextField();
 
+        setAlignmentX(LEFT_ALIGNMENT);
+        setOpaque(false);
+        setLayout(new java.awt.GridBagLayout());
+
         nameLabel.setLabelFor(nameText);
         nameLabel.setText(NbBundle.getMessage(SunEjbJarDetailsPanel.class, "LBL_Name_1")); // NOI18N
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(nameLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(nameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(nameLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 20, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(nameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        nameText.getAccessibleContext().setAccessibleName(null);
-        nameText.getAccessibleContext().setAccessibleDescription(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 0);
+        add(nameLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 5, 5);
+        add(nameText, gridBagConstraints);
+        nameText.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SunEjbJarDetailsPanel.class, "ACSN_Name")); // NOI18N
+        nameText.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SunEjbJarDetailsPanel.class, "ACSD_Name")); // NOI18N
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SunEjbJarDetailsPanel.class, "ACSN_SunEjbJarDetailsPanel")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SunEjbJarDetailsPanel.class, "ACSD_SunEjbJarDetailsPanel")); // NOI18N
@@ -104,16 +94,6 @@ public class SunEjbJarDetailsPanel extends SectionNodeInnerPanel {
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField nameText;
     // End of variables declaration//GEN-END:variables
-
-    public void setValue(JComponent source, Object value) {
-    }
-
-    public void linkButtonPressed(Object ddBean, String ddProperty) {
-    }
-
-    public JComponent getErrorComponent(String errorId) {
-        return null;
-    }
 
     // Model classes for handling updates to the fields (is there a better or
     // more generic way to do this?)

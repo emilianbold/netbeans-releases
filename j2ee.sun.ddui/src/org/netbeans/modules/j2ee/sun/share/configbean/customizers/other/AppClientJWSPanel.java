@@ -18,68 +18,51 @@
  */
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.other;
 
-import java.awt.Dimension;
 import java.util.ResourceBundle;
 import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
-import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.dd.api.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.sun.dd.api.client.JavaWebStartAccess;
 import org.netbeans.modules.j2ee.sun.dd.api.client.SunApplicationClient;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
-import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDTextFieldEditorModel;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNodeInnerPanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.TextItemEditorModel;
 import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.openide.ErrorManager;
-import org.openide.util.Exceptions;
 
 
 /**
  *
  * @author Peter Williams
  */
-public class AppClientJWSPanel extends SectionNodeInnerPanel {
+public class AppClientJWSPanel extends BaseSectionNodeInnerPanel {
 	
     private static final ResourceBundle otherBundle = ResourceBundle.getBundle(
         "org.netbeans.modules.j2ee.sun.share.configbean.customizers.other.Bundle"); // NOI18N
 
-    private SunDescriptorDataObject dataObject;
     private SunApplicationClient sunAppClient;
-    private ASDDVersion version;
 
-    // true if AS 9.0+ fields are visible.
-    private boolean as90FeaturesVisible;
-    
-	public AppClientJWSPanel(SectionNodeView sectionNodeView, final SunApplicationClient sunAppClient, final ASDDVersion version) {
-        super(sectionNodeView);
-        this.dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
+    public AppClientJWSPanel(SectionNodeView sectionNodeView, final SunApplicationClient sunAppClient, final ASDDVersion version) {
+        super(sectionNodeView, version);
         this.sunAppClient = sunAppClient;
-        this.version = version;
-        this.as90FeaturesVisible = true;
-        
+
         initComponents();
-        initUserComponents();
+        initUserComponents(sectionNodeView);
     }
 
-    private void initUserComponents() {
-        if(ASDDVersion.SUN_APPSERVER_9_0.compareTo(version) <= 0) {
-            showAS90Fields(true);
-        } else {
-            showAS90Fields(false);
-        }
+    private void initUserComponents(SectionNodeView sectionNodeView) {
+        showAS90Fields(as90FeaturesVisible);
 
+        SunDescriptorDataObject dataObject = (SunDescriptorDataObject) sectionNodeView.getDataObject();
         XmlMultiViewDataSynchronizer synchronizer = dataObject.getModelSynchronizer();
         addRefreshable(new ItemEditorHelper(jTxtContextRoot, new SunAppClientTextFieldEditorModel(synchronizer, JavaWebStartAccess.CONTEXT_ROOT)));
         addRefreshable(new ItemEditorHelper(jTxtVendor, new SunAppClientTextFieldEditorModel(synchronizer, JavaWebStartAccess.VENDOR)));
         addRefreshable(new EligibleCheckboxHelper(synchronizer, jChkEligible));
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -97,6 +80,7 @@ public class AppClientJWSPanel extends SectionNodeInnerPanel {
         jLblEligible = new javax.swing.JLabel();
         jChkEligible = new javax.swing.JCheckBox();
 
+        setAlignmentX(LEFT_ALIGNMENT);
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
@@ -139,11 +123,9 @@ public class AppClientJWSPanel extends SectionNodeInnerPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         jPnlJws.add(jLblEligible, gridBagConstraints);
 
-        jChkEligible.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jChkEligible.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.ipady = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         jPnlJws.add(jChkEligible, gridBagConstraints);
@@ -168,35 +150,14 @@ public class AppClientJWSPanel extends SectionNodeInnerPanel {
     private javax.swing.JTextField jTxtVendor;
     // End of variables declaration//GEN-END:variables
 
-    private void showAS90Fields(boolean show) {
-        if(as90FeaturesVisible != show) {
-            as90FeaturesVisible = show;
-            jPnlJws.setVisible(show);
-        }
+    private void showAS90Fields(boolean visible) {
+        jPnlJws.setVisible(visible);
     }
     
     public String getHelpId() {
         return "AS_CFG_AppClient";
     }
 
-    public void setValue(JComponent source, Object value) {
-    }
-
-    public void linkButtonPressed(Object ddBean, String ddProperty) {
-    }
-
-    public JComponent getErrorComponent(String errorId) {
-        return null;
-    }
-    
-    /** Return correct preferred size.  The multiline JLabels in this panel cause
-     *  the default preferred size behavior to be incorrect (too wide).
-     */
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(getMinimumSize().width, super.getPreferredSize().height);
-    }
-    
     // Model class for handling updates to the text fields
     private class SunAppClientTextFieldEditorModel extends TextItemEditorModel {
 

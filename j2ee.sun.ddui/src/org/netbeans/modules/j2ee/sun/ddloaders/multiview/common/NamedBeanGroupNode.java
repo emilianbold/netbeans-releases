@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.common;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -47,7 +48,9 @@ import org.netbeans.modules.j2ee.sun.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
 import org.netbeans.modules.j2ee.sun.ddloaders.Utils;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNode;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.CustomSectionNodePanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDSectionNodeView;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.ReferencesNode;
 import org.netbeans.modules.j2ee.sun.share.configbean.SunONEDeploymentConfiguration;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
@@ -136,6 +139,7 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
                 checkChildren(null);
             }
         };
+        boxPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         populateBoxPanel(boxPanel);
         return boxPanel;
     }
@@ -154,6 +158,11 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
         SectionNodeInnerPanel innerPanel = super.createNodeInnerPanel();
         return innerPanel;
     }
+    
+    @Override
+    protected SectionNodePanel createSectionNodePanel() {
+        return new CustomSectionNodePanel(this);
+    }    
     
     public void checkChildren(final CommonDDBean focusBean) {
         processor.post(new Runnable() {
@@ -456,10 +465,14 @@ public abstract class NamedBeanGroupNode extends BaseSectionNode implements Bean
     protected String getParentNodeName() {
         String parentName = null;
         Node parentNode = getParentNode();
+        // Hack to bypass the references group node, but then this entire method is a hack.
+        if(parentNode instanceof ReferencesNode) {
+            parentNode = parentNode.getParentNode();
+        }
         if(parentNode instanceof NamedBeanNode) {
             DDBinding binding = ((NamedBeanNode) parentNode).getBinding();
             if(binding != null) {
-                parentName = binding.getBindingName();
+                parentName = binding.isBound() ? binding.getBindingName() : binding.getBeanName();
                 if(parentName.length() == 0) {
                     parentName = null;
                 }

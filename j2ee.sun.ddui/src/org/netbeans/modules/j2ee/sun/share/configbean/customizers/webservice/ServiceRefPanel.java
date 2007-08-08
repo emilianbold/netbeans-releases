@@ -19,16 +19,15 @@
 package org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice;
 
 import java.util.ResourceBundle;
-import javax.swing.JComponent;
 import org.netbeans.modules.j2ee.sun.dd.api.common.ServiceRef;
 import org.netbeans.modules.j2ee.sun.dd.api.ASDDVersion;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.j2ee.sun.ddloaders.SunDescriptorDataObject;
+import org.netbeans.modules.j2ee.sun.ddloaders.multiview.BaseSectionNodeInnerPanel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.DDTextFieldEditorModel;
 import org.netbeans.modules.j2ee.sun.ddloaders.multiview.common.ServiceRefNode;
 import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
-import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 
@@ -36,14 +35,13 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  *
  * @author Peter Williams
  */
-public class ServiceRefPanel extends SectionNodeInnerPanel {
+public class ServiceRefPanel extends BaseSectionNodeInnerPanel {
 
     static final ResourceBundle bundle = ResourceBundle.getBundle(
             "org.netbeans.modules.j2ee.sun.share.configbean.customizers.webservice.Bundle"); // NOI18N
 
     // data model & version
     private ServiceRefNode serviceRefNode;
-    private ASDDVersion version;
 
     /** The two tabbed panels */
 //    private ServiceRefGeneralPanel generalPanel;
@@ -51,9 +49,8 @@ public class ServiceRefPanel extends SectionNodeInnerPanel {
 
     public ServiceRefPanel(SectionNodeView sectionNodeView, final ServiceRefNode serviceRefNode, 
             final ASDDVersion version) {
-        super(sectionNodeView);
+        super(sectionNodeView, version);
         this.serviceRefNode = serviceRefNode;
-        this.version = version;
 
         initComponents();
         initUserComponents(sectionNodeView);
@@ -83,6 +80,7 @@ public class ServiceRefPanel extends SectionNodeInnerPanel {
         jLblWsdlOverride = new javax.swing.JLabel();
         jTxtWsdlOverride = new javax.swing.JTextField();
 
+        setAlignmentX(LEFT_ALIGNMENT);
         setOpaque(false);
         setLayout(new java.awt.GridBagLayout());
 
@@ -197,16 +195,6 @@ public class ServiceRefPanel extends SectionNodeInnerPanel {
         return result;
     }
 
-    public void setValue(JComponent source, Object value) {
-    }
-
-    public void linkButtonPressed(Object ddBean, String ddProperty) {
-    }
-
-    public JComponent getErrorComponent(String errorId) {
-        return null;
-    }
-    
     // Model class for handling updates to the text fields
     private class ServiceRefTextFieldEditorModel extends DDTextFieldEditorModel {
 
