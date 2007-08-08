@@ -294,12 +294,18 @@ public class VerifyLibsAndLicenses extends Task {
                         } finally {
                             is.close();
                         }
-                        String expected = masterBody.toString().replaceAll("[ \n\t]+", " ").trim()
-                                .replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1")
-                                .replaceAll("__[A-Z]__", ".+");
+                        String master = masterBody.toString().replaceAll("[ \n\t]+", " ").trim();
+                        String expected = master.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll("__[A-Z]__", ".+");
                         String actual = body.toString().replaceAll("[ \n\t]+", " ").trim();
                         if (!actual.matches(expected)) {
-                            msg.append("\n" + path + " contains a license body which does not match that in nbbuild/licenses/" + license);
+                            int pos = 0;
+                            while (pos < actual.length() && pos < master.length() && actual.charAt(pos) == master.charAt(pos)) {
+                                pos++;
+                            }
+                            String actualSnippet = actual.substring(pos, Math.min(pos + 20, actual.length()));
+                            String masterSnippet = master.substring(pos, Math.min(pos + 20, master.length()));
+                            msg.append("\n" + path + " contains a license body which does not match that in nbbuild/licenses/" + license +
+                                    ": '..." + actualSnippet + "...' vs. '..." + masterSnippet + "...'");
                         }
                     } else {
                         msg.append("\n" + path + " refers to nonexistent nbbuild/licenses/" + license);
