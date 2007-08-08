@@ -1,6 +1,6 @@
 Software: Rome HTTP Fetcher
 Version: 0.6
-License: Apache_V2
+License: Apache-2.0
 
 Copyright 2004 Sun Microsystems, Inc.
 
