@@ -18,9 +18,10 @@ mobility/designer/nb_midp_components/dist/*
 mobility/miscme/
 mobility/svg/nb_svg_midp_components/dist/*
 
-libs/external/
 j2ee/adventure/
-form/swingapp/
+
+# Samples (should probably be packed during build instead):
+form/swingapp/src/org/netbeans/modules/swingapp/resources/*App.zip
 
 #native library, all files inside zip under CDDL
 uml/core/lib/DoorsIntegrationFiles.zip
