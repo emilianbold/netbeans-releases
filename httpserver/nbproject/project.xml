@@ -105,7 +105,7 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/webserver.jar</runtime-relative-path>
-                <binary-origin>external/webserver.jar</binary-origin>
+                <binary-origin>external/tomcat-webserver-3.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
