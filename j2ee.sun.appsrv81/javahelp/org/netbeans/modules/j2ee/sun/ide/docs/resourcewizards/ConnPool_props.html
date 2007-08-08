@@ -42,9 +42,10 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
             <li>Click Next if you want to further customize the optional pool properties such as pool size and connection validation.</li>
             <li>Click Finish to create the connection pool, leaving the optional settings at their default values.</li>
         </ul>
-        <ul class="note"><li>Connection pool properties can be modified later in the properties sheet for the connection pool. 
-        You can access the connection pool properties sheet in the Services window by right-clicking the connection pool node and selecting Properties.</li></ul>
-        
+        <p>The connection pool properties are added to <tt>sun-resources.xml</tt>.
+        If you want to modify connection pool properties you can open <tt>sun-resources.xml</tt> in the Source Editor by expanding the 
+        Server Resources node of your project in the Projects window and double-clicking the file. </p>
+       
         <h3>Datasource classname</h3>
         <p>The datasource class name is the JDBC driver that implements the APIs
         for the datasource. This name is provided according to the database connection selected in the previous screen.
