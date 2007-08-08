@@ -781,7 +781,7 @@ function getContainerTable(content) {
     try {
         if(content.indexOf("<?xml ") != -1) {
             var doc2 = loadXml(content);
-            if(doc2 != null && doc2.documentElement.nodeName != 'parsererror')
+            if(doc2 != null && doc2.documentElement.nodeName == 'parsererror')
                 return null;
             container=doc2.documentElement;
             if(container == null || container.nodeName == 'html')
