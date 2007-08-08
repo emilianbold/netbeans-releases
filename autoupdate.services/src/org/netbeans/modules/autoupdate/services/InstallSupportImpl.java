@@ -230,11 +230,11 @@ public class InstallSupportImpl {
         Callable<Boolean> installCallable = new Callable<Boolean>() {
             public Boolean call() throws Exception {
                 synchronized(this) {
-                    assert currentStep != STEP.FINISHED;
+                    assert currentStep != STEP.FINISHED : currentStep + " != STEP.FINISHED";
                     if (currentStep == STEP.CANCEL) return false;
                     currentStep = STEP.INSTALLATION;
                 }
-                assert support.getContainer().listInvalid().isEmpty();
+                assert support.getContainer ().listInvalid ().isEmpty () : "listInvalid() isEmpty() but " + support.getContainer ().listInvalid ();
                 List<OperationInfo<InstallSupport>> infos = support.getContainer().listAll();
                 Set<ModuleUpdateElementImpl> moduleImpls = new HashSet<ModuleUpdateElementImpl> ();
                 Set<FeatureUpdateElementImpl> affectedFeatureImpls = new HashSet<FeatureUpdateElementImpl> ();
