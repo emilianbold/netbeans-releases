@@ -22,8 +22,24 @@ Microsystems, Inc. All Rights Reserved.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.web.jsf12</code-name-base>
-            <module-dependencies/>
-            <public-packages/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.servletjspapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
+            <class-path-extension>
+                <runtime-relative-path>ext/jsf-1_2/jsf-api.jar</runtime-relative-path>
+                <binary-origin>../../external/jsf-1.2/jsf-api.jar</binary-origin>
+            </class-path-extension>
+            <public-packages>
+                <subpackages>javax.faces</subpackages>
+            </public-packages>
         </data>
     </configuration>
 </project>
