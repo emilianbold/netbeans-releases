@@ -1,3 +1,7 @@
+Name: Java Web Services Developer Pack
+Version: 1.6
+License: BCL
+
 Use of JAVA WEB SERVICES DEVELOPER PACK, VERSION 1.6 is governed by the terms
 of the license below:
 
