@@ -250,6 +250,7 @@ public class MenuEditLayer extends JPanel {
     // the public method for non-menu parts of the form editor to
     // start menu editing
     public void openAndShowMenu(RADComponent metacomp, Component comp) {
+        p("making sure the menu is open: " + metacomp +  " " + metacomp.getName());
         if(hackedPopupFactory == null) {
             this.hackedPopupFactory = new VisualDesignerPopupFactory(this);
         }
@@ -396,25 +397,37 @@ public class MenuEditLayer extends JPanel {
     }
 
     void showMenuPopup(final JMenu menu) {
+        p("showing the popup for menu: " + menu.getName());
         getPopupFactory();
         // if already created then just make it visible
         if(hackedPopupFactory.containerMap.containsKey(menu)) {
+            p("there is already be a popup view. just making it visible " + menu.getName());
             JPanel view = hackedPopupFactory.containerMap.get(menu);
             view.setVisible(true);
         } else {
+            p("there is not already a popup view " + menu.getName());
             if(!isConfigured(menu)) {
+                p("configureing again! " + menu.getName());
                 configureMenu(null, menu);
             }
             final JPopupMenu popup = menu.getPopupMenu();
+            p("got the popup: " + popup + "\n for menu " + menu.getName());
             
             if(!(popup.getUI() instanceof VisualDesignerPopupMenuUI)) {
+                p("setting the right ui. why wasn't this already done! " + menu.getName());
                 popup.setUI(new VisualDesignerPopupMenuUI(this, popup.getUI()));
             }
             if(menu.isVisible()) {
+                p("the menu *is* visible "  + menu.getName());
+                p("triggering the creation of the popup");
+                //force popup view creation
+                hackedPopupFactory.getPopup(menu, null, 0, 0);
+                
                 // do later so that the component will definitely be on screen by then
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         try {
+                            p("doing the real show later " + menu.getName());
                             popup.show(menu,0,menu.getHeight());
                         } catch (Exception ex) {
                             ex.printStackTrace();
@@ -444,6 +457,7 @@ public class MenuEditLayer extends JPanel {
     
     
     void configureMenu(final JComponent parent, final JMenu menu) {
+        p("configuring the menu: " + menu.getText());
         // make sure it will draw it's border so we can have rollovers and selection
         menu.setBorderPainted(true);
         //install the wrapper icon if not a toplevel JMenu
@@ -455,11 +469,16 @@ public class MenuEditLayer extends JPanel {
         
         // configure the maps and popups
         JPopupMenu popup = menu.getPopupMenu();
+        p("got a popup: " + popup);
         menuPopupUIMap.put(menu, popup.getUI());
         popup.setUI(new VisualDesignerPopupMenuUI(this, popup.getUI()));
         
         // get all of the components in this menu
         Component[] subComps = menu.getMenuComponents();
+        p("the current subcomps of the menu are:");
+        for(Component c : subComps) {
+            p("   comp: " + c);
+        }
         // if this isn't the first time this menu has been opened then the sub components
         // will have been moved to the popupPanel already, so we will find them there instead.
         JPanel popupPanel = getPopupFactory().containerMap.get(menu);
@@ -1089,7 +1108,7 @@ public class MenuEditLayer extends JPanel {
             validate();
             popupContainer.repaint();
         } else {
-            p("menu popup not built yet");
+            p("menu popup not built yet: " + menu.getName());
         }
     }
     
