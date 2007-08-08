@@ -20,10 +20,12 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -33,7 +35,8 @@ import org.netbeans.api.visual.widget.Widget;
  */
 public class EditorPaneWidget extends Widget {
     
-    private JEditorPane pane;
+    private JEditorPane editorPane;
+    private JScrollPane scrollPane;
     private boolean componentAdded;
     private float origoinalFontSize = 0;
     private ComponentSceneListener validateListener;
@@ -46,10 +49,13 @@ public class EditorPaneWidget extends Widget {
      */
     public EditorPaneWidget(Scene scene, String text, String contentType) {
         super(scene);
-        pane = new JEditorPane(contentType,text);
-        pane.setVisible(false);
+        editorPane = new JEditorPane(contentType,text);
+        scrollPane = new JScrollPane(editorPane);
+        editorPane.setVisible(false);
+        scrollPane.setVisible(false);
         componentAdded = false;
-        origoinalFontSize = pane.getFont().getSize2D();
+        origoinalFontSize = editorPane.getFont().getSize2D();
+        editorPane.setPreferredSize(new Dimension(0,(int)origoinalFontSize*6));
         componentListener = new ComponentComponentListener ();
     }
 
@@ -58,19 +64,20 @@ public class EditorPaneWidget extends Widget {
      * @param flag 
      */
     public void setEditable(boolean flag) {
-        pane.setEditable(flag);
+        editorPane.setEditable(flag);
     }
 
     public boolean isEditable() {
-        return pane.isEditable();
+        return editorPane.isEditable();
     }
 
     public String getText() {
-        return pane.getText();
+        return editorPane.getText();
     }
 
     protected void notifyAdded() {
-        pane.setVisible(true);
+        editorPane.setVisible(true);
+        scrollPane.setVisible(true);
         if(validateListener==null) {
             validateListener = new ComponentSceneListener ();
             getScene ().addSceneListener (validateListener);
@@ -78,8 +85,9 @@ public class EditorPaneWidget extends Widget {
     }
 
     protected void notifyRemoved() {
-        pane.setVisible(false);
-        if(validateListener==null) {
+        editorPane.setVisible(false);
+        scrollPane.setVisible(false);
+        if(validateListener!=null) {
             getScene ().removeSceneListener (validateListener);
             validateListener = null;
         }
@@ -90,7 +98,7 @@ public class EditorPaneWidget extends Widget {
      * @return the calculated client area
      */
     protected final Rectangle calculateClientArea () {
-        return new Rectangle (pane.getPreferredSize ());
+        return new Rectangle (editorPane.getPreferredSize ());
     }
 
     /**
@@ -98,12 +106,12 @@ public class EditorPaneWidget extends Widget {
      */
     protected final void paintWidget () {
         if(!componentAdded) {
-            getScene().getView().add(pane);
+            getScene().getView().add(scrollPane);
             componentAdded = true;
         }
-        pane.setBounds (getScene().convertSceneToView (convertLocalToScene (getClientArea())));
-        pane.setFont(pane.getFont().deriveFont((float)getScene().getZoomFactor()*origoinalFontSize));
-        pane.repaint();
+        scrollPane.setBounds (getScene().convertSceneToView (convertLocalToScene (getClientArea())));
+        editorPane.setFont(editorPane.getFont().deriveFont((float)getScene().getZoomFactor()*origoinalFontSize));
+        editorPane.repaint();
     }
 
     private final class ComponentSceneListener implements Scene.SceneListener {
@@ -113,15 +121,15 @@ public class EditorPaneWidget extends Widget {
 
         public void sceneValidating () {
             if(componentAdded) {
-                getScene().getView().remove(pane);
+                getScene().getView().remove(scrollPane);
                 componentAdded = false;
-                pane.removeComponentListener (componentListener);
+                scrollPane.removeComponentListener (componentListener);
             }
         }
 
         public void sceneValidated () {
             if(componentAdded) {
-                pane.addComponentListener (componentListener);
+                scrollPane.addComponentListener (componentListener);
             }
         }
     }
