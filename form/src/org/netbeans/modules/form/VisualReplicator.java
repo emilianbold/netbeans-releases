@@ -170,7 +170,6 @@ public class VisualReplicator { //implements VisualMapper
             if (!relativeProperties.isEmpty())
                 copyRelativeProperties(relativeProperties);
 
-            // PENDING performance
             Map mapToClones = new HashMap(getMapToClones());
             FormModel formModel = getFormModel();
             Set<Map.Entry> entries = mapToClones.entrySet();
@@ -183,15 +182,19 @@ public class VisualReplicator { //implements VisualMapper
                     entry.setValue(rc.getBeanInstance());
                 }
             }
-            if (getDesignRestrictions()) { // this is an updated view (designer)
-                bindingSupport.establishUpdatedBindings(
-                        metacomp, true, mapToClones, getBindingContext(), false);
-                // BindingDesignSupport will unbind and remove these bindings
-                // automatically if user removes a binding or whole component
-            }
-            else { // this is a one-off view (preview)
-                BindingDesignSupport.establishOneOffBindings(
-                        metacomp, true, mapToClones, getBindingContext());
+            BindingContext context = getBindingContext();
+            boolean restrictions = getDesignRestrictions();
+            for (Object o : mapToClones.keySet()) {
+                RADComponent comp = formModel.getMetaComponent(o.toString());
+                if (restrictions) { // this is an updated view (designer)
+                    bindingSupport.establishUpdatedBindings(
+                            comp, false, mapToClones, context, false);
+                    // BindingDesignSupport will unbind and remove these bindings
+                    // automatically if user removes a binding or whole component
+                } else { // this is a one-off view (preview)
+                    BindingDesignSupport.establishOneOffBindings(
+                            comp, false, mapToClones, context);
+                }
             }
         }
         catch (Exception ex) {
