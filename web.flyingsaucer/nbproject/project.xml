@@ -25,11 +25,11 @@ Microsystems, Inc. All Rights Reserved.
             <module-dependencies/>
             <class-path-extension>
                 <runtime-relative-path>ext/core-renderer.jar</runtime-relative-path>
-                <binary-origin>../../external/flyingsaucer/core-renderer.jar</binary-origin>
+                <binary-origin>external/core-renderer-R5pre1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/cssparser-0-9-4-fs.jar</runtime-relative-path>
-                <binary-origin>../../external/flyingsaucer/cssparser-0-9-4-fs.jar</binary-origin>
+                <binary-origin>external/cssparser-0-9-4-fs.jar</binary-origin>
             </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.css.visual</friend>
