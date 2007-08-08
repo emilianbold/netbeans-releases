@@ -17,21 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<project name="Visual CSS Editor" default="netbeans" basedir=".">
-    <description>Builds, tests, and runs the project Visual CSS editor.</description>
+<project name="web/css" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="../external">
-                <include name="flute*.jar"/>
-                <include name="sac*.jar"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="netbeans-extra" depends="release"/>
-
 </project>

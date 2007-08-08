@@ -238,11 +238,11 @@ Microsystems, Inc. All Rights Reserved.
             </test-dependencies>
             <class-path-extension>
                 <runtime-relative-path>ext/flute.jar</runtime-relative-path>
-                <binary-origin>../external/flute.jar</binary-origin>
+                <binary-origin>external/flute.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/sac.jar</runtime-relative-path>
-                <binary-origin>../external/sac.jar</binary-origin>
+                <binary-origin>external/sac.jar</binary-origin>
             </class-path-extension>
             <public-packages/>
         </data>
