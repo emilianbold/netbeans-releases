@@ -51,7 +51,9 @@ import org.openide.util.Utilities;
  * @author marcow
  */
 public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceService {
-
+    static private final String DATASOURCE_PREFIX = "java:comp/env/"; // NOI18N
+    static private final String NON_DEFAULT_DATASOURCE_PREFIX = "java:/"; // NOI18N
+    
     /** Creates a new instance of DesignTimeDataSourceServiceImpl */
     public DesignTimeDataSourceServiceImpl() {
     }
@@ -136,9 +138,11 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         Set<RequestedJdbcResource> reqDss = new HashSet<RequestedJdbcResource>();
         Iterator<Datasource> it = dss.iterator();
         
+        // stripDATASOURCE_PREFIX is a hack for JBoss and other application servers due to differences in JNDI string format
+        // for issue 101812
         while (it.hasNext()) {
             Datasource ds = it.next();
-            RequestedJdbcResource r = new RequestedJdbcResource(ds.getJndiName(),ds.getDriverClassName(),
+            RequestedJdbcResource r = new RequestedJdbcResource(stripDATASOURCE_PREFIX(ds.getJndiName()),ds.getDriverClassName(),
                     ds.getUrl(), null, ds.getUsername(), ds.getPassword(), null);
                         
             reqDss.add(r);
@@ -161,16 +165,34 @@ public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceServ
         
         Set<RequestedJdbcResource> reqDss = new HashSet<RequestedJdbcResource>();
         Iterator<Datasource> it = dss.iterator();
-                
+        
+        // stripDATASOURCE_PREFIX is a hack for JBoss and other application servers due to differences in JNDI string format
+        // for issue 101812
         while (it.hasNext()) {
             Datasource ds = it.next();
-            RequestedJdbcResource r = new RequestedJdbcResource(ds.getJndiName(),ds.getDriverClassName(),
+            RequestedJdbcResource r = new RequestedJdbcResource(stripDATASOURCE_PREFIX(ds.getJndiName()),ds.getDriverClassName(),
                     ds.getUrl(), null, ds.getUsername(), ds.getPassword(), null);
             
             reqDss.add(r);
         }
         
         return reqDss;
+    }
+    
+    private String stripDATASOURCE_PREFIX(String orig) {
+        if (orig == null) {
+            return orig;
+        }
+        if (orig.startsWith(NON_DEFAULT_DATASOURCE_PREFIX)) {
+            return orig.substring(NON_DEFAULT_DATASOURCE_PREFIX.length());
+        }
+        if (!orig.startsWith(DATASOURCE_PREFIX)) {
+            return orig;
+        }
+        if (orig.equals(DATASOURCE_PREFIX)) {
+            return orig;
+        }
+        return orig.substring(DATASOURCE_PREFIX.length());
     }
     
       /**

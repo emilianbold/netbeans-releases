@@ -71,6 +71,7 @@ public class ProjectDataSourceTracker{
     // static private final String DATASOURCE_NAMES = com.sun.rave.designtime.Constants.ContextData.DATASOURCE_NAMES;
     
     static private final String DATASOURCE_PREFIX = "java:comp/env/"; // NOI18N
+    static private final String NON_DEFAULT_DATASOURCE_PREFIX = "java:/"; // NOI18N
     
     static private final String HC_ELEMENT_NAME = "hardcoded-datasource-names" ; // NOI18N
     static private final String HC_ELEMENT_NAMESPACE = "http://creator.sun.com/project/datasources" ; // NOI18N
@@ -606,10 +607,14 @@ public class ProjectDataSourceTracker{
                     
                     String validationTable = ds.getValidationTable() ;
                     
+                     // stripDATASOURCE_PREFIX is a hack for JBoss and other application servers due to differences in JNDI string format
+                     // for issue 101812
                     retList.add( new RequestedJdbcResource( stripDATASOURCE_PREFIX(dsName),
                                                             ds.getDriverClassName(), ds.getUrl(), ds.getValidationQuery(),
                                                             ds.getUsername(), ds.getPassword(), JdbcDriverInfoManager.getInstance().findDriverJarNames(ds.getDriverClassName()), validationTable));
                 } catch (NamingException e) {
+                     // stripDATASOURCE_PREFIX is a hack for JBoss and other application servers due to differences in JNDI string format
+                     // for issue 101812
                     retList.add( new RequestedJdbcResource(stripDATASOURCE_PREFIX(dsName), null, null,
                                                            null, null, null, null));
                 }
@@ -632,6 +637,7 @@ public class ProjectDataSourceTracker{
         
         private String stripDATASOURCE_PREFIX(String orig) {
             if ( orig == null) return orig ;
+            if ( orig.startsWith(NON_DEFAULT_DATASOURCE_PREFIX)) return orig.substring( NON_DEFAULT_DATASOURCE_PREFIX.length());
             if ( ! orig.startsWith(DATASOURCE_PREFIX)) return orig ;
             if ( orig.equals(DATASOURCE_PREFIX)) return orig ;
             return orig.substring( DATASOURCE_PREFIX.length() ) ;
@@ -779,27 +785,7 @@ public class ProjectDataSourceTracker{
             }
             return (String[])retVal.toArray(new String[retVal.size()]) ;
         }
-    }
-    
-//    public class OpenProjectsListener implements PropertyChangeListener {
-//        
-//        public void propertyChange(PropertyChangeEvent event) {
-//            
-//            // The list of open projects has changed; clean up any old projects we may be holding on to.
-//            if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(event.getPropertyName())) {
-//                
-//                List<Project> oldOpenProjectsList = Arrays.asList((Project[]) event.getOldValue());
-//                List<Project> newOpenProjectsList = Arrays.asList((Project[]) event.getNewValue());
-//                Set<Project> closedProjectsSet = new LinkedHashSet<Project>(oldOpenProjectsList);
-//                closedProjectsSet.removeAll(newOpenProjectsList);
-//                for (Project project : closedProjectsSet) {
-//                    // Project has been closed; remove it and the DSTracker from the map.
-//                    trackers.remove(project);
-//                }
-//            }
-//        }
-//    }
-    
+    }    
   
     private static final String LOGPREFIX = "PDST: " ; // NOI18N
     private static ErrorManager err = ErrorManager.getDefault().getInstance("rave.dbdatasource"); // NOI18N

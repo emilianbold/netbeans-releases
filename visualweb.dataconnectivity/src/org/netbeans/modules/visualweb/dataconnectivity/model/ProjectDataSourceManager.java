@@ -152,7 +152,16 @@ public class ProjectDataSourceManager  {
             
             while (projectDataSourcesIterator.hasNext()) {
                 RequestedJdbcResource requestedJdbcResource = projectDataSourcesIterator.next();
-                String projectDsName = requestedJdbcResource.getResourceName().replaceFirst("jdbc/",""); // NOI18N
+                String resourceName = requestedJdbcResource.getResourceName();
+                String projectDsName = "";
+                
+                 // stripDATASOURCE_PREFIX is a hack for JBoss and other application servers due to differences in JNDI string format
+                 // for issue 101812
+                if (resourceName.startsWith("jdbc")) { // NOI18N
+                    projectDsName = resourceName.replaceFirst("jdbc/",""); // NOI18N
+                } else if (resourceName.startsWith("java:/jdbc")) {
+                    projectDsName = resourceName.replaceFirst("java:/jdbc/",""); // NOI18N
+                }
                 
                 if (projectDsName.equals(name)) {
                     return requestedJdbcResource;
@@ -165,7 +174,16 @@ public class ProjectDataSourceManager  {
             
             while (serverDataSourcesIterator.hasNext()) {
                 RequestedJdbcResource requestedJdbcResource = serverDataSourcesIterator.next();
-                String projectDsName = requestedJdbcResource.getResourceName().replaceFirst("jdbc/",""); // NOI18N
+                //String projectDsName = requestedJdbcResource.getResourceName().replaceFirst("jdbc/",""); // NOI18N
+                String projectDsName = requestedJdbcResource.getResourceName();
+                
+                 // stripDATASOURCE_PREFIX is a hack for JBoss and other application servers due to differences in JNDI string format
+                 // for issue 101812
+                if (projectDsName.startsWith("jdbc")) { // NOI18N
+                    projectDsName = projectDsName.replaceFirst("jdbc/",""); // NOI18N
+                } else if (projectDsName.startsWith("java:/jdbc")) {
+                    projectDsName = projectDsName.replaceFirst("java:/jdbc/",""); // NOI18N
+                }
                 
                 if (projectDsName.equals(name)) {
                     return requestedJdbcResource;
