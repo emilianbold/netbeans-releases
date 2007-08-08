@@ -65,12 +65,12 @@ public class MigrationHelper {
 
     // 6/29/07 IZ #101033
     public static void migrateCompAppProperties(String projDir, EditableProperties ep) {
-        System.out.println("Migrating CompApp Properties:");
+//        System.out.println("Migrating CompApp Properties:");
         String propFileLoc = projDir + File.separator + "nbproject" + 
                 File.separator + "project.properties"; // NOI18N
-        System.out.println("propFileLoc=" + propFileLoc);
+//        System.out.println("propFileLoc=" + propFileLoc);
         File propertyFile = new File(propFileLoc);
-        System.out.println("property file " + propertyFile.getAbsolutePath() + ": " + propertyFile.exists());
+//        System.out.println("property file " + propertyFile.getAbsolutePath() + ": " + propertyFile.exists());
         if (propertyFile.exists()) {
             try {
                 // fix deprecated properties
@@ -130,7 +130,7 @@ public class MigrationHelper {
                 reader.close();
                 writer.close();
 
-                System.out.println("Updating property file " + propertyFile.getAbsolutePath()); // NOI18N
+//                System.out.println("Updating property file " + propertyFile.getAbsolutePath()); // NOI18N
                 MyFileUtil.move(tempFile, propertyFile);
             } catch (Exception e) {
                 System.out.println("Problem migrating CompApp project properties: " + e); // NOI18N
@@ -143,7 +143,7 @@ public class MigrationHelper {
             String oldPropertyName, String newPropertyName) {
         
         if (line.startsWith(oldPropertyName + "=")) { // NOI18N
-            System.out.println("    Migrating from " + oldPropertyName + " to " + newPropertyName);  // NOI18N
+//            System.out.println("    Migrating from " + oldPropertyName + " to " + newPropertyName);  // NOI18N
             line = line.replaceFirst(oldPropertyName, newPropertyName);
             if (ep != null) {
                 ep.setProperty(newPropertyName, ep.getProperty(oldPropertyName));
@@ -159,7 +159,7 @@ public class MigrationHelper {
             EditableProperties ep, String oldPropertyName) {
         
         if (line.startsWith(oldPropertyName + "=")) { // NOI18N
-            System.out.println("    Removing " + oldPropertyName);  // NOI18N
+//            System.out.println("    Removing " + oldPropertyName);  // NOI18N
             ep.remove(oldPropertyName);
             return true;
         } else {
