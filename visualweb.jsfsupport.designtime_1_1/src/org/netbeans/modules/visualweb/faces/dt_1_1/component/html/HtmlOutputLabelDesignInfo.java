@@ -73,7 +73,7 @@ public class HtmlOutputLabelDesignInfo implements MarkupDesignInfo {
     }
 
     public DisplayAction[] getContextItems(DesignBean bean) {
-        return null;//new DisplayAction[] { new RowDataBindingCustomizerAction(), new ObjectBindingCustomizerAction() };
+        return new DisplayAction[0];//new DisplayAction[] { new RowDataBindingCustomizerAction(), new ObjectBindingCustomizerAction() };
     }
 
     public boolean acceptLink(DesignBean targetBean, DesignBean sourceBean, Class sourceClass) {
