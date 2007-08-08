@@ -576,7 +576,7 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
         for (CatalogEntry entry : entries) {
 //System.out.println("see");
           String name = getFileName(entry.getSource());
-System.out.println("        name: " + name);
+//System.out.println("        name: " + name);
 //System.out.println("        file: " + new File(name));
           FileObject source = FileUtil.toFileObject(FileUtil.normalizeFile(new File(name)));
 
