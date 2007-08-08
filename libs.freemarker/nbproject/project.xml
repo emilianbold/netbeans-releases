@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/freemarker-2.3.8.jar</runtime-relative-path>
-                <binary-origin>../external/freemarker-2.3.8.jar</binary-origin>
+                <binary-origin>external/freemarker-2.3.8.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
