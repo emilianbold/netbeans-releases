@@ -232,11 +232,16 @@ function getMethodMimeTypeCombo(resource) {
         var m = methods[j];                            
         var mName = m.attributes.getNamedItem("name").nodeValue;
         var mediaType = getMediaType(m);
-        var dispName = getMethodNameForDisplay(mName, mediaType);
-        if(mName == 'GET')
-            str += "  <option selected value='"+dispName+"' selected>"+dispName+"</option>";
-        else
-            str += "  <option selected value='"+dispName+"'>"+dispName+"</option>";
+        var mimeTypes = mediaType.split(',');
+        var k=0;
+        for(k=0;k<mimeTypes.length;k++) {
+            var mimeType = mimeTypes[k];
+            var dispName = getMethodNameForDisplay(mName, mimeType);
+            if(mName == 'GET')
+                str += "  <option selected value='"+dispName+"' selected>"+dispName+"</option>";
+            else
+                str += "  <option selected value='"+dispName+"'>"+dispName+"</option>";
+        }
     }   
     str += "</select>";
     return str;
@@ -512,7 +517,7 @@ function createIFrame(url) {
     return c;
 }
 function showViews(name) {
-    if(name == 'raw' && currentMethod == 'GET') //This step is needed for Firefox to show content as xml
+    if(name == 'raw' && currentMethod == 'GET' && currentMimeType == 'application/xml') //This step is needed for Firefox to show content as xml
     	updatepage('rawContent', createIFrame(currentValidUrl));
     var tableNode = document.getElementById('tableContent').style;
     var rawNode = document.getElementById('rawContent').style;
@@ -830,7 +835,7 @@ function getChildUriFromXml(refChild) {
                 subChild.attributes.getNamedItem('uri') != null) {
                 tcStr += createRowForUriFromXml(subChild);
             }
-            getChildUri(subChild);
+            getChildUriFromXml(subChild);
         }
     }
 }
