@@ -20,16 +20,11 @@
 package org.netbeans.modules.autoupdate.ui;
 
 import java.io.CharConversionException;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationSupport;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
@@ -49,7 +44,6 @@ public class UnitDetails extends DetailsPanel{
         setUnit(u, null);
     }
     
-    @SuppressWarnings ("deprecation")
     public void setUnit(Unit u, Action action) {
         if (u == null) {
             getDetails ().setText ("<i>" + getBundle ("UnitDetails_Category_NoDescription") + "</i>"); // NOI18N
@@ -63,15 +57,6 @@ public class UnitDetails extends DetailsPanel{
                 setActionListener(action);
                 if (Utilities.modulesOnly () || Utilities.showExtendedDescription ()) {
                     text += "<b>" + getBundle ("UnitDetails_Plugin_CodeName") + "</b>" + u.annotate (u.updateUnit.getCodeName ()); // NOI18N
-                    // XXX: Temporary only for development
-                    UpdateElement elem = u.getRelevantElement ();
-                    if (elem.isAutoload () || elem.isEager () || elem.isFixed ()) {
-                        text += " (";
-                        text += elem.isAutoload () ? "<i>" + getBundle ("UnitDetails_Plugin_Autoload") + "</i>" : ""; // NOI18N
-                        text += elem.isEager () ? "<i>" + getBundle ("UnitDetails_Plugin_Eager") + "</i>" : ""; // NOI18N
-                        text += elem.isFixed () ? "<i>" + getBundle ("UnitDetails_Plugin_Fixed") + "</i>" : ""; // NOI18N
-                        text += ")";
-                    } // enf of temporary
                     text += "<br>";
 
                 }

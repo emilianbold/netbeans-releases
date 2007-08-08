@@ -144,7 +144,6 @@ public class InstallManager {
     }
     
     // can be null for fixed modules
-    @SuppressWarnings("deprecation")
     private static File getInstallDir (UpdateElement installed, UpdateElementImpl update) {
         File res = null;
         UpdateElementImpl i = Trampoline.API.impl (installed);
@@ -154,7 +153,7 @@ public class InstallManager {
         File configFile = InstalledFileLocator.getDefault ().locate (configFileName, installed.getCodeName (), false);
         if (configFile == null) {
             // only fixed module cannot be located
-            ERR.log (Level.FINE, "No install dir for " + installed + " (It's ok for fixed). Is fixed? " + installed.isFixed ());
+            ERR.log (Level.FINE, "No install dir for " + installed + " (It's ok for fixed). Is fixed? " + Trampoline.API.impl (installed).isFixed ());
             String targetCluster = update.getInstallInfo ().getTargetCluster ();
             if (targetCluster != null) {
                 for (File cluster : UpdateTracking.clusters (false)) {

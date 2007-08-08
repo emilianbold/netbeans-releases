@@ -144,21 +144,6 @@ public final class UpdateElement {
         return impl.getLicence ();
     }
     
-    @Deprecated // Will be removed !!!
-    public boolean isAutoload () {
-        return impl.isAutoload ();
-    }
-
-    @Deprecated // Will be removed !!!
-    public boolean isEager () {
-        return impl.isEager ();
-    }
-    
-    @Deprecated // Will be removed !!!
-    public boolean isFixed() {
-        return impl.isFixed ();
-    }
-    
     @Override
     public boolean equals(Object obj) {
         if (obj == null)

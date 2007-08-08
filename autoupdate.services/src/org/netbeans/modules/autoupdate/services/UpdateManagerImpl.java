@@ -92,42 +92,13 @@ public class UpdateManagerImpl extends Object {
         return filterUnitsByAskedTypes (unitsFromReference (updateUnitsRef), type2checkedList (types));
     }
     
-/*    @SuppressWarnings("deprecation")
-    public Set<UpdateElement> getAvailableEagers () {
-        Reference<Set<UpdateElement>> tmp = null;
-        synchronized (UpdateManagerImpl.class) {
-            tmp = availableEagers;
-        }
-        if (tmp == null || tmp.get () == null) {
-            tmp = new WeakReference<Set<UpdateElement>> (new HashSet<UpdateElement> ());
-            synchronized (UpdateElementImpl.class) {
-                availableEagers = tmp;
-                if (availableEagers.get ().isEmpty ()) {
-                    for (UpdateUnit unit : getUpdateUnits ()) {
-                        if (! unit.getAvailableUpdates ().isEmpty ()) {
-                            UpdateElement el = unit.getAvailableUpdates ().get (0);
-                            if (el.isEager ()) {
-                                System.out.println("availableEagers.get (): " + availableEagers.get ());
-                                availableEagers.get ().add (el);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        
-        return availableEagers.get ();
-    }
- */ 
-    @SuppressWarnings("deprecation")
     public Set<UpdateElement> getAvailableEagers () {
         if (availableEagers == null) {
             availableEagers = new HashSet<UpdateElement> ();
             for (UpdateUnit unit : getUpdateUnits ()) {
                 if (! unit.getAvailableUpdates ().isEmpty ()) {
                     UpdateElement el = unit.getAvailableUpdates ().get (0);
-                    if (el.isEager ()) {
+                    if (Trampoline.API.impl (el).isEager ()) {
                         availableEagers.add (el);
                     }
                 }
@@ -137,14 +108,14 @@ public class UpdateManagerImpl extends Object {
         return availableEagers;
     }
     
-    @SuppressWarnings("deprecation")
+
     public Set<UpdateElement> getInstalledEagers () {
         if (installedEagers == null) {
             installedEagers = new HashSet<UpdateElement> ();
             for (UpdateUnit unit : getUpdateUnits ()) {
                 UpdateElement el;
                 if ((el = unit.getInstalled ()) != null) {
-                    if (el.isEager ()) {
+                    if (Trampoline.API.impl (el).isEager ()) {
                         installedEagers.add (el);
                     }
                 }
