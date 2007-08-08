@@ -75,6 +75,8 @@ public class ReleaseFilesLicense extends Task {
             OutputStream os = new FileOutputStream(license);
             try {
                 PrintWriter pw = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
+                pw.println("License for NetBeans module:");
+                pw.println();
                 append(pw, standardLicense);
                 for (String name : extraLicenseFiles.split("[, ]+")) {
                     File f = new File(licenses, name);
@@ -82,7 +84,11 @@ public class ReleaseFilesLicense extends Task {
                         log("No such license: " + f, Project.MSG_WARN);
                         continue;
                     }
+                    pw.println();
+                    pw.println();
                     pw.println("==================================================");
+                    pw.println("Additional license (" + name + "):");
+                    pw.println();
                     append(pw, f);
                 }
                 Map<File,Set<String>> inferredLicenses = new TreeMap<File,Set<String>>();
@@ -124,7 +130,10 @@ public class ReleaseFilesLicense extends Task {
                     }
                 }
                 for (Map.Entry<File,Set<String>> entry : inferredLicenses.entrySet()) {
+                    pw.println();
+                    pw.println();
                     pw.println("==================================================");
+                    pw.println("Additional license (" + entry.getKey().getName() + ") associated with the following files:");
                     for (String binary : entry.getValue()) {
                         pw.println(binary);
                     }
