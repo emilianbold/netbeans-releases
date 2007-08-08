@@ -388,7 +388,13 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     }
     
     public void undeploy(boolean force) {
-                 
+            
+        // The cached SA status is for performance purpose. The tradeoff is that
+        // the actual SA status is not always correct. 
+        // The following cache clearing is not really necessary, but is added 
+        // anyway for #111623.
+        clearServiceAssemblyStatusCache();
+        
         if (canShutdown()) {
             shutdown(force);
         }
