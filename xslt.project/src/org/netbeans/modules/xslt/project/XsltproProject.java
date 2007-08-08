@@ -22,6 +22,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -29,6 +33,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.xml.catalogsupport.ProjectConstants;
 
 import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
@@ -84,6 +89,8 @@ public class XsltproProject implements Project, AntProjectListener {
     public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.xslt.project";
     public static final String MODULE_INSTALL_DIR = "module.install.dir";
     
+    private static final Logger LOG = Logger.getLogger(XsltproProject.class.getName());
+
     private final AntProjectHelper helper;
     private Lookup lookup;
     private PropertyEvaluator evaluator;
@@ -367,17 +374,52 @@ public class XsltproProject implements Project, AntProjectListener {
                     }
                     
                     helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                     
+                    // Add project encoding for old projects
+                    EditableProperties projectEP = helper.getProperties(
+                                    AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if (projectEP.getProperty(IcanproProjectProperties.SOURCE_ENCODING) == null) {
+                        projectEP.setProperty(IcanproProjectProperties.SOURCE_ENCODING,
+                                // FIXME: maybe we should use Charset.defaultCharset() instead?
+                                // See comments in IcanproProjectEncodingQueryImpl.java
+                                FileEncodingQuery.getDefaultEncoding().name());
+                    }            
+                    helper.putProperties(
+                            AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
+
                     try {
                         ProjectManager.getDefault().saveProject(XsltproProject.this);
                     } catch (IOException e) {
                         ErrorManager.getDefault().notify(e);
                     }
+                    
                     return null;
                 }
             });
             if (IcanproLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }
+            
+            checkEncoding();
+        }
+        
+        private void checkEncoding() {
+            // TODO m
+            // Should we show ErrorManager dialog to inform user in case wrong encoding parameter ?
+            String prop = evaluator.getProperty(IcanproProjectProperties.SOURCE_ENCODING);
+            if (prop != null) {
+                try {
+                    Charset c = Charset.forName(prop);
+                } catch (IllegalCharsetNameException e) {
+                    //Broken property, log & ignore
+                    LOG.warning("Illegal charset: " + prop+ " in project: " + // NOI18N
+                            getProjectDirectory()); 
+                } catch (UnsupportedCharsetException e) {
+                    //todo: Needs UI notification like broken references.
+                    LOG.warning("Unsupported charset: " + prop+ " in project: " + // NOI18N
+                            getProjectDirectory()); 
+                }
+            }            
         }
         
         protected void projectClosed() {

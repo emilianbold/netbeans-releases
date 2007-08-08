@@ -20,8 +20,10 @@ package org.netbeans.modules.xslt.project;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
@@ -157,7 +159,8 @@ public class XsltproProjectGenerator {
     }
     
     private static AntProjectHelper setupProject (FileObject dirFO, String name) throws IOException {
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, XsltproProjectType.TYPE);
+        AntProjectHelper h = ProjectGenerator.createProject(dirFO,
+                XsltproProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(XsltproProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -167,59 +170,58 @@ public class XsltproProjectGenerator {
         minant.appendChild(doc.createTextNode("1.6")); // NOI18N
         data.appendChild(minant);
         h.putPrimaryConfigurationData(data, true);
-        
+
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         // ep.setProperty(JAVAC_CLASSPATH, "${libs.j2ee14.classpath}");
         ep.setProperty(IcanproProjectProperties.DIST_DIR, "dist"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.DIST_JAR, 
-                "${"+IcanproProjectProperties.DIST_DIR+"}/" + name + ".zip"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.DIST_JAR,
+                "${" + IcanproProjectProperties.DIST_DIR + "}/" + name + ".zip"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JAR_NAME, name + ".jar");
         ep.setProperty(IcanproProjectProperties.JAR_COMPRESS, "false");
 //        ep.setProperty(JAR_CONTENT_ADDITIONAL, "");
-        
-        Deployment deployment = Deployment.getDefault ();
-        String serverInstanceID = deployment.getDefaultServerInstanceID ();
+        Deployment deployment = Deployment.getDefault();
+        String serverInstanceID = deployment.getDefaultServerInstanceID();
         ep.setProperty(IcanproProjectProperties.JAVAC_SOURCE, "1.4");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(IcanproProjectProperties.JAVAC_DEPRECATION, "false");
 // todo r
         ep.setProperty(VALIDATION_FLAG, "false");
-        
+
         ep.setProperty(IcanproProjectProperties.JAVAC_TARGET, "1.4");
 
-        
-        ep.setProperty(IcanproProjectProperties.BUILD_DIR, DEFAULT_BUILD_DIR);
-        ep.setProperty(IcanproProjectProperties.BUILD_GENERATED_DIR, 
-                "${"+IcanproProjectProperties.BUILD_DIR+"}/generated"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.BUILD_CLASSES_DIR, 
-                "${"+IcanproProjectProperties.BUILD_DIR+"}/jar"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.BUILD_CLASSES_EXCLUDES, 
-                "**/*.java,**/*.form,**/.nbattrs"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.DIST_JAVADOC_DIR, 
-                "${"+IcanproProjectProperties.DIST_DIR+"}/javadoc"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.JAVA_PLATFORM, "default_platform"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.DEBUG_CLASSPATH, 
-                "${"+IcanproProjectProperties.JAVAC_CLASSPATH+"}:${"+IcanproProjectProperties.BUILD_CLASSES_DIR+"}");// NOI18N
 
+        ep.setProperty(IcanproProjectProperties.BUILD_DIR, DEFAULT_BUILD_DIR);
+        ep.setProperty(IcanproProjectProperties.BUILD_GENERATED_DIR,
+                "${" + IcanproProjectProperties.BUILD_DIR + "}/generated"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.BUILD_CLASSES_DIR,
+                "${" + IcanproProjectProperties.BUILD_DIR + "}/jar"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.BUILD_CLASSES_EXCLUDES, "**/*.java,**/*.form,**/.nbattrs"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.DIST_JAVADOC_DIR,
+                "${" + IcanproProjectProperties.DIST_DIR + "}/javadoc"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.JAVA_PLATFORM, "default_platform"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.DEBUG_CLASSPATH,
+                "${" + IcanproProjectProperties.JAVAC_CLASSPATH + "}:${" + IcanproProjectProperties.BUILD_CLASSES_DIR + "}"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.WSDL_CLASSPATH, "");
+        Charset enc = FileEncodingQuery.getDefaultEncoding();
+        ep.setProperty(IcanproProjectProperties.SOURCE_ENCODING, enc.name());
+        
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_SE_TYPE, "sun-xslt-engine"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.SERVICE_UNIT_DESCRIPTION, "This represents the Service Unit"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_ROOT, "nbproject/private"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_ROOT, "nbproject/deployment"); // NOI18N
-
-        ep.setProperty(IcanproProjectProperties.BC_DEPLOYMENT_JAR, 
-                "${"+IcanproProjectProperties.BUILD_DIR+"}/" + "BCDeployment.jar"); // NOI18N
-        ep.setProperty(IcanproProjectProperties.SE_DEPLOYMENT_JAR, 
-                "${"+IcanproProjectProperties.BUILD_DIR+"}/" + "SEDeployment.jar"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.BC_DEPLOYMENT_JAR,
+                "${" + IcanproProjectProperties.BUILD_DIR + "}/" + "BCDeployment.jar"); // NOI18N
+        ep.setProperty(IcanproProjectProperties.SE_DEPLOYMENT_JAR,
+                "${" + IcanproProjectProperties.BUILD_DIR + "}/" + "SEDeployment.jar"); // NOI18N
         //============= End of IcanPro========================================//
-
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-        
+
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         //============= Start of IcanPro========================================//
         ep.setProperty(IcanproProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
         ep.setProperty(IcanproProjectProperties.JBI_DEPLOYMENT_CONF_FILE, "default.xml"); // NOI18N
         //============= End of IcanPro========================================//
-
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
