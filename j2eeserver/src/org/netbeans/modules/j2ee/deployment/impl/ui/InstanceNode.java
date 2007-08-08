@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.j2ee.deployment.impl.ui;
 
+import javax.swing.Action;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.netbeans.modules.j2ee.deployment.impl.*;
@@ -58,6 +59,11 @@ public class InstanceNode extends AbstractNode implements ServerInstance.StateLi
             return instance;
         }
         return super.getCookie(type);
+    }
+    
+    @Override
+    public Action[] getActions(boolean b) {
+        return new Action[] {};
     }
     
     // StateListener implementation -------------------------------------------

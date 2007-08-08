@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.j2ee.jboss4.nodes;
 
+import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -33,5 +34,10 @@ public class JBTargetNode extends AbstractNode {
     public JBTargetNode(Lookup lookup) {
         super(new Children.Array());
         getChildren().add(new Node[] {new JBItemNode(new JBApplicationsChildren(lookup), NbBundle.getMessage(JBTargetNode.class, "LBL_Apps"))});
+    }
+    
+    @Override
+    public Action[] getActions(boolean b) {
+        return new Action[] {};
     }
 }

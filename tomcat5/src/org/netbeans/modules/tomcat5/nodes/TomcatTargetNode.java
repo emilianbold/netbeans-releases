@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.tomcat5.nodes;
 import java.awt.Image;
+import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.openide.nodes.*;
@@ -39,6 +40,11 @@ public class TomcatTargetNode extends AbstractNode {
     public TomcatTargetNode(Lookup lookup) {
         super(new Children.Array());
         getChildren().add(new Node[] {new WebModuleHolderNode(lookup)});
+    }
+    
+    @Override
+    public Action[] getActions(boolean b) {
+        return new Action[] {};
     }
  
     public class WebModuleHolderNode extends AbstractNode {
