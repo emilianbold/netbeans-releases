@@ -625,10 +625,10 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         }
         
         public String getListLabelText() {
-            return getString("LIBRARY_LIST_TXT");
+            return getString("DIR_LIST_TXT");
         }
         public char getListLabelMnemonic() {
-            return getString("LIBRARY_LIST_MN").charAt(0);
+            return getString("DIR_LIST_MN").charAt(0);
         }
         
         public String getAddButtonText() {
