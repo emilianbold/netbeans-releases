@@ -73,6 +73,10 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
                 version = "?";
             }
             installedLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "RailsVersion", version));
+        } else if (!RubyInstallation.getInstance().isValidRuby(false)) {
+            descLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "NoRuby"));
+            railsButton.setText(NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails"));
+            installedLabel.setText("");
         } else {
             descLabel.setText(NbBundle.getMessage(RailsInstallationPanel.class, "NoRails"));
             railsButton.setText(NbBundle.getMessage(RailsInstallationPanel.class, "InstallRails"));
@@ -85,6 +89,11 @@ public class RailsInstallationPanel extends javax.swing.JPanel {
     }
         
     boolean valid (WizardDescriptor settings) {
+        if (!RubyInstallation.getInstance().isValidRuby(false)) {
+            wizardDescriptor.putProperty( "WizardPanel_errorMessage", 
+                    NbBundle.getMessage(RailsInstallationPanel.class, "NoRuby"));
+            return false;
+        }
         // Make sure we have Rails (and possibly openssl as well)
         String rails = RubyInstallation.getInstance().getRails();
         if (rails != null && !(new File(rails).exists())) {

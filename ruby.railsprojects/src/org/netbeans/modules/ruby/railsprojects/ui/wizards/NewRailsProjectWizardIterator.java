@@ -146,18 +146,20 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
         // (unless we're creating a rails app from existing sources - those probably don't need configuration steps)
         if ((type == TYPE_APP) && (RubyInstallation.getInstance().isJRubySet())) {
             String jrubyHome = RubyInstallation.getInstance().getJRubyHome();
-            File railsFile = new File(jrubyHome + File.separator + "docs" + File.separator + "README.rails");
-            FileObject fo = FileUtil.toFileObject(railsFile);
-            if (fo != null) {
-                // Open
-                try {
-                    DataObject dobj = DataObject.find(fo);
-                    EditorCookie cookie = dobj.getCookie(EditorCookie.class);
-                    if (cookie != null) {
-                        cookie.open();
+            if (jrubyHome != null) {
+                File railsFile = new File(jrubyHome + File.separator + "docs" + File.separator + "README.rails");
+                FileObject fo = FileUtil.toFileObject(railsFile);
+                if (fo != null) {
+                    // Open
+                    try {
+                        DataObject dobj = DataObject.find(fo);
+                        EditorCookie cookie = dobj.getCookie(EditorCookie.class);
+                        if (cookie != null) {
+                            cookie.open();
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        ErrorManager.getDefault().notify(ex);
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    ErrorManager.getDefault().notify(ex);
                 }
             }
         }
