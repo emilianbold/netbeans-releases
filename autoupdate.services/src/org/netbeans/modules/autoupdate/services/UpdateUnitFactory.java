@@ -293,16 +293,22 @@ public class UpdateUnitFactory {
         
     }
     
-    // XXX
-    private static void resetRunTime (String msg) {
-        if (msg != null) System.out.println ("|=== " + msg + " ===|");
+    private void resetRunTime (String msg) {
+        if (log.isLoggable (Level.FINE)) {
+            if (msg != null) {
+                log.log (Level.FINE, "|=== " + msg + " ===|");
+            }
         runTime = System.currentTimeMillis ();
+        }
     }
     
-    // XXX
-    private static void reportRunTime (String msg) {
-        System.out.println(msg + " === " + FMT.format (new Date (System.currentTimeMillis () - runTime)));
-        resetRunTime (null);
+    private void reportRunTime (String msg) {
+        if (log.isLoggable (Level.FINE)) {
+            if (msg != null) {
+                log.log (Level.FINE, msg + " === " + FMT.format (new Date (System.currentTimeMillis () - runTime)));
+            }
+            resetRunTime (null);
+        }
     }
     
 }
