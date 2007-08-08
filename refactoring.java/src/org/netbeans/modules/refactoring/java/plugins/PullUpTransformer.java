@@ -69,6 +69,7 @@ public class PullUpTransformer extends RefactoringVisitor {
                             classIsAbstract = true;
                             Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
                             mod.add(Modifier.ABSTRACT);
+                            mod.remove(Modifier.FINAL);
                             ModifiersTree modifiers = make.Modifiers(mod);
                             rewrite(njuClass.getModifiers(), modifiers);
                         }
@@ -77,6 +78,7 @@ public class PullUpTransformer extends RefactoringVisitor {
                         MethodTree method = (MethodTree) workingCopy.getTrees().getTree(members[i].getElementHandle().resolve(workingCopy));
                         Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
                         mod.add(Modifier.ABSTRACT);
+                        mod.remove(Modifier.FINAL);
                         MethodTree nju = make.Method(
                                 make.Modifiers(mod),
                                 method.getName(),
