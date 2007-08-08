@@ -1946,10 +1946,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
 	// load the property editor class and create an instance of it
 	PropertyEditor prEd = null;
 	if (editorStr != null) {
-	    prEd = getPropertyEditor(editorStr, property, propertyType, propNode);
-	    if(prEd==null) {
+            boolean prEdNecessary = (valueStr == null);
+	    prEd = getPropertyEditor(editorStr, property, propertyType, propNode, prEdNecessary);
+	    if(prEd==null && prEdNecessary) {
 		return;
-	    }	    
+	    } // if we failed to create the property editor we may still decode
+              // the saved value from valueStr (i.e. a primitive value)
 	}	    
 
 	// load the property value
@@ -2168,7 +2170,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         nonfatalErrors.add(ex); 
     }
     
-    private PropertyEditor getPropertyEditor(String editorStr, FormProperty property, Class propertyType, org.w3c.dom.Node propNode) {
+    private PropertyEditor getPropertyEditor(String editorStr, FormProperty property, Class propertyType, org.w3c.dom.Node propNode, boolean reportFailure) {
 	// load the property editor class and create an instance of it
 	PropertyEditor prEd = null;
 	Throwable t = null;	
@@ -2189,13 +2191,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 if (prEd != null && prEd.getClass().getName().equals(editorStr))
                     return prEd;
 
-		String msg = createLoadingErrorMessage(
-		    FormUtils.getFormattedBundleString(
-			"FMT_ERR_CannotLoadClass3", // NOI18N
-			new Object[] { editorStr }),
-		    propNode);
-		ErrorManager.getDefault().annotate(t, ErrorManager.USER, null, msg, null, null);
-		nonfatalErrors.add(t);
+                if (reportFailure) {
+                    String msg = createLoadingErrorMessage(
+                        FormUtils.getFormattedBundleString(
+                            "FMT_ERR_CannotLoadClass3", // NOI18N
+                            new Object[] { editorStr }),
+                        propNode);
+                    ErrorManager.getDefault().annotate(t, ErrorManager.USER, null, msg, null, null);
+                    nonfatalErrors.add(t);
+                }
 		return null;
 	    }
 
