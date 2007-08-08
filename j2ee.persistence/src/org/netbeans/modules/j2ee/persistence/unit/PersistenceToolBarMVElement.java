@@ -101,6 +101,12 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
     public void componentShowing() {
         super.componentShowing();
         if (needInit){
+            if (!puDataObject.viewCanBeDisplayed()) {
+                view = new PersistenceView();
+                view.setRoot(Node.EMPTY);
+                comp.setContentView(view);
+                return;
+            }
             needInit = !repaintView();
         }
     }
@@ -111,15 +117,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
      * @return true if repainting succeeded, false otherwise.
      */ 
     private boolean repaintView(){
-        
         view = new PersistenceView();
-        
-        if (!puDataObject.viewCanBeDisplayed()){
-            view.setRoot(Node.EMPTY);
-            comp.setContentView(view);
-            return false;
-        }
-        
         view.initialize(puDataObject);
         comp.setContentView(view);
         Object lastActive = comp.getLastActive();
@@ -139,17 +137,14 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
     
     public void propertyChange(PropertyChangeEvent evt) {
         String name = evt.getPropertyName();
-        
-        if (puDataObject.PROPERTY_DATA_MODIFIED.equals(name) || puDataObject.PROPERTY_DATA_UPDATED.equals(name)){
-            
-            if (this.equals(puDataObject.getActiveMultiViewElement0())){
-                repaintingTask.schedule(100);
-            } else {
-                needInit = true;
-            }
+        if (PUDataObject.PERSISTENCE_UNIT_ADDED_OR_REMOVED.equals(name)){
+            repaintingTask.schedule(100);
+        } else if ((puDataObject.PROPERTY_DATA_MODIFIED.equals(name) 
+                || puDataObject.PROPERTY_DATA_UPDATED.equals(name))
+                && !this.equals(puDataObject.getActiveMultiViewElement0())) {
+            needInit = true;
         }
     }
-    
     
     private class PersistenceView extends SectionView {
         

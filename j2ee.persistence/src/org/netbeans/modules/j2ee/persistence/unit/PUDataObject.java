@@ -73,6 +73,11 @@ public class PUDataObject extends XmlMultiViewDataObject {
     private static final String DESIGN_VIEW_ID = "persistence_multiview_design"; // NO18N
     
     /**
+     * The property name for the event fired when a persistence unit was added or removed.
+     */ 
+    static final String PERSISTENCE_UNIT_ADDED_OR_REMOVED = "persistence_unit_added_or_removed"; //NO18N
+
+    /**
      * Creates a new instance of PUDataObject.
      */
     public PUDataObject(FileObject pf, PUDataLoader loader) throws DataObjectExistsException {
@@ -210,6 +215,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
         ProviderUtil.makePortableIfPossible(FileOwnerQuery.getOwner(getPrimaryFile()), persistenceUnit);
         getPersistence().addPersistenceUnit(persistenceUnit);
         modelUpdatedFromUI();
+        firePropertyChange(PERSISTENCE_UNIT_ADDED_OR_REMOVED, false, true);
     }
     
     /**
@@ -218,6 +224,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
     public void removePersistenceUnit(PersistenceUnit persistenceUnit){
         getPersistence().removePersistenceUnit(persistenceUnit);
         modelUpdatedFromUI();
+        firePropertyChange(PERSISTENCE_UNIT_ADDED_OR_REMOVED, false, true);
     }
     
     /**
