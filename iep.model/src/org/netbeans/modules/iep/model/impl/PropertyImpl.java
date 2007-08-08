@@ -65,4 +65,8 @@ public class PropertyImpl extends IEPComponentBase implements Property {
     public Component getParentComponent() {
     	return (Component) getParent();
     }
+    
+    public String toString() {
+    	return getName();
+    }
 }

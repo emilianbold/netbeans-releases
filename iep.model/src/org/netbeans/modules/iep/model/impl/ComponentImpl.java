@@ -122,6 +122,7 @@ public class ComponentImpl extends IEPComponentBase implements Component {
     		String propName = p.getName();
     		if(propName.equals(name)) {
     			prop = p;
+    			break;
     		}
     	}
     	
