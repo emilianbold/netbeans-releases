@@ -48,13 +48,11 @@ import org.netbeans.installer.utils.exceptions.XMLException;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
-import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiPasswordField;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
-import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationValidator;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxEditor;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxModel;
@@ -67,6 +65,8 @@ import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMe
 import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import static java.lang.Integer.parseInt;
+import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
+import org.netbeans.installer.utils.helper.swing.NbiFileChooser;
 
 /**
  *
@@ -251,7 +251,7 @@ public class GlassFishPanel extends DestinationPanel {
         
         private NbiTextField jdkLocationField;
         
-        private JFileChooser fileChooser;
+        private NbiDirectoryChooser fileChooser;
         
         private NbiLabel usernameLabel;
         private NbiTextField usernameField;
@@ -726,12 +726,8 @@ public class GlassFishPanel extends DestinationPanel {
             statusLabel = new NbiLabel();
             
             // fileChooser //////////////////////////////////////////////////////////
-            fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fileChooser.setMultiSelectionEnabled(false);
-            fileChooser.setDialogTitle(component.getProperty(FILECHOOSER_TITLE_PROPERTY));
-            
-            
+            fileChooser = new NbiDirectoryChooser();
+                        
             final Dimension longFieldSize = new Dimension(
                     200,
                     new NbiTextField().getPreferredSize().height);

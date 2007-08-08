@@ -37,6 +37,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.helper.swing.NbiComboBox;
+import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationValidator;
 import org.netbeans.installer.wizard.components.panels.ApplicationLocationPanel.LocationsComboBoxEditor;
@@ -147,7 +148,7 @@ public class NbBasePanel extends DestinationPanel {
         
         private NbiTextField jdkLocationField;
         
-        private JFileChooser fileChooser;
+        private NbiDirectoryChooser fileChooser;
         
         public NbBaseDestinationPanelSwingUi(
                 final NbBasePanel panel,
@@ -275,10 +276,7 @@ public class NbBasePanel extends DestinationPanel {
             statusLabel = new NbiLabel();
             
             // fileChooser //////////////////////////////////////////////////////////
-            fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fileChooser.setMultiSelectionEnabled(false);
-            fileChooser.setDialogTitle(component.getProperty(FILECHOOSER_TITLE_PROPERTY));
+            fileChooser = new NbiDirectoryChooser();
             
             // this /////////////////////////////////////////////////////////////////
             add(jdkLocationLabel, new GridBagConstraints(

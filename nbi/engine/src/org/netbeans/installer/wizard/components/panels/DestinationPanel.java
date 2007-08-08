@@ -40,6 +40,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.exceptions.NativeException;
+import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiTextField;
 import org.netbeans.installer.wizard.ui.SwingUi;
@@ -62,10 +63,7 @@ public class DestinationPanel extends ErrorMessagePanel {
         setProperty(DESTINATION_LABEL_TEXT_PROPERTY,
                 DEFAULT_DESTINATION_LABEL_TEXT);
         setProperty(DESTINATION_BUTTON_TEXT_PROPERTY,
-                DEFAULT_DESTINATION_BUTTON_TEXT);
-        setProperty(FILECHOOSER_TITLE_PROPERTY, 
-                DEFAULT_FILECHOOSER_TITLE);
-
+                DEFAULT_DESTINATION_BUTTON_TEXT);        
         setProperty(ERROR_NULL_PROPERTY,
                 DEFAULT_ERROR_NULL);
         setProperty(ERROR_NOT_VALID_PROPERTY,
@@ -128,7 +126,7 @@ public class DestinationPanel extends ErrorMessagePanel {
         
         private NbiPanel spacerPanel;
         
-        private JFileChooser fileChooser;
+        private NbiDirectoryChooser fileChooser;
         
         public DestinationPanelSwingUi(
                 final DestinationPanel component,
@@ -348,10 +346,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             });
             
             // fileChooser //////////////////////////////////////////////////////////
-            fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fileChooser.setMultiSelectionEnabled(false);
-            fileChooser.setDialogTitle(component.getProperty(FILECHOOSER_TITLE_PROPERTY));
+            fileChooser = new NbiDirectoryChooser();
             
             // spacerPanel //////////////////////////////////////////////////////////
             spacerPanel = new NbiPanel();
@@ -442,8 +437,7 @@ public class DestinationPanel extends ErrorMessagePanel {
             = "destination.label.text"; // NOI18N
     public static final String DESTINATION_BUTTON_TEXT_PROPERTY
             = "destination.button.text"; // NOI18N
-    public static final String FILECHOOSER_TITLE_PROPERTY = 
-            "filechooser.title";
+    
     
     public static final String DEFAULT_DESTINATION_LABEL_TEXT =
             ResourceUtils.getString(DestinationPanel.class,
@@ -451,9 +445,7 @@ public class DestinationPanel extends ErrorMessagePanel {
     public static final String DEFAULT_DESTINATION_BUTTON_TEXT =
             ResourceUtils.getString(DestinationPanel.class,
             "DP.destination.button.text"); // NOI18N
-    public static final String DEFAULT_FILECHOOSER_TITLE =
-            ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "DP.filechooser.title"); // NOI18N
+    
     
     public static final String ERROR_NULL_PROPERTY =
             "error.null"; // NOI18N

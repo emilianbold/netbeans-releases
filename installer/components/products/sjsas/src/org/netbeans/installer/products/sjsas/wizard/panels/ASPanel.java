@@ -65,6 +65,7 @@ import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMe
 import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import static java.lang.Integer.parseInt;
+import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
 
 /**
  *
@@ -248,7 +249,7 @@ public class ASPanel extends DestinationPanel {
         
         private NbiTextField jdkLocationField;
         
-        private JFileChooser fileChooser;
+        private NbiDirectoryChooser fileChooser;
         
         private NbiLabel usernameLabel;
         private NbiTextField usernameField;
@@ -709,10 +710,7 @@ public class ASPanel extends DestinationPanel {
             statusLabel = new NbiLabel();
             
             // fileChooser //////////////////////////////////////////////////////////
-            fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fileChooser.setMultiSelectionEnabled(false);
-            fileChooser.setDialogTitle(component.getProperty(FILECHOOSER_TITLE_PROPERTY));
+            fileChooser = new NbiDirectoryChooser();
             
             final Dimension longFieldSize = new Dimension(
                     200,

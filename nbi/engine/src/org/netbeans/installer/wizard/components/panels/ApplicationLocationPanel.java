@@ -47,6 +47,7 @@ import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
+import org.netbeans.installer.utils.helper.swing.NbiDirectoryChooser;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiList;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
@@ -70,8 +71,6 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
                 DEFAULT_LOCATION_BUTTON_TEXT);
         setProperty(LIST_LABEL_TEXT_PROPERTY, 
                 DEFAULT_LIST_LABEL_TEXT);        
-        setProperty(FILECHOOSER_TITLE_PROPERTY, 
-                DEFAULT_FILECHOOSER_TITLE);
         
         setProperty(ERROR_NOTHING_FOUND_PROPERTY, 
                 DEFAULT_ERROR_NOTHING_FOUND);
@@ -129,7 +128,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
         
         private NbiPanel locationsListReplacement;
         
-        private JFileChooser fileChooser;
+        private NbiDirectoryChooser fileChooser;
         
         public ApplicationLocationPanelSwingUi(
                 final ApplicationLocationPanel component,
@@ -249,11 +248,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             locationsListReplacement = new NbiPanel();
             
             // fileChooser //////////////////////////////////////////////////////////
-            fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fileChooser.setMultiSelectionEnabled(false);
-            fileChooser.setDialogTitle(component.getProperty(FILECHOOSER_TITLE_PROPERTY));
-            
+            fileChooser = new NbiDirectoryChooser();            
             // this /////////////////////////////////////////////////////////////////
             add(locationLabel, new GridBagConstraints(
                     0, 1,                             // x, y
@@ -594,8 +589,6 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
             "location.button.text"; // NOI18N
     public static final String LIST_LABEL_TEXT_PROPERTY = 
             "list.label.text"; // NOI18N
-    public static final String FILECHOOSER_TITLE_PROPERTY = 
-            "filechooser.title";
     
     public static final String DEFAULT_LOCATION_LABEL_TEXT = 
             ResourceUtils.getString(ApplicationLocationPanel.class, 
@@ -606,10 +599,7 @@ public abstract class ApplicationLocationPanel extends ErrorMessagePanel {
     public static final String DEFAULT_LIST_LABEL_TEXT = 
             ResourceUtils.getString(ApplicationLocationPanel.class, 
             "ALP.list.label.text"); // NOI18N
-    public static final String DEFAULT_FILECHOOSER_TITLE =
-            ResourceUtils.getString(ApplicationLocationPanel.class, 
-            "ALP.filechooser.title"); // NOI18N
-            
+           
     
     public static final String ERROR_NOTHING_FOUND_PROPERTY = 
             "error.nothing.found"; // NOI18N
