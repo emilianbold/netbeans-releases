@@ -233,7 +233,12 @@ public final class DefaultProjectOperationsImplementation {
             
             FileObject target = newTarget.createFolder(nueName);
             FileObject projectDirectory = project.getProjectDirectory();
-            List<FileObject> toCopyList = Arrays.asList(projectDirectory.getChildren());
+            List<FileObject> toCopyList = new ArrayList<FileObject>();
+            for (FileObject child : projectDirectory.getChildren()) {
+                if (child.isValid()) {
+                    toCopyList.add(child);
+                }
+            }
             
             double workPerFileAndOperation = totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK) / toCopyList.size();
 
@@ -407,7 +412,12 @@ public final class DefaultProjectOperationsImplementation {
             handle.progress((int) (currentWorkDone = totalWork * NOTIFY_WORK));
             
             FileObject projectDirectory = project.getProjectDirectory();
-            List<FileObject> toMoveList = Arrays.asList(projectDirectory.getChildren());
+            List<FileObject> toMoveList = new ArrayList<FileObject>();
+            for (FileObject child : projectDirectory.getChildren()) {
+                if (child.isValid()) {
+                    toMoveList.add(child);
+                }
+            }
             
             double workPerFileAndOperation = (totalWork * (1.0 - 2 * NOTIFY_WORK - FIND_PROJECT_WORK) / toMoveList.size()) / 2;
             
