@@ -37,6 +37,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Formatter;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
@@ -203,15 +204,19 @@ ActionListener {
             public void run () {
                 epPreview.setText (originalText);
                 Document doc = epPreview.getDocument ();
-                if (doc instanceof BaseDocument)
-                try {
-                    ((BaseDocument) doc).getFormatter ().reformat (
-                        (BaseDocument) doc, 
-                        0, 
-                        ((BaseDocument) doc).getEndPosition ().getOffset () - 1
-                    );
-                } catch (BadLocationException ex) {
-                    ex.printStackTrace ();
+                if (doc instanceof BaseDocument) {
+                    BaseDocument bdoc = (BaseDocument)doc;
+                    Formatter formatter = bdoc.getFormatter();
+                    formatter.reformatLock();
+                    bdoc.atomicLock();
+                    try {
+                        formatter.reformat (bdoc, 0, bdoc.getLength());
+                    } catch (BadLocationException ex) {
+                        ex.printStackTrace ();
+                    } finally {
+                        bdoc.atomicUnlock();
+                        formatter.reformatUnlock();
+                    }
                 }
             }
         });
