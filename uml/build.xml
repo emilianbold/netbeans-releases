@@ -54,12 +54,15 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     </target>
 
     <target name="copy-drawingLibrary-jar">
+	<echo message="Moved to tomsawyer/nbproject/project.properties"/> 
+	<!--
         <mkdir dir="${cluster}/modules/ext/drawingLibrary"/>
         <copy todir="${cluster}/modules/ext/drawingLibrary">
             <fileset dir="../external/">
                 <include name="drawingLibrary.jar"/>             
             </fileset>
         </copy>
+	-->
     </target>
     
     <property name="doors.integration.files" value="${basedir}/lib/DoorsIntegrationFiles.zip"/>

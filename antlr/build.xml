@@ -24,37 +24,4 @@ Microsystems, Inc. All Rights Reserved.
 <project name="antlr272" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project antlr272.</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="../external/">
-                <include name="antlr-2.7.2.jar"/>
-            </fileset>
-        </copy>
-    </target>
-<!--
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}">
-            <license name="antlr-license.txt">
-                <text>For the integration module:</text>
-                <file location="${license.file}"/>
-                <text>For the antlr library:</text>
-                <file location="${nb_all}/uml/external/antlr/antlr-license.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
--->
-    
 </project>

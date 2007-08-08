@@ -25,23 +25,9 @@ Microsystems, Inc. All Rights Reserved.
     <description>Builds, tests, and runs the project org.jaxen.</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-     <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <unzip dest="../external" src="../external/dom4j-1.2.zip"/>
-        <mkdir dir="${cluster}/modules/ext/dom4j"/>
-        <copy todir="${cluster}/modules/ext/dom4j">
-            <fileset dir="../external/">
-                <include name="relaxngDatatype.jar"/>
-                <include name="saxpath.jar"/>
-                <include name="Tidy.jar"/>
-                <include name="msv.jar"/>
-                <include name="jaxen.jar"/>
-                <include name="xsdlib.jar"/>
-                <include name="PullParser2.jar"/>
-                <include name="org-dom4j.jar"/>
-            </fileset>
-        </copy>
+    <target name="common-init" depends="default.init">
+    	<mkdir dir="build/external"/>
+        <unzip dest="build/external" src="external/dom4j-1.2.zip"/>
     </target>
 
 </project>

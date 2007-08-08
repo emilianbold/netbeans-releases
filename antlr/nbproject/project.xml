@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/antlr-2.7.2.jar</runtime-relative-path>
-                <binary-origin>../external/antlr-2.7.2.jar</binary-origin>
+                <binary-origin>external/antlr-2.7.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

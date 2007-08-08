@@ -5,28 +5,9 @@
 <project name="org.netbeans.modules.uml.tomsawyer" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.uml.tomsawyer.</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
-    
-    <!--<target name="netbeans-extra" depends="release"/>-->
-    <target name="compile" depends="uml-external-TSLibrary, projectized-common.compile">
-        <echo>*** compiling Drawing Library module </echo>
-    </target>    
-        
-    <!--  <target name="release" depends="init"> -->
-    <target name="uml-external-TSLibrary">  
-        <echo>*** Extracting and copying DrawingLibrary jar to cluster dir </echo>
-        <unzip dest="../external" src="../external/drawingLibrary-6.0.zip"/>
-        <mkdir dir="${cluster}/modules/ext/drawingLibrary"/>
-        <copy todir="${cluster}/modules/ext/drawingLibrary">
-            <fileset dir="../external/">
-                <include name="batik-all.jar"/>
-                <include name="exeditor601.jar"/>
-                <include name="iText.jar"/>
-                <include name="pngEncoder.jar"/>
-                <include name="tsalleditor601dev.jar"/>
-                <include name="tsalljlayoutclient601dev.jar"/>
-                <include name="tsalljlayoutserver601dev.jar"/>                
-            </fileset>
-        </copy>
+
+    <target name="common-init" depends="default.init">
+	<mkdir dir="build/external"/>
+	<unzip dest="build/external" src="external/drawingLibrary-6.0.zip"/>
     </target>
-    
 </project>

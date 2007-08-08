@@ -327,7 +327,7 @@ Microsystems, Inc. All Rights Reserved.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/drawingLibrary/drawingLibrary.jar</runtime-relative-path>
-                <binary-origin>../external/drawingLibrary.jar</binary-origin>
+                <binary-origin>../tomsawyer/build/external/drawingLibrary.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

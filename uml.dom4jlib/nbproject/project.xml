@@ -25,35 +25,35 @@ Microsystems, Inc. All Rights Reserved.
             <module-dependencies/>
             <class-path-extension>
                 <runtime-relative-path>ext/dom4j/relaxngDatatype.jar</runtime-relative-path>
-                <binary-origin>../external/relaxngDatatype.jar</binary-origin>
+                <binary-origin>build/external/relaxngDatatype.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/dom4j/saxpath.jar</runtime-relative-path>
-                <binary-origin>../external/saxpath.jar</binary-origin>
+                <binary-origin>build/external/saxpath.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/dom4j/Tidy.jar</runtime-relative-path>
-                <binary-origin>../external/Tidy.jar</binary-origin>
+                <binary-origin>build/external/Tidy.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/dom4j/msv.jar</runtime-relative-path>
-                <binary-origin>../external/msv.jar</binary-origin>
+                <binary-origin>build/external/msv.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/dom4j/jaxen.jar</runtime-relative-path>
-                <binary-origin>../external/jaxen.jar</binary-origin>
+                <binary-origin>build/external/jaxen.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/dom4j/xsdlib.jar</runtime-relative-path>
-                <binary-origin>../external/xsdlib.jar</binary-origin>
+                <binary-origin>build/external/xsdlib.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/dom4j/PullParser2.jar</runtime-relative-path>
-                <binary-origin>../external/PullParser2.jar</binary-origin>
+                <binary-origin>build/external/PullParser2.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/dom4j/org-dom4j.jar</runtime-relative-path>
-                <binary-origin>../external/org-dom4j.jar</binary-origin>
+                <binary-origin>build/external/org-dom4j.jar</binary-origin>
             </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.uml</friend>
