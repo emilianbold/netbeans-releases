@@ -32,7 +32,6 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.WeakListeners;
@@ -50,6 +49,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     //active platform is valid (not broken reference)
     private boolean isActivePlatformValid;
     private List<PathResourceImplementation> resourcesCache;
+    private long eventId;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
     public BootClassPathImplementation(PropertyEvaluator evaluator) {
@@ -58,24 +58,35 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    public synchronized List<PathResourceImplementation> getResources() {
-        if (this.resourcesCache == null) {
-            JavaPlatform jp = findActivePlatform ();
-            if (jp != null) {
-                //TODO: May also listen on CP, but from Platform it should be fixed.
-                ClassPath cp = jp.getBootstrapLibraries();
-                List entries = cp.entries();
-                List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(entries.size());
-                for (Iterator it = entries.iterator(); it.hasNext();) {
-                    ClassPath.Entry entry = (ClassPath.Entry) it.next();
-                    result.add (ClassPathSupport.createResource(entry.getURL()));
-                }
-                resourcesCache = Collections.unmodifiableList (result);
-            } else {
-                resourcesCache = Collections.emptyList();
+    public List<PathResourceImplementation> getResources() {
+        long currentId;
+        synchronized (this) {
+            if (this.resourcesCache != null) {
+                return this.resourcesCache;
+            }
+            currentId = eventId;
+        }
+        
+        JavaPlatform jp = findActivePlatform();
+        final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        if (jp != null) {
+            //TODO: May also listen on CP, but from Platform it should be fixed.
+            final ClassPath cp = jp.getBootstrapLibraries();
+            assert cp != null : jp;
+            for (ClassPath.Entry entry : cp.entries()) {
+                result.add(ClassPathSupport.createResource(entry.getURL()));
             }
         }
-        return this.resourcesCache;
+        
+        synchronized (this) {
+            if (currentId == eventId) {
+                if (this.resourcesCache == null) {
+                    this.resourcesCache = Collections.unmodifiableList(result);
+                }
+                return this.resourcesCache;
+            }
+            return Collections.unmodifiableList (result);
+        }
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -125,6 +136,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
     private void resetCache () {
         synchronized (this) {
             resourcesCache = null;
+            eventId++;
         }
         support.firePropertyChange(PROP_RESOURCES, null, null);
     }
