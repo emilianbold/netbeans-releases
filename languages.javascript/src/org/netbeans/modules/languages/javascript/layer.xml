@@ -30,6 +30,8 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="Templates">
         <folder name="JSP_Servlet">
+            <attr name="position" intvalue="600"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.javascript.Bundle"/>
             <file name="EmptyJSON.json" url="EmptyJSON.json">
                 <attr name="position" intvalue="750"/>
                 <attr name="template" boolvalue="true"/>
