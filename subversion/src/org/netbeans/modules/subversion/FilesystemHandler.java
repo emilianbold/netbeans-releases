@@ -54,7 +54,7 @@ class FilesystemHandler extends VCSInterceptor {
         cache = svn.getStatusCache();
     }
 
-    public boolean beforeDelete(File file) {
+    public boolean beforeDelete(File file) {     
         if (SvnUtils.isPartOfSubversionMetadata(file)) return true;
         // calling cache results in SOE, we must check manually
         return !file.isFile() && hasMetadata(file);
@@ -163,6 +163,11 @@ class FilesystemHandler extends VCSInterceptor {
         if ( SvnUtils.isPartOfSubversionMetadata(file)) {
             synchronized(invalidMetadata) {
                 invalidMetadata.add(file);   
+                File p = file.getParentFile();
+                while(p != null && SvnUtils.isPartOfSubversionMetadata(p)) {
+                    invalidMetadata.add(p);
+                    p = p.getParentFile();
+                }            
             }            
             return false;
         } else {
