@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.tables;
 import java.util.ResourceBundle;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 
+
 /**
  *
  * @author Peter Williams
@@ -32,38 +33,41 @@ public abstract class TableEntry {
     protected final String parentPropertyName;
     protected final String propertyName;
     protected final String columnName;
+    protected final int columnWidth;
     protected final boolean requiredFieldFlag;
     protected final boolean nameFieldFlag;
 
-    public TableEntry(String pn, String c) {
-        this(pn, c, false);
+    public TableEntry(String pn, String c, int w) {
+        this(pn, c, w, false);
     }
 
-    public TableEntry(String pn, String c, boolean required) {
-        this(null, pn, c, required);
+    public TableEntry(String pn, String c, int w, boolean required) {
+        this(null, pn, c, w, required);
     }
 
-    public TableEntry(String ppn, String pn, String c, boolean required) {
-        this(ppn, pn, c, required, false);
+    public TableEntry(String ppn, String pn, String c, int w, boolean required) {
+        this(ppn, pn, c, w, required, false);
     }
 
-    public TableEntry(String ppn, String pn, String c, boolean required, boolean isName) {
+    public TableEntry(String ppn, String pn, String c, int w, boolean required, boolean isName) {
         parentPropertyName = ppn;
         bundle = null;
         resourceBase = null;
         propertyName = pn;
         columnName = c;
+        columnWidth = w;
         requiredFieldFlag = required;
         nameFieldFlag = isName;
     }
 
     public TableEntry(String ppn, String pn, ResourceBundle resBundle,
-            String base, boolean required, boolean isName) {
+            String base, int w, boolean required, boolean isName) {
         parentPropertyName = ppn;
         propertyName = pn;
         bundle = resBundle;
         resourceBase = base;
         columnName = bundle.getString("LBL_" + resourceBase);	// NOI18N
+        columnWidth = w;
         requiredFieldFlag = required;
         nameFieldFlag = isName;
     }
@@ -74,6 +78,10 @@ public abstract class TableEntry {
 
     public String getColumnName() {
         return columnName;
+    }
+
+    public int getColumnWidth() {
+        return columnWidth;
     }
 
     public boolean isRequiredField() {

@@ -21,6 +21,7 @@ package org.netbeans.modules.j2ee.sun.ddloaders.multiview.tables;
 import java.util.ResourceBundle;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 
+
 /** Use this class for a column if the entry is stored as a value in
  *  the parent bean class.
  *
@@ -28,25 +29,25 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
  */
 public class ValueEntry extends TableEntry {
 
-    public ValueEntry(String pn, String c) {
-        super(pn, c, false);
+    public ValueEntry(String pn, String c, int w) {
+        super(pn, c, w, false);
     }
 
-    public ValueEntry(String pn, String c, boolean required) {
-        super(pn, c, required);
+    public ValueEntry(String pn, String c, int w, boolean required) {
+        super(pn, c, w, required);
     }
 
-    public ValueEntry(String ppn, String pn, String c, boolean required) {
-        super(ppn, pn, c, required);
+    public ValueEntry(String ppn, String pn, String c, int w, boolean required) {
+        super(ppn, pn, c, w, required);
     }
 
-    public ValueEntry(String ppn, String pn, String c, boolean required, boolean isName) {
-        super(ppn, pn, c, required, isName);
+    public ValueEntry(String ppn, String pn, String c, int w, boolean required, boolean isName) {
+        super(ppn, pn, c, w, required, isName);
     }
 
     public ValueEntry(String ppn, String pn, ResourceBundle resBundle,
-            String resourceBase, boolean required, boolean isName) {
-        super(ppn, pn, resBundle, resourceBase, required, isName);
+            String resourceBase, int w, boolean required, boolean isName) {
+        super(ppn, pn, resBundle, resourceBase, w, required, isName);
     }
 
     public Object getEntry(CommonDDBean parent) {

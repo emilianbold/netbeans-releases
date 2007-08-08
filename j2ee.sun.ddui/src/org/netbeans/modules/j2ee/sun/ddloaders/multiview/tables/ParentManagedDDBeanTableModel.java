@@ -16,12 +16,12 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.j2ee.sun.ddloaders.multiview.tables;
 
 import java.util.List;
 import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
+
 
 /**
  * @author Peter Williams
@@ -48,20 +48,18 @@ public class ParentManagedDDBeanTableModel extends InnerTableModel {
     }
 
     private static String [] computeColumnNames(List<TableEntry> props) {
-		String [] names = new String [props.size()];
-		for(int i = 0; i < props.size(); i++) {
-			names[i] = props.get(i).getColumnName();
-		}
+        String [] names = new String [props.size()];
+        for(int i = 0; i < props.size(); i++) {
+            names[i] = props.get(i).getColumnName();
+        }
         return names;
     }
     
     private static int [] computeColumnWidths(List<TableEntry> props) {
-		int [] width = new int [props.size()];
-		for(int i = 0; i < props.size(); i++) {
-            // !PW TODO add this to TableEntry
-//			width[i] = props.get(i).getColumnWidth();
-            width[i] = 150;
-		}
+        int [] width = new int [props.size()];
+        for(int i = 0; i < props.size(); i++) {
+            width[i] = props.get(i).getColumnWidth();
+        }
         return width;
     }
 
@@ -86,7 +84,7 @@ public class ParentManagedDDBeanTableModel extends InnerTableModel {
     public int getRowCount() {
 //        CommonDDBean [] children = (CommonDDBean[]) parentBean.getValues(parentPropertyName);
 //        return children != null ? children.length : 0;
-        return parentBean.size(parentPropertyName);
+        return parentBean != null ? parentBean.size(parentPropertyName) : 0;
     }
 
     public Object getValueAt(int rowIndex, int columnIndex) {

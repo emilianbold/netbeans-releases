@@ -46,25 +46,26 @@ public class SunWebJspConfigPropertyNode extends BaseSectionNode {
                 ICON_BASE_MISC_NODE);
     }
 
+    @Override
     protected SectionNodeInnerPanel createNodeInnerPanel() {
         ArrayList<TableEntry> tableColumns = 
                 new ArrayList<TableEntry>(3);
         tableColumns.add(new AttributeEntry(
                 WebProperty.NAME, NbBundle.getMessage(SunWebJspConfigPropertyNode.class, 
-                "LBL_Name"), true)); // NOI18N
+                "LBL_Name"), 150, true)); // NOI18N
         tableColumns.add(new AttributeEntry(
                 WebProperty.VALUE, NbBundle.getMessage(SunWebJspConfigPropertyNode.class, 
-                "LBL_Value"), true)); // NOI18N
+                "LBL_Value"), 150, true)); // NOI18N
         tableColumns.add(new ValueEntry(
                 WebProperty.DESCRIPTION, NbBundle.getMessage(SunWebJspConfigPropertyNode.class, 
-                "LBL_Description"))); // NOI18N		
+                "LBL_Description"), 300)); // NOI18N		
         
         SunWebApp swa = (SunWebApp) key;
         SectionNodeView sectionNodeView = getSectionNodeView();
         return new InnerTablePanel(sectionNodeView, new ParentManagedDDBeanTableModel(
                 sectionNodeView.getModelSynchronizer(), 
                 swa.getJspConfig(), JspConfig.PROPERTY, tableColumns,
-                null, new JspConfigPropertyFactory()));
+                null, new JspConfigPropertyFactory()), version);
     }
     
 

@@ -28,25 +28,25 @@ import org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean;
  */
 public class AttributeEntry extends TableEntry {
 
-    public AttributeEntry(String pn, String c) {
-        super(pn, c);
+    public AttributeEntry(String pn, String c, int w) {
+        super(pn, c, w);
     }
 
-    public AttributeEntry(String pn, String c, boolean required) {
-        super(pn, c, required);
+    public AttributeEntry(String pn, String c, int w, boolean required) {
+        super(pn, c, w, required);
     }
 
-    public AttributeEntry(String ppn, String pn, String c, boolean required) {
-        super(ppn, pn, c, required);
+    public AttributeEntry(String ppn, String pn, String c, int w, boolean required) {
+        super(ppn, pn, c, w, required);
     }
 
-    public AttributeEntry(String ppn, String pn, String c, boolean required, boolean isName) {
-        super(ppn, pn, c, required, isName);
+    public AttributeEntry(String ppn, String pn, String c, int w, boolean required, boolean isName) {
+        super(ppn, pn, c, w, required, isName);
     }
 
     public AttributeEntry(String ppn, String pn, ResourceBundle resBundle,
-            String resourceBase, boolean required, boolean isName) {
-        super(ppn, pn, resBundle, resourceBase, required, isName);
+            String resourceBase, int w, boolean required, boolean isName) {
+        super(ppn, pn, resBundle, resourceBase, w, required, isName);
     }
 
             public Object getEntry(CommonDDBean parent) {
