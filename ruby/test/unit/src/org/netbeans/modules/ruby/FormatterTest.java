@@ -337,6 +337,16 @@ if (fo.getName().equals("httputils") && fo.getParent().getName().equals("webrick
                "def foo\n  s = <<-EOS\n  stuff\n  EOS\nend", null);
     }
     
+    public void testHeredoc3() throws Exception {
+        format("def foo\n    s = <<EOS\nstuff\n  foo\nbar\nEOS\n  end",
+               "def foo\n  s = <<EOS\nstuff\n  foo\nbar\nEOS\nend", null);
+    }
+
+    public void testHeredoc4() throws Exception {
+        format("def foo\n    s = <<-EOS\nstuff\n  foo\nbar\nEOS\n  end",
+               "def foo\n  s = <<-EOS\nstuff\n  foo\nbar\n  EOS\nend", null);
+    }
+
     public void testArrayDecl() throws Exception {
         format("@foo = [\n'bar',\n'bar2',\n'bar3'\n]",
                 "@foo = [\n  'bar',\n  'bar2',\n  'bar3'\n]", null);
