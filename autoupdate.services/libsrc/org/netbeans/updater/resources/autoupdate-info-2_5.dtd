@@ -12,9 +12,7 @@
                  moduleauthor CDATA #IMPLIED
                  releasedate  CDATA #IMPLIED
                  global       (true|false) #IMPLIED
-                 targetcluster CDATA #IMPLIED
-                 eager (true|false) #IMPLIED
-                 autoload (true|false) #IMPLIED>
+                 targetcluster CDATA #IMPLIED>
 
 <!ELEMENT description (#PCDATA)>
 
