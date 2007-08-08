@@ -44,13 +44,21 @@ class TooltipWindow extends JWindow implements AWTEventListener {
         this.add(content);
         this.pack();
         Dimension dim = this.getSize();
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
-        if (location.y + dim.height + SCREEN_BORDER > screenSize.height) {
-            dim.height = screenSize.height - (location.y + SCREEN_BORDER);
+  
+        Rectangle screenBounds = null;
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice [] gds = ge.getScreenDevices();
+        for (GraphicsDevice device : gds) {
+            GraphicsConfiguration gc = device.getDefaultConfiguration();
+            screenBounds = gc.getBounds();
+            if (screenBounds.contains(location)) break;
         }
-        if (location.x + dim.width + SCREEN_BORDER > screenSize.width) {
-            dim.width = screenSize.width - (location.x + SCREEN_BORDER);  
+        
+        if (location.y + dim.height + SCREEN_BORDER > screenBounds.y + screenBounds.height) {
+            dim.height = (screenBounds.y + screenBounds.height) - (location.y + SCREEN_BORDER);
+        }
+        if (location.x + dim.width + SCREEN_BORDER > screenBounds.x + screenBounds.width) {
+            dim.width = (screenBounds.x + screenBounds.width) - (location.x + SCREEN_BORDER);  
         }
         this.setSize(dim);
         this.setLocation(location.x, location.y - 1);  // slight visual adjustment

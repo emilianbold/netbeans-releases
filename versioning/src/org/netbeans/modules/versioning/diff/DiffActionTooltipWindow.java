@@ -63,14 +63,23 @@ class DiffActionTooltipWindow implements AWTEventListener {
             contentWindow.add(cp);
             contentWindow.pack();
             Dimension dim = contentWindow.getSize();
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-
-            if (location.y + actionsWindow.getHeight() + dim.height + SCREEN_BORDER > screenSize.height) {
-                dim.height = screenSize.height - (location.y + actionsWindow.getHeight() + SCREEN_BORDER);
+                        
+            Rectangle screenBounds = null;
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            GraphicsDevice [] gds = ge.getScreenDevices();
+            for (GraphicsDevice device : gds) {
+                GraphicsConfiguration gc = device.getDefaultConfiguration();
+                screenBounds = gc.getBounds();
+                if (screenBounds.contains(location)) break;
             }
-            if (location.x + dim.width + SCREEN_BORDER > screenSize.width) {
-                dim.width = screenSize.width - (location.x + SCREEN_BORDER);  
+        
+            if (location.y + dim.height + SCREEN_BORDER > screenBounds.y + screenBounds.height) {
+                dim.height = (screenBounds.y + screenBounds.height) - (location.y + SCREEN_BORDER);
             }
+            if (location.x + dim.width + SCREEN_BORDER > screenBounds.x + screenBounds.width) {
+                dim.width = (screenBounds.x + screenBounds.width) - (location.x + SCREEN_BORDER);  
+            }
+            
             contentWindow.setSize(dim);
 
             contentWindow.setLocation(location.x, location.y + actionsWindow.getHeight() - 1);  // slight visual adjustment
