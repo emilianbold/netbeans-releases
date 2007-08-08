@@ -174,11 +174,14 @@ public class VerifyLibsAndLicenses extends Task {
                     int c;
                     while ((c = r.read()) != -1) {
                         if (trailingSpace && (c == '\r' || c == '\n')) {
-                            trailingSpace = false;
                             msg.append("\n" + path + " has a trailing space on line #" + line);
                             continue FILE;
                         }
                         if (c == '\r') {
+                            if (System.getProperty("line.separator").equals("\n")) {
+                                msg.append("\n" + path + " uses DOS line endings on line #" + line);
+                                continue FILE;
+                            }
                             column = 0;
                         } else if (c == '\n') {
                             if (column == 0 && line > 1 && !pastHeader) {
