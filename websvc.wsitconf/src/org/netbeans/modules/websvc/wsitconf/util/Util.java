@@ -456,7 +456,7 @@ public class Util {
         return password;
     }
     
-    public static final void fillDefaults(Project project) {
+    public static final void fillDefaults(Project project, boolean client) {
 
         final String STORE_FOLDER_NAME = "certs";
         
@@ -498,46 +498,48 @@ public class Util {
                         }
                     }
 
-                    FileObject tomcatUsers = tomcatLocation.getFileObject("conf/tomcat-users.xml");
+                    if (!client) {
+                        FileObject tomcatUsers = tomcatLocation.getFileObject("conf/tomcat-users.xml");
 
-                    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                    DocumentBuilder builder = dbf.newDocumentBuilder();
-                    Document document = builder.parse(FileUtil.toFile(tomcatUsers));
+                        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+                        DocumentBuilder builder = dbf.newDocumentBuilder();
+                        Document document = builder.parse(FileUtil.toFile(tomcatUsers));
 
-                    NodeList nodes = document.getElementsByTagName("tomcat-users");
-                    if ((nodes != null) && (nodes.getLength() > 0)) {
-                        Node n = nodes.item(0);
-                        NodeList users = document.getElementsByTagName("user");
-                        boolean foundUser = false;
-                        for (int i=0; i < users.getLength(); i++) {
-                            Node node = users.item(i);
-                            if (node instanceof Element) {
-                                Element u = (Element)node;
-                                String userAttr = u.getAttribute("name");
-                                if (UsernameAuthenticationProfile.DEFAULT_USERNAME.equals(userAttr)) {
-                                    foundUser = true;
-                                    break;
+                        NodeList nodes = document.getElementsByTagName("tomcat-users");
+                        if ((nodes != null) && (nodes.getLength() > 0)) {
+                            Node n = nodes.item(0);
+                            NodeList users = document.getElementsByTagName("user");
+                            boolean foundUser = false;
+                            for (int i=0; i < users.getLength(); i++) {
+                                Node node = users.item(i);
+                                if (node instanceof Element) {
+                                    Element u = (Element)node;
+                                    String userAttr = u.getAttribute("name");
+                                    if (UsernameAuthenticationProfile.DEFAULT_USERNAME.equals(userAttr)) {
+                                        foundUser = true;
+                                        break;
+                                    }
                                 }
                             }
-                        }
-                        if (!foundUser) {
-                            if (tomcatUsers.getParent().getFileObject("tomcat-users.backup", "xml") == null) {
-                                FileUtil.copyFile(tomcatUsers, tomcatUsers.getParent(), "tomcat-users.backup");
+                            if (!foundUser) {
+                                if (tomcatUsers.getParent().getFileObject("tomcat-users.backup", "xml") == null) {
+                                    FileUtil.copyFile(tomcatUsers, tomcatUsers.getParent(), "tomcat-users.backup");
+                                }
+
+                                Element user = document.createElement("user");
+                                user.setAttribute("name", UsernameAuthenticationProfile.DEFAULT_USERNAME);
+                                user.setAttribute("password", UsernameAuthenticationProfile.DEFAULT_PASSWORD);
+                                user.setAttribute("roles", "tomcat");
+                                n.appendChild(user);
+
+                                Transformer transformer = TransformerFactory.newInstance().newTransformer();
+                                transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+                                //initialize StreamResult with File object to save to file
+                                StreamResult result = new StreamResult(FileUtil.toFile(tomcatUsers));
+                                DOMSource source = new DOMSource(document);
+                                transformer.transform(source, result);
                             }
-
-                            Element user = document.createElement("user");
-                            user.setAttribute("name", UsernameAuthenticationProfile.DEFAULT_USERNAME);
-                            user.setAttribute("password", UsernameAuthenticationProfile.DEFAULT_PASSWORD);
-                            user.setAttribute("roles", "tomcat");
-                            n.appendChild(user);
-
-                            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-                            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-                            //initialize StreamResult with File object to save to file
-                            StreamResult result = new StreamResult(FileUtil.toFile(tomcatUsers));
-                            DOMSource source = new DOMSource(document);
-                            transformer.transform(source, result);
                         }
                     }
                 } catch (Exception ex) {
@@ -551,7 +553,7 @@ public class Util {
         
         if (glassfish) {
             try {
-                refreshBuildScript(project);
+                if (!client) refreshBuildScript(project);
                 copyKey(serverKeyStoreBundled, "xws-security-server", srcPasswd, srcPasswd, serverKeyStorePath, "xws-security-server", dstPasswd, false);
                 copyKey(serverKeyStoreBundled, "wssip", srcPasswd, srcPasswd, serverKeyStorePath, "wssip", dstPasswd, false);
                 copyKey(serverTrustStoreBundled, "certificate-authority", srcPasswd, srcPasswd, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);

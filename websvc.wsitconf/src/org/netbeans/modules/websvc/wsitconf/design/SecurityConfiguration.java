@@ -35,7 +35,6 @@ import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -152,15 +151,8 @@ public class SecurityConfiguration implements WSConfiguration {
             // enable secure conversation by default - better performance, and no need to hassle with RM set/unset
             ProfilesModelHelper.enableSecureConversation(binding, true, ComboConstants.PROF_MUTUALCERT);
             
-            // setup default keystore values
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(binding, Util.getServerStoreLocation(project, false), false, false);
-            ProprietarySecurityPolicyModelHelper.setKeyStoreAlias(binding, "xws-security-server", false); //NOI18N
-            ProprietarySecurityPolicyModelHelper.setStorePassword(binding, "changeit", false, false); //NOI18N
-
-            // setup default truststore values
-            ProprietarySecurityPolicyModelHelper.setStoreLocation(binding, Util.getServerStoreLocation(project, true), false, false);
-            ProprietarySecurityPolicyModelHelper.setTrustPeerAlias(binding, "xws-security-client", false); //NOI18N
-            ProprietarySecurityPolicyModelHelper.setStorePassword(binding, "changeit", true, false); //NOI18N
+            Util.fillDefaults(project, false);
+            ProfilesModelHelper.setServiceDefaults(ComboConstants.PROF_MUTUALCERT, binding, project);
 
             WSITModelSupport.save(binding);
         }

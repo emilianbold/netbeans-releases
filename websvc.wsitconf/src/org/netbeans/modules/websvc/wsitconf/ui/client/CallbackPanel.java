@@ -198,7 +198,7 @@ public class CallbackPanel extends SectionInnerPanel {
 
         if (source.equals(devDefaultsChBox)) {
             if (devDefaultsChBox.isSelected()) {
-                Util.fillDefaults(project);
+                Util.fillDefaults(project, true);
                 Binding serviceBinding = PolicyModelHelper.getBinding(serviceModel, binding.getName());
                 ProfilesModelHelper.setClientDefaults(profile, binding, serviceBinding, project);
                 sync();

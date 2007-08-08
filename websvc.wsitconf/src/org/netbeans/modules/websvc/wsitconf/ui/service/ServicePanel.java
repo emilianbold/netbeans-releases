@@ -208,7 +208,7 @@ public class ServicePanel extends SectionInnerPanel {
             if (rmChBox.isSelected()) {
                 if (!(RMModelHelper.isRMEnabled(binding))) {
                     RMModelHelper.enableRM(binding);
-                    if (securityChBox.isSelected()) {
+                    if (securityChBox.isSelected() && !ProfilesModelHelper.isSCEnabled(binding)) {
                         String profile = (String) profileCombo.getSelectedItem();
                         ProfilesModelHelper.enableSecureConversation(binding, true, profile);
                     }
@@ -278,7 +278,7 @@ public class ServicePanel extends SectionInnerPanel {
             if (securityChBox.isSelected()) {
                 profileCombo.setSelectedItem(profile);
                 if (devDefaultsChBox.isSelected()) {
-                    Util.fillDefaults(project);
+                    Util.fillDefaults(project, false);
                     ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
                     if (ProfilesModelHelper.isSSLProfile(profile)) {
                         ProfilesModelHelper.setSSLAttributes(binding);
@@ -298,7 +298,7 @@ public class ServicePanel extends SectionInnerPanel {
 
         if (source.equals(devDefaultsChBox)) {
             if (devDefaultsChBox.isSelected()) {
-                Util.fillDefaults(project);
+                Util.fillDefaults(project, false);
                 ProfilesModelHelper.setServiceDefaults((String) profileCombo.getSelectedItem(), binding, project);
             } else {
                 Util.unfillDefaults(project);
