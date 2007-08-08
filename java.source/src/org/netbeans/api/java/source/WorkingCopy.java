@@ -269,7 +269,10 @@ public class WorkingCopy extends CompilationController {
                     diff.kind = Difference.Kind.CHANGE;
                     diff.newText = s;
                 } else {
-                    diffs.add(new Difference(Difference.Kind.INSERT, ces.createPositionRef(offset, Bias.Forward), ces.createPositionRef(offset, Bias.Forward), null, s, userInfo.get(offset)));
+                    PositionConverter converter = getPositionConverter();
+                    int off = converter != null ? converter.getOriginalPosition(offset) : offset;
+                    if (off > 0)
+                        diffs.add(new Difference(Difference.Kind.INSERT, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off, Bias.Forward), null, s, userInfo.get(offset)));
                 }
             }
             
@@ -280,7 +283,10 @@ public class WorkingCopy extends CompilationController {
                     diff.kind = Difference.Kind.CHANGE;
                     diff.oldText = new String(buf);
                 } else {
-                    diffs.add(new Difference(Difference.Kind.REMOVE, ces.createPositionRef(offset, Bias.Forward), ces.createPositionRef(offset + buf.length, Bias.Forward), new String(buf), null, userInfo.get(offset)));
+                    PositionConverter converter = getPositionConverter();
+                    int off = converter != null ? converter.getOriginalPosition(offset) : offset;
+                    if (off > 0)
+                        diffs.add(new Difference(Difference.Kind.REMOVE, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off + buf.length, Bias.Forward), new String(buf), null, userInfo.get(offset)));
                 }
                 offset += buf.length;
             }
