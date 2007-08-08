@@ -53,6 +53,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
@@ -953,7 +954,7 @@ public class JaxWsCodeGenerator {
         }
     }
     
-    private static VariableTree generateServiceRefInjection(
+    private static VariableTree generateServiceRefInjection (
             WorkingCopy workingCopy,
             TreeMaker make,
             String fieldName,
@@ -966,8 +967,15 @@ public class JaxWsCodeGenerator {
                 Collections.<ExpressionTree>singletonList(make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlUrl)))
                 );
         // create method modifier: public and no annotation
+        
+        FileObject targetFo = workingCopy.getFileObject();
+        Set<Modifier> modifiers = new HashSet<Modifier>();
+        if (Car.getCar(targetFo) != null) {
+            modifiers.add(Modifier.STATIC);
+        }
+        modifiers.add(Modifier.PRIVATE);
         ModifiersTree methodModifiers = make.Modifiers(
-                Collections.<Modifier>singleton(Modifier.PUBLIC),
+                modifiers,
                 Collections.<AnnotationTree>singletonList(wsRefAnnotation)
                 );
         TypeElement typeElement = workingCopy.getElements().getTypeElement(fieldType);
