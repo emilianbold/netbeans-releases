@@ -134,15 +134,18 @@ public class RubyInstallation {
 
     // Ensure that JRuby can find its libraries etc.
     public void setJRubyLoadPaths() {
-        System.setProperty("jruby.home", getJRubyHome());
+        String jh = getJRubyHome();
+        if (jh != null) {
+            System.setProperty("jruby.home", jh);
+        }
     }
 
     public String getRubyBin() {
         if (rubybin == null) {
-            String ruby = getRuby();
+            String r = getRuby();
 
-            if (ruby != null) {
-                rubybin = new File(ruby).getParent();
+            if (r != null) {
+                rubybin = new File(r).getParent();
             }
         }
 
@@ -171,15 +174,22 @@ public class RubyInstallation {
 
             // Let RepositoryUpdater and friends know where they can root preindexing
             // This should be done in a cleaner way.
-            org.netbeans.modules.retouche.source.usages.Index.setPreindexRootUrl(getRubyHomeUrl());
+            if (ruby != null) {
+                org.netbeans.modules.retouche.source.usages.Index.setPreindexRootUrl(getRubyHomeUrl());
+            }
         }
 
         return ruby;
     }
     
     private String getJRuby() {
+        String binDir = getJRubyBin();
+        if (binDir == null) {
+            return null;
+        }
+
         String binary = org.openide.util.Utilities.isWindows() ? "jruby.bat" : "jruby"; // NOI18N
-        String jruby = getJRubyBin() + File.separator + binary;
+        String jruby = binDir + File.separator + binary;
 
         // Normalize path
         try {
@@ -246,7 +256,10 @@ public class RubyInstallation {
         String nativeRubyLabel = NbBundle.getMessage(RubyInstallation.class, "NativeRuby") + " "; 
 
         List<String> displayList = new ArrayList<String>();
-        displayList.add(jrubyLabel);
+        String jruby = getJRuby();
+        if (jruby != null) {
+            displayList.add(jrubyLabel);
+        }
         for (String r : rubies) {
             displayList.add(nativeRubyLabel + r);
         }
@@ -282,7 +295,7 @@ public class RubyInstallation {
         String displayItem = panel.getChosenInterpreter();
         if (displayItem == null) {
             // Force user to choose
-            displayAdvancedOptions();
+            displayRubyOptions();
         } else {
             if (displayItem.equals(jrubyLabel)) {
                 return "jruby";
@@ -310,7 +323,8 @@ public class RubyInstallation {
      * @return <tt>true</tt> if JRuby is set; <tt>false</tt> otherwise.
      */
     public boolean isJRubySet() {
-        return RubyInstallation.isJRuby(RubyInstallation.getInstance().getRuby());
+        String r = RubyInstallation.getInstance().getRuby();
+        return r != null ? RubyInstallation.isJRuby(r) : false;
     }
 
     public static boolean isJRuby(final String pathToInterpreter) {
@@ -327,8 +341,13 @@ public class RubyInstallation {
             File rubyHome = getRubyHome();
 
             if (rubyHome == null) {
-                return getJRubyLib() + File.separator + "ruby" + File.separator +
-                DEFAULT_RUBY_RELEASE;
+                String jrubyLib = getJRubyLib();
+                if (jrubyLib != null) {
+                    return jrubyLib + File.separator + "ruby" + File.separator +
+                        DEFAULT_RUBY_RELEASE;
+                } else {
+                    return null;
+                }
             }
 
             File lib = new File(rubyHome, "lib" + File.separator + "ruby"); // NOI18N
@@ -493,7 +512,11 @@ public class RubyInstallation {
 
     public File getRubyHome() {
         try {
-            File r = new File(getRuby());
+            String rp = getRuby();
+            if (rp == null) {
+               return null;
+            }
+            File r = new File(rp);
 
             // Handle bogus paths like "/" which cannot possibly point to a valid ruby installation
             File p = r.getParentFile();
@@ -530,12 +553,16 @@ public class RubyInstallation {
     }
 
     public boolean isValidRuby(boolean warn) {
-        File file = new File(getRuby());
-        boolean valid = file.exists() && getRubyHome() != null;
+        String rp = getRuby();
+        boolean valid = false;
+        if (rp != null) {
+            File file = new File(rp);
+            valid = file.exists() && getRubyHome() != null;
+        }
 
         if (warn && !valid) {
             String msg =
-                NbBundle.getMessage(RubyInstallation.class, "NotInstalled", file.getPath());
+                NbBundle.getMessage(RubyInstallation.class, "NotInstalledRuby");
             javax.swing.JButton closeButton =
                 new javax.swing.JButton(NbBundle.getMessage(RubyInstallation.class, "CTL_Close"));
             closeButton.getAccessibleContext()
@@ -565,15 +592,15 @@ public class RubyInstallation {
             }
 
             if (descriptor.getValue() == optionsButton) {
-                displayAdvancedOptions();
+                displayRubyOptions();
             }
         }
 
         return valid;
     }
     
-    private void displayAdvancedOptions() {
-        OptionsDisplayer.getDefault().open("Advanced"); // NOI18N
+    private void displayRubyOptions() {
+        OptionsDisplayer.getDefault().open("RubyOptions"); // NOI18N
     }
     
     /**
@@ -668,11 +695,11 @@ public class RubyInstallation {
     }
 
     public boolean isValidRake(boolean warn) {
-        String rake = getRake();
-        boolean valid = (rake != null) && new File(rake).exists();
+        String rakePath = getRake();
+        boolean valid = (rakePath != null) && new File(rakePath).exists();
 
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalled", rake);
+            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "rake"); // NOI18N
             NotifyDescriptor nd =
                 new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -690,7 +717,7 @@ public class RubyInstallation {
         boolean valid = (autoTest != null) && new File(autoTest).exists();
 
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalled", autoTest);
+            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "autotest"); // NOI18N
             NotifyDescriptor nd =
                 new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -707,8 +734,8 @@ public class RubyInstallation {
                     false); // NOI18N
 
             if ((jrubyDir == null) || !jrubyDir.isDirectory()) {
-                throw new RuntimeException("Can't locate " + JRUBY_RELEASEDIR + // NOI18N
-                    " directory. Installation might be damaged"); // NOI18N
+                // The JRuby distribution may not be installed
+                return null;
             }
 
             jrubyHome = jrubyDir.getPath();
@@ -718,11 +745,21 @@ public class RubyInstallation {
     }
 
     private String getJRubyBin() {
-        return getJRubyHome() + File.separator + "bin"; // NOI18N
+        String jh = getJRubyHome();
+        if (jh != null) {
+            return jh + File.separator + "bin"; // NOI18N
+        } else {
+            return null;
+        }
     }
 
     private String getJRubyLib() {
-        return getJRubyHome() + File.separator + "lib"; // NOI18N
+        String jh = getJRubyHome();
+        if (jh != null) {
+            return jh + File.separator + "lib"; // NOI18N
+        } else {
+            return null;
+        }
     }
 
     /** Return the lib directory for the currently chosen Ruby interpreter */
@@ -746,10 +783,10 @@ public class RubyInstallation {
 
     public FileObject getRubyLibFo() {
         if (rubylibFo == null) {
-            String rubylib = getRubyLib();
+            String lib = getRubyLib();
 
-            if (rubylib != null) {
-                rubylibFo = FileUtil.toFileObject(new File(rubylib));
+            if (lib != null) {
+                rubylibFo = FileUtil.toFileObject(new File(lib));
             }
         }
 
@@ -785,11 +822,11 @@ public class RubyInstallation {
     }
 
     public boolean isValidRDoc(boolean warn) {
-        String rdoc = getRDoc();
-        boolean valid = (rdoc != null) && new File(rdoc).exists();
+        String rdocPath = getRDoc();
+        boolean valid = (rdocPath != null) && new File(rdocPath).exists();
 
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalled", rdoc);
+            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "rdoc"); // NOI18N
             NotifyDescriptor nd =
                 new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -806,11 +843,11 @@ public class RubyInstallation {
     }
     
     public boolean isValidRails(boolean warn) {
-        String rails = getRails();
-        boolean valid = (rails != null) && new File(rails).exists();
+        String railsPath = getRails();
+        boolean valid = (railsPath != null) && new File(railsPath).exists();
 
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalled", rails);
+            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "rails"); // NOI18N
             NotifyDescriptor nd =
                 new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -862,8 +899,12 @@ public class RubyInstallation {
             return;
         }
 
-        File binDir = new File(getJRubyBin());
+        String binDirPath = getJRubyBin();
+        if (binDirPath == null) {
+            return;
+        }
 
+        File binDir = new File(binDirPath);
         if (!binDir.exists()) {
             // No JRuby bundled installation?
             return;
@@ -1001,7 +1042,11 @@ public class RubyInstallation {
     private void initGemList() {
         if (gemFiles == null) {
             // Initialize lazily
-            File gemDir = new File(getRubyLibGemDir(), SPECIFICATIONS);
+            String f = getRubyLibGemDir();
+            if (f == null) {
+                return;
+            }
+            File gemDir = new File(f, SPECIFICATIONS);
 
             if (gemDir.exists()) {
                 // Add each of */lib/
@@ -1114,117 +1159,117 @@ public class RubyInstallation {
 
         if (cp == null) {
             cp = ClassPathFactory.createClassPath(new ClassPathImplementation() {
-                        public List<?extends PathResourceImplementation> getResources() {
+                public List<?extends PathResourceImplementation> getResources() {
+                    try {
+                        List<PathResourceImplementation> list =
+                            new ArrayList<PathResourceImplementation>();
+                        List<URL> urls = new ArrayList<URL>();
+
+                        FileObject rubyStubs = getRubyStubs();
+
+                        if (rubyStubs != null) {
                             try {
-                                List<PathResourceImplementation> list =
-                                    new ArrayList<PathResourceImplementation>();
-                                List<URL> urls = new ArrayList<URL>();
-
-                                FileObject rubyStubs = getRubyStubs();
-
-                                if (rubyStubs != null) {
-                                    try {
-                                        urls.add(rubyStubs.getURL());
-                                    } catch (FileStateInvalidException fsie) {
-                                        Exceptions.printStackTrace(fsie);
-                                    }
-                                }
-
-                                // Install standard libraries
-                                // lib/ruby/1.8/ 
-                                if (!SKIP_INDEX_LIBS) {
-                                    String rubyLibDir = getRubyLibRubyDir();
-                                    if (rubyLibDir != null) {
-                                        File libs = new File(rubyLibDir);
-                                        assert libs.exists() && libs.isDirectory();
-                                        urls.add(libs.toURI().toURL());
-                                    }
-                                }
-
-                                // Install gems.
-                                if (!SKIP_INDEX_GEMS) {
-                                    initGemList();
-                                    if (gemFiles != null) {
-                                        Set<String> gems = gemFiles.keySet();
-                                        for (String name : gems) {
-                                            Map<String,File> m = gemFiles.get(name);
-                                            assert m.keySet().size() == 1;
-                                            File f = m.values().iterator().next();
-                                            // Points to the specification file
-                                            assert f.getName().endsWith(DOT_GEM_SPEC);
-                                            String filename = f.getName().substring(0, f.getName().length()-DOT_GEM_SPEC.length());
-                                            File lib = new File(f.getParentFile().getParentFile(), "gems" + // NOI18N
-                                                    File.separator + filename + File.separator + "lib"); // NOI18N
-
-                                            if (lib.exists() && lib.isDirectory()) {
-                                                URL url = lib.toURI().toURL();
-                                                urls.add(url);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Install site ruby - this is where rubygems lives for example
-                                if (!SKIP_INDEX_LIBS) {
-                                    String rubyLibSiteDir = getRubyLibSiteDir();
-
-                                    if (rubyLibSiteDir != null) {
-                                        File siteruby = new File(rubyLibSiteDir);
-
-                                        if (siteruby.exists() && siteruby.isDirectory()) {
-                                            urls.add(siteruby.toURI().toURL());
-                                        }
-                                    }
-                                }
-
-                                // Register boot roots. This is a bit of a hack.
-                                // I need to find a better way to distinguish source directories
-                                // from boot (library, gems, etc.) directories at the scanning and indexing end.
-                                ClassIndexManager mgr = ClassIndexManager.getDefault();
-                                mgr.setBootRoots(urls);
-
-                                final URL[] roots = urls.toArray(new URL[urls.size()]);
-                                PathResourceImplementation pri =
-                                    new PathResourceImplementation() {
-                                        public URL[] getRoots() {
-                                            return roots;
-                                        }
-
-                                        public ClassPathImplementation getContent() {
-                                            return null;
-                                        }
-
-                                        public void addPropertyChangeListener(
-                                            PropertyChangeListener listener) {
-                                            // No changes will ever be fired
-                                        }
-
-                                        public void removePropertyChangeListener(
-                                            PropertyChangeListener listener) {
-                                            // No changes will ever be fired
-                                        }
-                                    };
-
-                                list.add(pri);
-
-                                return list;
-                            } catch (MalformedURLException mue) {
-                                Exceptions.printStackTrace(mue);
+                                urls.add(rubyStubs.getURL());
+                            } catch (FileStateInvalidException fsie) {
+                                Exceptions.printStackTrace(fsie);
                             }
-
-                            return null;
                         }
 
-                        public void addPropertyChangeListener(PropertyChangeListener listener) {
-                            // There will be no changes fired
-                            //throw new UnsupportedOperationException("Not supported yet.");
+                        // Install standard libraries
+                        // lib/ruby/1.8/ 
+                        if (!SKIP_INDEX_LIBS) {
+                            String rubyLibDir = getRubyLibRubyDir();
+                            if (rubyLibDir != null) {
+                                File libs = new File(rubyLibDir);
+                                assert libs.exists() && libs.isDirectory();
+                                urls.add(libs.toURI().toURL());
+                            }
                         }
 
-                        public void removePropertyChangeListener(PropertyChangeListener listener) {
-                            // There will be no changes fired
-                            //throw new UnsupportedOperationException("Not supported yet.");
+                        // Install gems.
+                        if (!SKIP_INDEX_GEMS) {
+                            initGemList();
+                            if (gemFiles != null) {
+                                Set<String> gems = gemFiles.keySet();
+                                for (String name : gems) {
+                                    Map<String,File> m = gemFiles.get(name);
+                                    assert m.keySet().size() == 1;
+                                    File f = m.values().iterator().next();
+                                    // Points to the specification file
+                                    assert f.getName().endsWith(DOT_GEM_SPEC);
+                                    String filename = f.getName().substring(0, f.getName().length()-DOT_GEM_SPEC.length());
+                                    File lib = new File(f.getParentFile().getParentFile(), "gems" + // NOI18N
+                                            File.separator + filename + File.separator + "lib"); // NOI18N
+
+                                    if (lib.exists() && lib.isDirectory()) {
+                                        URL url = lib.toURI().toURL();
+                                        urls.add(url);
+                                    }
+                                }
+                            }
                         }
-                    });
+
+                        // Install site ruby - this is where rubygems lives for example
+                        if (!SKIP_INDEX_LIBS) {
+                            String rubyLibSiteDir = getRubyLibSiteDir();
+
+                            if (rubyLibSiteDir != null) {
+                                File siteruby = new File(rubyLibSiteDir);
+
+                                if (siteruby.exists() && siteruby.isDirectory()) {
+                                    urls.add(siteruby.toURI().toURL());
+                                }
+                            }
+                        }
+
+                        // Register boot roots. This is a bit of a hack.
+                        // I need to find a better way to distinguish source directories
+                        // from boot (library, gems, etc.) directories at the scanning and indexing end.
+                        ClassIndexManager mgr = ClassIndexManager.getDefault();
+                        mgr.setBootRoots(urls);
+
+                        final URL[] roots = urls.toArray(new URL[urls.size()]);
+                        PathResourceImplementation pri =
+                            new PathResourceImplementation() {
+                                public URL[] getRoots() {
+                                    return roots;
+                                }
+
+                                public ClassPathImplementation getContent() {
+                                    return null;
+                                }
+
+                                public void addPropertyChangeListener(
+                                    PropertyChangeListener listener) {
+                                    // No changes will ever be fired
+                                }
+
+                                public void removePropertyChangeListener(
+                                    PropertyChangeListener listener) {
+                                    // No changes will ever be fired
+                                }
+                            };
+
+                        list.add(pri);
+
+                        return list;
+                    } catch (MalformedURLException mue) {
+                        Exceptions.printStackTrace(mue);
+                    }
+
+                    return null;
+                }
+
+                public void addPropertyChangeListener(PropertyChangeListener listener) {
+                    // There will be no changes fired
+                    //throw new UnsupportedOperationException("Not supported yet.");
+                }
+
+                public void removePropertyChangeListener(PropertyChangeListener listener) {
+                    // There will be no changes fired
+                    //throw new UnsupportedOperationException("Not supported yet.");
+                }
+            });
         }
 
         return cp.entries();
