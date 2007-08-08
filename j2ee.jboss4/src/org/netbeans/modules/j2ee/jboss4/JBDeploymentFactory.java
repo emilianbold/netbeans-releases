@@ -303,7 +303,9 @@ public class JBDeploymentFactory implements DeploymentFactory {
         String domainLocationCan = new File(domainLocation).getCanonicalPath();
         for (FileObject instanceFO : serverInstanceDir.getChildren()) {
             String url = (String)instanceFO.getAttribute(InstanceProperties.URL_ATTR);
-            if (url.startsWith(URI_PREFIX)) { // it's JBoss instance
+            if (url == null) { // can occur if some unxpected file is in the directory
+                Logger.getLogger("global").log(Level.INFO, "No server URL in " + FileUtil.getFileDisplayName(instanceFO));
+            } else if (url.startsWith(URI_PREFIX)) { // it's JBoss instance
                 String installedLocation = (String)instanceFO.getAttribute(JBPluginProperties.PROPERTY_SERVER_DIR);
                 String installedLocationCan = new File(installedLocation).getCanonicalPath();
                 if (domainLocationCan.equals(installedLocationCan)) {
