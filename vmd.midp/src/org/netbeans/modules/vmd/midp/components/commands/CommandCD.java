@@ -96,7 +96,7 @@ public final class CommandCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter() 
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Label"), PropertyEditorString.createInstance(), PROP_LABEL) // NOI18N
+                    .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Label"), PropertyEditorString.createTextFieldInstance(), PROP_LABEL) // NOI18N
                     .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Long_Label"), PropertyEditorString.createInstance(), PROP_LONG_LABEL) // NOI18N
                     .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Type"), PropertyEditorComboBox.createInstance(getTypes(), TYPEID), PROP_TYPE) // NOI18N
                     .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Priority"), PropertyEditorNumber.createIntegerInstance(), PROP_PRIORITY); // NOI18N

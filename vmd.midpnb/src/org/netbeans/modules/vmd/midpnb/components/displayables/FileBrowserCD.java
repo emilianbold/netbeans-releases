@@ -87,7 +87,10 @@ public final class FileBrowserCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                   .addProperty(NbBundle.getMessage(FileBrowserCD.class, "DISP_FileBrowser_filter"), NbBundle.getMessage(FileBrowserCD.class, "TTIP_FileBrowser_filter"), new PropertyEditorString(NbBundle.getMessage(FileBrowserCD.class, "PROPERTY_EDITOR_COMMENT"),PropertyEditorString.DEPENDENCE_NONE), PROP_FILTER); //NOI18N
+                   .addProperty(NbBundle.getMessage(FileBrowserCD.class, "DISP_FileBrowser_filter"), // NOI18N
+                        NbBundle.getMessage(FileBrowserCD.class, "TTIP_FileBrowser_filter"), // NOI18N
+                        PropertyEditorString.createInstanceWithComment(NbBundle.getMessage(FileBrowserCD.class, "PROPERTY_EDITOR_COMMENT")), // NOI18N
+                        PROP_FILTER);
     }
      
     private Presenter createSetterPresenter () {
@@ -121,12 +124,14 @@ public final class FileBrowserCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
         MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC); //NOI18N
         MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_PDA); //NOI18N
     }
 
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, AddActionPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, CodeSetterPresenter.class);

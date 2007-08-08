@@ -85,10 +85,11 @@ public class ItemSupport {
         
         public String getEditableName(DesignComponent component) {
             PropertyValue value = component.readProperty(propertyName);
-            if (value.getKind() == PropertyValue.Kind.VALUE)
+            if (value.getKind() == PropertyValue.Kind.VALUE) {
                 return MidpTypes.getString(value);
-            else
+            } else {
                 return ""; // NOI18N
+            }
         }
         
         public void setEditableName(DesignComponent component, String enteredName) {

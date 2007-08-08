@@ -116,12 +116,14 @@ public final class PIMBrowserCD extends ComponentDescriptor {
          );
     }
     
+    @Override
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC); //NOI18N
-        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_PDA); //NOI18N
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC);
+        MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_PDA);
     }
     
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, AddActionPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, DisplayableDisplayPresenter.class);

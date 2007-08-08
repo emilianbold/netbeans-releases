@@ -64,6 +64,7 @@ public class SplashScreenCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP_2;
     }
     
+    @Override
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
         MidpProjectSupport.addLibraryToProject(component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC); //NOI18N

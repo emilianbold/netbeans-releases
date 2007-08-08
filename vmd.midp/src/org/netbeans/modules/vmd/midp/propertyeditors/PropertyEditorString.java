@@ -30,6 +30,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -59,7 +61,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private int dependence;
     private String comment;
     private String defaultValue;
-    private boolean isDefaultValueUsed;
+    private boolean useTextArea;
 
     /**
      * Creates instance of PropertyEditorString.
@@ -72,10 +74,10 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
      * this property will be automatically increased to be equal of text length.
      */
-    public PropertyEditorString(String comment, int dependence) {
+    private PropertyEditorString(String comment, int dependence, boolean useTextArea) {
         this.comment = comment;
         this.dependence = dependence;
-        isDefaultValueUsed = false;
+        this.useTextArea = useTextArea;
         initComponents();
 
         Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
@@ -96,24 +98,16 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @param String default value of the property editor, could be different from default
      * value specified in the component descriptor
      */
-    public PropertyEditorString(String comment, int dependence, String defaultValue) {
-        this(comment, dependence);
+    private PropertyEditorString(String comment, int dependence, String defaultValue) {
+        this(comment, dependence, true);
         this.defaultValue = defaultValue;
-        isDefaultValueUsed = true;
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences.
      */
     public static final PropertyEditorString createInstance() {
-        return new PropertyEditorString(null, DEPENDENCE_NONE);
-    }
-
-    /**
-     * Creates instance of PropertyEditorString without dependences with default value.
-     */
-    public static final PropertyEditorString createInstance(String defaultValue) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue);
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true);
     }
 
     /**
@@ -122,14 +116,35 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @see PropertyEditorString(String comment, int dependence)
      */
     public static final PropertyEditorString createInstance(int dependence) {
-        return new PropertyEditorString(null, dependence);
+        return new PropertyEditorString(null, dependence, true);
+    }
+
+    /**
+     * Creates instance of PropertyEditorString using JTExtField.
+     */
+    public static final PropertyEditorString createTextFieldInstance() {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, false);
+    }
+
+    /**
+     * Creates instance of PropertyEditorString without dependences with default value.
+     */
+    public static final PropertyEditorString createInstanceWithDefaultValue(String defaultValue) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue);
+    }
+
+    /**
+     * Creates instance of PropertyEditorString without dependences with default value.
+     */
+    public static final PropertyEditorString createInstanceWithComment(String comment) {
+        return new PropertyEditorString(comment, DEPENDENCE_NONE, null);
     }
 
     /**
      * Creates instance of PropertyEditorString which can not change PropertyValue.
      */
-    public static final PropertyEditorString createInstanceReadOnly() {
-        return new PropertyEditorString(null, DEPENDENCE_NONE) {
+    public static final PropertyEditorString createInstanceReadOnly(boolean useTextArea) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, useTextArea) {
 
             @Override
             public boolean canWrite() {
@@ -146,11 +161,8 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
 
     @Override
     public Object getDefaultValue() {
-        if (!isDefaultValueUsed) {
-            return super.getDefaultValue();
-        }
         if (defaultValue == null) {
-            return NULL_VALUE;
+            return super.getDefaultValue();
         }
         return MidpTypes.createStringValue(defaultValue);
     }
@@ -180,7 +192,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * This element should be vertically resizable
      */
     public boolean isVerticallyResizable() {
-        return true;
+        return useTextArea;
     }
 
     /*
@@ -276,7 +288,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
     private class CustomEditor {
 
         private JPanel panel;
-        private JEditorPane editorPane;
+        private JTextComponent editorPane;
         private String comment;
 
         public CustomEditor(String comment) {
@@ -286,10 +298,16 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
 
         private void initComponents() {
             panel = new JPanel(new GridBagLayout());
-            editorPane = new JEditorPane();
-            JScrollPane scrollPane = new JScrollPane();
-            scrollPane.setViewportView(editorPane);
-            scrollPane.setPreferredSize(new Dimension(400, 100));
+            
+            JComponent textComponent;
+            if (useTextArea) {
+                editorPane = new JEditorPane();
+                textComponent = new JScrollPane();
+                ((JScrollPane) textComponent).setViewportView(editorPane);
+                ((JScrollPane) textComponent).setPreferredSize(new Dimension(400, 100));
+            } else {
+                textComponent = editorPane = new JTextField();
+            }
 
             GridBagConstraints gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -298,7 +316,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 1.0;
-            panel.add(scrollPane, gridBagConstraints);
+            panel.add(textComponent, gridBagConstraints);
 
             if (comment != null) {
                 JLabel label = new JLabel(comment);

@@ -43,7 +43,6 @@ import org.netbeans.modules.vmd.midp.screen.display.DisplayableDisplayPresenter;
 import org.netbeans.modules.vmd.midpnb.codegen.MidpCustomCodePresenterSupport;
 import org.netbeans.modules.vmd.midpnb.propertyeditors.MidpNbPropertiesCategories;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -144,11 +143,13 @@ public final class LoginScreenCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
         MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC); //NOI18N
     }
 
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, AddActionPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, DisplayableDisplayPresenter.class);

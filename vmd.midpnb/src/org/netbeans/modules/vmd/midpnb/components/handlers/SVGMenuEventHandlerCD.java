@@ -61,6 +61,7 @@ public class SVGMenuEventHandlerCD extends ComponentDescriptor {
                 InfoPresenter.createStatic (NbBundle.getMessage(SVGMenuEventHandlerCD.class, "DISP_Process_SVG_Menu"), NbBundle.getMessage(SVGMenuEventHandlerCD.class, "TYPE_Action"), ICON_PATH), // NOI18N
                 // flow
                 new FlowEventHandlerPinBadgePresenter (Utilities.loadImage (ICON_PATH), 0) {
+                    @Override
                     protected DesignEventFilter getEventFilter () {
                         return super.getEventFilter ().addParentFilter (getComponent (), 2, false);
                     }
@@ -80,6 +81,7 @@ public class SVGMenuEventHandlerCD extends ComponentDescriptor {
                             section.getWriter ().write (code + " ();\n"); // NOI18N
                     }
                 }
+        
         );
     }
 

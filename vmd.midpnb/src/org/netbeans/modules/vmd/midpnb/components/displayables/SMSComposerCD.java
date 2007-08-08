@@ -118,8 +118,8 @@ public final class SMSComposerCD extends ComponentDescriptor {
                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                    .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_BackgroundColor"), new PropertyEditorColorChooser(true), PROP_BGK_COLOR)
                    .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_ForegroundColor"), new PropertyEditorColorChooser(true), PROP_FRG_COLOR)
-                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_PhoneNumberLabel"), PropertyEditorString.createInstance(PHONE_NUMBER_LABEL), PROP_PHONE_NUMEBR_LABEL)
-                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_MessageLabel"), PropertyEditorString.createInstance(MESSAGE_LABEL), PROP_MESSAGE_LABEL);
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_PhoneNumberLabel"), PropertyEditorString.createInstanceWithDefaultValue(PHONE_NUMBER_LABEL), PROP_PHONE_NUMEBR_LABEL)
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_MessageLabel"), PropertyEditorString.createInstanceWithDefaultValue(MESSAGE_LABEL), PROP_MESSAGE_LABEL);
     }
      
     private Presenter createSetterPresenter () {
@@ -152,12 +152,14 @@ public final class SMSComposerCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     public void postInitialize(DesignComponent component) {
         super.postInitialize(component);
         MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_BASIC);
         MidpProjectSupport.addLibraryToProject (component.getDocument (), AbstractInfoScreenCD.MIDP_NB_LIBRARY_WMA);
     }
 
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, AddActionPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, DisplayableDisplayPresenter.class);
