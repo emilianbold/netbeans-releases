@@ -297,19 +297,12 @@ class FilesystemHandler extends VCSInterceptor {
                             retryCounter--;
                             continue;
                         }
-
-                        // XXX loosing file history is less harm than raising IOException
-                        // that completelly breaks clients (namely refactoring can not handle IOEx)
-                        if (srcFile.renameTo(dstFile)) {
-                            ErrorManager.getDefault().annotate(e, "Relaxing Subversion rename error...."); // NOI18N
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e); // NOI18N
-                            break;
-                        } else {
-                            IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath()); // NOI18N
+                        
+                        IOException ex = new IOException("Subversion failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath()); // NOI18N
                         ex.initCause(e);
                         throw ex;
+                            
                     }
-                }
                 }
             } finally {
                 if (tmpMetadata != null) {
