@@ -684,19 +684,16 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/versioning/system/cvss/ui/syncview/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(tgbAll, bundle.getString("CTL_Synchronize_Action_All_Label")); // NOI18N
         tgbAll.setToolTipText(bundle.getString("CTL_Synchronize_Action_All_Tooltip")); // NOI18N
-        tgbAll.setFocusable(false);
         tgbAll.addActionListener(this);
         jPanel2.add(tgbAll);
 
         org.openide.awt.Mnemonics.setLocalizedText(tgbLocal, bundle.getString("CTL_Synchronize_Action_Local_Label")); // NOI18N
         tgbLocal.setToolTipText(bundle.getString("CTL_Synchronize_Action_Local_Tooltip")); // NOI18N
-        tgbLocal.setFocusable(false);
         tgbLocal.addActionListener(this);
         jPanel2.add(tgbLocal);
 
         org.openide.awt.Mnemonics.setLocalizedText(tgbRemote, bundle.getString("CTL_Synchronize_Action_Remote_Label")); // NOI18N
         tgbRemote.setToolTipText(bundle.getString("CTL_Synchronize_Action_Remote_Tooltip")); // NOI18N
-        tgbRemote.setFocusable(false);
         tgbRemote.addActionListener(this);
         jPanel2.add(tgbRemote);
 
@@ -704,17 +701,15 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         jSeparator1.setPreferredSize(new java.awt.Dimension(2, 20));
         jPanel2.add(jSeparator1);
 
-        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/refresh.png")));
+        btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/refresh.png"))); // NOI18N
         btnRefresh.setToolTipText(bundle.getString("CTL_Synchronize_Action_Refresh_Tooltip")); // NOI18N
         btnRefresh.setActionCommand(bundle.getString("CTL_Synchronize_TopComponent_Title")); // NOI18N
-        btnRefresh.setFocusable(false);
         btnRefresh.setPreferredSize(new java.awt.Dimension(22, 23));
         btnRefresh.addActionListener(this);
         jPanel2.add(btnRefresh);
 
-        btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff.png")));
+        btnDiff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/diff.png"))); // NOI18N
         btnDiff.setToolTipText(bundle.getString("CTL_Synchronize_Action_Diff_Tooltip")); // NOI18N
-        btnDiff.setFocusable(false);
         btnDiff.setPreferredSize(new java.awt.Dimension(22, 25));
         btnDiff.addActionListener(this);
         jPanel2.add(btnDiff);
@@ -722,17 +717,15 @@ class SynchronizePanel extends JPanel implements ExplorerManager.Provider, Prope
         jPanel3.setOpaque(false);
         jPanel2.add(jPanel3);
 
-        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/update.png")));
+        btnUpdate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/update.png"))); // NOI18N
         btnUpdate.setToolTipText(bundle.getString("CTL_Synchronize_Action_Update_Tooltip")); // NOI18N
         btnUpdate.setActionCommand(bundle.getString("CTL_Synchronize_TopComponent_Title")); // NOI18N
-        btnUpdate.setFocusable(false);
         btnUpdate.setPreferredSize(new java.awt.Dimension(22, 25));
         btnUpdate.addActionListener(this);
         jPanel2.add(btnUpdate);
 
-        btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/commit.png")));
+        btnCommit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/commit.png"))); // NOI18N
         btnCommit.setToolTipText(bundle.getString("CTL_CommitForm_Action_Commit_Tooltip")); // NOI18N
-        btnCommit.setFocusable(false);
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));
         btnCommit.addActionListener(this);
         jPanel2.add(btnCommit);
