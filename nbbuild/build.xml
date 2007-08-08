@@ -986,7 +986,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <subant target="clean">
       <fileset dir="..">
         <include name="*/external/build.xml"/>
-        <include name="contrib/*/external/build.xml"/>
+        <include name="*/*/external/build.xml"/>
+        <include name="*/*/*/external/build.xml"/>
       </fileset>
     </subant>
   </target>
