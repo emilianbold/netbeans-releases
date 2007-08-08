@@ -173,7 +173,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0-1</release-version>
-                        <specification-version>1.26</specification-version>
+                        <specification-version>1.27</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
