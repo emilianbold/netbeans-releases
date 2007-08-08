@@ -1157,9 +1157,10 @@ public class CasualDiff {
             tokenSequence.moveNext();
             copyTo(localPointer, localPointer = tokenSequence.offset());
         } else {
-            copyTo(localPointer, localPointer = selectedBounds[1]);
-            printer.print(".");
-            localPointer++;
+            tokenSequence.move(selectedBounds[1]);
+            moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to dot (.)
+            moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to oldT.name token
+            copyTo(localPointer, localPointer = tokenSequence.offset());
         }
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(newT.name);
