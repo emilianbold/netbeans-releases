@@ -41,8 +41,8 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
-        <mkdir dir="${cluster}/modules/ext"/>
-        <jar jarfile="${cluster}/modules/ext/${code.name.base.dashes}.jar" compress="false">
+        <mkdir dir="build/external/modules/ext"/>
+        <jar jarfile="build/external/modules/ext/${code.name.base.dashes}.jar" compress="false">
             <fileset dir="build/libclasses">
                 <exclude name="**/*.java"/>
             </fileset>
@@ -63,8 +63,8 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
-        <mkdir dir="${cluster}/ant/nblib"/>
-        <jar jarfile="${cluster}/ant/nblib/${code.name.base.dashes}.jar" compress="false">
+        <mkdir dir="build/external/ant/nblib"/>
+        <jar jarfile="build/external/ant/nblib/${code.name.base.dashes}.jar" compress="false">
             <fileset dir="build/antclasses">
                 <exclude name="**/*.java"/>
             </fileset>

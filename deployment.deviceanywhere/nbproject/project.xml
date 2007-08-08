@@ -119,17 +119,16 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>antsrc</package-root>
                 <classpath>${module.classpath}:${ant.jar}:${tools.jar}:build/classes</classpath>
                 <built-to>build/antclasses</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/ant/nblib/${code.name.base.dashes}.jar</built-to>
+                <built-to>build/external/ant/nblib/org-netbeans-modules-deployment-deviceanywhere.jar</built-to>
             </extra-compilation-unit>
             <extra-compilation-unit>
                 <package-root>libsrc</package-root>
                 <classpath>${module.classpath}:${ant.jar}:${tools.jar}:build/classes</classpath>
                 <built-to>build/libclasses</built-to>
-                <built-to>${netbeans.dest.dir}/${cluster.dir}/modules/ext/${code.name.base.dashes}.jar</built-to>
+                <built-to>build/external/modules/ext/org-netbeans-modules-deployment-deviceanywhere.jar</built-to>
             </extra-compilation-unit>
             <class-path-extension>
-                <binary-origin>build/libclasses</binary-origin>
-                <!--                <binary-origin>${netbeans.dest.dir}/${cluster.dir}/modules/ext/org-netbeans-modules-deployment-deviceanywhere.jar</binary-origin> -->
+                <binary-origin>build/external/modules/ext/org-netbeans-modules-deployment-deviceanywhere.jar</binary-origin>
                 <runtime-relative-path>ext/org-netbeans-modules-deployment-deviceanywhere.jar</runtime-relative-path>
             </class-path-extension>
         </data>
