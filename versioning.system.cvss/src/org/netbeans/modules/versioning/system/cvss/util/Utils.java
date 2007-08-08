@@ -293,8 +293,13 @@ public class Utils {
      * versioned file, this method returns an empty string 
      */
     public static String getRelativePath(File file) {
+        String postfix = "";
+        for (file = file.getParentFile(); file != null && !file.exists(); file = file.getParentFile()) {
+            postfix = "/" + file.getName() + postfix;
+        }
+        if (file == null) return "";
         try {
-            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getParent(), "").substring(1); // NOI18N
+            return CvsVersioningSystem.getInstance().getAdminHandler().getRepositoryForDirectory(file.getAbsolutePath(), "").substring(1) + postfix; // NOI18N
         } catch (IOException e) {
             return ""; // NOI18N
         }
