@@ -613,17 +613,18 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 } else
                     rbNewLibrary.setSelected(true);
             } else {
+                // <RAVE>
+                Library lib = LibraryManager.getDefault().getLibrary("jsf-designtime");
+                /*
                 Library[] libs = LibraryManager.getDefault().getLibraries();
                 Library lib = null;
                 for (int i = 0; i < libs.length; i++) {
-                    // <RAVE>
-                    // if (libs[i].getDisplayName().startsWith("JSF-")) {
-                    if (libs[i].getName().equals("jsf-designtime")) {
-                    // </RAVE>
+                    if (libs[i].getDisplayName().startsWith("JSF-")) {
                         lib = libs[i];
                         break;
                     }
                 }
+                </RAVE> */
                 if (lib != null) {
                     rbRegisteredLibrary.setSelected(true);
                     cbLibraries.setSelectedItem(lib.getDisplayName());
