@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import javax.management.Attribute;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -84,22 +82,12 @@ public class JBIFrameworkService implements Serializable {
      * virtual-servers - String
      */
     public static final String NAME_KEY = "name"; // NOI18N
-
     
     /**
      * DOCUMENT ME!
      */
     public static final String JBI_CONFIG_OBJECTNAME = "com.sun.appserv:name=JBIFramework,type=lifecycle-module,category=config"; // NOI18N
 
-//    public static final String JBI_LOG_DEFAULT_PROPERTY_NAME = "com.sun.jbi.defaultLogLevel"; // NOI18N
-
-    public static final String LOG_LEVEL_INFO_KEY = "INFO"; // NOI18N
-    public static final String LOG_LEVEL_FINEST_KEY = "FINEST"; // NOI18N
-    public static final String LOG_LEVEL_FINER_KEY = "FINER"; // NOI18N
-    public static final String LOG_LEVEL_FINE_KEY = "FINE"; // NOI18N
-    public static final String LOG_WARNING_INFO_KEY = "WARNING"; // NOI18N
-    public static final String LOG_SEVERE_INFO_KEY = "SEVERE"; // NOI18N
-    public static final String LOG_OFF_INFO_KEY = "OFF"; // NOI18N
     /**
      * DOCUMENT ME!
      */
@@ -142,8 +130,6 @@ public class JBIFrameworkService implements Serializable {
      * DOCUMENT ME!
      */
     private String name;
-    
-    private String buildNumber;
     
     boolean jbiFrameworkEnabled;
     
@@ -203,7 +189,6 @@ public class JBIFrameworkService implements Serializable {
         QueryExp queryExpression = null;
         Set set = null;
         ObjectName objectName = null;
-        String resultObject = null;
         objectName = new ObjectName(JBIFrameworkService.JBI_CONFIG_OBJECTNAME);
         ObjectName uiMBeanObjectName = new ObjectName(AdministrationService.ADMIN_SERVICE_OBJECTNAME);
 

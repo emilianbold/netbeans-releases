@@ -125,16 +125,30 @@ public class JBIPropertySupportFactory {
     private static PropertySupport createReadOnlyPropertySupport(
             final Attribute attr, final MBeanAttributeInfo info) {
         
-        return new PropertySupport.ReadOnly<String>(
-                attr.getName(),
-                String.class, //getClassFromStringType(info.getType()), 
-                info.getName(), 
-                info.getDescription()) {
-            
-            public String getValue() {
-                return (String) calculateReturnObjectType(attr);
-            }
-        };
+        if (attr.getValue() instanceof Boolean) {
+            return new PropertySupport.ReadOnly<Boolean>(
+                    attr.getName(),
+                    Boolean.class, 
+                    info.getName(), 
+                    info.getDescription()) {
+
+                public Boolean getValue() {
+                    return (Boolean) attr.getValue();
+                }
+            };
+        } else {
+            return new PropertySupport.ReadOnly<String>(
+                    attr.getName(),
+                    String.class, //getClassFromStringType(info.getType()), 
+                    info.getName(), 
+                    info.getDescription()) {
+
+                public String getValue() {
+                    String v = (String) attr.getValue();
+                    return v == null ? "" : v; // NOI18N
+                }
+            };
+        }
     }    
   
     private static PropertySupport createReadWritePropertySupport(
@@ -188,7 +202,7 @@ public class JBIPropertySupportFactory {
             Attribute attribute = attr;
             
             public String getValue() {
-                return (String) calculateReturnObjectType(attribute);
+                return (String) attribute.getValue();
             }
             
             public void setValue(String obj) {
@@ -211,7 +225,7 @@ public class JBIPropertySupportFactory {
             Attribute attribute = attr;
             
             public Integer getValue() {
-                return (Integer) calculateReturnObjectType(attribute);
+                return (Integer) attribute.getValue();
             }
             
             public void setValue(Integer obj) {
@@ -243,7 +257,7 @@ public class JBIPropertySupportFactory {
             final Class editorClass) {
 
         return new PropertySupport.ReadWrite<TabularDataSupport>(
-                info.getName(), // attr.getName() ?
+                attr.getName(),
                 TabularDataSupport.class,
                 info.getName(),
                 info.getDescription()) {
@@ -330,52 +344,6 @@ public class JBIPropertySupportFactory {
             }
         };
     }
-     
-    private static Object calculateReturnObjectType(Attribute attr) {
-        Object obj = attr.getValue();
-//        if (obj instanceof ObjectName[]) {
-//            ObjectName[] objNames = (ObjectName[])obj;
-//            String[] arrayNames = new String[objNames.length];
-//            for (int i=0; i < objNames.length; i++){
-//                arrayNames[i] = objNames[i].toString();
-//            }
-//            return arrayNames;
-//        } else if (obj instanceof String[]) {
-//            String[] values = (String[])obj;
-//            StringBuffer returnVals = new StringBuffer();
-//            int pos = 0;
-//            for(int i=0; i < values.length; i++){
-//                returnVals.append(values[i]);
-//                pos++;
-//                if (pos < values.length) {
-//                    returnVals.append(ARRAY_DELIM);
-//                }
-//            }
-//            return returnVals;
-//        } else {
-            return obj;
-//        }
-    }    
-    
-//    private static Class getClassFromStringType(final String type) {
-//        Class clazz = null;
-//        try {
-//            clazz = typeToClassesMap.get(type);
-//            if (clazz == null) {
-//                clazz = Class.forName(type);
-//            }
-//            if (clazz == null) {
-//                throw new ClassNotFoundException(type);
-//            }
-//            if (!String.class.isAssignableFrom(clazz) && 
-//                    !Number.class.isAssignableFrom(clazz)) {
-//                throw new ClassNotFoundException(type);
-//            }
-//        } catch(ClassNotFoundException e) {
-//            logger.log(Level.FINE, e.getMessage(), e);
-//        }
-//        return clazz;
-//    }
             
     private static Attribute updateAttribute(AppserverJBIMgmtNode parent,
             String attrName, Object attrValue, Attribute attribute){
