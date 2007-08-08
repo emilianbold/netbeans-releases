@@ -38,9 +38,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.awt.Cursor;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseAdapter;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.*;
 import java.io.File;
@@ -158,18 +155,6 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
             loadTemplate(true);
         }
 
-        recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        templateLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        recentLink.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                onBrowseRecentMessages();
-            }
-        });
-        templateLink.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                loadTemplate(false);
-            }
-        });
         taMessage.getDocument().addDocumentListener(this);
         onCommitMessageChanged();
     }
@@ -248,13 +233,13 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         java.awt.GridBagConstraints gridBagConstraints;
 
         jLabel2 = new javax.swing.JLabel();
-        recentLink = new javax.swing.JLabel();
-        templateLink = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         taMessage = new org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea();
         jLabel3 = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
         messageErrorLabel = new javax.swing.JLabel();
+        recentMessagesButton = new javax.swing.JButton();
+        loadTemplateButton = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 0, 11));
         setLayout(new java.awt.GridBagLayout());
@@ -271,27 +256,6 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         add(jLabel2, gridBagConstraints);
-
-        recentLink.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        recentLink.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/recent_messages.png")));
-        recentLink.setToolTipText(org.openide.util.NbBundle.getMessage(CommitSettings.class, "CTL_CommitForm_RecentMessages")); // NOI18N
-        recentLink.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 8));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        add(recentLink, gridBagConstraints);
-
-        templateLink.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
-        templateLink.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/load_template.png")));
-        templateLink.setToolTipText(org.openide.util.NbBundle.getMessage(CommitSettings.class, "TT_CommitForm_LoadTemplate")); // NOI18N
-        templateLink.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 2, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        add(templateLink, gridBagConstraints);
 
         taMessage.setColumns(30);
         taMessage.setLineWrap(true);
@@ -339,7 +303,46 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
         add(messageErrorLabel, gridBagConstraints);
+
+        recentMessagesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/recent_messages.png"))); // NOI18N
+        recentMessagesButton.setToolTipText(org.openide.util.NbBundle.getMessage(CommitSettings.class, "CTL_CommitForm_RecentMessages")); // NOI18N
+        recentMessagesButton.setBorderPainted(false);
+        recentMessagesButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        recentMessagesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                recentMessagesButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        add(recentMessagesButton, gridBagConstraints);
+
+        loadTemplateButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/system/cvss/resources/icons/load_template.png"))); // NOI18N
+        loadTemplateButton.setToolTipText(org.openide.util.NbBundle.getMessage(CommitSettings.class, "TT_CommitForm_LoadTemplate")); // NOI18N
+        loadTemplateButton.setBorderPainted(false);
+        loadTemplateButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        loadTemplateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadTemplateButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        add(loadTemplateButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void loadTemplateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadTemplateButtonActionPerformed
+        loadTemplate(false);
+    }//GEN-LAST:event_loadTemplateButtonActionPerformed
+
+    private void recentMessagesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_recentMessagesButtonActionPerformed
+        onBrowseRecentMessages();
+    }//GEN-LAST:event_recentMessagesButtonActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -347,10 +350,10 @@ public class CommitSettings extends javax.swing.JPanel implements PreferenceChan
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton loadTemplateButton;
     private javax.swing.JLabel messageErrorLabel;
-    private javax.swing.JLabel recentLink;
+    private javax.swing.JButton recentMessagesButton;
     private org.netbeans.modules.versioning.system.cvss.ui.components.KTextArea taMessage;
-    private javax.swing.JLabel templateLink;
     // End of variables declaration//GEN-END:variables
     
     public void tableChanged(TableModelEvent e) {
