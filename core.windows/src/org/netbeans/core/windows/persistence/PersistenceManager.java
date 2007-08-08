@@ -58,6 +58,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.io.SafeException;
 import org.openide.windows.TopComponent;
 import org.openide.xml.XMLUtil;
@@ -179,7 +180,7 @@ public final class PersistenceManager implements PropertyChangeListener {
         
         return defaultInstance;
     }
-
+    
     public void reset() {
         rootModuleFolder = null;
         rootLocalFolder  = null;
@@ -426,27 +427,19 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
     }
     
-    /** performance related, TCs get GCed anyway, but the strings were kept in the maps.
-     * make sure you call this only on TCs that are NOT TC.PERSISTENT_ALWAYS
+    /** 
+     * Performance related. It is called only from Reference Queue when TC is gc'ed.
+     * If that happens clean all internal data for this TC.
      */
-    public void removeGlobalTopComponentID(String id) {
-//        System.out.println("removing id=" + id);
+    private void removeGlobalTopComponentID(String id) {
         synchronized(LOCK_IDS) {
-            globalIDSet.remove(id.toUpperCase(Locale.ENGLISH));
-            Reference<TopComponent> result = id2TopComponentMap.remove(id);
-            if (result != null) {
-                TopComponent tc = result.get();
-                if (tc != null) {
-                    topComponent2IDMap.remove(tc);
-                }
-            }
-            result = id2TopComponentNonPersistentMap.remove(id);
-            if (result != null) {
-                TopComponent tc = result.get();
-                if (tc != null) {
-                    topComponentNonPersistent2IDMap.remove(tc);
-                }
-            }
+            //Do not release already used TC ID from cache. It is relevant for PERSISTENCE_ONLY_OPENED
+            //persistence type. We could safely clean TC ID from globalIDSet for PERSISTENCE_NEVER.
+            //Creation of new TC ID checks free file name in Component's folder anyway
+            //but it is more natural not to reuse already used TC ID in given session.
+            //globalIDSet.remove(id.toUpperCase(Locale.ENGLISH));
+            id2TopComponentMap.remove(id);
+            id2TopComponentNonPersistentMap.remove(id);
         }
     }
     
@@ -482,7 +475,7 @@ public final class PersistenceManager implements PropertyChangeListener {
                     TopComponent tc = (TopComponent)ic.instanceCreate();
                     synchronized(LOCK_IDS) {
                         topComponent2IDMap.put(tc, stringId);
-                        id2TopComponentMap.put(stringId, new WeakReference<TopComponent>(tc));
+                        id2TopComponentMap.put(stringId, new TopComponentReference(tc,stringId));
                         dataobjectToTopComponentMap.put(dob, stringId);
                     }
                     dob.addPropertyChangeListener(this);
@@ -856,7 +849,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             }
 
             topComponent2IDMap.put(tc, srcName);
-            id2TopComponentMap.put(srcName, new WeakReference<TopComponent>(tc));
+            id2TopComponentMap.put(srcName, new PersistenceManager.TopComponentReference(tc,srcName));
             globalIDSet.add(srcName.toUpperCase(Locale.ENGLISH));
         }
         
@@ -882,7 +875,7 @@ public final class PersistenceManager implements PropertyChangeListener {
             //+ " id:" + id);
             //Thread.dumpStack();
             synchronized(LOCK_IDS) {
-                id2TopComponentMap.put(id, new WeakReference<TopComponent>(tc));
+                id2TopComponentMap.put(id, new PersistenceManager.TopComponentReference(tc,id));
                 validateId(id);
             }
             return id;
@@ -1293,5 +1286,22 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
         return tcName;
     }
+    
+    /**
+     * This class is used to clean internal maps containing <String,WeakReference<TopComponent>>
+     * after TopComponent instanced was gc'ed.
+     */
+    private class TopComponentReference extends WeakReference<TopComponent> implements Runnable {
+        private final String tcID;
+        
+        public TopComponentReference (TopComponent ref, String tcID) {
+           super(ref, Utilities.activeReferenceQueue());
+           this.tcID = tcID;
+        }
+        
+        public void run() {
+            removeGlobalTopComponentID(tcID);
+        }
+    } 
 
 }

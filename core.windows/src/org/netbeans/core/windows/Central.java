@@ -569,8 +569,6 @@ final class Central implements ControllerHandler {
             } else {
                 //mkleint since one cannot close the sliding mode just like that, we don't need to check the previous mode of the tc.
                 model.removeModeTopComponent(mode, tc, null);
-                String id = WindowManagerImpl.getInstance().findTopComponentID(tc);
-                PersistenceManager.getDefault().removeGlobalTopComponentID(id);
             }
         }
         
@@ -890,8 +888,6 @@ final class Central implements ControllerHandler {
             recentTc = getRecentTopComponent( mode, tc );
         }
         model.removeModeTopComponent(mode, tc, recentTc);
-        String id = WindowManagerImpl.getInstance().findTopComponentID(tc);
-        PersistenceManager.getDefault().removeGlobalTopComponentID(id);
 
         ModeImpl oldActive = getActiveMode();
         ModeImpl newActive;
@@ -1184,8 +1180,6 @@ final class Central implements ControllerHandler {
                         model.addModeClosedTopComponent(mode, tc);
                     } else {
                         model.removeModeTopComponent(mode, tc, null);
-                        String id = WindowManagerImpl.getInstance().findTopComponentID(tc);
-                        PersistenceManager.getDefault().removeGlobalTopComponentID(id);
                     }
                     closedTcs.add(tc);
                 }
