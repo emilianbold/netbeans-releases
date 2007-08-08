@@ -121,21 +121,20 @@ public class CustomizerRun extends JPanel implements JbiJarCustomizer.Panel, Hel
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jLabelServer = new javax.swing.JLabel();
         jComboBoxServer = new javax.swing.JComboBox();
 
         setBorder(javax.swing.BorderFactory.createEtchedBorder());
+
         jLabelServer.setLabelFor(jComboBoxServer);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelServer, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Server_JLabel"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelServer, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Server_JLabel")); // NOI18N
 
         jComboBoxServer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBoxServerActionPerformed(evt);
             }
         });
-
-        jComboBoxServer.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_Server_A11YName"));
-        jComboBoxServer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_Server_A11YDesc"));
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -157,6 +156,10 @@ public class CustomizerRun extends JPanel implements JbiJarCustomizer.Panel, Hel
                     .add(jComboBoxServer, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(58, 58, 58))
         );
+
+        jLabelServer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACS_SERVER")); // NOI18N
+        jComboBoxServer.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_Server_A11YName")); // NOI18N
+        jComboBoxServer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_Server_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed

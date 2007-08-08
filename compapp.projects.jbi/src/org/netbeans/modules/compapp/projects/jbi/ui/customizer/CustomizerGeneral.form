@@ -22,43 +22,28 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace min="30" pref="30" max="-2" attributes="0"/>
-                      <Component id="jLabelServiceAssemblyDescription" min="-2" pref="83" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jTextFieldServiceAssemblyDescription" pref="394" max="32767" attributes="1"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jLabelServiceAssembly" alignment="0" min="-2" pref="200" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="jLabelProjectName" min="-2" pref="87" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="jTextFieldProjectFolder" pref="396" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="jLabelServiceAssemblyDescription" min="-2" pref="151" max="-2" attributes="0"/>
+                          <Component id="jLabelProjectName" alignment="0" min="-2" pref="87" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jTextFieldProjectFolder" pref="357" max="32767" attributes="1"/>
+                          <Component id="jTextFieldServiceAssemblyDescription" alignment="0" pref="357" max="32767" attributes="1"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabelServiceUnit" min="-2" pref="241" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
-                              <Component id="jLabelServiceUnitDescription" min="-2" pref="83" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                          </Group>
+                          <Component id="jLabelServiceUnitDescription" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jComboBoxEncoding" min="-2" pref="195" max="-2" attributes="0"/>
-                          <Component id="jTextFieldServiceUnitDescription" alignment="0" pref="394" max="32767" attributes="1"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="jComboBoxEncoding" alignment="0" min="-2" pref="189" max="-2" attributes="0"/>
+                          <Component id="jTextFieldServiceUnitDescription" alignment="0" pref="357" max="32767" attributes="1"/>
                       </Group>
                   </Group>
               </Group>
@@ -74,16 +59,12 @@
                   <Component id="jLabelProjectName" alignment="3" min="-2" pref="24" max="-2" attributes="0"/>
                   <Component id="jTextFieldProjectFolder" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
-              <Component id="jLabelServiceAssembly" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jLabelServiceAssemblyDescription" alignment="3" min="-2" pref="14" max="-2" attributes="0"/>
+                  <Component id="jLabelServiceAssemblyDescription" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jTextFieldServiceAssemblyDescription" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jLabelServiceUnit" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabelServiceUnitDescription" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jTextFieldServiceUnitDescription" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -108,13 +89,11 @@
           <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_ProjectFolder_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabelServiceAssembly">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_AssemblyUnit_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="ACS_PROJECT_FOLDER" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
-      </Properties>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabelServiceAssemblyDescription">
       <Properties>
@@ -125,23 +104,16 @@
           <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_AssemblyUnitDescription_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="ACS_SA_DESCRIPTION" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="jTextFieldServiceAssemblyDescription">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="ACS_CustomizeGeneral_AssemblyUnitDescription_A11YDesc" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="jLabelServiceUnit">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_ApplicationSubAssembly_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_ApplicationSubAssembly_JLabel" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
     </Component>
@@ -154,6 +126,11 @@
           <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="LBL_CustomizeGeneral_ApplicationSubAssemblyDescription_JLabel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="ACS_DEFAULT_SU_DESCRIPTION" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="jTextFieldServiceUnitDescription">
       <AccessibilityProperties>
@@ -163,6 +140,9 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="jTextFieldProjectFolder">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
@@ -178,6 +158,11 @@
           <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="TXT_Encoding" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle.properties" key="ACS_ENCODING" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboBoxEncoding">
       <Properties>

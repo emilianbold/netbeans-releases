@@ -158,7 +158,7 @@ public class CustomizerJarContent extends JPanel
                     .add(layout.createSequentialGroup()
                         .add(jLabelFileName)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextFieldFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 495, Short.MAX_VALUE)))
+                        .add(jTextFieldFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -189,7 +189,9 @@ public class CustomizerJarContent extends JPanel
                 .addContainerGap())
         );
 
+        jLabelFileName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_SERVICE_ASSEMBLY_BUILD_ARTIFACT")); // NOI18N
         jTextFieldFileName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJarContent.class).getString("ACS_CustomizeWAR_FileName_A11YDesc")); // NOI18N
+        jLabelExContent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_TARGET_COMPONENT_LIST")); // NOI18N
         jButtonUpdateComponents.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddFilter_A11YDesc")); // NOI18N
         jButtonAddProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddProject_A11YDesc")); // NOI18N
         jButtonRemoveProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AdditionalRemove_A11YDesc")); // NOI18N

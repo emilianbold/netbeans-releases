@@ -197,10 +197,8 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
     private void initComponents() {
 
         jLabelProjectName = new javax.swing.JLabel();
-        jLabelServiceAssembly = new javax.swing.JLabel();
         jLabelServiceAssemblyDescription = new javax.swing.JLabel();
         jTextFieldServiceAssemblyDescription = new javax.swing.JTextField();
-        jLabelServiceUnit = new javax.swing.JLabel();
         jLabelServiceUnitDescription = new javax.swing.JLabel();
         jTextFieldServiceUnitDescription = new javax.swing.JTextField();
         jTextFieldProjectFolder = new javax.swing.JTextField();
@@ -213,15 +211,13 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
         jLabelProjectName.setLabelFor(jTextFieldProjectFolder);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelProjectName, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ProjectFolder_JLabel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelServiceAssembly, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_AssemblyUnit_JLabel")); // NOI18N
-
         jLabelServiceAssemblyDescription.setLabelFor(jTextFieldServiceAssemblyDescription);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelServiceAssemblyDescription, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_AssemblyUnitDescription_JLabel")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelServiceUnit, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ApplicationSubAssembly_JLabel")); // NOI18N
-
         jLabelServiceUnitDescription.setLabelFor(jTextFieldServiceUnitDescription);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelServiceUnitDescription, org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "LBL_CustomizeGeneral_ApplicationSubAssemblyDescription_JLabel")); // NOI18N
+
+        jTextFieldProjectFolder.setEditable(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "jLabel1");
 
@@ -235,35 +231,24 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
+                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(30, 30, 30)
-                        .add(jLabelServiceAssemblyDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 83, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabelServiceAssemblyDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 151, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(jLabelProjectName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(8, 8, 8)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
+                            .add(jTextFieldServiceAssemblyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabelServiceUnitDescription)
+                            .add(jLabel2))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextFieldServiceAssemblyDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabelServiceAssembly, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(layout.createSequentialGroup()
-                                .add(jLabelProjectName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 87, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(18, 18, 18)
-                                .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))))
-                    .add(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .add(jLabelServiceUnit, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 241, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(30, 30, 30)
-                                .add(jLabelServiceUnitDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 83, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                            .add(layout.createSequentialGroup()
-                                .addContainerGap()
-                                .add(jLabel2)))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jComboBoxEncoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 195, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                            .add(jTextFieldServiceUnitDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE))))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jComboBoxEncoding, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 189, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                            .add(org.jdesktop.layout.GroupLayout.LEADING, jTextFieldServiceUnitDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -273,15 +258,11 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelProjectName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jTextFieldProjectFolder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(11, 11, 11)
-                .add(jLabelServiceAssembly)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelServiceAssemblyDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 14, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabelServiceAssemblyDescription)
                     .add(jTextFieldServiceAssemblyDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(jLabelServiceUnit)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabelServiceUnitDescription)
                     .add(jTextFieldServiceUnitDescription, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -292,10 +273,13 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
                 .addContainerGap(18, Short.MAX_VALUE))
         );
 
+        jLabelProjectName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACS_PROJECT_FOLDER")); // NOI18N
+        jLabelServiceAssemblyDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACS_SA_DESCRIPTION")); // NOI18N
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/compapp/projects/jbi/ui/customizer/Bundle"); // NOI18N
         jTextFieldServiceAssemblyDescription.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeGeneral_AssemblyUnitDescription_A11YDesc")); // NOI18N
-        jLabelServiceUnit.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(CustomizerGeneral.class).getString("LBL_CustomizeGeneral_ApplicationSubAssembly_JLabel")); // NOI18N
+        jLabelServiceUnitDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACS_DEFAULT_SU_DESCRIPTION")); // NOI18N
         jTextFieldServiceUnitDescription.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_CustomizeGeneral_ApplicationSubAssemblyDescription_A11YDesc")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerGeneral.class, "ACS_ENCODING")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -303,9 +287,7 @@ public class CustomizerGeneral extends JPanel implements JbiJarCustomizer.Panel,
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabelProjectName;
-    private javax.swing.JLabel jLabelServiceAssembly;
     private javax.swing.JLabel jLabelServiceAssemblyDescription;
-    private javax.swing.JLabel jLabelServiceUnit;
     private javax.swing.JLabel jLabelServiceUnitDescription;
     private javax.swing.JTextField jTextFieldProjectFolder;
     private javax.swing.JTextField jTextFieldServiceAssemblyDescription;
