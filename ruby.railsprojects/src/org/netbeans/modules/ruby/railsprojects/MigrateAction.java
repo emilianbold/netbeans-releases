@@ -304,12 +304,12 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
             //            
             File pwd = FileUtil.toFile(project.getProjectDirectory());
 
+            RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+            rake.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
             if (version == -1) {
                 // Run to the current migration
-                RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
                 rake.runRake(pwd, null, displayName, fileLocator, true, "db:migrate"); // NOI18N
             } else {
-                RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
                 rake.runRake(pwd, null, displayName, fileLocator, true, "db:migrate", // NOI18N
                     "VERSION=" + Integer.toString(version)); // NOI18N
             }

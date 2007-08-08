@@ -406,6 +406,7 @@ public class RubyActionProvider implements ActionProvider {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
                 RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+                rake.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
                 rake.runRake(null, file, file.getName(), new RubyFileLocator(context, project), true);
                 return;
             }
@@ -414,6 +415,7 @@ public class RubyActionProvider implements ActionProvider {
             if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
+                rspec.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
                 rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
                         COMMAND_DEBUG_SINGLE.equals(command));
                 return;
@@ -545,8 +547,10 @@ public class RubyActionProvider implements ActionProvider {
         
         if (COMMAND_AUTOTEST.equals(command)) {
             if (AutoTestSupport.isInstalled()) {
-                new AutoTestSupport(context, project, 
-                        project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING)).start();
+                AutoTestSupport support = new AutoTestSupport(context, project, 
+                        project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
+                support.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
+                support.start();
             }
             
             return;
@@ -575,6 +579,7 @@ public class RubyActionProvider implements ActionProvider {
 
             RSpecSupport rspec = new RSpecSupport(project.getProjectDirectory(), project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING));
             if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
+                rspec.setClassPath(project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH));
                 rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context, project), true,
                        isDebug);
                 return;

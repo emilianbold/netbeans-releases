@@ -45,10 +45,16 @@ public class RSpecSupport {
     private static final String RSPEC_GEM_NAME = "rspec"; // NOI18N
     private FileObject projectDir;
     private String charsetName;
+    private String classPath;
 
     public RSpecSupport(FileObject projectDir, String charsetName) {
         this.projectDir = projectDir;
         this.charsetName = charsetName;
+    }
+    
+    /** Extra class path to be used in case the execution process is a VM */
+    public void setClassPath(String classPath) {
+        this.classPath = classPath;
     }
     
     public boolean isRSpecInstalled() {
@@ -170,6 +176,7 @@ public class RSpecSupport {
 
         desc.debug(debug);
         desc.allowInput();
+        desc.classPath(classPath); // Applies only to JRuby
         desc.fileLocator(fileLocator);
         desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
         desc.addOutputRecognizer(new TestNotifier());

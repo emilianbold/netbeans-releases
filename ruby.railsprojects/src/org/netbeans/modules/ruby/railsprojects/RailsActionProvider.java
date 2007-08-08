@@ -200,6 +200,7 @@ public class RailsActionProvider implements ActionProvider {
             // Save all files first
             LifecycleManager.getDefault().saveAll();
             RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+            rake.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
             rake.setTest(true);
             File pwd = FileUtil.toFile(project.getProjectDirectory());
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "Tests");
@@ -229,6 +230,7 @@ public class RailsActionProvider implements ActionProvider {
             RSpecSupport rspec = new RSpecSupport(project.getProjectDirectory(),
                     project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
             if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
+                rspec.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
                 rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context), true, isDebug);
                 return;
             }
@@ -249,6 +251,7 @@ public class RailsActionProvider implements ActionProvider {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
                 RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+                rake.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
                 rake.runRake(null, file, file.getName(), new RubyFileLocator(context), true);
                 return;
             }
@@ -258,6 +261,7 @@ public class RailsActionProvider implements ActionProvider {
             if (rspec.isRSpecInstalled() && rspec.isSpecFile(file)) {
                 // Save all files first - this rake file could be accessing other files
                 LifecycleManager.getDefault().saveAll();
+                rspec.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
                 rspec.runRSpec(null, file, file.getName(), new RubyFileLocator(context), true, debugSingleCommand);
                 return;
             }
@@ -268,6 +272,7 @@ public class RailsActionProvider implements ActionProvider {
                 String name = file.getName();
                 String version = Integer.toString(Integer.parseInt(name.substring(0, 3)));
                 RakeSupport rake = new RakeSupport(project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+                rake.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
                 rake.runRake(null, file, file.getName(), new RubyFileLocator(context), true, "db:migrate", "VERSION=" + version); // NOI18N
                 return;
             }
@@ -452,8 +457,10 @@ public class RailsActionProvider implements ActionProvider {
 
         if (COMMAND_AUTOTEST.equals(command)) {
             if (AutoTestSupport.isInstalled()) {
-                new AutoTestSupport(context, project,
-                        project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)).start();
+                AutoTestSupport support = new AutoTestSupport(context, project,
+                        project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+                support.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
+                support.start();
             }
             
             return;

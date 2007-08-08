@@ -670,6 +670,8 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
             // XXX TODO - how do we obtain the target name now?
             String charsetName = null;
             RakeSupport rake = new RakeSupport(charsetName);
+            // TODO - set class path?
+
             String targetName = target.getTarget();
 
             if (targetName != null && (targetName.equals("test") || targetName.startsWith("test:"))) { // NOI18N

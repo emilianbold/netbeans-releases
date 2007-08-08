@@ -37,6 +37,7 @@ public class AutoTestSupport {
     private Project project;
     private Lookup context;
     private String charsetName;
+    private String classPath;
 
     public AutoTestSupport(Lookup context, Project project, String charsetName) {
         this.context = context;
@@ -44,6 +45,11 @@ public class AutoTestSupport {
         this.charsetName = charsetName;
     }
 
+    /** Extra class path to be used in case the execution process is a VM */
+    public void setClassPath(String classPath) {
+        this.classPath = classPath;
+    }
+    
     public static boolean isInstalled() {
         return RubyInstallation.getInstance().isValidAutoTest(false);
     }
@@ -67,6 +73,7 @@ public class AutoTestSupport {
         ExecutionDescriptor desc = new ExecutionDescriptor(displayName, pwd, RubyInstallation.getInstance().getAutoTest());
         desc.additionalArgs("-v"); // NOI18N
         desc.fileLocator(fileLocator);
+        desc.classPath(classPath); // Applies only to JRuby
         desc.showProgress(false);
         desc.addOutputRecognizer(new TestNotifier());
         desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);

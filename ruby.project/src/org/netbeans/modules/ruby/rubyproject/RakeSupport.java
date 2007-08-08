@@ -38,9 +38,15 @@ import org.openide.filesystems.FileUtil;
 public class RakeSupport {
     private String charsetName;
     private boolean test;
-    
+    private String classPath;
+
     public RakeSupport(String charsetName) {
         this.charsetName = charsetName;
+    }
+    
+    /** Extra class path to be used in case the execution process is a VM */
+    public void setClassPath(String classPath) {
+        this.classPath = classPath;
     }
     
     /**
@@ -120,6 +126,7 @@ public class RakeSupport {
         }
 
         desc.allowInput();
+        desc.classPath(classPath); // Applies only to JRuby
         desc.fileLocator(fileLocator);
         desc.addOutputRecognizer(RubyExecution.RUBY_COMPILER);
         desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
