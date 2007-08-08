@@ -37,6 +37,6 @@ public interface PropertyModifier {
      * @return <code>true</code> if some properties were removed/added,
      * returns <code>false</code> otherwise.
      */
-    boolean modifyProperties(RADComponent metacomp, List prefProps, List normalProps, List expertProps);
+    boolean modifyProperties(RADComponent metacomp, List<FormProperty> prefProps, List<FormProperty> normalProps, List<FormProperty> expertProps);
     
 }

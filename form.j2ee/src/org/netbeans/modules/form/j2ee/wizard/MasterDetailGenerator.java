@@ -457,7 +457,7 @@ public class MasterDetailGenerator {
      * @return map of general replacements.
      */
     private Map<String,String> replacements() {
-        Map map = new HashMap();
+        Map<String,String> map = new HashMap<String,String>();
         map.put("_masterClass_", masterClass); // NOI18N
         map.put("_masterEntity_", masterEntity); // NOI18N
         char masterInitial = Character.toLowerCase(masterEntity.charAt(0));

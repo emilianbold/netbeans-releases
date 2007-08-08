@@ -210,7 +210,7 @@ public class DBColumnDrop extends DBConnectionDrop {
                                 if (javax.swing.JTable.class.isAssignableFrom(tableCand.getBeanClass())) {
                                     BindingProperty prop = tableCand.getBindingProperty("elements"); // NOI18N
                                     if (prop != null) {
-                                        MetaBinding binding = (MetaBinding)prop.getValue();
+                                        MetaBinding binding = prop.getValue();
                                         if (binding.getSource() == component) {
                                             metaTable = tableCand;
                                         }
@@ -226,7 +226,7 @@ public class DBColumnDrop extends DBConnectionDrop {
             MetaBinding binding;
             if (metaTable == null) {
                 RADComponent metaEntity = null;
-                Class entityClass = ClassPathUtils.loadClass(entityInfo[1], formFile); // NOI18N
+                Class<?> entityClass = ClassPathUtils.loadClass(entityInfo[1], formFile); // NOI18N
                 for (RADComponent component : model.getAllComponents()) {
                     if (entityClass.equals(component.getBeanClass())) {
                         metaEntity = component;
@@ -235,7 +235,7 @@ public class DBColumnDrop extends DBConnectionDrop {
 
                 if (metaEntity == null) {
                     RADComponent metaQuery = new RADComponent();
-                    Class queryClass = ClassPathUtils.loadClass("javax.persistence.Query", formFile); // NOI18N
+                    Class<?> queryClass = ClassPathUtils.loadClass("javax.persistence.Query", formFile); // NOI18N
                     metaQuery.initialize(model);
                     metaQuery.initInstance(queryClass);
                     metaQuery.getPropertyByName("entityManager").setValue(entityManager); // NOI18N

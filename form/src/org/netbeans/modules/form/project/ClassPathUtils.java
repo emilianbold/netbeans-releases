@@ -59,7 +59,7 @@ public class ClassPathUtils {
      * project's execution classpath unless it is a basic JDK class, or a class
      * registred as a support (system) class.
      */
-    public static Class loadClass(String name, FileObject fileInProject)
+    public static Class<?> loadClass(String name, FileObject fileInProject)
         throws ClassNotFoundException
     {
         return Class.forName(name, true, getFormClassLoader(fileInProject));

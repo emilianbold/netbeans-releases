@@ -319,7 +319,7 @@ public class J2EEUtils {
     public static RADComponent createEntityManager(FormModel model, String puName) throws Exception {
         assert EventQueue.isDispatchThread();
         FileObject formFile = FormEditor.getFormDataObject(model).getFormFile();
-        Class emClass = ClassPathUtils.loadClass("javax.persistence.EntityManager", formFile); // NOI18N
+        Class<?> emClass = ClassPathUtils.loadClass("javax.persistence.EntityManager", formFile); // NOI18N
         RADComponent entityManager = new RADComponent();
         entityManager.initialize(model);
         entityManager.initInstance(emClass);
@@ -382,7 +382,7 @@ public class J2EEUtils {
      * of the entity classes for related tables (if <code>relatedTableNames</code>
      * parameter was non-<code>null</code>).
      */
-    private static String[] generateEntityClass(final Project project, SourceGroup location, String packageName, DatabaseConnection dbconn, List tableNames, PersistenceUnit unit) {
+    private static String[] generateEntityClass(final Project project, SourceGroup location, String packageName, DatabaseConnection dbconn, List<String> tableNames, PersistenceUnit unit) {
         try {
             EntitiesFromDBGenerator generator = new EntitiesFromDBGenerator(tableNames, true, packageName, location, dbconn, project, unit);
             // PENDING
@@ -679,7 +679,7 @@ public class J2EEUtils {
                         TypeElement transientElement = wc.getElements().getTypeElement("javax.persistence.Transient"); // NOI18N
                         TypeMirror transientMirror = transientElement.asType();
                         Tree transientType = make.Type(transientMirror);
-                        AnnotationTree transientTree = make.Annotation(transientType , Collections.EMPTY_LIST);
+                        AnnotationTree transientTree = make.Annotation(transientType, Collections.EMPTY_LIST);
                         ModifiersTree modifiers = make.Modifiers(Modifier.PRIVATE, Collections.singletonList(transientTree));
                         TypeElement changeSupportElement = wc.getElements().getTypeElement("java.beans.PropertyChangeSupport"); // NOI18N
                         TypeMirror changeSupportMirror = changeSupportElement.asType();

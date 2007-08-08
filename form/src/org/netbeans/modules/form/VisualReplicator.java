@@ -32,7 +32,6 @@ import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.netbeans.modules.form.layoutsupport.*;
-//import org.netbeans.modules.form.layoutdesign.LayoutDesigner.VisualMapper;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 
 /**
@@ -48,15 +47,14 @@ import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
  * @author Tomas Pavek
  */
 
-public class VisualReplicator { //implements VisualMapper
+public class VisualReplicator {
 
-//    Object topClonedComponent;
     private RADComponent topMetaComponent;
 
-    private Map idToClone = new HashMap();
-    private Map cloneToId = new HashMap();
+    private Map<String,Object> idToClone = new HashMap<String,Object>();
+    private Map<Object,String> cloneToId = new HashMap<Object,String>();
 
-    private Map layoutBuilders = new HashMap();
+    private Map<String,SwingLayoutBuilder> layoutBuilders = new HashMap<String,SwingLayoutBuilder>();
 
     private BindingContext bindingContext;
     private BindingDesignSupport bindingSupport;
@@ -87,10 +85,10 @@ public class VisualReplicator { //implements VisualMapper
     }
 
     public String getClonedComponentId(Object component) {
-        return (String) cloneToId.get(component);
+        return cloneToId.get(component);
     }
 
-    public Map getMapToClones() {
+    public Map<String,Object> getMapToClones() {
         return Collections.unmodifiableMap(idToClone);
     }
 
@@ -101,7 +99,7 @@ public class VisualReplicator { //implements VisualMapper
     }
 
     SwingLayoutBuilder getLayoutBuilder(String containerId) {
-        SwingLayoutBuilder builder = (SwingLayoutBuilder) layoutBuilders.get(containerId);
+        SwingLayoutBuilder builder = layoutBuilders.get(containerId);
         if (builder == null) {
             RADVisualContainer metacont = (RADVisualContainer)
                 getFormModel().getMetaComponent(containerId);
@@ -127,16 +125,11 @@ public class VisualReplicator { //implements VisualMapper
     // ---------
     // getters & setters
 
-//    public Object getTopClonedComponent() {
-//        return topClonedComponent;
-//    }
-
     public RADComponent getTopMetaComponent() {
         return topMetaComponent;
     }
 
     public void setTopMetaComponent(RADComponent metacomponent) {
-//        topClonedComponent = null;
         topMetaComponent = metacomponent;
         idToClone.clear();
         cloneToId.clear();
@@ -170,11 +163,11 @@ public class VisualReplicator { //implements VisualMapper
             if (!relativeProperties.isEmpty())
                 copyRelativeProperties(relativeProperties);
 
-            Map mapToClones = new HashMap(getMapToClones());
+            Map<String,Object> mapToClones = new HashMap<String,Object>(getMapToClones());
             FormModel formModel = getFormModel();
-            Set<Map.Entry> entries = mapToClones.entrySet();
-            for (Map.Entry entry : entries) {
-                String id = (String)entry.getKey();
+            Set<Map.Entry<String,Object>> entries = mapToClones.entrySet();
+            for (Map.Entry<String,Object> entry : entries) {
+                String id = entry.getKey();
                 Object comp = entry.getValue();
                 RADComponent rc = formModel.getMetaComponent(id);
                 if (rc != null && (comp == null || !rc.getBeanClass().isAssignableFrom(comp.getClass()))) {
@@ -184,8 +177,8 @@ public class VisualReplicator { //implements VisualMapper
             }
             BindingContext context = getBindingContext();
             boolean restrictions = getDesignRestrictions();
-            for (Object o : mapToClones.keySet()) {
-                RADComponent comp = formModel.getMetaComponent(o.toString());
+            for (String id : mapToClones.keySet()) {
+                RADComponent comp = formModel.getMetaComponent(id);
                 if (restrictions) { // this is an updated view (designer)
                     bindingSupport.establishUpdatedBindings(
                             comp, false, mapToClones, context, false);

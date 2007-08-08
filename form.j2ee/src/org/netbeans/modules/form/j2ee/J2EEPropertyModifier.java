@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.form.ComponentChooserEditor;
 import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormProperty;
 import org.netbeans.modules.form.PropertyModifier;
 import org.netbeans.modules.form.RADComponent;
 import org.netbeans.modules.form.RADProperty;
@@ -55,7 +56,7 @@ public class J2EEPropertyModifier implements PropertyModifier {
      * @return <code>true</code> if some properties were removed/added,
      * returns <code>false</code> otherwise.
      */
-    public boolean modifyProperties(RADComponent metacomp, List prefProps, List normalProps, List expertProps) {
+    public boolean modifyProperties(RADComponent metacomp, List<FormProperty> prefProps, List<FormProperty> normalProps, List<FormProperty> expertProps) {
         String className = metacomp.getBeanClass().getName();
         if (className.equals("javax.persistence.EntityManager")) { // NOI18N
             prefProps.clear();
@@ -553,11 +554,11 @@ public class J2EEPropertyModifier implements PropertyModifier {
         public String[] getTags() {
             // Remove <none> (= null)
             String[] superTags = super.getTags();
-            List tags = new LinkedList();
+            List<String> tags = new LinkedList<String>();
             tags.addAll(Arrays.asList(superTags));
             String none = noneString();
             tags.remove(none);
-            return (String[])tags.toArray(new String[tags.size()]);
+            return tags.toArray(new String[tags.size()]);
         }
     }
 

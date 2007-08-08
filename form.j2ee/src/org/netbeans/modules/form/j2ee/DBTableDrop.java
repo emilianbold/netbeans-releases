@@ -221,7 +221,7 @@ public class DBTableDrop extends DBConnectionDrop {
     public static RADComponent createQueryBean(FormModel model, RADComponent entityManager, String entityName) throws Exception {
         RADComponent query = new RADComponent();
         FileObject formFile = FormEditor.getFormDataObject(model).getFormFile();
-        Class queryClass = ClassPathUtils.loadClass("javax.persistence.Query", formFile); // NOI18N
+        Class<?> queryClass = ClassPathUtils.loadClass("javax.persistence.Query", formFile); // NOI18N
 
         query.initialize(model);
         query.initInstance(queryClass);
