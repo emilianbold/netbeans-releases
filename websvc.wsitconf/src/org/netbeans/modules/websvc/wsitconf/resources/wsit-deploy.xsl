@@ -57,7 +57,7 @@ introduced by support for multiple source roots. -jglick
 
             <target name="-post-run-deploy" depends="-wsit-init">
                 <echo file="nbproject/wsit.properties" >AS_ADMIN_USERPASSWORD=changeit</echo>
-                <exec executable="${{sjsas.root}}/bin/asadmin">
+                <exec executable="${{sjsas.root}}/bin/asadmin" failonerror="false" failifexecutionfails="false">
                     <arg value="create-file-user"/>
                     <arg value="--passwordfile"/>
                     <arg value="nbproject/wsit.properties"/>
