@@ -92,8 +92,6 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
             return;
         
         String body = pane.getTrimmedDocumentation();
-        if ("".equals(body))
-            return;
         
         if (current != null)
         {
