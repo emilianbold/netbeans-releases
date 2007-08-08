@@ -129,9 +129,9 @@ public final class MidpProjectSupport {
      * Returns a Map keyed by a FileObject matching the relative resource path
      * while the value is the FileObject representing the classpath root containing
      * the key FileObject.
-     * @param document 
+     * @param document the document
      * @param relativeResourcePath as seen from a MIDlet prespective must start with
-     * @return 
+     * @return a map of found file-objects
      */
     public static Map<FileObject, FileObject> getFileObjectsForRelativeResourcePath(DesignDocument document, String relativeResourcePath) {
         assert (document != null);
@@ -146,7 +146,7 @@ public final class MidpProjectSupport {
         DataObjectContext context = ProjectUtils.getDataObjectContextForDocument(document);
         // document is not leaded yet
         if (context == null) {
-            return Collections.EMPTY_MAP;
+            return Collections.emptyMap ();
         }
         
         DataObject dataObject = context.getDataObject();
@@ -197,8 +197,8 @@ public final class MidpProjectSupport {
     
     /**
      * Returns a Map of all images in the project keyed by FileObjects with their relative resource paths as values.
-     * @param document 
-     * @return 
+     * @param document the document
+     * @return the map of found file-objects
      */
     public static Map<FileObject, String> getImagesForProject(DesignDocument document, boolean pngOnly) {
         String EXTENSION_JPEG = "jpeg"; // NOI18N
@@ -227,8 +227,8 @@ public final class MidpProjectSupport {
     /**
      * Returns a Map of all files matching any of the provided file edxtensions
      * keyed by FileObjects with their relative resource paths as values.
-     * @param document 
-     * @return 
+     * @param document the document
+     * @return the map of found file-objects
      */
     public static Map<FileObject, String> getAllFilesForProjectByExt(DesignDocument document, Collection<String> fileExtensions) {
         assert (fileExtensions != null);
