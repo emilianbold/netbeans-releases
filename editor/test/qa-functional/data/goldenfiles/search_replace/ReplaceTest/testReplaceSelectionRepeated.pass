@@ -10,10 +10,10 @@ package search_replace.ReplaceTest;
  *
  * @author rs155161
  */
-public class testReplaceSelectionRepeated {
+public class testReplaceSelectionRepeated2 {
     
     /** Creates a new instance of testReplaceSelectionRepeated2 */
-    public testReplaceSelectionRepeated2() {
+    public testReplaceSelectionRepeated() {
     }
     
 }

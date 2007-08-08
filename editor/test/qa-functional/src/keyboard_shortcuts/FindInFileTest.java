@@ -25,6 +25,7 @@ package keyboard_shortcuts;
  */
 
 import java.awt.event.KeyEvent;
+import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -40,9 +41,10 @@ import org.netbeans.jemmy.EventTool;
  */
 public class FindInFileTest extends EditorTestCase {
 
-    private final String dialogTitle = Bundle.getStringTrimmed("org.netbeans.editor.Bundle","find-title"); // Find;
+    //private final String dialogTitle = Bundle.getStringTrimmed("org.netbeans.editor.Bundle","find-title"); // Find;
+    private final String dialogTitle = "Find in Projects";
     private final int keyCode = KeyEvent.VK_F;
-    private final int modifiers = KeyEvent.CTRL_MASK;
+    private final int modifiers = (KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
       
     /** Creates a new instance of Main */
     public FindInFileTest(String testMethodName) {
@@ -57,14 +59,17 @@ public class FindInFileTest extends EditorTestCase {
             EditorOperator editor = getDefaultSampleEditorOperator();
 
             JEditorPaneOperator txtOper = editor.txtEditorPane();
-            txtOper.pushKey(keyCode, modifiers);
-            new EventTool().waitNoEvent(1000);
-            txtOper.pushKey(keyCode, modifiers);
+            txtOper.pushKey(keyCode, modifiers);            
             closeDialog(dialogTitle);
 
         } finally {
             closeFileWithDiscard();
         }
     }
+    
+    public static void main(String[] args) {
+        TestRunner.run(FindInFileTest.class);
+    }
+
     
 }

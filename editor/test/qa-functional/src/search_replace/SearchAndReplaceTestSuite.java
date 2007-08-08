@@ -32,8 +32,8 @@ public class SearchAndReplaceTestSuite extends NbTestSuite {
     public SearchAndReplaceTestSuite() {
         super("Search and Replace");
 
-        addTestSuite(SearchAndReplaceTest.class);
-        addTestSuite(SearchTest.class);
+//        addTestSuite(SearchAndReplaceTest.class);
+//        addTestSuite(SearchTest.class);
         addTestSuite(ReplaceTest.class);
         addTestSuite(IncrementalSearchTest.class);
         
@@ -44,7 +44,7 @@ public class SearchAndReplaceTestSuite extends NbTestSuite {
     }
     
     public static void main(String[] args) {
-        TestRunner.run(new NbTestSuite(SearchAndReplaceTest.class));
+        TestRunner.run(new SearchAndReplaceTestSuite());
     }
 
 

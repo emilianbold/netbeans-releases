@@ -6,71 +6,67 @@ Build|Compile File
   F9
 Edit|<unknown>
   COPY
-  Alt+W
+  Ctrl+C
+  Ctrl+INSERT
 Edit|<unknown>
-  Ctrl+W
   CUT
+  Shift+DELETE
+  Ctrl+X
 Edit|<unknown>
   DELETE
-  Ctrl+D
 Edit|Find Next Occurrence
   F3
-  Alt+S
 Edit|Find Previous Occurrence
   Shift+F3
-  Alt+R
-  Ctrl+R
+Edit|Find Selection
+  Ctrl+F3
 Edit|Find Usages
   Alt+F7
 Edit|Find...
-  Ctrl+S
+  Ctrl+F
   FIND
 Edit|<unknown>
   PASTE
+  Shift+INSERT
+  Ctrl+V
+Edit|<unknown>
   Ctrl+Y
 Edit|<unknown>
-  Alt+Shift+MINUS
-  Ctrl+Shift+Z
-Edit|<unknown>
-  Alt+Shift+5
+  Ctrl+H
 Edit|Start Macro Recording
-  Ctrl+X Shift+9
+  Ctrl+J S
 Edit|Stop Macro Recording
-  Ctrl+X Shift+0
+  Ctrl+J E
 Edit|<unknown>
-  Ctrl+X U
-  Ctrl+SLASH
+  Ctrl+Z
   UNDO
-File|Exit
-  Ctrl+X Ctrl+C
 File|New File...
-  Ctrl+Alt+N
+  Ctrl+N
 File|New Project...
   Ctrl+Shift+N
-  Ctrl+X F
 File|Open File...
-  Ctrl+X Ctrl+F
+  Ctrl+O
 File|Open Project...
   Ctrl+Shift+O
 File|Save
-  Ctrl+X Ctrl+S
-File|Save All
-  Ctrl+X S
+  Ctrl+S
 Go To|Go to Declaration
-  Alt+PERIOD
-  Ctrl+Alt+G
-Go To|<unknown>
   Alt+G
-Go To|Go to Previous Document
-  Ctrl+BACK_QUOTE
+Go To|<unknown>
+  Ctrl+G
+Go To|Go to Source
+  Alt+O
+Go To|Go to Super Implementation
+  Ctrl+B
 Go To|Go to Test
   Ctrl+Shift+T
 Go To|Go to Type...
-  Ctrl+O
+  Alt+Shift+O
+Go To|Goto Javadoc
+  Alt+F1
 Go To|Next Bookmark
   F2
 Go To|Next Error
-  Ctrl+X BACK_QUOTE
   F12
 Go To|Next Inner View
   Alt+Shift+RIGHT
@@ -92,20 +88,28 @@ Go To|Toggle Bookmark
   Ctrl+F2
 Help|Help
   F1
+Other|Back
+  Alt+K
 Other|Cancel Process
   Ctrl+Shift+DELETE
 Other|Check XML
   Alt+F9
-Other|Cut from Insertion Point to Line Begining
-  Alt+0 Ctrl+K
-Other|Cut from Insertion Point to Line End
-  Ctrl+K
+Other|Copy Selection else Line down
+  Ctrl+Shift+DOWN
+Other|Copy Selection else Line up
+  Ctrl+Shift+UP
+Other|Debug Identifier
+  Ctrl+J D
+Other|Delete Line
+  Ctrl+E
 Other|Delete Next Word
-  Alt+D
+  Ctrl+DELETE
+Other|Delete Preceding Characters in Line
+  Ctrl+U
 Other|Delete Previous Character
   BACK_SPACE
+  Shift+BACK_SPACE
 Other|Delete Previous Word
-  Alt+BACK_SPACE
   Ctrl+BACK_SPACE
 Other|Delete Tab
   Shift+TAB
@@ -127,12 +131,16 @@ Other|Extend Selection to End of Document
   Ctrl+Shift+END
 Other|Extend Selection to End of Line
   Shift+END
+Other|Extend Selection to Matching Brace
+  Ctrl+Shift+OPEN_BRACKET
 Other|Extend Selection to Next Page
   Shift+PAGE_DOWN
 Other|Extend Selection to Next Word
   Ctrl+Shift+RIGHT
 Other|Extend Selection to Previous Page
   Shift+PAGE_UP
+Other|Fast Import
+  Alt+Shift+I
 Other|File Hierarchy
   Alt+F12
 Other|File Members
@@ -143,71 +151,79 @@ Other|Find in Projects...
   Ctrl+Shift+F
 Other|Fix Code...
   Alt+ENTER
+Other|Forward
+  Alt+L
 Other|Full Screen
   Alt+Shift+ENTER
 Other|Go to File...
-  Alt+Shift+O
+  Alt+Shift+L
 Other|HTTP Monitor
   Ctrl+Shift+5
 Other|Hierarchy
   Alt+Shift+F12
 Other|Incremental Search Forward
-  Ctrl+S
+  Ctrl+F
   FIND
+Other|Inplace Refactoring
+  Ctrl+R
+Other|Insert Code
+  Alt+INSERT
 Other|Insert Newline
   ENTER
 Other|Insert Tab
-  Ctrl+Q TAB
+  TAB
 Other|Insertion Point Backward
-  Ctrl+B
   LEFT
   KP_LEFT
 Other|Insertion Point Down
-  Ctrl+N
   DOWN
   KP_DOWN
 Other|Insertion Point Forward
-  Ctrl+F
   RIGHT
+  KP_RIGHT
 Other|Insertion Point Up
-  Ctrl+P
   KP_UP
   UP
 Other|Insertion Point to Beginning of Document
   Ctrl+HOME
-  Alt+Shift+COMMA
-  ESCAPE Shift+COMMA
-Other|Insertion Point to Beginning of Line
-  Ctrl+A
 Other|Insertion Point to Beginning of Text on Line
   HOME
 Other|Insertion Point to End of Document
-  Alt+Shift+PERIOD
   Ctrl+END
-  ESCAPE Shift+PERIOD
 Other|Insertion Point to End of Line
   END
-  Ctrl+E
+Other|Insertion Point to End of Word
+  Alt+U E
+Other|Insertion Point to Matching Brace
+  Ctrl+OPEN_BRACKET
 Other|Insertion Point to Next Word
   Ctrl+RIGHT
-  Alt+F
 Other|Insertion Point to Previous Word
-  Alt+B
   Ctrl+LEFT
 Other|Javadoc Index Search
   Shift+F1
+Other|Last edit
+  Ctrl+Q
 Other|Members
   Ctrl+Shift+F12
 Other|Modify Profiling Session...
   Alt+Shift+F2
+Other|Move Insertion Point to Bottom
+  Alt+Shift+B
+Other|Move Insertion Point to Center
+  Alt+Shift+M
+Other|Move Insertion Point to Top
+  Alt+Shift+T
+Other|Move Selection else Line down
+  Alt+DOWN
+Other|Move Selection else Line up
+  Alt+UP
 Other|Page Down
   PAGE_DOWN
-  Ctrl+V
 Other|Page Up
   PAGE_UP
-  Alt+V
-Other|Re-indent Current Line or Selection
-  TAB
+Other|Paste Formatted
+  Ctrl+Shift+V
 Other|Reload Form
   Ctrl+Shift+R
 Other|Replace Variable With its Getter
@@ -224,27 +240,36 @@ Other|Run SQL
   Ctrl+Shift+E
 Other|Scroll Down
   Ctrl+UP
+Other|Scroll Insertion Point to Bottom
+  Alt+U B
 Other|Scroll Insertion Point to Center
-  Ctrl+U Ctrl+L
+  Alt+U M
+Other|Scroll Insertion Point to Top
+  Alt+U T
 Other|Scroll Up
   Ctrl+DOWN
 Other|Select All
-  Ctrl+X H
-Other|Select Word
-  Ctrl+Alt+W
+  Ctrl+A
+Other|Select Identifier
+  Alt+J
+Other|Select Next Element
+  Alt+Shift+UP
+Other|Select Previous Element
+  Alt+Shift+DOWN
 Other|Set Request Parameters...
   Ctrl+Q
 Other|Show All Code Completion Popup
   Ctrl+Alt+SPACE
+  Ctrl+Alt+BACK_SLASH
 Other|Show Code Completion Popup
   Ctrl+BACK_SLASH
   Ctrl+SPACE
 Other|Show Code Completion Tip Popup
-  Alt+P
+  Ctrl+P
 Other|Show Documentation Popup
   Ctrl+Shift+SPACE
+  Ctrl+Shift+BACK_SLASH
 Other|<unknown>
-  CONTEXT_MENU
   Shift+F10
 Other|Split Line
   Ctrl+ENTER
@@ -252,16 +277,16 @@ Other|Start New Line
   Shift+ENTER
 Other|Step Over Expression
   Shift+F8
-Other|Switch Capitalization of Identifier
-  Alt+C
+Other|Switch Case
+  Alt+U R
 Other|Take Snapshot of Collected Results
   Ctrl+F2
-Other|Test Project
-  Alt+F6
 Other|To Lowercase
-  Ctrl+X Ctrl+L
+  Alt+U L
 Other|To Uppercase
-  Ctrl+X Ctrl+U
+  Alt+U U
+Other|Toggle Highlight Search
+  Alt+Shift+H
 Other|Toggle Typing Mode
   INSERT
 Other|Undock Window
@@ -309,24 +334,27 @@ Run|Test File
 Run|Toggle Line Breakpoint
   Ctrl+F8
 Source|Comment
-  Ctrl+C Ctrl+C
+  Ctrl+Shift+T
 Source|Fix Imports
   Alt+Shift+F
 Source|Next Matching Word
-  Alt+SLASH
+  Ctrl+L
+Source|Previous Matching Word
+  Ctrl+K
 Source|Reformat Code
-  Ctrl+Alt+BACK_SLASH
+  Ctrl+Shift+F
 Source|Shift Line Left
-  Alt+0 Ctrl+X TAB
+  Ctrl+D
 Source|Shift Line Right
-  Ctrl+X TAB
+  Ctrl+T
 Source|Uncomment
-  Alt+0 Ctrl+C Ctrl+C
+  Ctrl+Shift+D
 Tools|Create JUnit Tests
   Ctrl+Shift+U
 Tools|Insert Internationalized String...
   Ctrl+Shift+J
 View|Collapse All
+  Ctrl+Shift+MINUS
   Ctrl+Shift+SUBTRACT
 View|Collapse Fold
   Ctrl+MINUS
@@ -348,12 +376,10 @@ Window|Classes
 Window|Close All Documents
   Ctrl+Shift+F4
 Window|Close Window
-  Ctrl+X Ctrl+K
-  Ctrl+X K
+  Ctrl+W
   Ctrl+F4
 Window|Documents...
   Shift+F4
-  Ctrl+X B
 Window|Editor
   Ctrl+0
 Window|Favorites
@@ -364,7 +390,6 @@ Window|Local Variables
   Alt+Shift+1
 Window|Maximize Window
   Shift+ESCAPE
-  Ctrl+X 1
 Window|Navigator
   Ctrl+7
 Window|Output

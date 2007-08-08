@@ -38,27 +38,17 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="keyboard_shortcuts/*Test.class"/>
                 <include name="general/*Test.class"/>
-                <include name="popup_menus/MainMenuTest.class"/>
-                <include name="search_replace/SearchAndReplaceTest.class/"/>
-                <exclude name="search_replace/SearchAndReplaceTest.class/testSearch2"/>
+                <include name="popup_menus/MainMenuTest.class"/>                
+                <include name="search_replace/SearchAndReplaceTestSuite.class"/>
                 <include name="org/netbeans/test/editor/formatting/*.class"/>            
+                <exclude name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat"/>
                 <exclude name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>
 		<!-- Removing, fails on 1.5.0_12 for some strange reason -->
                 <!-- <include name="org/netbeans/test/editor/suites/abbrevs/AbbreviationsAddRemovePerformer.class"/>  -->
             </patternset>
         </testset>
     </testbag>
-    
-    <!-- Test currently failing -->
-    <testbag testattribs="failing" name="Test failing due to known bug">
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/test/editor/formatting/BasicTest.class/testReformat2"/>
-                <include name="org/netbeans/test/editor/suites/keybindings/KeyMapTest.class/testProfileRestore"/>            
-            </patternset>
-        </testset>
-    </testbag>
-    
+        
     <!-- Other tests & misc. -->
     <testbag testattribs="others,all" name="Others tests">
         <testset dir="qa-functional/src">

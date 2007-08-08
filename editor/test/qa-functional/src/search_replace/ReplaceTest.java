@@ -22,6 +22,7 @@ package search_replace;
 import java.awt.Component;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import junit.textui.TestRunner;
 import lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.HelpOperator;
@@ -55,9 +56,9 @@ public class ReplaceTest extends EditorTestCase {
     
     private void openReplaceDialog() {
         MainWindowOperator mwo = MainWindowOperator.getDefault();
-        mwo.pushKey(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK);
-        new EventTool().waitNoEvent(100);
-        mwo.pushKey(KeyEvent.VK_ESCAPE);
+        //mwo.pushKey(KeyEvent.VK_E, KeyEvent.ALT_DOWN_MASK);
+        //new EventTool().waitNoEvent(100);
+        //mwo.pushKey(KeyEvent.VK_ESCAPE);
         new ReplaceAction().perform();
     }
     
@@ -125,7 +126,7 @@ public class ReplaceTest extends EditorTestCase {
             replace.close();
             // check status bar
             log(editor.lblStatusBar().getText());
-            waitForLabel("'testReplaceSelectionRepeated' found at 16:12");
+            waitForLabel("'testReplaceSelectionRepeated' found at 15:35");
             
             // choose the "testReplaceSelectionRepeated" word
             editor.select(15, 35, 62);
@@ -138,8 +139,12 @@ public class ReplaceTest extends EditorTestCase {
             new EventTool().waitNoEvent(REPLACE_TIMEOUT);
             replace2.close();
             // check status bar
-            waitForLabel("'testReplaceSelectionRepeated' found at 2:4; End of document reached. "
-                    +"Continuing search from beginning.");
+            waitForLabel("'testReplaceSelectionRepeated' found at 16:12");
+            
+            
+            
+            //waitForLabel("'testReplaceSelectionRepeated' found at 2:4; End of document reached. "
+            //        +"Continuing search from beginning.");
             
             ref(editor.getText());
             compareReferenceFiles();
@@ -400,4 +405,9 @@ public class ReplaceTest extends EditorTestCase {
         }
     }
     
+    
+    public static void main(String[] args) {
+        TestRunner.run(ReplaceTest.class);
+    }
+
 }

@@ -23,6 +23,10 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import javax.swing.ListModel;
 import javax.swing.tree.TreePath;
 import junit.textui.TestRunner;
@@ -62,6 +66,8 @@ public class KeyMapTest extends JellyTestCase{
     private static String[] exceptions = {};
     
     private static String[] exceptionsNetBeans = {"Go To|Go to Previous Document"};
+    
+    private static String[] exceptionsNetBeans55 = {"Go To|Go to Previous Document"};
     
     private static String[] exceptionsEmacs = {};
     
@@ -110,9 +116,7 @@ public class KeyMapTest extends JellyTestCase{
     }
     
     private String lastVisitedCategory = "n/a";
-    
-    
-    
+            
     private boolean dumpException(String path) {
         for (int i = 0; i < exceptions.length; i++) {
             String string = exceptions[i];
@@ -121,8 +125,12 @@ public class KeyMapTest extends JellyTestCase{
         return false;
         
     }
+        
     
     private void dump(String path, JTreeOperator tree,KeyMapOperator kmo) {
+        Map<String,String> usedShortcuts = new HashMap<String, String>(); //used shortcuts <shortcut, action>
+        List<String> duplicates = new LinkedList<String>();    // list of dupes        
+        
         int rows = tree.getRowCount();
         for (int i = rows-1; i >= 0; i--) {
             tree.expandRow(i);
@@ -145,17 +153,27 @@ public class KeyMapTest extends JellyTestCase{
                 if(o.toString().startsWith("CompountAction")) {
                     name = getCompountActionName(o.toString());
                 }
-                JListOperator shortcuts = kmo.shortcuts();
-                ListModel model = shortcuts.getModel();
-                
-                if(model.getSize()>0 && !dumpException(lastVisitedCategory+"|"+name)) {
-                    getRef().println(lastVisitedCategory+"|"+name);
+                ListModel model = kmo.shortcuts().getModel();                
+                if (model.getSize() > 0 && !dumpException(lastVisitedCategory + "|" + name)) {
+                    getRef().println(lastVisitedCategory + "|" + name); //log acition name
+                    for (int j = 0; j < model.getSize(); j++) {
+                        String shortcut = model.getElementAt(j).toString();
+                        getRef().println("  " + shortcut); //log shortcut
+                        if (usedShortcuts.get(shortcut) != null) {
+                            duplicates.add(shortcut + " " + usedShortcuts.get(shortcut));
+                            duplicates.add(shortcut + " " + lastVisitedCategory + "|" + name);
+                        } else {
+                            usedShortcuts.put(shortcut, lastVisitedCategory + "|" + name);
+                        }
+                    }
                 }
-                for (int j = 0; j < model.getSize(); j++) {
-                    getRef().println("  "+model.getElementAt(j));
-                }
-                
+            }            
+        }
+        if(!duplicates.isEmpty()) {            
+            for (String dup : duplicates) {
+                getLog().println(dup);
             }
+            //fail("Keymap contains multiple action for the same shortcut"); //do not fail some dupes are as designed
         }
     }
     
@@ -168,6 +186,25 @@ public class KeyMapTest extends JellyTestCase{
             kmo.selectProfile("NetBeans");
             JTreeOperator tree =kmo.actions();
             exceptions = exceptionsNetBeans;
+            dump("",tree,kmo);
+            kmo.ok().push();
+            closed = true;
+            assertFile(new File(getWorkDir(),getName()+".ref"), getGoldenFile(), new File(getWorkDir(),getName()+".diff"));
+        } finally {
+            if(!closed) kmo.cancel().push();
+            editor.close(false);
+        }
+    }
+    
+    public void testAllKeyMapNetbeans55() throws IOException {
+        KeyMapOperator kmo = null;
+        boolean closed = true;
+        try {
+            kmo = KeyMapOperator.invoke();
+            closed = false;
+            kmo.selectProfile("NetBeans55");
+            JTreeOperator tree =kmo.actions();
+            exceptions = exceptionsNetBeans55;
             dump("",tree,kmo);
             kmo.ok().push();
             closed = true;
@@ -585,12 +622,11 @@ public class KeyMapTest extends JellyTestCase{
             ValueResolver vr = new ValueResolver() {
                 public Object getValue() {
                     editor.pushKey(KeyEvent.VK_Q, InputEvent.ALT_DOWN_MASK);
-                    new EventTool().waitNoEvent(100);
                     String text =  editor.txtEditorPane().getSelectedText();
                     return "tem.out.println(\"Hello\")".equals(text);
                 }
             };
-            waitMaxMilisForValue(3000, vr, Boolean.TRUE);
+            waitMaxMilisForValue(5000, vr, Boolean.TRUE);
             String text =  editor.txtEditorPane().getSelectedText();
             assertEquals("tem.out.println(\"Hello\")",text);
             int caretPositionOriginal = editor.txtEditorPane().getCaretPosition();
@@ -601,6 +637,11 @@ public class KeyMapTest extends JellyTestCase{
             kmo = KeyMapOperator.invoke();
             closed = false;
             kmo.restore().push();
+            kmo.ok().push();
+            closed = true;
+            new EventTool().waitNoEvent(2000);
+            kmo = KeyMapOperator.invoke();
+            closed = false;
             new EventTool().waitNoEvent(100);
             kmo.selectAction("Other|selection-last-non-white");
             checkListContents(kmo.shortcuts(), new Object[]{});
@@ -628,7 +669,7 @@ public class KeyMapTest extends JellyTestCase{
     }
     
     protected boolean waitMaxMilisForValue(int maxMiliSeconds, ValueResolver resolver, Object requiredValue){
-        int time = (int) maxMiliSeconds / 100;
+        int time = maxMiliSeconds / 100;
         while (time > 0) {
             Object resolvedValue = resolver.getValue();
             if (requiredValue == null && resolvedValue == null){
@@ -638,7 +679,7 @@ public class KeyMapTest extends JellyTestCase{
                 return true;
             }
             try {
-                Thread.currentThread().sleep(100);
+                Thread.sleep(100);
             } catch (InterruptedException ex) {
                 time=0;
             }
@@ -657,7 +698,7 @@ public class KeyMapTest extends JellyTestCase{
         }
     }
     
-    public static void main(String[] args) {
+    public static void main(String[] args) {               
         TestRunner.run(new NbTestSuite(KeyMapTest.class));
     }
     

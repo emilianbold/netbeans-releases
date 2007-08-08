@@ -10,16 +10,14 @@ Edit|<unknown>
   CUT
 Edit|<unknown>
   DELETE
-Edit|<unknown>
-  FIND
 Edit|Find Next Occurrence
   Ctrl+K
 Edit|Find Previous Occurrence
   Ctrl+Shift+K
 Edit|Find Usages
   Alt+F7
-Edit|Find/Replace in Projects...
-  Ctrl+H
+Edit|Find...
+  FIND
 Edit|<unknown>
   PASTE
 Edit|<unknown>
@@ -36,8 +34,6 @@ File|New File...
   Ctrl+N
 File|New Project...
   Ctrl+Shift+N
-File|Open File...
-  Ctrl+O
 File|Open Project...
   Ctrl+Shift+O
 File|Print...
@@ -55,9 +51,9 @@ Go To|Go to Previous Document
 Go To|Go to Source
   Ctrl+F3
 Go To|Go to Test
-  Alt+Shift+E
+  Ctrl+Shift+T
 Go To|Go to Type...
-  Alt+Shift+O
+  Ctrl+O
 Go To|Next Error
   Ctrl+PERIOD
 Go To|Next Inner View
@@ -86,8 +82,6 @@ Other|Cancel Process
   Ctrl+Shift+DELETE
 Other|Check XML
   Alt+F9
-Other|Copy Info
-  Alt+F3
 Other|Delete Line
   Ctrl+D
 Other|Delete Next Word
@@ -124,24 +118,38 @@ Other|Extend Selection to Previous Page
   Shift+PAGE_UP
 Other|Fast Import
   Ctrl+Shift+M
+Other|File Hierarchy
+  Alt+F12
+Other|File Members
+  Ctrl+F12
 Other|Files
   Ctrl+2
+Other|Find in Projects...
+  Ctrl+Shift+F
+Other|Fix Code...
+  Alt+ENTER
 Other|Forward
   Alt+RIGHT
 Other|Full Screen
   Alt+Shift+ENTER
+Other|Go to File...
+  Alt+Shift+O
 Other|HTTP Monitor
   Ctrl+Shift+5
+Other|Hierarchy
+  Alt+Shift+F12
+Other|Incremental Search Forward
+  FIND
 Other|Insert Newline
   ENTER
 Other|Insert Tab
   TAB
 Other|Insertion Point Backward
-  KP_LEFT
   LEFT
+  KP_LEFT
 Other|Insertion Point Down
-  KP_DOWN
   DOWN
+  KP_DOWN
 Other|Insertion Point Forward
   RIGHT
 Other|Insertion Point Up
@@ -155,44 +163,36 @@ Other|Insertion Point to End of Document
   Ctrl+END
 Other|Insertion Point to End of Line
   END
+Other|Insertion Point to Matching Brace
+  Ctrl+Alt+Shift+P
 Other|Insertion Point to Next Word
   Ctrl+RIGHT
 Other|Insertion Point to Previous Word
   Ctrl+LEFT
-Other|Inspect Hierarchy
-  Alt+F12
-Other|Inspect Hierarchy
-  Alt+Shift+F12
-Other|Inspect Members
-  Ctrl+F12
-Other|Inspect Members
-  Ctrl+Shift+F12
-Other|JUnit Test Results
-  Ctrl+Shift+6
 Other|Javadoc Index Search
   Shift+F1
 Other|Last edit
   Ctrl+Q
-Other|Match Brace
-  Ctrl+Alt+Shift+P
-Other|Modify Profiling...
+Other|Members
+  Ctrl+Shift+F12
+Other|Modify Profiling Session...
   Alt+Shift+F2
 Other|Page Down
   PAGE_DOWN
 Other|Page Up
   PAGE_UP
-Other|ReRun Last Profiling
-  Ctrl+Shift+F2
 Other|Reload Form
-  Ctrl+R
+  Ctrl+Shift+R
 Other|Replace Variable With its Getter
   Alt+U G
 Other|Replace Variable With its Setter
   Alt+U S
 Other|Replace Variable With its is* Method
   Alt+U I
-Other|Reset Abbreviation
-  Shift+SPACE
+Other|Replace in Projects...
+  Ctrl+Shift+H
+Other|Rerun Profiling Session
+  Ctrl+Shift+F2
 Other|Run SQL
   Ctrl+Shift+E
 Other|Scroll Down
@@ -223,6 +223,8 @@ Other|Step Over Expression
   Shift+F8
 Other|Take Snapshot of Collected Results
   Ctrl+F2
+Other|Test Project
+  Alt+F6
 Other|To Lowercase
   Ctrl+Shift+Y
 Other|To Uppercase
@@ -233,6 +235,8 @@ Other|Undock Window
   Alt+Shift+D
 Other|Validate XML
   Alt+Shift+F9
+Refactor|Rename...
+  Ctrl+R
 Run|Continue
   F8
 Run|Debug File
@@ -271,7 +275,7 @@ Run|Step Over
   F6
 Run|Test File
   Ctrl+F6
-Run|Toggle Breakpoint
+Run|Toggle Line Breakpoint
   Ctrl+Shift+B
 Source|Fix Imports
   Ctrl+Shift+O
@@ -301,8 +305,8 @@ Window|Close All Documents
   Ctrl+Shift+W
   Ctrl+Shift+F4
 Window|Close Window
-  Ctrl+F4
   Ctrl+W
+  Ctrl+F4
 Window|Documents...
   Ctrl+Shift+E
 Window|Editor
@@ -323,10 +327,10 @@ Window|Palette
   Ctrl+Shift+8
 Window|Properties
   Ctrl+Shift+7
-Window|Runtime
-  Ctrl+5
 Window|Search Results
   Ctrl+Shift+0
+Window|Services
+  Ctrl+5
 Window|Sessions
   Alt+Shift+6
 Window|Sources
@@ -337,5 +341,3 @@ Window|Threads
   Alt+Shift+7
 Window|Watches
   Alt+Shift+2
-XML|XSL Transformation...
-  Ctrl+Alt+T
