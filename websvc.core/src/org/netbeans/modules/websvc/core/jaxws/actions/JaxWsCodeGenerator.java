@@ -966,8 +966,8 @@ public class JaxWsCodeGenerator {
                 make.QualIdent(wsRefElement),
                 Collections.<ExpressionTree>singletonList(make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlUrl)))
                 );
-        // create method modifier: public and no annotation
         
+        // create field modifier: private(static) with @WebServiceRef annotation
         FileObject targetFo = workingCopy.getFileObject();
         Set<Modifier> modifiers = new HashSet<Modifier>();
         if (Car.getCar(targetFo) != null) {
