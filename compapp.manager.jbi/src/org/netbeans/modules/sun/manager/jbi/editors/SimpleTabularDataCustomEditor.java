@@ -1,26 +1,11 @@
 /*
- * The contents of this file are subject to the terms of the Common Development
- * and Distribution License (the License). You may not use this file except in
- * compliance with the License.
+ * MyNewJPanel.java
  *
- * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
- * or http://www.netbeans.org/cddl.txt.
- *
- * When distributing Covered Code, include this CDDL Header Notice in each file
- * and include the License file at http://www.netbeans.org/cddl.txt.
- * If applicable, add the following below the CDDL Header, with the fields
- * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
+ * Created on August 7, 2007, 5:28 PM
  */
 
 package org.netbeans.modules.sun.manager.jbi.editors;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -39,8 +24,6 @@ import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
@@ -51,21 +34,17 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.openide.DialogDisplayer;
-
+import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
-import org.openide.NotifyDescriptor;
 
 /**
- * A generic custom editor for basic TabularData.
  *
- * @author jqian
+ * @author  jqian
  */
-public class SimpleTabularDataCustomEditor extends JPanel
-        implements EnhancedCustomPropertyEditor, ActionListener {
-    
-    private JTable table;
-    
+public class SimpleTabularDataCustomEditor extends javax.swing.JPanel 
+    implements EnhancedCustomPropertyEditor, ActionListener {    
+     
     private TableCellRenderer headerCellRenderer;
     
     /** Number of index columns in the tabular data type. */
@@ -80,17 +59,35 @@ public class SimpleTabularDataCustomEditor extends JPanel
     private TabularType tabularType;
     private TabularData tabularData;
     
-    private JButton addRowButton, deleteRowButton;
     
-    private static String ADD_ROW = NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "AddRowLabel");
-    private static String DELETE_ROW = NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "DeleteRowLabel");
+    /** Creates new form MyNewJPanel */
+    public SimpleTabularDataCustomEditor(SimpleTabularDataEditor editor) {
         
+        initComponents();
         
-    public SimpleTabularDataCustomEditor(SimpleTabularDataEditor editor) {        
         headerCellRenderer = createTableHeaderRenderer(); 
         
         tabularData = (TabularData) editor.getValue();        
-        initComponents(tabularData);
+        DefaultTableModel tableModel = initTableModel(tabularData);
+        table = createTable(tableModel);
+        table.getTableHeader().setReorderingAllowed(false);
+        jScrollPane1.setViewportView(table);
+        
+        configureTableColumns(table);
+        
+        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int minSelectionIndex = table.getSelectionModel().getMinSelectionIndex();
+                    deleteButton.setEnabled(minSelectionIndex != -1);
+                }
+            }
+        });
+        
+        addButton.addActionListener(this);
+        deleteButton.addActionListener(this);
+        deleteAllButton.addActionListener(this);
+        deleteButton.setEnabled(false);
     }
     
     protected TableCellRenderer createTableHeaderRenderer() {
@@ -155,7 +152,7 @@ public class SimpleTabularDataCustomEditor extends JPanel
     }
     
     protected JTable createTable(DefaultTableModel tableModel) {
-        JTable table = new JTable(tableModel) {
+        JTable ret = new JTable(tableModel) {
             public Class getColumnClass(int column) {
                 OpenType columnType = columnTypes[column];
                 String className = columnType.getClassName();
@@ -171,7 +168,7 @@ public class SimpleTabularDataCustomEditor extends JPanel
             }
         };
         
-        return table;
+        return ret;
     }
         
     protected void configureTableColumns(JTable table) {
@@ -179,45 +176,6 @@ public class SimpleTabularDataCustomEditor extends JPanel
             TableColumn col = table.getColumnModel().getColumn(i);
             col.setHeaderRenderer(headerCellRenderer);
         }
-    }
-    
-    private void initComponents(TabularData tabularData) {
-        DefaultTableModel tableModel = initTableModel(tabularData);
-        
-        table = createTable(tableModel);
-        table.getTableHeader().setReorderingAllowed(false);
-        
-        configureTableColumns(table);
-        
-        table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    int minSelectionIndex = table.getSelectionModel().getMinSelectionIndex();
-                    deleteRowButton.setEnabled(minSelectionIndex != -1);
-                }
-            }
-        });
-        
-        JScrollPane scrollPane= new JScrollPane(table);
-        JPanel buttonPanel = new JPanel();
-        addRowButton = new JButton(ADD_ROW);
-        addRowButton.setActionCommand(ADD_ROW);
-        deleteRowButton = new JButton(DELETE_ROW);
-        deleteRowButton.setActionCommand(DELETE_ROW);
-        
-        buttonPanel.add(addRowButton);
-        buttonPanel.add(deleteRowButton);
-        
-        addRowButton.addActionListener(this);
-        deleteRowButton.addActionListener(this);
-        deleteRowButton.setEnabled(false);
-        
-        setLayout(new BorderLayout());
-        add("Center", scrollPane);
-        add("South", buttonPanel);
-        setBackground(Color.white);
-        buttonPanel.setBackground(Color.white);
-        table.getParent().setBackground(Color.white);
     }
     
     private DefaultTableModel initTableModel(TabularData tabularData) {
@@ -239,7 +197,7 @@ public class SimpleTabularDataCustomEditor extends JPanel
                 columnNameList.add((String)columnName);
             }
         }
-        columnNames = (String[]) columnNameList.toArray(new String[]{});
+        columnNames = columnNameList.toArray(new String[]{});
         
         columnDescriptions = new String[columnNames.length];
         columnTypes = new OpenType[columnNames.length];
@@ -250,17 +208,17 @@ public class SimpleTabularDataCustomEditor extends JPanel
             columnTypes[i] = rowType.getType(columnName);
         }
         
-        Vector dataVector = new Vector();
+        Vector<Vector> dataVector = new Vector<Vector>();
         for (Object rowDataObj : tabularData.values()) {
             CompositeData rowData = (CompositeData) rowDataObj;
-            Vector row = new Vector();
-            for (Object columnName : columnNames) {
-                row.add(rowData.get((String)columnName));
+            Vector<Object> row = new Vector<Object>();
+            for (String columnName : columnNames) {
+                row.add(rowData.get(columnName));
             }
             dataVector.add(row);
         }
         
-        Vector columnIdentifiers = new Vector();
+        Vector<String> columnIdentifiers = new Vector<String>();
         for (int i = 0; i < columnNames.length; i++) {
             columnIdentifiers.addElement(columnNames[i]);
         }
@@ -275,40 +233,15 @@ public class SimpleTabularDataCustomEditor extends JPanel
         return new DefaultTableModel();
     }
     
-    protected Vector createRow() {
-        Vector row = new Vector();
+    protected Vector<String> createRow() {
+        Vector<String> row = new Vector<String>();
         for (int i = 0; i < columnNames.length; i++) {
             row.addElement(null);
         }
         return row;
     }
     
-    private void addRow(Vector row) {
-        Vector dataVector = getDataVector();
-        dataVector.addElement(row);
-        table.addNotify();
-        
-        int newRowIndex = dataVector.size() - 1;
-        table.getSelectionModel().setSelectionInterval(newRowIndex, newRowIndex);
-    }
-    
-    private void deleteSelectedRows() {
-        Vector dataVector = getDataVector();
-        int[] rowIndices = table.getSelectedRows();  // guaranteed to be non-null
-        
-        for (int i = rowIndices.length - 1; i >= 0; i--) {
-            dataVector.removeElementAt(rowIndices[i]);
-        }
-        table.addNotify();
-        
-        table.getSelectionModel().clearSelection();
-        //        if (rowIndices.length > 0) {
-        //            int newSelectedRowIndex = rowIndices[0] - 1;
-        //            table.getSelectionModel().setSelectionInterval(newSelectedRowIndex, newSelectedRowIndex);
-        //        }
-    }
-    
-    private Vector getDataVector() {
+    private Vector<Vector> getDataVector() {
         return ((DefaultTableModel)table.getModel()).getDataVector();
     }
     
@@ -317,16 +250,31 @@ public class SimpleTabularDataCustomEditor extends JPanel
             table.getCellEditor().stopCellEditing();
         }
         
-        JButton source = (JButton) event.getSource();
-        String actionCommand = source.getActionCommand();
+        Vector<Vector> dataVector = getDataVector();
         
-        if (actionCommand.equals(ADD_ROW)) {
+        JButton source = (JButton) event.getSource();
+        
+        if (source == addButton) {
             Vector row = createRow();
             if (row != null) {
-                addRow(row);
+                dataVector.addElement(row);
+                table.addNotify();
+
+                int newRowIndex = dataVector.size() - 1;
+                table.getSelectionModel().setSelectionInterval(newRowIndex, newRowIndex);
             }
-        } else if (actionCommand.equals(DELETE_ROW)) {
-            deleteSelectedRows();
+        } else {            
+            if (source == deleteButton) {
+                int[] rowIndices = table.getSelectedRows(); // guaranteed to be non-null
+                for (int i = rowIndices.length - 1; i >= 0; i--) {
+                    dataVector.removeElementAt(rowIndices[i]);
+                }
+            } else { // source == deleteAllButton                
+                dataVector.clear();                
+            }
+
+            table.addNotify();
+            table.getSelectionModel().clearSelection();
         }
     }    
     
@@ -343,8 +291,8 @@ public class SimpleTabularDataCustomEditor extends JPanel
                     setFont(header.getFont());
                 }
             }
-            String myValue = (value == null) ? "" :
-                "<html><body><b>" + value.toString().toUpperCase() + "</b></body></html>";
+            String myValue = (value == null) ? "" : // NOI18N
+                "<html><body><b>" + value.toString().toUpperCase() + "</b></body></html>"; // NOI18N
             setText(myValue);
             setToolTipText(columnDescriptions[getColumnIndex(colIndex)]); 
             setBorder(UIManager.getBorder("TableHeader.cellBorder"));
@@ -356,4 +304,76 @@ public class SimpleTabularDataCustomEditor extends JPanel
             return column;
         }
     }
+    
+    /** This method is called from within the constructor to
+     * initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        jScrollPane1 = new javax.swing.JScrollPane();
+        table = new javax.swing.JTable();
+        buttonPanel = new javax.swing.JPanel();
+        addButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
+        deleteAllButton = new javax.swing.JButton();
+        label = new javax.swing.JLabel();
+
+        jScrollPane1.setViewportView(table);
+
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "LBL_ADD")); // NOI18N
+        buttonPanel.add(addButton);
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "ACS_ADD")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(deleteButton, org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "LBL_DELETE")); // NOI18N
+        buttonPanel.add(deleteButton);
+        deleteButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "ACS_DELETE")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(deleteAllButton, org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "LBL_DELETE_ALL")); // NOI18N
+        buttonPanel.add(deleteAllButton);
+        deleteAllButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "ACS_DELETE_ALL")); // NOI18N
+
+        label.setLabelFor(table);
+        org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "LBL_TABLE")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, buttonPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
+                    .add(label, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 118, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .add(label)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(buttonPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        label.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SimpleTabularDataCustomEditor.class, "ACS_TABLE_LABEL")); // NOI18N
+    }// </editor-fold>//GEN-END:initComponents
+    
+    
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
+    private javax.swing.JPanel buttonPanel;
+    private javax.swing.JButton deleteAllButton;
+    private javax.swing.JButton deleteButton;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel label;
+    private javax.swing.JTable table;
+    // End of variables declaration//GEN-END:variables
+    
 }

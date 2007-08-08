@@ -93,7 +93,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
     }
     
     @Override
-    protected Vector createRow() {
+    protected Vector<String> createRow() {
         NewEnvironmentVariableTypeSelectionPanel typeSelectionPanel =
                 new NewEnvironmentVariableTypeSelectionPanel();
         
@@ -104,7 +104,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
         
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             String type = typeSelectionPanel.getTypeChoice();
-            Vector row = super.createRow();
+            Vector<String> row = super.createRow();
             row.set(TYPE_COLUMN, type);
             
             // init default boolean value
@@ -125,7 +125,8 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
         JTable table = new JTable(tableModel) {
             public TableCellRenderer getCellRenderer(int row, int column) {
                 TableCellRenderer renderer = new DefaultTableCellRenderer() {
-                    public Component getTableCellRendererComponent(JTable table,
+                    public Component getTableCellRendererComponent(
+                            JTable table,
                             Object value,
                             boolean isSelected,
                             boolean hasFocus,
@@ -134,7 +135,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                         if (column == NAME_COLUMN) {
                             // Highlight key columns
                             if (value != null) {
-                                value = "<html><body><b>" + value + "</b></body></html>";
+                                value = "<html><body><b>" + value + "</b></body></html>"; // NOI18N
                             }
                             Component component = super.getTableCellRendererComponent(
                                     table, value, isSelected, hasFocus, row, column);
@@ -150,7 +151,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                                 return renderer.getTableCellRendererComponent(
                                         table, value, isSelected, hasFocus, row, column);
                             } else {
-                                System.err.println("WARNING: Unknown TableCellRenderer for type of \"" + type + "\"");
+                                System.err.println("WARNING: Unknown TableCellRenderer for type of \"" + type + "\"");  // NOI18N
                                 return super.getTableCellRendererComponent(
                                         table, value, isSelected, hasFocus, row, column);
                             }
@@ -171,7 +172,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                     if (type != null) {
                         return editor;
                     } else {
-                        System.err.println("WARNING: Unknown TableCellEditor for type of \"" + type + "\"");
+                        System.err.println("WARNING: Unknown TableCellEditor for type of \"" + type + "\"");  // NOI18N
                         return stringEditor;
                     }
                 }
@@ -183,7 +184,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
     
     @Override
     protected void configureTableColumns(JTable table) {
-        super.configureTableColumns(table);
+        super.configureTableColumns(table); 
         
         // Hide the type column in the table
         TableColumnModel columnModel = table.getColumnModel();
@@ -245,7 +246,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                 formatter = NumberFormat.getInstance();
             }
             if (value == null || ((String)value).trim().length() == 0) {
-                setText("");
+                setText(""); // NOI18N
             } else {
                 double d = Double.parseDouble((String)value);
                 setText(formatter.format(d));
@@ -271,7 +272,8 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                 setBackground(table.getBackground());
             }
             
-            setSelected((value != null && value.toString().equalsIgnoreCase("true")));
+            setSelected(value != null && 
+                    value.toString().equalsIgnoreCase("true")); // NOI18N
             
             return this;
         }
@@ -286,6 +288,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
             super();
             setOpaque(true);
             setBorder(myBorder);
+            setEchoChar('*'); // NOI18N
         }
         
         public Component getTableCellRendererComponent(JTable table, Object value,
@@ -305,7 +308,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
         }
         
         protected void setValue(Object value) {
-            setText((value == null) ? "" : value.toString());
+            setText((value == null) ? "" : value.toString()); // NOI18N
         }
     }
     
@@ -319,7 +322,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
         
         public GenericEditor() {
             super(new JTextField());
-            getComponent().setName("Table.editor");
+            getComponent().setName("Table.editor"); // NOI18N
             setClickCountToStart(1);
         }
         
@@ -331,7 +334,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
             // they have the option to replace the value with
             // null or use escape to restore the original.
             // For Strings, return "" for backward compatibility.
-            if ("".equals(s)) {
+            if ("".equals(s)) {  // NOI18N
                 if (constructor.getDeclaringClass() == String.class) {
                     value = s;
                 }
@@ -394,25 +397,25 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
                     return value;
                 } catch (Exception e) {
                     NotifyDescriptor d = new NotifyDescriptor.Message(//e.getMessage(),
-                            "Invalid number: " + value,
+                            "Invalid number: " + value, // NOI18N
                             NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(d);
                 }
             }
             
-            return ""; // FIXME: restore the old value
+            return ""; // FIXME: restore the old value // NOI18N
         }
     }
     
     static class BooleanEditor extends DefaultCellEditor {
         public BooleanEditor() {
             super(new JCheckBox());
-            JCheckBox checkBox = (JCheckBox)getComponent();
+//            JCheckBox checkBox = (JCheckBox)getComponent();
         }
         
         public Object getCellEditorValue() {
             Boolean b = (Boolean) super.getCellEditorValue();
-            return b ? "true" : "false";
+            return b ? "true" : "false"; // NOI18N
         }
     }
     

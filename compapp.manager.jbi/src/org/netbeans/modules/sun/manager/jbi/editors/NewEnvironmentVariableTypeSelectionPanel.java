@@ -36,29 +36,29 @@ public class NewEnvironmentVariableTypeSelectionPanel extends javax.swing.JPanel
         booleanRB = new javax.swing.JRadioButton();
         passwordRB = new javax.swing.JRadioButton();
 
-        typeSelectionLabel.setText(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "selectTypeLabel.text")); // NOI18N
+        typeSelectionLabel.setText(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "LBL_TYPE_SELECTION")); // NOI18N
 
         buttonGroup1.add(stringRB);
         stringRB.setSelected(true);
-        stringRB.setText(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "stringRB.text")); // NOI18N
+        stringRB.setText(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "LBL_STRING_TYPE")); // NOI18N
         stringRB.setActionCommand("STRING"); // NOI18N
         stringRB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         stringRB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         buttonGroup1.add(numberRB);
-        numberRB.setText(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "numberRB.text")); // NOI18N
+        numberRB.setText(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "LBL_NUMBER_TYPE")); // NOI18N
         numberRB.setActionCommand("NUMBER"); // NOI18N
         numberRB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         numberRB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         buttonGroup1.add(booleanRB);
-        booleanRB.setText(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "booleanRB.text")); // NOI18N
+        booleanRB.setText(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "LBL_BOOLEAN_TYPE")); // NOI18N
         booleanRB.setActionCommand("BOOLEAN"); // NOI18N
         booleanRB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         booleanRB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         buttonGroup1.add(passwordRB);
-        passwordRB.setText(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "passwordRB.text")); // NOI18N
+        passwordRB.setText(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "LBL_PASSWORD_TYPE")); // NOI18N
         passwordRB.setActionCommand("PASSWORD"); // NOI18N
         passwordRB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         passwordRB.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -95,6 +95,12 @@ public class NewEnvironmentVariableTypeSelectionPanel extends javax.swing.JPanel
                 .add(passwordRB)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        typeSelectionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "ACS_TYPE_SELECTION")); // NOI18N
+        stringRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "ACS_STRING_TYPE")); // NOI18N
+        numberRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "ACS_NUMBER_TYPE")); // NOI18N
+        booleanRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "ACS_BOOLEAN_TYPE")); // NOI18N
+        passwordRB.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewEnvironmentVariableTypeSelectionPanel.class, "ACS_PASSWORD_TYPE")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
