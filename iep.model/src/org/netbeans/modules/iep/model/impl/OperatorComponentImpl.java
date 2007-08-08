@@ -30,6 +30,19 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		return description;
 	}
 
+	public void setDescription(String description) {
+		Property p = super.getProperty(PROP_DESCRIPTION);
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_DESCRIPTION);
+			addProperty(p);
+			
+		}
+		
+		p.setValue(description);
+		
+	}
+	
 	public List<OperatorComponent> getFromColumnList() {
 		
 		return null;
@@ -135,9 +148,14 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 	
 	public void setX(int x) {
 		Property p = super.getProperty(PROP_X);
-		if(p != null) {
-			p.setValue(x+"");
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_X);
+			addProperty(p);
+			
 		}
+		
+		p.setValue(x+"");
 	}
 	
 	public int getY() {
@@ -162,9 +180,14 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 	
 	public void setY(int y) {
 		Property p = super.getProperty(PROP_Y);
-		if(p != null) {
-			p.setValue(y+"");
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_Y);
+			addProperty(p);
+			
 		}
+		
+		p.setValue(y+"");
 	}
 	
 	public int getZ() {
@@ -189,9 +212,14 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 
 	public void setZ(int z) {
 		Property p = super.getProperty(PROP_Z);
-		if(p != null) {
-			p.setValue(z+"");
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_Z);
+			addProperty(p);
+			
 		}
+		
+		p.setValue(z+"");
 	}
 	
 	public boolean isBatchMode() {

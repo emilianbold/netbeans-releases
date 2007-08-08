@@ -62,6 +62,8 @@ public interface OperatorComponent extends Component {
 	
 	String getDescription();
 	
+	void setDescription(String description);
+	
 	String getTopoScore();
 	
 	OperatorType getInputType();
