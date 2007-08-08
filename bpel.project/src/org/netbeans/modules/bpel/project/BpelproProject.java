@@ -25,9 +25,13 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.FileNotFoundException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -48,6 +52,7 @@ import org.netbeans.modules.compapp.projects.base.spi.JbiArtifactProvider;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproCustomizerProvider;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.queries.IcanproProjectEncodingQueryImpl;
 import org.netbeans.modules.compapp.projects.base.ui.IcanproXmlCustomizerProvider;
@@ -96,6 +101,8 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
     public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.bpel.project";
     public static final String MODULE_INSTALL_DIR = "module.install.dir";
     
+    private static final Logger LOG = Logger.getLogger(BpelproProject.class.getName());
+
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
@@ -353,6 +360,19 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
                   }
                   helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
+                    
+                  // Add project encoding for old projects
+                  EditableProperties projectEP = helper.getProperties(
+                                  AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                  if (projectEP.getProperty(IcanproProjectProperties.SOURCE_ENCODING) == null) {
+                      projectEP.setProperty(IcanproProjectProperties.SOURCE_ENCODING,
+                              // FIXME: maybe we should use Charset.defaultCharset() instead?
+                              // See comments in IcanproProjectEncodingQueryImpl.java
+                              FileEncodingQuery.getDefaultEncoding().name());
+                  }            
+                  helper.putProperties(
+                          AntProjectHelper.PROJECT_PROPERTIES_PATH, projectEP);
+
                   try {
                       ProjectManager.getDefault().saveProject(BpelproProject.this);
                   } catch (IOException e) {
@@ -364,8 +384,30 @@ public final class BpelproProject implements Project, AntProjectListener, Projec
           if (IcanproLogicalViewProvider.hasBrokenLinks(helper, refHelper)) {
               BrokenReferencesSupport.showAlert();
           }
+            
+          checkEncoding();
+
           sourcesRegistryHelper.register();
           addListenerOnCatalog();
+      }
+      
+      private void checkEncoding() {
+        // TODO m
+        // Should we show ErrorManager dialog to inform user in case wrong encoding parameter ?
+        String prop = eval.getProperty(IcanproProjectProperties.SOURCE_ENCODING);
+        if (prop != null) {
+            try {
+                Charset c = Charset.forName(prop);
+            } catch (IllegalCharsetNameException e) {
+                //Broken property, log & ignore
+                LOG.warning("Illegal charset: " + prop+ " in project: " + // NOI18N
+                        getProjectDirectory()); 
+            } catch (UnsupportedCharsetException e) {
+                //todo: Needs UI notification like broken references.
+                LOG.warning("Unsupported charset: " + prop+ " in project: " + // NOI18N
+                        getProjectDirectory()); 
+            }
+        }            
       }
       
       // vlv # 96026
