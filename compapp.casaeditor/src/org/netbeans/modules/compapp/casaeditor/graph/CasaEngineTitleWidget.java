@@ -23,7 +23,10 @@ import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.State;
@@ -167,6 +170,14 @@ public class CasaEngineTitleWidget extends Widget implements CasaMinimizable {
                 return State.CONSUMED;
             }
             return State.REJECTED;
+        }
+        public State keyPressed (Widget widget, WidgetKeyEvent event) {
+            State retState = State.REJECTED;
+            if ((event.getModifiers () & InputEvent.SHIFT_MASK) == InputEvent.SHIFT_MASK  &&  event.getKeyCode () == KeyEvent.VK_ENTER) {
+                mStateModel.toggleBooleanState();
+                retState = State.CONSUMED;
+            }
+            return retState;
         }
     }
 }
