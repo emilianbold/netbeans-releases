@@ -44,6 +44,7 @@ import org.netbeans.modules.compapp.projects.base.ui.IcanproXmlCustomizerProvide
 
 import static org.netbeans.modules.xslt.project.XsltproConstants.*;
 import org.netbeans.modules.xml.catalogsupport.DefaultProjectCatalogSupport;
+import org.netbeans.modules.xslt.project.spi.ProjectsFilesChangeHandler;
 import org.netbeans.modules.xslt.project.wizard.IcanproLogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -96,6 +97,7 @@ public class XsltproProject implements Project, AntProjectListener {
     private PropertyEvaluator evaluator;
     private ReferenceHelper refHelper;
     private GeneratedFilesHelper genFilesHelper;
+    private ProjectsFilesChangeHandler myProjectsChangeHandler;
     
     public XsltproProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -104,6 +106,7 @@ public class XsltproProject implements Project, AntProjectListener {
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         this.refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
         this.genFilesHelper = new GeneratedFilesHelper(helper);
+        myProjectsChangeHandler = new ProjectsFilesChangeHandler(this);
         this.lookup = createLookup(aux);
         helper.addAntProjectListener(this);
     }
@@ -252,6 +255,9 @@ public class XsltproProject implements Project, AntProjectListener {
 //            new XsltProjectCustomizerProvider(this),
             new IcanproXmlCustomizerProvider(this, helper, refHelper, 
                     XsltproProjectType.PROJECT_CONFIGURATION_NAMESPACE),
+            // provides information about added/removed schema and wsdl files
+            // forwards related model property change events
+            myProjectsChangeHandler,
             new JbiArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             //todo m
@@ -401,6 +407,8 @@ public class XsltproProject implements Project, AntProjectListener {
             }
             
             checkEncoding();
+            
+            myProjectsChangeHandler.subscribes();
         }
         
         private void checkEncoding() {
@@ -429,6 +437,7 @@ public class XsltproProject implements Project, AntProjectListener {
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
             }
+            myProjectsChangeHandler.unsubscribes();
         }
         
     }

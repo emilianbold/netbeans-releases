@@ -300,7 +300,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.xslt.mapper</friend>
+                <friend>org.netbeans.modules.xslt.core</friend>
+                <package>org.netbeans.modules.xslt.project.spi</package>
                 <package>org.netbeans.modules.xslt.project</package>
             </friend-packages>
         </data>
