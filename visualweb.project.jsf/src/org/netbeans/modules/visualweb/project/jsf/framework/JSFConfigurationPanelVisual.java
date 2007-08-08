@@ -596,8 +596,13 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     private void initLibSettings(boolean webModule25Version, String serverInstanceID) {
         try {
             addJSF = false;
-            File[] cp = Deployment.getDefault().getJ2eePlatform(serverInstanceID).getClasspathEntries();
-            boolean isJSF = Util.containsClass(Arrays.asList(cp), "javax.faces.FacesException");
+            // <RAVE> fix issue#112245, java.lang.NullPointerException
+            boolean isJSF = false;
+            if (serverInstanceID != null) {
+                File[] cp = Deployment.getDefault().getJ2eePlatform(serverInstanceID).getClasspathEntries();
+                isJSF = Util.containsClass(Arrays.asList(cp), "javax.faces.FacesException");
+            }
+            // </RAVE>
             if (isJSF)
                 rbNoneLibrary.setSelected(true);
             else if (webModule25Version) {
