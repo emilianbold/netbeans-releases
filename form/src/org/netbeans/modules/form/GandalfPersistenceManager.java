@@ -348,11 +348,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     } else {
                         formBaseClass = designClass;
                     }
-                } else {
-                    formBaseClass = Object.class;
                 }
-
-                formModel.setFormBaseClass(formBaseClass);
+                if (formBaseClass != null) {
+                    formModel.setFormBaseClass(formBaseClass);
+                }
             }
             catch (Exception ex) {
                 formBaseClassEx = ex;
@@ -523,6 +522,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                 result[0] = controller.getElements().getBinaryName((TypeElement)superEl).toString(); // .getQualifiedName()
                                 break;
                             }
+                        } else {
+                            result[0] = "java.lang.Object"; // NOI18N
+                            break;
                         }
                     }
                 }
