@@ -21,41 +21,14 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <ant dir="../external" target="unzip_jwsdp16"/>
-
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <copy file="../external/jaxrpc16/activation.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/activation.jar"/>
-        <copy file="../external/jaxrpc16/FastInfoset.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/FastInfoset.jar"/>
-        <copy file="../external/jaxrpc16/jaxp-api.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxp-api.jar"/>
-        <copy file="../external/jaxrpc16/jax-qname.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jax-qname.jar"/>
-        <copy file="../external/jaxrpc16/jaxrpc-api.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxrpc-api.jar"/>
-        <copy file="../external/jaxrpc16/jaxrpc-impl.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxrpc-impl.jar"/>
-        <copy file="../external/jaxrpc16/jaxrpc-spi.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jaxrpc-spi.jar"/>
-        <copy file="../external/jaxrpc16/jsr173_api.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/jsr173_api.jar"/>
-        <copy file="../external/jaxrpc16/mail.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/mail.jar"/>
-        <copy file="../external/jaxrpc16/relaxngDatatype.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/relaxngDatatype.jar"/>
-        <copy file="../external/jaxrpc16/saaj-api.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/saaj-api.jar"/>
-        <copy file="../external/jaxrpc16/saaj-impl.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/saaj-impl.jar"/>
-        <copy file="../external/jaxrpc16/xsdlib.jar"
-              tofile="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/xsdlib.jar"/>              
+    <target name="unzip_jwsdp16">
+        <mkdir dir="build/xternal/jaxrpc16"/>
+	<unzip src="external/jwsdp16_jars.zip" dest="build/external/jaxrpc16"/>
     </target>
-    
-    <target name="clean" depends="init">
+   
+    <target name="common-init" depends="default.init, unzip_jwsdp16"/> 
+
+    <target name="clean" depends="init,projectized-common.clean">
         <echo message="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/"/>
         <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jaxrpc16/"/>
     </target>

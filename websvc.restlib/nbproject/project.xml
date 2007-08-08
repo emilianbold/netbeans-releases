@@ -25,47 +25,47 @@ Microsystems, Inc. All Rights Reserved.
             <module-dependencies/>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jsr311-api.jar</runtime-relative-path>
-                <binary-origin>../external/rest/jsr311-api.jar</binary-origin>
+                <binary-origin>build/external/rest/jsr311-api.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jersey.jar</runtime-relative-path>
-                <binary-origin>../external/rest/jersey.jar</binary-origin>
+                <binary-origin>build/external/rest/jersey.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/wadl2java.jar</runtime-relative-path>
-                <binary-origin>../external/rest/wadl2java.jar</binary-origin>
+                <binary-origin>build/external/rest/wadl2java.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/localizer.jar</runtime-relative-path>
-                <binary-origin>../external/rest/localizer.jar</binary-origin>
+                <binary-origin>build/external/rest/localizer.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/rome-0.9.jar</runtime-relative-path>
-                <binary-origin>../external/rest/rome-0.9.jar</binary-origin>
+                <binary-origin>build/external/rest/rome-0.9.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jdom-1.0.jar</runtime-relative-path>
-                <binary-origin>../external/rest/jdom-1.0.jar</binary-origin>
+                <binary-origin>build/external/rest/jdom-1.0.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jettison-1.0-RC1.jar/</runtime-relative-path>
-                <binary-origin>../external/rest/jettison-1.0-RC1.jar</binary-origin> 
+                <binary-origin>build/external/rest/jettison-1.0-RC1.jar</binary-origin> 
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/comresrcgen.jar/</runtime-relative-path>
-                <binary-origin>../external/rest/comresrcgen.jar</binary-origin>
+                <binary-origin>build/external/rest/comresrcgen.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/grizzly-1.0.13.jar</runtime-relative-path>
-                <binary-origin>../external/rest/grizzly-1.0.13.jar</binary-origin>
+                <binary-origin>build/external/rest/grizzly-1.0.13.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/jsp-api-2.0-20040521.jar/</runtime-relative-path>
-                <binary-origin>../external/rest/jsp-api-2.0-20040521.jar</binary-origin>
+                <binary-origin>build/external/rest/jsp-api-2.0-20040521.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/persistence-api-1.0.jar/</runtime-relative-path>
-                <binary-origin>../external/rest/persistence-api-1.0.jar</binary-origin>
+                <binary-origin>build/external/rest/persistence-api-1.0.jar</binary-origin>
             </class-path-extension>
             <friend-packages>
                 <friend>org.netbeans.modules.websvc.rest</friend>

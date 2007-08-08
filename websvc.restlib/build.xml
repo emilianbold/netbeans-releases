@@ -21,41 +21,15 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
     
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <ant dir="../external" target="unzip_rest"/>
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext"/>
-        <copy description="Copying files" 
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/">
-            <fileset dir="../external/rest/"/>
-            <fileset file="../external/rest-license.txt"/>
-        </copy>
+    <target name="unzip_rest">
+        <mkdir dir="build/external/rest"/>
+	<unzip src="external/rest.zip" dest="build/external/rest"/>
     </target>
 
-<!--    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <makenbm file="build/${nbm}"
-                 productdir="${netbeans.dest.dir}/${cluster.dir}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}">
-            <license name="jaxws20-license.txt">
-                <text>For the integration module:</text>
-                <file location="${license.file}"/>
-                <text>For JAX-WS 2.0 library:</text>
-                <file location="${nb_all}/websvc/external/jaxws20-license.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>-->
-    
+    <target name="common-init" depends="default.init, unzip_rest"/>
+
     <target name="clean" depends="init,projectized-common.clean">
         <echo message="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/"/>
         <delete dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/rest/"/>
-        <ant dir="../external" target="clean_rest"/>
     </target>
 </project>
