@@ -23,7 +23,7 @@ import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,12 +55,10 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
     private JRadioButton radioButton;
     
     private PropertyEditorLayout() {
-        super();
+        super(NbBundle.getMessage(PropertyEditorLayout.class, "LBL_LAYOUT_STR_UCLABEL")); // NOI18N
         initComponents();
         
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
     
     public static final PropertyEditorLayout createInstance() {
@@ -69,7 +67,7 @@ public final class PropertyEditorLayout extends PropertyEditorUserCode implement
     
     private void initComponents() {
         radioButton = new JRadioButton();
-        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorLayout.class, "LBL_STRING_STR")); // NOI18N
+        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorLayout.class, "LBL_LAYOUT_STR")); // NOI18N
         customEditor = new CustomEditorConstraints(0);
     }
     

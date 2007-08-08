@@ -78,6 +78,7 @@ public final class ItemCommandEventSourceCD extends ComponentDescriptor {
         return commandEventSourceComponent.readProperty(ItemCommandEventSourceCD.PROP_COMMAND).getComponent();
     }
     
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         EventSourceSupport.addActionsPresentres(presenters);
         super.gatherPresenters(presenters);
@@ -110,21 +111,25 @@ public final class ItemCommandEventSourceCD extends ComponentDescriptor {
                 return FlowItemCommandPinOrderPresenter.CATEGORY_ID;
             }
             
+            @Override
             protected boolean canRename() {
                 DesignComponent command = ItemCommandEventSourceCD.getCommandComponent(getComponent());
                 return command != null;
             }
             
+            @Override
             protected String getRenameName() {
                 DesignComponent command = ItemCommandEventSourceCD.getCommandComponent(getComponent());
                 return (String) command.readProperty(CommandCD.PROP_LABEL).getPrimitiveValue ();
             }
             
+            @Override
             protected void setRenameName(String name) {
                 DesignComponent command = ItemCommandEventSourceCD.getCommandComponent(getComponent());
                 command.writeProperty(CommandCD.PROP_LABEL, MidpTypes.createStringValue(name));
             }
             
+            @Override
             protected DesignEventFilter getEventFilter() {
                 return super.getEventFilter().addDescentFilter(getComponent(), ItemCommandEventSourceCD.PROP_COMMAND);
             }
@@ -138,6 +143,21 @@ public final class ItemCommandEventSourceCD extends ComponentDescriptor {
                 ArraySupport.remove(item, ItemCD.PROP_COMMANDS, component);
             }
         }
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         );
     }
     

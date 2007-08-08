@@ -46,7 +46,7 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
     private PredefinedEditor predefinedEditor;
     
     private PropertyEditorTimeZone() {
-        super();
+        super(NbBundle.getMessage(PropertyEditorTimeZone.class, "LBL_TIME_ZONE_UCLABEL")); // NOI18N
         
         elements = new ArrayList<PropertyEditorElement>(2);
         elements.add(predefinedEditor = new PredefinedEditor());

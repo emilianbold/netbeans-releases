@@ -69,6 +69,7 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
                 .addProperty (NbBundle.getMessage(ListSelectCommandEventSourceCD.class, "DISP_ListSelectCommandEventSource_Show_Select_Command"), PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND); // NOI18N
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, InspectorFolderPresenter.class);
         DocumentSupport.removePresentersOfClass(presenters, ActionsPresenter.class);
@@ -81,9 +82,10 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // info
-            InfoPresenter.createStatic ("List.SELECT_COMMAND", "Command", CommandCD.ICON_PATH),
+            InfoPresenter.createStatic ("List.SELECT_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
             // flow
             new CommandEventSourceCD.CommandEventSourceFlowPinPresenter () {
+                @Override
                 protected DesignComponent getComponentForAttachingPin () {
                     if (! MidpTypes.getBoolean (getComponent ().readProperty (PROP_SHOW_SELECT_COMMAND)))
                         return null;
@@ -97,6 +99,7 @@ public final class ListSelectCommandEventSourceCD extends ComponentDescriptor {
             DeletePresenter.createSilentDeletionPresenter(),
             //inspector
             new InspectorFolderComponentPresenter(false)
+        
         );
     }
 

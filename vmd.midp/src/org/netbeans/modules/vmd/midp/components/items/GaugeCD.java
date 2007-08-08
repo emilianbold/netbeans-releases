@@ -72,6 +72,7 @@ public class GaugeCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_VALUE, MidpTypes.createIntegerValue (50));
         component.writeProperty (PROP_MAX_VALUE, MidpTypes.createIntegerValue (100));
@@ -86,6 +87,7 @@ public class GaugeCD extends ComponentDescriptor {
         );
     }
     
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);
@@ -137,6 +139,7 @@ public class GaugeCD extends ComponentDescriptor {
             super (PARAM_VALUE);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (PROP_MAX_VALUE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
@@ -158,6 +161,7 @@ public class GaugeCD extends ComponentDescriptor {
             super.generateParameterCode (component, section, index);
         }
 
+        @Override
         public boolean isRequiredToBeSet (DesignComponent component) {
             return true;
         }
@@ -172,6 +176,7 @@ public class GaugeCD extends ComponentDescriptor {
             super (PARAM_MAX_VALUE);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (PROP_MAX_VALUE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
@@ -184,6 +189,7 @@ public class GaugeCD extends ComponentDescriptor {
             super.generateParameterCode (component, section, index);
         }
 
+        @Override
         public boolean isRequiredToBeSet (DesignComponent component) {
             return true;
         }

@@ -68,6 +68,7 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
         return commandEventSourceComponent.readProperty (PROP_COMMAND).getComponent ();
     }
     
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         EventSourceSupport.addActionsPresentres(presenters);
         super.gatherPresenters(presenters);

@@ -101,10 +101,12 @@ public class ItemCode {
             super (PARAM_ITEM_COMMAND_LISTENER);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             MidpCodeSupport.generateCodeForPropertyValue (section.getWriter (), component.readProperty (ItemCD.PROP_ITEM_COMMAND_LISTENER));
         }
 
+        @Override
         public boolean isRequiredToBeSet (DesignComponent component) {
             return ! component.isDefaultValue (ItemCD.PROP_COMMANDS);
         }
@@ -117,6 +119,7 @@ public class ItemCode {
             super (PARAM_LAYOUT);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (ItemCD.PROP_LAYOUT);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
@@ -170,6 +173,7 @@ public class ItemCode {
             super (PARAM_APPEARANCE_MODE);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (ItemCD.PROP_APPEARANCE_MODE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {

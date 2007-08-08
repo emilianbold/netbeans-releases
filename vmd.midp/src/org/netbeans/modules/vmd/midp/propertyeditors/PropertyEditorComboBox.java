@@ -22,8 +22,7 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -49,6 +48,7 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
 
     private final Map<String, PropertyValue> values;
     private String[] tags;
+    private String valueLabel;
 
     private TypeID typeID;
     private TypeID enableTypeID;
@@ -56,25 +56,27 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
     private CustomEditor customEditor;
     private JRadioButton radioButton;
 
-    private PropertyEditorComboBox(Map<String, PropertyValue> values, TypeID typeID, TypeID enableTypeID) {
-        super();
+    private PropertyEditorComboBox(Map<String, PropertyValue> values, TypeID typeID,
+            TypeID enableTypeID, String valueLabel, String userCodeLabel) {
+        super(userCodeLabel);
 
         this.values = values;
         this.typeID = typeID;
         this.enableTypeID = enableTypeID;
+        this.valueLabel = valueLabel;
         createTags();
         initComponents();
 
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
-    public static PropertyEditorComboBox createInstance(Map<String, PropertyValue> values, TypeID typeID) {
-        return createInstance(values, typeID, null);
+    public static PropertyEditorComboBox createInstance(Map<String, PropertyValue> values,
+            TypeID typeID, String valueLabel, String userCodeLabel) {
+        return createInstance(values, typeID, null, valueLabel, userCodeLabel);
     }
 
-    public static PropertyEditorComboBox createInstance(Map<String, PropertyValue> values, TypeID typeID, TypeID enableTypeID) {
+    public static PropertyEditorComboBox createInstance(Map<String, PropertyValue> values,
+            TypeID typeID, TypeID enableTypeID, String valueLabel, String userCodeLabel) {
         if (values == null) {
             throw new IllegalArgumentException("Argument values can't be null"); // NOI18N
         }
@@ -85,13 +87,13 @@ public final class PropertyEditorComboBox extends PropertyEditorUserCode impleme
             }
         }
 
-        PropertyEditorComboBox instance = new PropertyEditorComboBox(values, typeID, enableTypeID);
+        PropertyEditorComboBox instance = new PropertyEditorComboBox(values, typeID, enableTypeID, valueLabel, userCodeLabel);
         return instance;
     }
 
     private void initComponents() {
         radioButton = new JRadioButton();
-        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorComboBox.class, "LBL_VALUE_STR")); // NOI18N
+        Mnemonics.setLocalizedText(radioButton, valueLabel);
         customEditor = new CustomEditor();
         customEditor.updateModel();
     }

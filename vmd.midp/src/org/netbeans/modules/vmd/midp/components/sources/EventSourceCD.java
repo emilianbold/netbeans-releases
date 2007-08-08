@@ -81,6 +81,7 @@ public final class EventSourceCD extends ComponentDescriptor {
                                                 };
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters (presenters, false, false, false, true, true);
         super.gatherPresenters (presenters);
@@ -95,6 +96,7 @@ public final class EventSourceCD extends ComponentDescriptor {
             InspectorPositionPresenter.create(createPositionControllers()),
             // accept
             new AcceptTypePresenter(EventHandlerCD.TYPEID) {
+                @Override
                 protected void notifyCreated (DesignComponent component) {
                     MidpDocumentSupport.updateEventHandlerWithNew (getComponent (), component);
                 }
@@ -115,6 +117,7 @@ public final class EventSourceCD extends ComponentDescriptor {
                     section.switchToGuarded ();
                 }
             }
+        
         );
     }
 

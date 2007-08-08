@@ -55,7 +55,7 @@ public final class ResourcesSupport {
             case SECONDARY:
                 return MidpTypes.getSimpleClassName(component.getType());
             case TERTIARY:
-                return "<HTML>" + InfoPresenter.getHtmlDisplayName(component);
+                return "<HTML>" + InfoPresenter.getHtmlDisplayName(component); // NOI18N
             default:
                 throw new IllegalStateException();
             }

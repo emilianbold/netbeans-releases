@@ -47,6 +47,7 @@ public final class ListSelectCommandCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (CommandCD.PROP_LABEL, MidpTypes.createStringValue ("")); // NOI18N
         component.writeProperty (CommandCD.PROP_TYPE, MidpTypes.createIntegerValue (CommandCD.VALUE_SCREEN));
@@ -59,6 +60,7 @@ public final class ListSelectCommandCD extends ComponentDescriptor {
         return null;
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         presenters.clear ();
         super.gatherPresenters (presenters);
@@ -67,7 +69,7 @@ public final class ListSelectCommandCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic ("SELECT_COMMAND", "Command", "List.SELECT_COMMAND", CommandCD.ICON_PATH),
+            InfoPresenter.createStatic ("SELECT_COMMAND", "Command", "List.SELECT_COMMAND", CommandCD.ICON_PATH), // NOI18N
             // code
             new CodeReferencePresenter () {
                 protected String generateAccessCode () { return generateDirectAccessCode (); }

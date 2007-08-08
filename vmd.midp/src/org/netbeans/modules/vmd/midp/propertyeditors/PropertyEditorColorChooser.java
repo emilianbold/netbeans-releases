@@ -50,7 +50,6 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
 
     private static final String ERROR_WARNING = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_ARRAY_INTEGER_DIALOG"); // NOI18N
     private static final String BUTTON_NAME = NbBundle.getMessage(PropertyEditorArrayInteger.class, "LBL_BUTTON_NAME"); // NOI18N
-    private static final String NULL = NbBundle.getMessage(PropertyEditorColorChooser.class, "LBL_STRING_USER_CODE"); // NOI18N
     
     private JColorChooser customEditorElement;
     private JRadioButton radioButton;
@@ -58,7 +57,9 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
     private boolean supportsCustomEditor;
 
     public PropertyEditorColorChooser(boolean supportsCustomEditor) {
+        super(NbBundle.getMessage(PropertyEditorColorChooser.class, "LBL_COLOR_CHOOSER_UCLABEL")); // NOI18N
         this.supportsCustomEditor = supportsCustomEditor;
+        
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
@@ -139,7 +140,7 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
         if (isCurrentValueAUserCodeType()) {
             return USER_CODE_TEXT;
         } else if (isCurrentValueANull()) {
-            return NULL;
+            return NULL_TEXT;
         }
         PropertyValue value = (PropertyValue) getValue();
         if (value.getKind() == PropertyValue.Kind.VALUE && value.getPrimitiveValue() instanceof Integer) {

@@ -77,9 +77,11 @@ public final class WaitScreenCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(MidpNbPropertiesCategories.CATEGORY_TASK) // TODO
-                   .addProperty(NbBundle.getMessage(WaitScreenCD.class, "DISP_WaitScreen_Task"), PropertyEditorResource.createInstance(new TaskEditorElement(), // NOI18N
-                        NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), // NOI18N
-                        NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE")), PROP_TASK); // NOI18N
+                   .addProperty(NbBundle.getMessage(WaitScreenCD.class, "DISP_WaitScreen_Task"),
+                        PropertyEditorResource.createInstance(new TaskEditorElement(), // NOI18N
+                            NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NEW"), // NOI18N
+                            NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_NONE"), // NOI18N
+                            NbBundle.getMessage(WaitScreenCD.class, "LBL_CANCELLABLETASK_UCLABEL")), PROP_TASK); // NOI18N
     }
 
     private Presenter createSetterPresenter () {

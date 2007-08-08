@@ -68,6 +68,7 @@ public final class MobileDeviceResumeEventSourceCD extends ComponentDescriptor {
         return mobileDeviceResumeEventSourceComponent.getParentComponent ();
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters (presenters, false, true, false, false, false);
         super.gatherPresenters (presenters);
@@ -97,6 +98,7 @@ public final class MobileDeviceResumeEventSourceCD extends ComponentDescriptor {
             },
             // code
             new CodeClassLevelPresenter.Adapter() {
+                @Override
                 protected void generateClassBodyCode (StyledDocument document) {
                     MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-resumeMIDlet"); // NOI18N
 
@@ -117,6 +119,7 @@ public final class MobileDeviceResumeEventSourceCD extends ComponentDescriptor {
             // delete
             DeletePresenter.createIndeliblePresenter (),
             DeleteDependencyPresenter.createDependentOnParentComponentPresenter ()
+        
         );
     }
 

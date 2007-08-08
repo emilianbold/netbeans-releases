@@ -108,7 +108,7 @@ public final class MobileDeviceCD extends ComponentDescriptor {
         }
         
         public List<InspectorFolder> getOrdered(DesignComponent component, Collection<InspectorFolder> folders) {
-            List orderedList = new ArrayList(folders);
+            List<InspectorFolder> orderedList = new ArrayList<InspectorFolder>(folders);
             
             Collections.sort(orderedList, comparator);
             

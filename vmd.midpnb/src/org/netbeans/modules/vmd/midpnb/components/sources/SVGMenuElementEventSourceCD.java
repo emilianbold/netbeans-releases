@@ -73,9 +73,12 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(SVGMenuElementEventSourceCD.class, "DISP_SVGMenuElementEventSource_String"), PropertyEditorString.createInstance (), PROP_STRING); // NOI18N
+                .addProperty(NbBundle.getMessage(SVGMenuElementEventSourceCD.class, "DISP_SVGMenuElementEventSource_String"), // NOI18N
+                    PropertyEditorString.createInstance(NbBundle.getMessage(SVGMenuElementEventSourceCD.class,
+                    "DISP_SVGMenuElementEventSource_String_UCLABEL")), PROP_STRING); // NOI18N
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, InspectorPositionPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, ActionsPresenter.class);
@@ -118,18 +121,22 @@ public class SVGMenuElementEventSourceCD extends ComponentDescriptor {
                     return FlowSVGMenuElementPinOrderPresenter.CATEGORY_ID;
                 }
 
+                @Override
                 protected boolean canRename () {
                     return getComponent () != null;
                 }
 
+                @Override
                 protected String getRenameName () {
                     return (String) getComponent ().readProperty (PROP_STRING).getPrimitiveValue ();
                 }
 
+                @Override
                 protected void setRenameName (String name) {
                     getComponent ().writeProperty (PROP_STRING, MidpTypes.createStringValue (name));
                 }
 
+                @Override
                 protected DesignEventFilter getEventFilter () {
                     return super.getEventFilter ().addParentFilter (getComponent (), 1, false);
                 }

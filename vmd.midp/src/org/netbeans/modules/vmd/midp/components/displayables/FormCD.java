@@ -105,7 +105,7 @@ public final class FormCD extends ComponentDescriptor {
         return Arrays.asList(
                 // accept
                 FormAcceptPresenterSupport.createImageAcceptPresenter(),
-                FormAcceptPresenterSupport.createFileAcceptPresenter("png","jpg","gif"), //NOI18N
+                FormAcceptPresenterSupport.createFileAcceptPresenter("png", "jpg", "gif"), //NOI18N
                 new ScreenMoveArrayAcceptPresenter(FormCD.PROP_ITEMS, ItemCD.TYPEID),
                 new AcceptTypePresenter(ItemCD.TYPEID) {
                     @Override
@@ -117,7 +117,7 @@ public final class FormCD extends ComponentDescriptor {
                 // action
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ItemCD.TYPEID),
                 // inspector
-                MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage(FormCD.class, "DISP_InspectorCategory_Items"),createOrderingArrayController() , ItemCD.TYPEID), // NOI18N
+                MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage(FormCD.class, "DISP_InspectorCategory_Items"), createOrderingArrayController() , ItemCD.TYPEID), // NOI18N
                 // code
                 createSetterPresenter(),
                 // flow

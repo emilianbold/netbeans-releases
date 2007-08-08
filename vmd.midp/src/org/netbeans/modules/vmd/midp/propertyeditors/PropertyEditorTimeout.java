@@ -24,8 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.regex.Pattern;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -56,11 +55,10 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
     private JRadioButton radioButton;
 
     private PropertyEditorTimeout() {
+        super(NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUT_UCLABEL")); // NOI18N
         initComponents();
 
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static final PropertyEditorTimeout createInstance() {

@@ -56,6 +56,7 @@ public class ListEventHandlerCD extends ComponentDescriptor {
         return null;
     }
 
+    @Override
     public PaletteDescriptor getPaletteDescriptor () {
         return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(ListEventHandlerCD.class, "DISP_ListEventHandler"), NbBundle.getMessage(ListEventHandlerCD.class, "TTIP_ListEventHandler"), ICON_PATH, LARGE_ICON_PATH); // NOI18N
     }

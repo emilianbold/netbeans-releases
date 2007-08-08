@@ -55,6 +55,7 @@ public final class ClassCD extends ComponentDescriptor {
         return new TypeDescriptor (null, TYPEID, false, true);
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_INSTANCE_NAME, InstanceNameResolver.createFromSuggested (component, ClassCode.getSuggestedMainName (component.getType ())));
     }
@@ -79,6 +80,7 @@ public final class ClassCD extends ComponentDescriptor {
                 
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters (presenters, true, true, true, true, true);
         super.gatherPresenters (presenters);

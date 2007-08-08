@@ -27,11 +27,9 @@ import java.util.Arrays;
 import java.util.List;
 
 
-
 /**
  * @author Karol Harezlak
  */
-
 public final class FileBrowserOpenCommandEventSourceCD extends ComponentDescriptor {
 
     public static final TypeID TYPEID = new TypeID(TypeID.Kind.COMPONENT, "#FileBrowserOpenCommandEventSource"); // NOI18N

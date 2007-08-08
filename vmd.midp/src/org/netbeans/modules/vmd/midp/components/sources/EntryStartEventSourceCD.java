@@ -72,6 +72,7 @@ public final class EntryStartEventSourceCD extends ComponentDescriptor {
                     return null; // TODO
                 }
 
+                @Override
                 protected DesignEventFilter getEventFilter () {
                     return new DesignEventFilter ().addHierarchyFilter (getComponent (), false);
                 }
@@ -79,6 +80,7 @@ public final class EntryStartEventSourceCD extends ComponentDescriptor {
             // delete
             DeletePresenter.createUserIndeliblePresenter (),
             DeleteDependencyPresenter.createDependentOnParentComponentPresenter ()
+        
         );
     }
 

@@ -98,9 +98,15 @@ public final class ListCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Type"), PropertyEditorComboBox.createInstance( ChoiceSupport.getListTypes(), TYPEID), PROP_LIST_TYPE) // NOI18N
-                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Fit_Policy"), PropertyEditorComboBox.createInstance(ChoiceSupport.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY) // NOI18N
-                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Select_Command"), PropertyEditorListSelectCommand.create(), PROP_SELECT_COMMAND) // NOI18N
+                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Type"), // NOI18N
+                        PropertyEditorComboBox.createInstance(ChoiceSupport.getListTypes(), TYPEID,
+                            NbBundle.getMessage(ListCD.class, "DISP_List_Type_RB_LABEL"), // NOI18N
+                            NbBundle.getMessage(ListCD.class, "DISP_List_Type_UCLABEL")), PROP_LIST_TYPE) // NOI18N
+                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Fit_Policy"), // NOI18N
+                        PropertyEditorComboBox.createInstance(ChoiceSupport.getFitPolicyValues(), TYPEID,
+                            NbBundle.getMessage(ListCD.class, "DISP_List_Fit_Policy_RB_LABEL"), // NOI18N
+                            NbBundle.getMessage(ListCD.class, "DISP_List_Fit_Policy_UCLABEL")), PROP_FIT_POLICY) // NOI18N
+                    .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Select_Command"), PropertyEditorListSelectCommand.createInstance(), PROP_SELECT_COMMAND) // NOI18N
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES)
                     .addProperty(NbBundle.getMessage(ListCD.class, "DISP_List_Index_Based_Switch"), PropertyEditorBooleanUC.createInstance(false), PROP_INDEX_BASED_SWITCH); // NOI18N
     }

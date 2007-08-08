@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -51,7 +52,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton ChechelS
+ * @author Anton Chechel
  * @author Karol Harezlak
  */
 public final class PropertyEditorListSelectCommand extends PropertyEditorUserCode implements PropertyEditorElement {
@@ -66,22 +67,23 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
     private String noneItem;
     private String defaultItem;
 
-    public static PropertyEditorListSelectCommand create() {
+    public static PropertyEditorListSelectCommand createInstance() {
         String mnemonic = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SEL_COMMAND_STR"); // NOI18N
         String noneItem = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SELECTCOMMAND_NONE"); // NOI18N
         String defaultItem = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SELECTCOMMAND_DEFAULT"); // NOI18N
-        return new PropertyEditorListSelectCommand(ListSelectCommandCD.TYPEID, mnemonic, noneItem, defaultItem);
+        String userCodeLabel = NbBundle.getMessage(PropertyEditorListSelectCommand.class, "LBL_SELECTCOMMAND_UCLABEL"); // NOI18N
+        return new PropertyEditorListSelectCommand(ListSelectCommandCD.TYPEID, mnemonic, noneItem, defaultItem, userCodeLabel);
     }
 
-    public PropertyEditorListSelectCommand(TypeID typeID, String mnemonic, String noneItem, String defaultItem) {
+    private PropertyEditorListSelectCommand(TypeID typeID, String mnemonic, String noneItem, String defaultItem, String userCodeLabel) {
+        super(userCodeLabel);
         initComponents();
         this.typeID = typeID;
         Mnemonics.setLocalizedText(radioButton, mnemonic);
         this.noneItem = noneItem;
         this.defaultItem = defaultItem;
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     private void initComponents() {

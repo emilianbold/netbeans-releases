@@ -148,7 +148,7 @@ public class ClassCode {
     
     public static String getSuggestedMainName(TypeID type) {
         String instanceName = type.getString();
-        int index = instanceName.lastIndexOf('.');
+        int index = instanceName.lastIndexOf('.'); // NOI18N
         if (index >= 0)
             instanceName = instanceName.substring(index + 1);
         if (type.getDimension() > 0)

@@ -63,6 +63,7 @@ public final class MobileDeviceStartEventSourceCD extends ComponentDescriptor {
         return mobileDeviceStartEventSourceComponent.getParentComponent ();
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters (presenters, false, true, false, false, false);
         super.gatherPresenters (presenters);
@@ -92,6 +93,7 @@ public final class MobileDeviceStartEventSourceCD extends ComponentDescriptor {
             },
             // code
             new CodeClassLevelPresenter.Adapter() {
+                @Override
                 protected void generateClassBodyCode (StyledDocument document) {
                     MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-startMIDlet"); // NOI18N
 
@@ -112,6 +114,7 @@ public final class MobileDeviceStartEventSourceCD extends ComponentDescriptor {
             // delete
             DeletePresenter.createIndeliblePresenter (),
             DeleteDependencyPresenter.createDependentOnParentComponentPresenter ()
+        
         );
     }
 

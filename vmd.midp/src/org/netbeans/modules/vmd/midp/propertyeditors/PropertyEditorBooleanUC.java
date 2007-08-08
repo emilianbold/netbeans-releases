@@ -33,8 +33,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import javax.swing.*;
 
 /**
@@ -53,10 +52,10 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
     private boolean supportsCustomEditor;
 
     private PropertyEditorBooleanUC(boolean supportsCustomEditor) {
+        super(NbBundle.getMessage(PropertyEditorBooleanUC.class, "LBL_VALUE_BOOLEAN_UCLABEL")); // NOI18N
         this.supportsCustomEditor = supportsCustomEditor;
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static PropertyEditorBooleanUC createInstance(boolean supportsCustomEditor) {

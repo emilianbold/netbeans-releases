@@ -90,7 +90,10 @@ public final class PIMBrowserCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                   .addProperty(NbBundle.getMessage(PIMBrowserCD.class, "DISP_PIMBrowser_Type"), PropertyEditorComboBox.createInstance(getListTypes(), TYPEID), PROP_PIM_TYPE); // NOI18N
+                   .addProperty(NbBundle.getMessage(PIMBrowserCD.class, "DISP_PIMBrowser_Type"), // NOI18N
+                        PropertyEditorComboBox.createInstance(getListTypes(), TYPEID,
+                            NbBundle.getMessage(PIMBrowserCD.class, "DISP_PIMBrowser_Type_RB_LABEL"), // NOI18N
+                            NbBundle.getMessage(PIMBrowserCD.class, "DISP_PIMBrowser_Type_UCLABEL")), PROP_PIM_TYPE); // NOI18N
     }
     
     private Presenter createSetterPresenter() {

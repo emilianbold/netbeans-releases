@@ -25,8 +25,7 @@ import java.awt.event.FocusListener;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -53,19 +52,19 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
     private static final DateFormat FORMAT_DATE_TIME = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss"); // NOI18N
     private static final DateFormat FORMAT_DATE = new SimpleDateFormat("dd.MM.yyyy"); // NOI18N
     private static final DateFormat FORMAT_TIME = new SimpleDateFormat("HH:mm:ss"); // NOI18N
+    
     private static final String NON_DATE_TIME_TEXT = NbBundle.getMessage(PropertyEditorDate.class, "MSG_NON_DATE_TIME"); // NOI18N
     private static final String NON_DATE_TEXT = NbBundle.getMessage(PropertyEditorDate.class, "MSG_NON_DATE"); // NOI18N
     private static final String NON_TIME_TEXT = NbBundle.getMessage(PropertyEditorDate.class, "MSG_NON_TIME"); // NOI18N
+    
     private CustomEditor customEditor;
     private JRadioButton radioButton;
 
     private PropertyEditorDate() {
-        super();
+        super(NbBundle.getMessage(PropertyEditorDate.class, "LBL_DATE_UCLABEL")); // NOI18N
         initComponents();
 
-        Collection<PropertyEditorElement> peElements = new ArrayList<PropertyEditorElement>(1);
-        peElements.add(this);
-        initElements(peElements);
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static final DesignPropertyEditor createInstance() {

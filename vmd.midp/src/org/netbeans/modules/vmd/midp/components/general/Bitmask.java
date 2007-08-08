@@ -73,6 +73,7 @@ public abstract class Bitmask {
         }
     }
     
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof Bitmask) {
             return equals((Bitmask)obj);

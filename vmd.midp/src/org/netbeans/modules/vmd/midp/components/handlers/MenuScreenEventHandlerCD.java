@@ -51,6 +51,7 @@ public class MenuScreenEventHandlerCD extends ComponentDescriptor {
         return null;
     }
 
+    @Override
     public PaletteDescriptor getPaletteDescriptor () {
         return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(MenuScreenEventHandlerCD.class, "DISP_MenuScreenEventHandler"), NbBundle.getMessage(MenuScreenEventHandlerCD.class, "TTIP_MenuScreenEventHandler"), MenuScreenEventHandlerCD.ICON_PATH, MenuScreenEventHandlerCD.LARGE_ICON_PATH); // NOI18N
     }

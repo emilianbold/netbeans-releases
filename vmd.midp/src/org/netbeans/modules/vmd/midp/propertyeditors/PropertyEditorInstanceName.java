@@ -128,7 +128,7 @@ public final class PropertyEditorInstanceName extends DesignPropertyEditor {
 
     @Override
     public boolean canWrite() {
-        if (component != null && component.get() != null) {
+        if (component == null || component.get() == null) {
             return false;
         }
         

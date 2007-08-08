@@ -68,6 +68,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     public PaletteDescriptor getPaletteDescriptor () {
         return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(SwitchCaseEventSourceCD.class, "DISP_SwitchCaseEventSource"), NbBundle.getMessage(SwitchCaseEventSourceCD.class, "TTIP_SwitchCaseEventSource"), ICON_PATH, LARGE_ICON_PATH); // NOI18N
     }
@@ -83,6 +84,7 @@ public final class SwitchCaseEventSourceCD extends ComponentDescriptor {
                     .addProperty (NbBundle.getMessage(SwitchCaseEventSourceCD.class, "DISP_SwitchCaseEventSource_Switch_Case_Option"), PropertyEditorJavaString.createInstance(TYPEID), PROP_OPTION); // NOI18N
     }
     
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters (presenters, true, true, true, true, true);
         MidpActionsSupport.addMoveActionPresenter(presenters, SwitchPointCD.PROP_CASES);

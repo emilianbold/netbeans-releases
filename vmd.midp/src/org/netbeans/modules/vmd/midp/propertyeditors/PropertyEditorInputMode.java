@@ -52,7 +52,7 @@ public class PropertyEditorInputMode  extends PropertyEditorUserCode {
     private List<PropertyEditorElement> elements;
     
     private PropertyEditorInputMode() {
-        super();
+        super(NbBundle.getMessage(PropertyEditorInputMode.class, "LBL_INPUT_MODE_UCLABEL")); // NOI18N
         
         elements = new ArrayList<PropertyEditorElement>(2);
         elements.add(new PredefinedEditor());

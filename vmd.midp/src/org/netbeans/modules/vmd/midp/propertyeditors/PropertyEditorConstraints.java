@@ -23,7 +23,7 @@ import java.awt.GridLayout;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,12 +55,10 @@ public class PropertyEditorConstraints extends PropertyEditorUserCode implements
     private JRadioButton radioButton;
     
     private PropertyEditorConstraints() {
-        super();
+        super(NbBundle.getMessage(PropertyEditorConstraints.class, "LBL_CONSTR_UCLABEL")); // NOI18N
         initComponents();
         
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
     
     public static final PropertyEditorConstraints createInstance() {

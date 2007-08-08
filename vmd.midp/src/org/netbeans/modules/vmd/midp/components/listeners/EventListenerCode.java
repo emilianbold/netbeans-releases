@@ -149,6 +149,7 @@ class EventListenerCode {
             return classTreePath;
         }
 
+        @Override
         public Void visitClass (ClassTree node, Void p) {
             if (! isFirstLevel) {
                 isFirstLevel = true;
@@ -161,6 +162,7 @@ class EventListenerCode {
             return null;
         }
 
+        @Override
         public Void visitMethod (MethodTree node, Void p) {
             if (node.getName ().contentEquals (methodName)) {
                 List<? extends VariableTree> parameters = node.getParameters ();
@@ -182,6 +184,7 @@ class EventListenerCode {
             return null;
         }
 
+        @Override
         public Void visitVariable (VariableTree node, Void p) {
             return null;
         }
@@ -190,6 +193,7 @@ class EventListenerCode {
 
     public static class CodeCommandListenerPresenter extends CodeClassLevelPresenter.Adapter {
 
+        @Override
         protected void generateClassBodyCode (StyledDocument document) {
             List<DesignComponent> sources = DocumentSupport.gatherAllComponentsOfTypeID (getComponent ().getDocument (), CommandEventSourceCD.TYPEID);
             if (sources.size () == 0)
@@ -292,6 +296,7 @@ class EventListenerCode {
 
     public static class CodeItemCommandListenerPresenter extends CodeClassLevelPresenter.Adapter {
 
+        @Override
         protected void generateClassBodyCode (StyledDocument document) {
             List<DesignComponent> sources = DocumentSupport.gatherAllComponentsOfTypeID (getComponent ().getDocument (), ItemCommandEventSourceCD.TYPEID);
             if (sources.size () == 0)

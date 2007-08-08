@@ -76,6 +76,7 @@ public class TextFieldCD extends ComponentDescriptor {
          return MidpVersionDescriptor.MIDP;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_MAX_SIZE, MidpTypes.createIntegerValue (32));
         component.writeProperty (PROP_CONSTRAINTS, MidpTypes.createIntegerValue (VALUE_ANY));
@@ -90,6 +91,7 @@ public class TextFieldCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);
@@ -99,7 +101,9 @@ public class TextFieldCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Maximum_Size"), PropertyEditorNumber.createIntegerInstance(), PROP_MAX_SIZE) // NOI18N
-                .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Text"), PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_FIELD), PROP_TEXT) // NOI18N
+                .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Text"), // NOI18N
+                    PropertyEditorString.createInstance(PropertyEditorString.DEPENDENCE_TEXT_FIELD,
+                        NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Text_UCLABEL")), PROP_TEXT) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Initial_Input_Mode"), PropertyEditorInputMode.createInstance(), PROP_INITIAL_INPUT_MODE) // NOI18N
                 .addProperty(NbBundle.getMessage(TextFieldCD.class, "DISP_TextField_Input_Constraints"), PropertyEditorConstraints.createInstance(), PROP_CONSTRAINTS); // NOI18N
     }
@@ -134,6 +138,7 @@ public class TextFieldCD extends ComponentDescriptor {
             super (PARAM_CONSTRAINTS);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue value = component.readProperty (PROP_CONSTRAINTS);
             if (value.getKind () == PropertyValue.Kind.VALUE) {

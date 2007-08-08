@@ -77,8 +77,12 @@ public class StringItemCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Text"), PropertyEditorString.createInstance(), PROP_TEXT) // NOI18N
-                .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Appearance"), PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID), ItemCD.PROP_APPEARANCE_MODE) // NOI18N
+                .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Text"), // NOI18N
+                    PropertyEditorString.createInstance(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Text_UCLABEL")), PROP_TEXT) // NOI18N
+                .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Appearance"), // NOI18N
+                    PropertyEditorComboBox.createInstance(ImageItemCD.getAppearanceValues(), TYPEID,
+                        NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Appearance_RB_LABEL"), // NOI18N
+                        NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Appearance_UCLABEL")), ItemCD.PROP_APPEARANCE_MODE) // NOI18N
                 .addProperty(NbBundle.getMessage(StringItemCD.class, "DISP_StringItem_Font"), PropertyEditorResource.createFontPropertyEditor(), PROP_FONT); // NOI18N
     }
 

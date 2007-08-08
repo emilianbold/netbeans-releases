@@ -108,10 +108,22 @@ public final class FontCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Kind"), PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_FONT_KIND) // NOI18N
-                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Face"), PropertyEditorComboBox.createInstance(getFaceTypes(), TYPEID, TYPEID), PROP_FACE) // NOI18N
-                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Size"), PropertyEditorComboBox.createInstance(getSizeTypes(), TYPEID, TYPEID), PROP_SIZE) // NOI18N
-                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Style"), PropertyEditorComboBox.createInstance(getStyleTypes(), TYPEID, TYPEID), PROP_STYLE); // NOI18N
+                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Kind"), // NOI18N
+                        PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID,
+                            NbBundle.getMessage(FontCD.class, "DISP_Font_Kind_RB_LABEL"), // NOI18N
+                            NbBundle.getMessage(FontCD.class, "DISP_Font_Kind_UCLABEL")), PROP_FONT_KIND) // NOI18N
+                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Face"), // NOI18N
+                        PropertyEditorComboBox.createInstance(getFaceTypes(), TYPEID, TYPEID,
+                            NbBundle.getMessage(FontCD.class, "DISP_Font_Face_RB_LABEL"), // NOI18N
+                            NbBundle.getMessage(FontCD.class, "DISP_Font_Face_UCLABEL")), PROP_FACE) // NOI18N
+                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Size"), // NOI18N
+                        PropertyEditorComboBox.createInstance(getSizeTypes(), TYPEID, TYPEID,
+                            NbBundle.getMessage(FontCD.class, "DISP_Font_Size_RB_LABEL"), // NOI18N
+                            NbBundle.getMessage(FontCD.class, "DISP_Font_Size_UCLABEL")), PROP_SIZE) // NOI18N
+                    .addProperty(NbBundle.getMessage(FontCD.class, "DISP_Font_Style"), // NOI18N
+                        PropertyEditorComboBox.createInstance(getStyleTypes(), TYPEID, TYPEID,
+                            NbBundle.getMessage(FontCD.class, "DISP_Font_Style_RB_LABEL"), // NOI18N
+                            NbBundle.getMessage(FontCD.class, "DISP_Font_Style_UCLABEL")), PROP_STYLE); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {

@@ -66,9 +66,12 @@ public class SVGMenuSelectCommandEventSourceCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter ()
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_CODE_PROPERTIES) // TODO - its is not a code property
-                .addProperty (NbBundle.getMessage(SVGMenuSelectCommandEventSourceCD.class, "DISP_SVGMenuSelectCommandEventSource_ShowSelectCommand"), PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND); // NOI18N
+                .addProperty (NbBundle.getMessage(SVGMenuSelectCommandEventSourceCD.class,
+                    "DISP_SVGMenuSelectCommandEventSource_ShowSelectCommand"), // NOI18N
+                    PropertyEditorBooleanUC.createInstance(), PROP_SHOW_SELECT_COMMAND);
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, InfoPresenter.class);
         DocumentSupport.removePresentersOfClass (presenters, CommandEventSourceCD.CommandEventSourceFlowPinPresenter.class);
@@ -81,6 +84,7 @@ public class SVGMenuSelectCommandEventSourceCD extends ComponentDescriptor {
             InfoPresenter.createStatic ("SVGMenu.SELECT_COMMAND", "Command", CommandCD.ICON_PATH), // NOI18N
             // flow
             new CommandEventSourceCD.CommandEventSourceFlowPinPresenter () {
+                @Override
                 protected DesignComponent getComponentForAttachingPin () {
                     if (! MidpTypes.getBoolean (getComponent ().readProperty (PROP_SHOW_SELECT_COMMAND)))
                         return null;
@@ -91,6 +95,7 @@ public class SVGMenuSelectCommandEventSourceCD extends ComponentDescriptor {
             createPropertiesPresenter (),
             // delete
             DeletePresenter.createUserIndeliblePresenter ()
+        
         );
     }
 

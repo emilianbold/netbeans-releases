@@ -136,7 +136,8 @@ public class ItemCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), PropertyEditorString.createInstance(), PROP_LABEL) // NOI18N
+                    .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label"), // NOI18N
+                        PropertyEditorString.createInstance(NbBundle.getMessage(ItemCD.class, "DISP_Item_Label_UCLABEL")), PROP_LABEL) // NOI18N
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Default_Command"), PropertyEditorDefaultCommand.createInstance(), PROP_DEFAULT_COMMAND) // NOI18N
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Layout"), PropertyEditorLayout.createInstance(), PROP_LAYOUT) // NOI18N
                     .addProperty(NbBundle.getMessage(ItemCD.class, "DISP_Item_Preferred_Size"), PropertyEditorArrayInteger.create(), PROP_PREFERRED_WIDTH, PROP_PREFERRED_HEIGHT); // NOI18N

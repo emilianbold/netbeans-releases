@@ -379,10 +379,12 @@ public class ListCode {
 
     private static final class ListCommandParameter extends DisplayableCode.CommandParameter {
 
+        @Override
         public int getParameterPriority () {
             return super.getParameterPriority () + 1;
         }
 
+        @Override
         public boolean isRequiredToBeSet (DesignComponent component, int index) {
             DescriptorRegistry descriptorRegistry = component.getDocument ().getDescriptorRegistry ();
             List<PropertyValue> array = component.readProperty (DisplayableCD.PROP_COMMANDS).getArray ();
@@ -409,6 +411,7 @@ public class ListCode {
 
     private static final class ListActionCodeClassLevelPresenter extends CodeClassLevelPresenter.Adapter {
 
+        @Override
         protected void generateClassBodyCode (StyledDocument document) {
             DesignComponent list = getComponent ();
             List<PropertyValue> array = list.readProperty (ListCD.PROP_ELEMENTS).getArray ();
@@ -478,6 +481,7 @@ public class ListCode {
             super (PARAM_LIST_TYPE);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (ListCD.PROP_LIST_TYPE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
@@ -508,6 +512,7 @@ public class ListCode {
             super (PARAM_FIT_POLICY);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (ListCD.PROP_FIT_POLICY);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {

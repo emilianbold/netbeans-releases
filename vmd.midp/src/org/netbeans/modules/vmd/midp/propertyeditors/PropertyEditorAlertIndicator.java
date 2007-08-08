@@ -36,8 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import org.openide.explorer.propertysheet.InplaceEditor;
 
 /**
@@ -55,10 +54,10 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
     private boolean executeInsideWriteTransactionUsed = true;
 
     private PropertyEditorAlertIndicator() {
+        super(NbBundle.getMessage(PropertyEditorAlertIndicator.class, "LBL_VALUE_ALERT_INDICATOR_UCLABEL")); // NOI18N
         initComponents();
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static PropertyEditorAlertIndicator createInstance() {
@@ -67,7 +66,7 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
 
     private void initComponents() {
         radioButton = new JRadioButton();
-        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorAlertIndicator.class, "LBL_VALUE_BOOLEAN")); // NOI18N
+        Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorAlertIndicator.class, "LBL_VALUE_ALERT_INDICATOR_STR")); // NOI18N
         customEditor = new CustomEditor();
     }
 
@@ -156,11 +155,6 @@ public final class PropertyEditorAlertIndicator extends PropertyEditorUserCode i
     public void updateState(PropertyValue value) {
         customEditor.setValue(value);
         radioButton.setSelected(!isCurrentValueAUserCodeType());
-    }
-
-    @Override
-    protected void initElements(Collection<PropertyEditorElement> elements) {
-        super.initElements(elements);
     }
 
     @Override

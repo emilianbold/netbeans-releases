@@ -67,6 +67,7 @@ public class DateFieldCD extends ComponentDescriptor {
         return MidpVersionDescriptor.MIDP;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_DATE, PropertyValue.createUserCode ("new java.util.Date (System.currentTimeMillis ())")); // NOI18N
         component.writeProperty (PROP_INPUT_MODE, MidpTypes.createIntegerValue (VALUE_DATE_TIME));
@@ -80,6 +81,7 @@ public class DateFieldCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass (presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters (presenters);
@@ -90,7 +92,10 @@ public class DateFieldCD extends ComponentDescriptor {
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                 .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Date"), "dd.mm.yyyy hh:mm:ss", PropertyEditorDate.createInstance(), PROP_DATE) // NOI18N
                 .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Time_Zone"), PropertyEditorTimeZone.createInstance(), PROP_TIME_ZONE) // NOI18N
-                .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Input_Mode"), PropertyEditorComboBox.createInstance(getInputModeValues(), TYPEID), PROP_INPUT_MODE); // NOI18N
+                .addProperty(NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Input_Mode"), // NOI18N
+                    PropertyEditorComboBox.createInstance(getInputModeValues(), TYPEID,
+                        NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Input_Mode_RB_LABEL"), // NOI18N
+                        NbBundle.getMessage(DateFieldCD.class, "DISP_DateField_Input_Mode_UCLABEL")), PROP_INPUT_MODE); // NOI18N
     }
 
     private static Presenter createSetterPresenter() {
@@ -135,6 +140,7 @@ public class DateFieldCD extends ComponentDescriptor {
         }
 
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (PROP_DATE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
@@ -153,6 +159,7 @@ public class DateFieldCD extends ComponentDescriptor {
             super (PARAM_INPUT_MODE);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (PROP_INPUT_MODE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
@@ -184,6 +191,7 @@ public class DateFieldCD extends ComponentDescriptor {
             super (PARAM_TIME_ZONE);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (PROP_TIME_ZONE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {

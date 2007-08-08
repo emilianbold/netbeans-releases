@@ -317,6 +317,7 @@ public class ChoiceGroupCode {
             super (PARAM_CHOICE_TYPE);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (ChoiceGroupCD.PROP_CHOICE_TYPE);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {
@@ -347,6 +348,7 @@ public class ChoiceGroupCode {
             super (PARAM_FIT_POLICY);
         }
 
+        @Override
         public void generateParameterCode (DesignComponent component, MultiGuardedSection section, int index) {
             PropertyValue propertyValue = component.readProperty (ChoiceGroupCD.PROP_FIT_POLICY);
             if (propertyValue.getKind () == PropertyValue.Kind.VALUE) {

@@ -16,8 +16,7 @@
  */
 package org.netbeans.modules.vmd.midpnb.propertyeditors;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -41,12 +40,10 @@ public class PropertyEditorSVGImage extends PropertyEditorUserCode implements Pr
     private String resourcePath;
 
     private PropertyEditorSVGImage() {
-        super();
+        super(NbBundle.getMessage(PropertyEditorSVGImage.class, "LBL_SVGIMAGE_UCLABEL")); // NOI18N;
         initComponents();
         
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static PropertyEditorSVGImage createInstance() {

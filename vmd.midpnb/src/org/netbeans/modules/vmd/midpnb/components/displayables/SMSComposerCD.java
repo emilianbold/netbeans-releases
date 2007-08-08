@@ -111,15 +111,26 @@ public final class SMSComposerCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
        return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                .addPropertiesCategory(CATEGORIES_SMS) 
-                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_PhoneNumber"), PropertyEditorString.createInstance(), PROP_PHONE_NUMBER)
-                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_Message"), PropertyEditorString.createInstance(), PROP_MESSAGE)
-                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_Port_Number"), PropertyEditorNumber.createIntegerInstance(), PROP_PORT_NUMBER)
-                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_AutomaticallySend"), PropertyEditorBooleanUC.createInstance(), PROP_SEND_AUTOMATICALLY)
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_PhoneNumber"), //NOI18N
+                        PropertyEditorString.createInstance(NbBundle.getMessage(SMSComposerCD.class,
+                            "DISP_SMSComposer_PhoneNumber_UCLABEL")), PROP_PHONE_NUMBER) //NOI18N
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_Message"), //NOI18N
+                        PropertyEditorString.createInstance(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_Message_UCLABEL")), PROP_MESSAGE) //NOI18N
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_Port_Number"), //NOI18N
+                        PropertyEditorNumber.createIntegerInstance(), PROP_PORT_NUMBER)
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_AutomaticallySend"), //NOI18N
+                        PropertyEditorBooleanUC.createInstance(), PROP_SEND_AUTOMATICALLY)
                .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_BackgroundColor"), new PropertyEditorColorChooser(true), PROP_BGK_COLOR)
-                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_ForegroundColor"), new PropertyEditorColorChooser(true), PROP_FRG_COLOR)
-                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_PhoneNumberLabel"), PropertyEditorString.createInstanceWithDefaultValue(PHONE_NUMBER_LABEL), PROP_PHONE_NUMEBR_LABEL)
-                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_MessageLabel"), PropertyEditorString.createInstanceWithDefaultValue(MESSAGE_LABEL), PROP_MESSAGE_LABEL);
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_BackgroundColor"), //NOI18N
+                        new PropertyEditorColorChooser(true), PROP_BGK_COLOR)
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_ForegroundColor"), //NOI18N
+                        new PropertyEditorColorChooser(true), PROP_FRG_COLOR)
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_PhoneNumberLabel"), //NOI18N
+                        PropertyEditorString.createInstanceWithDefaultValue(PHONE_NUMBER_LABEL,
+                        NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_PhoneNumberLabel_UCLABEL")), PROP_PHONE_NUMEBR_LABEL) //NOI18N
+                   .addProperty(NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_MessageLabel"), //NOI18N
+                        PropertyEditorString.createInstanceWithDefaultValue(MESSAGE_LABEL, 
+                        NbBundle.getMessage(SMSComposerCD.class, "DISP_SMSComposer_MessageLabel_UCLABEL")), PROP_MESSAGE_LABEL); //NOI18N
     }
      
     private Presenter createSetterPresenter () {

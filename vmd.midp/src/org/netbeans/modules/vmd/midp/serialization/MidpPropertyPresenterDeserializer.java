@@ -30,6 +30,7 @@ import org.w3c.dom.Node;
 
 import java.util.Arrays;
 import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
  * @author David Kaspar
@@ -88,7 +89,7 @@ public class MidpPropertyPresenterDeserializer extends PresenterDeserializer {
             else if (EDITOR_FLOAT.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorNumber.createFloatInstance(), propertyName);
             else if (EDITOR_STRING.equals (editor))
-                presenter.addProperty (displayName, PropertyEditorString.createInstance (), propertyName);
+                presenter.addProperty (displayName, PropertyEditorString.createInstance(NbBundle.getMessage(MidpPropertyPresenterDeserializer.class, "TEXT_UCLABEL")), propertyName); // NOI18N
             else if (EDITOR_JAVA_CODE.equals (editor))
                 presenter.addProperty (displayName, PropertyEditorJavaString.createInstance (descriptor.getTypeDescriptor ().getThisType ()), propertyName);
             else if (EDITOR_CHAR.equals (editor))

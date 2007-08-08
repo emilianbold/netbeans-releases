@@ -88,9 +88,13 @@ public class AbstractInfoScreenCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
             .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_text"), PropertyEditorString.createInstance(), PROP_TEXT) // NOI18N
-                .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_image"), PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
-                .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_textFont"), PropertyEditorResource.createFontPropertyEditor(), PROP_TEXT_FONT); // NOI18N
+                .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_text"), // NOI18N
+                    PropertyEditorString.createInstance(NbBundle.getMessage(AbstractInfoScreenCD.class,
+                    "DISP_AbstractInfoScreen_text_UCLABEL")), PROP_TEXT) // NOI18N
+                .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_image"), // NOI18N
+                    PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE)
+                .addProperty(NbBundle.getMessage(AbstractInfoScreenCD.class, "DISP_AbstractInfoScreen_textFont"), // NOI18N
+                    PropertyEditorResource.createFontPropertyEditor(), PROP_TEXT_FONT);
     }
 
     private Presenter createSetterPresenter () {

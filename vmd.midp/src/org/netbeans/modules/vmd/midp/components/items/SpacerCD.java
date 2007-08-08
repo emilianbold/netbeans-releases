@@ -96,6 +96,7 @@ public class SpacerCD extends ComponentDescriptor {
                 .addSetters(MidpSetter.createSetter("setSetMinimumSize", MidpVersionable.MIDP_2).addParameters(PROP_MIN_WIDTH, PROP_MIN_HEIGHT)); // NOI18N
     }
     
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         Presenter[] pa = presenters.toArray(new Presenter[presenters.size()]);
         for (Presenter presenter : pa) {

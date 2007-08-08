@@ -86,7 +86,8 @@ public final class ListElementEventSourceCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter () {
         return new DefaultPropertiesPresenter ()
             .addPropertiesCategory (MidpPropertiesCategories.CATEGORY_PROPERTIES)
-            .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_String"), PropertyEditorString.createInstance (), PROP_STRING) // NOI18N
+            .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_String"), // NOI18N
+                PropertyEditorString.createInstance(NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_String_UCLABEL")), PROP_STRING) // NOI18N
             .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Image"), PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
             .addProperty(NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Font"), PropertyEditorResource.createFontPropertyEditor(), PROP_FONT) // NOI18N
             .addProperty (NbBundle.getMessage(ListElementEventSourceCD.class, "DISP_ListElementEventSource_Selected"), PropertyEditorBooleanUC.createInstance(), PROP_SELECTED); // NOI18N

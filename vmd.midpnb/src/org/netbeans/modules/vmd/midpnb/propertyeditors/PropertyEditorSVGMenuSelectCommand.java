@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -69,20 +70,19 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         String mnemonic = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SEL_COMMAND_STR"); // NOI18N
         String noneItem = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SELECTCOMMAND_NONE"); // NOI18N
         String defaultItem = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SELECTCOMMAND_DEFAULT"); // NOI18N
-        return new PropertyEditorSVGMenuSelectCommand(SVGMenuSelectCommandCD.TYPEID, mnemonic, noneItem, defaultItem);
+        String userCodeLabel = NbBundle.getMessage(PropertyEditorSVGMenuSelectCommand.class, "LBL_SELECTCOMMAND_UCLABEL"); // NOI18N
+        return new PropertyEditorSVGMenuSelectCommand(SVGMenuSelectCommandCD.TYPEID, mnemonic, noneItem, defaultItem, userCodeLabel);
     }
 
-    public PropertyEditorSVGMenuSelectCommand(TypeID typeID, String mnemonic, String noneItem, String defaultItem) {
-        super();
+    private PropertyEditorSVGMenuSelectCommand(TypeID typeID, String mnemonic, String noneItem, String defaultItem, String userCodeLabel) {
+        super(userCodeLabel);
         initComponents();
         this.typeID = typeID;
         this.noneItem = noneItem;
         this.defaultItem = defaultItem;
         Mnemonics.setLocalizedText(radioButton, mnemonic);
 
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     private void initComponents() {

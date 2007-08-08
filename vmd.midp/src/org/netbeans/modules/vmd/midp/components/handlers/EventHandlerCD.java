@@ -58,6 +58,7 @@ public final class EventHandlerCD extends ComponentDescriptor {
         );
     }
 
+    @Override
     protected void gatherPresenters (ArrayList<Presenter> presenters) {
         MidpActionsSupport.addCommonActionsPresenters (presenters, false, true, false, true, true);
         super.gatherPresenters (presenters);

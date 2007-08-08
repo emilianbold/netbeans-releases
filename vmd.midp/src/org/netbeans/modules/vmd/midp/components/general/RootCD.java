@@ -75,6 +75,7 @@ public final class RootCD extends ComponentDescriptor {
         return MidpVersionDescriptor.FOREVER;
     }
 
+    @Override
     public void postInitialize (DesignComponent component) {
         component.writeProperty (PROP_VERSION, MidpTypes.createStringValue (VALUE_MIDP_2_0));
     }
@@ -104,7 +105,7 @@ public final class RootCD extends ComponentDescriptor {
     protected List<? extends Presenter> createPresenters () {
         return Arrays.asList (
             // general
-            InfoPresenter.createStatic(NbBundle.getMessage(RootCD.class, "NAME_Root"), null, ICON_PATH),
+            InfoPresenter.createStatic(NbBundle.getMessage(RootCD.class, "NAME_Root"), null, ICON_PATH), // NOI18N
             // properties
             createPropertiesPresenter(),
             // validator

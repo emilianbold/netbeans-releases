@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -64,11 +65,10 @@ public final class PropertyEditorDefaultCommand extends PropertyEditorUserCode i
     private JRadioButton radioButton;
 
     private PropertyEditorDefaultCommand() {
+        super(NbBundle.getMessage(PropertyEditorDefaultCommand.class, "LBL_DEF_COMMAND_UCLABEL")); // NOI18N
         initComponents();
 
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     public static PropertyEditorDefaultCommand createInstance() {

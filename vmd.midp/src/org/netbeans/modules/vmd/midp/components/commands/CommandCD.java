@@ -96,9 +96,14 @@ public final class CommandCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter() 
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Label"), PropertyEditorString.createTextFieldInstance(), PROP_LABEL) // NOI18N
-                    .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Long_Label"), PropertyEditorString.createInstance(), PROP_LONG_LABEL) // NOI18N
-                    .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Type"), PropertyEditorComboBox.createInstance(getTypes(), TYPEID), PROP_TYPE) // NOI18N
+                    .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Label"), // NOI18N
+                        PropertyEditorString.createTextFieldInstance(NbBundle.getMessage(CommandCD.class, "DISP_Command_Label_UCLABEL")), PROP_LABEL) // NOI18N
+                    .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Long_Label"), // NOI18N
+                        PropertyEditorString.createInstance(NbBundle.getMessage(CommandCD.class, "DISP_Command_Long_Label_UCLABEL")), PROP_LONG_LABEL) // NOI18N
+                    .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Type"), // NOI18N
+                        PropertyEditorComboBox.createInstance(getTypes(), TYPEID,
+                        NbBundle.getMessage(CommandCD.class, "DISP_Command_Type_RB_LABEL"), // NOI18N
+                        NbBundle.getMessage(CommandCD.class, "DISP_Command_Type_UCLABEL")), PROP_TYPE) // NOI18N
                     .addProperty(NbBundle.getMessage(CommandCD.class, "DISP_Command_Priority"), PropertyEditorNumber.createIntegerInstance(), PROP_PRIORITY); // NOI18N
     }
 

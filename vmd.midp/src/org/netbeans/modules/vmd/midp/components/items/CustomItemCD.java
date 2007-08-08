@@ -46,7 +46,7 @@ public class CustomItemCD extends ComponentDescriptor {
     }
 
     public List<PropertyDescriptor> getDeclaredPropertyDescriptors() {
-        return Arrays.asList(
+        return Arrays.<PropertyDescriptor>asList(
         );
     }
 

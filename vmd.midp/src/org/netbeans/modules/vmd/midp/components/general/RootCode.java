@@ -57,6 +57,7 @@ public final class RootCode {
 
     private static class CodeInitializeMethodPresenter extends CodeClassLevelPresenter.Adapter {
 
+        @Override
         protected void generateClassBodyCode (StyledDocument document) {
             MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-initialize"); // NOI18N
             section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: initialize \">\n"); // NOI18N

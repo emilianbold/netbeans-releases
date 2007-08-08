@@ -97,8 +97,12 @@ public final class AlertCD extends ComponentDescriptor {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
                     .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Image"), PropertyEditorResource.createImagePropertyEditor(), PROP_IMAGE) // NOI18N
-                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_String"), PropertyEditorString.createInstance(), PROP_STRING) // NOI18N
-                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Type"), PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID), PROP_ALERT_TYPE) // NOI18N
+                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_String"), // NOI18N
+                        PropertyEditorString.createInstance(NbBundle.getMessage(AlertCD.class, "DISP_Alert_String_UCLABEL")), PROP_STRING) // NOI18N
+                    .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Type"), // NOI18N
+                        PropertyEditorComboBox.createInstance(getKindTypes(), TYPEID,
+                        NbBundle.getMessage(AlertCD.class, "DISP_Alert_Type_RB_LABEL"), // NOI18N
+                        NbBundle.getMessage(AlertCD.class, "DISP_Alert_Type_UCLABEL")), PROP_ALERT_TYPE) // NOI18N
                     .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Use_Indicator"), PropertyEditorAlertIndicator.createInstance(), PROP_INDICATOR) // NOI18N
                     .addProperty(NbBundle.getMessage(AlertCD.class, "DISP_Alert_Timeout"), PropertyEditorTimeout.createInstance(), PROP_TIMEOUT); // NOI18N
     }

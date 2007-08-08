@@ -37,6 +37,7 @@ public class DisplayableAccept {
             super(Kind.COMPONENT_PRODUCER);
         }
         
+        @Override
         public boolean isAcceptable (ComponentProducer producer, AcceptSuggestion suggestion) {
             if (getComponent().getComponentDescriptor().getPropertyDescriptor(DisplayableCD.PROP_COMMANDS).isReadOnly())
                 return false;
@@ -44,6 +45,7 @@ public class DisplayableAccept {
             return registry.isInHierarchy(CommandCD.TYPEID, producer.getMainComponentTypeID ());
         }
         
+        @Override
         public final ComponentProducer.Result accept (ComponentProducer producer, AcceptSuggestion suggestion) {
             DesignComponent displayable = getComponent();
             DesignDocument document = displayable.getDocument();

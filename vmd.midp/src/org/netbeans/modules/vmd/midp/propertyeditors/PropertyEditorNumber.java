@@ -22,8 +22,7 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 import java.awt.BorderLayout;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.regex.Pattern;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -52,13 +51,11 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
     private CustomEditor customEditor;
     private JRadioButton radioButton;
     
-    private PropertyEditorNumber() {
-        super();
+    private PropertyEditorNumber(String userCodeLabel) {
+        super(userCodeLabel);
         initComponents();
         
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
     
     /**
@@ -67,7 +64,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createIntegerInstance() {
-        return new PropertyEditorNumber();
+        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_INTEGER_UCLABEL")); // NOI18N
     }
     
     /**
@@ -76,7 +73,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createLongInstance() {
-        return new PropertyEditorNumber(){
+        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_LONG_UCLABEL")) { // NOI18N
             @Override
             protected String getLocalizedRadioButtonLabel() {
                 return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_LONG_STR"); // NOI18N
@@ -103,7 +100,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createByteInstance() {
-        return new PropertyEditorNumber(){
+        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_BYTE_UCLABEL")) { // NOI18N
             @Override
             protected String getLocalizedRadioButtonLabel() {
                 return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_BYTE_STR"); // NOI18N
@@ -130,7 +127,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createShortInstance() {
-        return new PropertyEditorNumber(){
+        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_SHORT_UCLABEL")) { // NOI18N
             @Override
             protected String getLocalizedRadioButtonLabel() {
                 return NbBundle.getMessage(PropertyEditorNumber.class, "LBL_SHORT_STR"); // NOI18N
@@ -157,7 +154,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createFloatInstance() {
-        return new PropertyEditorNumber(){
+        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_FLOAT_UCLABEL")) { // NOI18N
             @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-\\.]+", text); // NOI18N
@@ -194,7 +191,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createDoubleInstance() {
-        return new PropertyEditorNumber(){
+        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_DOUBLE_UCLABEL")) { // NOI18N
             @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-\\.]+", text); // NOI18N
@@ -231,7 +228,7 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
      * @return propertyEditor
      */
     public static final PropertyEditorNumber createCharInstance() {
-        return new PropertyEditorNumber(){
+        return new PropertyEditorNumber(NbBundle.getMessage(PropertyEditorNumber.class, "LBL_CHAR_UCLABEL")) { // NOI18N
             @Override
             protected boolean isTextCorrect(String text) {
                 return Pattern.matches("[\\d\\-]+", text); // NOI18N

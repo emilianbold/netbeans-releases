@@ -75,6 +75,7 @@ public class ChoiceGroupCD extends ComponentDescriptor {
         );
     }
     
+    @Override
     protected void gatherPresenters(ArrayList<Presenter> presenters) {
         DocumentSupport.removePresentersOfClass(presenters, ScreenDisplayPresenter.class);
         super.gatherPresenters(presenters);
@@ -83,9 +84,15 @@ public class ChoiceGroupCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter()
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                    .addProperty(NbBundle.getMessage(ChoiceGroupCD.class, "DISP_ChoiceGroup_Type"), PropertyEditorComboBox.createInstance(ChoiceSupport.getChoiceGroupTypes(), TYPEID), PROP_CHOICE_TYPE) // NOI18N
-                    .addProperty(NbBundle.getMessage(ChoiceGroupCD.class, "DISP_ChoiceGroup_Fit_Policy"), NbBundle.getMessage(ChoiceGroupCD.class, "TTIP_ChoiceGroup_Fit_Policy"), // NOI18N
-                                  PropertyEditorComboBox.createInstance(ChoiceSupport.getFitPolicyValues(), TYPEID), PROP_FIT_POLICY);
+                    .addProperty(NbBundle.getMessage(ChoiceGroupCD.class, "DISP_ChoiceGroup_Type"), // NOI18N
+                        PropertyEditorComboBox.createInstance(ChoiceSupport.getChoiceGroupTypes(), TYPEID,
+                            NbBundle.getMessage(ChoiceGroupCD.class, "DISP_ChoiceGroup_Type_RB_LABEL"), // NOI18N
+                            NbBundle.getMessage(ChoiceGroupCD.class, "DISP_ChoiceGroup_Type_UCLABEL")), PROP_CHOICE_TYPE) // NOI18N
+                    .addProperty(NbBundle.getMessage(ChoiceGroupCD.class, "DISP_ChoiceGroup_Fit_Policy"), // NOI18N
+                        NbBundle.getMessage(ChoiceGroupCD.class, "TTIP_ChoiceGroup_Fit_Policy"), // NOI18N
+                        PropertyEditorComboBox.createInstance(ChoiceSupport.getFitPolicyValues(), TYPEID,
+                            NbBundle.getMessage(ChoiceGroupCD.class, "DISP_ChoiceGroup_Fit_Policy_RB_LABEL"), // NOI18N
+                            NbBundle.getMessage(ChoiceGroupCD.class, "DISP_ChoiceGroup_Fit_Policy_UCLABEL")), PROP_FIT_POLICY); // NOI18N
     }
     
     private static Presenter createSetterPresenter() {
@@ -113,6 +120,7 @@ public class ChoiceGroupCD extends ComponentDescriptor {
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ChoiceElementCD.TYPEID),
                 //accept
                 new AcceptTypePresenter(ChoiceElementCD.TYPEID) {
+                    @Override
                     protected void notifyCreated (DesignComponent choiceElement) {
                         super.notifyCreated (choiceElement);
                         DesignComponent choiceGroup = getComponent ();
@@ -126,7 +134,6 @@ public class ChoiceGroupCD extends ComponentDescriptor {
                 },
                 // screen
                 new ChoiceGroupDisplayPresenter()
-        
         );
     }
      

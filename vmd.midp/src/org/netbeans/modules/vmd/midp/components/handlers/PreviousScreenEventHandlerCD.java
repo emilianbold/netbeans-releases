@@ -54,6 +54,7 @@ public class PreviousScreenEventHandlerCD extends ComponentDescriptor {
         return null;
     }
 
+    @Override
     public PaletteDescriptor getPaletteDescriptor () {
         return new PaletteDescriptor (MidpPaletteProvider.CATEGORY_PROCESS_FLOW, NbBundle.getMessage(PreviousScreenEventHandlerCD.class, "DISP_PreviousScreenEventHandler"), NbBundle.getMessage(PreviousScreenEventHandlerCD.class, "TTIP_PreviousScreenEventHandler"), ICON_PATH, LARGE_ICON_PATH); // NOI18N
     }

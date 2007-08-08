@@ -22,8 +22,7 @@ package org.netbeans.modules.vmd.midp.propertyeditors;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
@@ -74,15 +73,14 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * example is given text length is more than TextBoxCD.PROP_MAX_SIZE then
      * this property will be automatically increased to be equal of text length.
      */
-    private PropertyEditorString(String comment, int dependence, boolean useTextArea) {
+    private PropertyEditorString(String comment, int dependence, boolean useTextArea, String userCodeLabel) {
+        super(userCodeLabel);
         this.comment = comment;
         this.dependence = dependence;
         this.useTextArea = useTextArea;
         initComponents();
 
-        Collection<PropertyEditorElement> elements = new ArrayList<PropertyEditorElement>(1);
-        elements.add(this);
-        initElements(elements);
+        initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
     /**
@@ -98,16 +96,16 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @param String default value of the property editor, could be different from default
      * value specified in the component descriptor
      */
-    private PropertyEditorString(String comment, int dependence, String defaultValue) {
-        this(comment, dependence, true);
+    private PropertyEditorString(String comment, int dependence, String defaultValue, String userCodeLabel) {
+        this(comment, dependence, true, userCodeLabel);
         this.defaultValue = defaultValue;
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences.
      */
-    public static final PropertyEditorString createInstance() {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, true);
+    public static final PropertyEditorString createInstance(String userCodeLabel) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, true, userCodeLabel);
     }
 
     /**
@@ -115,42 +113,29 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * @param int dependence
      * @see PropertyEditorString(String comment, int dependence)
      */
-    public static final PropertyEditorString createInstance(int dependence) {
-        return new PropertyEditorString(null, dependence, true);
+    public static final PropertyEditorString createInstance(int dependence, String userCodeLabel) {
+        return new PropertyEditorString(null, dependence, true, userCodeLabel);
     }
 
     /**
      * Creates instance of PropertyEditorString using JTExtField.
      */
-    public static final PropertyEditorString createTextFieldInstance() {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, false);
+    public static final PropertyEditorString createTextFieldInstance(String userCodeLabel) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, false, userCodeLabel);
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences with default value.
      */
-    public static final PropertyEditorString createInstanceWithDefaultValue(String defaultValue) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue);
+    public static final PropertyEditorString createInstanceWithDefaultValue(String defaultValue, String userCodeLabel) {
+        return new PropertyEditorString(null, DEPENDENCE_NONE, defaultValue, userCodeLabel);
     }
 
     /**
      * Creates instance of PropertyEditorString without dependences with default value.
      */
-    public static final PropertyEditorString createInstanceWithComment(String comment) {
-        return new PropertyEditorString(comment, DEPENDENCE_NONE, null);
-    }
-
-    /**
-     * Creates instance of PropertyEditorString which can not change PropertyValue.
-     */
-    public static final PropertyEditorString createInstanceReadOnly(boolean useTextArea) {
-        return new PropertyEditorString(null, DEPENDENCE_NONE, useTextArea) {
-
-            @Override
-            public boolean canWrite() {
-                return false;
-            }
-        };
+    public static final PropertyEditorString createInstanceWithComment(String comment, String userCodeLabel) {
+        return new PropertyEditorString(comment, DEPENDENCE_NONE, null, userCodeLabel);
     }
 
     private void initComponents() {

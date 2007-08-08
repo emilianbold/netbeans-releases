@@ -104,7 +104,11 @@ public class SVGPlayerCD extends ComponentDescriptor {
     private static DefaultPropertiesPresenter createPropertiesPresenter() {
         return new DefaultPropertiesPresenter(DesignEventFilterResolver.THIS_COMPONENT)
                 .addPropertiesCategory(MidpPropertiesCategories.CATEGORY_PROPERTIES)
-                .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_SVGImage"), PropertyEditorResource.createInstance(new SVGImageEditorElement(), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE")), PROP_SVG_IMAGE) //NOI18N
+                .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_SVGImage"), //NOI18N
+                    PropertyEditorResource.createInstance(new SVGImageEditorElement(),
+                        NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NEW"), //NOI18N
+                        NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_NONE"), //NOI18N
+                        NbBundle.getMessage(SVGWaitScreenCD.class, "LBL_SVGIMAGE_UCLABEL")), PROP_SVG_IMAGE) //NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_StartAnimationImmediately"), PropertyEditorBooleanUC.createInstance(), PROP_START_ANIM_IMMEDIATELY) // NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_AnimationTimeIncrement"), PropertyEditorNumber.createFloatInstance(), PROP_TIME_INCREMENT) // NOI18N
                 .addProperty(NbBundle.getMessage(SVGPlayerCD.class, "DISP_SVGPlayer_ResetAnimationWhenStopped"), PropertyEditorBooleanUC.createInstance(), PROP_RESET_ANIMATION_WHEN_STOPPED); // NOI18N
