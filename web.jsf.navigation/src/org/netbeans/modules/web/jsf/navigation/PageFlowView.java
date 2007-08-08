@@ -217,7 +217,10 @@ public class PageFlowView extends TopComponent implements Lookup.Provider, Explo
             Node node = new DefaultDataNode(DataObject.find(context.getFacesConfigFile()));
             setActivatedNodes(new Node[]{node});
         } catch (DataObjectNotFoundException donfe) {
-            Exceptions.printStackTrace(donfe);
+            Exceptions.printStackTrace(donfe);            
+            /* Trying to track down #112243 */
+            System.out.println("WARNING: Unable to find the following DataObject: " + context.getFacesConfigFile());
+            setActivatedNodes(new Node[]{});
         }
     }
 
