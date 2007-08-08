@@ -26,6 +26,7 @@ import org.netbeans.modules.uml.codegen.dataaccess.DomainTemplatesRetriever;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -66,7 +67,8 @@ public class TemplatesTableRowPanel extends javax.swing.JPanel
         DefaultComboBoxModel selectionModel = 
             ((DefaultComboBoxModel)templateFileCombo.getModel());
         
-        selectionModel.addElement("<None Selected>");
+        selectionModel.addElement(NbBundle.getMessage(
+            TemplatesTableRowPanel.class, "VAL_ElementType_NodeSelected")); // NOI18N
         
         Enumeration templateFiles = root.getChildren(true);
         

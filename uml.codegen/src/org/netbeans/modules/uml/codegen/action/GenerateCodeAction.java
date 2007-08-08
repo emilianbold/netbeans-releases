@@ -255,7 +255,8 @@ public class GenerateCodeAction extends CookieAction
         
         HashMap settings = new HashMap();
         
-        settings.put(AbstractNBTask.SETTING_KEY_TASK_NAME,NbBundle.getMessage(GenerateCodeAction.class, 
+        settings.put(AbstractNBTask.SETTING_KEY_TASK_NAME,NbBundle.getMessage(
+            GenerateCodeAction.class, 
             "CTL_ExportCodeActionName")); // NOI18N
 
         settings.put(AbstractNBTask.SETTING_KEY_TOTAL_ITEMS, selElements.size());
@@ -280,7 +281,7 @@ public class GenerateCodeAction extends CookieAction
         // createJavaProject(ProjectUtil.getOpenJavaProjects()[0]);
     }
 
-    private final static String COLON_COLON = "::";
+    private final static String COLON_COLON = "::"; // NOI18N
     
     private ETList<IElement> removeImportedElements(ETList<IElement> elements)
     {

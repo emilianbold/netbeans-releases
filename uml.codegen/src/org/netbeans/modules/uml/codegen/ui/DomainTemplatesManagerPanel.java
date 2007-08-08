@@ -72,13 +72,13 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         new ImageIcon(Utilities.loadImage(
         "org/netbeans/modules/uml/resources/images/default-category.gif")); // NOI18N
     
-    // called by project customizer
-    public DomainTemplatesManagerPanel(UMLProjectProperties properties)
+    public DomainTemplatesManagerPanel()
     {
         initComponents();
         registerListeners();
         populateElementTypeChoices();
         populateTemplatesTreeValues(false);
+        clearTemplatesTable();
 
         // gets set to true on the initial expand/collapse setup
         // so need to reset to not expanded
@@ -86,11 +86,6 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         enableTableModifyingButtons(false);
     }
     
-    // called by globlal options
-    public DomainTemplatesManagerPanel()
-    {
-        this(null);
-    }
     
     
     private void registerListeners()
@@ -792,6 +787,7 @@ public class DomainTemplatesManagerPanel extends javax.swing.JPanel
         modifyRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_EditTemplateRowButton")); // NOI18N
         removeRowButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSN_RemoveTemplateRow")); // NOI18N
         removeRowButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_RemoveTemplateRow")); // NOI18N
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "ACSD_OutputParameters")); // NOI18N
 
         jLabel1.setLabelFor(templatesTree);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(DomainTemplatesManagerPanel.class, "LBL_DomainObjects_PanelTitle")); // NOI18N
