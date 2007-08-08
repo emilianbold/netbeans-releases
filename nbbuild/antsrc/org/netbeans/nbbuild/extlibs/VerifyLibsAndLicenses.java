@@ -190,6 +190,9 @@ public class VerifyLibsAndLicenses extends Task {
                             }
                             column = 0;
                             line++;
+                        } else if (c == '\f') {
+                            msg.append("\n" + path + " uses a form feed (^L) on line #" + line);
+                            continue FILE;
                         } else {
                             trailingSpace = c == ' ';
                             column++;
