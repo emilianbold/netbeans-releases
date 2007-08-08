@@ -10,28 +10,29 @@
 			<tocitem text="Web Application Tasks: Quick Reference" target="webapps_quickref" />
 			<tocitem text="About the IDE's Web Development Support" target="webapps_idesupport" />
 			<tocitem text="About the IDE's Technology Version Support" target="webapps_techsupport" />
+			<tocitem text="Web Introductory Tutorials" target="projrave_intro_web_walkthru" />
 		</tocitem>
 		<tocitem text="Creating and Editing Web Applications">
-			<tocitem text="Copying a Project" target="projrave_projects_howtoprojects_copy_project" />
-			<tocitem text="Opening a Project" target="projrave_projects_howtoprojects_open_project" />
 			<tocitem text="About Creating Web Applications" target="about_create_webapps" />
-			<tocitem text="About Regular Expressions" target="projrave_projects_howtoprojects_aboutregularexpn" />
-			<tocitem text="Creating a Sample Visual Web Application" target="projrave_projects_howtoprojects_create_sample_app" />
-			<tocitem text="Importing a Java Studio Creator Project" target="projrave_projects_howtoprojects_import_creator_project" />
-			<tocitem text="Adding a CSS File to a Project" target="projrave_projects_howtoprojects_add_css_file" />
-			<tocitem text="Starting With Web Projects" target="webapps_process" />
-			<tocitem text="Web Introductory Tutorials" target="projrave_intro_web_walkthru" />
-			<tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
-			<tocitem text="Saving a Project" target="projrave_projects_howtoprojects_save_project" />
-			<tocitem text="Adding a Theme" target="projrave_projects_howtoprojects_add_theme" />
-			<tocitem text="Adding a Project Item" target="projrave_projects_howtoprojects_add_object" />
-			<tocitem text="Setting Project Properties" target="projrave_projects_howtoprojects_set_project_properties" />
-			<tocitem text="Web Project Tasks: Quick Reference" target="webapps_quickref" />
-			<tocitem text="Deleting a Project Item" target="projrave_projects_howtoprojects_delete_proj_item" />
-			<tocitem text="Renaming a Page" target="projrave_projects_howtoprojects_rename_page" />
-			<tocitem text="Setting the Start Page in a Project" target="projrave_projects_howtoprojects_set_start_page" />
-			<tocitem text="Adding an Image File to a Visual Web Project" target="projrave_projects_howtoprojects_add_image" />
 			<tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
+			<tocitem text="Creating a Sample Visual Web Application" target="projrave_projects_howtoprojects_create_sample_app" />
+			<tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
+			<tocitem text="About Regular Expressions" target="projrave_projects_howtoprojects_aboutregularexpn" />
+			<tocitem text="Working with Projects">
+				<tocitem text="Copying a Project" target="projrave_projects_howtoprojects_copy_project" />
+				<tocitem text="Opening a Project" target="projrave_projects_howtoprojects_open_project" />
+				<tocitem text="Importing a Java Studio Creator Project" target="projrave_projects_howtoprojects_import_creator_project" />
+				<tocitem text="Starting With Web Projects" target="webapps_process" />
+				<tocitem text="Saving a Project" target="projrave_projects_howtoprojects_save_project" />
+				<tocitem text="Adding a Theme" target="projrave_projects_howtoprojects_add_theme" />
+				<tocitem text="Setting Project Properties" target="projrave_projects_howtoprojects_set_project_properties" />
+				<tocitem text="Deleting a Project Item" target="projrave_projects_howtoprojects_delete_proj_item" />
+				<tocitem text="Renaming a Page" target="projrave_projects_howtoprojects_rename_page" />
+				<tocitem text="Setting the Start Page in a Project" target="projrave_projects_howtoprojects_set_start_page" />
+				<tocitem text="Adding a CSS File to a Project" target="projrave_projects_howtoprojects_add_css_file" />
+				<tocitem text="Adding a Project Item" target="projrave_projects_howtoprojects_add_object" />
+				<tocitem text="Web Project Tasks: Quick Reference" target="webapps_quickref" />
+			</tocitem>
 			<tocitem text="Web Application Frameworks">
 				<tocitem text="About Web Application Frameworks" target="about_framework" />
 				<tocitem text="JavaServer Faces">

@@ -118,6 +118,7 @@
 					<file title="Template"/>
 				</directory>
 			</directory>
+			<directory title="ejb"/>
 			<directory title="glossary">
 				<directory title="CVS">
 					<file title="Entries"/>
@@ -1191,6 +1192,7 @@
 					<file title="yellow-ball.gif"/>
 				</directory>
 			</directory>
+			<directory title="web_svc"/>
 			<file title="credits.html"/>
 			<file title="intro_web_walkthru.html"/>
 			<file title="no_topic.html"/>
