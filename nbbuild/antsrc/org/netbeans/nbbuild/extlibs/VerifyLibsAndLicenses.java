@@ -95,7 +95,7 @@ public class VerifyLibsAndLicenses extends Task {
         Map<Long,String> binaries = new HashMap<Long,String>();
         for (String module : modules) {
             File d = new File(new File(nball, module), "external");
-            Set<String> cvsFiles = findCvsControlledFiles(d);
+            Set<String> cvsFiles = findCvsControlledFiles(d, false);
             for (String n : cvsFiles) {
                 if (!n.endsWith(".jar") && !n.endsWith(".zip")) {
                     continue;
@@ -156,12 +156,16 @@ public class VerifyLibsAndLicenses extends Task {
         StringBuffer msg = new StringBuffer();
         for (String module : modules) {
             File d = new File(new File(nball, module), "external");
-            FILE: for (String n : findCvsControlledFiles(d)) {
+            Set<String> textFiles = findCvsControlledFiles(d, true);
+            FILE: for (String n : findCvsControlledFiles(d, false)) {
+                String path = module + "/external/" + n;
+                if (textFiles.contains(n) ^ !n.matches(".*\\.(zip|jar)")) {
+                    msg.append("\n" + path + " may have -kb improperly (un)set");
+                }
                 if (!n.endsWith("-license.txt")) {
                     continue;
                 }
                 File f = new File(d, n);
-                String path = module + "/external/" + n;
                 InputStream is = new FileInputStream(f);
                 int line = 1;
                 try {
@@ -222,7 +226,7 @@ public class VerifyLibsAndLicenses extends Task {
         StringBuffer msg = new StringBuffer();
         for (String module : modules) {
             File d = new File(new File(nball, module), "external");
-            Set<String> cvsFiles = findCvsControlledFiles(d);
+            Set<String> cvsFiles = findCvsControlledFiles(d, false);
             Set<String> referencedBinaries = new HashSet<String>();
             for (String n : cvsFiles) {
                 if (!n.endsWith("-license.txt")) {
@@ -380,7 +384,7 @@ public class VerifyLibsAndLicenses extends Task {
         }
     }
     private void findStrayThirdPartyBinaries(File dir, String prefix, Set<String> violations, List<String> ignoredPatterns) throws IOException {
-        for (String n : findCvsControlledFiles(dir)) {
+        for (String n : findCvsControlledFiles(dir, false)) {
             File f = new File(dir, n);
             if (f.isDirectory()) {
                 findStrayThirdPartyBinaries(f, prefix + n + "/", violations, ignoredPatterns);
@@ -405,7 +409,7 @@ public class VerifyLibsAndLicenses extends Task {
         }
     }
 
-    static Set<String> findCvsControlledFiles(File dir) throws IOException {
+    static Set<String> findCvsControlledFiles(File dir, boolean textOnly) throws IOException {
         File efile = new File(new File(dir, "CVS"), "Entries");
         File elfile = new File(new File(dir, "CVS"), "Entries.Log");
         if (!efile.isFile() && !elfile.isFile()) {
@@ -427,7 +431,7 @@ public class VerifyLibsAndLicenses extends Task {
                     String[] components = line.split("/");
                     if (components.length > 1) {
                         String n = components[1];
-                    	if (new File(dir, n).exists()) {
+                    	if (new File(dir, n).exists() && !(textOnly && line.matches(".*/-kb/"))) {
                             entries.add(n);
                     	}
                     }

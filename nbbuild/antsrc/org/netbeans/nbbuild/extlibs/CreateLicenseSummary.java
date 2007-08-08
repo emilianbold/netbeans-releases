@@ -141,7 +141,7 @@ public class CreateLicenseSummary extends Task {
         for (String cluster : getProject().getProperty("nb.clusters.list").split("[, ]+")) {
             for (String module : getProject().getProperty(cluster).split("[, ]+")) {
                 File d = new File(new File(nball, module), "external");
-                Set<String> cvsFiles = VerifyLibsAndLicenses.findCvsControlledFiles(d);
+                Set<String> cvsFiles = VerifyLibsAndLicenses.findCvsControlledFiles(d, false);
                 Map<String,String> binary2License = findBinary2LicenseMapping(cvsFiles, d);
                 for (String n : cvsFiles) {
                     if (!n.endsWith(".jar") && !n.endsWith(".zip")) {
