@@ -64,7 +64,7 @@
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/prefuse.jar</runtime-relative-path>
-                <binary-origin>../external/prefuse.jar</binary-origin>
+                <binary-origin>external/prefuse.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

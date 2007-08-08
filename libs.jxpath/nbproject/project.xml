@@ -42,7 +42,7 @@
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jxpath/jxpath1.1.jar</runtime-relative-path>
-                <binary-origin>../external/jxpath1.1.jar</binary-origin>
+                <binary-origin>external/jxpath1.1.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
