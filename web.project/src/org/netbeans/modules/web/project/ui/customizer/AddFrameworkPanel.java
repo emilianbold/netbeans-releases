@@ -76,16 +76,18 @@ public class AddFrameworkPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jScrollPane1 = new javax.swing.JScrollPane();
         jListFrameworks = new javax.swing.JList();
         jLabel1 = new javax.swing.JLabel();
 
-        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACSD_AddFramework"));
         jScrollPane1.setViewportView(jListFrameworks);
-        jListFrameworks.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACSN_ListFrameworks"));
-        jListFrameworks.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACSD_ListFrameworks"));
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle"); // NOI18N
+        jListFrameworks.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_ListFrameworks")); // NOI18N
+        jListFrameworks.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ListFrameworks")); // NOI18N
 
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_Select_Framework"));
+        jLabel1.setLabelFor(jListFrameworks);
+        jLabel1.setText(bundle.getString("LBL_Select_Framework")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -101,6 +103,8 @@ public class AddFrameworkPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE))
         );
+
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AddFramework")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     
