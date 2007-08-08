@@ -616,7 +616,8 @@ function getURL(xmlHttpReq5) {
             var desc = container.getElementsByTagName('description')[0];
             return container.attributes.getNamedItem('uri').nodeValue;
         } catch(e) {
-            alert('err: '+e.name+e.message);
+            //alert('err: '+e.name+e.message);
+            return null;
         }
     } 
     return url;   
