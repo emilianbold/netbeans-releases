@@ -51,8 +51,8 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
     /**
      *  The Describe documentation editor ActiveX control wrapper class.
      */
-    private DocumentationPane pane;
-    private IProjectTreeItem current = null;
+    private static DocumentationPane pane;
+    private static IProjectTreeItem current = null;
     private final String default_title =
             NbBundle.getMessage(DocumentationTopComponnet.class, "Pane.Documentation.Title");
     
@@ -86,9 +86,9 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
     }
     
     
-    public void saveDocumentation()
+    public static void saveDocumentation()
     {
-        if (!pane.isDirty())
+        if ( pane == null || !pane.isDirty())
             return;
         
         String body = pane.getTrimmedDocumentation();
