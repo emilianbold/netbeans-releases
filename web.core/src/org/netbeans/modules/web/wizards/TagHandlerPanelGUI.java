@@ -41,6 +41,8 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 
 import org.netbeans.modules.web.core.Util;
 import org.netbeans.modules.xml.multiview.ui.EditDialog;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
  /**
  * @author  mk115033
@@ -423,20 +425,28 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
                                                "");
             }
             
-            if ( fo != null) {
-                tldFo=fo;
-                FileObject targetFolder=Templates.getTargetFolder(wiz);
+            if (fo != null) {
+                tldFo = fo;
+                FileObject targetFolder = Templates.getTargetFolder(wiz);
                 WebModule wm = WebModule.getWebModule(targetFolder);
                 //tldTextField.setText(target==null || target.length()==0?fo.getNameExt():target+"/"+fo.getNameExt());
-                tldTextField.setText( FileUtil.getRelativePath( (wm==null?proj.getProjectDirectory():wm.getDocumentBase()), fo ) );
-                try {
-                    java.io.InputStream is = tldFo.getInputStream();
-                    // get existing tag names for testing duplicity
-                    tagValues = Util.getTagValues(is, new String[]{"tag","tag-file"},"name"); //NOI18N
-                    is.close();
-                } catch (java.io.IOException ex) {}
-                  catch (org.xml.sax.SAXException ex ){}
-                panel.fireChangeEvent();
+                tldTextField.setText(FileUtil.getRelativePath(wm == null ? proj.getProjectDirectory() : wm.getDocumentBase(), fo));
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    public void run() {
+                        try {
+                            java.io.InputStream is = tldFo.getInputStream();
+                            // get existing tag names for testing duplicity
+                            tagValues = Util.getTagValues(is, new String[]{"tag", "tag-file"}, "name"); //NOI18N
+                            is.close();
+                        } catch (java.io.IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (org.xml.sax.SAXException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        panel.fireChangeEvent();
+                    }
+                });
             }
                         
         }
