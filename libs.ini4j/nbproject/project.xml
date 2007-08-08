@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/ini4j.jar</runtime-relative-path>
-                <binary-origin>../external/ini4j.jar</binary-origin>
+                <binary-origin>external/ini4j.jar</binary-origin>
             </class-path-extension>            
         </data>
     </configuration>

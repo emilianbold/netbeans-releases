@@ -18,26 +18,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="subversion/ini4j" default="netbeans" basedir=".">
-
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="../external">
-                <include name="ini4j.jar"/>
-            </fileset>
-        </copy>
-    </target>
-
-
-    <!-- Need to unscramble the libs before continuing-->
-    <!--target name="build-init" depends="projectized.build-init">
-      <ant dir="../external" target="unscramble"/>
-    </target-->
-
     <!-- Rewritten to capture two licenses. -->                           
     <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
         <mkdir dir="build"/>
