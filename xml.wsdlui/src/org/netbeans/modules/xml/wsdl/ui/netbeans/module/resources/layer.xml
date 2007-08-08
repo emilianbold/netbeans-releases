@@ -83,10 +83,17 @@
                     <file name="org-openide-actions-DeleteAction.instance">
                         <attr name="position" intvalue="1200"/>
                     </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1400"/>
+                    </file>
                     <file name="org-openide-actions-SaveAsTemplateAction.instance">
                         <attr name="position" intvalue="1500"/>
                     </file>
-                    <file name="sep-3.instance">
+                    <file name="sep-4.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
@@ -101,7 +108,7 @@
                         <attr name="position" intvalue="1800"/>
                     </file>
                     
-                    <file name="sep-4.instance">
+                    <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
