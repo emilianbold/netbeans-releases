@@ -27,6 +27,7 @@ import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.netbeans.modules.xml.xam.Referenceable;
 
 
 /**
@@ -36,6 +37,11 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 public class SchemaRefactoringsFactory implements RefactoringPluginFactory {
    
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+        Referenceable ref = refactoring.getRefactoringSource().lookup(Referenceable.class);
+        if(ref == null){
+           //this is not my obj, dont participate in refactoring
+           return null;
+        }
         if (refactoring instanceof WhereUsedQuery) {
             return new SchemaWhereUsedRefactoringPlugin( (WhereUsedQuery)refactoring);
         } else if (refactoring instanceof RenameRefactoring) {

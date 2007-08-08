@@ -25,6 +25,7 @@ import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
+import org.netbeans.modules.xml.xam.Referenceable;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -34,6 +35,11 @@ public final class Factory implements RefactoringPluginFactory {
    
   /**{@inheritDoc}*/
   public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+   Referenceable ref = refactoring.getRefactoringSource().lookup(Referenceable.class);
+   if(ref == null){
+     //this is not my obj, dont participate in refactoring
+     return null;
+    }
     if (refactoring instanceof WhereUsedQuery) {
       return new Finder((WhereUsedQuery) refactoring);
     } 
