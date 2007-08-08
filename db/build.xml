@@ -60,4 +60,16 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" depends="jar-lib, projectized-common.compile" />
     
+    <target name="test-preinit">
+        <available file="test/unit/data/db-derby-10.2.2.0-bin"
+             property="derby.extracted"/>
+        <antcall target="extract-derby"/>
+    </target>
+
+    <target name="extract-derby" unless="derby.extracted">
+        <property name="derby.data.dir" value="test/unit/data"/>
+        <mkdir dir="${derby.data.dir}"/>
+        <unzip src="external/derby-10.2.2.0.zip" dest="${derby.data.dir}"/>
+    </target>
+
 </project>

@@ -34,15 +34,19 @@ import org.openide.*;
 import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.impl.*;
 import org.netbeans.lib.ddl.util.*;
+import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.util.*;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.openide.awt.Mnemonics;
 
 public class AddTableColumnDialog {
+    static final Logger LOGGER = 
+            Logger.getLogger(AddTableColumnDialog.class.getName());
     boolean result = false;
     Dialog dialog = null;
     Specification spec;
+    AddTableColumnDDL ddl;
     Map ixmap;
     Map ix_uqmap;
     String colname = null;
@@ -57,6 +61,11 @@ public class AddTableColumnDialog {
     public AddTableColumnDialog(final Specification spe, final DatabaseNodeInfo nfo) throws DatabaseException {
         spec = spe;
         try {
+            String table = (String)nfo.get(DatabaseNode.TABLE);
+            String schema = (String)nfo.get(DatabaseNodeInfo.SCHEMA);
+            DriverSpecification drvSpec = nfo.getDriverSpecification();
+            ddl = new AddTableColumnDDL(spec, drvSpec, schema, table);
+
             JLabel label;
             JPanel pane = new JPanel();
             pane.setBorder(new EmptyBorder(new Insets(12, 12, 5, 11)));
@@ -319,9 +328,6 @@ public class AddTableColumnDialog {
             // are there primary keys?
             boolean isPK = false;
             try {
-                String table = (String)nfo.get(DatabaseNode.TABLE);
-                DriverSpecification drvSpec = nfo.getDriverSpecification();
-
                 drvSpec.getPrimaryKeys(table);
                 ResultSet rs = drvSpec.getResultSet();
 
@@ -353,41 +359,9 @@ public class AddTableColumnDialog {
             ixcheckbox.setToolTipText(bundle.getString("ACS_AddTableColumnIndexNameA11yDesc"));
             pane.add(ixcheckbox, con);
 
-            try {
-                String table = (String)nfo.get(DatabaseNode.TABLE);
-                DriverSpecification drvSpec = nfo.getDriverSpecification();
-
-                drvSpec.getIndexInfo(table, false, true);
-                ResultSet rs = drvSpec.getResultSet();
-                HashMap rset = new HashMap();
-                
-                ixmap = new HashMap();
-                ix_uqmap = new HashMap();
-                String ixname;
-                while (rs.next()) {
-                    rset = drvSpec.getRow();
-                    ixname = (String) rset.get(new Integer(6));
-                    if (ixname != null) {
-                        Vector ixcols = (Vector)ixmap.get(ixname);
-                        if (ixcols == null) {
-                            ixcols = new Vector();
-                            ixmap.put(ixname,ixcols);
-                            boolean uq = !Boolean.valueOf( (String)rset.get( new Integer(4) ) ).booleanValue();
-                            if(uq)
-                                ix_uqmap.put( ixname, ColumnItem.UNIQUE );
-                        }
-
-                        ixcols.add((String) rset.get(new Integer(9)));
-                    }
-                    rset.clear();
-                }
-                rs.close();
-            } catch (SQLException sqle) {
-                DatabaseException dbe = new DatabaseException(sqle.getMessage());
-                dbe.initCause(sqle);
-                throw dbe;
-            }
-
+            ixmap = ddl.getIndexMap();
+            ix_uqmap = ddl.getUniqueIndexMap();
+            
             con = new GridBagConstraints ();
             con.gridx = 1;
             con.gridy = 5;
@@ -482,85 +456,44 @@ public class AddTableColumnDialog {
                                            });
 
             ActionListener listener = new ActionListener() {
-                      public void actionPerformed(ActionEvent event) {
-                          if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                              result = validate();
-
-                              CommandBuffer cbuff = new CommandBuffer();
-
-                              if (result) {
-                                  try {
-                                      boolean use_idx = false;
-                                      String tablename = nfo.getTable();
-                                      colname = colnamefield.getText();
-                                      ColumnItem citem = (ColumnItem)dmodel.getData().elementAt(0);
-                                      AddColumn cmd = spec.createCommandAddColumn(tablename);
-                                      cmd.setObjectOwner((String)nfo.get(DatabaseNodeInfo.SCHEMA));
-                                      org.netbeans.lib.ddl.impl.TableColumn col = null;
-                                      if (citem.isPrimaryKey()) {
-                                          col = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createPrimaryKeyColumn(colname);
-                                      } else if (citem.isUnique()) {
-                                          col = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createUniqueColumn(colname);
-                                      } else col = (org.netbeans.lib.ddl.impl.TableColumn)cmd.createColumn(colname);
-                                      if (citem.isIndexed()&&!citem.isUnique()&&!citem.isPrimaryKey()) use_idx = true;
-                                      col.setColumnType(Specification.getType(citem.getType().getType()));
-                                      col.setColumnSize(citem.getSize());
-                                      col.setDecimalSize(citem.getScale());
-                                      col.setNullAllowed(citem.allowsNull());
-                                      if (citem.hasDefaultValue()) col.setDefaultValue(citem.getDefaultValue());
-
-                                      if (citem.hasCheckConstraint()) {
-                                          // add COLUMN constraint (without constraint name)
-                                          col.setCheckCondition(citem.getCheckConstraint());
-                                      }
-                                      cbuff.add(cmd);
-
-                                      if (use_idx) {
-
-                                          String idxname = (String)idxcombo.getSelectedItem();
-                                          String isUQ = new String();
-                                          if (ixmap.containsKey(idxname)) {
-                                              if(ix_uqmap.containsKey(idxname))
-                                                                isUQ = ColumnItem.UNIQUE;
-                                              DropIndex dropIndexCmd = spec.createCommandDropIndex(idxname);
-                                              dropIndexCmd.setTableName(tablename);
-                                              dropIndexCmd.setObjectOwner((String)nfo.get(DatabaseNodeInfo.SCHEMA));
-                                              cbuff.add(dropIndexCmd);
-                                          }
-
-                                          CreateIndex xcmd = spec.createCommandCreateIndex(tablename);
-                                          xcmd.setIndexName(idxname);
-                                          xcmd.setIndexType(isUQ);
-                                          xcmd.setObjectOwner((String)nfo.get(DatabaseNodeInfo.SCHEMA));
-                                          Enumeration enu = ((Vector)ixmap.get(idxname)).elements();
-                                          while (enu.hasMoreElements()) {
-                                              xcmd.specifyColumn((String)enu.nextElement());
-                                          }
-                                          xcmd.specifyColumn(citem.getName());
-                                          cbuff.add(xcmd);
-                                      }
-
-                                      cbuff.execute();
-
-                                      // was execution of commands with or without exception?
-                                      if(!cbuff.wasException()) {
-                                          // dialog is closed after successfully add column
-                                          dialog.setVisible(false);
-                                          dialog.dispose();
-                                      }
-                                      //dialog is not closed after unsuccessfully add column
-
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                              } else {
-                                  String msg = bundle.getString("EXC_InsufficientAddColumnInfo");
-                                  DialogDisplayer.getDefault().notify(
-                                    new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
-                              }
-                          }
+                  public void actionPerformed(ActionEvent event) {
+                      if (event.getSource() != DialogDescriptor.OK_OPTION) {
+                          return;
                       }
-                  };
+                      result = validate();
+                      if ( ! result ) {
+                          String msg = bundle.getString(
+                              "EXC_InsufficientAddColumnInfo");
+                          DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(msg, 
+                                    NotifyDescriptor.ERROR_MESSAGE));
+                          return;
+                      }
+
+                      colname = colnamefield.getText();
+                      ColumnItem citem = (ColumnItem)dmodel.getData().elementAt(0);
+                      ddl.setColumn(colname, citem);
+                      ddl.setIndexName((String)idxcombo.getSelectedItem());
+                      try {
+                          ddl.execute();
+                      } catch ( Exception e ) {
+                        LOGGER.log(Level.WARNING, null, e);
+                          
+                        DbUtilities.reportError(bundle.getString(
+                            "ERR_UnableToAddColumn"), e.getMessage());
+                        return;
+                      }
+
+                      // was execution of commands with or without exception?
+                      if(ddl.wasException()) {
+                          return;
+                      }
+                      
+                      // dialog is closed after successfully add column
+                      dialog.setVisible(false);
+                      dialog.dispose();
+                  }
+              };
 
             pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnDialogA11yDesc"));
                   
