@@ -75,6 +75,7 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
     }
 
     private String        text;
+    private String        filledPrefix;
     private String        description;
     private String        rightText;
     private String        icon;
@@ -82,8 +83,9 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
     private int           processKeyEventOffset;
     private String        confirmChars;
 
-    CompletionSupport (CompletionItem item) {
+    CompletionSupport (CompletionItem item, String prefix) {
         text = item.getText ();
+        filledPrefix = prefix;
         rightText = item.getLibrary ();
         priority = item.getPriority ();
         
@@ -147,12 +149,14 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
 
     CompletionSupport (
         String text,
+        String prefix,
         String description,
         String rightText,
         String icon,
         int    priority
     ) {
         this.text = text;
+        this.filledPrefix = prefix;
         this.description = description;
         this.rightText = rightText;
         this.icon = icon;
@@ -184,14 +188,19 @@ public class CompletionSupport implements org.netbeans.spi.editor.completion.Com
                 Language l = LanguagesManager.getDefault ().getLanguage (mimeType);
                 List<Feature> features = l.getFeatures (CompletionProviderImpl.COMPLETION, tokenType);
                 Iterator<Feature> it = features.iterator ();
+                t = text;
+                boolean found = false;
                 while (it.hasNext ()) {
                     Feature feature =  it.next ();
                     String completionType = getCompletionType (feature, tokenType);
-                    t = text;
                     if (completionType == CompletionProviderImpl.COMPLETION_COMPLETE) {
                         t = text.substring (offset - sequence.offset ());
+                        found = true;
                         break;
                     }
+                }
+                if (!found && filledPrefix != null) {
+                    t = text.substring(filledPrefix.length());
                 }
             } finally {
                 if (doc instanceof NbEditorDocument)

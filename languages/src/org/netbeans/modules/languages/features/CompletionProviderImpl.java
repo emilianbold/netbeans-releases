@@ -392,7 +392,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             while (it.hasNext ()) {
                 DatabaseDefinition definition =  it.next ();
                 names.add (definition.getName ());
-                CompletionSupport cs = createCompletionItem (definition, getFileName ());
+                CompletionSupport cs = createCompletionItem (definition, getFileName (), start);
                 items.add (cs);
                 if (definition.getName ().startsWith (start))
                     resultSet.addItem (cs);
@@ -407,7 +407,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                     while (it2.hasNext()) {
                         DatabaseDefinition definition =  it2.next();
                         if (names.contains (definition.getName ())) continue;
-                        CompletionSupport cs = createCompletionItem (definition, fileObject.getNameExt ());
+                        CompletionSupport cs = createCompletionItem (definition, fileObject.getNameExt (), start);
                         items.add (cs);
                         if (definition.getName ().startsWith (start))
                             resultSet.addItem (cs);
@@ -472,7 +472,8 @@ public class CompletionProviderImpl implements CompletionProvider {
                 Object o = it.next ();
                 if (o instanceof org.netbeans.api.languages.CompletionItem)
                     o = new CompletionSupport (
-                        (org.netbeans.api.languages.CompletionItem) o
+                        (org.netbeans.api.languages.CompletionItem) o,
+                        start
                     );
                 CompletionItem item = (CompletionItem) o;
                 items.add (item);
@@ -499,7 +500,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 description = text;
             String icon = (String) feature.getValue ("icon" + j);
             CompletionItem item = new CompletionSupport (
-                text, description, null, icon, 2
+                text, start, description, null, icon, 2
             );
             items.add (item);
             if (!text.startsWith (start))
@@ -507,7 +508,8 @@ public class CompletionProviderImpl implements CompletionProvider {
             resultSet.addItem (item);
         }
 
-        private static CompletionSupport createCompletionItem (DatabaseDefinition definition, String fileName) {
+        private static CompletionSupport createCompletionItem (DatabaseDefinition definition, String fileName,
+                String start) {
             Type type = null;
             if ("local".equals (definition.getType ()))
                 type = Type.LOCAL;
@@ -526,7 +528,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                 fileName,
                 type,
                 100
-            ));
+            ), start);
         }
     }
     
