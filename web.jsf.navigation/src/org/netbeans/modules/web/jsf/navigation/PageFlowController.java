@@ -26,6 +26,8 @@
 
 package org.netbeans.modules.web.jsf.navigation;
 
+import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
@@ -61,6 +63,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.JEditorPane;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.openide.DialogDescriptor;
@@ -68,7 +71,11 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.jsf.navigation.PageFlowToolbarUtilities.Scope;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.EditorCookie;
 import org.openide.util.NbPreferences;
+import org.netbeans.editor.BaseDocument;
+import org.openide.cookies.EditCookie;
 
 /**
  *
@@ -821,21 +828,7 @@ public class PageFlowController {
         return webFiles.contains(fileObj);
     }
 
-    //    /**
-    //     * Return the file if the file name is in the webfiles collection
-    //     * @param displayName
-    //     * @return fileObject, returns null if nothing is found.
-    //     **/
-    //    public final FileObject getFileFromWebFiles( String displayName ){
-    //        for( FileObject fileObject : webFiles ){
-    //            String fileDisplayName = PageFlowNode.getFolderDisplayName(webFolder, fileObject);
-    //            if( fileDisplayName.equals(displayName)){
-    //                return fileObject;
-    //            }
-    //        }
-    //        return null;
-    //    }
-    // case2Node Wrappers
+
     public final void putNavCase2NavCaseEdge(NavigationCase navCase, NavigationCaseEdge navCaseEdge) {
         navCase2NavCaseEdge.put(navCase, navCaseEdge);
     }
@@ -907,5 +900,57 @@ public class PageFlowController {
 
     public void serializeNodeLocations() {
         view.serializeNodeLocations(PageFlowView.getStorageFile(configDataObj.getPrimaryFile()));
+    }
+
+    public void openNavigationCase(NavigationCaseEdge navCaseEdge) {
+
+        final NavigationCase navCase = getNavCase2NavCaseEdge(navCaseEdge);
+        //FileObject fobj = NbEditorUtilities.getFileObject(navCase.getModel().getDocument());
+        //DataObject dobj = DataObject.find(fobj);
+        DataObject dobj = getConfigDataObject();        
+        if (dobj != null) {
+            final EditCookie ec2 = dobj.getCookie(EditCookie.class);
+            if (ec2 != null) {
+
+                final EditorCookie.Observable ec = dobj.getCookie(EditorCookie.Observable.class);
+                if (ec != null) {
+                    StatusDisplayer.getDefault().setStatusText("otvirani"); // NOI18N
+                    EventQueue.invokeLater(new Runnable() {
+
+                        public void run() {
+
+                            ec2.edit();
+                            JEditorPane[] panes = ec.getOpenedPanes();
+                            if (panes != null && panes.length > 0) {
+                                openPane(panes[0], navCase);
+                                //ec.open();
+                            } else {
+                                ec.addPropertyChangeListener(new PropertyChangeListener() {
+
+                                    public void propertyChange(PropertyChangeEvent evt) {
+                                        if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
+                                            final JEditorPane[] panes = ec.getOpenedPanes();
+                                            if (panes != null && panes.length > 0) {
+                                                openPane(panes[0], navCase);
+                                            }
+                                            ec.removePropertyChangeListener(this);
+                                        }
+                                    }
+                                });
+                                ec.open();
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    private void openPane(JEditorPane pane, NavigationCase navCase) {
+        final Cursor editCursor = pane.getCursor();
+        pane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) );
+        pane.setCaretPosition(navCase.findPosition() + 2);
+        pane.setCursor(editCursor);
+        StatusDisplayer.getDefault().setStatusText(""); //NOI18N
     }
 }

@@ -34,6 +34,7 @@ import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.web.jsf.navigation.graph.PageFlowSceneElement;
 import org.openide.ErrorManager;
+import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -217,10 +218,17 @@ public final class NavigationCaseEdge extends PageFlowSceneElement  {
 //        }
         
         
+        @SuppressWarnings("unchecked")
         public <T extends Cookie> T getCookie(Class<T> type) {
             if( type.equals(SaveCookie.class)) {
                 pc.serializeNodeLocations();
                 return pc.getConfigDataObject().getCookie(type);
+            } else if ( type.equals(OpenCookie.class)){
+                return (T) new OpenCookie() {
+                    public void open() {
+                        pc.openNavigationCase(edge);
+                    }
+                };
             }
             return null;
         }

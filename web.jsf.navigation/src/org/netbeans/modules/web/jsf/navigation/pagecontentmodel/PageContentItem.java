@@ -16,7 +16,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.util.List;
 import javax.swing.Action;
-import org.openide.cookies.OpenCookie;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Utilities;
 
