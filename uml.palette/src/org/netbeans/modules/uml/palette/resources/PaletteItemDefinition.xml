@@ -25,7 +25,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <Button paletteid="1" name="Class" id="ID_VIEWNODE_UML_CLASS" tooltip_key="HINT_Class" icon16="class.png" icon32="class-32.png"></Button>
     <Button paletteid="2" name="Interface" id="ID_VIEWNODE_UML_INTERFACE" tooltip_key="HINT_Interface" icon16="interface.png" icon32="interface-32.png"></Button>
     <Button paletteid="3" name="Package" id="ID_VIEWNODE_UML_PACKAGE" tooltip_key="HINT_Package" icon16="dt-package.png" icon32="dt-package-32.png"></Button>
-    <Button paletteid="4" name="Collaboration Lifeline" id="ID_VIEWNODE_UML_COLLABORATIONLIFELINE" tooltip_key="HINT_Collaboration_Lifeline" icon16="collaboration-lifeline.png" icon32="collaboration-lifeline-32.png"></Button>
+    <Button paletteid="4" name="Collaboration Lifeline" id="ID_VIEWNODE_UML_COLLABORATIONLIFELINE" tooltip_key="HINT_Collaboration_Lifeline" icon16="lifeline.png" icon32="lifeline-32.png"></Button>
     <Button paletteid="5" name="Boundary Class" id="ID_VIEWNODE_UML_CLASS_BOUNDARY" tooltip_key="HINT_Boundary_Class" icon16="boundry-class.png" icon32="boundry-class-32.png"></Button>
     <Button paletteid="6" name="Control Class" id="ID_VIEWNODE_UML_CLASS_CONTROL" tooltip_key="HINT_Control_Class" icon16="control-class.png" icon32="control-class-32.png"></Button>
     <Button paletteid="7" name="Entity Class" id="ID_VIEWNODE_UML_CLASS_ENTITY" tooltip_key="HINT_Entity_Class" icon16="entity-class.png" icon32="entity-class-32.png"></Button>
@@ -57,9 +57,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <Button paletteid="33" name="Design Pattern" id="ID_VIEWNODE_UML_COLLABORATION" tooltip_key="HINT_Design_Pattern" icon16="design-pattern.png" icon32="design-pattern-32.png"></Button>
     <Button paletteid="34" name="Role" id="ID_VIEWNODE_UML_PARTFACADE_CLASS" tooltip_key="HINT_Role" icon16="classifier-role.png" icon32="classifier-role-32.png"></Button>
     <Button paletteid="35" name="Interface Role" id="ID_VIEWNODE_UML_PARTFACADE_INTERFACE" tooltip_key="HINT_Interface_Role" icon16="part-facade-interface.png" icon32="part-facade-interface-32.png"></Button>
-    <Button paletteid="36" name="Actor Role" id="ID_VIEWNODE_UML_PARTFACADE_ACTOR" tooltip_key="HINT_Actor_Role" icon16="part-facade-actor.png" icon32="part-facade-actor-32.png"></Button>
+    <Button paletteid="36" name="Actor Role" id="ID_VIEWNODE_UML_PARTFACADE_ACTOR" tooltip_key="HINT_Actor_Role" icon16="actor-role.png" icon32="actor-role-32.png"></Button>
     <Button paletteid="37" name="Class Role" id="ID_VIEWNODE_UML_PARTFACADE_CLASS" tooltip_key="HINT_Class_Role" icon16="part-facade-class.png" icon32="part-facade-class-32.png"></Button>
-    <Button paletteid="38" name="Use Case Role" id="ID_VIEWNODE_UML_PARTFACADE_USECASE" tooltip_key="HINT_Use_Case_Role" icon16="part-facade-use-case.png" icon32="part-facade-use-case-32.png"></Button>
+    <Button paletteid="38" name="Use Case Role" id="ID_VIEWNODE_UML_PARTFACADE_USECASE" tooltip_key="HINT_Use_Case_Role" icon16="use-case-role.png" icon32="use-case-role-32.png"></Button>
     <Button paletteid="39" name="Role Binding" id="ID_VIEWNODE_UML_PARTFACADELINK" tooltip_key="HINT_Role_Binding" icon16="connector.png" icon32="connector-32.png"></Button>
     <Button paletteid="41" name="Comment" id="ID_VIEWNODE_UML_COMMENT" tooltip_key="HINT_Comment" icon16="notepad.png" icon32="notepad-32.png"></Button>
     <Button paletteid="40" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="note-link.png" icon32="note-link-32.png"></Button>
@@ -81,8 +81,8 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <Button paletteid="314" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="note-link.png" icon32="note-link-32.png"></Button>
   </Palette>
   <Palette name="Sequence Diagram">
-    <Button paletteid="401" name="Lifeline" id="ID_VIEWNODE_UML_CLASS" tooltip_key="HINT_Lifeline" icon16="object.png" icon32="object-32.png"></Button>
-    <Button paletteid="402" name="Actor" id="ID_VIEWNODE_UML_ACTOR" tooltip_key="HINT_Actor" icon16="sequence-actor.png" icon32="seq-actor-32.png"></Button>
+    <Button paletteid="401" name="Lifeline" id="ID_VIEWNODE_UML_CLASS" tooltip_key="HINT_Lifeline" icon16="lifeline.png" icon32="lifeline-32.png"></Button>
+    <Button paletteid="402" name="Actor" id="ID_VIEWNODE_UML_ACTOR" tooltip_key="HINT_Actor" icon16="actor.png" icon32="actor-32.png"></Button>
     <Button paletteid="403" name="Synchronous Message" id="ID_VIEWNODE_UML_MESSAGE" tooltip_key="HINT_Synchronous_Message" icon16="synchronous-message.png" icon32="synchronous-message-32.png"></Button>
     <Button paletteid="404" name="Asynchronous Message" id="ID_VIEWNODE_UML_MESSAGE_ASYNCHRONOUS" tooltip_key="HINT_Asynchronous_Message" icon16="asynchronous-message.png" icon32="asynchronous-message-32.png"></Button>
     <Button paletteid="405" name="Create Message" id="ID_VIEWNODE_UML_MESSAGE_CREATE" tooltip_key="HINT_Create_Message" icon16="message.png" icon32="message-32.png"></Button>
@@ -129,9 +129,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <Button paletteid="533" name="Design Pattern" id="ID_VIEWNODE_UML_COLLABORATION" tooltip_key="HINT_Design_Pattern" icon16="design-pattern.png" icon32="design-pattern-32.png"></Button>
     <Button paletteid="534" name="Role" id="ID_VIEWNODE_UML_PARTFACADE_CLASS" tooltip_key="HINT_Role" icon16="classifier-role.png" icon32="classifier-role-32.png"></Button>
     <Button paletteid="535" name="Interface Role" id="ID_VIEWNODE_UML_PARTFACADE_INTERFACE" tooltip_key="HINT_Interface_Role" icon16="part-facade-interface.png" icon32="part-facade-interface-32.png"></Button>
-    <Button paletteid="536" name="Actor Role" id="ID_VIEWNODE_UML_PARTFACADE_ACTOR" tooltip_key="HINT_Actor_Role" icon16="part-facade-actor.png" icon32="part-facade-actor.png"></Button>
+    <Button paletteid="536" name="Actor Role" id="ID_VIEWNODE_UML_PARTFACADE_ACTOR" tooltip_key="HINT_Actor_Role" icon16="actor-role.png" icon32="actor-role-32.png"></Button>
     <Button paletteid="537" name="Class Role" id="ID_VIEWNODE_UML_PARTFACADE_CLASS" tooltip_key="HINT_Class_Role" icon16="part-facade-class.png" icon32="part-facade-class-32.png"></Button>
-    <Button paletteid="538" name="Use Case Role" id="ID_VIEWNODE_UML_PARTFACADE_USECASE" tooltip_key="HINT_Use_Case_Role" icon16="part-facade-use-case.png" icon32="part-facade-use-case-32.png"></Button>
+    <Button paletteid="538" name="Use Case Role" id="ID_VIEWNODE_UML_PARTFACADE_USECASE" tooltip_key="HINT_Use_Case_Role" icon16="use-case-role.png" icon32="use-case-role-32.png"></Button>
     <Button paletteid="539" name="Role Binding" id="ID_VIEWNODE_UML_PARTFACADELINK" tooltip_key="HINT_Role_Binding" icon16="connector.png" icon32="connector-32.png"></Button>
     <Button paletteid="540" name="Delegate" id="ID_VIEWNODE_UML_DELEGATE" tooltip_key="HINT_Delegate" icon16="delegate.png" icon32="delegate-32.png"></Button>
     <Button paletteid="541" name="Assembly Connector" id="ID_VIEWNODE_UML_ASSEMBLYCONNECTOR_INITIALEDGE" tooltip_key="HINT_Assembly_Connector" icon16="assembly-connector.png" icon32="assembly-connector-32.png"></Button>
@@ -139,7 +139,7 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <Button paletteid="543" name="Link Comment" id="ID_VIEWNODE_UML_COMMENTLINK" tooltip_key="HINT_Link_Comment" icon16="note-link.png" icon32="note-link-32.png"></Button>
   </Palette>
   <Palette name="Collaboration Diagram">
-    <Button paletteid="601" name="Lifeline" id="ID_VIEWNODE_UML_COLLABORATIONLIFELINE" tooltip_key="HINT_Lifeline" icon16="collaboration-lifeline.png" icon32="collaboration-lifeline-32.png"></Button>
+    <Button paletteid="601" name="Lifeline" id="ID_VIEWNODE_UML_COLLABORATIONLIFELINE" tooltip_key="HINT_Lifeline" icon16="lifeline.png" icon32="lifeline-32.png"></Button>
     <Button paletteid="602" name="Actor" id="ID_VIEWNODE_UML_ACTOR" tooltip_key="HINT_Actor" icon16="actor.png" icon32="actor-32.png"></Button>
     <Button paletteid="603" name="Connector" id="ID_VIEWNODE_UML_CONNECTOR" tooltip_key="HINT_Connector" icon16="connector.png" icon32="connector-32.png"></Button>
     <Button paletteid="604" name="Dependency" id="ID_VIEWNODE_UML_DEPENDENCY" tooltip_key="HINT_Dependency" icon16="dependency.png" icon32="dependency-32.png"></Button>
@@ -153,9 +153,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
   <Palette name="Activity Diagram">
     <Button paletteid="101" name="Invocation" id="ID_VIEWNODE_UML_INVOCATIONNODE" tooltip_key="HINT_Invocation" icon16="invocation-node.png" icon32="invocation-node-32.png"></Button>
     <Button paletteid="102" name="Activity Edge" id="ID_VIEWNODE_UML_ACTIVITYEDGE" tooltip_key="HINT_Activity_Edge" icon16="activity-edge.png" icon32="activity-edge-32.png"></Button>
-    <Button paletteid="103" name="Decision" id="ID_VIEWNODE_UML_DECISIONNODE" tooltip_key="HINT_Decision" icon16="decision.png" icon32="decision-32.png"></Button>
-    <Button paletteid="104" name="Vertical Fork" id="ID_VIEWNODE_UML_FORKNODE" tooltip_key="HINT_Vertical_Fork" icon16="fork-node.png" icon32="fork-node-32.png"></Button>
-    <Button paletteid="105" name="Horizontal Fork" id="ID_VIEWNODE_UML_HORIZONTAL_FORKNODE" tooltip_key="HINT_Horizontal_Fork" icon16="horizontal-fork-node.png" icon32="horizontal-fork-node-32.png"></Button>
+    <Button paletteid="103" name="Decision" id="ID_VIEWNODE_UML_DECISIONNODE" tooltip_key="HINT_Decision" icon16="decision-node.png" icon32="decision-node-32.png"></Button>
+    <Button paletteid="104" name="Vertical Fork" id="ID_VIEWNODE_UML_FORKNODE" tooltip_key="HINT_Vertical_Fork" icon16="vertical-fork-join.png" icon32="vertical-fork-join-32.png"></Button>
+    <Button paletteid="105" name="Horizontal Fork" id="ID_VIEWNODE_UML_HORIZONTAL_FORKNODE" tooltip_key="HINT_Horizontal_Fork" icon16="horizontal-fork-join.png" icon32="horizontal-fork-join-32.png"></Button>
     <Button paletteid="106" name="Activity Group" id="ID_VIEWNODE_UML_COMPLEXACTIVITYGROUP" tooltip_key="HINT_Activity_Group" icon16="complex-activity-group.png" icon32="complex-activity-group-32.png"></Button>
     <Button paletteid="107" name="Initial Node" id="ID_VIEWNODE_UML_INITIALNODE" tooltip_key="HINT_Initial_Node" icon16="initial-node.png" icon32="initial-node-32.png"></Button>
     <Button paletteid="108" name="Activity Final Node" id="ID_VIEWNODE_UML_ACTIVITYFINALNODE" tooltip_key="HINT_Activity_Final_Node" icon16="activity-final-node.png" icon32="activity-final-node-32.png"></Button>
@@ -196,12 +196,12 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
     <Button paletteid="803" name="Initial State" id="ID_VIEWNODE_UML_PSEUDOSTATE_INITIAL" tooltip_key="HINT_Initial_State" icon16="initial-state.png" icon32="initial-state-32.png"></Button>
     <Button paletteid="804" name="Final State" id="ID_VIEWNODE_UML_FINALSTATE" tooltip_key="HINT_Final_State" icon16="final-state.png" icon32="final-state-32.png"></Button>
     <Button paletteid="805" name="Aborted Final State" id="ID_VIEWNODE_UML_FINALSTATE_ABORTED" tooltip_key="HINT_Aborted_Final_State" icon16="aborted-final-state.png" icon32="aborted-final-state-32.png"></Button>
-    <Button paletteid="806" name="Vertical Join/Merge" id="ID_VIEWNODE_UML_PSEUDOSTATE_JOIN" tooltip_key="HINT_Vertical_Join/Merge" icon16="pseudostate-join.png" icon32="pseudostate-join-32.png"></Button>
-    <Button paletteid="807" name="Horizontal Join/Merge" id="ID_VIEWNODE_UML_PSEUDOSTATE_JOIN_HORIZONTAL" tooltip_key="HINT_Horizontal_Join/Merge" icon16="pseudostate-join-horizontal.png" icon32="pseudostate-join-horizontal-32.png"></Button>
+    <Button paletteid="806" name="Vertical Join/Merge" id="ID_VIEWNODE_UML_PSEUDOSTATE_JOIN" tooltip_key="HINT_Vertical_Join/Merge" icon16="vertical-fork-join.png" icon32="vertical-fork-join-32.png"></Button>
+    <Button paletteid="807" name="Horizontal Join/Merge" id="ID_VIEWNODE_UML_PSEUDOSTATE_JOIN_HORIZONTAL" tooltip_key="HINT_Horizontal_Join/Merge" icon16="horizontal-fork-join.png" icon32="horizontal-fork-join-32.png"></Button>
     <Button paletteid="808" name="Composite State" id="ID_VIEWNODE_UML_COMPOSITE_STATE" tooltip_key="HINT_Composite_State" icon16="composite-state.png" icon32="composite-state-32.png"></Button>
-    <Button paletteid="809" name="Choice Pseudo State" id="ID_VIEWNODE_UML_PSEUDOSTATE_CHOICE" tooltip_key="HINT_Choice_Pseudo_State" icon16="pseudostate-choice.png" icon32="pseudostate-choice-32.png"></Button>
-    <Button paletteid="810" name="Shallow History State" id="ID_VIEWNODE_UML_PSEUDOSTATE_SHALLOWHISTORY" tooltip_key="HINT_Shallow_History_State" icon16="pseudostate-shallow-history.png" icon32="pseudostate-shallow-history-32.png"></Button>
-    <Button paletteid="811" name="Deep History State" id="ID_VIEWNODE_UML_PSEUDOSTATE_DEEPHISTORY" tooltip_key="HINT_Deep_History_State" icon16="pseudostate-deep-history.png" icon32="pseudostate-deep-history-32.png"></Button>
+    <Button paletteid="809" name="Choice Pseudo State" id="ID_VIEWNODE_UML_PSEUDOSTATE_CHOICE" tooltip_key="HINT_Choice_Pseudo_State" icon16="decision-node.png" icon32="decision-node-32.png"></Button>
+    <Button paletteid="810" name="Shallow History State" id="ID_VIEWNODE_UML_PSEUDOSTATE_SHALLOWHISTORY" tooltip_key="HINT_Shallow_History_State" icon16="shallow-history-state.png" icon32="shallow-history-state-32.png"></Button>
+    <Button paletteid="811" name="Deep History State" id="ID_VIEWNODE_UML_PSEUDOSTATE_DEEPHISTORY" tooltip_key="HINT_Deep_History_State" icon16="deep-history-state.png" icon32="deep-history-state-32.png"></Button>
     <Button paletteid="812" name="Entry Point State" id="ID_VIEWNODE_UML_PSEUDOSTATE_ENTRYPOINT" tooltip_key="HINT_Entry_Point_State" icon16="pseudostate-entry-point.png" icon32="pseudostate-entry-point-32.png"></Button>
     <Button paletteid="813" name="Junction State" id="ID_VIEWNODE_UML_PSEUDOSTATE_JUNCTION" tooltip_key="HINT_Junction_State" icon16="pseudostate-junction.png" icon32="pseudostate-junction-32.png"></Button>
     <Button paletteid="814" name="Submachine State" id="ID_VIEWNODE_UML_SUBMACHINE_STATE" tooltip_key="HINT_Submachine_State" icon16="submachine-state.png" icon32="submachine-state-32.png"></Button>

@@ -35,7 +35,14 @@ import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.diagramsupport.DiagramTypesManager;
 import org.netbeans.modules.uml.ui.support.diagramsupport.IDiagramTypesManager;
 import java.awt.Image;
+import org.netbeans.modules.uml.core.metamodel.common.commonactivities.IForkNode;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IClass;
+import org.netbeans.modules.uml.core.metamodel.core.constructs.IPartFacade;
+import org.netbeans.modules.uml.core.metamodel.core.primitivetypes.IMessageKind;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ILifeline;
+import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
+import org.netbeans.modules.uml.core.support.umlutils.ETList;
 
 /**
  * @author sumitabhk
@@ -81,6 +88,12 @@ public class CommonResourceManager implements ICommonResourceManager
       m_ElementNameIconMap.put("None", RESOURCE_BUNDLE.getString("IDI_NOICON"));
       // The elements
       m_ElementNameIconMap.put("Class", RESOURCE_BUNDLE.getString("IDI_CLASS"));
+      m_ElementNameIconMap.put("UtilityClass", RESOURCE_BUNDLE.getString("IDI_UTILITYCLASS"));
+      m_ElementNameIconMap.put("BoundaryClass", RESOURCE_BUNDLE.getString("IDI_BOUNDARYCLASS"));
+      m_ElementNameIconMap.put("ControlClass", RESOURCE_BUNDLE.getString("IDI_CONTROLCLASS"));
+      m_ElementNameIconMap.put("EntityClass", RESOURCE_BUNDLE.getString("IDI_ENTITYCLASS"));
+      m_ElementNameIconMap.put("TemplateClass", RESOURCE_BUNDLE.getString("IDI_TEMPLATECLASS"));
+      m_ElementNameIconMap.put("RoleClass", RESOURCE_BUNDLE.getString("IDI_ROLECLASS"));
       m_ElementNameIconMap.put("Abstraction", RESOURCE_BUNDLE.getString("IDI_ABSTRACTION"));
       m_ElementNameIconMap.put("AbortedFinalState", RESOURCE_BUNDLE.getString("IDI_ABORTEDFINALSTATE"));
       m_ElementNameIconMap.put("ActionSequence", RESOURCE_BUNDLE.getString("IDI_ACTIONSEQUENCE"));
@@ -156,6 +169,8 @@ public class CommonResourceManager implements ICommonResourceManager
       m_ElementNameIconMap.put("FlowFinalNode", RESOURCE_BUNDLE.getString("IDI_FLOWFINALNODE"));
       m_ElementNameIconMap.put("FlowFinal", RESOURCE_BUNDLE.getString("IDI_FLOWFINALNODE"));
       m_ElementNameIconMap.put("ForkNode", RESOURCE_BUNDLE.getString("IDI_FORKNODE"));
+      m_ElementNameIconMap.put("HorizontalForkNode", RESOURCE_BUNDLE.getString("IDI_HORIZONTALFORKNODE"));
+      m_ElementNameIconMap.put("VerticalForkNode", RESOURCE_BUNDLE.getString("IDI_VERTICALFORKNODE"));
       m_ElementNameIconMap.put("Gate", RESOURCE_BUNDLE.getString("IDI_GATE"));
       m_ElementNameIconMap.put("Generalization", RESOURCE_BUNDLE.getString("IDI_GENERALIZATION"));
       m_ElementNameIconMap.put("Graphic", RESOURCE_BUNDLE.getString("IDI_GRAPHIC"));
@@ -185,6 +200,12 @@ public class CommonResourceManager implements ICommonResourceManager
       m_ElementNameIconMap.put("Lifeline", RESOURCE_BUNDLE.getString("IDI_LIFELINE"));
       m_ElementNameIconMap.put("MergeNode", RESOURCE_BUNDLE.getString("IDI_MERGENODE"));
       m_ElementNameIconMap.put("Message", RESOURCE_BUNDLE.getString("IDI_MESSAGE"));
+      m_ElementNameIconMap.put("SelfMessage", RESOURCE_BUNDLE.getString("IDI_SELFMESSAGE"));
+      m_ElementNameIconMap.put("AsynchronousMessage", RESOURCE_BUNDLE.getString("IDI_ASYNCMESSAGE"));
+      m_ElementNameIconMap.put("SynchronousMessage", RESOURCE_BUNDLE.getString("IDI_SYNCMESSAGE"));
+      m_ElementNameIconMap.put("CreateMessage", RESOURCE_BUNDLE.getString("IDI_CREATEMESSAGE"));
+      m_ElementNameIconMap.put("ResultMessage", RESOURCE_BUNDLE.getString("IDI_RESULTMESSAGE"));
+      m_ElementNameIconMap.put("SelfResultMessage", RESOURCE_BUNDLE.getString("IDI_SELFRESULTMESSAGE"));
       m_ElementNameIconMap.put("MessageConnector", RESOURCE_BUNDLE.getString("IDI_CONNECTOR"));
       m_ElementNameIconMap.put("Model", RESOURCE_BUNDLE.getString("IDI_MODEL"));
       m_ElementNameIconMap.put("MultiFlow", RESOURCE_BUNDLE.getString("IDI_MULTIFLOW"));
@@ -507,7 +528,7 @@ public class CommonResourceManager implements ICommonResourceManager
       return iconLocation;
    }
    
-   /**
+    /**
     * Returns the information about a specific icon for the IDispatch.  The pDisp can be an
     * IElement, IDiagram or IProxyDiagram..  Use to load the icon yourself - for instance if you
     * need to put into an image list.
@@ -516,26 +537,18 @@ public class CommonResourceManager implements ICommonResourceManager
     * @param sIconLibrary [out] The dll where this icon lives (this one!)
     * @param nIconID [out] The id of the icon
     */
-   public String getIconDetailsForDisp(Object pDisp)
-   {
-      String iconLib = null;
-      String searchStr = getSearchString(pDisp);
-      if (searchStr.length() > 0)
-      {
-         // Fixed issue 82208, 78848
-         // Take care a special case of lifeline elemenent
-         // if a lifeline element has an attribute indicating that
-         // it is an actor lifeline, then get an Actor icon instead.
-         if (pDisp instanceof ILifeline)
-         {
-            boolean isActorLifeline = ((ILifeline)pDisp).getIsActorLifeline();
-            searchStr = (isActorLifeline ? "Actor" : searchStr);
-            
-         }
-         iconLib = getIconDetailsForElementType(searchStr);
-      }
-      return iconLib;
-   }
+    public String getIconDetailsForDisp(Object pDisp)
+    {
+        String iconLib = null;
+        String searchStr = getSearchString(pDisp);
+
+        if (searchStr.length() > 0)
+        {
+            iconLib = getIconDetailsForElementType(searchStr);
+        }
+    
+        return iconLib;
+    }
    
    /**
     * Returns the information about a specific icon for the diagram kind (of type DiagramKind).  Use
@@ -565,7 +578,8 @@ public class CommonResourceManager implements ICommonResourceManager
     */
    private String getSearchString(Object pDisp)
    {
-      String searchStr ="";
+      String searchStr = ""; // NOI18N
+
       if (pDisp != null)
       {
          if (pDisp instanceof IDiagram)
@@ -573,24 +587,117 @@ public class CommonResourceManager implements ICommonResourceManager
             IDiagram pDiagram = (IDiagram)pDisp;
             IDiagramTypesManager pManager = DiagramTypesManager.instance();
             String displayName = pManager.getDiagramTypeNameNoSpaces(pDiagram);
+
             if (displayName != null && displayName.length() > 0)
-            {
                searchStr = displayName;
-            }
          }
+
          else if (pDisp instanceof IElement)
          {
             IElement pElement = (IElement)pDisp;
             searchStr = pElement.getExpandedElementType();
+
+            // Fixed issue 82208, 78848
+            // Take care a special case of lifeline elemenent
+            // if a lifeline element has an attribute indicating that
+            // it is an actor lifeline, then get an Actor icon instead.
+            if (pDisp instanceof ILifeline)
+            {
+                boolean isActorLifeline = ((ILifeline)pDisp).getIsActorLifeline();
+                searchStr = (isActorLifeline ? "Actor" : searchStr); // NOI18N
+            }
+
+            else if (pDisp instanceof IMessage)
+            {
+                searchStr = "Message"; // NOI18N
+                IMessage message = (IMessage)pDisp;
+
+                if (message.getReceivingLifeline() != null &&
+                    message.getSendingLifeline() != null &&
+                    message.getReceivingLifeline() == message.getSendingLifeline())
+                {
+                    if (message.getKind() == IMessageKind.MK_RESULT)
+                        searchStr = "SelfResultMessage"; // NOI18N
+    
+                    else
+                        searchStr = "SelfMessage"; // NOI18N
+                }
+
+                else if (message.getReceivingClassifier() != null &&
+                    message.getSendingClassifier() != null &&
+                    message.getReceivingClassifier() == message.getSendingClassifier())
+                {
+                    if (message.getKind() == IMessageKind.MK_RESULT)
+                        searchStr = "SelfResultMessage"; // NOI18N
+    
+                    else
+                        searchStr = "SelfMessage"; // NOI18N
+                }
+                
+                else
+                {
+                    switch (message.getKind())
+                    {
+                        case IMessageKind.MK_ASYNCHRONOUS:
+                            searchStr = "AsynchronousMessage"; // NOI18N
+                            break;
+                        case IMessageKind.MK_CREATE:
+                            searchStr = "CreateMessage"; // NOI18N
+                            break;
+                        case IMessageKind.MK_SYNCHRONOUS:
+                            searchStr = "SynchronousMessage"; // NOI18N
+                            break;
+                        case IMessageKind.MK_RESULT:
+                            searchStr = "ResultMessage"; // NOI18N
+                    }
+                }
+            }
+
+            else if (pDisp instanceof IPartFacade)
+            {
+                searchStr = "RoleClass"; // NOI18N
+            }
+
+            else if (pDisp instanceof IClass)
+            {
+                searchStr = "Class"; // NOI18N
+                ETList stereotypes = ((IClassifier)pDisp).getAppliedStereotypesAsString();
+
+                if (stereotypes.isInList("boundary")) // NOI18N
+                    searchStr = "BoundaryClass"; // NOI18N
+
+                else if (stereotypes.isInList("controller")) // NOI18N
+                    searchStr = "ControlClass"; // NOI18N
+
+                else if (stereotypes.isInList("entity")) // NOI18N
+                    searchStr = "EntityClass"; // NOI18N
+
+                else if (stereotypes.isInList("role")) // NOI18N
+                    searchStr = "RoleClass"; // NOI18N
+
+                else if (stereotypes.isInList("template")) // NOI18N
+                    searchStr = "TemplateClass"; // NOI18N
+
+                else if (stereotypes.isInList("utility")) // NOI18N
+                    searchStr = "UtilityClass"; // NOI18N
+            }
+
+            else if (pDisp instanceof IForkNode)
+            {
+                searchStr = "ForkNode"; // NOI18N
+            }
          }
+
          else if (pDisp instanceof IWorkspace)
          {
             searchStr ="Workspace";
          }
+
          else if (pDisp instanceof IWSProject)
          {
             searchStr ="WSProject";
          }
+         
          else if (pDisp instanceof IProxyDiagram)
          {
             IProxyDiagram pProxyDiagram = (IProxyDiagram)pDisp;
@@ -601,9 +708,9 @@ public class CommonResourceManager implements ICommonResourceManager
             diaKind = pProxyDiagram.getDiagramKind();
             isOpen = pProxyDiagram.isOpen();
             isValid = pProxyDiagram.isValidDiagram();
-            
             IDiagramTypesManager pManager = DiagramTypesManager.instance();
             String displayName = pManager.getDiagramTypeNameNoSpaces(diaKind);
+
             if (displayName != null && displayName.length() > 0)
             {
                searchStr = displayName;
