@@ -347,10 +347,7 @@ public class DesignView extends JPanel implements
         if (point == null) {
             point = event.getPoint();
         }
-        
-        
         String result = null;
-        
         VisualElement element = findElement(point);
         Pattern pattern = (element == null) ? null : element.getPattern();
         
@@ -359,8 +356,7 @@ public class DesignView extends JPanel implements
                     && !(element instanceof BorderElement))
             {
                 result = element.getText();
-                result = ((result != null) ? result.trim() : "") // NOI18N
-                        + " [Operation]"; // NOI18N
+                result = ((result != null) ? result.trim() : "") + " " + NbBundle.getMessage(DesignView.class, "LBL_Operation"); // NOI18N
             } else {
                 Node node = getNodeForPattern(pattern);
 
@@ -377,7 +373,6 @@ public class DesignView extends JPanel implements
         if (result != null && result.trim().length() == 0) {
             result = null;
         }
-        
         if (result == null) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -386,7 +381,6 @@ public class DesignView extends JPanel implements
                 }
             });
         }
-        
         return result;
     }
     
@@ -397,10 +391,8 @@ public class DesignView extends JPanel implements
         if (p != null) {
             p.y += 20;
         }
-        
         return p;
     }
-    
     
     public void closeView() {
         if (diagramModel != null){
