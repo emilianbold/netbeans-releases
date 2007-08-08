@@ -36,6 +36,7 @@ import javax.swing.JButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -50,17 +51,16 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 
 /**
- * @author  Radek Matous
+ * @author  Radek Matous, Jirka Rechtacek
  */
 public class SettingsTab extends javax.swing.JPanel {
     private DetailsPanel details;
     private JScrollPane  scrollerForDetails;
     private JTable table;
     private JScrollPane  scrollerForTable;
-    private static final RequestProcessor RP = new RequestProcessor();
+
     private Action removeAction;
     private Action editAction;    
     private Action addAction;   
@@ -102,7 +102,6 @@ public class SettingsTab extends javax.swing.JPanel {
         removeAction = new RemoveAction();
         addAction = new AddAction();
         addButton.setAction(addAction);        
-        addListener ();        
     }
 
     public String getDisplayName () {
@@ -128,8 +127,8 @@ public class SettingsTab extends javax.swing.JPanel {
     @Override
     public void addNotify () {
         super.addNotify ();
-        Utilities.startAsWorkerThread(new Runnable() {
-            public void run() {
+        Utilities.startAsWorkerThread (new Runnable () {
+            public void run () {
                 getSettingsTableModel ().refreshModel ();                
             }
         });        
@@ -289,11 +288,19 @@ public SettingsTableModel getSettingsTableModel() {
 
 private class Listener implements ListSelectionListener,  TableModelListener {
     public void valueChanged(ListSelectionEvent arg0) {
-        modelOrSelectionChanged();
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                modelOrSelectionChanged ();
+            }
+        });
     }
        
     public void tableChanged(TableModelEvent arg0) {
-        modelOrSelectionChanged();
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                modelOrSelectionChanged ();
+            }
+        });
     }
     
     private void modelOrSelectionChanged() {
@@ -327,7 +334,7 @@ private class Listener implements ListSelectionListener,  TableModelListener {
             lsm.setSelectionInterval(0, 0);
         }
     }
-}
+    }
 
     private void setData (final UpdateUnitProvider provider, UpdateUnitProviderPanel panel) {
         provider.setDisplayName (panel.getProviderName ());
