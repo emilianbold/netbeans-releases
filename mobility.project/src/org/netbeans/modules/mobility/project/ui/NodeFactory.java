@@ -442,17 +442,20 @@ static class ProjCfgNode extends ActionNode implements AntProjectListener, Prope
                     Node nodes[]=NodeTransfer.nodes(tr,NodeTransfer.DND_COPY_OR_MOVE);
                     if (nodes == null) return null;
                     for (Node node : nodes)
-                    {
-                        J2MEProject project=node.getLookup().lookup(J2MEProject.class);
-                        if (project != null)
+                    {  
+                        if (node instanceof CfgNode)
                         {
-                            HashSet<Node> set=map.get(project);
-                            if (set == null)
+                            J2MEProject project=node.getLookup().lookup(J2MEProject.class);
+                            if (project != null)
                             {
-                                set = new HashSet<Node>();
-                                map.put(project,set);
+                                HashSet<Node> set=map.get(project);
+                                if (set == null)
+                                {
+                                    set = new HashSet<Node>();
+                                    map.put(project,set);
+                                }
+                                set.add(node);
                             }
-                            set.add(node);
                         }
                     }
                     if (map.size() != 0)
@@ -460,7 +463,7 @@ static class ProjCfgNode extends ActionNode implements AntProjectListener, Prope
                 }
                 if (DND_TYPE.equals(flavor.getSubType ())) {
                     Node node=NodeTransfer.node(tr,NodeTransfer.DND_COPY_OR_MOVE);
-                    if (node !=null)
+                    if (node instanceof CfgNode)
                     {
                         J2MEProject project=node.getLookup().lookup(J2MEProject.class);
                         if (project != null)
@@ -560,7 +563,7 @@ static class ResourcesNode extends ActionNode
                                 continue;
                             }
                         }
-                        return new NDPasteType();
+                        return set.size()==0?null:new NDPasteType();
                             
                     } catch (Exception ex)
                     {
@@ -587,7 +590,7 @@ static class ResourcesNode extends ActionNode
                             continue;
                         }
                     }
-                    return  new NDPasteType();
+                    return  set.size()==0?null:new NDPasteType();
                 }
                 
                 if (DND_TYPE.equals(flavor.getSubType ())) {
@@ -604,7 +607,7 @@ static class ResourcesNode extends ActionNode
                         set.clear();
                         continue;
                     }
-                    return  new NDPasteType();
+                    return  set.size()==0?null:new NDPasteType();
                 }
             }
         }
