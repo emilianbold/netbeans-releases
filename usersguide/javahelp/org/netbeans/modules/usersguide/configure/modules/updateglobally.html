@@ -13,24 +13,23 @@
 <body>
 <h2>Updating a Multi-User IDE Installation</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>If you 
-  are using a multi-user installation of the IDE, you can install a module globally
-	so that the module is available to all users. When you install or update a
-	module using the Update Center wizard, the IDE places the module <tt>.jar</tt> file
+<p>If you are using a multi-user installation of the IDE, you can install a plugin globally
+	so that the plugin is available to all users. When you install or update a
+	plugin using the Plugin Manager, the IDE places the plugin <tt>.jar</tt> file
 	and docs in your user directory. The IDE places <tt>.jar</tt> files 
-  and docs for globally installed modules in your installation directory instead 
+  and docs for globally installed plugins in your installation directory instead 
   of an individual user directory.</p>
-<p><b>To globally install a module:</b></p>
+<p><b>To globally install a plugin:</b></p>
 <ol>
-  <li>Download the module using the Update Center wizard.</li>
-  <li>In the View Certificates and Install Modules page of the wizard, select 
-    the Global checkbox for the desired modules.</li>
-  <li>Click Finish to install the module.</li>
-  <li>Restart the IDE to activate the new module.</li>
+    <li>Choose Tools &gt; Plugins to open the Plugin Manager.</li>
+    <li>Click the Settings tab and then select Install into shared directories.</li>
+    <li>Click the Available Plugins tab, select the Install checkbox for the plugin and click Install.</li>
+    <li>Follow the wizard instructions to complete the installation of the plugin.</li>
+    <li>Restart the IDE to activate the new plugin, if necessary.</li>
 </ol>
 
   <ul class="note"> 
-    <li> In order to install a module globally, you must have write access for
+    <li> In order to install a plugin globally, you must have write access for
        the IDE installation directory.</li>
   </ul>
 
