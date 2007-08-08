@@ -111,8 +111,13 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final LayerWidget upperLayer = new LayerWidget(this);
 
     private Router router;
+    /**
+     * The maximum is used for determining which router to used.  If either
+     * edges or pages exceed the max, the direct routing algorithm will be used
+     **/
+    private static final int MAX_EDGES = 20; 
+    private static final int MAX_PAGES = 20;
     private final Router routerDirect = RouterFactory.createDirectRouter();
-    private static final int MAX_EDGES = 20;
 
     private final WidgetAction moveControlPointAction = ActionFactory.createOrthogonalMoveControlPointAction();
     //    private WidgetAction popupNodeAction = ActionFactory.createPopupMenuAction (new NodePopupMenuProvider(this));
@@ -120,11 +125,10 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     private final WidgetAction dragNdropAction = ActionFactory.createAcceptAction(new PageFlowAcceptProvider());
     private final WidgetAction connectAction = ActionFactory.createConnectAction(connectionLayer, new LinkCreateProvider(this));
     private final WidgetAction selectAction = ActionFactory.createSelectAction(new PageFlowSelectProvider());
-    private final WidgetAction doubleClickAction = ActionFactory.createEditAction( new PageNodeEditAction());
-    
-    private PageFlowView tc;
-    private PopupMenuProvider popupProvider;   //Please see POPUP_HACK below.
+    private final WidgetAction doubleClickAction = ActionFactory.createEditAction(new PageNodeEditAction());
 
+    private PageFlowView tc;
+    private PopupMenuProvider popupProvider; //Please see POPUP_HACK below.
     private static Paint PAINT_BACKGROUND;
     static {
         Image sourceImage = Utilities.loadImage("org/netbeans/modules/web/jsf/navigation/graph/resources/paper_grid.png"); // NOI18N
@@ -137,7 +141,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         PAINT_BACKGROUND = new TexturePaint(image, new Rectangle(0, 0, width, height));
     }
 
-    
+
 
     /**
      * Creates a VMD graph scene.
@@ -163,7 +167,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         actions.addAction(ActionFactory.createPanAction());
         actions.addAction(ActionFactory.createRectangularSelectAction(this, backgroundLayer));
         /*** POPUP_HACK: I have no access to PopupAction so I can't look through the actions and determine which one is a popup.
-         * In order to added accessibility to popup I need access to this provider unless an API is created 
+         * In order to added accessibility to popup I need access to this provider unless an API is created
          * to figure this out another means.
          **/
         popupProvider = new PageFlowPopupProvider(this, tc);
@@ -177,7 +181,6 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         //ActionMap actionMap = MapActionUtility.initActionMap();
         //actions.addAction(ActionFactory.createActionMapAction(inputMap, actionMap));
         //MyActionMapAction action = new MyActionMapAction(null, null);
-        
         FreePlaceNodesLayouter fpnl = new FreePlaceNodesLayouter(this, tc.getVisibleRect());
     }
 
@@ -213,7 +216,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         if (!widgets.contains(malFormedLabel)) {
             addChild(malFormedLabel);
             validate();
-        } 
+        }
     }
 
     /**
@@ -222,9 +225,9 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     public void removeMalFormedWidget() {
         List<Widget> widgets = getChildren();
         if (widgets.contains(malFormedLabel)) {
-            removeChild(malFormedLabel);  //Removed major bug... Not sure what I was doing before...
+            removeChild(malFormedLabel); //Removed major bug... Not sure what I was doing before...
             validate();
-        } 
+        }
     }
 
 
@@ -258,7 +261,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         nodeWidget.getActions().addAction(selectAction);
         nodeWidget.getActions().addAction(moveAction);
         nodeWidget.setMinimized(true);
-        
+
         /*
         if ( node.getPinNodes().size() == 0 ){
         nodeWidget.setMinimized(true);
@@ -279,7 +282,6 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
             if (pageSpecificActionMapAction != null) {
                 nodeWidget.getActions().addAction(pageSpecificActionMapAction);
             }
-            
         }
     }
 
@@ -300,9 +302,9 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         /* Not sure if it is the right thing to create a new action map
          * should I be adding it?
          */
-        return new MyActionMapAction(inputMap, actionMap);  
+        return new MyActionMapAction(inputMap, actionMap);
 
-        
+
         //return  ActionFactory.createActionMapAction(inputMap, actionMap);
     }
 
@@ -419,7 +421,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         } else {
             connectionWidget = new VMDConnectionWidget(this, new PFENotModifiableScheme());
         }
-        if (getEdges().size() > MAX_EDGES) {
+        if (getEdges().size() > MAX_EDGES || getNodes().size() > MAX_PAGES) {
             connectionWidget.setRouter(routerDirect);
         } else {
             connectionWidget.setRouter(router);
@@ -540,15 +542,14 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
         }
     }
 
-    
-    public final class PageNodeEditAction implements EditProvider{
+
+    public final class PageNodeEditAction implements EditProvider {
 
         public void edit(Widget widget) {
             PageFlowScene scene = (PageFlowScene) widget.getScene();
             PageFlowSceneElement element = (PageFlowSceneElement) scene.findObject(widget);
             MapActionUtility.openPageFlowSceneElement(element);
         }
-        
     }
 
     public final class CaseNodeTextFieldInplaceEditor implements TextFieldInplaceEditor {
@@ -724,7 +725,7 @@ public class PageFlowScene extends GraphPinScene<Page, NavigationCaseEdge, Pin> 
     //
     //
     //    }
-    
+
     public PopupMenuProvider getPopupMenuProvider() {
         return popupProvider;
     }
