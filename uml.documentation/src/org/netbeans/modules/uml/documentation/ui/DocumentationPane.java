@@ -32,6 +32,7 @@ import java.awt.event.KeyListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.util.Enumeration;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -46,6 +47,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
@@ -181,7 +183,7 @@ public class DocumentationPane extends JPanel
         underlineAction   = new StyledEditorKit.UnderlineAction();
         leftAction        = new StyledEditorKit.AlignmentAction(NbBundle.getMessage(DocumentationPane.class, "IDS_ALIGNLEFT"), StyleConstants.ALIGN_LEFT);
         centerAction      = new StyledEditorKit.AlignmentAction(NbBundle.getMessage(DocumentationPane.class, "IDS_CENTER"), StyleConstants.ALIGN_CENTER);
-        rightAction       = new StyledEditorKit.AlignmentAction(NbBundle.getMessage(DocumentationPane.class, "IDS_ALIGNRIGHT"), StyleConstants.ALIGN_RIGHT);      
+        rightAction       = new StyledEditorKit.AlignmentAction(NbBundle.getMessage(DocumentationPane.class, "IDS_ALIGNRIGHT"), StyleConstants.ALIGN_RIGHT);
         colorAction       = new ColorAction();
         saveAction        = new SaveAction();
         
@@ -291,6 +293,16 @@ public class DocumentationPane extends JPanel
     {
         if(ke.getKeyChar() == KeyEvent.VK_ENTER)
         {
+            // do not add <br> line break for pre-format text
+            AttributeSet set = getTextPane().getParagraphAttributes();
+            for(Enumeration e = set.getAttributeNames(); e.hasMoreElements();)
+            {
+                Object key = e.nextElement();
+                Object val = set.getAttribute(key);
+                if (val.equals("pre") || val == HTML.Tag.PRE)
+                    return;
+            }
+            
             try
             {
                 insertBreak();
@@ -359,6 +371,7 @@ public class DocumentationPane extends JPanel
         getTextPane().getDocument().removeDocumentListener(this);
         getTextPane().getDocument().removeUndoableEditListener(undoableEditListner);
         
+        getTextPane().removeAll();
         getTextPane().setText(sText);
         getTextPane().getDocument().addDocumentListener(this);
         getTextPane().getDocument().addUndoableEditListener(undoableEditListner);
@@ -557,9 +570,15 @@ public class DocumentationPane extends JPanel
     {
         public void actionPerformed(ActionEvent e)
         {
+            int pos = getTextPane().getCaretPosition();
             DocumentationPane.this.firePropertyChange(PROP_DIRTY, true, false);
             saveAction.setEnabled(false);
             purgeUndos();
+            int length = getTextPane().getDocument().getLength();
+            if (pos > length)
+                getTextPane().setCaretPosition(length);
+            else
+                getTextPane().setCaretPosition(pos);
         }
         
         protected void updateState()
