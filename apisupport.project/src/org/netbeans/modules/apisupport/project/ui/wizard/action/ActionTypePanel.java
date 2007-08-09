@@ -42,9 +42,8 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     private static final Map<String, String> NAME_TO_FQCN;
     
     static {
-        Map map = new HashMap(DataModel.PREDEFINED_COOKIE_CLASSES.length);
-        for (int i = 0; i < DataModel.PREDEFINED_COOKIE_CLASSES.length; i++) {
-            String fqcn = DataModel.PREDEFINED_COOKIE_CLASSES[i];
+        Map<String,String> map = new HashMap<String,String>(DataModel.PREDEFINED_COOKIE_CLASSES.length);
+        for (String fqcn : DataModel.PREDEFINED_COOKIE_CLASSES) {
             String name = DataModel.parseClassName(fqcn);
             map.put(name, fqcn);
         }
@@ -74,15 +73,15 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     
     private String[] getCookieClasses() {
         StringTokenizer classesST  = new StringTokenizer(
-                cookieClass.getEditor().getItem().toString(), ","); // NOI18N
-        Collection classes = new ArrayList();
+                cookieClass.getEditor().getItem().toString(), ", "); // NOI18N
+        Collection<String> classes = new ArrayList<String>();
         while (classesST.hasMoreTokens()) {
-            String clazz = ((String) classesST.nextToken()).trim();
-            String fqcn = (String) NAME_TO_FQCN.get(clazz);
+            String clazz = classesST.nextToken().trim();
+            String fqcn = NAME_TO_FQCN.get(clazz);
             classes.add(fqcn == null ? clazz : fqcn);
         }
         String[] s = new String[classes.size()];
-        return (String[]) classes.toArray(s);
+        return classes.toArray(s);
     }
     
     protected void readFromDataModel() {
@@ -104,11 +103,8 @@ final class ActionTypePanel extends BasicWizardIterator.Panel {
     
     private static ComboBoxModel createCookieClassModel() {
         DefaultComboBoxModel cookieClassModel = new DefaultComboBoxModel();
-        Map map = new HashMap(DataModel.PREDEFINED_COOKIE_CLASSES.length);
-        for (int i = 0; i < DataModel.PREDEFINED_COOKIE_CLASSES.length; i++) {
-            String fqcn = DataModel.PREDEFINED_COOKIE_CLASSES[i];
+        for (String fqcn : DataModel.PREDEFINED_COOKIE_CLASSES) {
             String name = DataModel.parseClassName(fqcn);
-            map.put(name, fqcn);
             cookieClassModel.addElement(name);
         }
         return cookieClassModel;
