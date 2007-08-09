@@ -259,10 +259,10 @@ public class DerbyOptions {
 
             for (int j = 0; j < urls.length; j++) {
                 File file = null;
-                if ("file".equals(urls[i].getProtocol())) { // NOI18N
-                    // FileObject's do not work nice if the file urls[i] points to doesn't exist
+                if ("file".equals(urls[j].getProtocol())) { // NOI18N
+                    // FileObject's do not work nice if the file urls[j] points to doesn't exist
                     try {
-                        file = new File(urls[i].toURI());
+                        file = new File(urls[j].toURI());
                     } catch (URISyntaxException e) {
                         LOGGER.log(Level.WARNING, null, e);
                     }
