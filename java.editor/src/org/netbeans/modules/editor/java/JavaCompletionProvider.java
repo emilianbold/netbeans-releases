@@ -221,7 +221,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
         }
-
+        
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {
@@ -324,14 +324,18 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         public void run(CompilationController controller) throws Exception {
-            if ((queryType & COMPLETION_QUERY_TYPE) != 0)
-                resolveCompletion(controller);
-            else if (queryType == TOOLTIP_QUERY_TYPE)
-                resolveToolTip(controller);
-            else if (queryType == DOCUMENTATION_QUERY_TYPE)
-                resolveDocumentation(controller);
-            if (component != null)
-                component.putClientProperty("completion-active", Boolean.TRUE); //NOI18N
+            if (!isTaskCancelled()) {
+                if (component != null)
+                    component.putClientProperty("completion-active", Boolean.TRUE); //NOI18N
+                if ((queryType & COMPLETION_QUERY_TYPE) != 0)
+                    resolveCompletion(controller);
+                else if (queryType == TOOLTIP_QUERY_TYPE)
+                    resolveToolTip(controller);
+                else if (queryType == DOCUMENTATION_QUERY_TYPE)
+                    resolveDocumentation(controller);
+                if (component != null && isTaskCancelled())
+                    component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
+            }
         }
         
         

@@ -74,6 +74,7 @@ public final class AsyncCompletionTask implements CompletionTask, Runnable {
         assert (query != null) : "Query must be non-null";
         this.query = query;
         this.component = component;
+        query.initTask(this);
     }
     
     /**
