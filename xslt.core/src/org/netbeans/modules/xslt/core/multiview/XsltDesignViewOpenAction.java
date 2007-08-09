@@ -20,6 +20,7 @@ package org.netbeans.modules.xslt.core.multiview;
 
 import org.netbeans.modules.xslt.core.XSLTDataEditorSupport;
 import org.netbeans.modules.xslt.core.XSLTDataObject;
+import org.openide.cookies.EditCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -54,15 +55,20 @@ public class XsltDesignViewOpenAction extends NodeAction {
             }
             return;
         }
-        // default to open cookie
-        OpenCookie oc = activatedNodes[0].getCookie(OpenCookie.class);
-        if (oc != null) {
-            oc.open();
-        }
+        // default to edit cookie
+//        EditCookie ec = activatedNodes[0].getCookie(EditCookie.class);
+//        if (ec != null) {
+//            ec.edit();
+//        }
     }
 
     protected boolean enable(Node[] activatedNodes) {
-        return true;
+        if (activatedNodes == null || activatedNodes[0] == null) {
+            return false;
+        }
+        XSLTDataObject dObj = activatedNodes[0].getLookup().
+                                                lookup(XSLTDataObject.class);
+        return dObj != null;
     }
 
     public String getName() {

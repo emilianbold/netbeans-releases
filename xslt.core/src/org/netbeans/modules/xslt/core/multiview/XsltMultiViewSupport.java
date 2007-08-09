@@ -63,7 +63,8 @@ public class XsltMultiViewSupport {
         CloneableTopComponent multiview =
                 MultiViewFactory.createCloneableMultiView(
                 views,
-                views[1],
+                // source view invokes cloneableEditorSupport initialization (add listeners ...)
+                views[0],
                 new XSLTDataEditorSupport.CloseHandler( dataObject ));
         String name = dataObject.getNodeDelegate().getDisplayName();
         multiview.setDisplayName(name);
