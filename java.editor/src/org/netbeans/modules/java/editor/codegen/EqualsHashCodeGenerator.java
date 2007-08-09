@@ -50,6 +50,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
@@ -342,7 +343,8 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         //<this type> other = (<this type>) o;
         statements.add(make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)), "other", make.Type(type), make.TypeCast(make.Type(type), make.Identifier("obj")))); //NOI18N
         for (VariableElement ve : equalsFields) {
-            if (ve.asType().getKind().isPrimitive()) {
+            TypeMirror tm = ve.asType();
+            if (tm.getKind().isPrimitive() || tm.getKind() == TypeKind.DECLARED && ((DeclaredType)tm).asElement().getKind() == ElementKind.ENUM) {
                 //if (this.<var> != other.<var>) return false;                
                 statements.add(make.If(make.Binary(Tree.Kind.NOT_EQUAL_TO, make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.MemberSelect(make.Identifier("other"), ve.getSimpleName())), make.Return(make.Identifier("false")), null)); //NOI18N
             } else {
