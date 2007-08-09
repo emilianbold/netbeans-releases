@@ -44,6 +44,7 @@ import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
+import org.openide.util.NbBundle;
 import static org.netbeans.modules.java.source.save.ListMatcher.*;
 import static com.sun.tools.javac.code.Flags.*;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
@@ -187,7 +188,7 @@ public class CasualDiff {
                 copyTo(localPointer, getOldPos(oldT.pid));
                 localPointer = endPos(oldT.pid);
                 printer.print(newT.pid);
-                diffInfo.put(getOldPos(oldT.pid), "Update package statement");
+                diffInfo.put(getOldPos(oldT.pid), NbBundle.getMessage(CasualDiff.class,"TXT_UpdatePackageStatement"));
                 break;
         }
         return localPointer;
@@ -222,7 +223,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(localPointer, insertHint);
             printer.print(newT.name);
-            diffInfo.put(insertHint, "Change class name");
+            diffInfo.put(insertHint, NbBundle.getMessage(CasualDiff.class,"TXT_ChangeClassName"));
             localPointer = insertHint += oldT.name.length();
             origClassName = oldT.name;
         } else {
@@ -403,7 +404,7 @@ public class CasualDiff {
                 }
                 else {
                     printer.print(newT.name);
-                    diffInfo.put(oldT.pos, "Rename method " + oldT.name);
+                    diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameMethod") + " " + oldT.name);
                     localPointer = oldT.pos + oldT.name.length();
                 }
             } else {
@@ -468,7 +469,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(localPointer, oldT.pos);
             printer.print(newT.name);
-            diffInfo.put(oldT.pos, "Rename variable " + oldT.name);
+            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable") + " " + oldT.name);
             localPointer = oldT.pos + oldT.name.length();
         }
         if (newT.init != null && oldT.init != null) {
@@ -505,7 +506,7 @@ public class CasualDiff {
             if (nameChanged(oldT.name, newT.name)) {
                 copyTo(localPointer, oldT.pos);
                 printer.print(newT.name);
-                diffInfo.put(oldT.pos, "Rename enum constant " + oldT.name);
+                diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameEnumConstant") + " " + oldT.name);
                 localPointer = oldT.pos + oldT.name.length();
             }
             JCNewClass oldInit = (JCNewClass) oldT.init;
@@ -539,7 +540,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(localPointer, oldT.pos);
             printer.print(newT.name);
-            diffInfo.put(oldT.pos, "Rename variable " + oldT.name);
+            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameVariable") + " " + oldT.name);
             localPointer = oldT.pos + oldT.name.length();
         }
         if (newT.init != null && oldT.init != null) {
@@ -1164,7 +1165,7 @@ public class CasualDiff {
         }
         if (nameChanged(oldT.name, newT.name)) {
             printer.print(newT.name);
-            diffInfo.put(localPointer, "Update reference to " + oldT.name);
+            diffInfo.put(localPointer, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo") + " " + oldT.name);
             localPointer = localPointer + oldT.name.length();
         }
         copyTo(localPointer, bounds[1]);
@@ -1179,7 +1180,7 @@ public class CasualDiff {
         if (nameChanged(oldT.name, newT.name)) {
             copyTo(bounds[0], oldT.pos);
             printer.print(newT.name);
-            diffInfo.put(oldT.pos, "Update reference to " + oldT.name);
+            diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_UpdateReferenceTo") + " " + oldT.name);
         } else {
             copyTo(bounds[0], bounds[1]);
         }
