@@ -55,8 +55,8 @@ public class GenericResourceBean {
         HttpMethodType.GET, HttpMethodType.PUT 
     };
     
-    public static final HttpMethodType[] CLIENT_CONTROL_METHODS = new HttpMethodType[] {
-        HttpMethodType.GET, HttpMethodType.PUT, HttpMethodType.DELETE
+    public static final HttpMethodType[] CLIENT_CONTROL_CONTAINER_METHODS = new HttpMethodType[] {
+        HttpMethodType.GET
     };
     
     private final String name;
