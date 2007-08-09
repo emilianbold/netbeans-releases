@@ -780,8 +780,10 @@ public class ProjectHelper {
                 FileObject jaxbBuildXml = getFOForBindingBuildFile(project);
                 AntBuildExtender.Extension jaxbBuild = ext.addExtension( 
                         JAXB_ANT_XTN_NAME, jaxbBuildXml); 
-                jaxbBuild.addDependency("-pre-pre-compile", //NOI18N
-                        "jaxb-code-generation"); //NOI18N
+                jaxbBuild.addDependency(
+                        JAXBWizModuleConstants.JAXB_COMPILE_TARGET_DEPENDS,
+                        JAXBWizModuleConstants.JAXB_COMPILE_TARGET);
+                ProjectManager.getDefault().saveProject(project);
                 ProjectManager.getDefault().saveProject(project);
             }
         } catch (IOException ioe) {
@@ -817,26 +819,39 @@ public class ProjectHelper {
     }
 
     public static void compileXSDs(final Project project) {
-        compileXSDs(project, null, false);
+        compileXSDs(project, false);
     }
 
-    private static void compileXSDs(final Project prj, final String pkgName) {
-        compileXSDs(prj, pkgName, true);
+    public static void compileXSDs(final Project project, 
+            final boolean addLibs){
+        executeAntTarget(project, addLibs, 
+                JAXBWizModuleConstants.JAXB_COMPILE_TARGET);
     }
 
-    public static void compileXSDs(final Project project, final String pkgName, 
-            final boolean addLibs) {
+    public static void cleanCompileXSDs(final Project project, 
+            final boolean addLibs){
+        executeAntTarget(project, addLibs, 
+                JAXBWizModuleConstants.JAXB_CLEAN_COMPILE_TARGET);
+    }
+
+    private static void executeAntTarget(final Project project,
+            final boolean addLibs,
+            final String antTarget){
         final ProgressHandle progressHandle = ProgressHandleFactory
                 .createHandle(NbBundle.getMessage(ProjectHelper.class, 
                 "MSG_JAXB_PROGRESS")); //NOI18N;
         progressHandle.start();
 
         Runnable run = new Runnable() {
-
             public void run() {
                 try {
+                    if (addLibs) {
+                        addLibraries(project);
+                    }
+
                     FileObject buildXml = getFOForProjectBuildFile(project);
-                    String[] args = new String[]{"jaxb-code-generation"}; //NOI18N
+                    String[] args = new String[]{antTarget};
+                                        
                     if (buildXml != null) {
                         ExecutorTask task = ActionUtils.runTarget(buildXml,
                                 args, null);
@@ -850,10 +865,6 @@ public class ProjectHelper {
                             DialogDisplayer.getDefault().notify(desc);
                         }
                     }
-
-                    if (addLibs) {
-                        addLibraries(project);
-                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 } catch (Exception e) {
@@ -866,39 +877,39 @@ public class ProjectHelper {
 
         RequestProcessor.getDefault().post(run);
     }
-
-    private static boolean isJDK6(final Project prj) {
-        boolean ret = false;
-        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-        if (jpm != null) {
-            String platForm = getProjectProperty(prj, PLATFORM_ACTIVE);
-            if (DEFAULT_PLATFORM.equals(platForm)) {
-
-                JavaPlatform dflt = jpm.getDefaultPlatform();
-                if (dflt != null) {
-                    if (JDK_1_6.compareTo(dflt.getSpecification().getVersion()) <= 0) {
-                        ret = true;
-                    }
-                }
-            } else {
-                JavaPlatform[] jp = jpm.getInstalledPlatforms();
-                if (jp != null) {
-                    for (JavaPlatform jpi : jp) {
-                        if (jpi.getProperties().get("platform.ant.name").equals( //NOI18N
-                                platForm)) {
-                            SpecificationVersion sv = jpi.getSpecification()
-                                    .getVersion();
-                            if (JDK_1_6.compareTo(sv) <= 0) {
-                                ret = true;
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return ret;
-    }
+    
+//    private static boolean isJDK6(final Project prj) {
+//        boolean ret = false;
+//        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+//        if (jpm != null) {
+//            String platForm = getProjectProperty(prj, PLATFORM_ACTIVE);
+//            if (DEFAULT_PLATFORM.equals(platForm)) {
+//
+//                JavaPlatform dflt = jpm.getDefaultPlatform();
+//                if (dflt != null) {
+//                    if (JDK_1_6.compareTo(dflt.getSpecification().getVersion()) <= 0) {
+//                        ret = true;
+//                    }
+//                }
+//            } else {
+//                JavaPlatform[] jp = jpm.getInstalledPlatforms();
+//                if (jp != null) {
+//                    for (JavaPlatform jpi : jp) {
+//                        if (jpi.getProperties().get("platform.ant.name").equals( //NOI18N
+//                                platForm)) {
+//                            SpecificationVersion sv = jpi.getSpecification()
+//                                    .getVersion();
+//                            if (JDK_1_6.compareTo(sv) <= 0) {
+//                                ret = true;
+//                            }
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return ret;
+//    }
     
     public static void addCfgFileChangeListener(Project prj, 
             FileChangeListener l){

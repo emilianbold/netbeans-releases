@@ -192,13 +192,11 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
 
     public void uninitialize(TemplateWizard wiz) {
         if ( wiz.getValue() == TemplateWizard.FINISH_OPTION ) {
-                String pkgName = (String) wiz.getProperty(
-                        JAXBWizModuleConstants.PACKAGE_NAME);
                 try {
                     Schema nSchema = ProjectHelper.importResources(project, 
                             wiz, null);
                     ProjectHelper.addSchema2Model(project, nSchema);                    
-                    ProjectHelper.compileXSDs(project, pkgName, true);
+                    ProjectHelper.compileXSDs(project, true);
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }

@@ -6,6 +6,7 @@
             <classpath path="${libs.jaxb20.classpath}"/>
         </typedef>
     </target>
+    <target name="jaxb-clean-code-generation" depends="clean,jaxb-code-generation"/>
     <target name="jaxb-code-generation" depends="xjc-typedef-target">
         <mkdir dir="build/generated/addons/jaxb" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>
         <mkdir dir="build/generated/jaxbCache" xmlns:s="http://xml.netbeans.org/schema/JAXBWizConfig"/>

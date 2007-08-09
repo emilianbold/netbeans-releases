@@ -61,8 +61,12 @@ public class JAXBWizModuleConstants {
     public static final String ORIG_LOCATION = "origLocation" ; // No I18N
     public static final String ORIG_LOCATION_TYPE = "orginLocationType"; //NOI18N
     public static final String LOC_SCHEMA_ROOT = "localSchemaRoot"; //NOI18N
-        
+
+    public static final String JAXB_COMPILE_TARGET_DEPENDS = "-pre-pre-compile" ;//NOI18N
+    public static final String JAXB_COMPILE_TARGET = "jaxb-code-generation"; //NOI18N
+    public static final String JAXB_CLEAN_COMPILE_TARGET = "jaxb-clean-code-generation"; //NOI18N
+    
     private JAXBWizModuleConstants() {
     }
-
 }
+

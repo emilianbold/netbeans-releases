@@ -177,16 +177,15 @@ public class OpenJAXBCustomizerAction extends NodeAction  {
                 dlg.setVisible( true );
                 
                 if ( descriptor.getValue() == WizardDescriptor.FINISH_OPTION ) {
-                    String pkgName = (String) descriptor.getProperty(
-                            JAXBWizModuleConstants.PACKAGE_NAME);
-                    try {                        
+
+                    try {
                         Schema nSchema = ProjectHelper.importResources(project, 
                                 descriptor, schema);
                         
                         schemaNode.setSchema(nSchema);                        
                         ProjectHelper.changeSchemaInModel(project, schema, 
                                 nSchema);                        
-                        ProjectHelper.compileXSDs(project, pkgName, true);
+                        ProjectHelper.cleanCompileXSDs(project, true);
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
                     }                        

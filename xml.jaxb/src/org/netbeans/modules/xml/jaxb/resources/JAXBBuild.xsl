@@ -34,7 +34,11 @@ Microsystems, Inc. All Rights Reserved.
                 <typedef classname="com.sun.tools.xjc.XJCTask" name="xjc">
                     <classpath path="${{libs.jaxb20.classpath}}"/>
                 </typedef>
-            </xsl:element> 
+            </xsl:element>
+            <xsl:element name="target">
+                <xsl:attribute name="name">jaxb-clean-code-generation</xsl:attribute>
+                <xsl:attribute name="depends">clean,jaxb-code-generation</xsl:attribute>            
+            </xsl:element>
             <xsl:element name="target">
                 <xsl:attribute name="name">jaxb-code-generation</xsl:attribute>
                 <xsl:attribute name="depends">xjc-typedef-target</xsl:attribute>            
@@ -45,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
                 <javac destdir="${{build.classes.dir}}" srcdir="build/generated/addons/jaxb" source="${{javac.source}}"  target="${{javac.target}}">
                     <classpath path="${{libs.jaxb20.classpath}}"/>
                 </javac>
-            </xsl:element> 
+            </xsl:element>             
         </xsl:element>
     </xsl:template>
     <xsl:template match="s:schema">
