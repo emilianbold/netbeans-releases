@@ -45,7 +45,6 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         <antcall target="clean-javahelp-images"/>       
         <antcall target="javahelp-images"/>                
         <antcall target="unzip-doors"/>
-        <antcall target="copy-drawingLibrary-jar"/>
 
         <!-- Add our cluster name in etc/netbeans.clusters -->
         <!--
@@ -53,16 +52,9 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
         -->
     </target>
 
-    <target name="copy-drawingLibrary-jar">
-	<echo message="Moved to tomsawyer/nbproject/project.properties"/> 
-	<!--
-        <mkdir dir="${cluster}/modules/ext/drawingLibrary"/>
-        <copy todir="${cluster}/modules/ext/drawingLibrary">
-            <fileset dir="../external/">
-                <include name="drawingLibrary.jar"/>             
-            </fileset>
-        </copy>
-	-->
+    <target name="release">
+        <ant dir="../tomsawyer" target="common-init"/>
+        <antcall target="projectized.release"/>
     </target>
     
     <property name="doors.integration.files" value="${basedir}/lib/DoorsIntegrationFiles.zip"/>
