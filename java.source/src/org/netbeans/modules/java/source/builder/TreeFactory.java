@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.java.source.builder;
 
+import com.sun.tools.javac.code.Type.ErrorType;
 import com.sun.tools.javac.model.JavacElements;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.*;
@@ -584,6 +585,9 @@ public class TreeFactory {
             case ARRAY:
                 
                 tp = make.TypeArray((JCExpression) Type(((ArrayType) type).getComponentType()));
+                break;
+            case ERROR:
+                tp = make.Ident(((ErrorType) type).tsym.name);
                 break;
             default:
         return make.Type((Type)type);
