@@ -44,8 +44,11 @@ public class SecurityConfigurationProvider implements WSConfigurationProvider {
 
     public synchronized WSConfiguration getWSConfiguration(Service service, FileObject implementationFile) {
         String key = "";
-        if (service != null) key += service.getLocalWsdlFile();
-        if (implementationFile != null) key += implementationFile.getPath();
+        if ((implementationFile == null) || (service == null)) {
+            return null;
+        }
+        key += service.getLocalWsdlFile();
+        key += implementationFile.getPath();
         if (!configProviders.containsKey(key)) {
             configProviders.put(key, new SecurityConfiguration(service, implementationFile));
         }
