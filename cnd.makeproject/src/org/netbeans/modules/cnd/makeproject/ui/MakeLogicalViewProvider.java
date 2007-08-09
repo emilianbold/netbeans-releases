@@ -157,6 +157,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         // FIXUP: this doesn't work with file groups (jl: is this still true?)
         File file = FileUtil.toFile((FileObject)target);
         MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor();
+        if (makeConfigurationDescriptor == null || file == null) {
+            // IZ 111884 NPE while creating a web project
+            return null;
+        }
         Item item = makeConfigurationDescriptor.findProjectItemByPath(file.getAbsolutePath());
         
         if (item == null) {
@@ -1313,7 +1317,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         public Action[] getActions( boolean context ) {
             // Replace DeleteAction with Remove Action
             // Replace PropertyAction with customizeProjectAction
-            Action[] oldActions = super.getActions();
+            Action[] oldActions = super.getActions(false);
             Vector newActions = new Vector();
             for (int i = 0; i < oldActions.length; i++) {
                 if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.OpenAction) {

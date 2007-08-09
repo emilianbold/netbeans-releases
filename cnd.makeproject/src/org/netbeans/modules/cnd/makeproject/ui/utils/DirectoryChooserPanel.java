@@ -255,6 +255,10 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 	    return getString("EDIT_BUTTON_MN").charAt(0);
 	}
 
+        public String getDownButtonText() {
+            return getString("DOWN_BUTTON_TXT");
+        }
+        
         public char getDownButtonMnemonics() {
 	    return getString("DOWN_BUTTON_MN").charAt(0);
         }
