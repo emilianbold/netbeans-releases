@@ -6244,7 +6244,7 @@ public class UMLParsingIntegrator
                     
                     if(params.length() > 0)
                     {
-                        params += ",";
+                        params += ", ";
                     }
                     params += tempStr;
                 }
@@ -6282,6 +6282,22 @@ public class UMLParsingIntegrator
                                                            pClassSpace, 
                                                            derivationElementStr, 
                                                            false);
+		if (spNamedElement == null) 
+		{
+		    // lets try in the namespace of template element
+		    String tempStr = XMLManip.getAttributeValue(pDerivationElement, "name");
+		    INamedElement templateElement = resolveType(pClazz, pClazzObj, 
+								pClassSpace, 
+								tempStr, 
+								true);
+		    if (templateElement != null) 
+		    {
+			spNamedElement = resolveType(pClazz, pClazzObj, 
+						     templateElement.getNamespace(), 
+						     derivationElementStr, 
+						     false);
+		    }
+		}		
                 if(spNamedElement instanceof IDerivationClassifier)
                 {
                     pDerivationClassifier = (IDerivationClassifier)spNamedElement;
