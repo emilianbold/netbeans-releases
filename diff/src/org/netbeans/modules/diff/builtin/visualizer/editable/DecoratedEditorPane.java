@@ -44,6 +44,9 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
     
     private final RequestProcessor.Task repaintTask;
 
+    private int                 fontHeight;
+    private int                 charWidth;
+
     public DecoratedEditorPane(DiffContentPanel master) {
         repaintTask = RequestProcessor.getDefault().create(new RepaintPaneTask());
         setBorder(null);
@@ -62,6 +65,28 @@ class DecoratedEditorPane extends JEditorPane implements PropertyChangeListener 
     void setDifferences(Difference [] diff) {
         currentDiff = diff;
         repaint();
+    }
+
+    public void setFont(Font font) {
+        super.setFont(font);
+        setFontHeightWidth(getFont());
+    }
+    
+    private void setFontHeightWidth(Font font) {
+        FontMetrics metrics = getFontMetrics(font);
+        fontHeight = metrics.getHeight();
+        charWidth = metrics.charWidth('m');
+    }
+    
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+        switch (orientation) {
+        case SwingConstants.VERTICAL:
+            return fontHeight;
+        case SwingConstants.HORIZONTAL:
+            return charWidth;
+        default:
+            throw new IllegalArgumentException("Invalid orientation: " + orientation); // discrimination
+        }
     }
 
     protected void paintComponent(Graphics gr) {
