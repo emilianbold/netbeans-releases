@@ -517,8 +517,8 @@ function createIFrame(url) {
     return c;
 }
 function showViews(name) {
-    if(name == 'raw' && currentMethod == 'GET' && currentMimeType == 'application/xml') //This step is needed for Firefox to show content as xml
-    	updatepage('rawContent', createIFrame(currentValidUrl));
+    //if(name == 'raw' && currentMethod == 'GET' && currentMimeType == 'application/xml') //This step is needed for Firefox to show content as xml
+    //	updatepage('rawContent', createIFrame(currentValidUrl));
     var tableNode = document.getElementById('tableContent').style;
     var rawNode = document.getElementById('rawContent').style;
     var headerNode = document.getElementById('headerInfo').style;
@@ -804,14 +804,15 @@ function getContainerTable(content) {
         if(container != null)
             str2 = findUriFromXml(container);
         else
-            str2 = findUriFromJSON(content);
+            str2 = findUriFromContent(content);
         if(str2 == null || str2 == '')
             return null;
         str += str2;
         str += "</tbody></table>";
         ret = str;
     } catch(e) {
-        alert('err: '+e.name+e.message);
+        //alert('err: '+e.name+e.message);
+        return null;
     }
 
     return ret;
@@ -861,55 +862,26 @@ function createRowForUriFromXml(refChild) {
     str += "</tr>";
     return str;
 }
-function findUriFromJSON(content) {
-    var str = ''; 
-    
-    //Check if Container    
-    var i = content.indexOf('Ref');
-    if(i == -1)
-        return str;
-    
-    var temp = new Array();
-    temp = content.split(':');
-    var j = 0;
-    var count = 0;
-    for(j=0;j<temp.length;j++) {
-        if(temp[j] == '{"$"')
-            count++;  
-    }
-        
-    //Find container name
-    var cName = '';
-    var j = content.indexOf('"');
-    if(j != -1)
-        cName = content.substring(j+1, content.indexOf('"', j+1));
-    
-    var c = content.replace(/\\\//g,"/");
-    /*var myObj = 
-        {"playlists":
-            {"@uri":"http://localhost:8080/F/restbean/playlists/",
-            "playlistRef":[
-                    {"@uri":"http://localhost:8080/F/restbean/playlists/1/", "playlistId":{"$":"1"}},
-                    {"@uri":"http://localhost:8080/F/restbean/playlists/2/", "playlistId":{"$":"2"}},
-                    {"@uri":"http://localhost:8080/F/restbean/playlists/3/", "playlistId":{"$":"3"}}
-                ]
-            }
-        };*/    
-    var myObj = eval('(' +c+')');
-        
-    var x = cName.substring(0, cName.length-1);
-    var y = x + 'Ref';
-    var z = x + 'Id';
-    for(j=0;j<count;j++) {
-        str += "<tr>"; 
-        str += "<td>"+eval('myObj.'+x+'s.'+y+'['+j+'].'+z+'.$')+"</td>";
-        var uri = eval('myObj.'+x+'s.'+y+'['+j+'].@uri');
-        var disp = getDisplayUri(uri);
-        str += "<td>";    
-        str += "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+getDisplayURL(disp, 70)+"</a>";
-        str += "<br/>(<a href='"+uri+"' target='_blank'><span class=font10>"+getDisplayURL(uri, 70)+"</span></a>)";
-        str += "</td>";
-        str += "</tr>";
+function findUriFromContent(content) {
+    if(content == null || content == '')
+        return '';
+    var c = content.replace(/\\\//g,"/");   
+    var uris = c.split('\"');
+    var str = '';
+    var i = 0;
+    var count = 1;
+    for(i=0;i<uris.length;i++) {
+        var uri = uris[i];
+        if(uri.indexOf(baseURL) != -1 && uri.length > currentValidUrl.length) {
+            str += "<tr>";    
+            str += "<td>"+(count++)+"</td>";
+            str += "<td>";
+            var disp = getDisplayUri(uri);
+            str += "<a id='"+uri+"' href=javascript:doShowContent('"+uri+"') >"+getDisplayURL(disp, 70)+"</a>";
+            str += "<br/>(<a href='"+uri+"' target='_blank'><span class=font10>"+getDisplayURL(uri, 70)+"</span></a>)";
+            str += "</td>";
+            str += "</tr>";            
+        }            
     }
     return str;
 }
