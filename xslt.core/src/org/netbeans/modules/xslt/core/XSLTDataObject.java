@@ -26,12 +26,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.xml.transform.Source;
 import org.netbeans.modules.xslt.core.multiview.XsltDesignViewOpenAction;
 import org.netbeans.modules.xslt.core.multiview.XsltMultiViewSupport;
 import org.netbeans.modules.xslt.mapper.model.MapperContext;
 import org.netbeans.modules.xslt.model.XslModel;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
+import org.netbeans.spi.xml.cookies.TransformableSupport;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataNode;
@@ -81,8 +83,8 @@ public class XSLTDataObject extends MultiDataObject {
         cookies.add(new CheckXMLSupport (is));
         cookies.add(new ValidateXSLSupport (is));
         
-//        Source source = DataObjectAdapters.source(this);
-//        cookies.add(new TransformableSupport(source));
+        Source source = DataObjectAdapters.source(this);
+        cookies.add(new TransformableSupport(source));
 //        cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
     }
     
