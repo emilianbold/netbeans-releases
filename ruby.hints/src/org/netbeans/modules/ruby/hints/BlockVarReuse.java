@@ -150,7 +150,7 @@ public class BlockVarReuse implements AstRule {
         }
 
         private void addNonBlockRefs(Node node, String name, Set<OffsetRange> ranges) {
-            if (((node instanceof LocalAsgnNode) || (node instanceof LocalVarNode)) && name.equals(((INameNode)node).getName())) {
+            if ((node.nodeId == NodeTypes.LOCALASGNNODE || node.nodeId == NodeTypes.LOCALVARNODE) && name.equals(((INameNode)node).getName())) {
                 ranges.add(AstUtilities.getNameRange(node));
             }
 

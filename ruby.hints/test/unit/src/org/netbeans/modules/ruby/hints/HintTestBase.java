@@ -49,6 +49,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Common utility methods for testing a hint
@@ -180,6 +181,8 @@ public abstract class HintTestBase extends RubyTestBase {
         return sb.toString();
     }
     
+    protected boolean parseErrorsOk;
+    
     protected ComputedHints getHints(NbTestCase test, AstRule hint, String relFilePath, FileObject fileObject, String caretLine) throws Exception {
         assert relFilePath == null || fileObject == null;
 
@@ -191,9 +194,16 @@ public abstract class HintTestBase extends RubyTestBase {
         
         CompilationInfo info = fileObject != null ? getInfo(fileObject) : getInfo(relFilePath);
         Node root = AstUtilities.getRoot(info);
-        assertNotNull("Unexpected parse error in test case " + 
-                FileUtil.getFileDisplayName(info.getFileObject()) + "\nErrors = " + 
-                info.getDiagnostics(), root);
+        if (root == null) {
+            if (parseErrorsOk) {
+                List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+                int caretOffset = 0;
+                return new ComputedHints(info, result, caretOffset);
+            }
+            assertNotNull("Unexpected parse error in test case " + 
+                    FileUtil.getFileDisplayName(info.getFileObject()) + "\nErrors = " + 
+                    info.getDiagnostics(), root);
+        }
 
         String text = info.getText();
 
@@ -230,6 +240,33 @@ public abstract class HintTestBase extends RubyTestBase {
         return new ComputedHints(info, result, caretOffset);
     }
 
+    protected void assertNoJRubyMatches(AstRule hint, Set<String> exceptions) throws Exception {
+        List<FileObject> files = findJRubyRubyFiles();
+        assertTrue(files.size() > 0);
+        
+        Set<String> fails = new HashSet<String>();
+        for (FileObject fileObject : files) {
+            ComputedHints r = getHints(this, hint, null, fileObject, null);
+            CompilationInfo info = r.info;
+            List<ErrorDescription> result = r.hints;
+            int caretOffset = r.caretOffset;
+
+            String annotatedSource = annotate((BaseDocument)info.getDocument(), result, caretOffset);
+            
+            if (annotatedSource.length() > 0) {
+                // Check if there's an exception
+                String name = fileObject.getNameExt();
+                if (exceptions.contains(name)) {
+                    continue;
+                }
+                
+                fails.add(fileObject.getNameExt());
+            }
+        }
+        
+        assertTrue(fails.toString(), fails.size() == 0);
+    }
+    
     // TODO - rename to "checkHints"
     protected void findHints(NbTestCase test, AstRule hint, String relFilePath, String caretLine) throws Exception {
         findHints(test, hint, relFilePath, null, caretLine);
