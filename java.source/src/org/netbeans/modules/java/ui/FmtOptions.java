@@ -44,12 +44,18 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.EditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.editor.Settings;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.editor.Formatter;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -212,6 +218,8 @@ public class FmtOptions {
         
     public static Preferences lastValues;
     
+    private static Class<? extends EditorKit> kitClass;
+    
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     
     private FmtOptions() {}
@@ -232,6 +240,37 @@ public class FmtOptions {
         return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
     }
     
+    public static boolean getGlobalExpandTabToSpaces() {
+        Formatter f = (Formatter)Settings.getValue(getKitClass(), "formatter");
+        if (f != null)
+            return f.expandTabs();
+        return getDefaultAsBoolean(expandTabToSpaces);
+    }
+    
+    public static int getGlobalTabSize() {
+        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TAB_SIZE);
+        return i != null ? i.intValue() : getDefaultAsInt(tabSize);
+    }
+    
+    public static int getGlobalIndentSize() {
+        Formatter f = (Formatter)Settings.getValue(getKitClass(), "formatter");
+        if (f != null)
+            return f.getShiftWidth();
+        return getDefaultAsInt(indentSize);
+    }
+    
+    public static int getGlobalRightMargin() {
+        Integer i = (Integer)Settings.getValue(getKitClass(), SettingsNames.TEXT_LIMIT_WIDTH);
+        return i != null ? i.intValue() : getDefaultAsInt(rightMargin);
+    }
+    
+    public static Class<? extends EditorKit> getKitClass() {
+        if (kitClass == null) {
+            EditorKit kit = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(EditorKit.class); //NOI18N
+            kitClass = kit != null ? kit.getClass() : EditorKit.class;
+        }
+        return kitClass;
+    }
     
     public static void flush() {
         try {

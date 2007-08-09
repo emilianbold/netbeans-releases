@@ -38,6 +38,7 @@ class IndentationModel {
     private boolean         originalExpandedTabs;
     private int             originalSpacesPerTab = 0;
     private int             originalTabSize = 0;
+    private int             originalRightMargin = 0;
     
     private boolean         changed = false;
 
@@ -47,6 +48,7 @@ class IndentationModel {
         originalExpandedTabs = isExpandTabs ();
         originalSpacesPerTab = getSpacesPerTab ().intValue ();
         originalTabSize = getTabSize().intValue ();
+        originalRightMargin = getRightMargin().intValue ();
     }
     
     boolean isExpandTabs () {
@@ -94,6 +96,25 @@ class IndentationModel {
         updateChanged ();
     }
 
+    Integer getRightMargin () {
+        BaseOptions options = getExampleBaseOptions();
+        if (options != null) {
+            return options.getTextLimitWidth();
+        } else {
+            return 120;
+        }
+    }
+    
+    void setRightMargin (Integer margin) {
+	if (margin.intValue () > 0) {
+            BaseOptions options = getExampleBaseOptions();
+            if (options != null) {
+                options.setTextLimitWidth(margin);
+            }
+        }
+        updateChanged ();
+    }
+
     boolean isChanged () {
         return changed;
     }
@@ -103,6 +124,7 @@ class IndentationModel {
         applyParameterToAll ("setExpandTabs", Boolean.valueOf(isExpandTabs ()), Boolean.TYPE); //NOI18N
         applyParameterToAll ("setSpacesPerTab", getSpacesPerTab (), Integer.TYPE); //NOI18N
         applyParameterToAll ("setTabSize", getTabSize(), Integer.TYPE); //NOI18N
+        applyParameterToAll ("setRightMargin", getRightMargin(), Integer.TYPE); //NOI18N
     }
     
     void revertChanges () {
@@ -116,6 +138,9 @@ class IndentationModel {
         if (getTabSize().intValue() != originalTabSize && originalTabSize > 0) {
             setTabSize(new Integer(originalTabSize));
         }
+        if (getRightMargin().intValue() != originalRightMargin && originalRightMargin > 0) {
+            setRightMargin(new Integer(originalRightMargin));
+        }
     }
     
     // private helper methods ..................................................
@@ -124,7 +149,8 @@ class IndentationModel {
         changed = 
             isExpandTabs () != originalExpandedTabs ||
             getSpacesPerTab ().intValue () != originalSpacesPerTab ||
-            getTabSize().intValue() != originalTabSize;
+            getTabSize().intValue() != originalTabSize ||
+            getRightMargin().intValue() != originalRightMargin;
     }
     
     private BaseOptions exampleBaseOptions = null;
@@ -218,6 +244,8 @@ class IndentationModel {
                 
                 if (parameterName.equals("setTabSize")) { //NOI18N
                     baseOptions.setTabSize((Integer)parameterValue);
+                } else if (parameterName.equals("setRightMargin")) { //NOI18N
+                    baseOptions.setTextLimitWidth((Integer)parameterValue);
                 } else {
                     Method method = indentEngine.getClass ().getMethod (
                         parameterName,

@@ -34,6 +34,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -62,11 +63,13 @@ public class Reformatter implements ReformatTask {
     private int startOffset;
     private int endOffset;
     private int shift;
+    private int tabSize;    
 
     public Reformatter(JavaSource javaSource, Context context) {
         this.javaSource = javaSource;
         this.context = context;
         this.doc = context.document();
+        this.tabSize = CodeStyle.getDefault(null).getTabSize();
     }
 
     public void reformat() throws BadLocationException {
@@ -152,11 +155,12 @@ public class Reformatter implements ReformatTask {
                     String text = token.text().toString();
                     int idx = text.lastIndexOf('\n');
                     if (idx >= 0) {
-                        indent = text.length() - idx - 1;
+                        text = text.substring(idx + 1);
+                        indent = getCol(text);
                         break;
                     } else if (sourceTS.movePrevious()) {
                         if (sourceTS.token().id() == JavaTokenId.LINE_COMMENT) {
-                            indent = text.length();
+                            indent = getCol(text);
                             break;
                         }                        
                     }
@@ -165,6 +169,19 @@ public class Reformatter implements ReformatTask {
             path = path.getParentPath();
         }
         return indent;
+    }
+    
+    private int getCol(String text) {
+        int col = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '\t') {
+                col = col+tabSize & ~(tabSize-1);
+            } else {
+                col++;
+            }
+        }
+        return col;
     }
     
     private LinkedList<Diff> getDiffs(TokenSequence<JavaTokenId> sourceTS, TokenSequence<JavaTokenId> textTS, int offset) throws BadLocationException {

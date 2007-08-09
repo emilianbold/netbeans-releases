@@ -69,6 +69,7 @@ ActionListener {
         loc (lTabSize, "TabSize"); //NOI18N
         loc (lPreview, "Preview"); //NOI18N
         loc (lExpandTabsToSpaces, "Expand_Tabs"); //NOI18N
+        loc (lRightMargin, "Right_Margin"); //NOI18N
         cbExpandTabsToSpaces.getAccessibleContext ().setAccessibleName (loc ("AN_Expand_Tabs")); //NOI18N
         cbExpandTabsToSpaces.getAccessibleContext ().setAccessibleDescription (loc ("AD_Expand_Tabs")); //NOI18N
         epPreview.getAccessibleContext ().setAccessibleName (loc ("AN_Preview")); //NOI18N
@@ -81,6 +82,8 @@ ActionListener {
         sNumberOfSpacesPerIndent.addChangeListener (this);
         sTabSize.setModel (new SpinnerNumberModel (4, 1, 50, 1));
         sTabSize.addChangeListener (this);
+        sRightMargin.setModel (new SpinnerNumberModel (120, 1, 200, 10));
+        sRightMargin.addChangeListener (this);
         epPreview.setEnabled (false);
     }
     
@@ -101,6 +104,8 @@ ActionListener {
         lTabSize = new javax.swing.JLabel();
         sTabSize = new javax.swing.JSpinner();
         lExpandTabsToSpaces = new javax.swing.JLabel();
+        lRightMargin = new javax.swing.JLabel();
+        sRightMargin = new javax.swing.JSpinner();
 
         lNumberOfSpacesPerIndent.setLabelFor(sNumberOfSpacesPerIndent);
         lNumberOfSpacesPerIndent.setText("Number of Spaces per Indent:");
@@ -118,34 +123,48 @@ ActionListener {
         lExpandTabsToSpaces.setLabelFor(cbExpandTabsToSpaces);
         lExpandTabsToSpaces.setText("Expand Tabs To Spaces:");
 
+        lRightMargin.setLabelFor(sRightMargin);
+        lRightMargin.setText("Right Margin:");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 763, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(lPreview)
-                .addContainerGap(451, Short.MAX_VALUE))
-            .add(jScrollPane1)
-            .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, lExpandTabsToSpaces, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .add(25, 25, 25)
+                .addContainerGap())
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(sTabSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(cbExpandTabsToSpaces))
-                .add(266, 266, 266))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(lNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                                    .add(lTabSize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                            .add(layout.createSequentialGroup()
+                                .add(lRightMargin)
+                                .add(140, 140, 140)))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                            .add(sRightMargin)
+                            .add(sTabSize)
+                            .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
+                        .add(204, 204, 204))
+                    .add(layout.createSequentialGroup()
+                        .add(cbExpandTabsToSpaces)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(lExpandTabsToSpaces)))
+                .add(294, 294, 294))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(lExpandTabsToSpaces)
-                    .add(cbExpandTabsToSpaces))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(14, 14, 14)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(cbExpandTabsToSpaces)
+                    .add(lExpandTabsToSpaces))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lNumberOfSpacesPerIndent)
                     .add(sNumberOfSpacesPerIndent, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -153,10 +172,14 @@ ActionListener {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lTabSize)
                     .add(sTabSize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(27, 27, 27)
+                .add(6, 6, 6)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(lRightMargin)
+                    .add(sRightMargin, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(lPreview)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 172, Short.MAX_VALUE))
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 165, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -168,8 +191,10 @@ ActionListener {
     private javax.swing.JLabel lExpandTabsToSpaces;
     private javax.swing.JLabel lNumberOfSpacesPerIndent;
     private javax.swing.JLabel lPreview;
+    private javax.swing.JLabel lRightMargin;
     private javax.swing.JLabel lTabSize;
     private javax.swing.JSpinner sNumberOfSpacesPerIndent;
+    private javax.swing.JSpinner sRightMargin;
     private javax.swing.JSpinner sTabSize;
     // End of variables declaration//GEN-END:variables
     
@@ -197,6 +222,9 @@ ActionListener {
         );
         model.setTabSize(
             (Integer) sTabSize.getValue ()
+        );
+        model.setRightMargin(
+            (Integer) sRightMargin.getValue ()
         );
         
         // start formatter
@@ -283,6 +311,7 @@ ActionListener {
                 cbExpandTabsToSpaces.setSelected(model.isExpandTabs());
                 sNumberOfSpacesPerIndent.setValue(model.getSpacesPerTab());
                 sTabSize.setValue(model.getTabSize());
+                sRightMargin.setValue(model.getRightMargin());
                 listen = true;
 
                 // update preview

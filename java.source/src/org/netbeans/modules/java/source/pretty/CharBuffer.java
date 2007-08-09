@@ -28,15 +28,19 @@ public final class CharBuffer {
     int maxcol;
     static final int UNLIMITED = 999999;
     int rightMargin = 72;
+    int tabSize = 8;
+    boolean expandTabs = true;
     int leftMargin = 0;
     int hardRightMargin = UNLIMITED;
     int lastBlankLines = 0;
     public final int length() { return used; }
     public void setLength(int l) { if (l < used) used = l < 0 ? 0 : l; }
     public CharBuffer() { chars = new char[10]; }
-    public CharBuffer(int rm) {
+    public CharBuffer(int rm, int ts, boolean et) {
 	this();
 	rightMargin = rm;
+        tabSize = ts;
+        expandTabs = et;
     }
     public final boolean hasMargin() {
         return hardRightMargin != UNLIMITED;
@@ -62,7 +66,9 @@ public final class CharBuffer {
                 hardRightMargin != UNLIMITED) throw err;
     }
     void toCol(int n) {
-        // while(((col+8)&~7)<n) append('\t');
+        if (!expandTabs)
+            while(((col+tabSize)&~(tabSize-1))<=n)
+                append('\t');
         while (col < n) append(' ');
     }
     void toLeftMargin() {
@@ -85,7 +91,7 @@ public final class CharBuffer {
             col = 0;
             break;
           case '\t':
-            col = col+8 & ~(7);
+            col = col+tabSize & ~(tabSize-1);
             break;
           case '\b':
             if (col > maxcol) maxcol = col;

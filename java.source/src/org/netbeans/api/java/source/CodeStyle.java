@@ -65,15 +65,15 @@ public final class CodeStyle {
     // General tabs and indents ------------------------------------------------
     
     public boolean expandTabToSpaces() {
-        return preferences.getBoolean(expandTabToSpaces, getDefaultAsBoolean(expandTabToSpaces));
+        return preferences.getBoolean(expandTabToSpaces, getGlobalExpandTabToSpaces());
     }
 
     public int getTabSize() {
-        return preferences.getInt(tabSize, getDefaultAsInt(tabSize));
+        return preferences.getInt(tabSize, getGlobalTabSize());
     }
 
     public int getIndentSize() {
-        return preferences.getInt(indentSize, getDefaultAsInt(indentSize));
+        return preferences.getInt(indentSize, getGlobalIndentSize());
     }
 
     public int getContinuationIndentSize() {
@@ -97,7 +97,7 @@ public final class CodeStyle {
     }
 
     public int getRightMargin() {
-        return preferences.getInt(rightMargin, getDefaultAsInt(rightMargin));
+        return preferences.getInt(rightMargin, getGlobalRightMargin());
     }
 
     // Code generation ---------------------------------------------------------

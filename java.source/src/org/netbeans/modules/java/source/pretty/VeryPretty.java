@@ -71,6 +71,7 @@ public final class VeryPretty extends JCTree.Visitor {
     private final DanglingElseChecker danglingElseChecker;
     
     public Name enclClassName; // the enclosing class name.
+    private int indentSize;
     private int prec; // visitor argument: the current precedence level.
     private LinkedList<Comment> pendingComments = null;
     private int lastReadCommentIdx = -1;
@@ -106,7 +107,8 @@ public final class VeryPretty extends JCTree.Visitor {
         danglingElseChecker = new DanglingElseChecker();
         prec = TreeInfo.notExpression;
         this.cs = cs;
-        out = new CharBuffer(cs.getRightMargin());
+        out = new CharBuffer(cs.getRightMargin(), cs.getTabSize(), cs.expandTabToSpaces());
+        this.indentSize = cs.getIndentSize();
     }
 
     @Override
@@ -127,7 +129,7 @@ public final class VeryPretty extends JCTree.Visitor {
      */
     public int indent() {
 	int old = out.leftMargin;
-	out.leftMargin = old + cs.getIndentSize();
+	out.leftMargin = old + indentSize;
 	return old;
     }
     
@@ -372,7 +374,7 @@ public final class VeryPretty extends JCTree.Visitor {
             break;
         case NEW_LINE_HALF_INDENTED:
             newline();
-	    bcol += (cs.getIndentSize() >> 1);
+	    bcol += (indentSize >> 1);
             toColExactly(bcol);
             break;
         case NEW_LINE_INDENTED:
@@ -692,12 +694,12 @@ public final class VeryPretty extends JCTree.Visitor {
             break;
         case NEW_LINE_HALF_INDENTED:
             newline();
-	    bcol += (cs.getIndentSize() >> 1);
+	    bcol += (indentSize >> 1);
             toColExactly(bcol);
             break;
         case NEW_LINE_INDENTED:
             newline();
-	    bcol += cs.getIndentSize();
+	    bcol += indentSize;
             toColExactly(bcol);
             break;
         }
@@ -1590,7 +1592,7 @@ public final class VeryPretty extends JCTree.Visitor {
             break;
         case NEW_LINE_HALF_INDENTED:
             newline();
-	    bcol += (cs.getIndentSize() >> 1);
+	    bcol += (indentSize >> 1);
             toColExactly(bcol);
             break;
         case NEW_LINE_INDENTED:
