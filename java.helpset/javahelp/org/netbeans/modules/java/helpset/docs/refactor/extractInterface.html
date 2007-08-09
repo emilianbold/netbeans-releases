@@ -38,12 +38,13 @@ IDE creates a new interface from the selected public non-static methods in a cla
             is also an item for that implemented interface. If you select the checkbox 
             for that interface, the <tt>implements</tt> clause for that new interface 
             is moved to the new interface that you are extracting.</p></li>
-            <li>(Optional) Clear the Preview All Changes checkbox if you do not want to preview the changes before they are made.
-            If Preview All Changes is not selected, the IDE applies the changes automatically and skips the remaining steps.</li>
-            <li>Click Next. 
-            If Preview All Changes was selected, the Refactoring window opens and displays all occurrences that will be affected by the change.
-            Review the list and clear the checkbox of any code that you do not want changed. </li>
-            <li>Click Do Refactoring in the Refactoring window to apply the changes to the selected files.</li>
+        <li>If you click Refactor, the IDE applies 
+    the changes automatically and skips the remaining steps. If you click Preview,
+    the Refactoring window displays the lines of code that will be changed. Review 
+    the list and clear the checkbox of any code that you do not want changed. If the 
+    class that you are pushing members from has multiple subclasses and you do not 
+    want the members to be pushed to all of them, be sure to clear the checkboxes 
+    for the corresponding subclasses. Click Do Refactoring to apply the selected changes.</li>   
         </ol>
 
 

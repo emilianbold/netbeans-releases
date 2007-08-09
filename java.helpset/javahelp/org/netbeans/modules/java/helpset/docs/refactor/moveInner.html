@@ -31,17 +31,13 @@ want to convert.</li>
         <li>(Optional) Select the Declare Field for the Current Outer Class field 
  if you want to generate an instance field for the current outer class and pass the outer class to 
 the constructor. If you select this checkbox, type a name for the the outer class' instance field.<!--TODO - post50 - explain better--></li>
-        <li>(Optional) If you do not want to review the changes before they are made, 
-        clear the Preview All Changes checkbox.</li>
-        <li>Click Next. If you have cleared the Preview All Changes checkbox, the IDE applies 
-        the changes automatically and skips the remaining steps.</li>
-        <li>If you have selected the Preview All Changes checkbox, the Refactoring window displays the lines of code that will be changed. Review 
-            the list and clear the checkbox of any code that you do not want changed. 
-        </li>
-        <li>(Optional) Double-click a file name in the Refactoring window to open the file, 
-        or double-click a line of code to open the source file and to position the 
-        cursor on that line of code.</li>
-        <li>Click Do Refactoring to apply the selected changes.
+      <li>If you click Refactor, the IDE applies 
+    the changes automatically and skips the remaining steps. If you click Preview,
+    the Refactoring window displays the lines of code that will be changed. Review 
+    the list and clear the checkbox of any code that you do not want changed. If the 
+    class that you are pushing members from has multiple subclasses and you do not 
+    want the members to be pushed to all of them, be sure to clear the checkboxes 
+    for the corresponding subclasses. Click Do Refactoring to apply the selected changes.</li>
         </li>
     </ol>
 

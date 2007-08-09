@@ -47,17 +47,13 @@ the field that you want to encapsulate is selected. You can select multiple fiel
     <li>You have set the field's accessor modifier so that the field is visible 
     to the classes with these references.</li>
 </ul></li>
-  <li>(Optional) If you do not want to review the changes before they are made, 
-    clear the Preview All Changes checkbox.</li>
-  <li>Click Next. If you have cleared the Preview All Changes checkbox, the IDE applies 
-    the changes automatically and skips the remaining steps.</li>
-  <li>The <a href="csh/previewWindow.html">Refactoring window</a> displays the lines of code that will be changed. Review 
-    the list and clear the checkbox of any code that you do not want changed. 
-  </li>
-  <li>(Optional) Double-click a file name in the Refactoring window to open the file, 
-    or double-click a line of code to open the file and to put the insertion 
-    point in that line of code.</li>
-  <li>Click Do Refactoring to apply the selected changes.</li>
+  <li>If you click Refactor, the IDE applies 
+    the changes automatically and skips the remaining steps. If you click Preview,
+    the Refactoring window displays the lines of code that will be changed. Review 
+    the list and clear the checkbox of any code that you do not want changed. If the 
+    class that you are pushing members from has multiple subclasses and you do not 
+    want the members to be pushed to all of them, be sure to clear the checkboxes 
+    for the corresponding subclasses. Click Do Refactoring to apply the selected changes.</li>
 </ol>
     <ul class="note">
     <li>You should always perform a clean build after completing

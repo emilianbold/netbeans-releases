@@ -16,17 +16,20 @@
 
 <p>To rename a field or method and update references to it throughout your project:</p>
 <ol>
-  <li>In the Projects window or the Source Editor window, expand the node for the 
- source file and its subnodes until the field or method is displayed in the tree view.</l>
-<li>Right-click the field or method and choose Refactor &gt; Rename 
+  <li>In the Source Editor, right-click the field or method and choose Refactor &gt; Rename 
     from the contextual menu. </li>
   <li>In the <a href="csh/rename_db.html">Rename dialog box</a>, type the New Name.</li>
-  <li>Click Next.</li>
-  <li>In the <a href="csh/previewWindow.html">Refactoring window</a>, review the lines of code that will be changed and 
+  <li>Optionally, click Preview. In the <a href="csh/previewWindow.html">Refactoring window</a>, at
+   the bottom of the Source Editor, review the lines of code that will be changed and 
     clear the checkbox of any code that you do not want changed. </li>
   <li>Click Do Refactoring to apply the selected changes.</li>
 </ol>
 
+<ul class="note">
+            <li>For quick in-place renaming, place the cursor in the item that you
+             want to rename, and press Ctrl-R. Then type the new name. To finish
+             renaming, press Escape.
+        </ul>
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
