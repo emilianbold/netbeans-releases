@@ -182,14 +182,16 @@ public class DataSourceResolver implements DataSourceInfoListener {
         topComponent = TopComponent.getRegistry().getActivated();
         topComponent.setCursor(Utilities.createProgressCursor(topComponent));
         String progressBarLabel = org.openide.util.NbBundle.getMessage(DataSourceResolver.class, "ProgressBarLabel"); //NOI18N
-        handle = ProgressHandleFactory.createHandle(progressBarLabel);
-        handle.start();
-        handle.switchToIndeterminate();
         FacesModelSet modelSet = FacesModelSet.startModeling(project);
+        if (modelSet == null) {
+            handle = ProgressHandleFactory.createHandle(progressBarLabel);
+            handle.start();
+            handle.switchToIndeterminate();
+        }
+        
         if (modelSet != null) {
             ModelSet.removeModelSetsListener(modelingListener);    
-            ProjectDataSourceTracker.refreshDataSourceReferences(project);     
-            update(project);
+            ProjectDataSourceTracker.refreshDataSourceReferences(project);                 
             
             if (handle != null) {
                 handle.finish();
