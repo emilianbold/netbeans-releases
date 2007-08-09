@@ -290,6 +290,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
         Set<FileObject> set = new HashSet<FileObject>();
         for (String path : cmf.getCreatedPaths()) {
             FileObject fo = project.getProjectDirectory().getFileObject(path);
+            assert fo != null : path;
             formatFile(fo);
             DataObject dObj = DataObject.find(fo);
             if (dObj != null && toBeShown.size() < 10 && toBeShown.add(dObj)) {
