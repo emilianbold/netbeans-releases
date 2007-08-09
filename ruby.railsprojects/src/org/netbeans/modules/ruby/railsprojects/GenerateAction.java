@@ -62,6 +62,14 @@ public final class GenerateAction extends NodeAction {
     
     @Override
     protected void performAction(Node[] activatedNodes) {
+        if (!RubyInstallation.getInstance().isValidRuby(true)) {
+            return;
+        }
+
+        if (!RubyInstallation.getInstance().isValidRails(true)) {
+            return;
+        }
+
         Lookup lookup = activatedNodes[0].getLookup();
         RailsProject project = lookup.lookup(RailsProject.class);
 
