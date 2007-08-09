@@ -49,6 +49,7 @@ class TestCompilationInfo extends CompilationInfo {
     public TestCompilationInfo(FileObject fileObject, BaseDocument doc, String text) throws IOException {
         super(fileObject);
         this.text = text;
+        assert text != null;
         this.doc = doc;
         setParser(new RubyParser());
         if (fileObject != null) {

@@ -223,6 +223,9 @@ public abstract class RubyTestBase extends NbTestCase {
 
     public CompilationInfo getInfo(FileObject fileObject) throws Exception {
         String text = readFile(fileObject);
+        if (text == null) {
+            text = "";
+        }
         BaseDocument doc = getDocument(text);
 
         CompilationInfo info = new TestCompilationInfo(fileObject, doc, text);
