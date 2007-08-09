@@ -159,6 +159,11 @@ ant build \
         \"-Dsjsas.image.token.hostname.solaris-x86=${SJSAS_IMAGE_HOSTNAME_SOLARIS_X86}\" \
         \"-Dsjsas.image.token.hostname.solaris-sparc=${SJSAS_IMAGE_HOSTNAME_SOLARIS_SPARC}\" \
         \"-Dsjsas.image.token.hostname.macosx=${SJSAS_IMAGE_HOSTNAME_MACOSX}\" \
+	\"-Dmakedmg.remote.port=${MAKEDMG_MACOSX_SYSTEM_PORT}\" \
+	\"-Dmakedmg.remote.host=${MAKEDMG_MACOSX_SYSTEM_HOST}\" \
+	\"-Dmakedmg.remote.user=${MAKEDMG_MACOSX_SYSTEM_USER}\" \
+	\"-Dmakedmg.ssh.keyfile=${MAKEDMG_MACOSX_SYSTEM_SSH_KEYFILE}\" \
+	\"-Dmakedmg.ssh.keypass=${MAKEDMG_MACOSX_SYSTEM_SSH_PASSPHRASE}\" \
         ${ADDITIONAL_PARAMETERS} \
         $*
 ERROR_CODE=$?

@@ -1139,29 +1139,29 @@ jarsigner.storepass=${jarsigner.storepass}
             -->
         </create-bundle>
 
-        <antcall target="unzip-bundle-to-tar">
-            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-basic-macosx-x86.zip"/>
-            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-basic-macosx-x86.tgz"/>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-x86.tgz"/>
         </antcall>
-        <antcall target="unzip-bundle-to-tar">
-            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.zip"/>
-            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.tgz"/>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-basic-macosx-ppc.tgz"/>
         </antcall>
-	<antcall target="unzip-bundle-to-tar">
-            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-standard-macosx-x86.zip"/>
-            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-standard-macosx-x86.tgz"/>
+	<antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-x86.tgz"/>
         </antcall>
-        <antcall target="unzip-bundle-to-tar">
-            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.zip"/>
-            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.tgz"/>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-standard-macosx-ppc.tgz"/>
         </antcall>
-        <antcall target="unzip-bundle-to-tar">
-            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-full-macosx-x86.zip"/>
-            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-full-macosx-x86.tgz"/>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-x86.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-x86.tgz"/>
         </antcall>
-        <antcall target="unzip-bundle-to-tar">
-            <param name="input.file"  value="netbeans-6.0-nightly-${build.number}-full-macosx-ppc.zip"/>
-            <param name="output.file" value="netbeans-6.0-nightly-${build.number}-full-macosx-ppc.tgz"/>
+        <antcall target="zip-to-tgz">
+            <param name="input.file"  value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-ppc.zip"/>
+            <param name="output.file" value="${output.dir}/bundles/netbeans-6.0-nightly-${build.number}-full-macosx-ppc.tgz"/>
         </antcall>
 
        
@@ -1190,24 +1190,110 @@ jarsigner.storepass=${jarsigner.storepass}
         </delete>
     </target>
 
-    <target name="unzip-bundle-to-tar">
-	<unzip 
-		src="${output.dir}/bundles/${input.file}"
-		dest="${output.dir}/bundles/tempdir"/>
+    <target name="zip-to-tgz">
+	<set property="tar.tmpdir"
+             value="${output.dir}/bundles/tempdir"/>
 
-        <tar tarfile="${output.dir}/bundles/${output.file}" 
+	<mkdir dir="${tar.tmpdir}"/>
+
+	<unzip 
+		src="${input.file}"
+		dest="${tar.tmpdir}"/>
+
+        <tar tarfile="${output.file}" 
              compression="gzip">
-            <tarfileset dir="${output.dir}/bundles/tempdir" mode="644">
+            <tarfileset dir="${tar.tmpdir}" mode="644">
                 <include name="**/*.*"/>
 		<exclude name="**/executable"/>
             </tarfileset>
-	    <tarfileset dir="${output.dir}/bundles/tempdir" mode="755">
+	    <tarfileset dir="${tar.tmpdir}" mode="755">
 		<include name="**/executable"/>
             </tarfileset>
         </tar>
-	<delete dir="${output.dir}/bundles/tempdir"/>
+	<delete dir="${tar.tmpdir}"/>
     </target>
-    
+    <target name="zip-to-dmg"> 
+	<antcall target="zip-to-tgz">
+            <param name="input.file"  value="${zip.file}"/>
+            <param name="output.file" value="${zip.file}.tgz"/>
+        </antcall>
+	<antcall target="tgz-to-dmg">
+            <param name="tgz.file"  value="${zip.file}.tgz"/>
+            <param name="dmg.file" value="${dmg.file}"/>
+        </antcall>
+	<delete file="${zip.file}.tgz"/>
+    </target>
+
+    <target name="tgz-to-dmg">        
+	<echo message="Creating directory structure at MacOS system"/>	
+        <echo message=""/>
+
+        <sshexec host="${makedmg.remote.host}"
+                 username="${makedmg.remote.user}"
+		 port="${makedmg.remote.port}"
+                 command="mkdir -p ~/.nbi-build/src ~/.nbi-build/tmp ~/.nbi-build/dmg"
+                 verbose="true"
+                 trust="true"
+                 keyfile="${makedmg.ssh.keyfile}"
+                 passphrase="${makedmg.ssh.keypass}"/>
+
+	<echo message=""/>
+	<echo message="Copying file ${tgz.file} to the MacOS system"/>
+	<scp keyfile="${makedmg.ssh.keyfile}"
+             passphrase="${makedmg.ssh.keypass}"
+             verbose="true"
+             trust="true"
+             remoteTofile="${makedmg.remote.user}@${makedmg.remote.host}:~/.nbi-build/src/temp.tgz"
+	     file="${tgz.file}"/>
+
+	<echo message=""/>
+	<echo message="Untar archive to temporary directory"/>
+
+	<sshexec host="${makedmg.remote.host}"
+                 username="${makedmg.remote.user}"
+		 port="${makedmg.remote.port}"
+                 command="cd ~/.nbi-build/tmp; tar -xzvf ~/.nbi-build/src/temp.tgz; rm -rf ~/.nbi-build/src"
+                 verbose="true"
+                 trust="true"
+                 keyfile="${makedmg.ssh.keyfile}"
+                 passphrase="${makedmg.ssh.keypass}"/>
+
+	<echo message=""/>
+	<echo message="Create DMG from the source folder"/>
+        
+        <sshexec host="${makedmg.remote.host}"
+                 username="${makedmg.remote.user}"
+		 port="${makedmg.remote.port}"
+                 command="hdiutil create -fs HFS+ -srcfolder ~/.nbi-build/tmp -volname &quot;${dmg.name}&quot; ~/.nbi-build/dmg/image.dmg"
+                 verbose="true"
+                 trust="true"
+                 keyfile="${makedmg.ssh.keyfile}"
+                 passphrase="${makedmg.ssh.keypass}"/>
+
+        <echo message=""/>
+	<echo message="Copying file image.dmg back to the build system"/>
+        
+	<scp keyfile="${makedmg.ssh.keyfile}"
+             passphrase="${makedmg.ssh.keypass}"
+             verbose="true"
+             trust="true"
+             localTofile="${dmg.file}"
+	     file="${makedmg.remote.user}@${makedmg.remote.host}:~/.nbi-build/dmg/image.dmg"/>
+
+	<echo message=""/>
+	<echo message="Clear temporary build directory on MacOS system"/>
+
+	<sshexec host="${makedmg.remote.host}"
+                 username="${makedmg.remote.user}"
+		 port="${makedmg.remote.port}"
+                 command="rm -rf ~/.nbi-build"
+                 verbose="true"
+                 trust="true"
+                 keyfile="${makedmg.ssh.keyfile}"
+                 passphrase="${makedmg.ssh.keypass}"/>
+
+    </target>
+
     <target name="replace">
         <property file="${token.file}"/>
         <replaceregexp file="${file.to.replace}" flags="mg">
