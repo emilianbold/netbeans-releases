@@ -20,6 +20,8 @@
 package org.netbeans.modules.web.wizards;
 
 
+import java.io.IOException;
+import java.io.InputStream;
 import javax.swing.DefaultCellEditor;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
@@ -431,18 +433,24 @@ public class TagHandlerPanelGUI extends javax.swing.JPanel implements ListSelect
                 WebModule wm = WebModule.getWebModule(targetFolder);
                 //tldTextField.setText(target==null || target.length()==0?fo.getNameExt():target+"/"+fo.getNameExt());
                 tldTextField.setText(FileUtil.getRelativePath(wm == null ? proj.getProjectDirectory() : wm.getDocumentBase(), fo));
+                
                 RequestProcessor.getDefault().post(new Runnable() {
 
                     public void run() {
                         try {
-                            java.io.InputStream is = tldFo.getInputStream();
-                            // get existing tag names for testing duplicity
-                            tagValues = Util.getTagValues(is, new String[]{"tag", "tag-file"}, "name"); //NOI18N
-                            is.close();
-                        } catch (java.io.IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (org.xml.sax.SAXException ex) {
-                            Exceptions.printStackTrace(ex);
+                            InputStream is = tldFo.getInputStream();
+                            try {
+                                // get existing tag names for testing duplicity
+                                tagValues = Util.getTagValues(is, new String[]{"tag", "tag-file"}, "name"); //NOI18N
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (org.xml.sax.SAXException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } finally {
+                                is.close();
+                            }
+                        } catch (IOException e) {
+                             Exceptions.printStackTrace(e);
                         }
                         panel.fireChangeEvent();
                     }
