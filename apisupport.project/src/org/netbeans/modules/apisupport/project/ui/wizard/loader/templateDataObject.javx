@@ -14,8 +14,8 @@ public class @@PREFIX@@DataObject extends MultiDataObject {
         super(pf, loader);
 @@EDITOR_SUPPORT_SNIPPET@@
     }
-    
-    protected Node createNodeDelegate() {
+
+    protected @Override Node createNodeDelegate() {
         return new @@PREFIX@@DataNode(this);
     }
 

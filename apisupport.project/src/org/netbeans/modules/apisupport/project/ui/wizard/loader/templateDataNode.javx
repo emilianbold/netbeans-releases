@@ -18,7 +18,7 @@ public class @@PREFIX@@DataNode extends DataNode {
     }
 
 //    /** Creates a property sheet. */
-//    protected Sheet createSheet() {
+//    protected @Override Sheet createSheet() {
 //        Sheet s = super.createSheet();
 //        Sheet.Set ss = s.get(Sheet.PROPERTIES);
 //        if (ss == null) {

@@ -17,11 +17,11 @@ public class @@PREFIX@@DataLoader extends UniFileLoader {
         super("@@PACKAGENAME@@.@@PREFIX@@DataObject");
     }
 
-    protected String defaultDisplayName() {
+    protected @Override String defaultDisplayName() {
         return NbBundle.getMessage(@@PREFIX@@DataLoader.class, "LBL_@@PREFIX@@_loader_name");
     }
 
-    protected void initialize() {
+    protected @Override void initialize() {
         super.initialize();
         getExtensions().addMimeType(REQUIRED_MIME);
     }
@@ -30,7 +30,7 @@ public class @@PREFIX@@DataLoader extends UniFileLoader {
         return new @@PREFIX@@DataObject(primaryFile, this);
     }
 
-    protected String actionsContext() {
+    protected @Override String actionsContext() {
         return "Loaders/" + REQUIRED_MIME + "/Actions";
     }
 

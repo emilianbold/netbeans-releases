@@ -80,24 +80,24 @@ final class @@TEMPLATENAME@@TopComponent extends TopComponent {
         return getDefault();
     }
 
-    public int getPersistenceType() {
+    public @Override int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
 
-    public void componentOpened() {
+    public @Override void componentOpened() {
         // TODO add custom code on component opening
     }
 
-    public void componentClosed() {
+    public @Override void componentClosed() {
         // TODO add custom code on component closing
     }
 
     /** replaces this in object stream */
-    public Object writeReplace() {
+    public @Override Object writeReplace() {
         return new ResolvableHelper();
     }
 
-    protected String preferredID() {
+    protected @Override String preferredID() {
         return PREFERRED_ID;
     }
 

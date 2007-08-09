@@ -9,7 +9,7 @@ public final class @@VISUAL_PANEL_CLASS@@ extends JPanel {
         initComponents();
     }
 
-    public String getName() {
+    public @Override String getName() {
         return "@@STEP_NAME@@";
     }
 

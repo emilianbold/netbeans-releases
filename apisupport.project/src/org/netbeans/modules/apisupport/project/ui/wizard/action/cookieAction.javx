@@ -16,9 +16,7 @@ public final class @@CLASS_NAME@@ extends CookieAction {
     }
 
     protected Class[] cookieClasses() {
-        return new Class[] {
-@@COOKIE_CLASSES_BLOCK@@
-        };
+        return new Class[] {@@COOKIE_CLASSES_BLOCK@@};
     }
     @@ICON_RESOURCE_METHOD@@
     @@INITIALIZE_METHOD@@
@@ -26,7 +24,7 @@ public final class @@CLASS_NAME@@ extends CookieAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    protected boolean asynchronous() {
+    protected @Override boolean asynchronous() {
         return false;
     }
 

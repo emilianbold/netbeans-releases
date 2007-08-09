@@ -10,15 +10,15 @@ import org.openide.util.Utilities;
 
 public class @@PREFIX@@DataLoaderBeanInfo extends SimpleBeanInfo {
 
-    public BeanInfo[] getAdditionalBeanInfo() {
+    public @Override BeanInfo[] getAdditionalBeanInfo() {
         try {
             return new BeanInfo[] {Introspector.getBeanInfo(UniFileLoader.class)};
         } catch (IntrospectionException e) {
             throw new AssertionError(e);
         }
     }
-    
-    public Image getIcon(int type) {
+
+    public @Override Image getIcon(int type) {
         @@IMAGESNIPPET@@
     }
 

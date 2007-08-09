@@ -12,11 +12,11 @@ import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
 
 public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListener {
-    
+
     public static final String PROP_PROJECT_NAME = "projectName";
-    
+
     private @@TEMPLATENAME@@WizardPanel panel;
-    
+
     public @@TEMPLATENAME@@PanelVisual(@@TEMPLATENAME@@WizardPanel panel) {
         initComponents();
         this.panel = panel;
@@ -24,11 +24,11 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         projectNameTextField.getDocument().addDocumentListener(this);
         projectLocationTextField.getDocument().addDocumentListener(this);
     }
-    
+
     public String getProjectName() {
         return this.projectNameTextField.getText();
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -124,8 +124,8 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         }
 
     }//GEN-LAST:event_browseButtonActionPerformed
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseButton;
     private javax.swing.JLabel createdFolderLabel;
@@ -136,14 +136,14 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
     private javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
 
-    public void addNotify() {
+    public @Override void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
         projectNameTextField.requestFocus();
     }
-    
+
     boolean valid(WizardDescriptor wizardDescriptor) {
-        
+
         if (projectNameTextField.getText().length() == 0) {
             wizardDescriptor.putProperty("WizardPanel_errorMessage",
                     "Project Name is not a valid folder name.");
@@ -166,13 +166,13 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
                                     "Project Folder cannot be created.");
             return false;
         }
-        
+
         if (FileUtil.toFileObject(projLoc) == null) {
             String message = "Project Folder is not a valid path.";
             wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
             return false;
         }
-        
+
         File[] kids = destFolder.listFiles();
         if (destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
@@ -183,15 +183,15 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         wizardDescriptor.putProperty("WizardPanel_errorMessage", "");
         return true;
     }
-    
+
     void store(WizardDescriptor d) {
         String name = projectNameTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
-        
+
         d.putProperty("projdir", new File(folder));
         d.putProperty("name", name);
     }
-    
+
     void read(WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty("projdir");
         if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory()) {
@@ -200,7 +200,7 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
             projectLocation = projectLocation.getParentFile();
         }
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        
+
         String projectName = (String) settings.getProperty("name");
         if(projectName == null) {
             projectName = "@@TEMPLATENAME@@";
@@ -208,51 +208,51 @@ public class @@TEMPLATENAME@@PanelVisual extends JPanel implements DocumentListe
         this.projectNameTextField.setText(projectName);
         this.projectNameTextField.selectAll();
     }
-    
+
     void validate(WizardDescriptor d) throws WizardValidationException {
         // nothing to validate
     }
-    
+
     // Implementation of DocumentListener --------------------------------------
-    
+
     public void changedUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange(PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
     }
-    
+
     public void insertUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange(PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
     }
-    
+
     public void removeUpdate(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange(PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
     }
-    
+
     /** Handles changes in the Project name and project directory, */
     private void updateTexts(DocumentEvent e) {
-        
+
         Document doc = e.getDocument();
-        
+
         if (doc == projectNameTextField.getDocument() || doc == projectLocationTextField.getDocument()) {
             // Change in the project name
-            
+
             String projectName = projectNameTextField.getText();
             String projectFolder = projectLocationTextField.getText();
 
             //if (projectFolder.trim().length() == 0 || projectFolder.equals(oldName)) {
             createdFolderTextField.setText(projectFolder + File.separatorChar + projectName);
             //}
-            
+
         }
         panel.fireChangeEvent(); // Notify that the panel changed
     }
-    
+
 }

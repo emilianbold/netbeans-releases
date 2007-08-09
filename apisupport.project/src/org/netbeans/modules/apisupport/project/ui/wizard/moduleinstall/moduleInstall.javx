@@ -8,7 +8,7 @@ import org.openide.modules.ModuleInstall;
  */
 public class @@CLASS_NAME@@ extends ModuleInstall {
 
-    public void restored() {
+    public @Override void restored() {
         // By default, do nothing.
         // Put your startup code here.
     }

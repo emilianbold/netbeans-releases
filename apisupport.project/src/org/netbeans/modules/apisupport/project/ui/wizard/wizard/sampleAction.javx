@@ -66,18 +66,17 @@ public final class @@WIZARD_PREFIX@@WizardAction extends CallableSystemAction {
     public String getName() {
         return "Start Sample Wizard";
     }
-    
-    public String iconResource() {
+
+    public @Override String iconResource() {
         return null;
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
-    protected boolean asynchronous() {
+
+    protected @Override boolean asynchronous() {
         return false;
     }
 
 }
-

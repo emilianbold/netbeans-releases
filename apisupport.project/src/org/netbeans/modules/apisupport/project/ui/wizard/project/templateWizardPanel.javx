@@ -2,7 +2,6 @@ package @@PACKAGENAME@@;
 
 import java.awt.Component;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -19,11 +18,11 @@ public class @@TEMPLATENAME@@WizardPanel implements WizardDescriptor.Panel,
 
     private WizardDescriptor wizardDescriptor;
     private @@TEMPLATENAME@@PanelVisual component;
-    
+
     /** Creates a new instance of templateWizardPanel */
     public @@TEMPLATENAME@@WizardPanel() {
     }
-    
+
     public Component getComponent() {
         if (component == null) {
             component = new @@TEMPLATENAME@@PanelVisual(this);
@@ -31,17 +30,17 @@ public class @@TEMPLATENAME@@WizardPanel implements WizardDescriptor.Panel,
         }
         return component;
     }
-    
+
     public HelpCtx getHelp() {
         return new HelpCtx(@@TEMPLATENAME@@WizardPanel.class);
     }
-    
+
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
-    
-    private final Set/*<ChangeListener>*/ listeners = new HashSet(1); // or can use ChangeSupport in NB 6.0
+
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
@@ -53,21 +52,21 @@ public class @@TEMPLATENAME@@WizardPanel implements WizardDescriptor.Panel,
         }
     }
     protected final void fireChangeEvent() {
-        Iterator it;
+        Set<ChangeListener> ls;
         synchronized (listeners) {
-            it = new HashSet(listeners).iterator();
+            ls = new HashSet<ChangeListener>(listeners);
         }
         ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+        for (ChangeListener l : ls) {
+            l.stateChanged(ev);
         }
     }
-    
+
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
     }
-    
+
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
@@ -76,7 +75,7 @@ public class @@TEMPLATENAME@@WizardPanel implements WizardDescriptor.Panel,
     public boolean isFinishPanel() {
         return true;
     }
-    
+
     public void validate() throws WizardValidationException {
         getComponent();
         component.validate(wizardDescriptor);

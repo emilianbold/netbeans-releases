@@ -139,23 +139,23 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         Set<String> addedFQNCs = new TreeSet<String>();
         if (!alwaysEnabled) {
             StringBuffer cookieSB = new StringBuffer();
-            for (int i = 0; i < cookieClasses.length; i++) {
+            for (String cookieClass : cookieClasses) {
                 // imports for predefined chosen cookie classes
-                if (CLASS_TO_CNB.containsKey(cookieClasses[i])) {
-                    addedFQNCs.add(cookieClasses[i]);
+                if (CLASS_TO_CNB.containsKey(cookieClass)) {
+                    addedFQNCs.add(cookieClass);
                 }
                 // cookie block
-                cookieSB.append(INDENT_2X + INDENT + parseClassName(cookieClasses[i]) + ".class"); // NOI18N
-                if (i != cookieClasses.length - 1) {
-                    cookieSB.append(',' + NEW_LINE);
+                if (cookieSB.length() > 0) {
+                    cookieSB.append(", ");
                 }
+                cookieSB.append(parseClassName(cookieClass) + ".class"); // NOI18N
             }
             replaceTokens.put("@@COOKIE_CLASSES_BLOCK@@", cookieSB.toString()); // NOI18N
             String impl;
             if (cookieClasses.length == 1) {
                 String cName = parseClassName(cookieClasses[0]);
                 String cNameVar = Character.toLowerCase(cName.charAt(0)) + cName.substring(1);
-                impl = cName + ' ' + cNameVar + " = (" + cName + ") activatedNodes[0].getLookup().lookup(" + cName + ".class);\n" // NOI18N
+                impl = cName + ' ' + cNameVar + " = activatedNodes[0].getLookup().lookup(" + cName + ".class);\n" // NOI18N
                         + INDENT_2X + "// TODO use " + cNameVar; // NOI18N
             } else {
                 impl = "// TODO implement action body"; // NOI18N
@@ -483,13 +483,13 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     private static String generateIconResourceMethod(final String relativeIconPath) {
         return NEW_LINE +
-                INDENT + "protected String iconResource() {" + NEW_LINE + // NOI18N
+                INDENT + "protected @Override String iconResource() {" + NEW_LINE + // NOI18N
                 INDENT_2X + "return \"" + relativeIconPath + "\";" + NEW_LINE + // NOI18N
                 INDENT + "}"; // NOI18N
     }
     
     private static String generateNoIconInitializeMethod() {
-        return "protected void initialize() {" + NEW_LINE + // NOI18N
+        return "protected @Override void initialize() {" + NEW_LINE + // NOI18N
                 INDENT_2X + "super.initialize();" + NEW_LINE + // NOI18N
                 INDENT_2X + "// see org.openide.util.actions.SystemAction.iconResource() javadoc for more details" + NEW_LINE + // NOI18N
                 INDENT_2X + "putValue(\"noIconInMenu\", Boolean.TRUE);" + NEW_LINE + // NOI18N

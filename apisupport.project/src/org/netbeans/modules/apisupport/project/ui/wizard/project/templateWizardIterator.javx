@@ -24,13 +24,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor./*Progress*/InstantiatingIterator {
-    
+
     private int index;
     private WizardDescriptor.Panel[] panels;
     private WizardDescriptor wiz;
-    
+
     public @@TEMPLATENAME@@WizardIterator() {}
-    
+
     public static @@TEMPLATENAME@@WizardIterator createIterator() {
         return new @@TEMPLATENAME@@WizardIterator();
     }
@@ -40,28 +40,28 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor./*Progre
             new @@TEMPLATENAME@@WizardPanel(),
         };
     }
-    
+
     private String[] createSteps() {
         return new String[] {
             NbBundle.getMessage(@@TEMPLATENAME@@WizardIterator.class, "LBL_CreateProjectStep")
         };
     }
-    
+
     public Set/*<FileObject>*/ instantiate(/*ProgressHandle handle*/) throws IOException {
-        Set resultSet = new LinkedHashSet();
+        Set<FileObject> resultSet = new LinkedHashSet<FileObject>();
         File dirF = FileUtil.normalizeFile((File) wiz.getProperty("projdir"));
         dirF.mkdirs();
-        
+
         FileObject template = Templates.getTemplate(wiz);
         FileObject dir = FileUtil.toFileObject(dirF);
         unZipFile(template.getInputStream(), dir);
-        
+
         // Always open top dir as a project:
         resultSet.add(dir);
         // Look for nested projects to open as well:
-        Enumeration e = dir.getFolders(true);
+        Enumeration<? extends FileObject> e = dir.getFolders(true);
         while (e.hasMoreElements()) {
-            FileObject subfolder = (FileObject) e.nextElement();
+            FileObject subfolder = e.nextElement();
             if (ProjectManager.getDefault().isProject(subfolder)) {
                 resultSet.add(subfolder);
             }
@@ -71,10 +71,10 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor./*Progre
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
-        
+
         return resultSet;
     }
-    
+
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
@@ -105,16 +105,16 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor./*Progre
         this.wiz = null;
         panels = null;
     }
-    
+
     public String name() {
         return MessageFormat.format("{0} of {1}",
             new Object[] {new Integer(index + 1), new Integer(panels.length)});
     }
-    
+
     public boolean hasNext() {
         return index < panels.length - 1;
     }
-    
+
     public boolean hasPrevious() {
         return index > 0;
     }
@@ -136,11 +136,11 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor./*Progre
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
-    
+
     // If nothing unusual changes in the middle of the wizard, simply:
     public final void addChangeListener(ChangeListener l) {}
     public final void removeChangeListener(ChangeListener l) {}
-    
+
     private static void unZipFile(InputStream source, FileObject projectRoot) throws IOException {
         try {
             ZipInputStream str = new ZipInputStream(source);
@@ -167,5 +167,5 @@ public class @@TEMPLATENAME@@WizardIterator implements WizardDescriptor./*Progre
             source.close();
         }
     }
-    
+
 }
