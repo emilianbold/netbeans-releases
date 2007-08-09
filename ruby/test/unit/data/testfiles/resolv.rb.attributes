@@ -1,0 +1,58 @@
+Resolv::DNS::Resource::IN::AAAA
+  address
+Resolv::DNS::Resource::HINFO
+  os
+  cpu
+Resolv::IPv6
+  address
+Resolv::IPv4
+  address
+Resolv::DNS::Resource::Generic
+  data
+Resolv::DNS::Resource::DomainName
+  name
+Resolv::DNS::Label::Str
+  string
+  downcase
+Resolv::DNS::Requester::Sender
+  queue
+Resolv::DNS::Resource::SOA
+  refresh
+  mname
+  retry
+  minimum
+  rname
+  expire
+  serial
+Resolv::DNS::Resource::IN::SRV
+  weight
+  target
+  port
+  priority
+Resolv::DNS::Resource::IN::WKS
+  protocol
+  bitmap
+  address
+Resolv::DNS::Message
+  question
+  authority
+  opcode
+  ra
+  answer
+  tc
+  id
+  rcode
+  rd
+  aa
+  qr
+  additional
+Resolv::DNS::Resource::MX
+  exchange
+  preference
+Resolv::DNS::Resource::IN::A
+  address
+Resolv::DNS::Resource::MINFO
+  rmailbx
+  emailbx
+Resolv::DNS::Resource::TXT
+  strings
