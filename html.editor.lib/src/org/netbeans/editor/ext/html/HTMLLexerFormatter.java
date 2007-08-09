@@ -36,7 +36,7 @@ import org.netbeans.modules.editor.structure.formatting.TagBasedLexerFormatter;
  */
 
 public class HTMLLexerFormatter extends TagBasedLexerFormatter {
-    private static final String[] UNFORMATTABLE_TAGS = new String[]{"pre", "script", "code"}; //NOI18N
+    private static final String[] UNFORMATTABLE_TAGS = new String[]{"pre", "script", "code", "textarea"}; //NOI18N
     
     /** Creates a new instance of HTMLFormater */
     public HTMLLexerFormatter(Class kitClass) {
