@@ -18,25 +18,5 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="libs/swing-layout" default="netbeans" basedir=".">
-
     <import file="../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="../external">
-                <include name="swing-layout-1.0.2.jar"/>
-            </fileset>
-        </copy>
-        <mkdir dir="${cluster}/docs"/>
-        <copy todir="${cluster}/docs">
-            <fileset dir="../external">
-                <include name="swing-layout-1.0.2-doc.zip"/>
-                <include name="swing-layout-1.0.2-src.zip"/>
-            </fileset>
-        </copy>
-    </target>
-
 </project>

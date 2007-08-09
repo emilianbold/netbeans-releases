@@ -28,7 +28,7 @@ Microsystems, Inc. All Rights Reserved.
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/swing-layout-1.0.2.jar</runtime-relative-path>
-                <binary-origin>../external/swing-layout-1.0.2.jar</binary-origin>
+                <binary-origin>external/swing-layout-1.0.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
