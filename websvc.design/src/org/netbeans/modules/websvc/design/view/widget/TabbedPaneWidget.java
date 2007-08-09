@@ -30,6 +30,7 @@
 
 package org.netbeans.modules.websvc.design.view.widget;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
@@ -37,9 +38,11 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Rectangle2D;
 import javax.swing.AbstractAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.layout.LayoutFactory;
@@ -162,6 +165,12 @@ public class TabbedPaneWidget extends Widget {
                 gp.closePath();
             }
             g2.setPaint(TAB_BORDER_COLOR);
+            if (tab.getState().isFocused()) {
+                Stroke s = g2.getStroke ();
+                g2.setStroke (new BasicStroke(1.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_MITER, new float[] {2,2}, 0));
+                g2.drawRect (rect.x+radius*3, rect.y+radius*2,rect.width-radius*6,rect.height-radius*4);
+                g2.setStroke (s);
+            }
             g2.draw(gp);
             
             g2.setPaint(oldPaint);

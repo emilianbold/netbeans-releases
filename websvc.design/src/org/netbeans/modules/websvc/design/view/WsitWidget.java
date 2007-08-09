@@ -114,16 +114,19 @@ public class WsitWidget extends AbstractTitledWidget {
     }
     
     private void populateConfigWidget() {
-        final ObjectScene scene = (ObjectScene) getScene();
         for(WSConfigurationProvider provider : getConfigProviders()){
             final WSConfiguration config = provider.getWSConfiguration(service, implementationClass);
             if(config != null){
                 CheckBoxWidget button = new CheckBoxWidget(getScene(), config.getDisplayName()) {
                     @Override
+                    protected Object hashKey() {
+                        return config;
+                    }
+
+                    @Override
                     public void notifyAdded() {
                         super.notifyAdded();
                         config.registerListener(configListener);
-                        scene.addObject(config, this);
                         setSelected(config.isSet());
                         setVisible(config.isEnabled());
                         determineVisibility();
@@ -132,7 +135,6 @@ public class WsitWidget extends AbstractTitledWidget {
                     public void notifyRemoved() {
                         super.notifyRemoved();
                         config.unregisterListener(configListener);
-                        scene.removeObject(config);
                     }
                 };
                 button.setAction(new ConfigWidgetAction(config));

@@ -191,6 +191,7 @@ public class OperationWidget extends AbstractTitledWidget {
             }
         });
         buttons.addChild(0,viewButton);
+//        getObjectScene().addObject(new Object(), viewButton);
         tabbedView = false;
         setTabbedView(!tabbedView);
     }

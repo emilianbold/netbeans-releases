@@ -38,6 +38,7 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.SelectProvider;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.layout.LayoutFactory;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -49,7 +50,8 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
     
     private Action action;
     public static int BORDER_RADIUS = 3;
-    
+    private Object key = new Object();
+
     /**
      *
      * @param scene
@@ -168,9 +170,11 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
         return (String)action.getValue(Action.ACTION_COMMAND_KEY);
     }
     
+    @Override
     protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
         if (previousState.isWidgetAimed() != state.isWidgetAimed() ||
-                previousState.isWidgetHovered() != state.isWidgetHovered())
+                previousState.isWidgetHovered() != state.isWidgetHovered() ||
+                previousState.isFocused() != state.isFocused())
             revalidate(true);
     }
     
@@ -180,6 +184,32 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
      */
     protected boolean isAimingAllowed() {
         return true;
+    }
+    
+    /**
+     * Subclasses may override this.
+      */
+    protected Object hashKey() {
+        return key;
+    }
+    
+    @Override
+    public void notifyAdded() {
+        super.notifyAdded();
+        Scene scene = getScene();
+        if(scene instanceof ObjectScene) {
+            ObjectScene objectScene = (ObjectScene)scene;
+            objectScene.addObject(hashKey(), this);
+        }
+    }
+    
+    @Override
+    public void notifyRemoved() {
+        super.notifyRemoved();
+        Scene scene = getScene();
+        if(scene instanceof ObjectScene) {
+            ((ObjectScene)scene).removeObject(hashKey());
+        }
     }
     
     private static String getActionName(Action action) {
@@ -214,24 +244,30 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
                     (rect.x+0.5f, rect.y+0.5f, rect.width-1f, rect.height-1f, radius*2, radius*2);
             if (button.isButtonEnabled()) {
                 
-                if (button.getState().isWidgetAimed()) {
-                    g2.setPaint(BACKGROUND_COLOR_PRESSED);
-                    g2.fill(buttonRect);
-                } else if (button.isOpaque()){
+                if (button.isOpaque()){
                     g2.setPaint(new GradientPaint(
                             0, rect.y , BACKGROUND_COLOR_1,
                             0, rect.y + rect.height * 0.5f,
                             BACKGROUND_COLOR_2, true));
                     g2.fill(buttonRect);
                 }
-                
-                g2.setPaint(BORDER_COLOR);
-                if (button.getState().isHovered()) {
+                if (button.getState().isWidgetAimed()) {
+                    g2.setPaint(BACKGROUND_COLOR_PRESSED);
+                    g2.fill(buttonRect);
+                } else {
                     Area s = new Area(buttonRect);
-                    s.subtract(new Area(new RoundRectangle2D.Double(rect.x + 1.75f, rect.y + 1.75f,
-                            rect.width - 3f, rect.height - 3f, radius*2, radius*2)));
-                    g2.fill(s);
+                    Area inner = new Area(new RoundRectangle2D.Double(rect.x + 2.5f, rect.y + 2.5f,
+                                rect.width - 5f, rect.height - 5f, radius*2, radius*2));
+                    s.subtract(inner);
+                    if (button.getState().isHovered()) {
+                        g2.setPaint(HOVER_COLOR);
+                        g2.fill(s);
+                    } else if (button.getState().isFocused()) {
+                        g2.setPaint(BORDER_COLOR);
+                        g2.fill(s);
+                    }
                 }
+                g2.setPaint(BORDER_COLOR);
                 g2.draw(buttonRect);
             } else {
                 if(button.isOpaque()) {
@@ -266,7 +302,8 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
         return new Color(y, y, y);
     }
     
-    private static final Color BORDER_COLOR = new Color(0x7F9DB9);
+    protected static final Color BORDER_COLOR = new Color(0x7F9DB9);
+    private static final Color HOVER_COLOR = new Color(0xFF9900);
     private static final Color BACKGROUND_COLOR_1 = new Color(0xD2D2DD);
     private static final Color BACKGROUND_COLOR_2 = new Color(0xF8F8F8);
     private static final Color BACKGROUND_COLOR_PRESSED = new Color(0xCCCCCC);
@@ -289,7 +326,7 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
         }
         
         public void select(Widget widget, Point localLocation, boolean invertSelection) {
-            if(widget instanceof ButtonWidget && widget.isHitAt(localLocation))
+            if(widget instanceof ButtonWidget)
                 ((ButtonWidget)widget).performAction();
         }
         

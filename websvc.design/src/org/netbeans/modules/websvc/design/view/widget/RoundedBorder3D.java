@@ -18,11 +18,13 @@
  */
 package org.netbeans.modules.websvc.design.view.widget;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Paint;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import org.netbeans.api.visual.border.Border;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
@@ -78,7 +80,12 @@ public class RoundedBorder3D implements Border {
             gr.setPaint(SHADOW_COLOR);
             gr.fill(raisedArea);
             gr.setPaint(widget.getState().isSelected()?SELECTED_BORDER_COLOR:drawColor);
+            Stroke s = gr.getStroke ();
+            if(widget.getState().isFocused())
+                gr.setStroke (new BasicStroke(1, BasicStroke.CAP_BUTT, 
+                        BasicStroke.JOIN_ROUND, BasicStroke.JOIN_MITER, new float[] {2,2}, 0));
             gr.draw(rect);
+            gr.setStroke (s);
         }
         gr.setPaint(oldPaint);
     }

@@ -29,9 +29,11 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.EventProcessingType;
 import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.SeparatorWidget;
@@ -80,6 +82,9 @@ public class DesignView extends JPanel  {
         scene = new ObjectScene();
         final JComponent sceneView = scene.createView();
         zoomer = new ZoomManager(scene);
+
+        scene.getActions().addAction(ActionFactory.createCycleObjectSceneFocusAction());
+        scene.setKeyEventProcessingType (EventProcessingType.FOCUSED_WIDGET_AND_ITS_PARENTS);
 
         mainLayer = new LayerWidget(scene);
         mainLayer.setPreferredLocation(new Point(0, 0));

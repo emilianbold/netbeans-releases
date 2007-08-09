@@ -16,6 +16,7 @@ import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 
 /**
@@ -71,7 +72,7 @@ public class CheckBoxWidget extends ButtonWidget {
      */
     public CheckBoxWidget(Scene scene, String text) {
         super(scene, IMAGE_CHECKBOX, text);
-        setBorder(BorderFactory.createEmptyBorder());
+        setBorder(BorderFactory.createEmptyBorder(1));
     }
     
     
@@ -95,4 +96,13 @@ public class CheckBoxWidget extends ButtonWidget {
         return isSelected()?ACTION_COMMAND_SELECTED:ACTION_COMMAND_DESELECTED;
     }
 
+    @Override
+    protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
+        if (previousState.isFocused() != state.isFocused()) {
+            setBorder(state.isFocused()?BorderFactory.createDashedBorder
+                    (BORDER_COLOR, 2, 2, true):BorderFactory.createEmptyBorder(1));
+        }
+        super.notifyStateChanged(previousState,state);
+    }
+    
 }

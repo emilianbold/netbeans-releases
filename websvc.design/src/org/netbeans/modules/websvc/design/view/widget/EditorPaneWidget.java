@@ -24,6 +24,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import javax.swing.BorderFactory;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 import org.netbeans.api.visual.widget.Scene;
@@ -51,11 +52,12 @@ public class EditorPaneWidget extends Widget {
         super(scene);
         editorPane = new JEditorPane(contentType,text);
         scrollPane = new JScrollPane(editorPane);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
         editorPane.setVisible(false);
         scrollPane.setVisible(false);
         componentAdded = false;
         origoinalFontSize = editorPane.getFont().getSize2D();
-        editorPane.setPreferredSize(new Dimension(0,(int)origoinalFontSize*6));
+        editorPane.setMaximumSize(new Dimension(0,(int)origoinalFontSize*6));
         componentListener = new ComponentComponentListener ();
     }
 
