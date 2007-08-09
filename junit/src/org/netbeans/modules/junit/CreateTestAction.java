@@ -62,6 +62,7 @@ public final class CreateTestAction extends TestAction {
         return new HelpCtx(CreateTestAction.class);
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         putProperty(Action.SHORT_DESCRIPTION,
@@ -69,6 +70,7 @@ public final class CreateTestAction extends TestAction {
                                         "HINT_Action_CreateTest"));     //NOI18N
     }
 
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/junit/resources/"                  //NOI18N
                + "CreateTestActionIcon.gif";                            //NOI18N
