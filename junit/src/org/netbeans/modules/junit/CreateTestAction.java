@@ -20,7 +20,9 @@
 package org.netbeans.modules.junit;
 
 import java.awt.EventQueue;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
