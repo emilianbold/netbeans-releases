@@ -436,7 +436,7 @@ public class VerifyLibsAndLicenses extends Task {
                     String[] components = line.split("/");
                     if (components.length > 1) {
                         String n = components[1];
-                    	if (new File(dir, n).exists() && !(textOnly && line.matches(".*/-kb/"))) {
+                    	if (new File(dir, n).exists() && !(textOnly && line.matches(".*/-kb/.*"))) {
                             entries.add(n);
                     	}
                     }
