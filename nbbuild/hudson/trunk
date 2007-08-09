@@ -94,8 +94,7 @@ ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-enterprise -Dxt
 # CND UI validation tests
 ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-cnd -Dxtest.instance.name="CND tests" -Dxtest.no.cleanresults=true runtests
 # Profiler UI validation tests
-# XXX - disabled because it is failing
-#ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-profiler -Dxtest.instance.name="Profiler tests" -Dxtest.no.cleanresults=true runtests
+ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-profiler -Dxtest.instance.name="Profiler tests" -Dxtest.no.cleanresults=true runtests
 # J2EE UI validation tests
 ant -f xtest/instance/build.xml -Dxtest.config=commit-validation-j2ee -Dxtest.instance.name="J2EE tests" -Dxtest.no.cleanresults=true -D"xtest.userdata|com.sun.aas.installRoot"=/hudson/workdir/jobs/trunk/testappsrv/glassfish runtests
 # Mobility UI validation tests
