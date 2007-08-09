@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -543,14 +542,16 @@ public abstract class CLIHandler extends Object {
                             byte[] host = InetAddress.getLocalHost().getAddress();
                             if (block != null && block.intValue() == 667) {
                                 // this is here to emulate #64004
-                                throw new java.net.UnknownHostException ("dhcppc0"); // NOI18N
+                                throw new UnknownHostException("dhcppc0"); // NOI18N
                             }
                             for (int all = 0; all < host.length; all++) {
                                 os.write(host[all]);
                             }
                         } catch (UnknownHostException unknownHost) {
-                            // if we just cannot get the address, we can go on
-                            unknownHost.printStackTrace();
+                            if (!"dhcppc0".equals(unknownHost.getMessage())) { // NOI18N, see above
+                                // if we just cannot get the address, we can go on
+                                unknownHost.printStackTrace();
+                            }
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
