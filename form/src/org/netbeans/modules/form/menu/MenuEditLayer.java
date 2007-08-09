@@ -75,12 +75,14 @@ public class MenuEditLayer extends JPanel {
     
     /* === public constants === */
     
-    
+        
+    /* === constants for the look of the designer === */
     public static final Border DRAG_MENU_BORDER = BorderFactory.createLineBorder(Color.BLACK,1);
     public static final Border DRAG_SEPARATOR_BORDER = BorderFactory.createLineBorder(Color.RED,1);
     public static final Color SELECTED_MENU_BACKGROUND = new Color(0xA5A6A9);
     public static final Color EMPTY_ICON_COLOR = new Color(0xDDDDDD);
     public static final int EMPTY_ICON_BORDER_WIDTH = 2;
+    
     /* === private constants === */
     private static final boolean DEBUG = false;
     
@@ -1264,6 +1266,8 @@ public class MenuEditLayer extends JPanel {
                 p("not a menu component. going back to handle layer");
                 PaletteUtils.clearPaletteSelection();
                 hideMenuLayer();
+                formDesigner.getHandleLayer().mousePressed(e);
+                return;
             }
 
             // start editing
