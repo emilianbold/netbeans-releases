@@ -55,8 +55,10 @@ import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
+import org.openide.ErrorManager;
 
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.windows.TopComponent;
@@ -890,12 +892,23 @@ public final class Models {
             if (filter instanceof ExtendedNodeModelFilter) {
                 return ((ExtendedNodeModelFilter) filter).getIconBaseWithExtension(model, node);
             } else {
-                String base = filter.getIconBase(model, node);
-                if (base != null) {
-                    base += ".gif";
+                String base;
+                try {
+                    base = filter.getIconBase(model, node);
+                    if (base != null) {
+                        base += ".gif";
+                    }
+                } catch (Exception utex) {
+                    // The filter can not process the icon base filtering
+                    // Perhaps it needs to be upgraded to ExtendedNodeModelFilter
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
+                            ErrorManager.getDefault().annotate(utex,
+                                "The filter "+filter+" does not perform icon base filtering for "+node+".\n"+
+                                "If this is a problem, it should be upgraded to "+
+                                "ExtendedNodeModelFilter and getIconBaseWithExtension() implemented."));
+                    base = model.getIconBaseWithExtension(node);
                 }
                 return base;
-                //return model.getIconBaseWithExtension(node);
             }
         }
     }
