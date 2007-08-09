@@ -160,14 +160,14 @@ class FilesystemHandler extends VCSInterceptor {
     }
     
     public boolean beforeCreate(File file, boolean isDirectory) {
-        if ( SvnUtils.isPartOfSubversionMetadata(file)) {
+        if ( SvnUtils.isPartOfSubversionMetadata(file)) {            
             synchronized(invalidMetadata) {
-                invalidMetadata.add(file);   
-                File p = file.getParentFile();
-                while(p != null && SvnUtils.isPartOfSubversionMetadata(p)) {
-                    invalidMetadata.add(p);
+                File p = file;
+                while(!p.getName().equals(".svn") && !p.getName().equals("_svn")) {                    
                     p = p.getParentFile();
-                }            
+                    assert p != null : "file " + file + " doesn't have a .svn parent";
+                }                            
+                invalidMetadata.add(p);
             }            
             return false;
         } else {
