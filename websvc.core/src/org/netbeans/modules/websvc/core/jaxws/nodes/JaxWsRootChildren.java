@@ -50,7 +50,6 @@ public class JaxWsRootChildren extends Children.Keys {
     }
     
     protected void addNotify() {
-        super.addNotify();
         listener = new JaxWsListener();
         jaxWsModel.addPropertyChangeListener(listener);
         updateKeys();
@@ -59,7 +58,6 @@ public class JaxWsRootChildren extends Children.Keys {
     protected void removeNotify() {
         setKeys(Collections.EMPTY_SET);
         jaxWsModel.removePropertyChangeListener(listener);
-        super.removeNotify();
     }
        
     private void updateKeys() {

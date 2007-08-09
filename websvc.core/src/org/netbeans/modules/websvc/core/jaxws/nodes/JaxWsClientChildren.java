@@ -62,7 +62,6 @@ public class JaxWsClientChildren extends Children.Keys {
     
     @Override
     protected void addNotify() {
-        super.addNotify();
         final WsdlModeler wsdlModeler = ((JaxWsClientNode)getNode()).getWsdlModeler();
         if (wsdlModeler!=null) {
             wsdlModel = wsdlModeler.getWsdlModel();
@@ -86,7 +85,6 @@ public class JaxWsClientChildren extends Children.Keys {
     
     protected void removeNotify() {
         setKeys(Collections.EMPTY_SET);
-        super.removeNotify();
     }
        
     private void updateKeys() {

@@ -38,13 +38,11 @@ public class ServiceChildren extends Children.Keys {
     }
     
     protected void addNotify() {
-        super.addNotify();
         updateKeys();
     }
     
     protected void removeNotify() {
         setKeys(Collections.EMPTY_SET);
-        super.removeNotify();
     }
        
     private void updateKeys() {

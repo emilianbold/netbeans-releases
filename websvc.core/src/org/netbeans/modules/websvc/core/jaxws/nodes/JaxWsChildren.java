@@ -135,7 +135,6 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
     }
 
     protected void addNotify() {
-        super.addNotify();
         if (isFromWsdl()) {
             try {
                 FileObject localWsdlFolder = getJAXWSSupport().getLocalWsdlFolderForService(service.getName(),false);
@@ -204,7 +203,7 @@ public class JaxWsChildren extends Children.Keys/* implements MDRChangeListener 
             implClass.removeFileChangeListener(fcl);
             fcl = null;
         }
-        super.removeNotify();
+        setKeys(Collections.EMPTY_SET);
     }
     
     private void updateKeys() {
