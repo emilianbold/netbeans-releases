@@ -1,1 +1,92 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!--* Copyright 2007 Sun Microsystems, Inc. All rights reserved.* Use is subject to license terms.--><html><head><title>Creating a Tag File</title><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>Creating a Tag File</h2><p><small><a href="#seealso">See Also</a></small></p><p>The following steps show how to create a tag file in a web application. After you create the tag file, use code completion in the Source Editor to specify the tag's attributes, body, and behavior. </p><p><b>To create a tag file:</b></p><ol><li>In the Projects window or Files window, right-click the project node. </li><li>From the pop-up menu, choose New &gt; Other.</li><li>Under Categories, select Web. Under File Types, select Tag File. Click Next.</li><li>Type the name of the tag file.</li><li>Type the folder where your tag files are housed. By default, they are created in <tt>WEB-INF/tags</tt>.</li><li>Select the type of tag file that you want to create:<ul><li><b>Tag File (Standard Syntax).</b> Tag files written using 	    the <a href="../../jsp/about_jsp_syntax.html#standard">standard JSP syntax</a>. 	    typically have the <tt>.tag</tt> extension.</li>	    <li><b>Tag File (XML Syntax).</b> Tag files written 	    using the <a href="../../jsp/about_jsp_syntax.html#document">XML document syntax</a> 	    typically have the 	    <tt>.tagx</tt> extension. Two examples of the advantages that XML document syntax 	    has over standard JSP syntax are:</li>	    <ul><li>You can edit, verify, and view files in XML document syntax with XML capable tools, 		    such as the IDE's Source Editor.</li>		    <li>You can transform files in XML document syntax using XSLT tools, such 		    as the IDE's XSL Transformation command.</li></ul>	    </ul>	    </li><li>(Optional) Click the Create as a Segment of a Tag File checkbox.    A segment is a file that contains a fragment of tag file text for inclusion     by tag files. Tag segments typically use the <tt>.tagf</tt> extension.</li><li>(Optional) Click the Add Tag File to Tag Library Descriptor checkbox ifyou want the IDE to create entries in a <a href="../tld/about_tld.html">TLD file</a> for the tag file.If you click this checkbox, you must have a TLD file available. If not, <a href="../tld/tld_create.html">create</a>one first.<p>If you clicked the Add Tag File to Tag Library Descriptor checkbox, do the following:<ol><li>Click Browse to select the tag library descriptor (TLD file) for yourtag file. By default, the TLD files are in the <tt>WEB-INF/tlds</tt> folder.</li><li>Type the name of the tag. This is the name you use in the JSP file to referto the tag file.</li></ol></li><li>Click Finish.</li></ol><p>The IDE creates a tag file that conforms to the JSP 2.0 specification.</p><table cellpadding="3" cellspacing="0" border="0">  <tr valign="top">     <td><img src="../../../images/tip.gif" alt="tip">&nbsp;</td>    <td>A tag file is run when the JSP file in which it is <a href="../../jsp/jsp_usetaglib.html">defined</a>	    is deployed. You can set breakpoints in the tag file. 	    Then, when the JSP file is  <a href="../../../debug/about_debug.html">debugged</a>, the tag     file is debugged too.</td>  </tr></table><p>For more information about creating and using tag libraries, see the <i>JavaServer   Pages Specification</i> available   at <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">        <param name="content" value="http://java.sun.com/products/jsp/download.html">        <param name="text" value="<html><u>http://java.sun.com/products/jsp/download.html</u></html>">        <param name="textFontSize" value="medium">        <param name="textColor" value="blue"></object>.   </p><dl>  <dt><a name="seealso">See Also</a></dt><dd><a href="about_tagfile.html">About Tag Files</a></dd><dd><a href="../../jsp/jsp_usetaglib.html">Accessing a Custom Tag from a JSP Page </a></dd><dd><a href="../about/about_taglib.html">About Tag Libraries</a></dd><dd><a href="../../jsp/about_jsp_syntax.html">About JSP Syntax</a></dd></dl><hr><small><a href="../../../../credits.html">Legal Notices</a></small> <table cellpadding="20" border="0">    <tr><td>&nbsp;</td></tr>    <tr><td>&nbsp;</td></tr>    <tr><td>&nbsp;</td></tr> </table> </body> </html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Creating a Tag File</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+<h2>Creating a Tag File</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>The following steps show how to create a tag file in a web application. After you create 
+the tag file, use code completion in the Source Editor to specify the tag's attributes, body, and behavior. </p>
+
+<p><b>To create a tag file:</b></p>
+<ol>
+<li>In the Projects window or Files window, right-click the project node. </li>
+<li>From the pop-up menu, choose New &gt; Other.</li>
+<li>Under Categories, select Web. Under File Types, select Tag File. Click Next.</li>
+<li>Type the name of the tag file.</li>
+<li>Type the folder where your tag files are housed. By default, they are created in <tt>WEB-INF/tags</tt>.</li>
+<li>Select the type of tag file that you want to create:
+<ul><li><b>Tag File (Standard Syntax).</b> Tag files written using 
+	    the <a href="../../jsp/about_jsp_syntax.html#standard">standard JSP syntax</a>. 
+	    typically have the <tt>.tag</tt> extension.</li>
+	    <li><b>Tag File (XML Syntax).</b> Tag files written 
+	    using the <a href="../../jsp/about_jsp_syntax.html#document">XML document syntax</a> 
+	    typically have the 
+	    <tt>.tagx</tt> extension. Two examples of the advantages that XML document syntax 
+	    has over standard JSP syntax are:</li>
+	    <ul><li>You can edit, verify, and view files in XML document syntax with XML capable tools, 
+		    such as the IDE's Source Editor.</li>
+		    <li>You can transform files in XML document syntax using XSLT tools, such 
+		    as the IDE's XSL Transformation command.</li></ul>
+	    </ul>
+	    </li>
+<li>(Optional) Click the Create as a Segment of a Tag File checkbox.
+    A segment is a file that contains a fragment of tag file text for inclusion 
+    by tag files. Tag segments typically use the <tt>.tagf</tt> extension.</li>
+<li>(Optional) Click the Add Tag File to Tag Library Descriptor checkbox if
+you want the IDE to create entries in a <a href="../tld/about_tld.html">TLD file</a> for the tag file.
+If you click this checkbox, you must have a TLD file available. If not, <a href="../tld/tld_create.html">create</a>
+one first.
+<p>If you clicked the Add Tag File to Tag Library Descriptor checkbox,
+ do the following:
+<ol><li>Click Browse to select the tag library descriptor (TLD file) for your
+tag file. By default, the TLD files are in the <tt>WEB-INF/tlds</tt> folder.</li>
+<li>Type the name of the tag. This is the name you use in the JSP file to refer
+to the tag file.</li></ol></li>
+<li>Click Finish.</li>
+</ol>
+<p>The IDE creates a tag file that conforms to the JSP 2.0 specification.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top"> 
+    <td><img src="../../../images/tip.gif" alt="tip">&nbsp;</td>
+    <td>A tag file is run when the JSP file in which it is <a href="../../jsp/jsp_usetaglib.html">defined</a>
+	    is deployed. You can set breakpoints in the tag file. 
+	    Then, when the JSP file is  <a href="../../../debug/about_debug.html">debugged</a>, the tag
+     file is debugged too.</td>
+  </tr>
+</table>
+<p>For more information about creating and using tag libraries, see the <i>JavaServer 
+  Pages Specification</i> available 
+  at
+ 
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://java.sun.com/products/jsp/download.html">
+        <param name="text" value="<html><u>http://java.sun.com/products/jsp/download.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+</object>. 
+  </p>
+
+<dl>  
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="about_tagfile.html">About Tag Files</a></dd>
+<dd><a href="../../jsp/jsp_usetaglib.html">Accessing a Custom Tag from a JSP Page </a></dd>
+<dd><a href="../about/about_taglib.html">About Tag Libraries</a></dd>
+<dd><a href="../../jsp/about_jsp_syntax.html">About JSP Syntax</a></dd>
+</dl>
+
+<hr>
+<small><a href="../../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="20" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+</table> 
+
+</body> </html>

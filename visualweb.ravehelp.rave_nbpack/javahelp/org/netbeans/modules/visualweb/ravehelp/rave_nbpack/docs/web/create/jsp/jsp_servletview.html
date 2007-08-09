@@ -1,1 +1,56 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved.  *	  Use is subject to license terms. --><html><head><meta name="lastupdated" content="4Jul07"><!-- p2 --><title>Viewing a JSP File's Servlet</title><link rel="stylesheet" href="ide.css" type="text/css"></head><body><h2>Viewing a JSP File's Servlet</h2><p><small> <a href="#seealso">See Also</a> </small></p> <p>When you execute a JSP file, the server translates the contents ofthe JSP file into a Java servlet and compiles the servlet. Youcan view, but not edit, the translated servlet source in the Source Editor.You cannot set breakpoints in the servlet source code. Youcan set breakpoints in the JSP file only.</p><p><b>To view the servlet generated from a JSP file:</b></p><ol> <li><a href="jsp_run.html">Run the JSP file</a>.</li> <li>In the Projects window, right-click the JSP file and choose View Servlet. <table cellpadding="3" cellspacing="0" border="0">   <tr valign="top">      <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>            <td>The View Servlet menu item is enabled only if the target     server has successfully executed the JSP file and the target server supports the viewing of translated     servlets.</td></tr></table></li></ol>     The servlet appears in the Source Editor. This servlet is based on the       state of the JSP file when the file was last executed. If you have changed       the JSP file but have not executed it, the servlet does not reflect the       changes. While this file is opened, if you execute the JSP file or if       you change the target server       in the Run section of the Project Properties dialog box,       the file changes to reflect the latest translated       servlet on the selected server.<dl>  <dt><a name="seealso">See Also</a></dt><dd><a href="about_jsp_technology.html">About JavaServer Pages Technology</a></dd><dd><a href="../servlet/about_servlet.html">About Servlets</a></dd></dl><hr><small><a href="../../../credits.html">Legal Notices</a></small> </body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+ -->
+<html>
+<head>
+<meta name="lastupdated" content="4Jul07">
+<!-- p2 -->
+
+<title>Viewing a JSP File's Servlet</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+<h2>Viewing a JSP File's Servlet</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+
+
+<p>When you execute a JSP file, the server translates the contents of
+the JSP file into a Java servlet and compiles the servlet. You
+can view, but not edit, the translated servlet source in the Source Editor.
+You cannot set breakpoints in the servlet source code. You
+can set breakpoints in the JSP file only.</p>
+<p><b>To view the servlet generated from a JSP file:</b></p>
+
+<ol>
+ <li><a href="jsp_run.html">Run the JSP file</a>.</li>
+ <li>In the Projects window, right-click the JSP file and choose View Servlet.
+ <table cellpadding="3" cellspacing="0" border="0">
+   <tr valign="top">
+      <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+      
+      <td>The View Servlet menu item is enabled only if the target 
+    server has successfully executed the JSP file and the target server supports the viewing of translated 
+    servlets.</td></tr></table></li></ol> 
+    The servlet appears in the Source Editor. This servlet is based on the 
+      state of the JSP file when the file was last executed. If you have changed 
+      the JSP file but have not executed it, the servlet does not reflect the 
+      changes. While this file is opened, if you execute the JSP file or if 
+      you change the target server 
+      in the Run section of the Project Properties dialog box, 
+      the file changes to reflect the latest translated 
+      servlet on the selected server.
+<dl>
+  <dt><a name="seealso">See Also</a></dt>
+<dd><a href="about_jsp_technology.html">About JavaServer Pages Technology</a></dd>
+<dd><a href="../servlet/about_servlet.html">About Servlets</a></dd>
+</dl>
+
+
+<hr>
+<small><a href="../../../credits.html">Legal Notices</a></small> 
+</body>
+</html>

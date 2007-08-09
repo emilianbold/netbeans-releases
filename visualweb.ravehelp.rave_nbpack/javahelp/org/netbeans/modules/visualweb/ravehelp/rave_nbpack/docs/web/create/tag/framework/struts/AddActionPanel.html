@@ -1,1 +1,72 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved.  *	  Use is subject to license terms.> --><html><head>	<meta name="lastupdated" content="9Jul07"><!-- p2 --><title>Add Action Dialog Box</title><link rel="StyleSheet" href="ide.css" type="text/css"></head><body>	<h2>Add Action Dialog Box</h2><p><small> <a href="#seealso">See Also</a> </small></p> A Struts action responds to a request. Writing an action means subclassing one of the <tt>Action</tt> classes and then overriding the class's <tt>execute</tt> method. Use the <a href="file_ActionPanel.html">New Struts Action wizard</a> for this purpose.<p>You use the Add Action dialog box to register an action in the <tt>struts-config.xml</tt> file.You open the Add Action dialog box by right-clicking in a <tt>struts-config.xml</tt> file andchoosing Struts &gt; Add Action.<p>In the Add Action dialog box, you set the following properties:<ul><li><b>Action Class.</b> Specifies the fully qualified Java class name of the action.</li><li><b>Action Path.</b> Specifies the application context-relative path to the action.</li><li><b>Use ActionForm Bean.</b> Specifies whether an actionform bean should be used or not. If youselect this checkbox, the following fields are enabled.</li><ul>	<li><b>ActionForm Bean Name.</b> Specifies the name of the actionform bean.</li>	<li>Input. 		  <ul>		<li><b>Resource.</b> Specifies the path to the JSP page that handles the actionform bean.</li>		<li><b>Action.</b> Specifies the action that handles the actionform bean.</li></ul><li><b>Scope.</b> Specifies the scope of the action. By default, the actionis set to Session scope.</li><li><b>Attribute.</b> Specifies an attribute that causes the actionform bean to be mapped into scope. When an actionform bean is mapped into scope, the action can access the actionform bean's values and display them in a JSP page.</li><li><b>Validate Form Bean.</b> Specifies that the <tt>validate</tt> method of the action associated with this actionform bean should be called.</li></ul><li><b>Parameter.</b> Specifies general-purpose attribute often used by "standard" actions to pass a required property.</li></ul><ul class="note">	<li>If you want to change a registered action, you can do	so by manually editing the XML tags in the <tt>struts-config.xml</tt> file.</ul><dl>    <dt><a name="seealso">See Also</a></dt>  <dd><a href="../about_framework.html">About Web Application Frameworks</a></dd><dd>  <a href="../framework_struts_create.html">Creating a New Application with Struts Support</a></dd><dd>  <a href="../framework_struts_add.html">Adding Struts Support to an Existing Application</a></dd></dl>   <hr><small><a href="../../../../../credits.html">Legal Notices</a></small> <table cellpadding="20" border="0"> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> </table> </body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+<head>
+	<meta name="lastupdated" content="9Jul07">
+<!-- p2 -->
+
+<title>Add Action Dialog Box</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+	<h2>Add Action Dialog Box</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+
+A Struts action responds to a request. Writing an action means subclassing one 
+of the <tt>Action</tt> classes and then overriding the class's <tt>execute</tt> method. 
+Use the <a href="file_ActionPanel.html">New Struts Action wizard</a> for this purpose.
+
+<p>You use the Add Action dialog box to register an action in the <tt>struts-config.xml</tt> file.
+You open the Add Action dialog box by right-clicking in a <tt>struts-config.xml</tt> file and
+choosing Struts &gt; Add Action.
+
+<p>In the Add Action dialog box, you set the following properties:
+
+<ul>
+<li><b>Action Class.</b> Specifies the fully qualified Java class name of the action.</li>
+<li><b>Action Path.</b> Specifies the application context-relative path to the action.</li>
+<li><b>Use ActionForm Bean.</b> Specifies whether an actionform bean should be used or not. If you
+select this checkbox, the following fields are enabled.</li>
+<ul>
+	<li><b>ActionForm Bean Name.</b> Specifies the name of the actionform bean.</li>
+	<li>Input. 	
+	  <ul>
+		<li><b>Resource.</b> Specifies the path to the JSP page that handles the actionform bean.</li>
+		<li><b>Action.</b> Specifies the action that handles the actionform bean.</li></ul>
+<li><b>Scope.</b> Specifies the scope of the action. By default, the action
+is set to Session scope.</li>
+<li><b>Attribute.</b> Specifies an attribute that causes the actionform bean to be mapped into scope. When an actionform
+ bean is mapped into scope, the action can access the actionform bean's values and display them in a JSP page.</li>
+<li><b>Validate Form Bean.</b> Specifies that the <tt>validate</tt> method of the action associated with this actionform bean should be called.</li>
+</ul>
+<li><b>Parameter.</b> Specifies general-purpose attribute often used by "standard" actions to pass a required property.</li>
+
+</ul>
+
+<ul class="note">
+	<li>If you want to change a registered action, you can do
+	so by manually editing the XML tags in the <tt>struts-config.xml</tt> file.
+</ul>
+
+<dl>
+    <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../about_framework.html">About Web Application Frameworks</a></dd>
+<dd>  <a href="../framework_struts_create.html">Creating a New Application with Struts Support</a></dd>
+<dd>  <a href="../framework_struts_add.html">Adding Struts Support to an Existing Application</a></dd>
+</dl>
+
+   
+<hr>
+<small><a href="../../../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body></html>
+

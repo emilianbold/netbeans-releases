@@ -1,1 +1,72 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved.  *	  Use is subject to license terms.--><html><head><meta name="lastupdated" content="4Jul07"><!-- p2 --><title>About Filters</title><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>About Filters</h2><p><small> <a href="#seealso">See Also</a> </small></p> <p>A filter is a piece of re-usable code that modifies requests to and responses   from a servlet. Filters can perform many functions, including (but not limited   to):</p><ul>  <li>Authentication, that is, blocking requests based on user identity</li>  <li>Logging and auditing, that is, tracking users of a web application</li>  <li>Localization, that is, tailoring the request and response to a particular     locale</li>  <li>Data compression, that is, making downloads smaller</li>  <li>XSLT transformations of XML content, that is, targeting web application     responses to more than one type of client</li></ul><p>The IDE provides a wizard to help you create both simple and more advanced filter elements.</p><table cellpadding="3" cellspacing="0" border="0">  <tr valign="top">     <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>    <td>Filters are run on each mapped request, therefore you cannot run or debug them individually.</td>  </tr></table><p>Filters are declared using the <tt><a href="filter_addtodd.html">filter</a></tt>   element in the web application's deployment descriptor (<tt>web.xml</tt>) and are   packaged in a WAR file along with the static content and servlets that make   up a web application. A filter or collection of filters can be configured for invocation   by defining the filter mapping elements in the deployment descriptor.</p><p>For more information about filters, see the<i>Java Servlet Technology Documentation</i> available at<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">         <param name="content" value="http://java.sun.com/products/servlet/docs.html ">         <param name="text" value="<html><u>http://java.sun.com/products/servlet/docs.html </u></html>">         <param name="textFontSize" value="medium">         <param name="textColor" value="blue"></object> </p><dl><dt><a name="seealso">See Also</a></dt><dd><a href="filter_create.html">Creating a Filter</a></dd><dd><a href="filter_addtodd.html">Registering a Filter</dd></dl><hr><small><a href="../../../credits.html">Legal Notices</a> <table cellpadding="20" border="0"> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> </table> </small></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+<html>
+<head>
+<meta name="lastupdated" content="4Jul07">
+<!-- p2 -->
+
+<title>About Filters</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>About Filters</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+
+<p>A filter is a piece of re-usable code that modifies requests to and responses 
+  from a servlet. Filters can perform many functions, including (but not limited 
+  to):</p>
+<ul>
+  <li>Authentication, that is, blocking requests based on user identity</li>
+  <li>Logging and auditing, that is, tracking users of a web application</li>
+  <li>Localization, that is, tailoring the request and response to a particular 
+    locale</li>
+  <li>Data compression, that is, making downloads smaller</li>
+  <li>XSLT transformations of XML content, that is, targeting web application 
+    responses to more than one type of client</li>
+</ul>
+<p>The IDE provides a wizard to help you create both simple and more advanced 
+filter elements.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top"> 
+    <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+    <td>Filters are run on each mapped request, therefore you cannot run or debug them individually.</td>
+  </tr>
+</table>
+<p>Filters are declared using the <tt><a href="filter_addtodd.html">filter</a></tt> 
+  element in the web application's deployment descriptor (<tt>web.xml</tt>) and are 
+  packaged in a WAR file along with the static content and servlets that make 
+  up a web application. A filter or collection of filters can be configured for invocation 
+  by defining the filter mapping elements in the deployment descriptor.</p>
+<p>For more information about filters, see the
+<i>Java Servlet Technology Documentation</i> available at
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+         <param name="content" value="http://java.sun.com/products/servlet/docs.html ">
+         <param name="text" value="<html><u>http://java.sun.com/products/servlet/docs.html </u></html>">
+         <param name="textFontSize" value="medium">
+         <param name="textColor" value="blue">
+</object> 
+
+</p>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="filter_create.html">Creating a Filter</a></dd>
+<dd><a href="filter_addtodd.html">Registering a Filter</dd>
+</dl>
+
+<hr>
+<small><a href="../../../credits.html">Legal Notices</a> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+
+</small></body></html>

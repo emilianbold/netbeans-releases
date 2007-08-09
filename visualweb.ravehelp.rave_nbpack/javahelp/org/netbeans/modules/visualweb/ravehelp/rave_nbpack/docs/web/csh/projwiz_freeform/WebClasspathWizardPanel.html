@@ -1,1 +1,71 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!--       *     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.*     Use is subject to license terms.--><html><head>	<title>New Project with Existing Ant Script Wizard: Web Sources Classpath</title><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>New Project with Existing Ant Script Wizard: Web Sources Classpath</h2><p> <small><a href="#seealso">See Also</a>&nbsp; </small> <p>The New Project with Existing Ant Script wizard imports an existing Java, web, or EJB module into a  	<object classid="java:com.sun.java.help.impl.JHSecondaryViewer">        <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/glossary_freeform.html">        <param name="viewerActivator" value="javax.help.LinkLabel">        <param name="viewerStyle" value="javax.help.Popup">        <param name="viewerSize" value="400,220">        <param name="text" value="standard Web project">        <param name="textFontSize" value="medium">        <param name="textFontFamily" value="SansSerif">        <param name="textFontStyle" value="italic">        <param name="textFontWeight" value="bold">        <param name="textColor" value="blue">    </object>&nbsp;.<p>In the Web Sources Classpath page,you add libraries, such as tag libraries, that you use in JSP pages.  If you have not specified libraries containing the JSP and Servlet API (the <tt>jsp-api.jar</tt> and <tt>servlet-api.jar</tt>  or the whole <tt>j2ee.jar</tt>, which contains both) in the Java Sources Classpath panel, you must specify these here. You need these  API libraries for code completion in scriptlets in JSP pages. If you do not have your own API libraries, you can use those   provided by the IDE at <tt><i>IDE-install-directory</i>/enterprise4/jakarta-tomcat-5.5.<i>x</i>/common/lib</tt>. <p><b>Notes:</b> <ul>  <li>Like all settings in the New Web Project with Existing Ant Script wizard,  	 declaring the project's classpath does not change the actual classpath of  	 your project as specified in your Ant script. These settings only configure  	 your project to mirror your Ant script so that features such as code completion,  	 error highlighting, and refactoring work correctly.</li>  <li>To add the build output of another IDE project to the classpath, add the     project's JAR file to the classpath. </li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	                                                        	<dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_free_about.html">About Free-Form Projects</a></dd><dd>	<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd><dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New Project Wizard:</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_j2sefree_wiz1.html">Name and Location</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_j2sefree_wiz2.html">Build and Run Actions</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebLocationsWizardPanel.html">Web Sources</a> (for web projects only)</dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_j2sefree_wiz3.html">Source Package Folders</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_j2sefree_wiz4.html">Java Sources Classpath</a></dd></dl><hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font> <table border="0" cellpadding="20">  <tr>    <td>&nbsp;</td>  </tr>  <tr>    <td>&nbsp;</td>  </tr>  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright ? 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+	<title>New Project with Existing Ant Script Wizard: Web Sources Classpath</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+<h2>New Project with Existing Ant Script Wizard: Web Sources Classpath</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>The New Project with Existing Ant Script wizard imports an existing Java, web,
+ or EJB module into a  
+	<object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/glossary_freeform.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,220">
+        <param name="text" value="standard Web project">
+        <param name="textFontSize" value="medium">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+    </object>&nbsp;.
+<p>In the Web Sources Classpath page,
+you add libraries, such as tag libraries, that you use in JSP pages.
+  If you have not specified libraries containing the JSP and Servlet API (the <tt>jsp-api.jar</tt> and <tt>servlet-api.jar</tt>
+  or the whole <tt>j2ee.jar</tt>, which contains both) in the Java Sources Classpath panel, you must specify these here. You need these
+  API libraries for code completion in scriptlets in JSP pages. If you do not have your own API libraries, you can use those 
+  provided by the IDE at <tt><i>IDE-install-directory</i>/enterprise4/jakarta-tomcat-5.5.<i>x</i>/common/lib</tt>. 
+
+<p><b>Notes:</b> 
+<ul>
+  <li>Like all settings in the New Web Project with Existing Ant Script wizard,
+  	 declaring the project's classpath does not change the actual classpath of
+  	 your project as specified in your Ant script. These settings only configure
+  	 your project to mirror your Ant script so that features such as code completion,
+  	 error highlighting, and refactoring work correctly.</li>
+  <li>To add the build output of another IDE project to the classpath, add the 
+    project's JAR file to the classpath. </li>
+</ul>
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	                                                        
+	<dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_free_about.html">About Free-Form Projects</a></dd>
+<dd>	<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/project/csh/proj_wiz.html">New Project Wizard:</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_j2sefree_wiz1.html">Name and Location</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_j2sefree_wiz2.html">Build and Run Actions</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebLocationsWizardPanel.html">Web Sources</a> (for web projects only)</dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_j2sefree_wiz3.html">Source Package Folders</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_j2sefree_wiz4.html">Java Sources Classpath</a></dd>
+</dl>
+<hr>
+<font size=-2><a href="../../../credits.html">Legal Notices</a></font> 
+<table border="0" cellpadding="20">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

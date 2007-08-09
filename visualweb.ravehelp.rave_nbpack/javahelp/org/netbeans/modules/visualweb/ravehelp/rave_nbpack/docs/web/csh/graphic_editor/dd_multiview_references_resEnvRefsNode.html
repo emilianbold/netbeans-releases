@@ -1,1 +1,59 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!--       *     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.*     Use is subject to license terms.--><html><head><title>web.xml Visual Editor: Resource Environment References</title><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2><tt>web.xml</tt> Visual Editor: Resource Environment References</h2><p> <small><a href="#seealso">See Also</a>&nbsp; </small> <p>Use the Resource Environment References section to add, remove, and view the web application's resource environment references. Resource environment references contain a declaration of a web application's reference to an administered object associated with a resource in the web application's environment.  It consists of an optional description, the resource environment reference name, and an  indication of the resource environment reference type expected by the web application code.<p>To declare an resource environment reference, you must register it in the <tt>web.xml</tt> file.When you do this, you provide information needed by the server to use the reference.<p>You open the <tt>web.xml</tt> Visual Editor  from the Projects window by expanding the Web Pages node, then the WEB-INF node, and then double-clickingthe <tt>web.xml</tt> file. Click References at the top of the editorto open the References section, then click the Resource Environment References header to open the Resource Environment References section.  <p>Click Add to define a resource environment reference with the following properties:</p><ul><li><b>Resource Name.</b> Specifies the name of a resource environment reference, such as <tt>jms/SharePriceQueue</tt>. The specified value is theenvironment entry name used in the web application code. The name is a JNDI name relative to the <tt>java:comp/env</tt> context and must be unique within a web application.</li><li><b>Resource Type.</b> Specifies the type of a resource environment reference, either <tt>javax.jms.Queue</tt> or <tt>javax.jms.Topic</tt>. It is the fully qualified name  of a Java language class or interface.<li><b>Description.</b> Specifies a description, such as <tt>Queue for My Share Prices</tt>.</li></ul><dl>	<dt><a name="seealso">See Also</a></dt>	<dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>       	<dd>	<a href="../../configure/about_webapp_configure.html">About Configuring Web Applications</a></dd>		<dd><a href="../../configure/configure_webapp_dd.html">Configuring Web Application Deployment Descriptors</a></dd>	</dl><hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font> <table border="0" cellpadding="20">  <tr>    <td>&nbsp;</td>  </tr>  <tr>    <td>&nbsp;</td>  </tr>  <tr>    <td>&nbsp;</td>  </tr></table></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>web.xml Visual Editor: Resource Environment References</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+<h2><tt>web.xml</tt> Visual Editor: Resource Environment References</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>Use the Resource Environment References section to add, remove, and
+ view the web application's resource environment references.
+ Resource environment references contain a declaration of a web application's reference
+ to an administered object associated with a resource in the web application's environment. 
+ It consists of an optional description, the resource environment reference name, and an 
+ indication of the resource environment reference type expected by the web application code.
+<p>To declare an resource environment reference, you must register it in the <tt>web.xml</tt> file.
+When you do this, you provide information needed by the server to use the reference.
+<p>You open the <tt>web.xml</tt> Visual Editor 
+ from the Projects window by 
+expanding the Web Pages node, then the WEB-INF node, and then double-clicking
+the <tt>web.xml</tt> file. Click References at the top of the editor
+to open the References section, then click the Resource Environment References header
+ to open the Resource Environment References section. 
+ <p>Click Add to define a resource environment reference with the following properties:
+</p><ul>
+<li><b>Resource Name.</b> Specifies the name of a resource environment reference, such as <tt>jms/SharePriceQueue</tt>. The specified value is the
+environment entry name used in the web application code. The name is a JNDI name relative to the 
+<tt>java:comp/env</tt> context and must be unique within a web application.</li>
+<li><b>Resource Type.</b> Specifies the type of a resource environment reference, either <tt>javax.jms.Queue</tt>
+ or <tt>javax.jms.Topic</tt>. It is the fully qualified name 
+ of a Java language class or interface.
+<li><b>Description.</b> Specifies a description, such as <tt>Queue for My Share Prices</tt>.</li>
+</ul>
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/ejb/general/about_deployment_descriptors.html">About Deployment Descriptors</a></dd>
+       	<dd>	<a href="../../configure/about_webapp_configure.html">About Configuring Web Applications</a></dd>
+		<dd><a href="../../configure/configure_webapp_dd.html">Configuring Web Application Deployment Descriptors</a></dd>
+	</dl>
+<hr>
+<font size=-2><a href="../../../credits.html">Legal Notices</a></font> 
+<table border="0" cellpadding="20">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
+

@@ -1,1 +1,95 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved.  *	  Use is subject to license terms.--><html><head><meta name="lastupdated" content="4Jul07"><!-- p2 --><title>About Web Application  Listeners</title><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>About Web Application  Listeners</h2><p><small> <a href="#seealso">See Also</a> </small></p> <p>Listeners allow you more control over interactions with the <tt>ServletContext</tt>   and <tt>HttpSession</tt> objects and let you efficiently manage the resources   used by a web application.</p><p>Application event listeners are classes that implement one or more of the servlet   event listener interfaces. Application events let listener objects be notified   when servlet contexts and sessions are initialized and destroyed, as well as   when attributes are added or removed from a context or session.</p><p>Use Servlet context listeners to manage resources or state held at a virtual   machine level for the web application. The IDE helps you create two types of context   event listeners:</p><ul>  <li><b><tt>ServletContextListener</tt></b>, which notifies you that the     servlet context has just been created and is available to service its first     request, or that the servlet context is about to be shut down.</li>  <li><b><tt>ServletContextAttributesListener</tt></b>, which notifies you     that attributes on the servlet context have been added, removed, or replaced.</li></ul><p>Use HTTP session listeners to manage state or resources associated with a series   of requests made to a web application from the same client or users. The IDE helps   you create two types of session event listeners: </p><ul>  <li><b><tt>HttpSessionListener</tt></b>, which notifies you that an HttpSession     has been created, invalidated, or timed out.</li>  <li><b><tt>HttpSessionAttributesListener</tt></b>, which notifies you that     attributes have been added, removed, or replaced on an HttpSession.</li></ul><p>Use Servlet request listeners to observe as requests are created and destroyed,    and as attributes are added and removed from a request. This is supported by   J2EE 1.4 only. The IDE helps you create    two types of request event listeners:</p><ul>  <li><b><tt>ServletRequestListener</tt></b>, which notifies you that the     request is coming in or out of a web application's scope.</li>  <li><b><tt>ServletRequestAttributesListener</tt></b>, which notifies you     that request attributes have been added, removed, or replaced.</li></ul><p>Listener classes are declared in the deployment descriptor (<tt>web.xml</tt>)   using the <tt>listener</tt> element. They are listed by class name in the   order in which they are to be invoked.</p>  <p>The IDE provides a wizard to help you create listener classes.</p><table cellpadding="3" cellspacing="0" border="0">  <tr valign="top">     <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>    <td>Listeners are run on each mapped event, therefore you cannot run or debug them individually.</td>  </tr></table>    <p>For more information   about listeners, see the <i>Java Servlet Specification</i> available   at <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">         <param name="content" value="http://java.sun.com/products/servlet/download.html">         <param name="text" value="<html><u>http://java.sun.com/products/servlet/download.html</u></html>">         <param name="textFontSize" value="medium">         <param name="textColor" value="blue"></object> </p><dl><dt><a name="seealso">See Also</a></dt><dd><a href="listener_create.html">Creating a Web Application Listener</a></dd><dd><a href="listener_addtodd.html">Registering a Web Application Listener</a></dd></dl><hr><small><a href="../../../credits.html">Legal Notices</a> <table cellpadding="20" border="0"> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> </table> </small></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+<html>
+<head>
+<meta name="lastupdated" content="4Jul07">
+<!-- p2 -->
+
+<title>About Web Application  Listeners</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>About Web Application  Listeners</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+
+<p>Listeners allow you more control over interactions with the <tt>ServletContext</tt> 
+  and <tt>HttpSession</tt> objects and let you efficiently manage the resources 
+  used by a web application.</p>
+<p>Application event listeners are classes that implement one or more of the servlet 
+  event listener interfaces. Application events let listener objects be notified 
+  when servlet contexts and sessions are initialized and destroyed, as well as 
+  when attributes are added or removed from a context or session.</p>
+<p>Use Servlet context listeners to manage resources or state held at a virtual 
+  machine level for the web application. The IDE helps you create two types of context 
+  event listeners:</p>
+<ul>
+  <li><b><tt>ServletContextListener</tt></b>, which notifies you that the 
+    servlet context has just been created and is available to service its first 
+    request, or that the servlet context is about to be shut down.</li>
+  <li><b><tt>ServletContextAttributesListener</tt></b>, which notifies you 
+    that attributes on the servlet context have been added, removed, or replaced.</li>
+</ul>
+<p>Use HTTP session listeners to manage state or resources associated with a series 
+  of requests made to a web application from the same client or users. The IDE helps 
+  you create two types of session event listeners: </p>
+<ul>
+  <li><b><tt>HttpSessionListener</tt></b>, which notifies you that an HttpSession 
+    has been created, invalidated, or timed out.</li>
+  <li><b><tt>HttpSessionAttributesListener</tt></b>, which notifies you that 
+    attributes have been added, removed, or replaced on an HttpSession.</li>
+</ul>
+<p>Use Servlet request listeners to observe as requests are created and destroyed, 
+   and as attributes are added and removed from a request. This is supported by
+   J2EE 1.4 only. The IDE helps you create 
+   two types of request event listeners:</p>
+<ul>
+  <li><b><tt>ServletRequestListener</tt></b>, which notifies you that the 
+    request is coming in or out of a web application's scope.</li>
+  <li><b><tt>ServletRequestAttributesListener</tt></b>, which notifies you 
+    that request attributes have been added, removed, or replaced.</li>
+</ul>
+<p>Listener classes are declared in the deployment descriptor (<tt>web.xml</tt>) 
+  using the <tt>listener</tt> element. They are listed by class name in the 
+  order in which they are to be invoked.</p>
+  <p>The IDE provides a wizard to help you create listener classes.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+  <tr valign="top"> 
+    <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+    <td>Listeners are run on each mapped event, therefore you cannot run or debug them individually.</td>
+  </tr>
+</table>
+  
+  <p>For more information 
+  about listeners, see the <i>Java Servlet Specification</i> available 
+  at 
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+         <param name="content" value="http://java.sun.com/products/servlet/download.html">
+         <param name="text" value="<html><u>http://java.sun.com/products/servlet/download.html</u></html>">
+         <param name="textFontSize" value="medium">
+         <param name="textColor" value="blue">
+</object> 
+</p>
+
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="listener_create.html">Creating a Web Application Listener</a></dd>
+<dd><a href="listener_addtodd.html">Registering a Web Application Listener</a></dd>
+</dl>
+
+<hr>
+<small><a href="../../../credits.html">Legal Notices</a> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+
+</small></body></html>

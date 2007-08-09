@@ -1,1 +1,104 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!--       *     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.*     Use is subject to license terms.--><html><head><title>Standard Web Project Properties Dialog Box: Libraries</title><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>Standard Web Project Properties Dialog Box: Libraries</h2><p> <small><a href="#seealso">See Also</a>&nbsp; </small> <p>You open the Standard Web Project Properties dialog box by right-clicking   any <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">        <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/glossary_standard.html">        <param name="viewerActivator" value="javax.help.LinkLabel">        <param name="viewerStyle" value="javax.help.Popup">        <param name="viewerSize" value="400,220">        <param name="text" value="standard Web project">        <param name="textFontSize" value="medium">        <param name="textFontFamily" value="SansSerif">        <param name="textFontStyle" value="italic">        <param name="textFontWeight" value="bold">        <param name="textColor" value="blue">    </object>&nbsp;and choosing Properties. <p>The Libraries page lets you specify the   classpath for the project, by setting the following properties: <ul><li><b>Java Platform:</b> Specifies the target Java platform against which all	source files are compiled and run. Available Java platforms are those that have been registered in the 	<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_platform_manager.html">Java Platform Manager</a>.</li>		<li><b>Compile.</b><br>	<b>Compile Tests.</b><br>	<b>Run Tests.</b> Specifies entries that are on each of the classpaths. 	You can add any of the following entries: 	<ul>  <li><b><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">Project</a>.</b> The build output, source     files, and Javadoc files of another IDE project.</li>  <li><b><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_libraries.html">Library</a>. </b>A collection of binary   files, source files, and Javadoc files.</li>  <li><b>JAR/Folder.</b> A JAR file or folder containing classes. The folder must contain classes. If the  folder does not contain classes but, for example, images instead, use the Packaging page to add them to  the project.</li></ul>By default, all items that are on the classpath are packaged in the WAR file. Uncheck     the Package checkbox for each classpath item that you want to exclude from the WAR file.</li><li><b>Build Required Projects (Libraries and additional WAR content).</b> By default, the projects required by the current project are built when the current    project is built. Required projects are projects on the classpath as well as projects    defined in the Packaging page. Unselect the Build Required Projects checkbox if you do    not want the required projects to be built when the current project is built.</li></ul><p><b>Notes:</b><ul>	<li>If you want to include a resource in the project, but not on the classpath,  use the Packaging page instead.  <li>If a JAR file is registered as a Java Class Library and has attached source     code and Javadoc documentation, you can just add the JAR file to the classpath     and the IDE finds the Javadoc documentation and source code automatically.     You should use the Add Library button if you want to add a library that contains     several JAR files. Adding a Java Class Library rather than a regular JAR file     also makes it easier for other developers you share the project with to fix     broken references to Javadoc documentation and source code.</li>  <li>Adding a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">    <param name="content" value="project/csh/glossary_freeform.html">    <param name="viewerActivator" value="javax.help.LinkLabel">    <param name="viewerStyle" value="javax.help.Popup">    <param name="viewerSize" value="400,160">    <param name="text" value="free-form project">    <param name="textFontSize" value="medium">    <param name="textFontFamily" value="SansSerif">    <param name="textFontStyle" value="italic">    <param name="textFontWeight" value="bold">    <param name="textColor" value="blue">  </object> to the classpath of a standard project does nothing     unless you have declared the free-form project's build outputs in the Output     page of its Project Properties dialog box.</li></ul><dl>    <dt><a name="seealso">See Also</a></dt>  <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd><dd> <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_free_about.html">About Free-Form Projects</a></dd><dd>Standard Web Project Properties Dialog Box:</dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerSources.html">Sources</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerFrameworks.html">Frameworks</a> </dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerCompile.html">Compiling</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerWar.html">Packaging</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerJavadoc.html">Documenting</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerRun.html">Run</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerWSServiceHost.html">Web Services</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerWSClientHost.html">Web Service Clients</a></dd>  </dl><hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font><table border="0" cellpadding="20"><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr></table></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Standard Web Project Properties Dialog Box: Libraries</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+<h2>Standard Web Project Properties Dialog Box: Libraries</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>You open the Standard Web Project Properties dialog box by right-clicking 
+  any <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/glossary_standard.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,220">
+        <param name="text" value="standard Web project">
+        <param name="textFontSize" value="medium">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+    </object>&nbsp;and choosing Properties. <p>The Libraries page lets you specify the 
+  classpath for the project, by setting the following properties: 
+
+<ul><li><b>Java Platform:</b> Specifies the target Java platform against which all
+	source files are compiled and run. Available Java platforms are those that have been registered in the 
+	<a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/proj_platform_manager.html">Java Platform Manager</a>.</li>
+	
+	<li><b>Compile.</b><br>
+	<b>Compile Tests.</b><br>
+	<b>Run Tests.</b> Specifies entries that are on each of the classpaths. 
+	You can add any of the following entries: 
+	<ul>
+  <li><b><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_dependencies.html">Project</a>.</b> The build output, source 
+    files, and Javadoc files of another IDE project.</li>
+  <li><b><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/compile/comp_libraries.html">Library</a>. </b>A collection of binary 
+  files, source files, and Javadoc files.</li>
+  <li><b>JAR/Folder.</b> A JAR file or folder containing classes. The folder must contain classes. If the
+  folder does not contain classes but, for example, images instead, use the Packaging page to add them to
+  the project.</li></ul>
+
+By default, all items that are on the classpath are packaged in the WAR file. Uncheck
+     the Package checkbox for each classpath item that you want to exclude from the WAR file.</li>
+
+<li><b>Build Required Projects (Libraries and additional WAR content).</b> 
+By default, the projects required by the current project are built when the current
+    project is built. Required projects are projects on the classpath as well as projects
+    defined in the Packaging page. Unselect the Build Required Projects checkbox if you do
+    not want the required projects to be built when the current project is built.</li></ul>
+
+
+<p><b>Notes:</b>
+<ul>
+	<li>If you want to include a resource in the project, but not on the classpath,  use the Packaging page instead.
+  <li>If a JAR file is registered as a Java Class Library and has attached source 
+    code and Javadoc documentation, you can just add the JAR file to the classpath 
+    and the IDE finds the Javadoc documentation and source code automatically. 
+    You should use the Add Library button if you want to add a library that contains 
+    several JAR files. Adding a Java Class Library rather than a regular JAR file 
+    also makes it easier for other developers you share the project with to fix 
+    broken references to Javadoc documentation and source code.</li>
+  <li>Adding a <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="project/csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,160">
+    <param name="text" value="free-form project">
+    <param name="textFontSize" value="medium">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object> to the classpath of a standard project does nothing 
+    unless you have declared the free-form project's build outputs in the Output 
+    page of its Project Properties dialog box.</li>
+</ul>
+<dl>
+    
+<dt><a name="seealso">See Also</a></dt> 
+ <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd>
+<dd> <a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_free_about.html">About Free-Form Projects</a></dd>
+<dd>Standard Web Project Properties Dialog Box:</dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerSources.html">Sources</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerFrameworks.html">Frameworks</a> </dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerCompile.html">Compiling</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerWar.html">Packaging</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerJavadoc.html">Documenting</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerRun.html">Run</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerWSServiceHost.html">Web Services</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerWSClientHost.html">Web Service Clients</a></dd>
+  </dl>
+
+<hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font>
+
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

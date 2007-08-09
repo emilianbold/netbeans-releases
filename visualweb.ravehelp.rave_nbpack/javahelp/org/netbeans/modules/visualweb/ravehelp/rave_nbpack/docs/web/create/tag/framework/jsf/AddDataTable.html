@@ -1,1 +1,94 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved.  *	  Use is subject to license terms.> --><html><head><meta name="lastupdated" content="9Jul07"><!-- p2 --><title>Insert JSF Data Table Dialog Box</title><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>Insert JSF Data Table Dialog Box</h2><p><small> <a href="#seealso">See Also</a> </small></p><p>You use the Insert JSF Data Table dialog box to generate JSF data table in   a JSP page. A JSF data table is a JSF component that provides a way of iterating   over each entry in a data source and displaying the entry's information in an   HTML table. You open the dialog box by opening any JSP file and dragging the   JSF Data Table item from the Palette window into the desired location in the   JSP file.</p><p>You can generate either of the following:</p><ul>  <li><b>An empty JSF data table.</b> The IDE enters the following code in the     JSP page:     <pre>&lt;f:view&gt;   &lt;h:form&gt;      &lt;h:dataTable value="#{arrayOrCollectionOf}" var="item"&gt;      &lt;/h:dataTable&gt;   &lt;/h:form&gt;&lt;/f:view&gt;</pre>    <p>In the generated code, you have to replace the <tt>arrayOrCollectionOf</tt>       variable with a property in a JSF managed bean that holds all of the items       in your data source. You then code a data column for each of the data source's       columns that you want to display in the file.   </li>  <li><b>A JSF data table from an entity class.</b> Specify the full entity class     name, including the package name. You can click Browse to search all classes     in the project contents and classpath.     <p> The IDE enters the following code in the page:     <pre>&lt;f:view&gt;    &lt;h:form&gt;        &lt;h2&gt;&lt;h:outputText value="List"/&gt;&lt;/h2&gt;        &lt;h:dataTable value="#{arrayOrCollectionOf<i>class-name</i>}" var="item"&gt;            &lt;h:column&gt;                &lt;f:facet name="header"&gt;                    &lt;h:outputText value="<i>column1</i>"/&gt;                &lt;/f:facet&gt;                &lt;h:outputText value="#{item.<i>column1</i>}"/&gt;            &lt;/h:column&gt;            ...        &lt;/h:dataTable&gt;    &lt;/h:form&gt;&lt;/f:view&gt;</pre>    <p>In the generated code, you have to replace the <tt>arrayOrCollectionOf<i>class-name</i></tt>       variable with a property in a JSF managed bean that holds all of the entries       in the data source. Note that the JSF managed bean is often not the entity       class itself but a separate controller class.  </li></ul><p><b>Notes:</b></p><ul class="tip">  <li>The IDE generates a <tt>column</tt> entity for each column of data to which     the entity class provides access. Remove any of the <tt>column</tt> entities     for columns that you do not want to display in your JSP file.</li>  <li>In order to use JSF components, you have to declare the JSF tag libraries     in the JSP page by adding the following to the top of the file:     <pre>&lt;%@taglib prefix="f" uri="http://java.sun.com/jsf/core"%&gt;&lt;%@taglib prefix="h" uri="http://java.sun.com/jsf/html"%&gt;</pre>  </li></ul><dl>   <dt><a name="seealso">See Also</a></dt>  <dd><a href="../about_framework.html">About Web Application Frameworks</a></dd>  <dd> <a href="../framework_jsf_add.html">Adding JSF Support to an Existing Application</a></dd>  <dd> <a href="../about_crud.html">About CRUD Applications</a></dd>  <dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/persistence/general/persistence_entityclasses.html">Creating     an Entity Class</a></dd>  <dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/persistence/general/persistence_fromdb.html">Generating     Persistent Entity Classes from a Database</a></dd></dl> <hr><small><a href="../../../../../credits.html">Legal Notices</a></small> <table cellpadding="20" border="0"> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> <tr><td>&nbsp;</td></tr> </table> </body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2007 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+<head>
+<meta name="lastupdated" content="9Jul07">
+<!-- p2 -->
+
+<title>Insert JSF Data Table Dialog Box</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+<h2>Insert JSF Data Table Dialog Box</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p>
+<p>You use the Insert JSF Data Table dialog box to generate JSF data table in 
+  a JSP page. A JSF data table is a JSF component that provides a way of iterating 
+  over each entry in a data source and displaying the entry's information in an 
+  HTML table. You open the dialog box by opening any JSP file and dragging the 
+  JSF Data Table item from the Palette window into the desired location in the 
+  JSP file.</p>
+<p>You can generate either of the following:</p>
+<ul>
+  <li><b>An empty JSF data table.</b> The IDE enters the following code in the 
+    JSP page: 
+    <pre>&lt;f:view&gt;
+   &lt;h:form&gt;
+      &lt;h:dataTable value="#{arrayOrCollectionOf}" var="item"&gt;
+      &lt;/h:dataTable&gt;
+   &lt;/h:form&gt;
+&lt;/f:view&gt;</pre>
+    <p>In the generated code, you have to replace the <tt>arrayOrCollectionOf</tt> 
+      variable with a property in a JSF managed bean that holds all of the items 
+      in your data source. You then code a data column for each of the data source's 
+      columns that you want to display in the file. 
+  </li>
+  <li><b>A JSF data table from an entity class.</b> Specify the full entity class 
+    name, including the package name. You can click Browse to search all classes 
+    in the project contents and classpath. 
+    <p> The IDE enters the following code in the page: 
+    <pre>&lt;f:view&gt;
+    &lt;h:form&gt;
+        &lt;h2&gt;&lt;h:outputText value="List"/&gt;&lt;/h2&gt;
+        &lt;h:dataTable value="#{arrayOrCollectionOf<i>class-name</i>}" var="item"&gt;
+            &lt;h:column&gt;
+                &lt;f:facet name="header"&gt;
+                    &lt;h:outputText value="<i>column1</i>"/&gt;
+                &lt;/f:facet&gt;
+                &lt;h:outputText value="#{item.<i>column1</i>}"/&gt;
+            &lt;/h:column&gt;
+            ...
+        &lt;/h:dataTable&gt;
+    &lt;/h:form&gt;
+&lt;/f:view&gt;</pre>
+    <p>In the generated code, you have to replace the <tt>arrayOrCollectionOf<i>class-name</i></tt> 
+      variable with a property in a JSF managed bean that holds all of the entries 
+      in the data source. Note that the JSF managed bean is often not the entity 
+      class itself but a separate controller class.
+  </li>
+</ul>
+<p><b>Notes:</b></p>
+<ul class="tip">
+  <li>The IDE generates a <tt>column</tt> entity for each column of data to which 
+    the entity class provides access. Remove any of the <tt>column</tt> entities 
+    for columns that you do not want to display in your JSP file.</li>
+  <li>In order to use JSF components, you have to declare the JSF tag libraries 
+    in the JSP page by adding the following to the top of the file: 
+    <pre>&lt;%@taglib prefix="f" uri="http://java.sun.com/jsf/core"%&gt;
+&lt;%@taglib prefix="h" uri="http://java.sun.com/jsf/html"%&gt;</pre>
+  </li>
+</ul>
+
+<dl> 
+  <dt><a name="seealso">See Also</a></dt>
+  <dd><a href="../about_framework.html">About Web Application Frameworks</a></dd>
+  <dd> <a href="../framework_jsf_add.html">Adding JSF Support to an Existing Application</a></dd>
+  <dd> <a href="../about_crud.html">About CRUD Applications</a></dd>
+  <dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/persistence/general/persistence_entityclasses.html">Creating 
+    an Entity Class</a></dd>
+  <dd><a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/persistence/general/persistence_fromdb.html">Generating 
+    Persistent Entity Classes from a Database</a></dd>
+</dl> 
+<hr>
+<small><a href="../../../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+</body></html>
+

@@ -1,1 +1,72 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!-- *     	  Copyright © 2003 Sun Microsystems, Inc. All rights reserved.  *	  Use is subject to license terms.> --><html><head><meta name="lastupdated" content="4Jul07"><!-- p2 --><title>Setting Permissions for an Applet</title><link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>Setting Permissions for an Applet</h2><p><small> <a href="#seealso">See Also</a> </small></p><p>By default, applets do not have access to resources on a client's computer, suchas threads and disk operations. An applet's permissions are defined in its <tt>applet.policy</tt> file.If you have an applet policy file, you can specify its location in the IDE. Then,when you run the application, the IDE uses the applet policy file that you specified. If you do not specify an applet policy file, the IDE generates one for you when you run the applet. The applet policy file that the IDE generates for you grants all permissions to the applet. You can use the Source Editor to modify the policy file, so that appropriate security checks are done.</p><p><b>To specify the location of an existing applet policy file:</b></p><ol><li>Right-click the project node and choose Properties.</li>	<li>In the left pane of the Project Properties dialog box, select Run.</li>	<li>In VM Options, specify the location of the applet policy file. For example,	use the following setting to specify that the applet policy file is in the	project's root folder:	<p><tt>-Djava.security.policy=applet.policy</tt></p></li>	<li>Click OK.</li></ol><p><b>To use the IDE to generate an applet policy file:</b></p><ol><li><a href="applet_run.html">Run the applet</a>.	<p>The IDE creates an applet policy file.</p></li>	<li>In the Files window, expand the project node and double-click the <tt>applet.policy</tt> file.</li>	<li>In the Source Editor, set permissions according to your needs.</li>	<li>Right-click the project node and choose Properties.</li>	<li>In the Project Properties dialog box, select Run.</li>	<li>In VM Options, note that the IDE has specified the location of the applet policy file. 	By default, the applet policy file is in the	project's root folder:	<p><tt>-Djava.security.policy=applet.policy</tt></p></li>	<li>Click OK.</li></ol><dl><dt><a name="seealso">See Also</a></dt><dd><a href="applet_create.html">Creating an Applet</a></dd><dd><a href="applet_run.html">Running an Applet</a></dd><dd><a href="../../build/build_externalresource.html">Packaging a Resource in a WAR File</a></dd><dd><a href="../jsp/jsp_useapplet.html">Accessing an Applet from a JSP Page</a> </dd></dl><hr><small><a href="../../../credits.html">Legal Notices</a></small> <table cellpadding="20" border="0">  <tr>    <td>&nbsp;</td>  </tr>  <tr>    <td>&nbsp;</td>  </tr></table>   </body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2003 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+> -->
+<html>
+<head>
+<meta name="lastupdated" content="4Jul07">
+<!-- p2 -->
+<title>Setting Permissions for an Applet</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Setting Permissions for an Applet</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p>
+<p>By default, applets do not have access to resources on a client's computer, such
+as threads and disk operations. An applet's permissions are defined in its <tt>applet.policy</tt> file.
+If you have an applet policy file, you can specify its location in the IDE. Then,
+when you run the application, the IDE uses the applet policy file that you specified.
+ If you do not specify an applet policy file, the IDE generates one for you
+ when you run the applet. The applet policy file that the IDE generates for you
+ grants all permissions to the applet. You can use the Source Editor to modify
+ the policy file, so that appropriate security checks are done.</p>
+<p><b>To specify the location of an existing applet policy file:</b></p>
+<ol><li>Right-click the project node and choose Properties.</li>
+	<li>In the left pane of the Project Properties dialog box, select Run.</li>
+	<li>In VM Options, specify the location of the applet policy file. For example,
+	use the following setting to specify that the applet policy file is in the
+	project's root folder:
+	<p><tt>-Djava.security.policy=applet.policy</tt></p></li>
+	<li>Click OK.</li>
+</ol>
+<p><b>To use the IDE to generate an applet policy file:</b></p>
+<ol><li><a href="applet_run.html">Run the applet</a>.
+	<p>The IDE creates an applet policy file.</p></li>
+	<li>In the Files window, expand the project node and double-click the <tt>applet.policy</tt> file.</li>
+	<li>In the Source Editor, set permissions according to your needs.</li>
+	<li>Right-click the project node and choose Properties.</li>
+	<li>In the Project Properties dialog box, select Run.</li>
+	<li>In VM Options, note that the IDE has specified the location of the applet policy file. 
+	By default, the applet policy file is in the
+	project's root folder:
+	<p><tt>-Djava.security.policy=applet.policy</tt></p></li>
+	<li>Click OK.</li>
+</ol>
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="applet_create.html">Creating an Applet</a></dd>
+<dd><a href="applet_run.html">Running an Applet</a></dd>
+<dd><a href="../../build/build_externalresource.html">Packaging a Resource in a WAR File</a></dd>
+<dd><a href="../jsp/jsp_useapplet.html">Accessing an Applet from a JSP Page</a> </dd>
+</dl>
+
+
+
+<hr>
+<small><a href="../../../credits.html">Legal Notices</a></small> 
+<table cellpadding="20" border="0">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table> 
+
+  </body>
+</html>
+

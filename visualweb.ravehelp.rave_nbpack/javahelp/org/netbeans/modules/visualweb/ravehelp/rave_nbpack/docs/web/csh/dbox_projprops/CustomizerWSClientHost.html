@@ -1,1 +1,168 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><!--       *     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.*     Use is subject to license terms.--><html><head>	<title>Standard Web Project Properties Dialog Box: JAX-RPC Web Service Clients</title>	<link rel="StyleSheet" href="ide.css" type="text/css"></head><body><h2>Standard Web Project Properties Dialog Box: JAX-RPC Web Service Clients</h2><p> <small><a href="#seealso">See Also</a>&nbsp; </small> <p>You open the Standard Web Project Properties dialog box by right-clicking   any <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">        <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/glossary_standard.html">        <param name="viewerActivator" value="javax.help.LinkLabel">        <param name="viewerStyle" value="javax.help.Popup">        <param name="viewerSize" value="400,220">        <param name="text" value="standard Web project">        <param name="textFontSize" value="medium">        <param name="textFontFamily" value="SansSerif">        <param name="textFontStyle" value="italic">        <param name="textFontWeight" value="bold">        <param name="textColor" value="blue">    </object>&nbsp;and choosing Properties. <p>The JAX-RPC Web Service Clients page lets   you preconfigure the features that are used by the <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_build.html"><tt>wscompile</tt> tool</a>   to compile a <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/consume/about_wsc.html">JAX-RPC web service client</a>.       <ul class="note">        <li>If the project does not contain JAX-RPC web service clients, the JAX-RPC Web Service Clients page does not exist.</li>    </ul>  <p><b>Features:</b></p><table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the   element. The right column lists the purpose.">  <tr valign="top">     <th scope="col" align="left">Feature</th>     <th scope="col" align="left">Effect on Web Service Client</th>  </tr>  <tr valign="top"> 	  <td><tt>datahandleronly </tt></td>	  <td>Maps attachments to the <tt>DataHandler</tt> type.        </td>  </tr>  <tr valign="top"> 	  <td><tt>donotoverride </tt></td>	  <td>No regeneration of classes that already exist on the classpath.</td>  </tr>  <tr valign="top"> 	  <td><tt>donounwrap </tt></td>	  <td>Disables unwrapping of document/literal wrapper elements in WSI mode (default).</td>  </tr>  <tr valign="top"> 	  <td><tt>explicitcontext </tt></td>	<td>Turns on explicit service context mapping.</td> </tr> <tr valign="top"> 	  <td><tt>jaxbenumtype</tt></td>	<td>Maps anonymous enumeration to its base type.</td> </tr> <tr valign="top"> 	  <td><tt>nodatabinding </tt></td>	<td>Turns off data binding for literal encoding.</td>  </tr>  <tr valign="top"> 	  <td><tt>noencodedtypes </tt></td>	  <td>Turns off encoding type information.</td>         </tr>  <tr valign="top"> 	  <td><tt>nomultirefs</tt></td>	  <td>Turns off support for multiple references.</td>  </tr>  <tr valign="top"> 	  <td><tt>norpcstructures</tt></td>	  <td>No generation of RPC structures (-import only).</td>  </tr>  <tr valign="top"> 	  <td><tt>novalidation</tt></td>	  <td>Turns off full validation of imported WSDL documents.</td>  </tr>  <tr valign="top"> 	  <td><tt>resolveidref</tt></td>	  <td>Resolve xsd:IDREF.</td>  </tr>  <tr valign="top"> 	  <td><tt>searchschema</tt></td>	<td>Searches schema aggressively for types.</td>  </tr>  <tr valign="top"> 	  <td><tt>serializeinterfaces</tt></td>	  <td>Turns on direct serialization of interface types.</td>  </tr>  <tr valign="top"> 	  <td><tt>strict</tt></td>	  <td>Generates code strictly compliant with JAXRPC Specification.</td>  </tr>  <tr valign="top"> 	  <td><tt>unwrap</tt></td>	  <td>Enables unwrapping of document/literal wrapper elements in WSI mode.</td>  </tr>  <tr valign="top"> 	  <td><tt>wsi</tt></td>	  <td>Checks for compliance with the WSI-Basic Profile, which is a specification for improved 	      interoperability.	      For example, the WS-I Basic Profile prohibits the use of <tt>rpc/encoded</tt>. Therefore, if you set	      the <tt>wsi</tt> feature, a warning will be generated when you build a web service client that uses	      a WSDL file that uses <tt>rpc/encoded</tt>.</td>  </tr></table><dl>    <dt><a name="seealso">See Also</a></dt> <dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd><dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_free_about.html">About Free-Form Projects</a></dd><dd>Standard Web Project Properties Dialog Box:</dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerSources.html">Sources</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerFrameworks.html">Frameworks</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerLibraries.html">Libraries</a> </dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerCompile.html">Compiling</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerWar.html">Packaging</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerJavadoc.html">Documenting</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerRun.html">Run</a></dd><dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerWSServiceHost.html">Web Services</a></dd></dl><hr><font size=-2><a href="../../../credits.html">Legal Notices</a></font> <table border="0" cellpadding="20"><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr><tr><td>&nbsp;</td></tr></table></body></html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+	<title>Standard Web Project Properties Dialog Box: JAX-RPC Web Service Clients</title>
+	
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/ide.css" type="text/css">
+</head>
+<body>
+<h2>Standard Web Project Properties Dialog Box: JAX-RPC Web Service Clients</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>You open the Standard Web Project Properties dialog box by right-clicking 
+  any <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+        <param name="content" value="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/csh/glossary_standard.html">
+        <param name="viewerActivator" value="javax.help.LinkLabel">
+        <param name="viewerStyle" value="javax.help.Popup">
+        <param name="viewerSize" value="400,220">
+        <param name="text" value="standard Web project">
+        <param name="textFontSize" value="medium">
+        <param name="textFontFamily" value="SansSerif">
+        <param name="textFontStyle" value="italic">
+        <param name="textFontWeight" value="bold">
+        <param name="textColor" value="blue">
+    </object>&nbsp;and choosing Properties. <p>The JAX-RPC Web Service Clients page lets 
+  you preconfigure the features that are used by the <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/consume/wsc_build.html"><tt>wscompile</tt> tool</a> 
+  to compile a <a href="nbdocs:/org/netbeans/modules/j2ee/platform/docs/webservice/consume/about_wsc.html">JAX-RPC web service client</a>.
+ 
+      <ul class="note">
+        <li>If the project does not contain JAX-RPC web service clients, the JAX-RPC Web Service Clients page does not exist.</li>
+    </ul>
+  
+<p><b>WsComplie features available for the selected web service client:</b></p>
+
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   element. The right column lists the purpose.">
+  <tr valign="top"> 
+    <th scope="col" align="left">Feature</th> 
+    <th scope="col" align="left">Effect on Web Service Client</th>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>datahandleronly </tt></td>
+	  <td>Maps attachments to the <tt>DataHandler</tt> type.
+    </td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>donotoverride </tt></td>
+	  <td>No regeneration of classes that already exist on the classpath.</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>donounwrap </tt></td>
+	  <td>Disables unwrapping of document/literal wrapper elements in WSI mode (default).</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>explicitcontext </tt></td>
+	<td>Turns on explicit service context mapping.</td>
+ </tr>
+ <tr valign="top"> 
+	  <td><tt>jaxbenumtype</tt></td>
+	<td>Maps anonymous enumeration to its base type.</td>
+ </tr>
+ <tr valign="top"> 
+	  <td><tt>nodatabinding </tt></td>
+	<td>Turns off data binding for literal encoding.</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>noencodedtypes </tt></td>
+	  <td>Turns off encoding type information.</td>
+       
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>nomultirefs</tt></td>
+	  <td>Turns off support for multiple references.</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>norpcstructures</tt></td>
+	  <td>No generation of RPC structures (-import only).</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>novalidation</tt></td>
+	  <td>Turns off full validation of imported WSDL documents.</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>resolveidref</tt></td>
+	  <td>Resolve xsd:IDREF.</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>searchschema</tt></td>
+	<td>Searches schema aggressively for types.</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>serializeinterfaces</tt></td>
+	  <td>Turns on direct serialization of interface types.</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>strict</tt></td>
+	  <td>Generates code strictly compliant with JAX-RPC Specification.</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>unwrap</tt></td>
+	  <td>Enables unwrapping of document/literal wrapper elements in WSI mode.</td>
+  </tr>
+  <tr valign="top"> 
+	  <td><tt>wsi</tt></td>
+	  <td>Checks for compliance with the WSI-Basic Profile, which is a specification for improved 
+	      interoperability.
+	      For example, the WS-I Basic Profile prohibits the use of <tt>rpc/encoded</tt>. Therefore, if you set
+	      the <tt>wsi</tt> feature, a warning will be generated when you build a web service client that uses
+	      a WSDL file that uses <tt>rpc/encoded</tt>.</td>
+  </tr>
+</table>
+<p><b>Additional WsCompile Options :</b></p>
+<table border="1" cellpadding="5" cellspacing="0" summary="The left column lists the
+   element. The right column lists the purpose.">
+  <tr valign="top"> 
+    <th scope="col" align="left">Feature</th> 
+    <th scope="col" align="left">Effect on Web Service Client</th>
+  </tr>
+  <tr valign="top">
+    <td><tt>debug</tt></td>
+    <td>Generates debugging information. </td>
+  </tr>
+  <tr valign="top">
+    <td><tt>optimize</tt></td>
+    <td>Optimizes generated coded. </td>
+  </tr>
+  <tr valign="top">
+    <td><tt>xSerializable</tt></td>
+    <td>Generates value types that implement Serializable interface.</td>
+  </tr>
+  <tr valign="top">
+    <td><tt>xPrintStackTrace</tt></td>
+    <td>Prints exception stack traces.</td>
+  </tr>
+  <tr valign="top">
+    <td><tt>verbose
+	</tt></td>
+    <td>Outputs messages about what the compiler is doing.</td>
+  </tr>
+</table>
+<p><strong></strong></p>
+<dl>
+    
+<dt><a name="seealso">See Also</a></dt> 
+<dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_stand_about.html">About Standard Projects</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.java.helpset/org/netbeans/modules/java/helpset/docs/project/proj_free_about.html">About Free-Form Projects</a></dd>
+<dd>Standard Web Project Properties Dialog Box:</dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerSources.html">Sources</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerFrameworks.html">Frameworks</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerLibraries.html">Libraries</a> </dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerCompile.html">Compiling</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerWar.html">Packaging</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerJavadoc.html">Documenting</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="WebCustomizerRun.html">Run</a></dd>
+<dd>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="CustomizerWSServiceHost.html">Web Services</a></dd>
+
+</dl>
+
+<hr>
+<font size=-2><a href="../../../credits.html">Legal Notices</a></font> 
+<table border="0" cellpadding="20">
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>
