@@ -90,7 +90,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         ProjectRootNode prn = pto.getProjectRootNode(TEST_PROJECT_NAME);
         prn.select();
 
-        waitNoEvent(60000);
+        waitNoEvent(45000);
 
         String path = "Source Packages|" + PACKAGE_NAME + "|" + CLASS_NAME + ".java"; // NOI18N
         //p(path);
@@ -113,7 +113,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
                                         + File.separator
                                         +"Bundle.properties");
 
-        String key = "FrameWithBundleToMove.jButton1.text";
+        String key = "FrameWithBundleToMove.lanButton.text";
         assertTrue("Key \"" + key + "\" not found in Bundle.properties file.",
                 findInFile( key, sourceFilePath)); // NOI18N
     }

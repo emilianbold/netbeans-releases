@@ -189,23 +189,50 @@ public abstract class ExtJellyTestCase extends JellyTestCase {
      * @return node
      */
     public Node openFile(String fileName) {
+        return getProjectFileNode(fileName, true, false);
+    }
+
+    /**
+     * Gets file node from nb project tree
+     * @param fileName
+     * @return node
+     */
+    private Node getProjectFileNode(String filePath, boolean openFileInEditor, boolean containsFilePathPackage) {
         ProjectsTabOperator pto = new ProjectsTabOperator();
         ProjectRootNode prn = pto.getProjectRootNode(TEST_PROJECT_NAME);
         prn.select();
 
-        String path = "Source Packages|" + TEST_PACKAGE_NAME + "|" + fileName; // NOI18N
+        String path = "Source Packages|";
+        if (!containsFilePathPackage) {
+            path += TEST_PACKAGE_NAME + "|"; // NOI18N
+        }
+        path += filePath;
+        
         //p(path);
         Node formnode = new Node(prn, path); // NOI18N
         formnode.setComparator(new Operator.DefaultStringComparator(true, false));
         formnode.select();
 
-        OpenAction openAction = new OpenAction();
-        openAction.perform(formnode);
+        if (openFileInEditor) {
+            OpenAction openAction = new OpenAction();
+            openAction.perform(formnode);            
+        }
 
         return formnode;
     }
+    
+    public Node getProjectFileNode(String fileName) {
+        return getProjectFileNode(fileName, false,false);
+    }
+    
+    public Node getProjectFileNode(String fileName, boolean containsFilePathPackage) {
+        return getProjectFileNode(fileName, false, containsFilePathPackage);
+    }
 
-
+    public Node getProjectFileNode(String fileName, String packageName) {
+        return getProjectFileNode(packageName+"|"+fileName, false,true);
+    }
+    
     public String createBeanFormFile(String beanClassName) {
         return createFile(TEST_PROJECT_NAME, TEST_PACKAGE_NAME, "Swing GUI Forms", "Bean Form", "MyBeanForm", beanClassName); // NOI18N
     }

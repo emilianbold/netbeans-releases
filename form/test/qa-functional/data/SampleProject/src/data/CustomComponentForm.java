@@ -1,19 +1,19 @@
 /*
- * FrameWithBundleToMove.java
+ * CustomComponentForm.java
  *
- * Created on 7. srpen 2007, 14:37
+ * Created on August 8, 2007, 11:14 AM
  */
 
 package data;
 
 /**
  *
- * @author  Jirka
+ * @author  jirka
  */
-public class FrameWithBundleToMove extends javax.swing.JFrame {
+public class CustomComponentForm extends javax.swing.JFrame {
     
-    /** Creates new form FrameWithBundleToMove */
-    public FrameWithBundleToMove() {
+    /** Creates new form CustomComponentForm */
+    public CustomComponentForm() {
         initComponents();
     }
     
@@ -25,28 +25,32 @@ public class FrameWithBundleToMove extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        lanButton = new javax.swing.JButton();
+        customButton1 = new data.components.CustomButton();
+        jButton1 = data.components.CustomButton.createButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("data/Bundle"); // NOI18N
-        lanButton.setText(bundle.getString("FrameWithBundleToMove.lanButton.text")); // NOI18N
+        jButton1.setText("jButton1");
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(138, 138, 138)
-                .add(lanButton)
-                .addContainerGap(155, Short.MAX_VALUE))
+                .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(customButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jButton1))
+                .addContainerGap(274, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(124, 124, 124)
-                .add(lanButton)
-                .addContainerGap(153, Short.MAX_VALUE))
+                .addContainerGap()
+                .add(customButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(44, 44, 44)
+                .add(jButton1)
+                .addContainerGap(196, Short.MAX_VALUE))
         );
 
         pack();
@@ -58,13 +62,14 @@ public class FrameWithBundleToMove extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new FrameWithBundleToMove().setVisible(true);
+                new CustomComponentForm().setVisible(true);
             }
         });
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton lanButton;
+    private data.components.CustomButton customButton1;
+    private javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables
     
 }
