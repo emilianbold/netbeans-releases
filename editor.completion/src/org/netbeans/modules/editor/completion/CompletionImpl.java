@@ -712,8 +712,15 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         if (activeProviders != null) {
             completionAutoPopupTimer.stop();
             synchronized(this) {
-                if (explicitQuery && completionResult != null)
+                if (explicitQuery && completionResult != null) {
+                    for (CompletionResultSetImpl rSet : completionResult.resultSets) {
+                        if (rSet.getQueryType() == CompletionProvider.COMPLETION_ALL_QUERY_TYPE)
+                            return;
+                        else
+                            break;
+                    }
                     queryType = CompletionProvider.COMPLETION_ALL_QUERY_TYPE;
+                }
             }
             completionCancel(); // cancel possibly pending query
             completionQuery(delayQuery, queryType);
