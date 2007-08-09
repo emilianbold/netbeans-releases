@@ -42,17 +42,7 @@ public class ModuleFactory {
             throws IOException {
         return new StandardModule(mgr, ev, jar, history, reloadable, autoload, eager);
     }
-    /**
-     * This method creates a "fixed" module. Fixed modules cannot be
-     * realoaded, are always enabled and are typically present on the
-     * classpath.
-     * @see FixedModule
-     */
-    public Module createFixed(Manifest mani, Object history,
-            ClassLoader loader, ModuleManager mgr, Events ev)
-            throws InvalidException {
-        return createFixed(mani, history, loader, false, false, mgr, ev);
-    }
+
     /**
      * This method creates a "fixed" module. Fixed modules cannot be
      * realoaded, are always enabled and are typically present on the

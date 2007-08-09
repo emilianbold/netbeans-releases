@@ -170,9 +170,9 @@ public class ModuleFactoryTest extends ModuleManagerTest {
             return super.create(jar, history, reloadable, autoload, eager, mgr, ev);
         }
         
-        public Module createFixed(Manifest mani, Object history, ClassLoader loader, ModuleManager mgr, Events ev) throws InvalidException {
+        public @Override Module createFixed(Manifest mani, Object history, ClassLoader loader, boolean autoload, boolean eager, ModuleManager mgr, Events ev) throws InvalidException {
             numberOfFixed++;
-            return super.createFixed(mani, history, loader, mgr, ev);
+            return super.createFixed(mani, history, loader, autoload, eager, mgr, ev);
         }
         
         public boolean removeBaseClassLoader() {
