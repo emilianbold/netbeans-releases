@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/debug-commons-java-0.7.3.jar</runtime-relative-path>
-                <binary-origin>../external/debug-commons-java-0.7.3.jar</binary-origin>
+                <binary-origin>external/debug-commons-java-0.7.3.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
