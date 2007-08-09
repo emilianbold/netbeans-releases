@@ -31,6 +31,7 @@ import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xpath.LocationStep;
 import org.netbeans.modules.xml.xpath.XPathCoreFunction;
 import org.netbeans.modules.xml.xpath.XPathCoreOperation;
+import org.netbeans.modules.xml.xpath.XPathExpression;
 import org.netbeans.modules.xml.xpath.XPathExpressionPath;
 import org.netbeans.modules.xml.xpath.XPathExtensionFunction;
 import org.netbeans.modules.xml.xpath.XPathLocationPath;
@@ -41,7 +42,8 @@ import org.netbeans.modules.xslt.mapper.model.PredicatedAxiComponent;
 import org.netbeans.modules.xslt.model.XslComponent;
 
 /**
- * The visitor is intended to convert the
+ * The visitor is intended to look for predicate expressions 
+ * inside of an XPath.
  *
  * @author nk160297
  */
@@ -64,16 +66,21 @@ public class PredicateFinderVisitor extends AbstractXPathVisitor {
     public void visit(XPathLocationPath expr) {
         myLocationPath = expr;
         //
-        if (!expr.getAbsolute()) {
-            assert false : "Only absolute location pathes are supported now."; // NOI18N
-        }
+//        if (!expr.getAbsolute()) {
+//            assert false : "Only absolute location pathes are supported now."; // NOI18N
+//        }
         //
         LocationPathConverter converter = new LocationPathConverter();
-        converter.processLocationPath(expr);
+        converter.processLocationPath(expr.getSteps());
     }
     
     public void visit(XPathExpressionPath expressionPath) {
-        assert false : "Variables are not supported in the XSLT mapper yet"; // NOI18N
+        XPathExpression rootExpr = expressionPath.getRootExpression();
+        rootExpr.accept(this);
+        //
+        LocationPathConverter converter = new LocationPathConverter();
+        converter.processLocationPath(expressionPath.getSteps());
+        // assert false : "Variables are not supported in the XSLT mapper yet"; // NOI18N
     }
     
     public void visit(XPathVariableReference vReference) {
@@ -109,10 +116,9 @@ public class PredicateFinderVisitor extends AbstractXPathVisitor {
             }
         }
         
-        public void processLocationPath(XPathLocationPath expr) {
+        public void processLocationPath(LocationStep[] stepArr) {
             processingAborted = false;
             //
-            LocationStep[] stepArr = expr.getSteps();
             for (LocationStep step : stepArr) {
                 if (!processingAborted) {
                     // ignore attributes. Process only subelements
@@ -181,7 +187,12 @@ public class PredicateFinderVisitor extends AbstractXPathVisitor {
                 }
             }
             //
-            assert soughtChildComp != null;
+            if (soughtChildComp == null) {
+                // Error. The location path contains a step with unknown AXIOM type
+                // The predicate manager can't continue analysing the path!
+                processingAborted = true;
+                return;
+            }
             //
             XPathPredicateExpression[] predArr = step.getPredicates();
             if (predArr == null || predArr.length == 0) {
