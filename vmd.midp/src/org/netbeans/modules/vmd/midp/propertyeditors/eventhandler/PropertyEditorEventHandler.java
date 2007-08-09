@@ -75,6 +75,13 @@ public final class PropertyEditorEventHandler extends DesignPropertyEditor {
     }
 
     @Override
+    public void init(DesignComponent component) {
+        if (component != null) {
+            this.component = new WeakReference<DesignComponent>(component);
+        }
+    }
+    
+    @Override
     public Component getCustomEditor() {
         if (component != null && component.get() != null) {
             final DesignComponent _component = component.get();
