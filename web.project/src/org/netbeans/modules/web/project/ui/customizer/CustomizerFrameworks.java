@@ -257,6 +257,10 @@ public class CustomizerFrameworks extends javax.swing.JPanel implements HelpCtx.
             // ugly, i know...
             WizardDescriptor.Panel<Void>[] wizardPanels = null;
             wizardDescriptor = new WizardDescriptor(wizardPanels, null);
+            String j2eeVersion = (String)uiProperties.get(WebProjectProperties.J2EE_PLATFORM);
+            String serverInstanceID = (String)uiProperties.get(WebProjectProperties.J2EE_SERVER_INSTANCE);
+            wizardDescriptor.putProperty("j2eeLevel", j2eeVersion);
+            wizardDescriptor.putProperty("serverInstanceID", serverInstanceID);
             frameworkConfigurationPanel.readSettings(wizardDescriptor);
         }
 
