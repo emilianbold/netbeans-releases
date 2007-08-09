@@ -20,6 +20,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -168,12 +169,14 @@ abstract class OperationValidator {
                 Set<Module> toUninstall = requiredForUninstall (new HashSet<Module> (), new LinkedHashSet<Module> (modules), mm);
                 toUninstall.removeAll (modules);
                 for (Module module : toUninstall) {
-                    if (! module.isFixed ()) { // XXX: check essential modules
-                        // !!! e.g. applemodule can be found in the list for uninstall but has UpdateUnit nowhere else MacXOS
-                        UpdateUnit unit = Utilities.toUpdateUnit (module);
-                        if (unit != null) {
-                            retval.add (unit.getInstalled ());
-                        }
+                    if (Utilities.isEssentialModule (module)) {
+                        LOGGER.log (Level.WARNING, "Essential module cannot be planned for uninstall but " + module);
+                        continue;
+                    }
+                    // !!! e.g. applemodule can be found in the list for uninstall but has UpdateUnit nowhere else MacXOS
+                    UpdateUnit unit = Utilities.toUpdateUnit (module);
+                    if (unit != null) {
+                        retval.add (unit.getInstalled ());
                     }
                 }
             }
@@ -181,39 +184,17 @@ abstract class OperationValidator {
         }
         
         private static Set<Module> requiredForUninstall (Set<Module> resultToUninstall, final Set<Module> requestedToUninstall, ModuleManager mm) {
-            resultToUninstall.addAll (requestedToUninstall);            
-            
-            // loop over all dependencies and add as many as possible for KIT_MODULE
-            // do traversal down
-            Set<Module> candidatesToUninstall = new HashSet<Module> ();
-            for (Module m : requestedToUninstall) {
-                if (Utilities.isKitModule (m)) {
-                    candidatesToUninstall.addAll (Utilities.findRequiredModules (m, mm, true));
-                    LOGGER.log (Level.FINE, "Inspect modules this module depends upon for KIT_MODULE " +
-                            m.getCodeNameBase () + ". The modules has added " + candidatesToUninstall.size ());
-                }
-            }
-            requestedToUninstall.addAll (candidatesToUninstall);
-            for (Module depM : candidatesToUninstall) {
-                Set<Module> depends = Utilities.findDependingModules (depM, mm);
-                if (! requestedToUninstall.containsAll (depends)) {
-                    LOGGER.log (Level.FINE, "The module " + depM + " is shared and cannot be uninstalled now.");
-                    requestedToUninstall.remove (depM);
-                } else {
-                    LOGGER.log (Level.FINEST, "The module " + depM + " is not needed anymore and can be uninstalled.");
-                }
-            }
-            
+            resultToUninstall.addAll (getRequiredModules (requestedToUninstall, mm));
+
             // do traversal up
             Set<Module> dependenciesToUninstall = new HashSet<Module> ();
             for (Module m : resultToUninstall) {
                 dependenciesToUninstall.addAll (Utilities.findDependingModules (m, mm));
-                LOGGER.log (Level.FINE, "Inspect modules depending on this module " +
-                        m.getCodeNameBase () + ". The modules has added " + dependenciesToUninstall.size ());
             }
                 
             resultToUninstall.addAll (requestedToUninstall);
             resultToUninstall.addAll (dependenciesToUninstall);
+            
             return resultToUninstall;
         }        
     }
@@ -333,33 +314,19 @@ abstract class OperationValidator {
                 return Collections.emptyList ();
             } 
             
-            Set<UpdateElement> retval = new HashSet<UpdateElement> ();
-            
-            // loop over all dependencies and add as many as possible for KIT_MODULE
-            // do traversal down
-            Set<Module> requestedToDisable = new HashSet<Module> (modules);
-            Set<Module> candidatesToDisable = new HashSet<Module> ();
-            for (Module m : requestedToDisable) {
-                if (Utilities.isKitModule (m)) {
-                    candidatesToDisable.addAll (Utilities.findRequiredModules (m, mm, true));
-                    LOGGER.log (Level.FINE, "Inspect modules this module depends upon for KIT_MODULE " +
-                            m.getCodeNameBase () + ". The modules has added " + candidatesToDisable.size ());
-                }
-            }
-            
-            requestedToDisable.addAll (candidatesToDisable);
-            for (Module depM : candidatesToDisable) {
-                Set<Module> depends = Utilities.findDependingModules (depM, mm);
-                if (! requestedToDisable.containsAll (depends)) {
-                    LOGGER.log (Level.FINE, "The module " + depM + " is shared and cannot be disabled now.");
-                    requestedToDisable.remove (depM);
-                } else {
-                    LOGGER.log (Level.FINEST, "The module " + depM + " is not needed anymore and can be disabled.");
-                }
-            }
-            
+            Set<Module> requestedToDisable = getRequiredModules (modules, mm);
+
             List<Module> toDisable = mm.simulateDisable (modules);
-            requestedToDisable.addAll (toDisable);
+            boolean wasAdded = requestedToDisable.addAll (toDisable);
+            
+            // XXX why sometimes happens that no all module for deactivated found?
+            // assert ! wasAdded : "The requestedToDisable cannot be enlarged by " + toDisable;
+            if (LOGGER.isLoggable (Level.FINE) && wasAdded) {
+                toDisable.removeAll (getRequiredModules (modules, mm));
+                LOGGER.log (Level.FINE, "requestedToDisable was enlarged by " + toDisable);
+            }
+            
+            Set<UpdateElement> retval = new HashSet<UpdateElement> ();
             for (Module module : requestedToDisable) {
                 if (! modules.contains (module) && Utilities.canDisable (module)) {
                     // !!! e.g. applemodule can be found in the list for uninstall but has UpdateUnit nowhere else MacXOS
@@ -393,6 +360,46 @@ abstract class OperationValidator {
             return Collections.emptyList ();
             //return new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos));
         }
+    }
+    
+    private static Set<Module> getRequiredModules (final Collection<Module> requested, ModuleManager mm) {
+        // loop over all dependencies and add as many as possible for KIT_MODULE
+        // do traversal down
+        Set<Module> candidates = new HashSet<Module> (requested);
+        for (Module m : requested) {
+            if (Utilities.isKitModule (m)) {
+                candidates.addAll (Utilities.findRequiredModules (m, mm, new HashSet<Module> ()));
+                LOGGER.log (Level.FINEST, "Inspect modules this module depends upon for KIT_MODULE " +
+                        m.getCodeNameBase () + ". The modules has added " + candidates.size ());
+            }
+        }
+
+        Set<Module> result = new HashSet<Module> (requested);
+        result.addAll (candidates);
+        candidates.removeAll (requested);
+        
+        Set<Module> canSkip = new HashSet<Module> ();
+        for (Module depM : candidates) {
+            if (canSkip.contains (depM)) {
+                LOGGER.log (Level.FINE, "The module " + depM.getCodeNameBase () + " was investigated already and won't be deactivated now.");
+            } else {
+                Set<Module> depends = Utilities.findDependingModules (depM, mm);
+                if (! result.containsAll (depends)) {
+                    canSkip.addAll (Utilities.findRequiredModules (depM, mm, new HashSet<Module> ()));
+                    LOGGER.log (Level.FINE, "The module " + depM.getCodeNameBase () + " is shared and cannot be deactivated now.");
+                    if (LOGGER.isLoggable (Level.FINER)) {
+                        Set<Module> outsideModules = new HashSet<Module> (depends);
+                        outsideModules.removeAll (result);
+                        LOGGER.log (Level.FINER, "On " + depM.getCodeNameBase () + " depending modules outside of set now deactivateing modules: " + outsideModules);
+                    }
+                    result.remove (depM);
+                } else {
+                    LOGGER.log (Level.FINEST, "The module " + depM.getCodeNameBase () + " is not needed anymore and can be deactivated.");
+                }
+            }
+        }
+        result.removeAll (canSkip);
+        return result;
     }
     
 }

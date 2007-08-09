@@ -72,6 +72,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     private OperationWizardModel model = null;
     private boolean readyToGo = false;
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
+    private RequestProcessor.Task lazyDependingTask = null;
     
     /** Creates a new instance of OperationDescriptionStep */
     public OperationDescriptionStep (OperationWizardModel model) {
@@ -143,7 +144,7 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     }
     
     private void appendDependingLazy (final String tableTitle, final String dependenciesTitle) {
-        RequestProcessor.getDefault ().post (new Runnable () {
+        lazyDependingTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 JPanel body = null;
                 if (model.hasBrokenDependencies ()) {
@@ -258,6 +259,9 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
     public void storeSettings(WizardDescriptor wd) {
         if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
             try {
+                if (lazyDependingTask != null && ! lazyDependingTask.isFinished ()) {
+                    lazyDependingTask.cancel ();
+                }
                 model.doCleanup ();
             } catch (OperationException x) {
                 Logger.getLogger (InstallUnitWizardModel.class.getName ()).log (Level.INFO, x.getMessage (), x);

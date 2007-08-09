@@ -704,7 +704,7 @@ public class Utilities {
      * @param m a module to start from; may be enabled or not, but must be owned by this manager
      * @return a set (possibly empty) of modules managed by this manager, never including m
      */
-    public static Set<Module> findRequiredModules (Module m, ModuleManager mm, boolean forceToGoDeep) {
+    public static Set<Module> findRequiredModules (Module m, ModuleManager mm, Collection<Module> seen) {
         synchronized (Utilities.class) {
             if (mapModule2requiredModules.get () == null) {
                 mapModule2requiredModules = new WeakReference<Map<Module, Set<Module>>> (new HashMap<Module, Set<Module>> ());
@@ -712,21 +712,22 @@ public class Utilities {
             }
         }
         if (! mapModule2requiredModules.get ().containsKey (m)) {
-            mapModule2requiredModules.get ().put (m, doFindRequiredModules (m, mm, forceToGoDeep));
+            mapModule2requiredModules.get ().put (m, doFindRequiredModules (m, mm, seen));
         }
         return mapModule2requiredModules.get ().get (m);
     }
 
-    private static Set<Module> doFindRequiredModules (Module m, ModuleManager mm, boolean forceToGoDeep) {
+    private static Set<Module> doFindRequiredModules (Module m, ModuleManager mm, Collection<Module> seen) {
         Set<Module> res = Collections.emptySet ();
-        if (forceToGoDeep || ! isLeafModule (m)) {
+        if (! isEssentialModule (m) && ! seen.contains (m)) {
             res = new HashSet<Module> ();
+            seen.add (m);
             for (Object depO : mm.getModuleInterdependencies (m, false, false)) {
                 assert depO instanceof Module : depO + " is instanceof Module";
                 Module depM = (Module) depO;
-                if (! isEssentialModule (depM)) {
+                if (! isEssentialModule (depM) && ! res.contains (depM)) {
                     res.add (depM);
-                    res.addAll (findRequiredModules (depM, mm, false));
+                    res.addAll (findRequiredModules (depM, mm, seen));
                 }
             }
         }
