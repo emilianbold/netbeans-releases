@@ -20,13 +20,17 @@ package org.netbeans.modules.vmd.midpnb.propertyeditors;
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
@@ -52,10 +56,11 @@ import org.openide.util.NbBundle;
 public class SVGImageEditorElement extends PropertyEditorResourceElement {
 
     private static final String EXTENSION = "svg"; // NOI18N
-
+    
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
+    private String lastDir;
     private SVGImageComponent imageView;
     private DefaultComboBoxModel comboBoxModel;
 
@@ -75,9 +80,9 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
     }
 
     public List<String> getPropertyValueNames() {
-        return Arrays.asList(new String[] {SVGImageCD.PROP_RESOURCE_PATH});
+        return Arrays.asList(SVGImageCD.PROP_RESOURCE_PATH);
     }
-    
+
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
@@ -107,6 +112,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
 
             this.componentID = component.getComponentID();
             component.getDocument().getTransactionManager().readAccess(new Runnable() {
+
                 public void run() {
                     PropertyValue propertyValue = component.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
                     if (!isPropertyValueAUserCodeType(propertyValue)) {
@@ -131,16 +137,37 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         setText(_pathText[0]);
     }
 
-    private synchronized void setText(String text) {
+    private void setText(String text) {
+        if (text == null || text.length() == 0) {
+            return;
+        }
+
+        addImage(text);
+    }
+    
+    private void addImage(String path) {
         doNotFireEvent = true;
-        if (text == null) {
-            text = ""; // NOI18N
+        if (comboBoxModel.getIndexOf(path) == -1) {
+            comboBoxModel.addElement(path);
+            sortComboBoxContent();
         }
-        if (comboBoxModel.getIndexOf(text) == -1) {
-            comboBoxModel.addElement(text);
-        }
-        pathTextComboBox.setSelectedItem(text);
+        pathTextComboBox.setSelectedItem(path);
         doNotFireEvent = false;
+        updatePreview();
+    }
+
+    @SuppressWarnings(value = "unchecked")
+    private void sortComboBoxContent() {
+        int size = pathTextComboBox.getItemCount();
+        List list = new ArrayList(size);
+        for (int i = 0; i < size; i++) {
+            list.add(pathTextComboBox.getItemAt(i));
+        }
+        Collections.sort(list);
+        pathTextComboBox.removeAllItems();
+        for (Object object : list) {
+            pathTextComboBox.addItem(object);
+        }
     }
 
     void setAllEnabled(boolean isEnabled) {
@@ -157,7 +184,16 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
 
     private void updateModel() {
         comboBoxModel.removeAllElements();
-        searchImagesInDirectory(getSourceFolder());
+        FileObject sourceFolder = getSourceFolder();
+        searchImagesInDirectory(sourceFolder);
+        for (Entry e : ClassPath.getClassPath(sourceFolder, ClassPath.COMPILE).entries()) {
+            if (e.getRoot() == null) {
+                continue;
+            }
+            if (e.getRoot().getName().trim().length() > 0) {
+                searchImagesInDirectory(e.getRoot());
+            }
+        }
     }
 
     private void searchImagesInDirectory(FileObject dir) {
@@ -165,10 +201,9 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
             if (fo.isFolder()) {
                 searchImagesInDirectory(fo);
             } else {
-                    if (EXTENSION.equals(fo.getExt().toLowerCase())) {
-                        comboBoxModel.addElement(convertFile(fo));
-                        break;
-                    }
+                if (EXTENSION.equals(fo.getExt().toLowerCase())) {
+                    addImage(convertFile(fo));
+                }
             }
         }
     }
@@ -216,6 +251,10 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
 
         if (!fullPath.contains(sourcePath)) {
             try {
+                File possible = new File(sourcePath + File.separator + file.getNameExt());
+                if (possible.exists()) {
+                    possible.delete();
+                }
                 file = file.copy(sourceFolder, file.getName(), file.getExt());
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -228,9 +267,9 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
     }
 
     private static class ImageFilter extends FileFilter {
-        
+
         private String description;
-        
+
         public ImageFilter() {
             description = NbBundle.getMessage(SVGImageEditorElement.class, "DISP_SVG_Image_Files"); // NOI18N
         }
@@ -284,7 +323,6 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         previewLabel.setEnabled(false);
 
         previewPanel.setEnabled(false);
-        previewPanel.setPreferredSize(new java.awt.Dimension(100, 100));
         previewPanel.setLayout(new java.awt.BorderLayout());
 
         widthLabel.setText(org.openide.util.NbBundle.getMessage(SVGImageEditorElement.class, "ImageEditorElement.widthLabel.text")); // NOI18N
@@ -360,16 +398,17 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
                             .add(heightLabel)
                             .add(heightTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(previewLabel)
-                    .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooserButtonActionPerformed
-        JFileChooser chooser = new JFileChooser(project.getProjectDirectory().getPath());
+        JFileChooser chooser = new JFileChooser(lastDir != null ? lastDir : project.getProjectDirectory().getPath());
         chooser.setFileFilter(new ImageFilter());
         int returnVal = chooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            FileObject fo = FileUtil.toFileObject(chooser.getSelectedFile());
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(chooser.getSelectedFile()));
+            lastDir = chooser.getSelectedFile().getParentFile().getPath();
             String relativePath = convertFile(fo);
             setText(relativePath);
         }
@@ -379,8 +418,8 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         if (isShowing() && !doNotFireEvent) {
             String text = (String) pathTextComboBox.getSelectedItem();
             fireElementChanged(componentID, SVGImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
-        }
-        updatePreview();
+            updatePreview();
+       }
     }//GEN-LAST:event_pathTextComboBoxActionPerformed
 
 

@@ -58,7 +58,7 @@ public class FontEditorElement extends PropertyEditorResourceElement {
     }
 
     public List<String> getPropertyValueNames() {
-        return Arrays.asList(new String[] {FontCD.PROP_FONT_KIND, FontCD.PROP_FACE, FontCD.PROP_STYLE, FontCD.PROP_SIZE});
+        return Arrays.asList(FontCD.PROP_FONT_KIND, FontCD.PROP_FACE, FontCD.PROP_STYLE, FontCD.PROP_SIZE);
     }
     
     private void attachListeners() {

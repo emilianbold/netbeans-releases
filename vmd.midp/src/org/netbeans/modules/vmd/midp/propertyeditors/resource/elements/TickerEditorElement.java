@@ -52,7 +52,7 @@ public class TickerEditorElement extends PropertyEditorResourceElement implement
     }
 
     public List<String> getPropertyValueNames() {
-        return Arrays.asList(new String[]{TickerCD.PROP_STRING});
+        return Arrays.asList(TickerCD.PROP_STRING);
     }
 
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {

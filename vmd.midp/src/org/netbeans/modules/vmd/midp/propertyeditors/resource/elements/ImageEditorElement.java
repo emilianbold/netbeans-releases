@@ -24,7 +24,9 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
@@ -32,6 +34,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.Debug;
@@ -58,6 +62,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
+    private String lastDir;
     private ImagePreview imagePreview;
     private Image image;
     private DefaultComboBoxModel comboBoxModel;
@@ -78,7 +83,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     }
 
     public List<String> getPropertyValueNames() {
-        return Arrays.asList(new String[] {ImageCD.PROP_RESOURCE_PATH});
+        return Arrays.asList(ImageCD.PROP_RESOURCE_PATH);
     }
     
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
@@ -134,16 +139,37 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         setText(_pathText[0]);
     }
 
-    private synchronized void setText(String text) {
+    private void setText(String text) {
+        if (text == null || text.length() == 0) {
+            return;
+        }
+
+        addImage(text);
+    }
+    
+    private void addImage(String path) {
         doNotFireEvent = true;
-        if (text == null) {
-            text = ""; // NOI18N
+        if (comboBoxModel.getIndexOf(path) == -1) {
+            comboBoxModel.addElement(path);
+            sortComboBoxContent();
         }
-        if (comboBoxModel.getIndexOf(text) == -1) {
-            comboBoxModel.addElement(text);
-        }
-        pathTextComboBox.setSelectedItem(text);
+        pathTextComboBox.setSelectedItem(path);
         doNotFireEvent = false;
+        updatePreview();
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void sortComboBoxContent() {
+        int size = pathTextComboBox.getItemCount();
+        List list = new ArrayList(size);
+        for (int i = 0; i < size; i++) {
+            list.add(pathTextComboBox.getItemAt(i));
+        }
+        Collections.sort(list);
+        pathTextComboBox.removeAllItems();
+        for (Object object : list) {
+            pathTextComboBox.addItem(object);
+        }
     }
 
     public void setAllEnabled(boolean isEnabled) {
@@ -162,7 +188,16 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
 
     private void updateModel() {
         comboBoxModel.removeAllElements();
-        searchImagesInDirectory(getSourceFolder());
+        FileObject sourceFolder = getSourceFolder();
+        searchImagesInDirectory(sourceFolder);
+        for (Entry e : ClassPath.getClassPath(sourceFolder, ClassPath.COMPILE).entries()) {
+            if (e.getRoot() == null) {
+                continue;
+            }
+            if (e.getRoot().getName().trim().length() > 0) {
+                searchImagesInDirectory(e.getRoot());
+            }
+        }
     }
 
     private void searchImagesInDirectory(FileObject dir) {
@@ -172,7 +207,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             } else {
                 for (String ext : EXTENSIONS) {
                     if (ext.equals(fo.getExt().toLowerCase())) {
-                        comboBoxModel.addElement(convertFile(fo));
+                        addImage(convertFile(fo));
                         break;
                     }
                 }
@@ -245,6 +280,10 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
 
         if (!fullPath.contains(sourcePath)) {
             try {
+                File possible = new File(sourcePath + File.separator + file.getNameExt());
+                if (possible.exists()) {
+                    possible.delete();
+                }
                 file = file.copy(sourceFolder, file.getName(), file.getExt());
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -351,7 +390,6 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         previewLabel.setEnabled(false);
 
         previewPanel.setEnabled(false);
-        previewPanel.setPreferredSize(new java.awt.Dimension(100, 100));
         previewPanel.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent evt) {
                 previewPanelComponentResized(evt);
@@ -406,7 +444,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
                     .add(layout.createSequentialGroup()
                         .add(previewLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
                         .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(heightLabel)
@@ -445,16 +483,17 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
                             .add(sizeLabel))
                         .addContainerGap())
                     .add(previewLabel)
-                    .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(previewPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void chooserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooserButtonActionPerformed
-        JFileChooser chooser = new JFileChooser(project.getProjectDirectory().getPath());
+        JFileChooser chooser = new JFileChooser(lastDir != null ? lastDir : project.getProjectDirectory().getPath());
         chooser.setFileFilter(new ImageFilter());
         int returnVal = chooser.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            FileObject fo = FileUtil.toFileObject(chooser.getSelectedFile());
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(chooser.getSelectedFile()));
+            lastDir = chooser.getSelectedFile().getParentFile().getPath();
             String relativePath = convertFile(fo);
             setText(relativePath);
             pathTextComboBoxActionPerformed(null);
@@ -465,8 +504,8 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         if (isShowing() && !doNotFireEvent) {
             String text = (String) pathTextComboBox.getSelectedItem();
             fireElementChanged(componentID, ImageCD.PROP_RESOURCE_PATH, MidpTypes.createStringValue(text != null ? text : "")); // NOI18N
+            updatePreview();
         }
-        updatePreview();
     }//GEN-LAST:event_pathTextComboBoxActionPerformed
 
     private void previewPanelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_previewPanelComponentResized

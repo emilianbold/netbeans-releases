@@ -159,7 +159,7 @@ public class MidpScreenDeviceInfo extends ScreenDeviceInfo {
         private static final Font FONT_INPUT_TEXT = new Font(FONT_FACE_PROPORTIONAL, Font.PLAIN, FONT_SIZE_MEDIUM);
         private static final Font FONT_STATIC_TEXT = new Font(FONT_FACE_PROPORTIONAL, Font.PLAIN, FONT_SIZE_MEDIUM);
         
-        private static final Map ATTR_MAP = new HashMap(1);
+        private static final Map<TextAttribute, Integer> ATTR_MAP = new HashMap<TextAttribute, Integer>(1);
         
         static {
             ATTR_MAP.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
