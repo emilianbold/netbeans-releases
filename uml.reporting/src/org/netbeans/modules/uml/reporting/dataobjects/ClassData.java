@@ -547,7 +547,7 @@ public class ClassData extends ElementDataObject
             out.write("<FONT SIZE=\"-1\">" + getOwningPackageName() + "</FONT>\r\n");
             out.write("<BR>\r\n");
             out.write(getElementType() + " " + getElementName() + "</H2>\r\n");
-            out.write("\r\n");
+            out.write("<PRE>\r\n");
             
             IClassifier[] superClasses = getSuperClasses();
             if (getSuperClasses().length>0)
@@ -566,7 +566,7 @@ public class ClassData extends ElementDataObject
                         "images/inherit.gif\" ALT=\"extended by \">"); // NOI18N
             }
             out.write("<B>" + getElement().getFullyQualifiedName(false) + "</B>\r\n");
-            out.write("\r\n");
+            out.write("</PRE>\r\n");
             
             IInterface[] infs = getImplementedInterfaces();
             if (infs.length > 0)
