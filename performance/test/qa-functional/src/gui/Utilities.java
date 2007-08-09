@@ -20,6 +20,9 @@
 package gui;
 
 import javax.swing.tree.TreePath;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
@@ -69,6 +72,11 @@ public class Utilities {
     private static PerformanceTestCase test = null;
     /** Creates a new instance of Utilities */
     public Utilities() {
+    }
+
+
+    public static String getTimeIndex() {
+        return new SimpleDateFormat("HHmmssS",Locale.US).format(new Date());
     }
     
     /**
