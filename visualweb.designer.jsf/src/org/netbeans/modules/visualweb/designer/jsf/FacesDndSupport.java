@@ -78,6 +78,8 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
 import javax.swing.FocusManager;
 import javax.swing.JComponent;
@@ -1206,11 +1208,37 @@ class FacesDndSupport {
 
         for (DisplayItem item : items) {
             if (item instanceof BeanCreateInfo) {
-                list.add(((BeanCreateInfo)item).getBeanClassName());
+                BeanCreateInfo beanCreateInfo = ((BeanCreateInfo)item);
+                String className = beanCreateInfo.getBeanClassName();
+                if (className == null) {
+                    // #112454 Bad impl of BeanCreateInfo.
+                    info(new IllegalArgumentException("Bad implementation of BeanCreateInfo, " +
+                            "it returns null bean class name, " +
+                            "beanCreateInfo=" + beanCreateInfo)); // NOI18N
+                } else {
+                    list.add(className);
+                }
             } else if (item instanceof BeanCreateInfoSet) {
-                String[] cls = ((BeanCreateInfoSet)item).getBeanClassNames();
-                for (int k = 0; k < cls.length; k++) {
-                    list.add(cls[k]);
+                BeanCreateInfoSet beanCreateInfoSet = ((BeanCreateInfoSet)item);
+                String[] cls = beanCreateInfoSet.getBeanClassNames();
+                if (cls == null) {
+                    // #112454 Bad impl of BeanCreateInfoSet.
+                    info(new IllegalArgumentException("Bad implementation of BeanCreatInfoSet, " +
+                            "it returns null array of bean class names, " +
+                            "beanCreateInfoSet=" + beanCreateInfoSet)); // NOI18N
+                } else {
+                    for (int k = 0; k < cls.length; k++) {
+                        String className = cls[k];
+                        if (className == null) {
+                            // #112454 Bad impl of BeanCreateImplSet.
+                            info(new IllegalArgumentException("Bad implementation of BeanCreatInfoSet, " +
+                                    "it returns null(s) in array of bean class names, " +
+                                    "beanCreateInfoSet=" + beanCreateInfoSet +
+                                    ", beanClasses=" + Arrays.asList(cls))); // NOI18N
+                        } else {
+                            list.add(cls[k]);
+                        }
+                    }
                 }
             } else {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
@@ -3879,5 +3907,13 @@ linkCheckFinished:
 //            fireSelectedDesignBeanChanged(designBeans);
 //        }
     }
+
     
+    private static Logger getLogger() {
+        return Logger.getLogger(FacesDndSupport.class.getName());
+    }
+    
+    private static void info(Exception ex) {
+        getLogger().log(Level.INFO, null, ex);
+    }
 }
