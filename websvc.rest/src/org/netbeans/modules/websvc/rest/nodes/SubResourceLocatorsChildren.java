@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.websvc.rest.nodes;
 
+import org.netbeans.modules.websvc.rest.support.Utils;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collections;

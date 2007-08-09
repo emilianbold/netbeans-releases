@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.websvc.rest.nodes;
 
+import org.netbeans.modules.websvc.rest.support.Utils;
 import java.awt.Image;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
