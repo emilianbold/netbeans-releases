@@ -345,8 +345,9 @@ public class MenuEditLayer extends JPanel {
                                 isAlive = false;
                             }
                             if(evt.getChangeType() == evt.COMPONENT_ADDED) {
-                                p("component was added");
-                                configureNewComponent(evt.getComponent());
+                                if(evt.getCreatedDeleted()) {
+                                    configureNewComponent(evt.getComponent());
+                                }
                             }
                             
                         }
@@ -969,17 +970,18 @@ public class MenuEditLayer extends JPanel {
     
     // change the look of the component to reflect the newly added state.
     // this mainly means making the foreground color light gray.
-    private void configureNewComponent(RADComponent item) {
-        p("configuring a new component: "+ item);
+    void configureNewComponent(RADComponent item) {
         if(item != null) {
             JComponent c = (JComponent) formDesigner.getComponent(item);
-            c.setForeground(Color.LIGHT_GRAY);
+            if(c != null) {
+                c.setForeground(Color.LIGHT_GRAY);
+            }
         }
     }
     
     
     // change the look of the component to reflect the fully edited state
-    void configureEditedComponent(JComponent c) {
+    private void configureEditedComponent(JComponent c) {
         //p("configuring an edited component");
         if(c.getForeground() == Color.LIGHT_GRAY) {
             c.setForeground(getNormalForeground(c));
@@ -1023,6 +1025,11 @@ public class MenuEditLayer extends JPanel {
                                 continue;
                             }
                             
+                            if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED) {
+                                if("action".equals(evt.getPropertyName())) {
+                                    configureEditedComponent(evt.getComponent());
+                                }
+                            }
                             if(evt.getChangeType() == evt.COMPONENT_PROPERTY_CHANGED || evt.getChangeType() == evt.BINDING_PROPERTY_CHANGED) {
                                 if(evt.getContainer() == metacomp || evt.getComponent() == metacomp) {
                                     rebuildOnScreenMenu(metacomp);
