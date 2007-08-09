@@ -130,7 +130,7 @@ public class MIDPTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         lIcon.setVisible(isMIDlet);
         cIcon.setVisible(isMIDlet);
         lNote.setVisible(isMIDlet);
-        lClassName.setText(NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, isMIDlet ? "LBL_File_MIDletClassName" : "LBL_File_MIDPClassName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lClassName, NbBundle.getMessage(MIDPTargetChooserPanelGUI.class, isMIDlet ? "LBL_File_MIDletClassName" : "LBL_File_MIDPClassName")); // NOI18N
         
         // Show name of the project
         if (isMIDlet) {
