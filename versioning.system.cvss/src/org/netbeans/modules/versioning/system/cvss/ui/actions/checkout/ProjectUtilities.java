@@ -105,7 +105,11 @@ final class ProjectUtilities {
             FileObject workingFolder = FileUtil.toFileObject(workingDirectory);
             action.putValue(CommonProjectActions.EXISTING_SOURCES_FOLDER, workingFolder);
             performAction(action);
-            ProjectChooser.setProjectsFolder(original);
+            try {
+                ProjectChooser.setProjectsFolder(original);
+            } catch (IllegalArgumentException e) {
+                // it seems the original folder is invalid, ignore this
+            }
         }
     }
 
