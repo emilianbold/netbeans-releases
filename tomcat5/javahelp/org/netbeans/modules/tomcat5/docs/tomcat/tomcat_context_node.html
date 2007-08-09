@@ -21,7 +21,7 @@
 </small></p> 
 <p>The web applications node <img src="../images/mfolder.gif">&nbsp;lists 
   the web application contexts that have been deployed to the server. It appears 
-  under the server's instance in the Runtime window. </p>
+  under the server's instance in the Services window. </p>
 <p>The IDE adds a web application's context node <img src="../images/webmodule.gif">&nbsp;
 the first time you execute the web application 
   from the IDE.</p>
@@ -49,10 +49,10 @@ the first time you execute the web application
     running for this item to be enabled, but the context must have a logger defined 
     in the <tt>context.xml</tt> file. For example, when you create a web application,
     the IDE creates a <tt>context.xml</tt> file that includes a logger element:
-    <pre><tt>      &lt;Context path="/MyApp"&gt;
+    <pre>      &lt;Context path="/MyApp"&gt;
          &lt;Logger className="org.apache.catalina.logger.FileLogger" 
          prefix="MyApp" suffix=".log" timestamp="true"/&gt;
-      &lt;/Context&gt;    </pre></tt></li>
+      &lt;/Context&gt;    </pre></li>
   <li><b>Undeploy.</b> Removes the web application's context from the server. The IDE 
     will recreate the context if the web application is subsequently executed from 
     the IDE.</li>

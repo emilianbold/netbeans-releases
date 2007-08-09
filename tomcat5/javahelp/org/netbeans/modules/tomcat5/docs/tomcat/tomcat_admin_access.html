@@ -24,7 +24,7 @@ You can manage server resources, such as connection pools, through the Administr
 
 <p><b>To access the Tomcat Web Server Administration Tool:</b>
 <ol>
-  <li>In the Runtime window, expand the Servers node and the Tomcat Web Server 
+  <li>In the Services window, expand the Servers node and the Tomcat Web Server 
  instance node.</li>
 <li>Start the server by right-clicking the Tomcat instance node and choosing Start.</li>
   <li>Once the server has started, expand the Web Applications node. Right-click the node for the <tt>/admin</tt> 
@@ -36,13 +36,13 @@ You can manage server resources, such as connection pools, through the Administr
     <td valign=top align=left><p>If the Administration Tool does not
 open, or if you don't have a user name or password, check the <tt>tomcat-users.xml</tt> file
 in Tomcat's base directory. To identify the location of this directory, right-click
-the Tomcat Web Server instance node in the Runtime window and select Properties.
+the Tomcat Web Server instance node in the Services window and select Properties.
 In the Properties dialog box, the Base Directory property points to 
 Tomcat's base directory.</p><p>In the <tt>tomcat-users.xml</tt> file in Tomcat's base
  directory, check 
 that a role called "admin" exists and that the role is assigned
 to a user. If necessary, define the "admin" role, assign the "admin" role to a user, save the file,
-and, using the Runtime tab, stop and restart the Tomcat instance.</p></td>
+and, using the Services tab, stop and restart the Tomcat instance.</p></td>
   </tr>
 </table></li>
 <li>Make your changes. For example, <a href="tomcat_setup_tdcp.html">set up a database connection pool</a>.</li>

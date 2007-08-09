@@ -30,16 +30,16 @@ rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/mod
    application, ensure that it is enabled as described below.</p>
 <p><b>To manually display the HTTP Monitor:</b>
 <ul><li>Choose Window &gt; HTTP 
-Monitor (Ctrl+Shift+5) from the main menu.</p></li></ul>
+Monitor (Ctrl+Shift+5) from the main menu.</li></ul>
 
 <b>To enable the HTTP Monitor for servers that are started from the IDE:</b>
-<ol><li>Right-click your server's node in the Runtime window's
+<ol><li>Right-click your server's node in the Services window's
 Servers node.</li>
 <li>Choose Properties.</li>
 <li>Select the Enable HTTP Monitor checkbox.</li>
 <li>If the server is running, stop and restart it.</li>
 <li>For the Sun Java System Application Server, right-click the HTTP Server node
- in the Runtime window and choose Start HTTP Server.</li></ol>
+ in the Services window and choose Start HTTP Server.</li></ol>
 <p>The HTTP Monitor is now enabled and will appear when you deploy your application.</p>
 <p><b>To enable the HTTP Monitor for servers that are started outside the IDE:</b></p>
 <ol>
@@ -49,7 +49,7 @@ Servers node.</li>
 	<table cellpadding="3" cellspacing="0" border="0">
   <tr valign="top"> 
     <td><img src="../images/tip.gif" alt="tip">&nbsp;</td>
-    The SJS Application Server has its own <tt>schema2beans.jar</tt>.
+    <td>The SJS Application Server has its own <tt>schema2beans.jar</tt>.
     Therefore, when you are using the Sun Java System Application Server, 
     only copy <tt>httpmonitor.jar</tt> to your web application's <tt>WEB-INF/lib</tt> folder.</td>
   </tr>
@@ -111,11 +111,11 @@ To monitor the data records from a web application using more than one
   &lt;/init-param&gt;
 </pre>
       </li>
-  </tr>
+
   <li>Right-click the HTTP Server node
-in the Runtime window and choose Start HTTP Server.</li>
+in the Services window and choose Start HTTP Server.</li>
   </ol>
-</table>
+
 
 <ul class="note">
     <li>When you deploy the web application to a production server, remember to remove 

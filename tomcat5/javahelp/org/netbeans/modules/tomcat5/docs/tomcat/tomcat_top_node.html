@@ -17,13 +17,13 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p>
-<p>The Servers node in the Runtime window and its subnodes represent the Tomcat 
+<p>The Servers node in the Services window and its subnodes represent the Tomcat 
   Web Server, its instances, and the contexts that have been deployed by an instance 
   to the server. If you right-click a node and display its contextual menu, you 
   see a list of menu items that enable you to work with this node.</p>
 <p><b>To view the Tomcat Web Server in the IDE:</b></p>
-<ol><li>Choose Window > Runtime (Ctrl+5)
-	from the main menu. The Runtime window appears.</li>
+<ol><li>Choose Window > Services (Ctrl+5)
+	from the main menu. The Services window appears.</li>
 	
   <li>Expand the Servers node in the tree view to view the Tomcat Web Server nodes.</li>
     <ul>
@@ -37,7 +37,7 @@
        Tomcat Web Servers using the Add New Server dialog box.</p></li>    
 <li><p>The web applications node <img src="../images/mfolder.gif">&nbsp;lists 
        the web application contexts that have been deployed to the server. It appears 
-       under the server's instance node in the Runtime window.
+       under the server's instance node in the Services window.
        The IDE adds a web application's context node <img src="../images/webmodule.gif">&nbsp;
        the first time you execute the web application from the IDE.
        When the server receives a HTTP request, the server selects the web application 
@@ -55,7 +55,7 @@
       context element. The Tomcat context descriptor node appears under the web 
       application's <tt>META-INF</tt> node. When Tomcat is set as the target server, 
       the IDE creates the <tt>META-INF</tt> directory and the Tomcat context descriptor 
-      when you create, open, or import a web application, unless one already exists.</p> 
+      when you create, open, or import a web application, unless one already exists. 
       <p>The <tt>context.xml</tt> file is used for setting a web application context path and 
        for advanced web application configuration.
        For simple web applications, you do not need to edit the <tt>context.xml</tt>

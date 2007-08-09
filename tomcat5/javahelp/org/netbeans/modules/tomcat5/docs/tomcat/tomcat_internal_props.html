@@ -20,15 +20,15 @@
 <a href="#seealso">See Also</a> 
 </small></p> 
 
-<ol><li>Choose Window > Runtime (Ctrl+5)
-from the main menu. The Runtime window appears.</li>
+<ol><li>Choose Window > Services (Ctrl+5)
+from the main menu. The Services window appears.</li>
   <li>Expand the Servers node in the tree view to view the Tomcat Web Server nodes.</li>
 <li>Right-click a Tomcat Web Server's instance and select Properties from the contextual menu.</li></ol>
 <p>A Tomcat Web Server's instance property sheet has two sections:</p>
 <h3>Properties Section</h3>
 <ul>
 	<li><b>Display Name.</b> Specifies the Tomcat Web Server's name for display
-    purposes in the Runtime window.</li>
+    purposes in the Services window.</li>
    <li><b>Server Port.</b> Specifies the number of the TCP/IP port that the server listens 
     on. The URL for a web application that is deployed on the server is derived from 
     the host's URL and the server port, such as <tt>http://localhost:8086</tt>.</li>
@@ -39,7 +39,7 @@ from the main menu. The Runtime window appears.</li>
     time the IDE starts the bundled Tomcat Web Server, such as through the Start/Stop Server menu 
     action or by executing a web component from the IDE, the IDE adds an admin 
     user with a randomly-generated password to the <i>tomcat-base-path</i><tt>/conf/tomcat-users.xml</tt> 
-    file. (Right-click the Tomcat Web Server instance node in the Runtime window and select Properties.
+    file. (Right-click the Tomcat Web Server instance node in the Services window and select Properties.
     In the Properties dialog box, the Base Directory property points to the <tt><i>base-dir directory</i></tt>.)
     The admin user entry in the <tt>tomcat-users.xml</tt> file looks similar to the following: 
     <PRE>  &lt;user username=&quot;ide&quot; password=&quot;woiehh&quot; roles=&quot;manager&quot;/&gt;</PRE>
