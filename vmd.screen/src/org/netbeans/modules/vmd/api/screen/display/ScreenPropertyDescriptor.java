@@ -40,6 +40,7 @@ public final class ScreenPropertyDescriptor {
     }
 
     public ScreenPropertyDescriptor (DesignComponent relatedComponent, JComponent relatedView, Shape selectionShape, ScreenPropertyEditor editor) {
+        assert relatedComponent != null  &&  relatedView != null  &&  selectionShape != null  &&  editor != null;
         this.relatedComponent = relatedComponent;
         this.relatedView = relatedView;
         this.selectionShape = selectionShape;
