@@ -19,26 +19,15 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.KeyStroke;
 import org.netbeans.modules.project.uiapi.ActionsFactory;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.actions.DeleteAction;
-import org.openide.nodes.Node;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.CallableSystemAction;
-import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
 /** Factory for all kinds of actions used in projectui and
