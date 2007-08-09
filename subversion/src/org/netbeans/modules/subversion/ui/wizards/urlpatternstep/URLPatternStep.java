@@ -72,7 +72,7 @@ public class URLPatternStep extends AbstractStep implements DocumentListener, Ac
                 );        
             String browserPurposeMessage = org.openide.util.NbBundle.getMessage(URLPatternStep.class, "LBL_BrowserMessage");
             int browserMode = Browser.BROWSER_SHOW_FILES | Browser.BROWSER_FOLDERS_SELECTION_ONLY;
-            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode);
+            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, Browser.BROWSER_HELP_ID_URL_PATTERN);
         } else {
             repositoryPaths.setRepositoryFile(repositoryFile);
         }                

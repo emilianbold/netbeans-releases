@@ -39,7 +39,6 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.explorer.ExplorerManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -66,7 +65,8 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     private int browserMode;
     private BrowserAction[] browserActions;
     private String browserPurpose;
-            
+    private String browserHelpID;
+    
     private boolean valid = false;
     public static final String PROP_VALID = "valid"; // NOI18N
     private List<PropertyChangeListener> listeners;
@@ -104,13 +104,14 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }                
     }
 
-    public void setupBrowserBehavior(String browserPurpose, int browserMode) {
+    public void setupBrowserBehavior(String browserPurpose, int browserMode, String browserHelpID) {
         this.browserMode = browserMode;                
         this.browserPurpose = browserPurpose;
+        this.browserHelpID = browserHelpID;
     }            
     
-    public void setupBrowserBehavior(String browserPurpose, int browserMode, BrowserAction[] browserActions) {
-        setupBrowserBehavior(browserPurpose, browserMode);
+    public void setupBrowserBehavior(String browserPurpose, int browserMode, BrowserAction[] browserActions, String browserHelpID) {
+        setupBrowserBehavior(browserPurpose, browserMode, browserHelpID);
         this.browserActions = browserActions;
         this.browserPurpose = browserPurpose;
     }            
@@ -177,7 +178,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }
         
         RepositoryFile repositoryFile = new RepositoryFile(getRepositoryUrl(), revision);
-        Browser browser = new Browser(browserPurpose, browserMode, repositoryFile, repositoryFilesToSelect, browserActions);                               
+        Browser browser = new Browser(browserPurpose, browserMode, repositoryFile, repositoryFilesToSelect, browserActions, browserHelpID);                               
 
         // handle results    
         RepositoryFile[] selectedFiles = browser.getRepositoryFiles();

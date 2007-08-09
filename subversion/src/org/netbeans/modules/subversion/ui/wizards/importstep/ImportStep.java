@@ -155,7 +155,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     );
                 String browserPurposeMessage = org.openide.util.NbBundle.getMessage(ImportStep.class, "LBL_BrowserMessage");
                 int browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;
-                repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, actions);
+                repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, actions, Browser.BROWSER_HELP_ID_IMPORT);
             } else {
                 repositoryPaths.setRepositoryFile(repositoryFile);
             }

@@ -60,7 +60,17 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
     public final static int BROWSER_FOLDERS_SELECTION_ONLY      = 8;
     public final static int BROWSER_SELECT_ANYTHING = BROWSER_FOLDERS_SELECTION_ONLY | BROWSER_FILES_SELECTION_ONLY;
 
+    public final static String BROWSER_HELP_ID_SEARCH_HISTORY   = "org.netbeans.modules.subversion.ui.browser.searchhistory";
+    public final static String BROWSER_HELP_ID_CHECKOUT         = "org.netbeans.modules.subversion.ui.browser.checkout";
+    public final static String BROWSER_HELP_ID_URL_PATTERN      = "org.netbeans.modules.subversion.ui.browser.urlpattern";
+    public final static String BROWSER_HELP_ID_MERGE            = "org.netbeans.modules.subversion.ui.browser.merge";
+    public final static String BROWSER_HELP_ID_SWITCH_TO        = "org.netbeans.modules.subversion.ui.browser.switchto";
+    public final static String BROWSER_HELP_ID_COPY             = "org.netbeans.modules.subversion.ui.browser.copy";
+    public final static String BROWSER_HELP_ID_IMPORT           = "org.netbeans.modules.subversion.ui.browser.import";
+    
     private final int mode;
+    
+    private final String helpID;
     
     private static final RepositoryFile[] EMPTY_ROOT = new RepositoryFile[0];
     private static final Action[] EMPTY_ACTIONS = new Action[0];
@@ -87,8 +97,9 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
      * @param nodeActions an array of actions from which the context menu on the tree items will be created
      * 
      */    
-    public Browser(String title, int mode, RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions) {
+    public Browser(String title, int mode, RepositoryFile repositoryRoot, RepositoryFile[] select, BrowserAction[] nodeActions, String helpID) {
         this.mode = mode;       
+        this.helpID = helpID;
         
         panel = new BrowserPanel(title,           
                                  org.openide.util.NbBundle.getMessage(Browser.class, "ACSN_RepositoryTree"),                                            // NOI18N
@@ -163,7 +174,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
         final DialogDescriptor dialogDescriptor = 
                 new DialogDescriptor(getBrowserPanel(), NbBundle.getMessage(Browser.class, "CTL_Browser_BrowseFolders_Title")); 
         dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
+        dialogDescriptor.setHelpCtx(new HelpCtx(helpID));
         dialogDescriptor.setValid(false);
         
         addPropertyChangeListener(new PropertyChangeListener() {

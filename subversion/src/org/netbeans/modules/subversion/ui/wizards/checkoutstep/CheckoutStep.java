@@ -88,7 +88,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
                 );        
             String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CheckoutStep.class, "LBL_BrowserMessage");
             int browserMode = Browser.BROWSER_SHOW_FILES | Browser.BROWSER_FOLDERS_SELECTION_ONLY;
-            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode);
+            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, Browser.BROWSER_HELP_ID_CHECKOUT);
         } else {
             repositoryPaths.setRepositoryFile(repositoryFile);
         }                

@@ -76,7 +76,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
             browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageSwitchFolder");
             browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;                                    
         }
-        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, null);                
+        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, Browser.BROWSER_HELP_ID_SWITCH_TO);                
     }            
     
     RepositoryFile getRepositoryFile() {        

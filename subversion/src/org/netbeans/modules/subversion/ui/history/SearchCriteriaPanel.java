@@ -325,7 +325,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         } else {
             browserMode = Browser.BROWSER_SHOW_FILES;                        
         }        
-        browser = new Browser(title, browserMode, repoFile, null, null);        
+        browser = new Browser(title, browserMode, repoFile, null, null, Browser.BROWSER_HELP_ID_SEARCH_HISTORY);        
         final RepositoryFile[] repositoryFiles = browser.getRepositoryFiles();
         if(repositoryFiles == null || repositoryFiles.length == 0) {
             return;

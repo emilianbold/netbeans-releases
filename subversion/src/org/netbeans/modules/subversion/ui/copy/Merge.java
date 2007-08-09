@@ -176,7 +176,7 @@ public class Merge extends CopyDialog implements ItemListener {
                 browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageMergeFolder");
                 browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;                
             }
-            paths.setupBrowserBehavior(browserPurposeMessage, browserMode);
+            paths.setupBrowserBehavior(browserPurposeMessage, browserMode, Browser.BROWSER_HELP_ID_MERGE);
             paths.addPropertyChangeListener(this);
         }
 
