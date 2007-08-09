@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -51,7 +50,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     private static final Map<String,String> CLASS_TO_CNB;
     
     static {
-        Map map = new HashMap(5);
+        Map<String,String> map = new HashMap<String,String>(5);
         map.put("org.openide.loaders.DataObject", "org.openide.loaders"); // NOI18N
         map.put("org.openide.cookies.EditCookie", "org.openide.nodes"); // NOI18N
         map.put("org.openide.cookies.OpenCookie", "org.openide.nodes"); // NOI18N
@@ -93,7 +92,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
     
     // global keyboard shortcut
     private boolean kbShortcutEnabled;
-    private final Set keyStrokes = new HashSet();
+    private final Set<String> keyStrokes = new HashSet<String>();
     
     // file type context menu item
     private boolean ftContextEnabled;
@@ -131,13 +130,13 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         URL template = DataModel.class.getResource(alwaysEnabled
                 ? "callableSystemAction.javx" : "cookieAction.javx"); // NOI18N
         String actionNameKey = "CTL_" + className; // NOI18N
-        Map replaceTokens = new HashMap();
+        Map<String,String> replaceTokens = new HashMap<String,String>();
         replaceTokens.put("@@CLASS_NAME@@", className); // NOI18N
         replaceTokens.put("@@PACKAGE_NAME@@", getPackageName()); // NOI18N
         replaceTokens.put("@@DISPLAY_NAME_KEY@@", actionNameKey); // NOI18N
         replaceTokens.put("@@MODE@@", getSelectionMode()); // NOI18N
-        Set imports = new TreeSet(Arrays.asList(HARDCODED_IMPORTS));
-        Set addedFQNCs = new TreeSet();
+        Set<String> imports = new TreeSet<String>(Arrays.asList(HARDCODED_IMPORTS));
+        Set<String> addedFQNCs = new TreeSet<String>();
         if (!alwaysEnabled) {
             StringBuffer cookieSB = new StringBuffer();
             for (int i = 0; i < cookieClasses.length; i++) {
@@ -166,8 +165,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // imports
         imports.addAll(addedFQNCs);
         StringBuffer importsBuffer = new StringBuffer();
-        for (Iterator it = imports.iterator(); it.hasNext();) {
-            importsBuffer.append("import " + it.next() + ';' + NEW_LINE); // NOI18N
+        for (String imprt : imports) {
+            importsBuffer.append("import " + imprt + ';' + NEW_LINE); // NOI18N
         }
         replaceTokens.put("@@IMPORTS@@", importsBuffer.toString()); // NOI18N
         cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
@@ -198,8 +197,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         cmf.add(cmf.addModuleDependency("org.openide.util")); // NOI18N
         if (!alwaysEnabled) {
             cmf.add(cmf.addModuleDependency("org.openide.nodes")); // NOI18N
-            for (Iterator it = addedFQNCs.iterator(); it.hasNext(); ) {
-                cmf.add(cmf.addModuleDependency((String) CLASS_TO_CNB.get(it.next())));
+            for (String fqn : addedFQNCs) {
+                cmf.add(cmf.addModuleDependency(CLASS_TO_CNB.get(fqn)));
             }
         }
         
@@ -219,8 +218,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         // create layer entry for keyboard shortcut
         if (kbShortcutEnabled) {
             String parentPath = "Shortcuts"; // NOI18N
-            for (Iterator it = keyStrokes.iterator(); it.hasNext();) {
-                String keyStroke = (String) it.next();
+            for (String keyStroke : keyStrokes) {
                 generateShadow(parentPath + "/" + keyStroke + ".shadow", instanceFullPath); // NOI18N                
             }
         }
