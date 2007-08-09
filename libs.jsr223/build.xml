@@ -17,58 +17,6 @@ The Original Software is NetBeans. The Initial Developer of the Original
 Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
 <project name="libs/jsr223" default="netbeans" basedir=".">
-
-  <import file="../../nbbuild/templates/projectized.xml"/>
-    
-  <property name="jsr223.jar" location="${basedir}/../external/jsr223-api.jar"/>
-  <property name="jsr223.license" location="${jsr223.jar}/../jsr223-api-license.txt"/>
-
-  <available
-    classname="javax.script.ScriptEngine"
-    property="script.engine.present"
-    classpath="${jsr223.jar}"
-  />
-
-  <target name="download-jsr223" depends="init" unless="script.engine.present">
-    <echo>
-Going to download jsr223 binaries!
-To build engines you need either JDK6, download it from: http://java.sun.com/
-Or you need to provide path to the scripting API using -Djsr223.jar=, download from:
-https://phobos.dev.java.net/source/browse/*checkout*/phobos/phobos/lib/jsr223-api.jar
-    </echo>
-    <get dest="${jsr223.jar}" src="https://phobos.dev.java.net/source/browse/*checkout*/phobos/phobos/lib/jsr223-api.jar"/>
-  </target>    
-
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init,download-jsr223">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext" file="${jsr223.jar}"/>
-    </target>
-
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <property name="nbm.target.cluster" value=""/> <!-- fallback -->
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}"
-                 global="${nbm.is.global}"
-                 targetcluster="${nbm.target.cluster}">
-            <license>
-                <text>For the integration module:</text>
-                <file location="${license.file}"/>
-                <text>For the jsr 233:</text>
-                <file location="${jsr223.license}"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-
+    <import file="../../nbbuild/templates/projectized.xml"/>
 </project>
