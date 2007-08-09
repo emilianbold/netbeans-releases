@@ -116,7 +116,7 @@ public class PropertyDefinitionFactory implements IPropertyDefinitionFactory{
 		}
     }
     propDef = getFromDefinitionMap(eleName);
-    setAppropriateDisplayName(propDef, pDisp);
+
     if (propDef == null)
     {
       //buildFunctionMap(pDisp);
@@ -136,6 +136,7 @@ public class PropertyDefinitionFactory implements IPropertyDefinitionFactory{
         addToDefinitionMap(eleName, propDef);
       }
     }
+    setAppropriateDisplayName(propDef, pDisp);
     return propDef;
   }
 
