@@ -70,7 +70,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
     private boolean globalMode = false;
     private boolean globalCreateMode = false;
     private FileObject sourceFile;
-    private String NEW_ACTION = "Create new action...";
+    // disabled for 6.0 release: private String NEW_ACTION = "Create new action...";
     private String GLOBAL_SUFFIX = "(global)";
 
     
@@ -146,7 +146,7 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         }
         if (panel == null) {
             panel = new ActionPropertyEditorPanel(formProperty,getSourceFile());
-            panel.addPropertyChangeListener("action", new PropertyChangeListener() {
+            panel.addPropertyChangeListener("action", new PropertyChangeListener() { // NOI18N
                 public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
                     setValue(panel.getSelectedAction());
                 }
@@ -199,9 +199,11 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             setValue(null);
             return;
         }
+        
+        /*disabled for 6.0 release
         if(NEW_ACTION.equals(string)) {
             openNewActionDialog();
-        }
+        }*/
         
         for(List<ProxyAction> acts : actionMap.values()) {
             for(ProxyAction act : acts) {
@@ -240,9 +242,12 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
             super.setValue(object);
             return;
         }
+        
+        /*disabled for 6.0 release
         if(NEW_ACTION.equals(object)) {
             openNewActionDialog();
-        }
+        }*/
+        
         if(object instanceof ProxyAction) {
             ProxyAction oldAction = action;
             action = (ProxyAction)object;
@@ -502,9 +507,6 @@ public class ActionEditor extends PropertyEditorSupport implements FormAwareEdit
         return newAction;
     }
     
-    private void openNewActionDialog() {
-        System.out.println("open new action dialog");
-    }
 
     private boolean isAppFramework() {
         if(globalCreateMode) { return true; }

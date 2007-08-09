@@ -213,7 +213,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         
         
         // set up the actions
-        deleteAction.putValue(Action.NAME, getLocalizedString("deleteAction.text"));
+        deleteAction.putValue(Action.NAME, getLocalizedString("deleteAction.text")); // NOI18N
         deleteAction.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("DELETE")); //NOI18N
         
         // do the first table load
@@ -249,7 +249,7 @@ public class GlobalActionPanel extends javax.swing.JPanel {
         }
     }
     
-    private final static String SHOW_ALL_CLASSES = getLocalizedString("classesFilter.allClasses");
+    private final static String SHOW_ALL_CLASSES = getLocalizedString("classesFilter.allClasses"); // NOI18N
     
     private String filterClass = null;
     
@@ -583,7 +583,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         ActionPropertyEditorPanel comp = (ActionPropertyEditorPanel) editor.getCustomEditor();
         //make sure it's in the right mode
         comp.setMode(ActionPropertyEditorPanel.Mode.Global);
-        final DialogDescriptor dd = new DialogDescriptor(comp, getLocalizedString("editActionPropertiesDialog.title"), true, null);
+        final DialogDescriptor dd = new DialogDescriptor(comp, getLocalizedString("editActionPropertiesDialog.title"), true, null); // NOI18N
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.pack();
         dialog.setVisible(true);
@@ -591,7 +591,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         // only update things if the user clicked okay
         if(dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
             try {
-                PropertyChangeEvent evt = new PropertyChangeEvent(this,"action",act,editor.getValue());
+                PropertyChangeEvent evt = new PropertyChangeEvent(this,"action",act,editor.getValue()); // NOI18N
                 editor.confirmChanges(evt); // this updates
                 //reloadTable(); // it should automatically reload the table when the actionmanager is updated
                 //reselect the original action
@@ -635,9 +635,9 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         ProxyAction action = getSelectedAction();
         if(action == null) { return; }
         int retval = JOptionPane.showConfirmDialog(this,
-                getLocalizedString("deleteActionQuestion")
+                getLocalizedString("deleteActionQuestion") // NOI18N
                  + action.getId(),
-                getLocalizedString("deleteActionButton.text"),JOptionPane.OK_CANCEL_OPTION);
+                getLocalizedString("deleteActionButton.text"),JOptionPane.OK_CANCEL_OPTION); // NOI18N
         if(retval == JOptionPane.OK_OPTION) {
             actionManager.deleteAction(action);
             reloadTable();
@@ -658,7 +658,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         panel.setMode(ActionPropertyEditorPanel.Mode.NewActionGlobal);
         
         //final CreateNewActionPanel panel = new CreateNewActionPanel(fileInProject);
-        final DialogDescriptor dd = new DialogDescriptor(panel,getLocalizedString("createNewActionDialog.title"));
+        final DialogDescriptor dd = new DialogDescriptor(panel,getLocalizedString("createNewActionDialog.title")); // NOI18N
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         d.setVisible(true);
         while (dd.getValue() == DialogDescriptor.OK_OPTION) {
@@ -667,15 +667,15 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
                 editor.createNewAction();
                 break;
             } else {
-                String message = "UNKNOWN ERROR";
+                String message = "UNKNOWN ERROR"; // NOI18N
                 if(!panel.isMethodNonEmpty()) {
-                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.emptyMethod");
+                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.emptyMethod"); // NOI18N
                 } else if(panel.doesMethodContainBadChars()) {
-                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.invalidName",panel.getNewMethodName());
+                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.invalidName",panel.getNewMethodName()); // NOI18N
                 } else if(!panel.isValidClassname()) {
-                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.invalidClassname");
+                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.invalidClassname"); // NOI18N
                 } else if(panel.isDuplicateMethod()) {
-                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.duplicateMethod",panel.getNewMethodName());
+                    message = NbBundle.getMessage(ActionEditor.class,"ActionEditor.createMethodError.duplicateMethod",panel.getNewMethodName()); // NOI18N
                 }
                 JOptionPane.showMessageDialog(d, message);
                 d.setVisible(true);
@@ -833,7 +833,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         }
     }
     private void switchedToTopComponent(TopComponent active) {
-        p("switched to top component called. active = " + active);
+        p("switched to top component called. active = " + active);//log
         if(active == null) { return; }
         FormEditorSupport fes = FormEditorSupport.getFormEditor(active);
         if(fes == null) { return; }
@@ -951,7 +951,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     }
     
     private static String getLocalizedString(String key) {
-        return NbBundle.getMessage(ActionPropertyEditorPanel.class, "GlobalActionPanel."+key);
+        return NbBundle.getMessage(ActionPropertyEditorPanel.class, "GlobalActionPanel."+key); // NOI18N
     }
     
     private static void initColumnSizes(JTable table) {
@@ -1003,7 +1003,7 @@ private void viewSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//
             cellWidth+=5; // a little extra space to make it look better
 
             if (DEBUG) {
-                System.out.println("Initializing width of column "
+                System.out.println("Initializing width of column " //log
                                    + i + ". "
                                    + "headerWidth = " + headerWidth
                                    + "; cellWidth = " + cellWidth);

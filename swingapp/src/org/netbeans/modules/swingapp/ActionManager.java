@@ -322,7 +322,7 @@ public class ActionManager {
                 lineObj = lineSet.getCurrent(line);
             }
             if (lineObj == null) {
-                System.out.println("the line is still null"); //log
+                p("the line is still null"); //log
                 Toolkit.getDefaultToolkit().beep();
             } else {
                 lineObj.show(Line.SHOW_GOTO);
@@ -398,9 +398,9 @@ public class ActionManager {
             buf.append("() {\n"); // NOI18N
             buf.append(indent).append(indent);
             if (taskName != null) {
-                buf.append("return new ");
+                buf.append("return new "); // NOI18N
                 buf.append(taskName);
-                buf.append("();\n");
+                buf.append("();\n"); // NOI18N
                 taskName = getNonExistingTaskName(action.getClassname(), taskName);
             } else {
                 buf.append("// put your action code here\n"); // NOI18N
@@ -545,7 +545,7 @@ public class ActionManager {
             boolean lineStart = true;
             for (int i=0; i < ctorCode.length(); i++) {
                 char c = ctorCode.charAt(i);
-                if (c == '\n') {
+                if (c == '\n') { // NOI18N
                     if (lineStart) {
                         buf.append("\n"); // NOI18N
                     } else {
@@ -877,14 +877,14 @@ public class ActionManager {
     }
     
     private void generateProperties(ProxyAction action, FileObject sourceFile) {
-        if(action.isAnnotationAttributeSet("enabledProperty")){
-            String enabledProperty = (String) action.getAnnotationAttributeValue("enabledProperty");
+        if(action.isAnnotationAttributeSet("enabledProperty")){ // NOI18N
+            String enabledProperty = (String) action.getAnnotationAttributeValue("enabledProperty"); // NOI18N
             if(!findBooleanProperty(enabledProperty, sourceFile)) {
                 generatePropertyGetterAndSetter(enabledProperty,sourceFile);
             }
         }
-        if(action.isAnnotationAttributeSet("selectedProperty")){
-            String enabledProperty = (String) action.getAnnotationAttributeValue("selectedProperty");
+        if(action.isAnnotationAttributeSet("selectedProperty")){ // NOI18N
+            String enabledProperty = (String) action.getAnnotationAttributeValue("selectedProperty"); // NOI18N
             if(!findBooleanProperty(enabledProperty, sourceFile)) {
                 generatePropertyGetterAndSetter(enabledProperty,sourceFile);
             }
@@ -892,16 +892,13 @@ public class ActionManager {
     }
     
     private static boolean findBooleanProperty(String enabledProperty, FileObject sourceFile) {
-        p("enabled prop = " + enabledProperty);
         List<String> props = findBooleanProperties(sourceFile);
         boolean found = false;
         for(String prop : props) {
-            p("prop = " + prop + " vs " + enabledProperty);
             if(prop.equals(enabledProperty)) {
                 return true;
             }
         }
-        p("found = " + found);
         return false;
     }
 
@@ -947,16 +944,6 @@ public class ActionManager {
     }
     
     
-    /*
-    private boolean prop = false;
-    private boolean isProp() {
-        return prop;
-    }
-    private void setProp(boolean b) {
-        boolean old = isProp();
-        this.prop = b;
-        firePropertyChange("prop",old,isProp());
-    }*/
     
     private static String getPropertyGetterAndSetterBodyText(String prop) {
         StringBuilder buf = new StringBuilder();
@@ -1399,7 +1386,7 @@ public class ActionManager {
     }
     
     private FileObject getFormFile(FileObject javaFile) {
-        return javaFile.getParent().getFileObject(javaFile.getName()+".form");
+        return javaFile.getParent().getFileObject(javaFile.getName()+".form"); // NOI18N
     }
     
     public boolean actionsMatch(ProxyAction pact, ProxyAction action) {
@@ -1417,7 +1404,7 @@ public class ActionManager {
     
     
     private String getKey(ProxyAction act) {
-        if(act == null) { return "null"; }
+        if(act == null) { return "null"; } // NOI18N
         String s = new String(act.getId() + ":"+act.getClassname()).intern();//NOI18N
         return s;
     }
@@ -1446,9 +1433,9 @@ public class ActionManager {
     }
     
     private void dumpContents() {
-        System.out.println("actionList:");//log
+        p("actionList:");//log
         for(ProxyAction a : this.actionList) {
-            System.out.println("action = " + a + " " + a.hashCode());//log
+            p("action = " + a + " " + a.hashCode());//log
         }
     }
     

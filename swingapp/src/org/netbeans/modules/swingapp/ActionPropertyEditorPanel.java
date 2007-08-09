@@ -129,8 +129,8 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             
         });
         
-        ((IconButton)iconButtonLarge).setIconText(NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.iconButtonLarge.text"));
-        ((IconButton)iconButtonSmall).setIconText(NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.iconButtonSmall.text"));
+        ((IconButton)iconButtonLarge).setIconText(NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.iconButtonLarge.text")); // NOI18N
+        ((IconButton)iconButtonSmall).setIconText(NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel.iconButtonSmall.text")); // NOI18N
         iconButtonSmall.addActionListener(new IconButtonListener(property,iconButtonSmall, Action.SMALL_ICON));
         iconButtonLarge.addActionListener(new IconButtonListener(property,iconButtonLarge, LARGE_ICON_KEY));
         setIconButtonSmall.addActionListener(new IconButtonListener(property,iconButtonSmall, Action.SMALL_ICON));
@@ -155,13 +155,13 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
         actionsCombo.setRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component comp = super.getListCellRendererComponent(list,value,index,isSelected,cellHasFocus);
-                String text = getLocalizedString("noneAction");
+                String text = getLocalizedString("noneAction"); // NOI18N
                 if(value instanceof ProxyAction) {
                     ProxyAction act = (ProxyAction)value;
                     if(value == NEW_ACTION) {
-                        text = getLocalizedString("createNewAction");
+                        text = getLocalizedString("createNewAction"); // NOI18N
                     } else {
-                        text = act != null ? act.getId() : getLocalizedString("noneAction");
+                        text = act != null ? act.getId() : getLocalizedString("noneAction"); // NOI18N
                         if(act != null && act.isAppWide()) {
                             text += getLocalizedString("globalActionAppend");//" (global)";
                         }
@@ -265,7 +265,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             actionsLabel.setVisible(false);
             actionToEdit.setVisible(false);
             setNewActionCreated(true);
-            classField.setText("");
+            classField.setText(""); // NOI18N
             classField.setVisible(false);
             classLabel.setVisible(true);
             targetClassButton.setVisible(true);
@@ -282,7 +282,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
     }
     
     private void clearAcceleratorPanel() {
-        acceleratorText.setText("");
+        acceleratorText.setText(""); // NOI18N
         altCheckbox.setSelected(false);
         controlCheckbox.setSelected(false);
         metaCheckbox.setSelected(false);
@@ -330,7 +330,7 @@ public class ActionPropertyEditorPanel extends javax.swing.JPanel {
             actionsLabel.setText(act.getId());
             methodLabel.setText(sig.toString());
             classLabel.setText(act.getClassname());
-            backgroundTaskLabel.setText(act.isTaskEnabled() ? getLocalizedString("yes") : getLocalizedString("no"));
+            backgroundTaskLabel.setText(act.isTaskEnabled() ? getLocalizedString("yes") : getLocalizedString("no")); // NOI18N
             backgroundTaskCheckbox.setSelected(act.isTaskEnabled());
         }
 
@@ -882,7 +882,7 @@ private void targetClassButtonActionPerformed(java.awt.event.ActionEvent evt) {/
         }
     },true,true);
 
-    cp.getDialog(getLocalizedString("classChooserDialogTitle"), null).setVisible(true);
+    cp.getDialog(getLocalizedString("classChooserDialogTitle"), null).setVisible(true); // NOI18N
     if(cp.getSelectedFile() != null) {
         selectedSourceFile = cp.getSelectedFile();
         String selectedClass = AppFrameworkSupport.getClassNameForFile(cp.getSelectedFile());
@@ -1142,9 +1142,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     
     private void clearFieldsForNull() {
         textField.setEnabled(false);
-        textField.setText("");
+        textField.setText(""); // NOI18N
         tooltipField.setEnabled(false);
-        tooltipField.setText("");
+        tooltipField.setText(""); // NOI18N
         acceleratorListener.setEnabled(false);
         setAcceleratorPanelEnabled(false);
         clearAcceleratorPanel();
@@ -1155,14 +1155,14 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         iconButtonSmall.setIcon(null);
         setIconButtonSmall.setEnabled(false);
         selectedTextfield.setEnabled(false);
-        selectedTextfield.setText("");
-        enabledTextfield.setText("");
+        selectedTextfield.setText(""); // NOI18N
+        enabledTextfield.setText(""); // NOI18N
         enabledTextfield.setEnabled(false);
         
         blockingDialogText.setEnabled(false);
-        blockingDialogText.setText("");
+        blockingDialogText.setText(""); // NOI18N
         blockingDialogTitle.setEnabled(false);
-        blockingDialogTitle.setText("");
+        blockingDialogTitle.setText(""); // NOI18N
         blockingType.setEnabled(false);
         
         backgroundTaskCheckbox.setEnabled(false);
@@ -1179,9 +1179,9 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         iconButtonSmall.setEnabled(true);
         setIconButtonSmall.setEnabled(true);
         selectedTextfield.setEnabled(true);
-        selectedTextfield.setText("");
+        selectedTextfield.setText(""); // NOI18N
         enabledTextfield.setEnabled(true);
-        enabledTextfield.setText("");
+        enabledTextfield.setText(""); // NOI18N
         actionsCombo.setEnabled(false);
         textField.setText(""); // NOI18N
         acceleratorListener.clearFields();
@@ -1192,17 +1192,17 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         // josh: is this next line correct?
         blockingType.setEnabled(false);
         
-        classLabel.setText("");
+        classLabel.setText(""); // NOI18N
         classLabel.setVisible(false);
-        classField.setText("");
+        classField.setText(""); // NOI18N
         classField.setVisible(true);
         
-        methodLabel.setText("");
+        methodLabel.setText(""); // NOI18N
         methodLabel.setVisible(false);
-        methodField.setText("");
+        methodField.setText(""); // NOI18N
         methodField.setVisible(true);
         
-        backgroundTaskLabel.setText("");
+        backgroundTaskLabel.setText(""); // NOI18N
         backgroundTaskLabel.setVisible(false);
         backgroundTaskCheckbox.setSelected(false);
         backgroundTaskCheckbox.setEnabled(true);
@@ -1254,7 +1254,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     boolean isValidClassname() {
         String classname = getSelectedClassname();
         if(classname == null) { return false; }
-        if(classname.trim().equals("")) { return false; }
+        if(classname.trim().equals("")) { return false; } // NOI18N
         
         ActionManager am = ActionManager.getActionManager(sourceFile);
         if(am.getFileForClass(classname) == null) { return false; }
@@ -1265,7 +1265,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
         newMethodName = methodField.getText();
         String classname = getSelectedClassname();
         if(classname == null) { return true; }
-        if(classname.trim().equals("")) { return true; }
+        if(classname.trim().equals("")) { return true; } // NOI18N
         
         
         ActionManager am = ActionManager.getActionManager(sourceFile);
@@ -1438,7 +1438,7 @@ private void backgroundTaskCheckboxActionPerformed(java.awt.event.ActionEvent ev
     }
 
     private String getLocalizedString(String key) {
-        return NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel."+key);
+        return NbBundle.getMessage(ActionPropertyEditorPanel.class, "ActionPropertyEditorPanel."+key); // NOI18N
     }
 }
 
