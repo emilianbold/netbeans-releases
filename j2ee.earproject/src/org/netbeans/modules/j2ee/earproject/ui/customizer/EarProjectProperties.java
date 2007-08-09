@@ -954,19 +954,7 @@ public final class EarProjectProperties {
                 } else if (NO_DEPENDENCIES.equals(pd.name) && newValueEncoded.equals("false")) { // NOI18N
                     ep.remove(pd.name);
                 } else if (CLIENT_MODULE_URI.equals(pd.name)) {
-                    if (isWebUri(newValueEncoded)) {
-                        // web module selected
-                        ep.setProperty(CLIENT_MODULE_URI, newValueEncoded);
-                        ep.remove(APPLICATION_CLIENT);
-                    } else if (isAppClientUri(newValueEncoded)) {
-                        // application module selected
-                        ep.setProperty(APPLICATION_CLIENT, newValueEncoded);
-                        ep.setProperty(CLIENT_MODULE_URI, getClientModuleUriForAppClient());
-                    } else {
-                        // may happen if e.g. currently set module is removed
-                        ep.remove(APPLICATION_CLIENT);
-                        ep.remove(CLIENT_MODULE_URI);
-                    }
+                    updateClientModuleUri(ep, newValueEncoded);
                 } else {
                     if (JAVA_PLATFORM.equals(pd.name)) { // update javac.source and javac.target
                         assert defaultPlatform != null;
@@ -1006,6 +994,54 @@ public final class EarProjectProperties {
         // Store the property changes into the project
         updateHelper.putProperties(PROJECT, eProps.get(PROJECT));
         updateHelper.putProperties(PRIVATE, eProps.get(PRIVATE));
+    }
+    
+    private void updateClientModuleUri(EditableProperties ep, String newValue) {
+        
+        if (isWebUri(newValue)) {
+            ep.put(CLIENT_MODULE_URI, newValue);
+            ep.remove(APPLICATION_CLIENT);
+            return;
+        }
+        if (isAppClientUri(newValue)) {
+            ep.put(APPLICATION_CLIENT, newValue);
+            ep.put(CLIENT_MODULE_URI, getClientModuleUriForAppClient());
+            return;
+        }
+        
+        // 2 possibilities here:
+        //  a) newValue is empty (removing module via context menu)
+        //  b) newValue is not in correct form (adding module via context menu)
+        
+        // check current module uri
+        String clientModuleUri = ep.getProperty(CLIENT_MODULE_URI);
+        if (clientModuleUri != null
+                && clientModuleUri.length() != 0) {
+            // uri exists -> is still valid?
+            if (isWebUri(clientModuleUri)
+                    || isAppClientUri(clientModuleUri)) {
+                // is valid => keep it
+                return;
+            }
+        }
+        
+        // uri doesn't exist or is not valid
+        //  => so remove it and try to set any valid module
+        ep.remove(APPLICATION_CLIENT);
+        ep.remove(CLIENT_MODULE_URI);
+        
+        String[] webUris = getWebUris();
+        for (String webUri : webUris) {
+            ep.put(CLIENT_MODULE_URI, webUri);
+            ep.remove(APPLICATION_CLIENT);
+            return;
+        }
+        String[] appClientUris = getAppClientUris();
+        for (String appClientUri : appClientUris) {
+            ep.put(APPLICATION_CLIENT, appClientUri);
+            ep.put(CLIENT_MODULE_URI, getClientModuleUriForAppClient());
+            return;
+        }
     }
     
     String getClientModuleUriForAppClient() {
