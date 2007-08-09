@@ -34,8 +34,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
@@ -63,6 +65,7 @@ public class UpdateUnitFactory {
     private final Logger log = Logger.getLogger (this.getClass ().getName ());
     private static final DateFormat FMT = new SimpleDateFormat ("mm:ss:SS");
     private static long runTime = -1;
+    private Set<String> scheduledForRestart = null;
     
     public static final String UNSORTED_CATEGORY = NbBundle.getMessage (UpdateUnitFactory.class, "UpdateUnitFactory_Unsorted_Category");
     public static final String LIBRARIES_CATEGORY = NbBundle.getMessage (UpdateUnitFactory.class, "UpdateUnitFactory_Libraries_Category");
@@ -279,7 +282,7 @@ public class UpdateUnitFactory {
             unitImpl = Trampoline.API.impl (unit);
         }
         
-        if (provider instanceof InstalledUpdateProvider) {
+        if (provider instanceof InstalledUpdateProvider || isScheduledForRestart (element)) {
             unitImpl.setInstalled (element);
         } else if (provider instanceof BackupUpdateProvider) {
             unitImpl.setBackup (element);
@@ -309,6 +312,17 @@ public class UpdateUnitFactory {
             }
             resetRunTime (null);
         }
+    }
+    
+    public void scheduleForRestart (UpdateElement el) {
+        if (scheduledForRestart == null) {
+            scheduledForRestart = new HashSet<String> ();
+        }
+        scheduledForRestart.add (el.getCodeName () + "_" + el.getSpecificationVersion ());
+    }
+    
+    public boolean isScheduledForRestart (UpdateElement el) {
+        return scheduledForRestart != null && scheduledForRestart.contains (el.getCodeName () + "_" + el.getSpecificationVersion ());
     }
     
 }

@@ -315,7 +315,7 @@ public class InstallSupportImpl {
                                 Module module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ().toString ());
                                 // XXX: consider again this
                                 for (; rerunWaitCount < 100 && (module == null || !module.isEnabled()); rerunWaitCount++) {
-                                    Thread.currentThread().sleep(100);
+                                    Thread.sleep(100);
                                     module = Utilities.toModule (impl.getCodeName(), impl.getSpecificationVersion ().toString ());
                                 }
                                 if (rerunWaitCount == 100) {
@@ -331,7 +331,7 @@ public class InstallSupportImpl {
                     }
                 } else {
                     for (ModuleUpdateElementImpl impl : moduleImpls) {
-                        Trampoline.API.impl(support.getContainer()).addScheduledForReboot (impl.getUpdateElement ());
+                        UpdateUnitFactory.getDefault ().scheduleForRestart (impl.getUpdateElement ());
                     }
                 }
                 

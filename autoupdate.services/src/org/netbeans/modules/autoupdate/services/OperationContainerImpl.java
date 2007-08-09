@@ -25,6 +25,8 @@ import java.util.HashSet;
 import org.netbeans.api.autoupdate.*;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import org.openide.modules.ModuleInfo;
@@ -37,7 +39,6 @@ public final class OperationContainerImpl<Support> {
     private OperationContainer<Support> container;
     private OperationContainerImpl () {}
     private List<OperationInfo<Support>> operations = new ArrayList<OperationInfo<Support>>();
-    private List<UpdateElement> scheduledForReboot = new ArrayList<UpdateElement> ();
     public static OperationContainerImpl<InstallSupport> createForInstall () {
         return new OperationContainerImpl<InstallSupport> (OperationType.INSTALL);
     }
@@ -73,7 +74,8 @@ public final class OperationContainerImpl<Support> {
             throw new IllegalArgumentException ("Invalid " + updateElement.getCodeName () + " for operation " + type);
         }
         if (type == OperationType.INSTALL || type == OperationType.UPDATE) {
-            if (scheduledForReboot.contains (updateElement)) {
+            if (UpdateUnitFactory.getDefault().isScheduledForRestart (updateElement)) {
+                Logger.getLogger(this.getClass ().getName ()).log (Level.INFO, updateElement + " is scheduled for restart IDE.");
                 return null;
             }
         }
@@ -102,10 +104,6 @@ public final class OperationContainerImpl<Support> {
             remove (toRemove);
         }
         return toRemove != null;
-    }
-    
-    public void addScheduledForReboot (UpdateElement el) {
-        scheduledForReboot.add (el);
     }
     
     public boolean contains (UpdateElement updateElement) {
