@@ -31,9 +31,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import javax.management.Attribute;
-import javax.management.MBeanAttributeInfo;
 import junit.framework.TestCase;
 import org.netbeans.modules.sun.manager.jbi.editors.ComboBoxPropertyEditor;
+import org.netbeans.modules.sun.manager.jbi.editors.PasswordEditor;
+import org.netbeans.modules.sun.manager.jbi.util.MyMBeanAttributeInfo;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.openide.nodes.PropertySupport;
 
@@ -79,33 +80,46 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
         // string enumeration
         type = SchemaBasedConfigPropertySupportFactory.
             getGlobalSimpleTypeName(schema, "ProxyType");
-        assertEquals(type, "tns:ProxyTypeSimpleType");        
+        assertEquals(type, "tns:ProxyTypeSimpleType"); 
+        
+        // password
+        type = SchemaBasedConfigPropertySupportFactory.
+            getGlobalSimpleTypeName(schema, "ProxyPassword");
+        assertEquals(type, "tns:SimpleStringType"); 
     }
 
     public void testGetPropertySupport() throws Exception {
+        // integer
         PropertySupport propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("OutboundThreads", 4), 
-                new MBeanAttributeInfo("name", "java.lang.Integer", "description", true, true, false));
+                new MyMBeanAttributeInfo("name", "java.lang.Integer", "description", 
+                true, true, false, false, false, false, false));
         assertTrue(propSupport.getValue() instanceof Integer);
 
+        // boolean
         propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("UseJVMProxySettings", true), 
-                new MBeanAttributeInfo("name", "java.lang.Boolean", "description", true, true, false));
+                new MyMBeanAttributeInfo("name", "java.lang.Boolean", "description", 
+                true, true, false, false, false, false, false));
         assertTrue(propSupport.getValue() instanceof Boolean);
         
+        // string
         propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("ProxyHost", "localhost"), 
-                new MBeanAttributeInfo("name", "java.lang.String", "description", true, true, false));
+                new MyMBeanAttributeInfo("name", "java.lang.String", "description", 
+                true, true, false, false, false, false, false));
         assertTrue(propSupport.getValue() instanceof String);
         assertFalse(propSupport.getPropertyEditor() instanceof ComboBoxPropertyEditor);
 
+        // string enumeration
         propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("ProxyType", "SOCKS"), 
-                new MBeanAttributeInfo("name", "java.lang.String", "description", true, true, false));
+                new MyMBeanAttributeInfo("name", "java.lang.String", "description", 
+                true, true, false, false, false, false, false));
         assertTrue(propSupport.getValue() instanceof String);
         PropertyEditor propEditor = propSupport.getPropertyEditor();
         assertTrue(propEditor instanceof ComboBoxPropertyEditor);
@@ -116,6 +130,15 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
         } catch (IllegalArgumentException e) {
             // expected
         }
+        
+        // password
+        propSupport = SchemaBasedConfigPropertySupportFactory.
+            getPropertySupport(schema, null, 
+                new Attribute("ProxyPassword", "localhost"), 
+                new MyMBeanAttributeInfo("name", "java.lang.String", "description", 
+                true, true, false, true, false, false, false));
+        assertTrue(propSupport.getValue() instanceof String);
+        assertTrue(propSupport.getPropertyEditor() instanceof PasswordEditor);
     }
 
 

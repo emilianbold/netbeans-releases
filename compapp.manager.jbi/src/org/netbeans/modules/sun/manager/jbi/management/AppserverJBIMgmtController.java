@@ -143,12 +143,13 @@ public class AppserverJBIMgmtController {
         return adminService;
     }
         
-    public Map<Attribute, MBeanAttributeInfo> getJBIComponentConfigProperties(
+    public Map<Attribute, ? extends MBeanAttributeInfo> getJBIComponentConfigProperties(
             String containerType, String componentName, boolean sort)
             throws Exception {
         JBIComponentConfigurator configurator =
                 getComponentConfigurator(containerType, componentName);
-        Map<Attribute, MBeanAttributeInfo> propertyMap = configurator.getPropertyMap();
+        Map<Attribute, ? extends MBeanAttributeInfo> propertyMap = 
+                configurator.getPropertyMap();
         return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
     }
     
@@ -156,31 +157,34 @@ public class AppserverJBIMgmtController {
             String componentName, boolean sort)
             throws Exception {
         Map<Attribute, MBeanAttributeInfo> propertyMap = 
-                getJBIAdministrationService().getComponentLoggerProperties(componentName);
+                getJBIAdministrationService().
+                getComponentLoggerProperties(componentName);
         return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
     }
     
     public Map<Attribute, MBeanAttributeInfo> getJBIComponentIdentificationProperties(
             String componentName, boolean sort) throws Exception {
         Map<Attribute, MBeanAttributeInfo> propertyMap = 
-                getJBIAdministrationService().getComponentIdentificationProperties(componentName);
+                getJBIAdministrationService().
+                getComponentIdentificationProperties(componentName);
         return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
     }
     
     public Map<Attribute, MBeanAttributeInfo> getSharedLibraryIdentificationProperties(
             String componentName, boolean sort) throws Exception {
         Map<Attribute, MBeanAttributeInfo> propertyMap = 
-                getJBIAdministrationService().getSharedLibraryIdentificationProperties(componentName);
+                getJBIAdministrationService().
+                getSharedLibraryIdentificationProperties(componentName);
         return sort ? getSortedPropertyMap(propertyMap) : propertyMap;
     }
     
-    private Map<Attribute, MBeanAttributeInfo> getSortedPropertyMap(
-            Map<Attribute, MBeanAttributeInfo> propertyMap) {
-        Map<Attribute, MBeanAttributeInfo> sortedMap =
-                new TreeMap<Attribute, MBeanAttributeInfo>();
+    private <T extends MBeanAttributeInfo> Map<Attribute,T> getSortedPropertyMap(
+            Map<Attribute, T> propertyMap) {
+        Map<Attribute, T> sortedMap =
+                new TreeMap<Attribute, T>();
         
         for (Attribute attr : propertyMap.keySet()) {
-            MBeanAttributeInfo info = propertyMap.get(attr);
+            T info = propertyMap.get(attr);
             sortedMap.put(new ComparableAttribute(attr), info);
         }
         return sortedMap;

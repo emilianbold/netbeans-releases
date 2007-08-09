@@ -130,7 +130,7 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
     protected Sheet.Set createSheetSet(String name, 
             String displayNameLabel, 
             String descriptionLabel, 
-            Map<Attribute, MBeanAttributeInfo> properties) {
+            Map<Attribute, ? extends MBeanAttributeInfo> properties) {
         
         if (properties == null) {
             return null;
@@ -170,7 +170,7 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
      * @return An array of PropertySupport objects.
      */
     protected PropertySupport[] createPropertySupportArray(
-            final Map<Attribute, MBeanAttributeInfo> attrMap) {
+            final Map<Attribute, ? extends MBeanAttributeInfo> attrMap) {
         PropertySupport[] supports = new PropertySupport[attrMap.size()];
         
         int i = 0;        

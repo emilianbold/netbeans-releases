@@ -43,6 +43,7 @@ import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtControlle
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
+import org.netbeans.modules.sun.manager.jbi.util.MyMBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Sheet;
 import org.openide.DialogDisplayer;
@@ -116,7 +117,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 }
             }
                         
-            Map<Attribute, MBeanAttributeInfo> configPropertyMap = 
+            Map<Attribute, ? extends MBeanAttributeInfo> configPropertyMap = 
                         getConfigurationProperties();
             
             Sheet.Set sheetSet = null;
@@ -145,7 +146,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     }
     
     protected PropertySupport[] createPropertySupportArrayWithSchema(
-            final Map<Attribute, MBeanAttributeInfo> attrMap) {
+            final Map<Attribute, ? extends MBeanAttributeInfo> attrMap) {
         
         assert configSchema != null;
         
@@ -207,7 +208,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      * @return A java.util.Map containing all configuration properties.
      */
-    private Map<Attribute, MBeanAttributeInfo> getConfigurationProperties()
+    private Map<Attribute, ? extends MBeanAttributeInfo> getConfigurationProperties()
     throws Exception {
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
         String containerType = getContainerType();

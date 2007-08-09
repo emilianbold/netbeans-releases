@@ -98,14 +98,9 @@ public class Utils {
             return null;
         }
         
-//        Map map = sort ? new TreeMap() : new HashMap();   // NB IDE BUG
-        
-        Map<Attribute, MBeanAttributeInfo> map = null;
-        if (sort) {
-            map = new TreeMap<Attribute, MBeanAttributeInfo>();
-        } else {
-            map = new HashMap<Attribute, MBeanAttributeInfo>();
-        }
+        Map<Attribute, MBeanAttributeInfo> map = sort ? 
+            new TreeMap<Attribute, MBeanAttributeInfo>() : 
+            new HashMap<Attribute, MBeanAttributeInfo>();  
         
         PropertyDescriptor[] propDescriptors = beanInfo.getPropertyDescriptors();
         

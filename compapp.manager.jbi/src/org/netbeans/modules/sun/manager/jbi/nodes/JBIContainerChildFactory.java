@@ -19,9 +19,9 @@
 
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
+import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
