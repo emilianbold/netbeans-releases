@@ -94,7 +94,7 @@
 <mapID target="webbrowser.config" url="webbrowser/config_browser.html" />
 <mapID target="proxy" url="webbrowser/proxy.html" />
 <mapID target="bypass.proxy" url="webbrowser/bypassproxy.html" />
-<mapID target="httpserver-options" url="webbrowser/httpserver-options.html" />
+
 
 <!--linked to from web/advanced help set - file webmod/mod_browser.html:-->
 <mapID target="webbrowser.default" url="webbrowser/default.html" />
@@ -257,7 +257,7 @@
 <mapID target="org.netbeans.modules.extbrowser.ExtWebBrowser" url="webbrowser/options.html" />
 <mapID target="org.openide.awt.SwingBrowser" url="webbrowser/swingbrowser.html" />
 
-<mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver-options.html" />
+
 
 
   <!--this ID is the one the ID calls if someone presses F1 in an area where there 
@@ -338,7 +338,7 @@
    <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
    <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
 
-   <mapID target="org.netbeans.modules.httpserver.HttpServerSettings" url="webbrowser/httpserver-options.html" />
+
   
 
 <!--CSH ID for Options | Editing | Form Editor Settings :-->

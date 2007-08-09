@@ -52,7 +52,7 @@
       <tocitem text="Accessing Local Files Through a Proxy" target="bypass.proxy" />
       <tocitem text="Changing the Default Web Browser" target="webbrowser.default" />
       <tocitem text="Configuring a Web Browser" target="webbrowser.config" />
-      <tocitem text="Configuring HTTP Server Options" target="httpserver-options" />
+
       <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
     </tocitem>
 
