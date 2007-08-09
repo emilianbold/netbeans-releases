@@ -39,6 +39,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -176,7 +177,7 @@ public class Merge extends CopyDialog implements ItemListener {
                 browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageMergeFolder");
                 browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;                
             }
-            paths.setupBrowserBehavior(browserPurposeMessage, browserMode, Browser.BROWSER_HELP_ID_MERGE);
+            paths.setupBehavior(browserPurposeMessage, browserMode, Browser.BROWSER_HELP_ID_MERGE, SvnSearch.SEACRH_HELP_ID_MERGE);
             paths.addPropertyChangeListener(this);
         }
 

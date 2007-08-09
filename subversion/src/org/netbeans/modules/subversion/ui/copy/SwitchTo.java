@@ -27,6 +27,7 @@ import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -76,7 +77,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
             browserPurposeMessage = org.openide.util.NbBundle.getMessage(CreateCopy.class, "LBL_BrowserMessageSwitchFolder");
             browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;                                    
         }
-        repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, Browser.BROWSER_HELP_ID_SWITCH_TO);                
+        repositoryPaths.setupBehavior(browserPurposeMessage, browserMode, Browser.BROWSER_HELP_ID_SWITCH_TO, SvnSearch.SEACRH_HELP_ID_SWITCH);                
     }            
     
     RepositoryFile getRepositoryFile() {        

@@ -66,6 +66,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
     private BrowserAction[] browserActions;
     private String browserPurpose;
     private String browserHelpID;
+    private String searchHelpID; 
     
     private boolean valid = false;
     public static final String PROP_VALID = "valid"; // NOI18N
@@ -104,14 +105,15 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         }                
     }
 
-    public void setupBrowserBehavior(String browserPurpose, int browserMode, String browserHelpID) {
-        this.browserMode = browserMode;                
+    public void setupBehavior(String browserPurpose, int browserMode, String browserHelpID, String searchHelpID) {
+        this.browserMode    = browserMode;                
         this.browserPurpose = browserPurpose;
-        this.browserHelpID = browserHelpID;
+        this.browserHelpID  = browserHelpID;
+        this.searchHelpID   = searchHelpID;
     }            
     
-    public void setupBrowserBehavior(String browserPurpose, int browserMode, BrowserAction[] browserActions, String browserHelpID) {
-        setupBrowserBehavior(browserPurpose, browserMode, browserHelpID);
+    public void setupBehavior(String browserPurpose, int browserMode, BrowserAction[] browserActions, String browserHelpID, String searchHelpID) {
+        setupBehavior(browserPurpose, browserMode, browserHelpID, searchHelpID);
         this.browserActions = browserActions;
         this.browserPurpose = browserPurpose;
     }            
@@ -214,7 +216,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         final DialogDescriptor dialogDescriptor = 
                 new DialogDescriptor(svnSearch.getSearchPanel(), java.util.ResourceBundle.getBundle("org/netbeans/modules/subversion/ui/browser/Bundle").getString("CTL_RepositoryPath_SearchRevisions")); 
         dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(Browser.class));
+        dialogDescriptor.setHelpCtx(new HelpCtx(searchHelpID));
         dialogDescriptor.setValid(false);
         
         svnSearch.addListSelectionListener(new ListSelectionListener() {

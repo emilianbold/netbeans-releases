@@ -36,6 +36,7 @@ import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.wizards.CheckoutWizard;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
@@ -88,7 +89,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
                 );        
             String browserPurposeMessage = org.openide.util.NbBundle.getMessage(CheckoutStep.class, "LBL_BrowserMessage");
             int browserMode = Browser.BROWSER_SHOW_FILES | Browser.BROWSER_FOLDERS_SELECTION_ONLY;
-            repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, Browser.BROWSER_HELP_ID_CHECKOUT);
+            repositoryPaths.setupBehavior(browserPurposeMessage, browserMode, Browser.BROWSER_HELP_ID_CHECKOUT, SvnSearch.SEACRH_HELP_ID_CHECKOUT);
         } else {
             repositoryPaths.setRepositoryFile(repositoryFile);
         }                

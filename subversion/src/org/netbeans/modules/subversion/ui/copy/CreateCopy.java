@@ -66,7 +66,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
 
         panel.copyFromLocalTextField.setText(localeFile.getAbsolutePath());
         panel.copyFromRemoteTextField.setText(repositoryFile.getFileUrl().toString());        
-        
+                        
         copyFromRepositoryPaths = 
             new RepositoryPaths(
                 repositoryFile, 
@@ -105,7 +105,7 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
 
         String defaultFolderName = localeFile.isFile() ? "" : localeFile.getName();
         int browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;
-        copyToRepositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, new BrowserAction[] { new CreateFolderAction(defaultFolderName)} , Browser.BROWSER_HELP_ID_COPY);                
+        copyToRepositoryPaths.setupBehavior(browserPurposeMessage, browserMode, new BrowserAction[] { new CreateFolderAction(defaultFolderName)} , Browser.BROWSER_HELP_ID_COPY, null);                
         copyToRepositoryPaths.addPropertyChangeListener(this);
 
         setupUrlComboBox(panel.urlComboBox, CreateCopy.class.getName());                        

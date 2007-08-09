@@ -38,6 +38,7 @@ import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
+import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.ErrorManager;
@@ -155,7 +156,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
                     );
                 String browserPurposeMessage = org.openide.util.NbBundle.getMessage(ImportStep.class, "LBL_BrowserMessage");
                 int browserMode = Browser.BROWSER_SINGLE_SELECTION_ONLY;
-                repositoryPaths.setupBrowserBehavior(browserPurposeMessage, browserMode, actions, Browser.BROWSER_HELP_ID_IMPORT);
+                repositoryPaths.setupBehavior(browserPurposeMessage, browserMode, actions, Browser.BROWSER_HELP_ID_IMPORT, null);
             } else {
                 repositoryPaths.setRepositoryFile(repositoryFile);
             }

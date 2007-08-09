@@ -55,6 +55,13 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  */
 public class SvnSearch implements ActionListener, DocumentListener {
     
+    public final static String SEACRH_HELP_ID_CHECKOUT = "org.netbeans.modules.subversion.ui.search.checkout"; 
+    public final static String SEACRH_HELP_ID_SWITCH = "org.netbeans.modules.subversion.ui.search.switch"; 
+    public final static String SEACRH_HELP_ID_COPY = "org.netbeans.modules.subversion.ui.search.copy"; 
+    public final static String SEACRH_HELP_ID_URL_PATTERN = "org.netbeans.modules.subversion.ui.search.urlpattern"; 
+    public final static String SEACRH_HELP_ID_MERGE = "org.netbeans.modules.subversion.ui.search.merge"; 
+    public final static String SEACRH_HELP_ID_REVERT = "org.netbeans.modules.subversion.ui.search.revert";     
+    
     private static final String DATE_FROM = "svnSearch.dateFrom";    // NOI18N
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
     private final SvnSearchPanel panel;    
@@ -65,7 +72,7 @@ public class SvnSearch implements ActionListener, DocumentListener {
     private NoContentPanel noContentPanel;
     
     public SvnSearch(RepositoryFile... repositoryFile) {
-        this.repositoryFiles = repositoryFile;
+        this.repositoryFiles = repositoryFile;                
         panel = new SvnSearchPanel();
         panel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SvnSearch.class, "ACSN_SummaryView_Name"));  // NOI18N
         panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SvnSearch.class, "ACSD_SummaryView_Desc"));   // NOI18N
