@@ -51,6 +51,27 @@ Microsystems, Inc. All Rights Reserved.
                         </file>
                     </folder>
                 </folder>
+                <folder name="NetBeans55">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeans55-Java-preprocessorColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="NetBeansEarth">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="NetBeansEarth-Java-preprocessorColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+                <folder name="BlueTheme">
+                    <folder name="Defaults">
+                        <file name="coloring.xml" url="BlueTheme-Java-preprocessorColors.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.editor.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
                 <folder name="CityLights">
                     <folder name="Defaults">
                         <file name="coloring.xml" url="CityLights-Java-preprocessorColors.xml">
