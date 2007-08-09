@@ -76,56 +76,6 @@ public class ExtractTask extends Task
             throw new BuildException(Bundle.getMessage("ERR_Extract_InvalidDir", dir != null ? dir.getAbsolutePath() : null)); // NO I18N
         final String[] archives = classPath.list();
         final Set excludes = exClassPath == null ? Collections.EMPTY_SET : new HashSet(Arrays.asList(exClassPath.list()));
-        long srcLastModified = Long.MIN_VALUE;
-        long destLastModified = Long.MAX_VALUE;
-        
-        if (archives != null) for (int a = 0; a < archives.length; a ++)
-        {
-            final File source = new File(archives[a]);
-            if (excludes.contains(archives[a]) || !source.exists())
-                continue;
-            if (source.isFile())
-            {
-                final String name = source.getName().toLowerCase();
-                if (name.endsWith(".zip")  ||  name.endsWith(".jar"))
-                { //NOI18N
-                    final long time = source.lastModified();
-                    if (time > srcLastModified)
-                        srcLastModified = time;
-                }
-            }
-            else if (source.isDirectory())
-            {
-                final FileSet fileset = new FileSet();
-                fileset.setDir(source);
-                final DirectoryScanner ds = fileset.getDirectoryScanner(getProject());
-                final File basedir = ds.getBasedir();
-                final String[] files = ds.getIncludedFiles();
-                for (int b = 0; b < files.length; b ++)
-                {
-                    final long time = new File(basedir, files[b]).lastModified();
-                    if (time > srcLastModified)
-                        srcLastModified = time;
-                }
-            }
-        }
-        
-        final FileSet targetfileset = new FileSet();
-        targetfileset.setDir(dir);
-        final DirectoryScanner targetds = targetfileset.getDirectoryScanner(getProject());
-        final File targetbasedir = targetds.getBasedir();
-        final String[] targetfiles = targetds.getIncludedFiles();
-        for (int a = 0; a < targetfiles.length; a ++)
-        {
-            final long time = new File(targetbasedir, targetfiles[a]).lastModified();
-            if (time < destLastModified)
-                destLastModified = time;
-        }
-        if (destLastModified != Long.MAX_VALUE  &&  srcLastModified <= destLastModified)
-        {
-            log(Bundle.getMessage("MSG_Extract_UpToDate", dir.getAbsolutePath()), Project.MSG_VERBOSE); // No I18N
-            return;
-        }
         
         if (archives != null) for (int a = 0; a < archives.length; a ++)
         {
@@ -158,6 +108,7 @@ public class ExtractTask extends Task
     {
         final Expand e = new Expand();
         e.setProject(getProject());
+        e.setOverwrite(false);
         if (excludeManifest)
         {
             final PatternSet ps = new PatternSet();
@@ -173,6 +124,7 @@ public class ExtractTask extends Task
     {
         final Copy c = new Copy();
         c.setProject(getProject());
+        c.setOverwrite(false);
         final FileSet fileset = new FileSet();
         fileset.setDir(source);
         c.addFileset(fileset);
