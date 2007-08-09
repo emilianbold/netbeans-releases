@@ -22,6 +22,8 @@ package org.netbeans.modules.web.core.jsploader;
 import java.lang.ref.WeakReference;
 import java.lang.ref.SoftReference;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.web.core.jsploader.api.TagLibParseCookie;
 import org.netbeans.modules.web.core.syntax.spi.ErrorAnnotation;
@@ -365,12 +367,14 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                             public void run() {
                                 for (int i = 0; i < locResult.getErrors().length; i ++){
                                     JspParserAPI.ErrorDescriptor err = locResult.getErrors()[i];
-                                    annotations.annotate(new ErrorAnnotation.ErrorInfo[] {
-                                        new ErrorAnnotation.ErrorInfo(translate(err.getErrorMessage()),
-                                                err.getLine(),
-                                                err.getColumn(),
-                                                ErrorAnnotation.JSP_ERROR)
-                                    } );
+                                    if(checkError(err)) {
+                                        annotations.annotate(new ErrorAnnotation.ErrorInfo[] {
+                                            new ErrorAnnotation.ErrorInfo(translate(err.getErrorMessage()),
+                                                    err.getLine(),
+                                                    err.getColumn(),
+                                                    ErrorAnnotation.JSP_ERROR)
+                                        } );
+                                    }
                                 }
                                 // set icon with error.
                                 if (!hasError){
@@ -407,6 +411,15 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
             }
             
             
+        }
+        
+        private boolean checkError(JspParserAPI.ErrorDescriptor err) {
+            if(err.getErrorMessage() == null) {
+                Logger.global.log(Level.INFO, null, 
+                        new IllegalStateException("Invalid JspParserAPI.ErrorDescription from jsp parser - null error message: " + err.toString()));
+                return false;
+            }
+            return true;
         }
         
         private String translate (String text){
