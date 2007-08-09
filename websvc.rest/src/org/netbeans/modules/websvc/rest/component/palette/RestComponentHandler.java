@@ -27,6 +27,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.websvc.rest.codegen.JAXWSwrapperRESTServiceGenerator;
 import org.netbeans.modules.websvc.rest.codegen.WADLResourceCodeGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.JaxwsBasedResourceBean;
+import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.modules.websvc.rest.wizard.RESTServicesProgressPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -82,6 +83,7 @@ public class RestComponentHandler implements ActiveEditorDrop {
                             }     
                         }
                         codegen.generate();
+                        Utils.showMethod(targetFO, codegen.getSubResourceLocator());
                     } else if (RestComponentData.isWADL(type)) {
                         WADLResourceCodeGenerator codegen = new WADLResourceCodeGenerator(targetFO, data);
                         codegen.generate();

@@ -889,7 +889,7 @@ public class JavaSourceHelper {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller)
                         throws IOException {
-                    String className = controller.getFileObject().getName();        
+                    String className = controller.getFileObject().getName();
                     CompilationUnitTree cu = controller.getCompilationUnit();
                     if (cu != null) {
                         allTree = cu.getTypeDecls();
@@ -930,8 +930,8 @@ public class JavaSourceHelper {
             source.runUserActionTask(new AbstractTask<CompilationController>() {
                 public void run(CompilationController controller)
                         throws IOException {
-                    TypeElement classElement = getTopLevelClassElement(controller);
                     controller.toPhase(Phase.RESOLVED);
+                    TypeElement classElement = getTopLevelClassElement(controller);
                     CompilationUnitTree tree = controller.getCompilationUnit();
                     Trees trees = controller.getTrees();
                     Tree elementTree;
@@ -964,7 +964,7 @@ public class JavaSourceHelper {
         
         return position;
     }
-
+    
     public static ExecutableElement getLongestContructor(JavaSource source) throws IOException {
         return getLongestContructor(getTypeElement(source));
     }

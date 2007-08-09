@@ -21,6 +21,14 @@ package org.netbeans.modules.websvc.rest.support;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.TreeSet;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.java.source.JavaSource;
+import org.openide.ErrorManager;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
 
 /**
  *
@@ -48,4 +56,32 @@ public class Utils {
         sortedKeys.addAll(keys);
         return sortedKeys;
     }
+    
+    public static void showMethod(FileObject source, String methodName) {
+        try {
+            DataObject dataObj = DataObject.find(source);          
+            JavaSource javaSource = JavaSource.forFileObject(source);
+            
+            // Force a save to make sure to make sure the line position in
+            // the editor is in sync with the java source.
+            SaveCookie sc = (SaveCookie) dataObj.getCookie(SaveCookie.class);
+            sc.save();
+            
+            LineCookie lc = (LineCookie) dataObj.getCookie(LineCookie.class);
+            
+            if (lc != null) {
+                final long[] position = JavaSourceHelper.getPosition(javaSource, methodName);
+                final Line line = lc.getLineSet().getOriginal((int) position[0]);
+                
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        line.show(Line.SHOW_SHOW, (int) position[1]);
+                    }
+                });
+            }
+        } catch (Exception de) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, de.toString());
+        }    
+    }
 }
+
