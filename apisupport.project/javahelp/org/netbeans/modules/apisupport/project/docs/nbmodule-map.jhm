@@ -74,7 +74,6 @@
 
     <mapID target="apisupport_about_libs_jhelp" url="create_plugin/libs_jhelp/about_libs_jhelp.html"/>
     <mapID target="apisupport_editing_xml_layer" url="register_plugin/apisupport_editing_xml_layer.html"/>
- <mapID target="apisupport_general_update_center" url="distribute_plugin/apisupport_general_update_center.html"/>
 <mapID target="apisupport_generate_autoupdate_descriptor" url="distribute_plugin/generate_autoupdate_descriptor.html"/>
 <mapID target="apisupport_searching_apis" url="create_plugin/apisupport_searching_apis.html"/>
 <mapID target="apisupport_extending_skeletons" url="create_plugin/apisupport_extending_skeletons.html"/>
