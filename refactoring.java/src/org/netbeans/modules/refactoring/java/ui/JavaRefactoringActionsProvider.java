@@ -20,6 +20,7 @@
 package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.List;
@@ -145,7 +146,10 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         }
                         selectedElement = TreePathHandle.create(info.getTrees().getPath(info.getCompilationUnit(), typeDecls.get(0)), info);
                     } else if (selected.getKind() == ElementKind.LOCAL_VARIABLE || selected.getKind() == ElementKind.PARAMETER || selected.getKind() == ElementKind.TYPE_PARAMETER) {
-                        selectedElement = TreePathHandle.create(info.getTrees().getPath(info.getTypes().asElement(selected.asType())), info);        
+                        TreePath path = info.getTrees().getPath(info.getTypes().asElement(selected.asType()));
+                        if (path==null)
+                            return null;
+                        selectedElement = TreePathHandle.create(path, info);
                     }
                     return new PushDownRefactoringUI(new TreePathHandle[]{selectedElement}, info);
                 }
@@ -197,7 +201,10 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         }
                         selectedElement = TreePathHandle.create(info.getTrees().getPath(info.getCompilationUnit(), typeDecls.get(0)), info);
                     } else if (selected.getKind() == ElementKind.LOCAL_VARIABLE || selected.getKind() == ElementKind.PARAMETER || selected.getKind() == ElementKind.TYPE_PARAMETER) {
-                        selectedElement = TreePathHandle.create(info.getTrees().getPath(info.getTypes().asElement(selected.asType())), info);        
+                        TreePath path = info.getTrees().getPath(info.getTypes().asElement(selected.asType()));
+                        if (path==null)
+                            return null;
+                        selectedElement = TreePathHandle.create(path, info);
                     }
                     return new PullUpRefactoringUI(new TreePathHandle[]{selectedElement}, info);
                 }
