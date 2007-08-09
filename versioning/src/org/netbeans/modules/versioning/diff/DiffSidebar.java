@@ -23,10 +23,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldHierarchyListener;
 import org.netbeans.api.editor.fold.FoldHierarchyEvent;
-import org.netbeans.api.diff.Difference;
-import org.netbeans.api.diff.Diff;
-import org.netbeans.api.diff.StreamSource;
-import org.netbeans.api.diff.DiffView;
+import org.netbeans.api.diff.*;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
@@ -188,13 +185,12 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
 
     void onDiff(Difference diff) {
         try {
-            DiffView view = Diff.getDefault().createDiff(new SidebarStreamSource(true), new SidebarStreamSource(false));
-            JComponent c = (JComponent) view.getComponent();
-            DiffTopComponent tc = new DiffTopComponent(c);
+            DiffController view = DiffController.create(new SidebarStreamSource(true), new SidebarStreamSource(false));
+            DiffTopComponent tc = new DiffTopComponent(view);
             tc.setName(fileObject.getNameExt() + " [Diff]"); // NOI18N
             tc.open();
             tc.requestActive();
-            view.setCurrentDifference(getDiffIndex(diff));
+            view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, getDiffIndex(diff));
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
         }
@@ -330,11 +326,14 @@ class DiffSidebar extends JComponent implements DocumentListener, ComponentListe
         public DiffTopComponent() {
         }
 
-        public DiffTopComponent(JComponent c) {
-            this.diffView = c;
+        public DiffTopComponent(DiffController c) {
+            this.diffView = c.getJComponent();
             setLayout(new BorderLayout());
-            c.putClientProperty(TopComponent.class, this);
-            add(c, BorderLayout.CENTER);
+            diffView.putClientProperty(TopComponent.class, this);
+            
+            DiffSidebarDiffPanel dsdp = new  DiffSidebarDiffPanel(c);
+            add(dsdp);
+            
 //            getAccessibleContext().setAccessibleName(NbBundle.getMessage(DiffTopComponent.class, "ACSN_Diff_Top_Component")); // NOI18N
 //            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
         }
