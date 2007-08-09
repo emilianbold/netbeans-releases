@@ -49,33 +49,38 @@ import org.openide.util.NbBundle;
  *
  * @author Sheryl
  */
-public class DiagramData extends ElementDataObject {
+public class DiagramData extends ElementDataObject
+{
     private IProxyDiagram pProxyDiagram;
     private String dir;
     private static int VIEWPORT_WIDTH = 1000;
     private static int VIEWPORT_HEIGHT = 700;
     private static int ZOOM_WIDTH = 120;
-    private static String FULL_DIAGRAM_FILE_SUFFIX = "_full.html"; // NOI18N
+    private static String FIT_TO_WINDOW_DIAGRAM_FILE_SUFFIX = "_fit.html"; // NOI18N
     private int fitToScaleIndex =0;
     private int full_size_index = 0;
-//    private double[] s = {0.5, 1};  // predefined fixed scales
     
     /** Creates a new instance of DiagramData */
-    public DiagramData() {
+    public DiagramData()
+    {
     }
     
-    public DiagramData(ITreeDiagram diagram) {
+    public DiagramData(ITreeDiagram diagram)
+    {
         this.pProxyDiagram = diagram.getDiagram();
         setElement(diagram.getData().getDiagram().getDiagram());
     }
     
     
-    public IDiagram getDiagram() {
+    public IDiagram getDiagram()
+    {
         return pProxyDiagram.getDiagram();
     }
     
-    private double getFitToWindowScale(IDiagram diagram) {
-        if (diagram instanceof UIDiagram) {
+    private double getFitToWindowScale(IDiagram diagram)
+    {
+        if (diagram instanceof UIDiagram)
+        {
             double width = ((UIDiagram)diagram).getFrameWidth();
             double height = ((UIDiagram)diagram).getFrameHeight();
             double scale1 = VIEWPORT_WIDTH/width;
@@ -86,10 +91,10 @@ public class DiagramData extends ElementDataObject {
     }
     
     
-    private void createFullDiagramFile(IDiagram pDiagram, IGraphicExportDetails pDetails) {
-        if (pDiagram != null && pDetails != null) {
-            String id = pDiagram.getXMIID();
-            String id2 = ReportTask.convertID(id);
+    private void createFullDiagramFile(IDiagram pDiagram, IGraphicExportDetails pDetails)
+    {
+        if (pDiagram != null && pDetails != null)
+        {
             // get the jpg file for the diagram
             String fullname = pDiagram.getFilename();
             String name = StringUtilities.getFileName(fullname);
@@ -98,8 +103,7 @@ public class DiagramData extends ElementDataObject {
             // will place the name and documentation for the diagram at the top of the html
             String diagName = pDiagram.getName();
             String doc = pDiagram.getDocumentation();
-            String filename = getDirectoryPath() + File.separator + name;
-            String full_filename = filename + FULL_DIAGRAM_FILE_SUFFIX;
+            String filename = getDirectoryPath() + File.separator + name + ReportTask.HTML_EXT;
             
             StringBuilder page = new StringBuilder();
             String str;
@@ -107,41 +111,45 @@ public class DiagramData extends ElementDataObject {
             page.append(getHTMLHeader());
             page.append(getNavBar());
             
-            if (diagName != null && diagName.length() > 0) 
+            if (diagName != null && diagName.length() > 0)
             {
                 page.append("<HR><H2>" + pDiagram.getDiagramKind2() + " " + diagName + "</H2>"); // NOI18N
                 page.append("<P>" + doc + "</P>\r\n"); // NOI18N
-            
-                page.append("<P ALIGN=\"CENTER\"><A HREF=\"" + name + // NOI18N
-                    ReportTask.HTML_EXT + "\"><IMG SRC=\"" + // NOI18N
-                    ReportTask.getPathToReportRoot(pDiagram) + // NOI18N
-                    "images/fit-to-window.png\" BORDER=n></A>&nbsp;</P>"); // NOI18N
+                
+                page.append("<P ALIGN=\"CENTER\"><A HREF=\"" + name + FIT_TO_WINDOW_DIAGRAM_FILE_SUFFIX + // NOI18N
+                        "\"><IMG SRC=\"" + // NOI18N
+                        ReportTask.getPathToReportRoot(pDiagram) + // NOI18N
+                        "images/fit-to-window.png\" BORDER=n></A>&nbsp;</P>"); // NOI18N
                 
                 page.append("<HR>\r\n"); // NOI18N
             }
             
             IETRect pMainRect = pDetails.getGraphicBoundingRect();
-            if (pMainRect != null) {
+            if (pMainRect != null)
+            {
                 int nMainRectLeft = pMainRect.getLeft();
                 int nMainRectBottom = pMainRect.getTop(); // The y axis is opposite of the TS coordinates
                 int nMainRectTop = pMainRect.getBottom();
                 int nMainRectRight = pMainRect.getRight();
                 
                 str = "<IMG SRC=\"" + jpg + "\" USEMAP=\"#MAP0-0\" BORDER=0 COORDS=\"" +  // NOI18N
-                    nMainRectLeft + nMainRectTop + nMainRectRight + nMainRectBottom + "\">"; // NOI18N
+                        nMainRectLeft + nMainRectTop + nMainRectRight + nMainRectBottom + "\">"; // NOI18N
                 
                 page.append(str);
                 page.append("<MAP NAME=\"MAP0-0\">"); // NOI18N
                 
                 // Process each item in the graphic
-                if (pDetails != null) {
+                if (pDetails != null)
+                {
                     // the information about the graphic is stored
                     // in these map locations
                     ETList < IGraphicMapLocation > pLocations = pDetails.getMapLocations();
-                    if (pLocations != null) {
+                    if (pLocations != null)
+                    {
                         // loop through the map locations
                         int count = pLocations.size();
-                        for (int x = 0; x < count; x++) {
+                        for (int x = 0; x < count; x++)
+                        {
                             // the map location can either be a node, a label, or
                             // an edge
                             // need to process all of the nodes and labels first
@@ -150,14 +158,18 @@ public class DiagramData extends ElementDataObject {
                             // to be listed after the nodes, because first entry
                             // in wins
                             IGraphicMapLocation pGMLoc = pLocations.get(x);
-                            if (pGMLoc != null) {
+                            if (pGMLoc != null)
+                            {
                                 // see if we have a node or a label
-                                if (pGMLoc instanceof INodeMapLocation) {
+                                if (pGMLoc instanceof INodeMapLocation)
+                                {
                                     INodeMapLocation pLoc = (INodeMapLocation) pGMLoc;
                                     // create the line in the jpg map for this node
                                     String str2 = createLineForNode(pDiagram, nMainRectBottom, pLoc);
                                     page.append(str2);
-                                } else if (pGMLoc instanceof ILabelMapLocation) {
+                                }
+                                else if (pGMLoc instanceof ILabelMapLocation)
+                                {
                                     ILabelMapLocation pLabel = (ILabelMapLocation) pGMLoc;
                                     // create the line in the jpg map for this label
                                     String str2 = createLineForLabel(nMainRectBottom, pLabel);
@@ -167,11 +179,14 @@ public class DiagramData extends ElementDataObject {
                         }
                         // we have processed all of the nodes and labels, now loop through
                         // the map locations again and do the links (edges)
-                        for (int x = 0; x < count; x++) {
+                        for (int x = 0; x < count; x++)
+                        {
                             IGraphicMapLocation pGMLoc = pLocations.get(x);
-                            if (pGMLoc != null) {
+                            if (pGMLoc != null)
+                            {
                                 // is it an edge
-                                if (pGMLoc instanceof IEdgeMapLocation) {
+                                if (pGMLoc instanceof IEdgeMapLocation)
+                                {
                                     IEdgeMapLocation pEdgeLoc = (IEdgeMapLocation) pGMLoc;
                                     // create the line in the jpg map for the link
                                     String str2 = createLineForLink(nMainRectBottom, pEdgeLoc);
@@ -188,10 +203,7 @@ public class DiagramData extends ElementDataObject {
             page.append("</BODY>\r\n"); // NOI18N
             page.append("</HTML>"); // NOI18N
             
-            if (id2 == null || id2.length() == 0) {
-                id2 = name;
-            }
-            makePage(full_filename, page.toString());
+            makePage(filename, page.toString());
         }
     }
     
@@ -207,22 +219,18 @@ public class DiagramData extends ElementDataObject {
      * @return CComBSTR			The string representing the HTML
      *
      */
-    private String createLineForNode(IDiagram diagram, int nMainRectBottom, INodeMapLocation pLoc) {
+    private String createLineForNode(IDiagram diagram, int nMainRectBottom, INodeMapLocation pLoc)
+    {
         String str = "";
-        if (nMainRectBottom > 0 && pLoc != null) {
+        if (nMainRectBottom > 0 && pLoc != null)
+        {
             // Get the basic graphic map information
-            String currID = pLoc.getElementXMIID();
-            String type = pLoc.getElementType();
-            
-            String id2 = ReportTask.convertID(currID);
-            
             String name = pLoc.getName();
-            
-            String currID2 = ReportTask.convertID(currID);
             
             // Get the node specific stuff
             IETRect pRect = pLoc.getLocation();
-            if (pRect != null) {
+            if (pRect != null)
+            {
                 int nRectLeft = pRect.getLeft();
                 int nRectTop = pRect.getTop(); // Y coordinates are flipped
                 int nRectBottom = pRect.getBottom();
@@ -232,14 +240,15 @@ public class DiagramData extends ElementDataObject {
                 long nTempRectRight = nRectRight;
                 long nTempRectBottom = nRectBottom;
                 
-                if (displayLink(pLoc.getElement())) {
+                if (displayLink(pLoc.getElement()))
+                {
                     // COORDS= "x1,y1,x2,y2" Where x1,y1 are the coordinates of the
                     // upper-left corner of the rectangle and x2,y2 are the coordinates
                     // of the lower-right coordinates of the rectangle.
                     str = "<AREA SHAPE=\"RECT\" COORDS=\"" + nTempRectLeft + ", " + // NOI18N
-                        nTempRectTop + ", " + nTempRectRight + ", " + nTempRectBottom + // NOI18N
-                        "\" HREF=\"" + ReportTask.getPathToReportRoot(diagram) + // NOI18N
-                        ReportTask.getLinkTo(pLoc.getElement()) + "\" ALT=\"" + name + "\">"; // NOI18N
+                            nTempRectTop + ", " + nTempRectRight + ", " + nTempRectBottom + // NOI18N
+                            "\" HREF=\"" + ReportTask.getPathToReportRoot(diagram) + // NOI18N
+                            ReportTask.getLinkTo(pLoc.getElement()) + "\" ALT=\"" + name + "\">"; // NOI18N
                 }
             }
         }
@@ -258,18 +267,18 @@ public class DiagramData extends ElementDataObject {
      * @return CComBSTR			The string representing the HTML
      *
      */
-    private String createLineForLabel(int nMainRectBottom, ILabelMapLocation pLoc) {
+    private String createLineForLabel(int nMainRectBottom, ILabelMapLocation pLoc)
+    {
         String str = "";
-        if (nMainRectBottom > 0 && pLoc != null) {
+        if (nMainRectBottom > 0 && pLoc != null)
+        {
             // Get the basic graphic map information
-            String currID = pLoc.getElementXMIID();
             String name = pLoc.getName();
-            
-            String currID2 = ReportTask.convertID(currID);
             
             // Get the node specific stuff
             IETRect pRect = pLoc.getLocation();
-            if (pRect != null) {
+            if (pRect != null)
+            {
                 int nRectLeft = pRect.getLeft();
                 int nRectTop = pRect.getTop(); // Y coordinates are flipped
                 int nRectBottom = pRect.getBottom();
@@ -280,14 +289,15 @@ public class DiagramData extends ElementDataObject {
                 long nTempRectRight =nRectRight;
                 long nTempRectBottom = nRectBottom;
                 
-                if (displayLink(pLoc.getElement())) {
+                if (displayLink(pLoc.getElement()))
+                {
                     // COORDS= "x1,y1,x2,y2" Where x1,y1 are the coordinates of the
                     // upper-left corner of the rectangle and x2,y2 are the coordinates
                     // of the lower-right coordinates of the rectangle.
                     str = "<AREA SHAPE=\"RECT\" COORDS=\"" + nTempRectLeft + ", " + // NOI18N
-                        nTempRectTop + ", " + nTempRectRight + ", " + nTempRectBottom + // NOI18N
-                        "\" HREF=\"" + ReportTask.getPathToReportRoot(getDiagram()) + // NOI18N
-                        ReportTask.getLinkTo(pLoc.getElement())  + "\" ALT=\"" + name + "\">"; // NOI18N
+                            nTempRectTop + ", " + nTempRectRight + ", " + nTempRectBottom + // NOI18N
+                            "\" HREF=\"" + ReportTask.getPathToReportRoot(getDiagram()) + // NOI18N
+                            ReportTask.getLinkTo(pLoc.getElement())  + "\" ALT=\"" + name + "\">"; // NOI18N
                 }
             }
         }
@@ -306,23 +316,25 @@ public class DiagramData extends ElementDataObject {
      * @return CComBSTR			The string representing the HTML
      *
      */
-    private String createLineForLink(int nMainRectBottom, IEdgeMapLocation pEdgeLoc) {
+    private String createLineForLink(int nMainRectBottom, IEdgeMapLocation pEdgeLoc)
+    {
         String str = ""; // NOI18N
-        if (nMainRectBottom > 0 && pEdgeLoc != null) {
+        if (nMainRectBottom > 0 && pEdgeLoc != null)
+        {
             // Get the basic graphic map information
-            String currID = pEdgeLoc.getElementXMIID();
             String name = pEdgeLoc.getName();
             
-            String currID2 = ReportTask.convertID(currID);
-            
-            if (displayLink(pEdgeLoc.getElement())) {
+            if (displayLink(pEdgeLoc.getElement()))
+            {
                 // Get the node specific stuff
                 ETList < IETPoint > pPointsList = pEdgeLoc.getPoints();
-                if (pPointsList != null && pPointsList.size() > 0) {
+                if (pPointsList != null && pPointsList.size() > 0)
+                {
                     str = "<AREA SHAPE=\"POLY\" COORDS=\""; // NOI18N
                     int ptCount = pPointsList.size();
                     
-                    for (int i = 0; i < ptCount; i++) {
+                    for (int i = 0; i < ptCount; i++)
+                    {
                         IETPoint pPoint = pPointsList.item(i);
                         Integer x = new Integer(pPoint.getX());
                         Integer y = new Integer(pPoint.getY());
@@ -333,7 +345,7 @@ public class DiagramData extends ElementDataObject {
                             str += ","; // NOI18N
                     }
                     str += "\" HREF=\"" + ReportTask.getPathToReportRoot(getDiagram()) + // NOI18N
-                        ReportTask.getLinkTo(pEdgeLoc.getElement()) + "\" ALT=\"" + name + "\">"; // NOI18N
+                            ReportTask.getLinkTo(pEdgeLoc.getElement()) + "\" ALT=\"" + name + "\">"; // NOI18N
                     
                 }
             }
@@ -343,53 +355,55 @@ public class DiagramData extends ElementDataObject {
     
     
     
-    private boolean makePage(String fileName, String content) {
+    private boolean makePage(String fileName, String content)
+    {
         boolean result = false;
         File f = new File(fileName);
-        try {
+        try
+        {
             FileOutputStream fo = new FileOutputStream(f);
             OutputStreamWriter writer = new OutputStreamWriter(fo);
             writer.write(content);
             writer.flush();
             writer.close();
             result = true;
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             ErrorManager.getDefault().notify(e);
         }
         return result;
     }
     
     
-    private String getDirectoryPath() {
+    private String getDirectoryPath()
+    {
         return dir;
     }
     
     
-    private boolean createFileForDiagram(IDiagram pDiagram, IGraphicExportDetails pDetails, String imageString) {
+    private boolean createFilesForDiagram(IDiagram pDiagram, IGraphicExportDetails pDetails, String imageString)
+    {
         if (pDiagram == null || pDetails == null)
             return false;
         
         createFullDiagramFile(pDiagram, pDetails);
         
-        String id = pDiagram.getXMIID();
-        String id2 = ReportTask.convertID(id);
         // get the jpg file for the diagram
         String fullname = pDiagram.getFilename();
         String name = StringUtilities.getFileName(fullname);
-        String jpg = name;
-        jpg += ReportTask.IMAGE_EXT;
+        
         // will place the name and documentation for the diagram at the top of the html
         String diagName = pDiagram.getName();
         String filename = getDirectoryPath();
-        filename = filename + File.separator + name + ReportTask.HTML_EXT;
-        String fullDiagramFile = name + FULL_DIAGRAM_FILE_SUFFIX;
+        filename = filename + File.separator + name + FIT_TO_WINDOW_DIAGRAM_FILE_SUFFIX;
         
         StringBuilder page = new StringBuilder();
         page.append("<HTML>\n"); // NOI18N
         page.append("	<HEAD>\n"); // NOI18N
         
         page.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=" +  // NOI18N
-            System.getProperty("file.encoding") + "\">\n"); // NOI18N
+                System.getProperty("file.encoding") + "\">\n"); // NOI18N
         
         String str = "<TITLE>" + diagName + "</TITLE>\n"; // NOI18N
         page.append(str + "\n"); // NOI18N
@@ -397,7 +411,7 @@ public class DiagramData extends ElementDataObject {
         String script = getScript(scriptPath, name, imageString);
         page.append(script + "\n"); // NOI18N
         page.append("	</HEAD>\n"); // NOI18N
-        String body = getBody(scriptPath, diagName, fullDiagramFile);
+        String body = getBody(scriptPath, diagName, name + ReportTask.HTML_EXT);
         page.append(body + "\n"); // NOI18N
         page.append("</HTML>"); // NOI18N
         
@@ -405,10 +419,12 @@ public class DiagramData extends ElementDataObject {
     }
     
     
-    private String getJavaScriptPath(IDiagram diagram) {
+    private String getJavaScriptPath(IDiagram diagram)
+    {
         String path =".."; // NOI18N
         IPackage pkg = diagram.getOwningPackage();
-        while (!pkg.equals(pkg.getProject())) {
+        while (!pkg.equals(pkg.getProject()))
+        {
             path = path + "/.."; // NOI18N
             pkg=pkg.getOwningPackage();
         }
@@ -416,7 +432,8 @@ public class DiagramData extends ElementDataObject {
     }
     
     
-    private String getScript(String javascriptPath, String diagramName, String imageString) {
+    private String getScript(String javascriptPath, String diagramName, String imageString)
+    {
         String script = "";
         
         StringBuilder buffer = ReportTask.readTemplate("org/netbeans/modules/uml/reporting/templates/script_template.html"); // NOI18N
@@ -433,7 +450,8 @@ public class DiagramData extends ElementDataObject {
     }
     
     
-    private String getBody(String scriptPath, String diagramName, String fileName) {
+    private String getBody(String scriptPath, String diagramName, String fileName)
+    {
         String body = "";
         StringBuilder buffer = ReportTask.readTemplate("org/netbeans/modules/uml/reporting/templates/body_template.html"); // NOI18N
         body = buffer.toString();
@@ -458,20 +476,22 @@ public class DiagramData extends ElementDataObject {
     }
     
     
-    public boolean toReport(File file) {
+    public boolean toReport(File file)
+    {
         this.dir = file.getAbsolutePath();
         
         // get the IDiagram from the ProxyDiagram (NULL if the diagram is closed)
-        if (pProxyDiagram != null) {
+        if (pProxyDiagram != null)
+        {
             IDiagram pDiagram = pProxyDiagram.getDiagram();
-            boolean closeIt =  !pProxyDiagram.isOpen() || pDiagram == null;
-            Boolean closeTheDiagram = new Boolean(closeIt);
             
-            if (pDiagram == null) {
+            if (pDiagram == null)
+            {
                 pDiagram = ReportTask.loadDiagram(pProxyDiagram.getFilename());
             }
             
-            if (pDiagram != null) {
+            if (pDiagram != null)
+            {
                 // the diagram is open, so create its jpeg file
                 // first get the file that we are going to create
                 
@@ -479,7 +499,7 @@ public class DiagramData extends ElementDataObject {
                 String name = StringUtilities.getFileName(filename);
                 
                 double fitScale = getFitToWindowScale(pDiagram);
-             
+                
                 double currentZoom = pDiagram.getCurrentZoom();
                 currentZoom = currentZoom>1?1:currentZoom;
                 double[] scales = {0.5*currentZoom, currentZoom, fitScale};
@@ -491,31 +511,29 @@ public class DiagramData extends ElementDataObject {
                     else if (scales[i]==currentZoom)
                         full_size_index = i;
                 }
-
+                
                 StringBuilder imageString = new StringBuilder();
                 IGraphicExportDetails details = null; // the image to be used for full diagram page
                 
-                for (int i=0;i<scales.length; i++) {
+                for (int i=0;i<scales.length; i++)
+                {
                     String imageName = getDirectoryPath() + File.separator + name + "_" + i + ReportTask.IMAGE_EXT;
-                    try {
-                        IGraphicExportDetails pDetails = pDiagram.saveAsGraphic2(imageName, SaveAsGraphicKind.SAFK_PNG, scales[i]);
-                        if (pDetails!=null) {
-                            int width = (int) (pDetails.getFrameBoundingRect().getWidth() * scales[i]);
-                            int height = (int) (pDetails.getFrameBoundingRect().getHeight() * scales[i]);
-                            imageString.append("               { 'path' : '" + name + "_" + i + ReportTask.IMAGE_EXT + "' , 'width' : " + width + " , 'height' : " + height + " }, "); // NOI18N
-                            imageString.append("\n"); // NOI18N
-                            if (i == full_size_index) {
-                                details = pDetails;
-                            }
+                    
+                    IGraphicExportDetails pDetails = pDiagram.saveAsGraphic2(imageName, SaveAsGraphicKind.SAFK_PNG, scales[i]);
+                    if (pDetails!=null)
+                    {
+                        int width = (int) (pDetails.getFrameBoundingRect().getWidth() * scales[i]);
+                        int height = (int) (pDetails.getFrameBoundingRect().getHeight() * scales[i]);
+                        imageString.append("               { 'path' : '" + name + "_" + i + ReportTask.IMAGE_EXT + "' , 'width' : " + width + " , 'height' : " + height + " }, "); // NOI18N
+                        imageString.append("\n"); // NOI18N
+                        if (i == full_size_index)
+                        {
+                            details = pDetails;
                         }
-                    } catch (OutOfMemoryError e) {
-                        
-                        Util.forceGC();
-                        ErrorManager.getDefault().notify(e);
                     }
                 }
                 
-                return createFileForDiagram(pDiagram, details, imageString.toString());
+                return createFilesForDiagram(pDiagram, details, imageString.toString());
             }
         }
         return false;
