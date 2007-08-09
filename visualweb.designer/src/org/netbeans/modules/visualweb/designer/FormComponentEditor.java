@@ -197,10 +197,11 @@ class FormComponentEditor extends InlineEditor {
             // XXX #6491646 Don't use the rendered component for inline editing.
             // It has problems with fonts.
             JTextField renderedTextField = (JTextField)component;
-            JTextField inlineTextField = new JTextField(renderedTextField.getText(), renderedTextField.getColumns());
+//            JTextField inlineTextField = new JTextField(renderedTextField.getText(), renderedTextField.getColumns());
+            JTextField inlineTextField = FormComponentBox.createTextField(renderedTextField.getText(), renderedTextField.getColumns());
             Font font = UIManager.getFont("TextField.font"); // NOI18N
             inlineTextField.setFont(font.deriveFont(fontSize));
-
+            
 //            inlineTextEditor = (JTextField)component;
             inlineTextEditor = inlineTextField;
             inlineEditor = inlineTextEditor;
@@ -225,7 +226,8 @@ class FormComponentEditor extends InlineEditor {
             // It has problems with fonts.
             JScrollPane renderedScrollPane = (JScrollPane)component;
             JTextArea renderedTextArea = (JTextArea)((JScrollPane)component).getViewport().getView();
-            JTextArea inlineTextArea = new JTextArea(renderedTextArea.getText(), renderedTextArea.getRows(), renderedTextArea.getColumns());
+//            JTextArea inlineTextArea = new JTextArea(renderedTextArea.getText(), renderedTextArea.getRows(), renderedTextArea.getColumns());
+            JTextArea inlineTextArea = FormComponentBox.createTextArea(renderedTextArea.getText(), renderedTextArea.getRows(), renderedTextArea.getColumns());
             JScrollPane inlineScrollPane = new JScrollPane(inlineTextArea, renderedScrollPane.getVerticalScrollBarPolicy(), renderedScrollPane.getHorizontalScrollBarPolicy());
             Font font = UIManager.getFont("TextArea.font"); // NOI18N
             inlineTextArea.setFont(font.deriveFont(fontSize));
@@ -249,7 +251,8 @@ class FormComponentEditor extends InlineEditor {
                 height = prefSize.height;
             }
         } else {
-            JTextField field = new JTextField();
+//            JTextField field = new JTextField();
+            JTextField field = FormComponentBox.createTextField();
             field.setColumns(9);
             inlineTextEditor = field;
             inlineEditor = inlineTextEditor;

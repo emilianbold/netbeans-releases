@@ -64,6 +64,7 @@ import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.ScrollPaneUI;
 import javax.swing.plaf.TextUI;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
 
@@ -583,7 +584,7 @@ public class FormComponentBox extends ContainerBox {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
 
-            JTextArea area = new JTextArea(sdoc);
+            JTextArea area = new JTextAreaColumnWidth(sdoc);
 
             int rows = HtmlAttribute.getIntegerAttributeValue(el, HtmlAttribute.ROWS, 3);
             area.setRows(rows);
@@ -784,7 +785,7 @@ public class FormComponentBox extends ContainerBox {
         if ((tag == HtmlTag.INPUT) &&
                 ((type == null) || (type.length() == 0) || type.equals("text"))) { // NOI18N
 
-            JTextField field = new JTextField();
+            JTextField field = new JTextFieldColumnWidth();
             c = field;
 
             int size = HtmlAttribute.getIntegerAttributeValue(el, HtmlAttribute.SIZE, -1);
@@ -925,7 +926,7 @@ public class FormComponentBox extends ContainerBox {
             //field.addActionListener(this);
             //maxIsPreferred = 3;
         } else if (type.equals("file")) {
-            JTextField field = new JTextField();
+            JTextField field = new JTextFieldColumnWidth();
             int size = HtmlAttribute.getIntegerAttributeValue(el, HtmlAttribute.SIZE, -1);
             field.setColumns((size > 0) ? size : DEFAULT_INPUT_COMPONENT_SIZE);
 
@@ -1247,6 +1248,43 @@ public class FormComponentBox extends ContainerBox {
         //        }
         return image;
     }
+
+    // XXX #112462 Width of text fields (and other textuals) is computed
+    // differently in browser and differently in Swing, trying to adjust.
+    private static Dimension computeSizeForTextComponent(JTextComponent textComponent) {
+        if (textComponent instanceof JTextField) {
+            JTextField textField = (JTextField)textComponent;
+            int columns = textField.getColumns();
+            if (columns > 0) {
+                return computeSizeForTextComponentColumns(textComponent, columns);
+            }
+        } else if (textComponent instanceof JTextArea) {
+            JTextArea textArea = (JTextArea)textComponent;
+            int columns = textArea.getColumns();
+            if (columns > 0) {
+                return computeSizeForTextComponentColumns(textComponent, columns);
+            }
+        }
+        return textComponent.getPreferredSize();
+    }
+    
+    // XXX #112462 Width of text fields (and other textuals) is computed
+    // differently in browser and differently in Swing, trying to adjust.
+    private static Dimension computeSizeForTextComponentColumns(JTextComponent textComponent, int columns) {
+        Dimension size = textComponent.getPreferredSize();
+        Font font = textComponent.getFont();
+        if (font == null) {
+            return size;
+        }
+        FontMetrics fontMetrics = textComponent.getFontMetrics(font);
+        if (fontMetrics == null) {
+            return size;
+        }
+//        Insets insets = textComponent.getInsets();
+//        int insetsWidth = insets == null ? 0 : insets.left + insets.right;
+        size.width = columns * (fontMetrics.charWidth('a'))/* + insetsWidth*/; // NOI18N
+        return size;
+    }
     
 //    /**
 //     * Paints a watermark on the component, indicating that it has initial focus.
@@ -1426,4 +1464,79 @@ public class FormComponentBox extends ContainerBox {
     public int getBaseline() {
         return baseline;
     }
+    
+    
+    /** XXX #112462 Text field with adjusted (more 'browser-like') column width. */
+    private static class JTextFieldColumnWidth extends JTextField {
+        private int columnWidth;
+        
+        public JTextFieldColumnWidth() {
+            super();
+        }
+        
+        public JTextFieldColumnWidth(String text, int columns) {
+            super(text, columns);
+        }
+        
+        @Override
+        public void setFont(Font font) {
+            super.setFont(font);
+            columnWidth = 0;
+        }
+        
+        @Override
+        protected int getColumnWidth() {
+            if (columnWidth == 0) {
+                FontMetrics metrics = getFontMetrics(getFont());
+//                columnWidth = metrics.charWidth('m');
+                columnWidth = metrics.charWidth('a'); // NOI18N
+            }
+            return columnWidth;
+        }
+    } // End of JTextFieldColumnWidth.
+    
+    
+    /** XXX #112462 Text area with adjusted (more 'browser-like') column width. */
+    private static class JTextAreaColumnWidth extends JTextArea {
+        private int columnWidth;
+        
+        public JTextAreaColumnWidth(Document doc) {
+            super(doc);
+        }
+        
+        public JTextAreaColumnWidth(String text, int rows, int columns) {
+            super(text, rows, columns);
+        }
+        
+        @Override
+        public void setFont(Font font) {
+            super.setFont(font);
+            columnWidth = 0;
+        }
+        
+        @Override
+        protected int getColumnWidth() {
+            if (columnWidth == 0) {
+                FontMetrics metrics = getFontMetrics(getFont());
+//                columnWidth = metrics.charWidth('m');
+                columnWidth = metrics.charWidth('a'); // NOI18N
+            }
+            return columnWidth;
+        }
+    } // End of JTextAreaColumnWidth.
+
+    
+    public static JTextField createTextField() {
+        return new JTextFieldColumnWidth();
+    }
+    
+    public static JTextField createTextField(String text, int columns) {
+        return new JTextFieldColumnWidth(text, columns);
+    }
+
+    public static JTextArea createTextArea(String text, int rows, int columns) {
+        return new JTextAreaColumnWidth(text, rows, columns);
+    }
+    
 }
+

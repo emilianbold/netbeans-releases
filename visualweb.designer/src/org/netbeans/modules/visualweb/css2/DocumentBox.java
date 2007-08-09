@@ -762,7 +762,8 @@ public abstract class DocumentBox extends ContainerBox {
 
     public void removed(Node node, Node parent) {
         boxes = null;
-        redoLayout(false);
+//        redoLayout(false);
+        redoLayout(true);
     }
 
     /**
