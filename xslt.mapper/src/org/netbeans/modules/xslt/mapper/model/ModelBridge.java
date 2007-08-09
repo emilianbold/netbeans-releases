@@ -115,11 +115,11 @@ public abstract class ModelBridge implements ComponentListener, PropertyChangeLi
             }
             //
             AXIComponent typeIn = getMapper().getContext().getSourceType();
-            if (typeIn == null || typeIn.getModel().getState() != XslModel.State.VALID) {
+            if (typeIn == null || typeIn.getModel() == null || typeIn.getModel().getState() != XslModel.State.VALID) {
                 errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadInputSchema"); // NOI18N
             }
             AXIComponent typeOut = getMapper().getContext().getTargetType();
-            if (typeOut == null || typeOut.getModel().getState() != XslModel.State.VALID) {
+            if (typeOut == null || typeIn.getModel() == null || typeOut.getModel().getState() != XslModel.State.VALID) {
                 errorMessages += NbBundle.getMessage(XsltModelBridge.class, "MSG_Error_BadOutputSchema"); // NOI18N
             }
         } else {

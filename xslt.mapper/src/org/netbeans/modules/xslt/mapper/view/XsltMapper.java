@@ -97,25 +97,25 @@ public class XsltMapper extends BasicMapper implements HelpCtx.Provider{
         if (context != null) {
             context.addMapperContextChangeListener(new MapperContextChangeListener() {
                 public void sourceTypeChanged(AXIComponent oldComponent, AXIComponent newComponent) {
-                    // TODO a
+                    schemaModelBridge.updateDiagram();
                     //                    System.out.println("mappperView sourceType changed ");
                 }
                 public void targetTypeChanged(AXIComponent oldComponent, AXIComponent newComponent) {
-                    // TODO a
+                    schemaModelBridge.updateDiagram();
                     //                    System.out.println("mappperView targetType changed ");
                 }
                 public void xslModelChanged(XslModel oldModel, XslModel newModel) {
-                    // TODO a
+                    schemaModelBridge.updateDiagram();
                     //                    System.out.println("mappperView xslModel changed ");
                 }
 
                 public void xslModelStateChanged(State oldValue, State newValue) {
-                    // TODO a
+                    schemaModelBridge.updateDiagram();
                     //                    System.out.println("mappperView xslModelStateChanged changed ");
                 }
 
                 public void tMapModelStateChanged(State oldValue, State newValue) {
-                    // TODO a
+                    schemaModelBridge.updateDiagram();
                     //                    System.out.println("mappperView tMapModelStateChanged changed ");
                 }
             });
