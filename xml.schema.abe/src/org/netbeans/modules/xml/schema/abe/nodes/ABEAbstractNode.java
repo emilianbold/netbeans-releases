@@ -471,8 +471,8 @@ public abstract class ABEAbstractNode extends AbstractNode
     }
     
     public NamedReferenceable getReferenceable() {
-        if(!getAXIComponent().getOriginal().isGlobal())
-            return null;
+        // if(!getAXIComponent().getOriginal().isGlobal())
+        //    return null;
         
         SchemaComponent comp = getAXIComponent().getOriginal().getPeer();
         if (comp instanceof NamedReferenceable && isValid() && comp.getModel().
@@ -482,9 +482,9 @@ public abstract class ABEAbstractNode extends AbstractNode
         return null;
     }
     
-    private NamedReferenceable getReferenceable(AXIComponent axiComponent) {
-        if(!axiComponent.getOriginal().isGlobal())
-            return null;
+   private NamedReferenceable getReferenceable(AXIComponent axiComponent) {
+       // if(!axiComponent.getOriginal().isGlobal())
+       //     return null;
         SchemaComponent comp = axiComponent.getOriginal().getPeer();
         if (comp instanceof NamedReferenceable && isValid() && comp.getModel().
                 getModelSource().getLookup().lookup(FileObject.class) != null){
