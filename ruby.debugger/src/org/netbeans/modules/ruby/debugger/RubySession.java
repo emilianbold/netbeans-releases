@@ -88,7 +88,7 @@ public final class RubySession {
     }
 
     public void resume() {
-        selectFrame(null);
+        beforeProceed();
         activeThread.resume();
         EditorUtil.unmarkCurrent();
         state = State.RUNNING;
@@ -96,7 +96,7 @@ public final class RubySession {
 
     public void stepInto() {
         try {
-            selectFrame(null);
+            beforeProceed();
             if (!activeThread.canStepInto()) {
                 return;
             }
@@ -109,7 +109,7 @@ public final class RubySession {
     
     public void stepOver() {
         try {
-            selectFrame(null);
+            beforeProceed();
             if (!activeThread.canStepOver()) {
                 return;
             }
@@ -122,7 +122,7 @@ public final class RubySession {
     
     public void stepReturn() {
         try {
-            selectFrame(null);
+            beforeProceed();
             activeThread.stepReturn();
             state = State.RUNNING;
         } catch (RubyDebuggerException e) {
@@ -138,7 +138,7 @@ public final class RubySession {
             line = runningToLine;
         } else {
             assert runningToFile == null : "runningToFile is not set";
-            selectFrame(null);
+            beforeProceed();
             Line eLine = EditorUtil.getCurrentLine();
             if (eLine == null) { return; }
             FileObject fo = eLine.getLookup().lookup(FileObject.class);
@@ -370,6 +370,11 @@ public final class RubySession {
         if (isSessionSuspended()) {
             switchThread(activeThread, null);
         }
+    }
+
+    private void beforeProceed() {
+        selectFrame(null);
+        CallStackAnnotation.clearAnnotations();
     }
 
     /**
