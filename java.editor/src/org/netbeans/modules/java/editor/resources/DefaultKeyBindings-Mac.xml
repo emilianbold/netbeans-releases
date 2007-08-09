@@ -30,5 +30,5 @@ Microsystems, Inc. All Rights Reserved.
     <bind key="DOS-UP" actionName="select-element-next"/>
     <bind key="OS-DOWN" remove="true"/>
     <bind key="DOS-DOWN" actionName="select-element-previous"/>
-    <bind key="DS-I" actionName="generate-code"/>
+    <bind key="DS-C" actionName="generate-code"/>
 </bindings>
