@@ -147,8 +147,12 @@ public interface Ejb extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
     public void setCmtTimeoutInSeconds(java.lang.String value);
     public java.lang.String getCmtTimeoutInSeconds();
     
+    public void setUseThreadPoolId(String value);
+    public String getUseThreadPoolId();
+    
     public void setGenClasses(GenClasses value);
     public GenClasses getGenClasses(); 
+    public GenClasses newGenClasses();
     
     public void setBeanPool(BeanPool value);
     public BeanPool getBeanPool();
@@ -219,6 +223,6 @@ public interface Ejb extends org.netbeans.modules.j2ee.sun.dd.api.CommonDDBean {
     public MessageDestinationRef[] getMessageDestinationRef() throws VersionNotSupportedException; 
     public int addMessageDestinationRef(MessageDestinationRef value) throws VersionNotSupportedException; 
     public int removeMessageDestinationRef(MessageDestinationRef value) throws VersionNotSupportedException; 
-    public MessageDestinationRef newMessageDestinationRef() throws VersionNotSupportedException; 
-    
+    public MessageDestinationRef newMessageDestinationRef() throws VersionNotSupportedException;
+
 }
