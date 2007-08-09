@@ -125,11 +125,19 @@ class DiffFacility {
                 }
                 String match1 = builder.toString();
                 builder = new StringBuilder();
-                for (int i = addStart; i <= addEnd; i++) {
+                for (int i = addStart; i <= delEnd; i++) {
                     builder.append(lines2[i].data);
                 }
                 String match2 = builder.toString();
                 makeTokenListMatch(match1, match2, lines1[delStart].start);
+                builder = new StringBuilder();
+                for(int i=delEnd+1; i<=addEnd ; i++) {
+                    builder.append(lines2[i].data);
+                }
+                String s = builder.toString();
+                if (!"".equals(s)) {
+                    gdiff.append(Diff.insert(lines1[delEnd].end, s));
+                }
             }
         }
         return null;
