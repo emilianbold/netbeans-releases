@@ -32,7 +32,6 @@ PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
     <tocitem text="Connecting to a Database" target="connectdb" />
     <tocitem text="Connecting to a Pointbase Database" target="pointbasedb" />
     <tocitem text="Connecting to a Java DB Database" target="derbydb" />
-    <tocitem text="Defining Database Explorer Properties" target="dbconfig" />
     <tocitem text="Defining Database Explorer Debug Mode" target="manipsql" />
         <!--<tocitem text="Defining Database Explorer Fetch Limitations" target="db.explorer.misc" />-->
         
