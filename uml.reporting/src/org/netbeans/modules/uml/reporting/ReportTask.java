@@ -21,8 +21,6 @@ package org.netbeans.modules.uml.reporting;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,16 +56,13 @@ import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.controls.projecttree.DefaultNodeFactory;
 import org.netbeans.modules.uml.ui.support.ProductHelper;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProxyUserInterface;
-import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeItem;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeBuilderImpl;
 
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
@@ -93,10 +88,9 @@ public class ReportTask extends Thread implements Cancellable
     private File reportDir;
     private ArrayList diagrams = new ArrayList();
     private ArrayList packages = new ArrayList();
-    private HashMap < String, ITreeItem > elements = new HashMap < String, ITreeItem > ();
-    private HashMap < String, String > elementFileMap = new HashMap < String, String > ();
+    private HashMap < String, ITreeItem > elements = new HashMap < String, ITreeItem > (500);
+    private HashMap < String, String > elementFileMap = new HashMap < String, String > (500);
     private HashMap < String, String > diagramFileMap = new HashMap < String, String > ();
-    private HashMap < String, String > packageFileMap = new HashMap < String, String > ();
     
     public static String FRAME = "-frame";
     public static String HTML_EXT = ".html";
