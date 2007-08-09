@@ -16,6 +16,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
@@ -63,6 +64,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
+import org.netbeans.modules.websvc.rest.codegen.EntityRESTServicesCodeGenerator;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
@@ -813,19 +815,22 @@ public class JavaSourceHelper {
         return false;
     }
     
-    public static TypeElement getXmlRepresentationClass(TypeElement typeElement) {
+    public static TypeElement getXmlRepresentationClass(TypeElement typeElement, String defaultSuffix) {
         List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
         for (ExecutableElement method : methods) {
             List<? extends AnnotationMirror> anmirs = method.getAnnotationMirrors();
             
             AnnotationMirror mirrorHttpMethod = findAnnotation(anmirs, Constants.HTTP_METHOD_ANNOTATION);
-            AnnotationMirror mirrorProduceMime = findAnnotation(anmirs, Constants.PRODUCE_MIME_ANNOTATION);
-            
-            if (annotationHasAttributeValue(mirrorHttpMethod, HttpMethodType.GET.name()) &&
-                    annotationHasAttributeValue(mirrorProduceMime, MimeType.XML.value())) {
+            if (mirrorHttpMethod == null) {
+                throw new RuntimeException();
+            }
+            if (annotationHasAttributeValue(mirrorHttpMethod, HttpMethodType.GET.name())){
                 TypeMirror tm = method.getReturnType();
                 if (tm.getKind() == TypeKind.DECLARED) {
-                    return (TypeElement) ((DeclaredType) tm).asElement();
+                    TypeElement returnType = (TypeElement) ((DeclaredType) tm).asElement();
+                    if (returnType.getSimpleName().toString().endsWith(defaultSuffix)) {
+                        return returnType;
+                    }
                 }
             }
         }
@@ -958,5 +963,22 @@ public class JavaSourceHelper {
         }
         
         return position;
+    }
+
+    public static ExecutableElement getLongestContructor(JavaSource source) throws IOException {
+        return getLongestContructor(getTypeElement(source));
+    }
+    
+    public static ExecutableElement getLongestContructor(TypeElement typeElement) {
+        List<ExecutableElement> constructors = ElementFilter.constructorsIn(typeElement.getEnclosedElements());
+        int max = -1;
+        ExecutableElement current = null;
+        for (ExecutableElement constructor : constructors) {
+            if (constructor.getParameters().size() > max) {
+                max = constructor.getParameters().size();
+                current = constructor;
+            }
+        }
+        return current;
     }
 }
