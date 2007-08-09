@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.bpel.design.model.DelegatingChangeEventListener;
 import org.netbeans.modules.bpel.model.api.CompositeActivity;
 import org.netbeans.modules.bpel.model.api.Documentation;
 import org.netbeans.modules.bpel.nodes.actions.AddElseAction;
@@ -53,6 +55,7 @@ import org.netbeans.modules.bpel.model.api.events.EntityUpdateEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
+import org.netbeans.modules.bpel.model.api.events.ChangeEventListener;
 import org.netbeans.modules.soa.ui.nodes.NodeTypeHolder;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
 import org.netbeans.modules.bpel.model.api.support.UniqueId;
@@ -303,7 +306,8 @@ public abstract class BpelNode<T>
             BpelModel model = ((BpelEntity) ref).getBpelModel();
             
             assert model != null: "Can't create Node for orphaned Bpel Entity"; // NOI18N
-            model.addEntityChangeListener(synchronizer);
+           /// model.addEntityChangeListener(synchronizer);
+            synchronizer.subscribe(model);
         }
         validationListener = new ValidationChangesListener();
         attachValidationController(validationListener);
@@ -1028,42 +1032,16 @@ public abstract class BpelNode<T>
         public Synchronizer() {
         }
         
-//        private boolean isRequireSpecialUpdate(ChangeEvent event, Object currentEntity) {
-//            BpelEntity sourceEntity = null;
-//            if (event.getClass() == EntityRemoveEvent.class) {
-//                sourceEntity = ((EntityRemoveEvent)event).getOldValue();
-//            } else if (event.getClass() == EntityUpdateEvent.class) {
-//                sourceEntity = ((EntityUpdateEvent)event).getOldValue();
-//            } else if (event.getClass() == EntityInsertEvent.class) {
-//                sourceEntity = ((EntityInsertEvent)event).getValue();
-//            }
-//
-//            if (sourceEntity == null
-//                    || sourceEntity.getElementType() != Scope.class) {
-//                return false;
-//            }
-//
-//            BpelEntity scopeParent = event.getParent();
-//
-//            if (!(scopeParent instanceof BaseScope)) {
-//                scopeParent = org.netbeans.modules.bpel.nodes.navigator.Util.getUpClosestBaseScope(scopeParent);
-//            }
-//
-//            if (scopeParent == null) {
-//                return false;
-//            }
-//
-//            if (scopeParent.getElementType() == Process.class) {
-//                return getNodeType().equals(NodeType.VARIABLE_CONTAINER)
-//                || getNodeType().equals(NodeType.CORRELATION_SET_CONTAINER);
-//            }
-//
-//            if (scopeParent == currentEntity) {
-//                return true;
-//            }
-//
-//            return false;
-//        }
+        
+        private ChangeEventListener listener;
+        
+        private void subscribe(BpelModel model) {
+            listener = new DelegatingChangeEventListener(this);
+            model.addEntityChangeListener(listener);
+            
+        }
+
+        
         
         private void reloadChildren() {
             
@@ -1105,32 +1083,7 @@ public abstract class BpelNode<T>
         public void notifyPropertyRemoved(PropertyRemoveEvent event) {
             BpelEntity entity = event.getParent();
             
-            //
-//////            if (BpelNode.this.isEventRequreUpdate(event)) {
-//////                String attributeName = event.getName();
-//////                updateAttributeProperty(attributeName);
-//////                updateName();
-//////                //
-//////                // Check if the property has the List type
-//////                Object value = event.getOldValue();
-//////                if (value != null && value instanceof List) {
-//////                    reloadChildren();
-//////                }
-//////            }
-//////            //
-//////            // Check that the property is the content of an entity
-//////            // which owned by the node's entity.
-//////            if (ContentElement.CONTENT_PROPERTY.equals(event.getName())) {
-//////                BpelEntity parentEntity = event.getParent();
-//////                //
-//////                T curEntity = getReference();
-//////                if (curEntity != null && parentEntity != null &&
-//////                        parentEntity.getParent() == curEntity) {
-//////                    updateElementProperty(parentEntity.getClass());
-//////                }
-//////            }
-//////
-            //
+
             T ref = getReference();
             if (ref == null) {
                 //
@@ -1232,6 +1185,7 @@ public abstract class BpelNode<T>
             updateComplexProperties(event);
             updateComplexNames(event);
         }
+
         
     }
     
