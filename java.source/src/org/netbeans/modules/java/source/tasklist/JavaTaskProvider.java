@@ -40,6 +40,7 @@ import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -68,8 +69,19 @@ public final class JavaTaskProvider extends PushTaskScanner {
         
         if (scope == null || callback == null)
             return ; //nothing to refresh
-        if (!scope.isInScope(file))
+        if (!scope.isInScope(file)) {
+            if (!file.isFolder())
+                return;
+            
+            //the given file may be a parent of some file that is in the scope:
+            for (FileObject inScope : scope.getLookup().lookupAll(FileObject.class)) {
+                if (FileUtil.isParentOf(file, inScope)) {
+                    enqueue(new Work(inScope, callback));
+                }
+            }
+            
             return ;
+        }
         
         LOG.log(Level.FINE, "enqueing work for: {0}", file);
         enqueue(new Work(file, callback));
