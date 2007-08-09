@@ -16,14 +16,9 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.java.jarloader;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
@@ -34,6 +29,7 @@ import org.openide.actions.RenameAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
@@ -44,43 +40,30 @@ import org.openide.util.actions.SystemAction;
  * @author Jesse Glick
  */
 public final class JarDataLoader extends UniFileLoader {
-
+    
     private static final long serialVersionUID = 1L;
-
+    
     public JarDataLoader() {
         super("org.netbeans.modules.java.jarloader.JarDataObject"); // NOI18N
     }
-
-    protected @Override String defaultDisplayName() {
+    
+    protected String defaultDisplayName() {
         return NbBundle.getMessage(JarDataLoader.class, "LBL_loaderName");
     }
-
-    /** @see FileUtil */
-    private static byte[] ZIP_HEADER_1 = {0x50, 0x4b, 0x03, 0x04};
-    private static byte[] ZIP_HEADER_2 = {0x50, 0x4b, 0x05, 0x06};
-    protected @Override FileObject findPrimaryFile(FileObject fo) {
-        if (fo.isFolder() || fo.isVirtual()) {
-            return null;
-        }
-        // Similar to FileUtil.isArchiveFile, but does not fall back to checking for a dot in the name.
-        try {
-            InputStream in = fo.getInputStream();
-            try {
-                byte[] buffer = new byte[4];
-                int len = in.read(buffer, 0, 4);
-                if (len == 4 && Arrays.equals(ZIP_HEADER_1, buffer) || Arrays.equals(ZIP_HEADER_2, buffer)) {
-                    return fo;
-                }
-            } finally {
-                in.close();
-            }
-        } catch (IOException ioe) {
-            Logger.getLogger(JarDataLoader.class.getName()).log(Level.INFO, "Scanning " + fo, ioe);
-        }
-        return null;
+    
+    protected void initialize() {
+        super.initialize();
+        ExtensionList extensions = new ExtensionList();
+        extensions.addExtension("jar"); // NOI18N
+        extensions.addExtension("zip"); // NOI18N
+        extensions.addExtension("war"); // NOI18N
+        extensions.addExtension("ear"); // NOI18N
+        // XXX could add others, perhaps...
+        // or could use FileUtil.isArchiveFile, but that might be too slow
+        setExtensions(extensions);
     }
-
-    protected @Override SystemAction[] defaultActions() {
+    
+    protected SystemAction[] defaultActions() {
         return new SystemAction[] {
             SystemAction.get(FileSystemAction.class),
             null,
@@ -95,9 +78,9 @@ public final class JarDataLoader extends UniFileLoader {
             SystemAction.get(PropertiesAction.class),
         };
     }
-
+    
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new JarDataObject(primaryFile, this);
     }
-
+    
 }
