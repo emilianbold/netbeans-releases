@@ -195,8 +195,12 @@ public class XMLDataObject extends MultiDataObject {
         //getIP ().resolveInfo ();        #16045
         cookies.assign( SaveAsCapable.class, new SaveAsCapable() {
             public void saveAs( FileObject folder, String fileName ) throws IOException {
-                XMLEditorSupport es = getCookie( XMLEditorSupport.class );
-                es.saveAs( folder, fileName );
+                EditorCookie ec = getCookieSet().getCookie( EditorCookie.class );
+                if( ec instanceof DataEditorSupport ) {
+                    ((DataEditorSupport)ec).saveAs( folder, fileName );
+                } else {
+                    Logger.getLogger( XMLDataObject.class.getName() ).log( Level.FINE, "'Save As' requires DataEditorSupport" ); //NOI18N
+                }
             }
         });
     }
