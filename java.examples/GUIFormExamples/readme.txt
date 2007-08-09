@@ -1,10 +1,9 @@
 GUI Form Example Descriptions
 ================================================================================
 
-This document is a quick overview of Java GUI Form samples built with NetBeans 
-IDE 5.0's new Matisse GUI Builder. The sample forms are provided as a means of 
-introducing you to the GUI Builder's features while familiarizing yourself with 
-the type of GUIs commonly built by developers. 
+This project contains three visual forms that were designed with the IDE's
+GUI Builder. You can open these forms in the IDE, and you can view accompanying 
+demos that show you how those forms can be created in the IDE.
 
 
 To open an example form in the GUI Builder:
