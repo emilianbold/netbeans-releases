@@ -31,6 +31,7 @@ public final class TomcatModule implements TargetModuleID {
     private TomcatTarget target;
 
     private final String path;
+    private final String tomcatPath;
     private final String docRoot;
 
     public TomcatModule (Target target, String path) {
@@ -39,8 +40,11 @@ public final class TomcatModule implements TargetModuleID {
 
     public TomcatModule (Target target, String path, String docRoot) {
         this.target = (TomcatTarget) target;
-        // Tomcat ROOT context path bug hack
-        this.path = "".equals(path) ? "/" : path; // NOI18N
+        /*
+         * Tomcat ROOT context path bug hack.
+         */
+        this.path = path;
+        this.tomcatPath = "".equals(path) ? "/" : path; // NOI18N
         this.docRoot = docRoot;
     }
     
@@ -66,7 +70,7 @@ public final class TomcatModule implements TargetModuleID {
     
     /** Context root path of this module. */
     public String getPath () {
-        return path;
+        return tomcatPath;
     }
     
 //    // PENDING
