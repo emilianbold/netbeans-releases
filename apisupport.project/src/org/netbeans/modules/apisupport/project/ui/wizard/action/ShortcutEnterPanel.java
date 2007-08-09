@@ -18,6 +18,7 @@
  */
 
 package org.netbeans.modules.apisupport.project.ui.wizard.action;
+import java.awt.AWTKeyStroke;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
@@ -54,15 +55,15 @@ public class ShortcutEnterPanel extends javax.swing.JPanel {
         loc(bClear, "CTL_Clear");
         tfShortcut.setFocusTraversalKeys(
                 KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS,
-                Collections.EMPTY_SET
+                Collections.<AWTKeyStroke>emptySet()
                 );
         tfShortcut.setFocusTraversalKeys(
                 KeyboardFocusManager.DOWN_CYCLE_TRAVERSAL_KEYS,
-                Collections.EMPTY_SET
+                Collections.<AWTKeyStroke>emptySet()
                 );
         tfShortcut.setFocusTraversalKeys(
                 KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS,
-                Collections.EMPTY_SET
+                Collections.<AWTKeyStroke>emptySet()
                 );
         
         tfShortcut.addKeyListener(listener);        

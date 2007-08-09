@@ -24,14 +24,10 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -288,13 +284,12 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
                     setEmptyModel(comboPositions);
                     return;
                 }
-                final Enumeration folders = subFolderName == null
+                final List<DataFolder> folders = subFolderName == null
                         ? getFolders(parentDF) : getFoldersByName(parentDF, subFolderName);
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        Collection<LayerItemPresenter> sorted = new LinkedHashSet();
-                        while (folders.hasMoreElements()) {
-                            DataFolder folder = (DataFolder) folders.nextElement();
+                        Collection<LayerItemPresenter> sorted = new LinkedHashSet<LayerItemPresenter>();
+                        for (DataFolder folder : folders) {
                             sorted.add(new LayerItemPresenter(folder.getPrimaryFile(), parent, subFolderName != null));
                         }
                         if (sorted.size() == 0) {
@@ -982,31 +977,27 @@ final class GUIRegistrationPanel extends BasicWizardIterator.Panel {
      * Actually really dedicated for Loader&hellip;Actions and
      * Editors&hellip;Popup.
      */
-    private Enumeration<DataFolder> getFoldersByName(final DataFolder startFolder, final String subFoldersName) {
-        Enumeration<DataFolder> folders = getFolders(startFolder);
-        Vector result = new Vector();
-        while (folders.hasMoreElements()) {
-            DataFolder dObj = (DataFolder) folders.nextElement();
+    private List<DataFolder> getFoldersByName(final DataFolder startFolder, final String subFoldersName) {
+        List<DataFolder> result = new ArrayList<DataFolder>();
+        for (DataFolder dObj : getFolders(startFolder)) {
             if (subFoldersName.equals(dObj.getName()) &&
                     dObj.getPrimaryFile().getParent() != startFolder.getPrimaryFile()) {
                 result.add(dObj);
             }
         }
-        return result.elements();
+        return result;
     }
     
-    private static Enumeration<DataFolder> getFolders(DataFolder folder) {
-        List<DataFolder> folders = new ArrayList();
+    private static List<DataFolder> getFolders(DataFolder folder) {
+        List<DataFolder> folders = new ArrayList<DataFolder>();
         getFolders(folder, folders); // #66144: depth-first, not breadth-first, search appropriate here
-        return Collections.enumeration(folders);
+        return folders;
     }
     
     private static void getFolders(DataFolder folder, List<DataFolder> folders) {
-        Enumeration e = folder.children();
-        while (e.hasMoreElements()) {
-            Object o = e.nextElement();
-            if (o instanceof DataFolder) {
-                DataFolder f = (DataFolder) o;
+        for (DataObject d : folder.getChildren()) {
+            if (d instanceof DataFolder) {
+                DataFolder f = (DataFolder) d;
                 folders.add(f);
                 getFolders(f, folders);
             }
