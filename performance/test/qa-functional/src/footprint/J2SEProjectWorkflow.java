@@ -65,7 +65,7 @@ public class J2SEProjectWorkflow extends org.netbeans.performance.test.utilities
     
     public ComponentOperator open(){
         // Create, edit, build and execute a sample J2SE project
-        j2seproject = FootprintUtilities.createproject("Samples|General", "Anagram Game", true);
+        j2seproject = FootprintUtilities.createproject("Samples|Java", "Anagram Game", true);
         
         FootprintUtilities.openFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java", false);
         FootprintUtilities.editFile(j2seproject, "com.toy.anagrams.ui", "Anagrams.java");
