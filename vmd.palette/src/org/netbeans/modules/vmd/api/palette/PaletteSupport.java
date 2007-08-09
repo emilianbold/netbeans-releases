@@ -42,6 +42,10 @@ public final class PaletteSupport {
         return PaletteMap.getInstance ().getPaletteKitForProjectType (document.getDocumentInterface ().getProjectType ()).getPaletteController ();
     }
 
+    public static PaletteController getPaletteController (String projectType) {
+        return PaletteMap.getInstance ().getPaletteKitForProjectType (projectType).getPaletteController ();
+    }
+
     public static Transferable createTransferable (DesignDocument document, Lookup item) {
         ExTransferable transferable = ExTransferable.create (ExTransferable.EMPTY);
         PaletteMap.getInstance ().getPaletteKitForProjectType (document.getDocumentInterface ().getProjectType ()).getDndHandler ().customize (transferable, item);
