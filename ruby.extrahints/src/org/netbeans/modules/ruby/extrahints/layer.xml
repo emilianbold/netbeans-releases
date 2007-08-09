@@ -35,6 +35,7 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="org-netbeans-modules-ruby-extrahints-ConstantNames.instance"/>
                     <file name="org-netbeans-modules-ruby-extrahints-CamelCaseNames.instance"/>
                     <file name="org-netbeans-modules-ruby-extrahints-UnsafeIdentifierChars.instance"/>
+                    <file name="org-netbeans-modules-ruby-extrahints-AttributeIsLocal.instance"/>
                     <!-- Add your rules here! -->
                 </folder>    
             </folder>    
