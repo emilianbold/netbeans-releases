@@ -58,6 +58,8 @@ public interface TcgPropertyType extends Serializable {
      */
     public Object getDefaultValue();
 
+    public String getDefaultValueAsString();
+    
     /**
      * Gets the editorName attribute of the TcgPropertyType object
      *

@@ -173,6 +173,10 @@ class TcgPropertyImpl implements TcgProperty {
             return mTcgPropertyType.getDefaultValue();
         }
         
+        public String getDefaultValueAsString() {
+            return mTcgPropertyType.getDefaultValueAsString();
+        }
+
         public String getDescription() {
             return mTcgPropertyType.getDescription();
         }

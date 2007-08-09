@@ -1,5 +1,6 @@
 package org.netbeans.modules.iep.model.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.netbeans.modules.iep.model.IEPModel;
@@ -75,6 +76,12 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 	}
 
 	public List<OperatorComponent> getInputOperatorList() {
+		List<OperatorComponent> inputOperators = new ArrayList<OperatorComponent>();
+		
+		Property p = getProperty(PROP_INPUT_ID_LIST);
+		if(p != null) {
+			String value = p.getValue();
+		}
 		return null;
 	}
 

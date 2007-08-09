@@ -37,6 +37,8 @@ class TcgPropertyTypeImpl
     private String mTitle = null;
     private String mDescription = null;
     private Object mDefaultValue = null;
+    private String mDefaultValueAsString = null;
+    
     private TcgType mType = null;
     private String mEditor = null;
     private String mRenderer = null;
@@ -88,6 +90,7 @@ class TcgPropertyTypeImpl
         mAccess = access;
         mMultiple = multiple;
         mRequired = required;
+        mDefaultValueAsString = defaultValue;
         mDefaultValue = mType.parse(defaultValue);
         mScript = script;
         mCategory = category;
@@ -140,6 +143,10 @@ class TcgPropertyTypeImpl
         return mDefaultValue;
     }
 
+    public String getDefaultValueAsString() {
+        return mDefaultValueAsString;
+    }
+    
     /**
      * Gets the description attribute of the TcgPropertyType object
      *
