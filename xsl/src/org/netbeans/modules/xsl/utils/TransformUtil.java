@@ -59,8 +59,8 @@ public class TransformUtil {
 
 
     public static boolean isXSLTransformation (DataObject dataObject) {
-        return ( dataObject instanceof XSLDataObject );
-//         return dataObject.getPrimaryFile().getMIMEType().equals (XSLDataObject.MIME_TYPE);
+      //  return ( dataObject instanceof XSLDataObject );
+         return dataObject.getPrimaryFile().getMIMEType().equals (XSLDataObject.MIME_TYPE);
     }
 
     public static String getURLName (FileObject fileObject) throws MalformedURLException, FileStateInvalidException {
