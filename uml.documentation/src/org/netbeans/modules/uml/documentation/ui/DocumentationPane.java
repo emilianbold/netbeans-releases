@@ -29,8 +29,6 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Enumeration;
 import javax.swing.AbstractAction;
@@ -106,8 +104,9 @@ public class DocumentationPane extends JPanel
         m_TextPane = new JTextPane();
         htmlKit = new DocumentationEditorKit();
         htmlDoc = (HTMLDocument) htmlKit.createDefaultDocument();
-        htmlKit.setDefaultCursor(new Cursor(Cursor.TEXT_CURSOR));
-        m_TextPane.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+        Cursor textCur = Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR);
+        htmlKit.setDefaultCursor(textCur);
+        m_TextPane.setCursor(textCur);
         
         /* Set up the text pane */
         m_TextPane.setEditorKit(htmlKit);
@@ -176,7 +175,6 @@ public class DocumentationPane extends JPanel
         toolbar = new JToolBar(JToolBar.HORIZONTAL);
         toolbar.setFloatable(false);
         toolbar.setAlignmentX(JToolBar.LEFT_ALIGNMENT);
-        
         
         boldAction        = new StyledEditorKit.BoldAction();
         italicAction      = new StyledEditorKit.ItalicAction();
@@ -256,10 +254,7 @@ public class DocumentationPane extends JPanel
         toolbar.add(rightBtn);
         
         return toolbar;
-        
     }
-    
-    
     
     private void registerAccelerator()
     {
@@ -325,8 +320,17 @@ public class DocumentationPane extends JPanel
     /* FocusListener methods */
     public void focusGained(FocusEvent fe)
     {
-        
+        // fixed 111959.
+        // Need to call selectAll() to get the end position of the text,
+        // then set the caret to that position.
+        m_TextPane.selectAll();
+        int caretPos = m_TextPane.getSelectionEnd();
+        String selectedText = m_TextPane.getSelectedText();
+        if (selectedText != null && selectedText.trim().length() > 0 ) {
+            m_TextPane.setCaretPosition(caretPos);
+        }
     }
+    
     public void focusLost(FocusEvent fe)
     {
     }
@@ -376,8 +380,8 @@ public class DocumentationPane extends JPanel
         getTextPane().getDocument().addDocumentListener(this);
         getTextPane().getDocument().addUndoableEditListener(undoableEditListner);
         getTextPane().setCaretPosition(0);
-        
-        getEditorKit().setDefaultCursor(new Cursor(Cursor.TEXT_CURSOR));
+        Cursor textCur = Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR);
+        getEditorKit().setDefaultCursor(textCur);
         purgeUndos();
         
         setEnabled(true);

@@ -160,8 +160,16 @@ public class DocumentationTopComponnet extends TopComponent implements PropertyC
         return new HelpCtx("DDEToolsDocumentation2_htm_wp1342319");
     }
     
+    public void componentActivated()
+    {   
+        super.componentActivated();
+        // Fixed iz=111959. request for the JTextPane to have the input focus 
+        // when this component is activated.
+        pane.getTextPane().requestFocusInWindow();
+    }
+    
     public void componentShowing()
-    {
+    { 
         super.componentShowing();
         pane.addPropertyChangeListener(this);
     }
