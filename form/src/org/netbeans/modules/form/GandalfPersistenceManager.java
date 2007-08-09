@@ -166,6 +166,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
     private List nonfatalErrors;
 
+    // name of the menu bar component loaded as AUX value of the top component
+    private String mainMenuBarName;
+
     // maps of properties that cannot be loaded before component is added to
     // parent container, or container is filled with sub-components
     private Map<RADComponent, java.util.List> parentDependentProperties;
@@ -435,6 +438,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             loadedComponents.clear();
         if (expressions != null)
             expressions.clear();
+        mainMenuBarName = null;
         parentDependentProperties = null;
         childrenDependentProperties = null;
         bindingProperties = null;
@@ -445,9 +449,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         this.newLayout = null;
 
         formModel.setName(javaFile.getName());
-
-        // load "Other Components" first
-        loadNonVisuals(mainElement);
 
         RADComponent topComp = formModel.getTopRADComponent();
         if (topComp != null) { // load the main form component
@@ -464,6 +465,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
             }
         }
+
+        // load "Other Components"
+        loadNonVisuals(mainElement);
+
+        // compatibility hack for loading form's menu bar, part 3
+        if (mainMenuBarName != null) {
+            RADComponent menuBar = (RADComponent) getComponentsMap().get(mainMenuBarName);
+            if (menuBar != null && menuBar.getParentComponent() == null
+                    && topComp instanceof RADVisualFormContainer) {
+                formModel.removeComponentImpl(menuBar, false);
+                ((RADVisualFormContainer)topComp).add(menuBar);
+            }
+        }
+
         // set default variable modifiers for ther form
         FormSettings settings = formModel.getSettings();
         boolean local = settings.getVariablesLocal();
@@ -492,6 +507,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         // final cleanup
         parentDependentProperties = null;
         childrenDependentProperties = null;
+        mainMenuBarName = null;
         if (expressions != null)
             expressions.clear();
         if (loadedComponents != null)
@@ -2702,15 +2718,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             if ("menuBar".equals(propName) // NOI18N
                 && value instanceof String
                 && metacomp instanceof RADVisualFormContainer)
-            {   // menuBar synthetic property points to a component in Other
-                for (RADComponent mc : metacomp.getFormModel().getOtherComponents()) {
-                    if (value.equals(mc.getName())) {
-                        RADVisualFormContainer formCont = (RADVisualFormContainer) metacomp;
-                        mc.getFormModel().removeComponentImpl(mc, false);
-                        formCont.add(mc);
-                        break;
-                    }
-                }
+            {   // menuBar synthetic property points to a component in Other Components
+                mainMenuBarName = (String) value;
                 continue;
             }
 
