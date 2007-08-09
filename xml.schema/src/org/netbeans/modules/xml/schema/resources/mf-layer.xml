@@ -179,11 +179,7 @@ Microsystems, Inc. All Rights Reserved.
                     </file>
                     <file name="org-openide-actions-DeleteAction.instance">
                         <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="RefactoringRename.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.renameAction"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>                    
+                    </file>                                
                     <file name="sep-5.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1600"/>

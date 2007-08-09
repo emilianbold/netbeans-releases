@@ -83,9 +83,6 @@
                     <file name="org-openide-actions-DeleteAction.instance">
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <file name="org-openide-actions-RenameAction.instance">
-                        <attr name="position" intvalue="1300"/>
-                    </file>
                     <file name="sep-3.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
