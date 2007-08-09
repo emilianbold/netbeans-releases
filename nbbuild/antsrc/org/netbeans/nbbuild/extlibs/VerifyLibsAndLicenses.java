@@ -295,28 +295,22 @@ public class VerifyLibsAndLicenses extends Task {
                             is.close();
                         }
                         String master = masterBody.toString().replaceAll("[ \n\t]+", " ").trim();
-                        String expected = master.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll("__[A-Z]__", ".+");
                         String actual = body.toString().replaceAll("[ \n\t]+", " ").trim();
-                        if (!actual.matches(expected)) {
-                            int pos = 0;
-                            while (pos < actual.length() && pos < master.length() && actual.charAt(pos) == master.charAt(pos)) {
-                                pos++;
-                            }
-                            String actualSnippet = actual.substring(pos, Math.min(pos + 20, actual.length()));
-                            String masterSnippet = master.substring(pos, Math.min(pos + 20, master.length()));
-                            msg.append("\n" + path + " contains a license body which does not match that in nbbuild/licenses/" + license +
-                                    ": '..." + actualSnippet + "...' vs. '..." + masterSnippet + "...'");
+                        if (!templateMatch(actual, master)) {
+                            msg.append("\n" + path + " contains a license body which does not match that in nbbuild/licenses/" + license);
                         }
                     } else {
                         msg.append("\n" + path + " refers to nonexistent nbbuild/licenses/" + license);
                     }
                 }
-                String source = headers.get("Source");
-                if (source != null) {
-                    try {
-                        new URL(source);
-                    } catch (MalformedURLException x) {
-                        msg.append("\n" + path + " has malformed Source value: " + source);
+                for (String urlHeader : new String[] {"Source", "Origin"}) {
+                    String value = headers.get("Source");
+                    if (value != null) {
+                        try {
+                            new URL(value);
+                        } catch (MalformedURLException x) {
+                            msg.append("\n" + path + " has malformed " + urlHeader + " value: " + value);
+                        }
                     }
                 }
                 String files = headers.get("Files");
@@ -351,6 +345,9 @@ public class VerifyLibsAndLicenses extends Task {
             }
         }
         pseudoTests.put("testLicenses", msg.length() > 0 ? "Some license files have incorrect headers" + msg : null);
+    }
+    private static boolean templateMatch(String actual, String expected) {
+        return actual.matches(expected.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll(" *__[A-Z_]+__ *", ".*"));
     }
 
     private void testNoStrayThirdPartyBinaries() throws IOException {
