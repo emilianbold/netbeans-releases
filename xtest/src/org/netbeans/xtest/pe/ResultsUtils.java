@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -127,6 +127,7 @@ public class ResultsUtils {
     // it should also check presence testbag.xml in the testbag root dir
     public static File[] listTestBags(File testRunRoot) {
         File[] testBagDirs = testRunRoot.listFiles();
+        Arrays.sort(testBagDirs);
         int count=0;
         for (int i=0; i<testBagDirs.length;i++) {
             debugInfo("listTestBags(): examining "+testBagDirs[i]);
@@ -163,6 +164,7 @@ public class ResultsUtils {
     // it should also check presence testrun.xml in the testrun dir
     public static File[] listTestRuns(File testReportRoot) {
         File[] testRunDirs = testReportRoot.listFiles();
+        Arrays.sort(testRunDirs);
         int count=0;
         for (int i=0; i<testRunDirs.length;i++) {
             debugInfo("listTestRuns(): examining "+testRunDirs[i]);
@@ -346,6 +348,7 @@ public class ResultsUtils {
         //File suiteDir = inputDir;
         // scan directory
         File[] suiteFiles = FileUtils.listFiles(suiteDir,null,".xml");
+        Arrays.sort(suiteFiles);
         debugInfo("getUnitTestSuites(File):"+suiteFiles);
         ArrayList suiteList = new ArrayList();
         for (int i=0; i< suiteFiles.length; i++) {
