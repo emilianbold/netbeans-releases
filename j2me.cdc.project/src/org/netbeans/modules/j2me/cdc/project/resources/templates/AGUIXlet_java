@@ -1,13 +1,13 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-package Templates.GUIForms;
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 
 import java.awt.Container;
 import java.awt.EventQueue;
@@ -16,17 +16,16 @@ import javax.microedition.xlet.XletContext;
 import javax.microedition.xlet.XletStateChangeException;
 
 /**
- *
- * @author __USER__
+ * @author ${user}
  */
-public class __NAME__ extends javax.swing.JInternalFrame implements javax.microedition.xlet.Xlet {
+public class ${name} extends javax.swing.JInternalFrame implements javax.microedition.xlet.Xlet {
     
     private XletContext context;            // our Xlet application context.
     private Container rootContainer;        // the root container of our screen.
 
     
-    /** Creates new form __NAME__ */
-    public __NAME__() {
+    /** Creates new form ${name} */
+    public ${name}() {
         initComponents();
     }
     
@@ -79,8 +78,8 @@ public class __NAME__ extends javax.swing.JInternalFrame implements javax.microe
             // invokeLater would work just as well in most cases.
             EventQueue.invokeAndWait(new Runnable() {
                 public void run() {
-                    __NAME__.this.setVisible(true);
-                    rootContainer.add(__NAME__.this);
+                    ${name}.this.setVisible(true);
+                    rootContainer.add(${name}.this);
                     // This is needed - or nothing will be displayed.
                     rootContainer.setVisible(true);
                 }
@@ -102,7 +101,7 @@ public class __NAME__ extends javax.swing.JInternalFrame implements javax.microe
                 // invokeLater would work just as well in most cases.
                 EventQueue.invokeAndWait(new Runnable() {
                         public void run() {
-                            rootContainer.remove(__NAME__.this);
+                            rootContainer.remove(${name}.this);
                         }
                 });
         } catch (Exception e) {

@@ -1,16 +1,20 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-package Templates.GUIForms;
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 
 /**
- *
- * @author  __USER__
+ * @author ${user}
+
+
  */
-public class JFrame extends javax.swing.JFrame {
+public class ${name} extends javax.swing.JFrame {
     static {
        try {           
            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getCrossPlatformLookAndFeelClassName());
@@ -19,8 +23,8 @@ public class JFrame extends javax.swing.JFrame {
        }        
     }
 
-    /** Creates new form __NAME__ */
-    public JFrame() {
+    /** Creates new form ${name} */
+    public ${name}() {
         // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:handlingClose
         //NSIcom won't close app without this
         this.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -57,7 +61,7 @@ public class JFrame extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new __NAME__().setVisible(true);
+                new ${name}().setVisible(true);
             }
         });
     }

@@ -70,6 +70,7 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/class.gif"/>
                 <attr name="CDC" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateCategory" stringvalue="CDC/Ricoh"/>
             </file>            
         </folder>

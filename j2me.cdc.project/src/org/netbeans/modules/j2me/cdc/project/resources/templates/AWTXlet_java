@@ -1,28 +1,27 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-package Templates.GUIForms.AWTForms;
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 
 import java.awt.BorderLayout;
 import java.awt.Container;
 
 /**
- *
- * @author __USER__
+ * @author ${user}
  */
-public class __NAME__ extends java.awt.Panel implements javax.microedition.xlet.Xlet {
+public class ${name} extends java.awt.Panel implements javax.microedition.xlet.Xlet {
     private Container c;
 
     /**
      * Default constructor without arguments should be.
      */
-    public __NAME__() {
+    public ${name}() {
     }
     
     /**
