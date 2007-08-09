@@ -34,7 +34,7 @@ import org.netbeans.jemmy.QueueTool;
 
 import org.netbeans.junit.ide.ProjectSupport;
 
-
+import gui.Utilities;
 /**
  * Measure Rename Class Memory footprint
  *
@@ -101,20 +101,20 @@ public class RefactoringRename extends org.netbeans.performance.test.utilities.M
         log(" Trying to rename file "+rename_from);
         
         //generate name for new node
-        String number = "1";
+/*        String number = "1";
         if(rename_from.equalsIgnoreCase(rename+".java")) {
             rename_to = rename + number;
         } else {
             number = rename_from.substring(rename.length(),rename_from.indexOf('.'));
             rename_to = rename + (Integer.parseInt(number) + 1);
         }
+*/
+	rename_to=rename+Utilities.getTimeIndex();
         
         // invoke Rename
         Node filenode = new Node(packagenode, rename_from);
         filenode.callPopup().pushMenuNoBlock("Refactor|Rename..."); // NOI18N
-        
-        NbDialogOperator renamedialog = new NbDialogOperator("Rename Class " + rename); // NOI18N
-        
+        NbDialogOperator renamedialog = new NbDialogOperator("Rename "); // NOI18N
         JTextFieldOperator txtfNewName = new JTextFieldOperator(renamedialog);
         JButtonOperator btnRefactor = new JButtonOperator(renamedialog,"Refactor"); // NOI18N
         
@@ -127,14 +127,10 @@ public class RefactoringRename extends org.netbeans.performance.test.utilities.M
         new JCheckBoxOperator(renamedialog,"Apply Rename on Comments").changeSelection(true); // NOI18N
         btnRefactor.push();
         
-        TopComponentOperator refactoringwindow = new TopComponentOperator("Refactoring"); // NOI18N
-        
-        new QueueTool().waitEmpty(1000);
-        new JButtonOperator(refactoringwindow, "Do Refactoring").push(); // NOI18N
         MainWindowOperator.getDefault().waitStatusText("Save All finished"); // NOI18N
         
         rename_to = rename_from;
-        return refactoringwindow;
+	return null;
     }
     
     public void close(){
