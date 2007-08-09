@@ -27,6 +27,10 @@ import org.netbeans.modules.visualweb.project.jsf.libraries.ComponentLibraryDefi
 import org.netbeans.modules.visualweb.project.jsf.libraries.JsfProjectLibrary;
 import org.netbeans.modules.visualweb.api.j2ee.common.RequestedEjbResource;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -64,6 +68,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
+import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 // XXX wait for NetBeans API
 //import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -414,10 +419,8 @@ public class JsfProjectUtils {
                 FileObject dd = wm.getDeploymentDescriptor();
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
                 if (ddRoot != null) {
-                    String pattern = getFacesURLPattern(ddRoot);
-                    String welcomeFile = (pattern == null) ? newStartPage : getWelcomeFile(pattern, newStartPage);
-                    WelcomeFileList wfl = ddRoot.getSingleWelcomeFileList();
-                    wfl.setWelcomeFile(new String[] { welcomeFile });
+                    String facesMapping = getFacesURLPattern(ddRoot);
+                    setWelcomeFile(wm, ddRoot, facesMapping, newStartPage, true);
                     ddRoot.write(dd);
                 }
             } catch (IOException e) {
@@ -454,26 +457,69 @@ public class JsfProjectUtils {
         return null;
     }
 
-    /**
-     * Get the welcome file based on the URL Pattern and the Page Name.
-     * @param mapping the URL Pattern
-     * @param uri the Page Name
-     * @return If successful, returns the welcome file, "faces/" + pageName if unsuccessful.
-     */
-    public static String getWelcomeFile(String mapping, String uri) {
-        String resource = "";
-        if (mapping != null && mapping.length()>0){
-            if (mapping.startsWith("*.")){
-                if (uri.indexOf('.') > 0)
-                    resource = uri.substring(0, uri.lastIndexOf('.'))+mapping.substring(1);
-                else
-                    resource = uri + mapping.substring(1);
-            } else
-                if (mapping.endsWith("/*")) {
-                    resource = mapping.substring(1,mapping.length()-1) + uri;
-                }
+    private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
+    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+
+    public static void setWelcomeFile(WebModule webModule, WebApp ddRoot, String facesMapping, String pageName, boolean force) {
+        // add welcome file
+        WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
+        if (welcomeFiles == null) {
+            try {
+                welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); //NOI18N
+                ddRoot.setWelcomeFileList(welcomeFiles);
+            } catch (ClassNotFoundException cnfe) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, cnfe);
+            }
         }
-        return resource;
+
+        if (force || welcomeFiles.sizeWelcomeFile() == 0) {
+            if (facesMapping.charAt(0) == '/') {
+                // if the mapping start with '/' (like /faces/*), then the welcame file can be the mapping
+                welcomeFiles.setWelcomeFile(new String[] { ConfigurationUtils.translateURI(facesMapping, pageName) });
+            } else {
+                // if the mapping doesn't strat '/' (like *.jsf), then the welcome file has to be
+                // a helper file, which will foward the request to the right url
+                welcomeFiles.setWelcomeFile(new String[] { FORWARD_JSF });
+                //copy forwardToJSF.jsp
+                if (facesMapping.charAt(0) != '/') {
+                    try {
+                        String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
+                        content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, pageName));
+                        FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
+                        createFile(target, content, "UTF-8");  //NOI18N
+                    } catch (IOException ex) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    }
+                }
+            }
+        }
+    }
+
+    public static String readResource(InputStream is, String encoding) throws IOException {
+        // read the config from resource first
+        StringBuffer sbuffer = new StringBuffer();
+        String lineSep = System.getProperty("line.separator");//NOI18N
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
+        String line = br.readLine();
+        while (line != null) {
+            sbuffer.append(line);
+            sbuffer.append(lineSep);
+            line = br.readLine();
+        }
+        br.close();
+        return sbuffer.toString();
+    }
+
+    public static void createFile(FileObject target, String content, String encoding) throws IOException{
+        FileLock lock = target.lock();
+        try {
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock), encoding));
+            bw.write(content);
+            bw.close();
+            
+        } finally {
+            lock.releaseLock();
+        }
     }
 
     public static String setDataSourceReference(Project project, String resourceName) {

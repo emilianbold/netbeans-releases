@@ -74,8 +74,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     
     private static final Logger LOGGER = Logger.getLogger(JSFFrameworkProvider.class.getName());
     
-    private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
-    private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
+    private static final String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
 
     private static final String FACES_STATE_SAVING_METHOD = "javax.faces.STATE_SAVING_METHOD"; // NOI18N
     private static final String FACES_VALIDATE_XML = "com.sun.faces.validateXml"; // NOI18N
@@ -187,21 +186,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         return result;
     }
     
-    public static String readResource(InputStream is, String encoding) throws IOException {
-        // read the config from resource first
-        StringBuffer sbuffer = new StringBuffer();
-        String lineSep = System.getProperty("line.separator");//NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
-        String line = br.readLine();
-        while (line != null) {
-            sbuffer.append(line);
-            sbuffer.append(lineSep);
-            line = br.readLine();
-        }
-        br.close();
-        return sbuffer.toString();
-    }
-    
     public java.io.File[] getConfigurationFiles(org.netbeans.modules.web.api.webmodule.WebModule wm) {
         // The JavaEE 5 introduce web modules without deployment descriptor. In such wm can not be jsf used.
         FileObject dd = wm.getDeploymentDescriptor();
@@ -242,18 +226,6 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         FileObject documentBase = webModule.getDocumentBase();
         Project project = FileOwnerQuery.getOwner(documentBase);
         return JsfProjectUtils.isJsfProject(project);
-    }
-    
-    public static void createFile(FileObject target, String content, String encoding) throws IOException{
-        FileLock lock = target.lock();
-        try {
-            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock), encoding));
-            bw.write(content);
-            bw.close();
-            
-        } finally {
-            lock.releaseLock();
-        }
     }
     
     private class  CreateFacesConfig implements FileSystem.AtomicAction{
@@ -459,30 +431,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     ddRoot.addServletMapping(mapping);
 
                     // add welcome file
-                    WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
-                    if (welcomeFiles == null) {
-                        welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); //NOI18N
-                        ddRoot.setWelcomeFileList(welcomeFiles);
-                    }
-                    // add the welcome file only if there not any
-                    if (welcomeFiles.sizeWelcomeFile() == 0) {
-                        if (facesMapping.charAt(0) == '/') {
-                            // if the mapping start with '/' (like /faces/*), then the welcame file can be the mapping
-                            welcomeFiles.addWelcomeFile(ConfigurationUtils.translateURI(facesMapping, pageName));
-                        }
-                        else {
-                            // if the mapping doesn't strat '/' (like *.jsf), then the welcome file has to be
-                            // a helper file, which will foward the request to the right url
-                            welcomeFiles.addWelcomeFile(FORWARD_JSF);
-                            //copy forwardToJSF.jsp
-                            if (facesMapping.charAt(0) != '/') {
-                                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
-                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, pageName));
-                                FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
-                                createFile(target, content, "UTF-8");  //NOI18N
-                            }
-                        }
-                    }
+                    JsfProjectUtils.setWelcomeFile(webModule, ddRoot, facesMapping, pageName, false);
 
                     // Catch ServletException
                     ErrorPage errorPage = (ErrorPage)ddRoot.createBean("ErrorPage");
@@ -548,9 +497,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                         facesConfigTemplate = "faces-config_1_2.xml"; //NOI18N
                     }
                 }
-                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
+                String content = JsfProjectUtils.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + facesConfigTemplate), "UTF-8"); //NOI18N
                 FileObject target = FileUtil.createData(webModule.getWebInf(), "faces-config.xml");//NOI18N
-                createFile(target, content, "UTF-8"); //NOI18N
+                JsfProjectUtils.createFile(target, content, "UTF-8"); //NOI18N
             }
         }
     }
