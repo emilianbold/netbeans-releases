@@ -213,7 +213,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
 
         servletNameLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_servletName_mnem").charAt(0));
         servletNameLabel.setLabelFor(servletNameTF);
-        servletNameLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_servletName"));
+        servletNameLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_servletName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -231,7 +231,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
 
         orderLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_order_mnem").charAt(0));
         orderLabel.setLabelFor(orderTF);
-        orderLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_order"));
+        orderLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_order")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
@@ -247,9 +247,9 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(orderTF, gridBagConstraints);
 
-        descriptionLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_description_mnem").charAt(0));
+        descriptionLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_description_mnem3").charAt(0));
         descriptionLabel.setLabelFor(descriptionTA);
-        descriptionLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_description"));
+        descriptionLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_description")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -268,7 +268,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
 
         buttonGroup1.add(servletClassRB);
         servletClassRB.setMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_servletClass_mnem").charAt(0));
-        servletClassRB.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_servletClass"));
+        servletClassRB.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_servletClass")); // NOI18N
         servletClassRB.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         servletClassRB.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -277,7 +277,6 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 10);
         add(servletClassRB, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -286,14 +285,13 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         add(servletClassTF, gridBagConstraints);
 
         browseButton.setMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_browse_mnem").charAt(0));
-        browseButton.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_browse"));
+        browseButton.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_browse")); // NOI18N
         browseButton.setMargin(new java.awt.Insets(0, 14, 0, 14));
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -303,7 +301,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
 
         buttonGroup1.add(jspFileRB);
         jspFileRB.setMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_jspFile_mnem").charAt(0));
-        jspFileRB.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_jspFile"));
+        jspFileRB.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_jspFile")); // NOI18N
         jspFileRB.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         jspFileRB.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -312,7 +310,6 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 10);
         add(jspFileRB, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -321,14 +318,13 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         add(jspFileTF, gridBagConstraints);
 
         browseButton1.setMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_browse_mnem2").charAt(0));
-        browseButton1.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_browse"));
+        browseButton1.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_browse")); // NOI18N
         browseButton1.setMargin(new java.awt.Insets(0, 14, 0, 14));
         browseButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButton1ActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
@@ -338,7 +334,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
 
         servletMappingLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_urlPatterns_mnem").charAt(0));
         servletMappingLabel.setLabelFor(servletMappingsTF);
-        servletMappingLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_urlPatterns"));
+        servletMappingLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_urlPatterns")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -354,7 +350,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(servletMappingsTF, gridBagConstraints);
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "HINT_urlPatterns"));
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "HINT_urlPatterns")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -363,7 +359,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         add(jLabel1, gridBagConstraints);
 
         initParamsLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_initParams_mnem").charAt(0));
-        initParamsLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_initParams"));
+        initParamsLabel.setText(org.openide.util.NbBundle.getMessage(ServletPanel.class, "LBL_initParams")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -381,9 +377,7 @@ public class ServletPanel extends SectionInnerPanel implements java.awt.event.Ac
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         add(filler, gridBagConstraints);
-
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     private void browseButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButton1ActionPerformed
         // TODO add your handling code here:

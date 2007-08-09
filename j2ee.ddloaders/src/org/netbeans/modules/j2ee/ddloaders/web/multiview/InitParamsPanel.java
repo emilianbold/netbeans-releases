@@ -54,6 +54,9 @@ public class InitParamsPanel extends DefaultTablePanel {
         });
         editButton.addActionListener(new TableActionListener(false));
         addButton.addActionListener(new TableActionListener(true));
+        addButton.setMnemonic(NbBundle.getMessage(InitParamsPanel.class, "LBL_addInitParam_mnem").charAt(0));
+        editButton.setMnemonic(NbBundle.getMessage(InitParamsPanel.class, "LBL_editInitParam_mnem").charAt(0));
+        removeButton.setMnemonic(NbBundle.getMessage(InitParamsPanel.class, "LBL_removeInitParam_mnem").charAt(0));
     }
 
     void setModel(Servlet servlet, InitParam[] params) {
