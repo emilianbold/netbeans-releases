@@ -69,18 +69,18 @@ AST {
 #HACK: IT LOOK LIKE HANZ NEEDS TO HAVE SOME OF THE COLORING TO BE THE SCHLIEMANN ONES
 #OTHERWISE THE NAVIGATOR DOESN'T SHOW NODES?!?!?!?
 
-COLOR:TAG_OPEN_SYMBOL: {
-    foreground_color:"blue";
-}
-COLOR:TAG_OPEN: {
-    foreground_color:"blue";
-}
-COLOR:TAG_CLOSE: {
-    foreground_color:"blue";
-}
-COLOR:TAG_CLOSE_SYMBOL: {
-    foreground_color:"blue";
-}
+#COLOR:TAG_OPEN_SYMBOL: {
+#    foreground_color:"blue";
+#}
+#COLOR:TAG_OPEN: {
+#    foreground_color:"blue";
+#}
+#COLOR:TAG_CLOSE: {
+#    foreground_color:"blue";
+#}
+#COLOR:TAG_CLOSE_SYMBOL: {
+#    foreground_color:"blue";
+#}
 
 
 #COLOR:element: {
@@ -98,22 +98,22 @@ COLOR:TAG_CLOSE_SYMBOL: {
 #COLOR:html_attribute_value: {
 #    default_coloring:"string";
 #
-COLOR:attribute: {
-    strike_through_color:"black";
-    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedAttribute;
-}
-COLOR:startTag: {
-    strike_through_color:"blue";
-    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
-}
-COLOR:simpleTag: {
-    strike_through_color:"blue";
-    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
-}
-COLOR:endTag: {
-    strike_through_color:"blue";
-    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
-}
+#COLOR:attribute: {
+#    strike_through_color:"black";
+#    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedAttribute;
+#}
+#COLOR:startTag: {
+#    strike_through_color:"blue";
+#    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
+#}
+#COLOR:simpleTag: {
+#    strike_through_color:"blue";
+#    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
+#}
+#COLOR:endTag: {
+#    strike_through_color:"blue";
+#    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
+#}
 
 
 ########### code folding #######################################################
@@ -187,13 +187,24 @@ MARK:error: {
     message:"LBL_Unexpected_character";
 }
 
-MARK:html_element_name: {
-    type:"Deprecation2";
+MARK:startTag: {
+    type:"Deprecation";
     message:"LBL_Deprecated_tag";
     condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
 }
-MARK:html_attribute_name: {
-    type:"Deprecation2";
+MARK:simpleTag: {
+    type:"Deprecation";
+    message:"LBL_Deprecated_tag";
+    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
+}
+MARK:endTag: {
+    type:"Deprecation";
+    message:"LBL_Deprecated_tag";
+    condition:org.netbeans.modules.html.editor.HTML.isDeprecatedTag;
+}
+
+MARK:attribute: {
+    type:"Deprecation";
     message:"LBL_Deprecated_attribute";
     condition:org.netbeans.modules.html.editor.HTML.isDeprecatedAttribute;
 }
