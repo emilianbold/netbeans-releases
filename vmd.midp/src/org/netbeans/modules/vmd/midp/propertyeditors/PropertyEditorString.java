@@ -24,11 +24,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.util.Collections;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
@@ -286,7 +286,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
             
             JComponent textComponent;
             if (useTextArea) {
-                editorPane = new JEditorPane();
+                editorPane = new JTextArea();
                 textComponent = new JScrollPane();
                 ((JScrollPane) textComponent).setViewportView(editorPane);
                 ((JScrollPane) textComponent).setPreferredSize(new Dimension(400, 100));
@@ -323,7 +323,9 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
         }
 
         public void setText(String text) {
-            editorPane.setText(text);
+            if (!editorPane.isShowing()) {
+                editorPane.setText(text);
+            }
         }
 
         public String getText() {
