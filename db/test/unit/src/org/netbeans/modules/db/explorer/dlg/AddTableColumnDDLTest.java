@@ -54,9 +54,8 @@ public class AddTableColumnDDLTest extends DDLTestBase {
         TypeElement type = new TypeElement("java.sql.Types.VARCHAR", "VARCHAR");
         col.setProperty(ColumnItem.TYPE, type);
         col.setProperty(ColumnItem.SIZE, "255");
-        ddl.setColumn(colname, col);
         
-        ddl.execute();
+        ddl.execute(colname, col, null);
     }
 
     public void testAddColumnToIndex() throws Exception {
@@ -79,10 +78,8 @@ public class AddTableColumnDDLTest extends DDLTestBase {
         col.setProperty(ColumnItem.TYPE, type);
         col.setProperty(ColumnItem.SIZE, "255");
         col.setProperty(ColumnItem.INDEX, new Boolean(true));
-        ddl.setColumn(secondColname, col);
-        ddl.setIndexName(indexName);
         
-        ddl.execute();
+        ddl.execute(secondColname, col, indexName);
         
         // Now verify the column exists and is part of the index
         assertTrue(columnInIndex(quote(tablename), quote(secondColname), 

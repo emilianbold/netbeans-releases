@@ -472,10 +472,10 @@ public class AddTableColumnDialog {
 
                       colname = colnamefield.getText();
                       ColumnItem citem = (ColumnItem)dmodel.getData().elementAt(0);
-                      ddl.setColumn(colname, citem);
-                      ddl.setIndexName((String)idxcombo.getSelectedItem());
+                      String indexName = (String)idxcombo.getSelectedItem();
+                      boolean wasException;
                       try {
-                          ddl.execute();
+                          wasException = ddl.execute(colname, citem, indexName);
                       } catch ( Exception e ) {
                         LOGGER.log(Level.WARNING, null, e);
                           
@@ -485,7 +485,7 @@ public class AddTableColumnDialog {
                       }
 
                       // was execution of commands with or without exception?
-                      if(ddl.wasException()) {
+                      if( wasException ) {
                           return;
                       }
                       

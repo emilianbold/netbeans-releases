@@ -39,16 +39,12 @@ import org.netbeans.lib.ddl.util.CommandBuffer;
  * logic, and also to make it more possible to unit test this logic
  */
 public class AddTableColumnDDL {
-    Specification       spec;
-    DriverSpecification drvSpec;
-    String              schema;
-    String              tablename;
-    String              colname;
-    ColumnItem          citem;
-    Map                 indexMap = null;
-    Map                 uniqueIndexMap = null;
-    String              indexName = null;
-    boolean             wasException = false;
+    private Specification       spec;
+    private DriverSpecification drvSpec;
+    private String              schema;
+    private String              tablename;
+    private Map                 indexMap;
+    private Map                 uniqueIndexMap;
     
 
     public AddTableColumnDDL(
@@ -62,11 +58,6 @@ public class AddTableColumnDDL {
         this.tablename  = tablename;
     }
         
-    public void setColumn(String colname, ColumnItem citem) {
-        this.colname = colname;
-        this.citem = citem;
-    }
-    
     public Map getIndexMap() throws DatabaseException {
         if ( indexMap == null ) {
             buildIndexMaps();
@@ -118,20 +109,16 @@ public class AddTableColumnDDL {
         }
     }
     
-    private boolean useIndex() {
-        assert citem != null;
+    private boolean useIndex(ColumnItem citem) {
         return citem.isIndexed() && !citem.isUnique() && !citem.isPrimaryKey(); 
     }
-    
-    public void setIndexName(String indexName) {
-        this.indexName = indexName;
-    }
-    
-    public void execute() throws Exception {
+        
+    public boolean execute(String colname, ColumnItem citem, 
+            String indexName) throws Exception {
         assert citem != null;
         assert colname != null;
-        assert (useIndex() && indexName != null) ||
-                !useIndex();
+        assert (useIndex(citem) && indexName != null) ||
+                !useIndex(citem);
         
         CommandBuffer cbuff = new CommandBuffer();
 
@@ -150,31 +137,24 @@ public class AddTableColumnDDL {
         if (citem.hasDefaultValue()) col.setDefaultValue(citem.getDefaultValue());
 
         if (citem.hasCheckConstraint()) {
-          // add COLUMN constraint (without constraint name)
-          col.setCheckCondition(citem.getCheckConstraint());
+            // add COLUMN constraint (without constraint name)
+            col.setCheckCondition(citem.getCheckConstraint());
         }
 
         cbuff.add(cmd);
 
-        if (useIndex() ) {
-          addIndex(cbuff);
+        if (useIndex(citem) ) {
+            assert indexName != null;
+            addIndex(cbuff, citem, indexName);
         }
-
-        this.wasException = false;
 
         cbuff.execute();
 
-        if ( cbuff.wasException() ) {
-          this.wasException = true;
-        }
+        return cbuff.wasException();
     }
     
-    public boolean wasException() {
-        return wasException;
-    }
-    
-    
-    private void addIndex(CommandBuffer cbuff) throws Exception {
+    private void addIndex(CommandBuffer cbuff, ColumnItem citem, 
+            String indexName) throws Exception {
           buildIndexMaps();
 
           String isUQ = new String();
