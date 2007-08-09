@@ -2051,7 +2051,9 @@ final class Central implements ControllerHandler {
     }    
     
     public void userEnabledAutoHide(TopComponent tc, ModeImpl source, String targetSide) {
-        
+        if( isViewMaximized() )
+            switchMaximizedMode( null );
+
         String tcID = WindowManagerImpl.getInstance().findTopComponentID(tc);        
         if( isEditorMaximized() )
             setTopComponentDockedInMaximizedMode( tcID, false );
