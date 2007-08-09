@@ -76,7 +76,6 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
@@ -86,11 +85,9 @@ import org.openide.actions.RenameAction;
 import org.openide.actions.ToolsAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.FolderLookup;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -484,31 +481,19 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return (Action[])actions.toArray(new Action[actions.size()]);
         }
         
-        private void addActionsFromLayers(final Vector actions, String folderName) {
-            // Add other project actions
-            try {
-                FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(folderName); // NOI18N
-                if (fo != null) {
-                    DataObject dobj = DataObject.find(fo);
-                    FolderLookup actionRegistry = new FolderLookup((DataFolder)dobj);
-                    Lookup.Template query = new Lookup.Template(Object.class);
-                    Lookup lookup = actionRegistry.getLookup();
-                    Iterator it = lookup.lookup(query).allInstances().iterator();
-                    if (it.hasNext()) {
+        private void addActionsFromLayers(final Vector actions, String path) {
+            Lookup look = Lookups.forPath(path);
+            boolean first = true;
+            for (Object next : look.lookupAll(Object.class)) {
+                if (next instanceof Action) {
+                    if (first) {
                         actions.add(null);
+                        first = false;
                     }
-                    while (it.hasNext()) {
-                        Object next = it.next();
-                        if (next instanceof Action) {
-                            actions.add(next);
-                        } else if (next instanceof JSeparator) {
-                            actions.add(null);
-                        }
-                    }
+                    actions.add((Action) next);
+                } else if (next instanceof JSeparator) {
+                    actions.add(null);
                 }
-            } catch (DataObjectNotFoundException ex) {
-                // data folder for existing fileobject expected
-                ErrorManager.getDefault().notify(ex);
             }
         }
         
