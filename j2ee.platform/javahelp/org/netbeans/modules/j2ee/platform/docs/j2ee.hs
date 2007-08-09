@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+*     Copyright Â© 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE helpset

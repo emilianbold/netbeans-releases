@@ -1,5 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- * Copyright 2006 Sun Microsystems,
+<!-- * Copyright © 2007 Sun Microsystems,
 Inc.  All rights reserved.  
 Use is subject to license terms.  *--> 
 <html> 
@@ -56,15 +56,15 @@ Use is subject to license terms.  *-->
         <p><tt>java.rmi.RemoteException: HTTP transport error: java.net.UnknownHostException:</tt>
         <p>Do the following to check and set the proxy:
         <ol>
-        <li>Open the Runtime window (Ctrl-5).
+        <li>Open the Services window (Ctrl-5).
         <li>If the Sun Java System
         Application Server is not started, start it.
         <li>Expand Sun Java System
         Application Server's node, right-click the JVM's node, and choose Properties.
         <li>In the JVM's Properties dialog box, click JVMOptions.
         <li>Add the following properties:
-        <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
-        <br><tt>-Dhttp.proxyPort=<i>your.proxy.port.number</tt></i></ol>
+        <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</i></tt>
+        <br><tt>-Dhttp.proxyPort=<i>your.proxy.port.number</i></tt></ol>
         <p>Stop and then restart the server for the new proxy settings to take effect.
 
         <p><b>To deploy to the JBoss Server:</b>
@@ -85,12 +85,12 @@ Use is subject to license terms.  *-->
         not been set correctly.
         <p>Do the following to check and set the proxy:
         <ol>
-        <li>Open the Runtime window (Ctrl-5).
+        <li>Open the Services window (Ctrl-5).
         <li>If the Tomcat Web Server is started, stop it.
         <li>Right-click the Tomcat node and choose Properties.
         <li>In the Platform tab, add the following properties in the VM Options text box:
-        <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</tt></i>
-        <br><tt>-Dhttp.proxyPort=<i>your.proxy.port</tt></i></ol>
+        <p><tt>-Dhttp.proxyHost=<i>your.proxy.host</i></tt>
+        <br><tt>-Dhttp.proxyPort=<i>your.proxy.port</i></tt></ol>
         <p>Start the server for the new proxy settings to take effect.
   
         <p><b>To deploy a web service client in a Java application:</b>
