@@ -129,7 +129,7 @@ public abstract class AstElement extends RubyElement {
         } else if (node instanceof ConstDeclNode) {
             return new AstConstantElement((ConstDeclNode)node);
         } else if (node instanceof SymbolNode) {
-            return new AstAttributeElement((SymbolNode)node);
+            return new AstAttributeElement((SymbolNode)node, null);
         } else {
             return null;
         }

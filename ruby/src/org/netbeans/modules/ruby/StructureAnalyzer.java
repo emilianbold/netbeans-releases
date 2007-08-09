@@ -465,7 +465,7 @@ public class StructureAnalyzer implements StructureScanner {
 
                 if ((symbols != null) && (symbols.length > 0)) {
                     for (SymbolNode s : symbols) {
-                        AstAttributeElement co = new AstAttributeElement(s);
+                        AstAttributeElement co = new AstAttributeElement(s, node);
                         
                         if (parent instanceof AstClassElement) {
                             Set<AstAttributeElement> attrsInClass = attributes.get(parent);
