@@ -70,33 +70,42 @@ public class Wizard extends WizardSheet {
 		super();
 	}
 
-	public void init(Icon hbmWatermark, GraphicsConfiguration hpalWatermark, Icon hbmHeader) {
-		getAccessibleContext().setAccessibleDescription(DefaultDesignPatternResource.getString("ACSD_WIZARD"));
-		if (hbmWatermark != null && hbmHeader != null) {
-			super.init(hbmWatermark, hpalWatermark, hbmHeader);
-		} else {
-			// just load up the default images
-			super.init(new ImageIcon(Wizard.class.getResource("wiz01.gif")), null, new ImageIcon(Wizard.class.getResource("wiz02.gif")));
-		}
+        public void init(Icon hbmWatermark, GraphicsConfiguration hpalWatermark, Icon hbmHeader)
+        {
+            getAccessibleContext().setAccessibleDescription(DefaultDesignPatternResource.getString("ACSD_WIZARD"));
 
-		m_IntroPage = new WizardIntro(this);
-		m_PatternSelectionPage = new WizardPatternSelection(this);
-		m_TargetPage = new WizardTarget(this);
-		m_RolesPage = new WizardRoles(this);
-		m_OptionsPage = new WizardOptions(this);
-		m_SummaryPage = new WizardSummary(this);
-
-		this.addPage(m_IntroPage, PG_INTRO);
-		this.addPage(m_PatternSelectionPage, PG_PATTERNSEL);
-		this.addPage(m_TargetPage, PG_TARGET);
-		this.addPage(m_RolesPage, PG_ROLES);
-		this.addPage(m_OptionsPage, PG_OPTIONS);
-		this.addPage(m_SummaryPage, PG_SUMMARY);
-
-		m_RefreshPages = false;
-
-		this.setActivePage(0);
-	}
+            super.init(null, null, null);
+            
+//            if (hbmWatermark != null && hbmHeader != null)
+//            {
+//                super.init(hbmWatermark, hpalWatermark, hbmHeader);
+//            }
+//            
+//            else
+//            {
+//                // just load up the default images
+//                super.init(new ImageIcon(Wizard.class.getResource("wiz01.gif")), 
+//                    null, new ImageIcon(Wizard.class.getResource("wiz02.gif")));
+//            }
+            
+            m_IntroPage = new WizardIntro(this);
+            m_PatternSelectionPage = new WizardPatternSelection(this);
+            m_TargetPage = new WizardTarget(this);
+            m_RolesPage = new WizardRoles(this);
+            m_OptionsPage = new WizardOptions(this);
+            m_SummaryPage = new WizardSummary(this);
+            
+            this.addPage(m_IntroPage, PG_INTRO);
+            this.addPage(m_PatternSelectionPage, PG_PATTERNSEL);
+            this.addPage(m_TargetPage, PG_TARGET);
+            this.addPage(m_RolesPage, PG_ROLES);
+            this.addPage(m_OptionsPage, PG_OPTIONS);
+            this.addPage(m_SummaryPage, PG_SUMMARY);
+            
+            m_RefreshPages = false;
+            
+            this.setActivePage(0);
+        }
 
 	public IDesignPatternDetails getDetails() {
 		return m_PatternDetails;

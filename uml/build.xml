@@ -76,17 +76,19 @@ Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 
         <mkdir dir="${dest.images.dir}/resources"/>
 
-        <!-- copy core images to javahelp resources dir -->
+        <!-- copy core images to javahelp resources dir 
         <copy todir="${dest.images.dir}/resources" overwrite="true">
             <fileset dir="${src.images.dir}/resources" casesensitive="yes"/>
         </copy>
-    
-        <!-- copy core toolbar images to javahelp toolbar_images dir -->
+        -->
+        
+        <!-- copy core toolbar images to javahelp toolbar_images dir
         <mkdir dir="${dest.images.dir}/resources/toolbar_images"/>
      
         <copy todir="${dest.images.dir}/resources/toolbar_images" overwrite="true">
             <fileset dir="${src.images.dir}/resources/toolbar_images" casesensitive="yes"/>
         </copy>
+        -->
         
         <!-- copy new core images to javahelp resources/images dir -->
         <mkdir dir="${dest.images.dir}/resources/images"/>

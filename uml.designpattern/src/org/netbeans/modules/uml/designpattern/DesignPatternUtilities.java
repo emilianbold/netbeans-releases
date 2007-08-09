@@ -209,7 +209,8 @@ public class DesignPatternUtilities
 			for (int x = 0; x < cnt; x++)
 			{
 				String str = v.get(x);
-				map.put(str, str);
+                                if (str != null)
+                                    map.put(str, str);
 			}
 			Set s = map.keySet();
 			Object[] o = s.toArray();

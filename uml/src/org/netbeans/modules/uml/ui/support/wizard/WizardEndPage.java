@@ -39,11 +39,11 @@ public abstract class WizardEndPage extends WizardPage {
 	protected void createUI() {
 		super.createUI();
 		
-		m_Watermark.setMaximumSize(new Dimension(0, 0));
-		m_Watermark.setMinimumSize(new Dimension(150, 100));
-		m_Watermark.setPreferredSize(new Dimension(150, 100));
-		m_Watermark.setIcon(getParentSheet().getBmpWatermark());
-		this.add(m_Watermark,  BorderLayout.WEST);
+		// m_Watermark.setMaximumSize(new Dimension(0, 0));
+		// m_Watermark.setMinimumSize(new Dimension(150, 100));
+		// m_Watermark.setPreferredSize(new Dimension(150, 100));
+		// m_Watermark.setIcon(getParentSheet().getBmpWatermark());
+		// this.add(m_Watermark,  BorderLayout.WEST);
 		this.add(pnlContents, BorderLayout.CENTER);
                 this.setPreferredSize(new Dimension(300,300));
 
