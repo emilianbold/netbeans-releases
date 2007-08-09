@@ -58,8 +58,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/actions/ReplaceActionTest.class/testPerformMenu" expectedFail="Fails because of problem in main menu (#61794)"/>
                 <include name="**/actions/SaveActionTest.class/testPerformMenu" expectedFail="Fails because of problem in main menu (#61794)"/>
                 <include name="**/actions/SaveAllActionTest.class/testPerformMenu" expectedFail="Fails because of problem in main menu (#61794)"/>
-                <include name="**/actions/FindInFilesActionTest.class/testPerformMenu" expectedFail="Fails because of AssertionError (#111430)"/>
-                <include name="**/actions/FindInFilesActionTest.class/testPerformAPI" expectedFail="Fails because of AssertionError (#111430)"/>
             </patternset>
         </testset>
     </testbag>
@@ -135,7 +133,6 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/NavigatorOperatorTest.class"/>
                 <include name="**/NewProjectNameLocationStepOperatorTest.class/testWebApplication"/>
                 <include name="**/J2eeServerNodeTest.class"/>
-                <include name="**/J2eeServerNodeTest.class/testProperties" expectedFail="Fails because of redundant menu items (#76102)"/>
             </patternset>
         </testset>
     </testbag>
