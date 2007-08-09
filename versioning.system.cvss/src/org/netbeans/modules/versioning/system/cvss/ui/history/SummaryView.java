@@ -21,6 +21,8 @@ package org.netbeans.modules.versioning.system.cvss.ui.history;
 
 import org.netbeans.lib.cvsclient.command.log.LogInformation;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
+import org.netbeans.lib.cvsclient.command.CommandException;
+import org.netbeans.lib.cvsclient.connection.AuthenticationException;
 import org.netbeans.modules.versioning.system.cvss.util.Utils;
 import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.log.SearchHistoryAction;
@@ -34,6 +36,9 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -49,6 +54,8 @@ import java.awt.event.*;
 import java.text.DateFormat;
 import java.io.File;
 import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
 
 /**
  * Shows Search History results in a JList.
@@ -427,11 +434,26 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     private static void rollbackChange(LogInformation.Revision change, ExecutorGroup group) {
-        UpdateCommand cmd = new UpdateCommand();
-        cmd.setFiles(new File [] { change.getLogInfoHeader().getFile() });
-        cmd.setMergeRevision1(change.getNumber());
-        cmd.setMergeRevision2(Utils.previousRevision(change.getNumber()));
-        group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null, null));
+        File file = change.getLogInfoHeader().getFile();
+        if (file.getParentFile().exists()) {
+            UpdateCommand cmd = new UpdateCommand();
+            cmd.setFiles(new File [] { file });
+            cmd.setMergeRevision1(change.getNumber());
+            cmd.setMergeRevision2(Utils.previousRevision(change.getNumber()));
+            group.addExecutors(UpdateExecutor.splitCommand(cmd, CvsVersioningSystem.getInstance(), null, null));
+        } else {
+            try {
+                File rev = VersionsCache.getInstance().getRemoteFile(file, Utils.previousRevision(change.getNumber()), null);
+                if (rev != null) {
+                    file.getParentFile().mkdirs();
+                    FileObject fo = FileUtil.toFileObject(file.getParentFile());
+                    fo = fo.createData(file.getName());
+                    org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(fo.getOutputStream(), new FileInputStream(rev));
+                }
+            } catch (Exception e) {
+                Logger.getLogger(SummaryView.class.getName()).log(Level.SEVERE, "Unable to rollback changes", e); // real simple error reporting ...
+            }
+        }
     }
 
     static void rollbackChanges(LogInformation.Revision [] changes) {
