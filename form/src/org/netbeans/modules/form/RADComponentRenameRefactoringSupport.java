@@ -96,7 +96,7 @@ public class RADComponentRenameRefactoringSupport {
                 Tree tr = it.next();
                 if (tr.getKind() == Tree.Kind.VARIABLE) {
                     Trees trees = info.getTrees();
-                    TreePath path = trees.getPath(info.getCompilationUnit(), tr);
+                    TreePath path = new TreePath(getCurrentPath(), tr);
                     Element el = trees.getElement(path);
                     String sname = el.getSimpleName().toString();
                     if(sname.equals(this.member)){
