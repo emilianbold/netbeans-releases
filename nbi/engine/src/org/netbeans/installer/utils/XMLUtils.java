@@ -54,6 +54,7 @@ import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.exceptions.DownloadException;
 import org.netbeans.installer.utils.exceptions.ParseException;
 import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.utils.helper.ErrorLevel;
 import org.netbeans.installer.utils.helper.ExtendedUri;
 import org.netbeans.installer.utils.helper.Feature;
 import org.netbeans.installer.utils.helper.NbiProperties;
@@ -74,32 +75,46 @@ public abstract class XMLUtils {
     public static void saveXMLDocument(
             final Document document,
             final File file) throws XMLException {
+        LogManager.logEntry("saving document to xml file : " + file);
         FileOutputStream output = null;
         
         for (int i = 0; i < MAXIMUM_SAVE_ATTEMPTS; i++) {
+            LogManager.log("... attempt " + (i + 1));
             try {
-                saveXMLDocument(document, output = new FileOutputStream(file));
-                
+                LogManager.log("... opening output stream");                
+                output = new FileOutputStream(file);
+                LogManager.log("... saving XML to output stream");
+                saveXMLDocument(document, output);
+                LogManager.log("... saving XML to output stream done");
                 // check the size of the resulting file -- sometimes it just happens
                 // to be empty, we need to resave then; if we fail to save for
                 // several times (MAXIMUM_SAVE_ATTEMPTS) -- fail with an
                 // XMLException
             } catch (IOException e) {
+                LogManager.log("... can`t save XML, an exception caught", e);
                 throw new XMLException("Cannot save XML document", e);
             } finally {
+                LogManager.log("... closing output stream if necessary");
                 if (output != null) {
                     try {
                         output.close();
                         output = null;
                     } catch (IOException e) {
                         ErrorManager.notifyDebug("Could not close the stream", e);
-                    }
+                    } 
+                    LogManager.log("... output stream is closed now");
+                } else {
+                    LogManager.log("... no need to do that");
                 }
             }
+            LogManager.log("... checking file length");
             if (file.length() > 0) {
+                LogManager.logExit("... file length is more that 0 so exit");
                 return;
             }
+            LogManager.log("... file length is zero so go to next cycle");
         }
+        LogManager.logExit("... throwing XML exception since xml file could not be saved for several attemps");
         throw new XMLException("Cannot save XML document after " +
                 MAXIMUM_SAVE_ATTEMPTS + " attempts, the resulting " +
                 "file is empty.");
