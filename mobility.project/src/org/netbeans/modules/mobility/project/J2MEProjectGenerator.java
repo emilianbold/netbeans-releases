@@ -72,6 +72,7 @@ import java.beans.PropertyVetoException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.spi.mobility.project.ui.customizer.support.VisualPropertySupport;
 import org.openide.util.NbBundle;
@@ -375,6 +376,7 @@ public class J2MEProjectGenerator {
         ep.setProperty(DefaultPropertiesDescriptor.DIST_JAD, usablePropertyName + ".jad");  //NOI18N
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/doc");  //NOI18N
         ep.setProperty(CopyDeploymentPlugin.PROP_TARGET, "deploy"); //NOI18N
+        ep.setProperty(DefaultPropertiesDescriptor.JAVAC_ENCODING, FileEncodingQuery.getDefaultEncoding().name());
         
         final HashMap<String,String> manifestOthers = new HashMap<String,String>();
         manifestOthers.put("MIDlet-Name", name);  //NOI18N
