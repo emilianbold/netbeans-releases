@@ -125,7 +125,7 @@ class DropTargetLayer extends JComponent {
         
         if(DEBUG) {
             g.setColor(Color.GREEN);
-            g.drawString("DropTarget Layer ", 30,100);
+            g.drawString("DropTarget Layer ", 30,100); //NOI18N
         }
         
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -139,28 +139,28 @@ class DropTargetLayer extends JComponent {
                 
                 // if over the menubar itself, rather than a toplevel JMenu
                 if(canvas.formDesigner.getMetaComponent(currentTargetComponent) == comp) { 
-                    JComponent mb = currentTargetComponent;
-                    Point mblocation = SwingUtilities.convertPoint(mb, new Point(0,0), this);
-                    if(mb.getComponentCount() > 0) {
-                        Component lastComp = mb.getComponent(mb.getComponentCount()-1);
-                        mblocation.x += lastComp.getX() + lastComp.getWidth();
-                    }
-                    g2.drawRect(mblocation.x+2, mblocation.y+2, mb.getHeight()-4, mb.getHeight()-4);
+                    //draw orange rect where you could drop a new menu item
+                    drawOpenSpotAtEndOfMenuBar(g2,currentTargetComponent);
                 } else {
+                    
                     // if this is a toplevel JMenu, draw between them
                     if(currentTargetComponent.getParent() instanceof JMenuBar) {
-                        //JComponent menu = (JComponent) canvas.formDesigner.getComponent(menuBarDropTargetComponent);
                         JComponent menu = currentTargetComponent;
+                        JComponent menubar = (JComponent) currentTargetComponent.getParent();
                         Point mblocation = SwingUtilities.convertPoint(menu, new Point(0, 0), this);
                         Point cursorLocation = SwingUtilities.convertPoint(this, currentTargetPoint, menu);
-                        int size = menu.getHeight() - 4;
 
                         g2.setColor(DROP_TARGET_COLOR);
                         if(currentTargetType != DropTargetType.INTO_SUBMENU) {
                             if (isMenuLeftEdge(cursorLocation, menu)) {
                                 drawVerticalTargetLine(g2, mblocation.x - 1, mblocation.y, 50);
                             } else if (isMenuRightEdge(cursorLocation, menu)) {
-                                drawVerticalTargetLine(g2, mblocation.x + menu.getWidth(), mblocation.y, 50);
+                                //if last toplevel menu, draw the rect target instead of a linef
+                                if(isLastChild(menu,menubar)) {
+                                    drawOpenSpotAtEndOfMenuBar(g2, menubar);
+                                } else {
+                                    drawVerticalTargetLine(g2, mblocation.x + menu.getWidth(), mblocation.y, 50);
+                                }
                             } else {
                                 // center drop
                                 g2.drawRect(mblocation.x, mblocation.y, menu.getWidth(), menu.getHeight());
@@ -183,6 +183,21 @@ class DropTargetLayer extends JComponent {
         g2.dispose();
     }
     
+    
+    private boolean isLastChild(JComponent child, JComponent parent) {
+        if(parent == null) return false;
+        if(parent.getComponentCount() < 1) return false;
+        return (child == parent.getComponent(parent.getComponentCount()-1));
+    }
+    //draw orange rect where you could drop a new menu item
+    private  void drawOpenSpotAtEndOfMenuBar(Graphics2D g2, JComponent mb) {
+        Point mblocation = SwingUtilities.convertPoint(mb, new Point(0,0), this);
+        if(mb.getComponentCount() > 0) {
+            Component lastComp = mb.getComponent(mb.getComponentCount()-1);
+            mblocation.x += lastComp.getX() + lastComp.getWidth();
+        }
+        g2.drawRect(mblocation.x+2, mblocation.y+2, mb.getHeight()-4, mb.getHeight()-4);
+    }
     private void drawSelectedComponent(Graphics2D g2, JComponent selected) {
         // draw normal border around toplevel menus
         if (selected instanceof JMenu && selected.getParent() instanceof JMenuBar) {
