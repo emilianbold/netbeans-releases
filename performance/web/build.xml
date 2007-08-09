@@ -20,6 +20,6 @@
 -->
 
 <project basedir="." default="netbeans" name="web/performancetests">
-    <description>Builds, tests, and runs the project entpackperftests</description>
+    <description>Builds, tests, and runs the project web perftests</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
 </project>
