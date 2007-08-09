@@ -170,6 +170,8 @@ public class GenerateCodeAction extends CookieAction
 
             if (!displayDialogDescriptor(gcPanel, templatesEnabled))
                 return;
+
+	    gcPanel.storeProjectProperties();
         }
         
         // if UML project is dirty, save it first

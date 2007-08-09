@@ -375,13 +375,7 @@ public class GenerateCodePanel extends javax.swing.JPanel
     {
         if (actionEvent.getActionCommand().equals("OK")) // NOI18N
         {
-            UMLProjectProperties props = model.getUMLProjectProperties();
-            props.setCodeGenFolderLocation(getSelectedFolderName());
-            props.setCodeGenBackupSources(isBackupSources());
-            props.setCodeGenUseMarkers(isGenerateMarkers());
-            props.setCodeGenShowDialog(isShowDialog());
-            props.setCodeGenAddMarkers(isAddMarkers());
-            props.save();
+	    storeProjectProperties();
         }
         
         else if (actionEvent.getActionCommand().equals("TEMPLATES")) // NOI18N
@@ -418,6 +412,17 @@ public class GenerateCodePanel extends javax.swing.JPanel
             topCont.doLayout();
         }
 
+    }
+
+    public void storeProjectProperties() 
+    { 
+	UMLProjectProperties props = model.getUMLProjectProperties();
+	props.setCodeGenFolderLocation(getSelectedFolderName());
+	props.setCodeGenBackupSources(isBackupSources());
+	props.setCodeGenUseMarkers(isGenerateMarkers());
+	props.setCodeGenShowDialog(isShowDialog());
+	props.setCodeGenAddMarkers(isAddMarkers());
+	props.save();
     }
     
     public String getSelectedFolderName()
