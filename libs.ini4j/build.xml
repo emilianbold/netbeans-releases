@@ -19,24 +19,4 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="subversion/ini4j" default="netbeans" basedir=".">
     <import file="../../nbbuild/templates/projectized.xml"/>
-    <!-- Rewritten to capture two licenses. -->                           
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-                 moduleauthor="${nbm.module.author}">
-            <license name="subversion-license.txt">
-                 <text>For the ini4j library module itself:</text>
-                 <file location="${license.file}"/>
-                 <text>For the ini4j library:</text>
-                 <file location="../external/ini4j.license"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-
 </project>
