@@ -40,12 +40,13 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="jv" executor="ide" name="testbag_refactoring">
+    <testbag testattribs="validation" executor="ide" name="testbag_refactoring">
         <testset dir="qa-functional/src">
             <patternset>
-<!--                <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
+                <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
                 <include name="org/netbeans/qa/form/refactoring/RenameFormClassTest.class"/>
--->                <include name="org/netbeans/qa/form/refactoring/MoveFormClassTest.class"/>                
+                <include name="org/netbeans/qa/form/refactoring/MoveFormClassTest.class"/>                
+                <include name="org/netbeans/qa/form/refactoring/RenamePackageComponentAndCustomCodeTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -54,12 +55,10 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
-                <!-- in issue testbag  <include name="org/netbeans/qa/form/binding/AdvancedBeansBinding.class"/> -->
+                <include name="org/netbeans/qa/form/binding/AdvancedBeansBinding.class"/>
             </patternset>
         </testset>
     </testbag>
-
-    
     
     <testbag testattribs="_jv" executor="ide" name="testbag_databinding">
         <testset dir="qa-functional/src">
