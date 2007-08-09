@@ -36,7 +36,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.apisupport.project.CreatedModifiedFiles;
-import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -286,12 +285,11 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
     public final void addChangeListener(ChangeListener  l) {}
     public final void removeChangeListener(ChangeListener l) {}
     
-    protected Set getCreatedFiles(final CreatedModifiedFiles cmf, final Project project) throws IOException {
-        Collection toBeShown = new HashSet();
-        String[] paths = cmf.getCreatedPaths();
-        Set set = new HashSet();
-        for (int i = 0; i < paths.length; i++) {
-            FileObject fo = project.getProjectDirectory().getFileObject(paths[i]);
+    protected Set<FileObject> getCreatedFiles(final CreatedModifiedFiles cmf, final Project project) throws IOException {
+        Collection<DataObject> toBeShown = new HashSet<DataObject>();
+        Set<FileObject> set = new HashSet<FileObject>();
+        for (String path : cmf.getCreatedPaths()) {
+            FileObject fo = project.getProjectDirectory().getFileObject(path);
             formatFile(fo);
             DataObject dObj = DataObject.find(fo);
             if (dObj != null && toBeShown.size() < 10 && toBeShown.add(dObj)) {
@@ -305,7 +303,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
         BaseDocument doc = null;
         DataObject dObj = DataObject.find(fo);
         if (dObj != null) {
-            EditorCookie editor = (EditorCookie) dObj.getCookie(EditorCookie.class);
+            EditorCookie editor = dObj.getCookie(EditorCookie.class);
             if (editor != null) {
                 doc = (BaseDocument) editor.openDocument();
             }
@@ -355,7 +353,7 @@ public abstract class BasicWizardIterator implements WizardDescriptor.Asynchrono
                 doc.atomicUnlock();
                 if (saved) {
                     try {
-                        ((EditorCookie) DataObject.find(fo).getCookie(EditorCookie.class)).saveDocument();
+                        DataObject.find(fo).getCookie(EditorCookie.class).saveDocument();
                     } catch (IOException e) {
                         Util.err.notify(ErrorManager.INFORMATIONAL, e);
                     }
