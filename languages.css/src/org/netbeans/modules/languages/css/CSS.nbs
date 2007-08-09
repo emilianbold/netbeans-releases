@@ -167,7 +167,7 @@ REFORMAT:value:" "
 
 ########### completion #########################################################
 
-COMPLETION:css_identifier: {
+COMPLETION:css_identifier, css_operator, css_comment, css_whitespace: {
     recursive:    "true";
     text1: "azimuth";
     text2: "background-attachment";
