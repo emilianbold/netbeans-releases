@@ -28,6 +28,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -36,6 +37,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.SyntaxElement.TagAttribute;
 import org.netbeans.editor.ext.html.parser.SyntaxParserListener;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
 
 /**
  * Listens on HTML parser changes and updates embedding of nested languages accordingly.
@@ -62,8 +65,29 @@ public class EmbeddingUpdater implements SyntaxParserListener {
     
     private boolean embeddingChanged;
     
+    private LanguagePath languagePath;
+    
     public EmbeddingUpdater(Document doc) {
         this.doc = doc;
+        
+        //hack
+        String topLevelLanguageMimeType = NbEditorUtilities.getMimeType(doc);
+        if(topLevelLanguageMimeType == null) {
+            throw new IllegalArgumentException("Cannot determine document mimetype " + doc);
+        }
+        
+        Language lang = Language.find(topLevelLanguageMimeType);
+        if(lang == null) {
+            throw new IllegalArgumentException("Cannot find language " + topLevelLanguageMimeType);
+        }
+        
+        if("text/html".equals(topLevelLanguageMimeType)) {
+            languagePath = LanguagePath.get(lang);
+        } else if("text/x-jsp".equals(topLevelLanguageMimeType)) {
+            languagePath = LanguagePath.get(LanguagePath.get(lang), Language.find("text/html"));
+        }
+        //eof hack
+        
     }
     
     public void parsingFinished(List<SyntaxElement> elements) {
@@ -222,46 +246,49 @@ public class EmbeddingUpdater implements SyntaxParserListener {
         ((BaseDocument)doc).extWriteLock(); //writeLock is required since we create embedding what is kind of document change
         try {
             TokenHierarchy th = TokenHierarchy.get(doc);
-            TokenSequence ts = tokenSequence(th, startOffset);
+            List<TokenSequence> tokenSequenceList = th.tokenSequenceList(languagePath, startOffset, endOffset);
+            //TokenSequence ts = tokenSequence(th, startOffset);
             
-            if(ts == null) {
-                LOGGER.log(Level.WARNING, "Trying to create embedding for " + mimeType + " [" + startOffset + " - " + endOffset + "]: cannot get HTML token sequence!");
-                return ;
-            }
+//            if(ts == null) {
+//                LOGGER.log(Level.WARNING, "Trying to create embedding for " + mimeType + " [" + startOffset + " - " + endOffset + "]: cannot get HTML token sequence!");
+//                return ;
+//            }
             
-            ts.move(startOffset);
-            if(!ts.moveNext() && !ts.movePrevious()) {
-                return ; //no token
-            }
-            
-            //huh, use the startSkipLength and endSkipLength only on the first and last token
-            //in the sequence of tokens we create the embedding.
-            boolean iAmFirstToken = true;
-            boolean iAmLastToken = false;
-            do {
-                Token item = ts.token();
-                //test if we are last token
-                boolean hasNextToken = ts.moveNext();
-                iAmLastToken = !(hasNextToken && ts.offset() < endOffset);
-                if(hasNextToken) {
-                    //rewind the tokenSequence back so the
-                    //embedding is created on a proper token
-                    ts.movePrevious();
+            for (TokenSequence ts : tokenSequenceList) {
+                ts.move(startOffset);
+                if(!ts.moveNext() && !ts.movePrevious()) {
+                    return ; //no token
                 }
-                if(ts.embedded(lang) == null) {
-                    //the embedding doesn't exist, try to create
-                    if(!ts.createEmbedding(lang, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0)) {
-                        LOGGER.log(Level.WARNING, "Cannot create embedding for " + mimeType + " [" + startOffset + " - "  + endOffset + "] (" + item.text().toString() + ")");
-                    } else {
-                        LOGGER.log(Level.INFO, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(item, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0) + ")");
-                        embeddingChanged = true;
+
+                //huh, use the startSkipLength and endSkipLength only on the first and last token
+                //in the sequence of tokens we create the embedding.
+                boolean iAmFirstToken = true;
+                boolean iAmLastToken = false;
+                do {
+                    Token item = ts.token();
+                    //test if we are last token
+                    boolean hasNextToken = ts.moveNext();
+                    iAmLastToken = !(hasNextToken && ts.offset() < endOffset);
+                    if(hasNextToken) {
+                        //rewind the tokenSequence back so the
+                        //embedding is created on a proper token
+                        ts.movePrevious();
                     }
-                }
-                iAmFirstToken = false;
-                if(!iAmLastToken) {
-                    ts.moveNext();
-                }
-            } while(!iAmLastToken);
+                    if(ts.embedded(lang) == null) {
+                        //the embedding doesn't exist, try to create
+                        if(!ts.createEmbedding(lang, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0)) {
+                            LOGGER.log(Level.WARNING, "Cannot create embedding for " + mimeType + " [" + startOffset + " - "  + endOffset + "] (" + item.text().toString() + ")\n");
+                        } else {
+                            LOGGER.log(Level.INFO, "Embedding for " + mimeType + " created [" + startOffset + " - "  + endOffset + "] (" + printEmbeddedText(item, iAmFirstToken ? startSkipLength : 0, iAmLastToken ? endSkipLength : 0) + ")\n");
+                            embeddingChanged = true;
+                        }
+                    }
+                    iAmFirstToken = false;
+                    if(!iAmLastToken) {
+                        ts.moveNext();
+                    }
+                } while(!iAmLastToken);
+            }
         }finally {
             ((BaseDocument)doc).extWriteUnlock();
         }
