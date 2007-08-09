@@ -277,7 +277,7 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         if (nodes[0] instanceof ServerNode) {
             ServerInstance serverInstance = ((ServerNode)nodes[0]).getServerInstance();
             if (!serverInstance.isRemoveForbidden()) {
-                ServerRegistry.getInstance().removeServerInstance(serverInstance.getUrl());
+                serverInstance.remove();
                 getChildren().refreshServers();
                 expandServers(null);
             }
