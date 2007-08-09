@@ -9,6 +9,8 @@ package org.netbeans.modules.ruby;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.gsf.CompilationInfo;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -17,6 +19,8 @@ import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.ElementKind;
 import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.api.gsf.StructureItem;
+import org.netbeans.modules.ruby.elements.AstAttributeElement;
+import org.netbeans.modules.ruby.elements.AstClassElement;
 
 /**
  *
@@ -159,4 +163,33 @@ public class StructureAnalyzerTest extends RubyTestBase {
         checkStructure("testfiles/unused.rb");
     }
 
+    
+    
+    private void checkAttributes(String relFilePath) throws Exception {
+        CompilationInfo info = getInfo(relFilePath);
+        RubyParseResult rbr = (RubyParseResult)info.getParserResult();
+        StructureAnalyzer.AnalysisResult ar = rbr.getStructure();
+        Map<AstClassElement, Set<AstAttributeElement>> attributes = ar.getAttributes();
+        
+        StringBuilder sb = new StringBuilder();
+        for (AstClassElement clz : attributes.keySet()) {
+            Set<AstAttributeElement> aes = attributes.get(clz);
+            if (aes != null) {
+                sb.append(clz.getFqn());
+                sb.append("\n");
+                for (AstAttributeElement ae : aes) {
+                    sb.append("  ");
+                    sb.append(ae.getName());
+                    sb.append("\n");
+                }
+            }
+        }
+        String annotatedSource = sb.toString();
+
+        assertDescriptionMatches(relFilePath, annotatedSource, false, ".attributes");
+    }
+
+    public void testAttributes1() throws Exception {
+        checkAttributes("testfiles/resolv.rb");
+    }
 }

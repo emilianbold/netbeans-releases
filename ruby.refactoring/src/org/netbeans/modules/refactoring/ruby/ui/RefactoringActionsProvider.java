@@ -45,6 +45,7 @@ import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyParseResult;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.StructureAnalyzer;
+import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.openide.ErrorManager;
@@ -551,8 +552,8 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             if (root != null) {
                 RubyParseResult rpr = (RubyParseResult)info.getParserResult();
                 if (rpr != null) {
-                    StructureAnalyzer.analyze(rpr);
-                    List<? extends AstElement> els = rpr.getStructure();
+                    AnalysisResult ar = rpr.getStructure();
+                    List<? extends AstElement> els = ar.getElements();
                     if (els.size() > 0) {
                         // TODO - try to find the outermost or most "relevant" module/class in the file?
                         // In Java, we look for a class with the name corresponding to the file.

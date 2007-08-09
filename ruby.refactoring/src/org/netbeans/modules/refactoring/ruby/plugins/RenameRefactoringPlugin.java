@@ -56,6 +56,7 @@ import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstPath;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -155,8 +156,8 @@ public class RenameRefactoringPlugin extends RubyRefactoringPlugin {
                         if (root != null) {
                             RubyParseResult rpr = (RubyParseResult)co.getParserResult();
                             if (rpr != null) {
-                                StructureAnalyzer.analyze(rpr);
-                                List<? extends AstElement> els = rpr.getStructure();
+                                AnalysisResult ar = rpr.getStructure();
+                                List<? extends AstElement> els = ar.getElements();
                                 if (els.size() > 0) {
                                     // TODO - try to find the outermost or most "relevant" module/class in the file?
                                     // In Java, we look for a class with the name corresponding to the file.

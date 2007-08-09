@@ -93,6 +93,7 @@ public class StructureAnalyzer implements StructureScanner {
     private Map<AstClassElement, Set<InstAsgnNode>> fields;
     private Set<String> requires;
     private List<AstMethodElement> methods;
+    private Map<AstClassElement, Set<AstAttributeElement>> attributes;
     private HtmlFormatter formatter;
     private RubyParseResult result;
 
@@ -103,35 +104,70 @@ public class StructureAnalyzer implements StructureScanner {
         this.result = (RubyParseResult)info.getParserResult();
         this.formatter = formatter;
 
-        List<?extends Element> elements = scan(result);
+        AnalysisResult ar = result.getStructure();
+        List<?extends AstElement> elements = ar.getElements();
         List<StructureItem> structure = new ArrayList<StructureItem>(elements.size());
 
-        for (Element e : elements) {
-            AstElement jn = (AstElement)e;
-            structure.add(new RubyStructureItem(jn, info));
+        for (AstElement e : elements) {
+            structure.add(new RubyStructureItem(e, info));
         }
 
         return structure;
     }
-
-    private List<?extends Element> scan(RubyParseResult result) {
-        if (result.getStructure() != null) {
-            // Already done
-            return result.getStructure();
+    
+    public static class AnalysisResult {
+        private List<?extends AstElement> elements;
+        private Map<AstClassElement, Set<AstAttributeElement>> attributes;
+        private Set<String> requires;
+        
+        private AnalysisResult() {
         }
+        
+        public Set<String> getRequires() {
+            return requires;
+        }
+
+        public void setRequires(Set<String> requires) {
+            this.requires = requires;
+        }
+
+        private void setElements(List<?extends AstElement> elements) {
+            this.elements = elements;
+        }
+        
+        private void setAttributes(Map<AstClassElement, Set<AstAttributeElement>> attributes) {
+            this.attributes = attributes;
+        }
+        
+        public Map<AstClassElement, Set<AstAttributeElement>> getAttributes() {
+            return attributes;
+        }
+        
+        public List<?extends AstElement> getElements() {
+            if (elements == null) {
+                return Collections.emptyList();
+            }
+            return elements;
+        }
+    }
+
+    private AnalysisResult scan(RubyParseResult result) {
+        AnalysisResult analysisResult = new AnalysisResult();
 
         Node root = AstUtilities.getRoot(result);
 
         if (root == null) {
-            return Collections.emptyList();
+            return analysisResult;
         }
 
         structure = new ArrayList<AstElement>();
         fields = new HashMap<AstClassElement, Set<InstAsgnNode>>();
+        attributes = new HashMap<AstClassElement, Set<AstAttributeElement>>();
         requires = new HashSet<String>();
         methods = new ArrayList<AstMethodElement>();
         haveAccessModifiers = new HashSet<AstClassElement>();
 
+        
         AstPath path = new AstPath();
         path.descend(root);
         // TODO: I should pass in a "default" context here to stash methods etc. outside of modules and classes
@@ -226,11 +262,11 @@ public class StructureAnalyzer implements StructureScanner {
             }
         }
 
-        // Stash the structure with the AST so other helper methods can use it
-        result.setStructure(structure);
-        result.setRequires(requires);
+        analysisResult.setElements(structure);
+        analysisResult.setAttributes(attributes);
+        analysisResult.setRequires(requires);
 
-        return structure;
+        return analysisResult;
     }
 
     public List<OffsetRange> folds(CompilationInfo info) {
@@ -430,7 +466,18 @@ public class StructureAnalyzer implements StructureScanner {
                 if ((symbols != null) && (symbols.length > 0)) {
                     for (SymbolNode s : symbols) {
                         AstAttributeElement co = new AstAttributeElement(s);
+                        
+                        if (parent instanceof AstClassElement) {
+                            Set<AstAttributeElement> attrsInClass = attributes.get(parent);
 
+                            if (attrsInClass == null) {
+                                attrsInClass = new HashSet<AstAttributeElement>();
+                                attributes.put((AstClassElement)parent, attrsInClass);
+                            }
+
+                            attrsInClass.add(co);
+                        }
+                        
                         if (parent != null) {
                             parent.addChild(co);
                         } else {
@@ -617,15 +664,8 @@ public class StructureAnalyzer implements StructureScanner {
         }
     }
 
-    public static void analyze(RubyParseResult result) {
-        if (result.getStructure() == null) {
-            StructureAnalyzer analyzer = new StructureAnalyzer();
-            analyzer.scan(result);
-        }
-    }
-
-    public Set<String> getRequires() {
-        return requires;
+    AnalysisResult analyze(RubyParseResult result) {
+        return scan(result);
     }
 
     /** Look through the comment nodes and associate them with the AST nodes */

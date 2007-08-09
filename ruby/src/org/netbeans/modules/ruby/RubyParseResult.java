@@ -28,6 +28,7 @@ import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.api.gsf.annotations.NonNull;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.AstRootElement;
 
@@ -37,15 +38,13 @@ import org.netbeans.modules.ruby.elements.AstRootElement;
  * @author Tor Norbye
  */
 public class RubyParseResult extends ParserResult {
-    //private Iterable<?extends ComFile> files;
     private AstTreeNode ast;
     private Node root;
     private RootNode realRoot;
     private AstRootElement rootElement;
     private String source;
     private OffsetRange sanitizedRange = OffsetRange.NONE;
-    private List<AstElement> structureList;
-    private Set<String> requires;
+    private StructureAnalyzer.AnalysisResult analysisResult;
     private RubyParserResult jrubyResult;
     private boolean commentsAdded;
 
@@ -122,20 +121,16 @@ public class RubyParseResult extends ParserResult {
         return jrubyResult;
     }
 
-    public void setStructure(List<AstElement> structureList) {
-        this.structureList = structureList;
+    public void setStructure(@NonNull StructureAnalyzer.AnalysisResult result) {
+        this.analysisResult = result;
     }
 
-    public List<?extends AstElement> getStructure() {
-        return structureList;
-    }
-
-    public Set<String> getRequires() {
-        return requires;
-    }
-
-    public void setRequires(Set<String> requires) {
-        this.requires = requires;
+    @NonNull
+    public StructureAnalyzer.AnalysisResult getStructure() {
+        if (analysisResult == null) {
+            analysisResult = new StructureAnalyzer().analyze(this);
+        }
+        return analysisResult;
     }
 
     public boolean isCommentsAdded() {

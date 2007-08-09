@@ -47,6 +47,7 @@ import org.netbeans.api.gsf.Modifier;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.ruby.StructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
 import org.netbeans.modules.ruby.elements.ModuleElement;
@@ -278,14 +279,12 @@ public class RubyIndexer implements Indexer {
 
             //Node root = result.getRootNode();
 
-            StructureAnalyzer.analyze(result);
-
             // Compute the requires for this file first such that
             // each class or module recorded in the index for this
             // file can reference their includes
-            requires = getRequireString(result.getRequires());
-
-            List<?extends Element> structure = result.getStructure();
+            AnalysisResult ar = result.getStructure();
+            requires = getRequireString(ar.getRequires());
+            List<?extends AstElement> structure = ar.getElements();
 
             // Rails special case
             String fileName = file.getNameExt();
