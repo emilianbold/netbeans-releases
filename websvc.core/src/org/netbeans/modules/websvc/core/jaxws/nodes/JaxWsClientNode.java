@@ -48,7 +48,6 @@ import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
 import org.netbeans.modules.websvc.core.webservices.action.ConfigureHandlerAction;
 import org.netbeans.modules.websvc.core.webservices.action.ConfigureHandlerCookie;
 import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPanel;
-import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookie;
 import org.netbeans.modules.websvc.core.wseditor.support.WSEditAttributesAction;
 import org.netbeans.modules.websvc.jaxws.api.JaxWsRefreshCookie;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
@@ -72,7 +71,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -161,15 +159,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     void changeIcon() {
         fireIconChange();
     }
-    /*
-    public Node.Cookie getCookie(Class type){
-        System.out.println("getCookie "+type+":"+type.getName());
-        if(type == EditWSAttributesCookie.class){
-            return new EditWSAttributesCookieImpl(this, jaxWsModel); //NOI18N
-        }
-        return super.getCookie(type);
-    }
-    */
+
     private EditCookie getEditCookie() {
         try {
             FileObject wsdlFo =
@@ -294,9 +284,9 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
                 ((JaxWsClientChildren)getChildren()).refreshKeys(true, result);
             }
         } else {
-            Object result = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(JaxWsClientNode.class,
-                    "HINT_RefreshClient"))); //NOI18N
+                    "HINT_RefreshClient"))); //NOI18N           
             ((JaxWsClientChildren)getChildren()).refreshKeys(false);
         }
     }
