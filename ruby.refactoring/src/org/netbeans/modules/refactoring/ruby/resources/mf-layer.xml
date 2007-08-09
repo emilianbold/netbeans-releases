@@ -115,19 +115,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
         -->
-        
-        <!-- folder name="folder">
-            <folder name="any">
-                <folder name="Actions">
-                    <attr boolvalue="true" name="DeleteAction.instance/RefactoringAll.instance"/>
-                    <file name="RefactoringAll.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.popupSubmenuAction"/>
-                    </file>
-                    <attr boolvalue="true" name="RefactoringAll.instance/Separator3.instance"/>
-                    <file name="RenameAction.instance_hidden"/>
-                </folder>
-            </folder>
-        </folder -->
     </folder> 
     <folder name="Services">
         <folder name="org-netbeans-modules-refactoring-ruby">
