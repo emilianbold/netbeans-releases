@@ -21,8 +21,12 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     <folder name="Menu">
         <folder name="Source">
+            <file name="SeparatorBeforePreprocessor.instance">
+                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                <attr name="position" intvalue="4000"/>
+            </file>
             <file name="org-netbeans-modules-mobility-editor-J2MEKit$PreprocessorMenuAction.instance">
-                <attr name="position" intvalue="1400"/>
+                <attr name="position" intvalue="4100"/>
             </file>
         </folder>
     </folder>
