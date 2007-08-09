@@ -47,8 +47,9 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
     private static CvsSynchronizeTopComponent instance;
 
     public CvsSynchronizeTopComponent() {
+        putClientProperty("SlidingName", NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title")); //NOI18N 
         setName(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "CTL_Synchronize_TopComponent_Title"));
-        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/versioning-view.png", true));  // NOI18N
+        setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/versioning/system/cvss/resources/icons/window-versioning.png", true));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CvsSynchronizeTopComponent.class, "ACSD_Synchronize_TopComponent"));
         syncPanel = new SynchronizePanel(this);
@@ -189,10 +190,12 @@ public class CvsSynchronizeTopComponent extends TopComponent implements External
 
     public static final class ReadResolver implements java.io.Serializable {
         public Object readResolve() {
-            if(instance == null) {
-                instance = new CvsSynchronizeTopComponent();
+            synchronized(CvsSynchronizeTopComponent.class) {
+                if(instance == null) {
+                    instance = new CvsSynchronizeTopComponent();
+                }
+                return instance;
             }
-            return instance;
         }
     }
 
