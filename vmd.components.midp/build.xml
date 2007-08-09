@@ -23,11 +23,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="release" depends="init">
         <mkdir dir="${cluster}/modules/ext"/>
-        <mkdir dir="${cluster}/docs"/>
+        <mkdir dir="${cluster}/modules/docs"/>
         <mkdir dir="${cluster}/sources"/>
         <echo message="${cluster}/modules/ext"/>
         <copy file="../netbeans_midp_components_basic/dist/netbeans_midp_components_basic.jar" todir="${cluster}/modules/ext"/>
-        <copy file="../netbeans_midp_components_basic/dist/netbeans_midp_components_basic-api.zip" todir="${cluster}/docs"/>    
+        <copy file="../netbeans_midp_components_basic/dist/netbeans_midp_components_basic-api.zip" todir="${cluster}/modules/docs"/>    
         <copy file="../netbeans_midp_components_basic/dist/netbeans_midp_components_basic-src.zip" todir="${cluster}/sources"/> 
     </target>
 </project>

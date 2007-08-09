@@ -23,7 +23,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="release" depends="init">
         <mkdir dir="${cluster}/modules/ext"/>
-        <mkdir dir="${cluster}/docs"/>
+        <mkdir dir="${cluster}/modules/docs"/>
         <mkdir dir="${cluster}/sources"/>
         <echo message="${cluster}/modules/ext"/>
         <copy file="../nb_svg_midp_components/dist/nb_svg_midp_components.jar" todir="${cluster}/modules/ext"/>

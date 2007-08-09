@@ -28,6 +28,6 @@ Microsystems, Inc. All Rights Reserved.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/netbeans_midp_components_basic-api.zip!/</resource>
+        <resource>jar:nbinst:///modules/docs/netbeans_midp_components_basic-api.zip!/</resource>
     </volume>
 </library>

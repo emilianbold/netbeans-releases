@@ -26,6 +26,6 @@ Microsystems, Inc. All Rights Reserved.
     </volume>
     <volume>
         <type>javadoc</type>
-        <resource>jar:nbinst:///docs/nb_svg_midp_components-api.zip!/</resource>
+        <resource>jar:nbinst:///modules/docs/nb_svg_midp_components-api.zip!/</resource>
     </volume>
 </library>
