@@ -69,7 +69,7 @@
     <tocitem text="Moving a Class Member to a Subclass" target="refactor.pushDown"/>
     <tocitem text="Encapsulating a Field" target="refactor.encapsulateField" /> 
     <tocitem text="Changing a Method's Signature" target="refactor.changeParameters"/>
-    <tocitem text="Extracting a Method" target="refactor.extractMethod"/>
+    <tocitem text="Introducing a Variable, Constant, Field, or Method" target="refactor.extractMethod"/>
     <tocitem text="Extracting a Superclass" target="refactor.extractSuperclass"/>
     <tocitem text="Extracting an Interface" target="refactor.extractInterface"/>
     <tocitem text="Using a Supertype Where Possible" target="refactor.useSupertype"/>   
