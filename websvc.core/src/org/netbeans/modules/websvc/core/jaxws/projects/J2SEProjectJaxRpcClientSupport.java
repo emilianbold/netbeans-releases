@@ -39,6 +39,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -340,7 +341,7 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
             ep = WSUtils.getEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH);
             ep1 = WSUtils.getEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         } catch (IOException ex) {
-            
+            ErrorManager.getDefault().notify(ex);
         }
         assert ep!=null && ep1!=null;
         
@@ -364,7 +365,7 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
             try {
                 WSUtils.storeEditableProperties(project, AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             } catch (IOException ex) {
-                
+                ErrorManager.getDefault().notify(ex);
             }
         }
         
@@ -373,7 +374,7 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
             try {
                 WSUtils.storeEditableProperties(project, AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep1);
             } catch (IOException ex) {
-                
+                ErrorManager.getDefault().notify(ex);
             }
         }
         
@@ -395,7 +396,7 @@ public class J2SEProjectJaxRpcClientSupport implements WebServicesClientSupportI
                             org.w3c.dom.Node clientNode = clientNameElement.getParentNode();
                             clientElements.removeChild(clientNode);
                             //helper.putPrimaryConfigurationData(data, true);
-                            //aux.putConfigurationFragment(clientElements, true);
+                            aux.putConfigurationFragment(clientElements, true);
                             needsSave = true;
                         }
                     }

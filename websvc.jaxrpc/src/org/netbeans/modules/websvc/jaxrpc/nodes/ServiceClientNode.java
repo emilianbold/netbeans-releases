@@ -23,7 +23,6 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
-import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileObject;
@@ -35,12 +34,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.core.webservices.action.ConfigureHandlerCookie;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.jaxrpc.ServiceInformation;
-//import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookie;
-//import org.netbeans.modules.websvc.core.wseditor.support.EditWSAttributesCookieImpl;
-//import org.netbeans.modules.websvc.core.wseditor.support.WSEditAttributesAction;
 import org.netbeans.modules.websvc.wsdl.config.ServiceInformationImpl;
 import org.openide.loaders.DataObject;
-import org.openide.util.actions.SystemAction;
 
 
 /** Wrap wsdl node from wsdl directory in a filter, but display children from
@@ -80,6 +75,17 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
     public void destroy() throws java.io.IOException {
         super.destroy();
         
+        /**
+         * This code has been moved from the old WSDLDataObject which used to call removeServiceClient
+         * Since we are now using the WsdlDataObject of the xml module, it has become necessary to call this here.
+         */ 
+        if(dobj != null){
+            FileObject f = dobj.getPrimaryFile();
+            WebServicesClientSupport wsc = WebServicesClientSupport.getWebServicesClientSupport(f);
+            if(wsc != null){
+                wsc.removeServiceClient(f.getName());
+            }
+        }
         WebServicesRegistryView registryView = (WebServicesRegistryView) Lookup.getDefault().lookup(WebServicesRegistryView.class);
         registryView.removePropertyChangeListener(this);
     }
@@ -166,9 +172,9 @@ public class ServiceClientNode extends FilterNode implements PropertyChangeListe
                 return new ConfigureHandlerCookieImpl(serviceName, project, clientSupport, fo );
             }
         }
-//        else if(type == EditWSAttributesCookie.class){
-//            return new EditWSAttributesCookieImpl(this, null);
-//        }        
+        //        else if(type == EditWSAttributesCookie.class){
+        //            return new EditWSAttributesCookieImpl(this, null);
+        //        }
         else if (type == ServiceInformation.class){
             return new ServiceInformationImpl(dobj);
         }
