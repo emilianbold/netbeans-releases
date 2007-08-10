@@ -77,6 +77,7 @@ public class CreateLicenseSummary extends Task {
     private Map<String,String> pseudoTests;
 
     public @Override void execute() throws BuildException {
+        // XXX deal with extra.license.files
         pseudoTests = new LinkedHashMap<String,String>();
         try {
             Map<Long,String> crc2License = findCrc2LicenseMapping();
