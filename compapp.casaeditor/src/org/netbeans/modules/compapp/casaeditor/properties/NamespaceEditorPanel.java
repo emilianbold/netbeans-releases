@@ -29,6 +29,8 @@ package org.netbeans.modules.compapp.casaeditor.properties;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
+import java.util.ResourceBundle;
+import javax.accessibility.AccessibleContext;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -90,6 +92,7 @@ implements ActionListener, ListSelectionListener, DocumentListener {
         localNameEntryLabel = new javax.swing.JLabel();
         localNameTextField = new javax.swing.JTextField();
         prefixErrorLabel = new javax.swing.JLabel();
+        uriListLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(schemaNamespaceRadioButton, org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "LBL_SchemaNamespace")); // NOI18N
         schemaNamespaceRadioButton.setToolTipText(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "HINT_SchemaNamespace")); // NOI18N
@@ -107,54 +110,70 @@ implements ActionListener, ListSelectionListener, DocumentListener {
 
         uriList.addListSelectionListener(this);
         jScrollPane1.setViewportView(uriList);
+        uriList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSN_NameSpacesList")); // NOI18N
+        uriList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSD_NameSpacesListDescription")); // NOI18N
 
+        namespaceEntryLabel.setLabelFor(otherNamespaceTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/compapp/casaeditor/properties/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(namespaceEntryLabel, bundle.getString("LBL_NamespaceEntry")); // NOI18N
 
+        prefixEntryLabel.setLabelFor(prefixTextField);
         org.openide.awt.Mnemonics.setLocalizedText(prefixEntryLabel, bundle.getString("LBL_PrefixEntry")); // NOI18N
 
         prefixTextField.setToolTipText(bundle.getString("HINT_Prefix")); // NOI18N
 
+        localNameEntryLabel.setLabelFor(localNameTextField);
         org.openide.awt.Mnemonics.setLocalizedText(localNameEntryLabel, bundle.getString("LBL_LocalNameEntry")); // NOI18N
 
         localNameTextField.setToolTipText(bundle.getString("HINT_LocalName")); // NOI18N
 
         prefixErrorLabel.setForeground(new java.awt.Color(255, 0, 0));
 
+        uriListLabel.setLabelFor(uriList);
+        org.openide.awt.Mnemonics.setLocalizedText(uriListLabel, "List of pre-existing Namespaces:");
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, dummyLabel1)
                     .add(layout.createSequentialGroup()
-                        .add(17, 17, 17)
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 361, Short.MAX_VALUE))
-                    .add(otherNamespaceRadioButton)
-                    .add(layout.createSequentialGroup()
-                        .add(17, 17, 17)
+                        .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, dummyLabel1)
                             .add(layout.createSequentialGroup()
-                                .add(prefixEntryLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                    .add(otherNamespaceRadioButton)
+                                    .add(layout.createSequentialGroup()
+                                        .add(17, 17, 17)
+                                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                                            .add(layout.createSequentialGroup()
+                                                .add(prefixEntryLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                                .add(prefixTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                                .add(225, 225, 225))
+                                            .add(layout.createSequentialGroup()
+                                                .add(namespaceEntryLabel)
+                                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                                .add(otherNamespaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE)))))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(prefixTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 56, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(prefixErrorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE))
+                                .add(prefixErrorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .add(layout.createSequentialGroup()
-                                .add(namespaceEntryLabel)
+                                .add(schemaNamespaceRadioButton)
+                                .add(22, 22, 22)
+                                .add(dummyLabel2)
+                                .add(151, 151, 151))
+                            .add(layout.createSequentialGroup()
+                                .add(localNameEntryLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(otherNamespaceTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 281, Short.MAX_VALUE))))
-                    .add(layout.createSequentialGroup()
-                        .add(schemaNamespaceRadioButton)
-                        .add(22, 22, 22)
-                        .add(dummyLabel2)
-                        .add(151, 151, 151))
-                    .add(layout.createSequentialGroup()
-                        .add(localNameEntryLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(localNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)))
+                                .add(localNameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 324, Short.MAX_VALUE))
+                            .add(layout.createSequentialGroup()
+                                .add(17, 17, 17)
+                                .add(uriListLabel))))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(27, 27, 27)
+                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 365, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -173,23 +192,43 @@ implements ActionListener, ListSelectionListener, DocumentListener {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(schemaNamespaceRadioButton)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(uriListLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(otherNamespaceRadioButton)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                    .add(namespaceEntryLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(otherNamespaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(prefixEntryLabel)
-                    .add(prefixTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(prefixErrorLabel))
-                .addContainerGap(60, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(42, 42, 42)
+                        .add(prefixErrorLabel))
+                    .add(layout.createSequentialGroup()
+                        .add(18, 18, 18)
+                        .add(otherNamespaceRadioButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                            .add(namespaceEntryLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(otherNamespaceTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(prefixEntryLabel)
+                            .add(prefixTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
+        schemaNamespaceRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSN_PreExsitingNameSpace")); // NOI18N
+        schemaNamespaceRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSD_PreExisitngNameSpace")); // NOI18N
+        otherNamespaceRadioButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSN_NewNameSpace")); // NOI18N
+        otherNamespaceRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSD_NewNameSpace")); // NOI18N
         otherNamespaceTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "HINT_OtherNamespace")); // NOI18N
         otherNamespaceTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "HINT_OtherNamespace")); // NOI18N
+        namespaceEntryLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSN_NameSpaceURI")); // NOI18N
+        namespaceEntryLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSD_NameSpaceURI")); // NOI18N
+        prefixEntryLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSN_Prefix")); // NOI18N
+        prefixEntryLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSD_Prefix")); // NOI18N
+        prefixTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSN_PrefixEditor")); // NOI18N
+        prefixTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSD_PrefixEditor")); // NOI18N
+        localNameEntryLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ASCN_LocalName")); // NOI18N
+        localNameEntryLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSD_LocalName")); // NOI18N
+        localNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ASCN_LocalNameEditor")); // NOI18N
+        localNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NamespaceEditorPanel.class, "ACSD_LocalNameEditor")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -352,6 +391,7 @@ implements ActionListener, ListSelectionListener, DocumentListener {
     public javax.swing.JTextField prefixTextField;
     public javax.swing.JRadioButton schemaNamespaceRadioButton;
     public javax.swing.JList uriList;
+    public javax.swing.JLabel uriListLabel;
     // End of variables declaration//GEN-END:variables
 
 }
