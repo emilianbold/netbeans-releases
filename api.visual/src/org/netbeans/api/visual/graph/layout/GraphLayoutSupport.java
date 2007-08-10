@@ -37,4 +37,19 @@ public class GraphLayoutSupport {
             ((TreeGraphLayout<N,E>) graph).setRootNode (rootNode);
     }
 
+    /**
+     * Sets properties to a tree graph layout.
+     * @param graph the tree graph layout
+     * @param originX the x-axis origin
+     * @param originY the y-axis origin
+     * @param verticalGap the vertical gap between cells
+     * @param horizontalGap the horizontal gap between cells
+     * @param vertical if true, then layout organizes the graph vertically; if false, then horizontally
+     * @since 2.7
+     */
+    public static <N,E> void setTreeGraphLayoutProperties (GraphLayout<N,E> graph, int originX, int originY, int verticalGap, int horizontalGap, boolean vertical) {
+        if (graph instanceof TreeGraphLayout)
+            ((TreeGraphLayout<N,E>) graph).setProperties (originX, originY, verticalGap, horizontalGap, vertical);
+    }
+
 }

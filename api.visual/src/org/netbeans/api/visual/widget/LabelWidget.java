@@ -28,8 +28,12 @@ import java.awt.geom.Rectangle2D;
 
 /**
  * A widget representing a text. The widget is not opaque and is checking clipping for by default.
- *
+ * <p>
  * It allows to set 4 types of horizontal and vertical alignments (by default LEFT as horizontal and BASELINE as vertical).
+ * <p>
+ * Swing Font-hinting feature may cause the labels are not rendered completely.
+ * Using <code>setUseGlyphVector</code> you may force the label to be converted to a glyph vector
+ * which scales correctly for any zoom factor.
  *
  * @author David Kaspar
  */
@@ -183,6 +187,7 @@ public class LabelWidget extends Widget {
     /**
      * Returns whether the label widget is using glyph vector for rendering text.
      * @return true, if the label widget is using glyph vector
+     * @since 2.7
      */
     public boolean isUseGlyphVector () {
         return useGlyphVector;
@@ -194,6 +199,7 @@ public class LabelWidget extends Widget {
      * Note that using glyph vector could slow-down the rendering performance.
      * Note that if you are not using glyph vector then the text may be clipped when a scene has zoom factor different from 1.0.
      * @param useGlyphVector if true, then a glyph vector is used for rendering text
+     * @since 2.7
      */
     public void setUseGlyphVector (boolean useGlyphVector) {
         if (this.useGlyphVector == useGlyphVector)
