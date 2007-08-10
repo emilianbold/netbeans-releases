@@ -51,9 +51,12 @@ public class E2EDataLoader extends UniFileLoader {
         super( "org.netbeans.modules.mobility.end2end.E2EDataObject" );  // NOI18N
         ExtensionList el = new ExtensionList();
         el.addExtension( "wsclient" );  // NOI18N
-        
         setExtensions( el );
-        setDisplayName( NbBundle.getMessage( E2EDataLoader.class, "TYPE_WSClient" ));   //NOI18N
+    }
+
+    @Override
+    protected String defaultDisplayName() {
+        return NbBundle.getMessage( E2EDataLoader.class, "TYPE_WSClient" ); // NOI18N
     }
     
     protected MultiDataObject createMultiObject( final FileObject primaryFile )
