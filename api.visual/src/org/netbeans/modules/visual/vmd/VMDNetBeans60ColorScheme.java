@@ -25,6 +25,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
+import org.netbeans.api.visual.anchor.PointShapeFactory;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -44,6 +45,8 @@ public class VMDNetBeans60ColorScheme extends VMDColorScheme {
 
     private static final Border BORDER60_PIN_SELECT = BorderFactory.createCompositeBorder (BorderFactory.createLineBorder (0, 1, 0, 1, COLOR60_SELECT), BorderFactory.createLineBorder (2, 7, 2, 7, COLOR60_SELECT));
 //        private static final Border BORDER60_PIN_HOVER = BorderFactory.createLineBorder (2, 8, 2, 8, COLOR60_HOVER);
+
+    private static final PointShape POINT_SHAPE60_IMAGE = PointShapeFactory.createImagePointShape (Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin-60.png")); // NOI18N
 
     public void installUI (VMDNodeWidget widget) {
         widget.setBorder (BORDER60);
@@ -95,7 +98,7 @@ public class VMDNetBeans60ColorScheme extends VMDColorScheme {
             widget.setControlPointCutDistance (0);
         } else {
             widget.setControlPointShape (PointShape.NONE);
-            widget.setEndPointShape (VMDOriginalColorScheme.POINT_SHAPE_IMAGE);
+            widget.setEndPointShape (POINT_SHAPE60_IMAGE);
             widget.setControlPointCutDistance (5);
         }
     }
