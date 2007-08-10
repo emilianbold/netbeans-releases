@@ -595,6 +595,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             boolean isAnyChanged = false;
 
             Iterator it = CodeStructure.getDefinedStatementsIterator(constrExp);
+            List<CodeStatement> redundantStatements = new ArrayList<CodeStatement>(15);
             while (it.hasNext()) {
                 // go through all the statements of constraints code expression
                 CodeStatement statement = (CodeStatement) it.next();
@@ -609,10 +610,15 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                         if (prop.isChanged()) { // this is a non-default value
                             constrCode.addStatement(statement);
                             isAnyChanged = true;
+                        } else { // remove statement for default value
+                            redundantStatements.add(statement);
                         }
                         break;
                     }
                 }
+            }
+            for (CodeStatement statement : redundantStatements) {
+                CodeStructure.removeStatement(statement);
             }
 
             setupVariable(isAnyChanged);
@@ -683,10 +689,9 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         }
 
         /** This method sets up the variable for constraints code expression.
-         * The variable is needed only there's some property change (i.e.
-         * there's some statement in which the variable would be used). Once
-         * the variable is created, it's used for all the GridBagConstraints
-         * in the form.
+         * The variable is needed only if there's some property changed (i.e.
+         * there's some statement in which the variable is used). One variable
+         * is used for all GridBagConstraints in the form.
          */
         private void setupVariable(boolean anyChangedProperty) {
             CodeStructure codeStructure =
