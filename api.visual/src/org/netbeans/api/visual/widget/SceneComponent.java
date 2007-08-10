@@ -59,6 +59,7 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
 
     public void addNotify () {
         super.addNotify ();
+        ToolTipManager.sharedInstance ().registerComponent (this);
         scene.setGraphics ((Graphics2D) getGraphics ());
         scene.revalidate ();
         scene.setViewShowing (true);
@@ -67,6 +68,7 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
 
     public void removeNotify () {
         super.removeNotify ();
+        ToolTipManager.sharedInstance ().unregisterComponent (this);
         scene.setViewShowing (false);
     }
 
@@ -146,8 +148,6 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
     public void mouseMoved (MouseEvent e) {
         MouseContext context = new MouseContext ();
         Point point = scene.convertViewToScene (e.getPoint ());
-//        Point sceneLocation = scene.getLocation ();
-//        point.translate (sceneLocation.x, sceneLocation.y);
         resolveContext (scene, point, context);
         context.commit (this);
         processLocationOperator (Operator.MOUSE_MOVED, new WidgetAction.WidgetMouseEvent (++ eventIDcounter, e));
@@ -164,6 +164,21 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
     }
 
     public void keyPressed (KeyEvent e) {
+        // HACK for invoking tooltip using Ctrl+F1 because a condition in ToolTipManager.shouldRegisterBindings cannot be satisfied
+        if (e.getKeyCode () == KeyEvent.VK_F1  && (e.getModifiers () & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK) {
+            MouseContext context = new MouseContext ();
+            resolveContext (scene.getFocusedWidget (), context);
+            context.commit (this);
+
+            Widget focusedWidget = scene.getFocusedWidget ();
+            Point location = focusedWidget.getScene ().convertSceneToView (focusedWidget.convertLocalToScene (focusedWidget.getBounds ().getLocation ()));
+            MouseEvent event = new MouseEvent (this, 0, 0, 0, location.x, location.y, 0, false);
+
+            ToolTipManager manager = ToolTipManager.sharedInstance ();
+            manager.mouseEntered (event);
+            manager.mouseMoved (event);
+        }
+
         WidgetAction.State state = processKeyOperator (Operator.KEY_PRESSED, new WidgetAction.WidgetKeyEvent (++ eventIDcounter, e));
         if (state.isConsumed ())
             e.consume ();
@@ -489,6 +504,13 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
         return false;
     }
 
+    private void resolveContext (Widget widget, MouseContext context) {
+        if (widget == null)
+            return;
+        context.update (widget, null);
+        resolveContext (widget.getParentWidget (), context);
+    }
+
 
     private interface Operator {
 
@@ -611,7 +633,7 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
 //        private AccessibleContext accessibleContext;
 
         public boolean update (Widget widget, Point localLocation) {
-            if (cursor == null)
+            if (cursor == null  &&  localLocation != null)
                 cursor = widget.getCursorAt (localLocation);
             if (toolTipText == null)
                 toolTipText = widget.getToolTipText ();
@@ -619,6 +641,7 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
         }
 
         public void commit (SceneComponent component) {
+            System.out.println ("toolTipText = " + toolTipText);
             component.setToolTipText (toolTipText);
             component.setCursor (cursor);
         }
