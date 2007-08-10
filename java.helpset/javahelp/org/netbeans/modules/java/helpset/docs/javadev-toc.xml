@@ -73,6 +73,7 @@
     <tocitem text="Extracting a Superclass" target="refactor.extractSuperclass"/>
     <tocitem text="Extracting an Interface" target="refactor.extractInterface"/>
     <tocitem text="Using a Supertype Where Possible" target="refactor.useSupertype"/>   
+    <tocitem text="Converting an Anonymous Inner Class to a Regular Inner Class" target="refactor.convertAnonymous"/>   
     <tocitem text="Safely Deleting Java Code" target="refactor.safeDelete"/>    
     </tocitem>    
     

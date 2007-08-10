@@ -281,8 +281,6 @@
 <mapID target="org.netbeans.modules.refactoring.java.ui.PullUpRefactoringUI" url="refactor/csh/pull-up_db.html" /> 
 <!--Push Down dialog box -->
 <mapID target="org.netbeans.modules.refactoring.java.ui.PushDownRefactoringUI" url="refactor/csh/push-down_db.html" /> 
-<!--Convert Anonymous Class to Inner dialog box -->
-<mapID target="org.netbeans.modules.refactoring.java.ui.AnonymousToInnerRefactoringUI" url="refactor/csh/convert-anonymous_db.html" /> 
 <!--Use Supertype Where Possible dialog box -->
 <mapID target="org.netbeans.modules.refactoring.java.ui.UseSuperTypeRefactoringUI" url="refactor/csh/use-supertype_db.html" /> 
 <!--Move Inner to Outer Level dialog box -->
