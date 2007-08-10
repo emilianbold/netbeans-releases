@@ -3907,7 +3907,7 @@ public class LayoutDesigner implements LayoutConstants {
     }
 
     public String[] positionCode() {
-        return dragger.positionCode();
+        return dragger != null ? dragger.positionCode() : new String[2];
     }
 
     // -----
