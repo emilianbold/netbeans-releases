@@ -34,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/glassfish-logging.jar</runtime-relative-path>
-                <binary-origin>../../external/glassfish-logging.jar</binary-origin>
+                <binary-origin>external/glassfish-logging.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

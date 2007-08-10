@@ -25,7 +25,12 @@ Microsystems, Inc. All Rights Reserved.
     <property name="s2b_root" location="src/org/netbeans/modules/web/struts/config/model"/>
     <property name="s2b_res_root" location="src/org/netbeans/modules/web/struts/resources"/>
 
-    <target name="s2binit" depends="build-init">
+    <target name="common-init" depends="default.init">
+        <mkdir dir="build/external"/>
+        <unzip src="external/struts-1.2.9-lib.zip" dest="build/external"/>
+    </target>
+ 
+   <target name="s2binit" depends="build-init">
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
 		<pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
@@ -58,33 +63,5 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete dir="${s2b_root}"/>
     </target>
-
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <ant dir="../external" target="unzip"/>
-        
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.9-lib/antlr.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.9-lib/commons-beanutils.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.9-lib/commons-digester.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.9-lib/commons-fileupload.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.9-lib/commons-logging.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.9-lib/commons-validator.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.9-lib/jakarta-oro.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-        <copy file="../external/struts-1.2.9-lib/struts.jar"
-              todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/struts"/>
-              
-        <mkdir dir="${cluster}/docs"/>
-        <copy file="../external/struts-1.2.9-javadoc.zip"
-              todir="${cluster}/docs"/>
-    </target>   
 
 </project>

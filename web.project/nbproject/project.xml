@@ -454,7 +454,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>antsrc</package-root>
                 <classpath>${module.classpath}:${antsrc.cp.extra}</classpath>
                 <built-to>build/antclasses</built-to>
-                <built-to>${cluster}/ant/nblib/${code.name.base.dashes}.jar</built-to>
+                <built-to>${cluster}/ant/extra/copyfiles.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

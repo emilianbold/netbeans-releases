@@ -20,32 +20,10 @@ Microsystems, Inc. All Rights Reserved.
 <project name="web/jsf12" default="netbeans" basedir=".">
 
     <import file="../../../nbbuild/templates/projectized.xml"/>
-
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <ant dir="../../external" target="unzip"/>
-
-	<mkdir dir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf-1_2"/>
-	<copy file="../../external/jsf-1.2/commons-beanutils.jar"
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf-1_2"/>
-	<copy file="../../external/jsf-1.2/commons-collections.jar"
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf-1_2"/>
-	<copy file="../../external/jsf-1.2/commons-digester.jar"
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf-1_2"/>
-	<copy file="../../external/jsf-1.2/commons-logging.jar"
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf-1_2"/>
-	<copy file="../../external/jsf-1.2/jsf-api.jar"
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf-1_2"/>
-	<copy file="../../external/jsf-1.2/jsf-impl.jar"
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf-1_2"/>
-	<copy file="../../external/jsf-1.2/LICENSE-APACHE.txt"
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf-1_2"/>
-	<copy file="../../external/jsf-1.2/LICENSE.TXT"
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf-1_2"/>
-	<copy file="../../external/jsf-1.2/THIRDPARTYLICENSEREADME.txt"
-	      todir="${netbeans.dest.dir}/${cluster.dir}/modules/ext/jsf-1_2"/>
-              
+    
+    <target name="common-init" depends="default.init">
+	<mkdir dir="build/external"/>
+	<unzip src="external/jsf-1.2.zip" dest="build/external"/>
     </target>
 
 </project>

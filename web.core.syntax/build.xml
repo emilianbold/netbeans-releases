@@ -19,10 +19,4 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project name="web/jspsyntax" default="netbeans" basedir=".">
   <import file="../../nbbuild/templates/projectized.xml"/>
-    <target name="netbeans-extra">
-        <copy file="../external/syntaxref20.zip" todir="${cluster}/docs"/>
-        <copy file="../tlddoc/doc/jstl11-doc.zip" todir="${cluster}/docs"/>    
-        <copy file="../tlddoc/doc/jsf12-tlddoc.zip" todir="${cluster}/docs"/>    
-        <copy file="../tlddoc/doc/struts-tags.zip" todir="${cluster}/docs"/>    
-    </target>
 </project>

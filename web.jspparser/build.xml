@@ -21,16 +21,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../nbbuild/templates/projectized.xml"/>
 
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="../external">
-                <include name="glassfish-jspparser.jar"/>
-                <include name="servlet2.5-jsp2.1-api.jar"/>
-            </fileset>
-        </copy>
-    </target>
-    
     <target name="ext-compile">
         <mkdir dir="build/extclasses"/>
         <javac srcdir="extsrc" destdir="build/extclasses" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.5">

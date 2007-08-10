@@ -22,35 +22,4 @@ Microsystems, Inc. All Rights Reserved.
 
     <import file="../../../nbbuild/templates/projectized.xml"/>
     
-    <target name="netbeans-extra" depends="release"/>
-
-    <target name="release" depends="init">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <copy todir="${cluster}/modules/ext">
-            <fileset dir="../../external">
-                <include name="glassfish-logging.jar"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="http://${dist.base}/${nbm}"
-                 needsrestart="${nbm.needs.restart}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}">
-            <license name="glassfish-jspparser-license.txt">
-                <text>For the integration module:</text>
-                <file location="${license.file}"/>
-                <text>For the Glassfish Logging library:</text>
-                <file location="../../external/glassfish-jspparser-license.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-
 </project>

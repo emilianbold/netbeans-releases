@@ -110,7 +110,7 @@ Microsystems, Inc. All Rights Reserved.
                 <package-root>extsrc</package-root>
                 <classpath>${module.classpath}:${cluster}/${module.jar}:${extsrc.cp.extra}</classpath>
                 <built-to>build/extclasses</built-to>
-                <built-to>${cluster}/modules/ext/jsp-parser-ext.jar</built-to>
+                <built-to>build/external/jsp-parser-ext.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>
