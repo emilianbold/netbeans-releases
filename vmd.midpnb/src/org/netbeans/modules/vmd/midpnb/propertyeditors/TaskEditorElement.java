@@ -58,21 +58,19 @@ public class TaskEditorElement extends PropertyEditorResourceElement {
     }
     
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
+        boolean enableGoTo = true;
         if (wrapper != null) {
             DesignComponent _component = wrapper.getComponent();
-            if (_component != null) {
+            if (enableGoTo = _component != null) {
                 component = new WeakReference<DesignComponent>(_component);
             }
         } else {
             component = null;
         }
-        // UI stuff
-        setAllEnabled(wrapper != null);
-    }
 
-    private void setAllEnabled(boolean isEnabled) {
-        taskLabel.setEnabled(isEnabled);
-        gotoButton.setEnabled(isEnabled);
+        // UI stuff
+        taskLabel.setEnabled(wrapper != null);
+        gotoButton.setEnabled(wrapper != null && enableGoTo);
     }
 
     /** This method is called from within the constructor to
