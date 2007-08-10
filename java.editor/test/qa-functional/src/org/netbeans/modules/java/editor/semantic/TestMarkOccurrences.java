@@ -295,10 +295,13 @@ public class TestMarkOccurrences extends NbTestCase {
         }
         String ref = "";
         //not locking, should be fine in tests:
-        HighlightsSequence hs = foundMarks.getHighlights(0, editorPane.getDocument().getLength());
-        while (hs.moveNext()) {
-            ref = ref + "["+hs.getStartOffset()+","+hs.getEndOffset()+"] ";
-            
+        if(foundMarks==null) {
+            ref = "";
+        } else {
+            HighlightsSequence hs = foundMarks.getHighlights(0, editorPane.getDocument().getLength());
+            while (hs.moveNext()) {
+                ref = ref + "[" + hs.getStartOffset() + "," + hs.getEndOffset() + "] ";
+            }
         }
         assertEquals(etalon, ref);
         
