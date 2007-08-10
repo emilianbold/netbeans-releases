@@ -165,9 +165,9 @@ public final class VeryPretty extends JCTree.Visitor {
         if (t == null) return;
         blankLines(t, true);
         toLeftMargin();
-	printPrecedingComments(t);
+	printPrecedingComments(t, true);
 	t.accept(this);
-        printTrailingComments(t);
+        printTrailingComments(t, true);
         blankLines(t, false);
     }
     
@@ -308,7 +308,7 @@ public final class VeryPretty extends JCTree.Visitor {
         if (hasImports)
             blankLines(cs.getBlankLinesAfterImports());
 	while (l.nonEmpty()) {
-            printStat(l.head);
+            printStat(l.head, true, false);
             newline();
             l = l.tail;
 	}
@@ -431,18 +431,20 @@ public final class VeryPretty extends JCTree.Visitor {
                     newline();
                 }
             }
+            boolean firstMember = true;
             for (List<JCTree> l = tree.defs; l.nonEmpty(); l = l.tail) {
                 JCTree t = l.head;
                 if (!isEnumerator(t)) {
                     if (isSynthetic(t))
                         continue;
                     toColExactly(out.leftMargin);
-                    printStat(t);
+                    printStat(t, true, firstMember);
                     newline();
                 }
+                firstMember = false;
             }
         } else {
-            printEmptyBlockComments(tree);
+            printEmptyBlockComments(tree, false);
         }
         toColExactly(bcol);
 	undent(old);
@@ -1489,14 +1491,19 @@ public final class VeryPretty extends JCTree.Visitor {
     }
     
     private void printStat(JCTree tree) {
+        printStat(tree, false, false);
+    }
+    
+    private void printStat(JCTree tree, boolean member, boolean first) {
 	if(tree==null) print(';');
 	else {
-            blankLines(tree, true);
-	    printPrecedingComments(tree);
+            if (!first)
+                blankLines(tree, true);
+	    printPrecedingComments(tree, !member);
             printExpr(tree, TreeInfo.notExpression);
 	    int tag = tree.tag;
 	    if(JCTree.APPLY<=tag && tag<=JCTree.MOD_ASG) print(';');
-            printTrailingComments(tree);
+            printTrailingComments(tree, !member);
             blankLines(tree, false);
 	}
     }
@@ -1515,7 +1522,7 @@ public final class VeryPretty extends JCTree.Visitor {
 		if (t.head instanceof JCVariableDecl)
 		    // bogus code has a variable declaration -- leave alone.
 		    break;
-		printPrecedingComments(tree);
+		printPrecedingComments(tree, true);
 		tree = t.head;
 	    }
         case LEAVE_ALONE:
@@ -1608,7 +1615,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	    newline();
 	    printStats(stats);
         } else {
-            printEmptyBlockComments(tree);
+            printEmptyBlockComments(tree, true);
         }
         toColExactly(bcol);
 	undent(old);
@@ -1631,11 +1638,11 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
 
-    private void printPrecedingComments(JCTree tree) {
+    private void printPrecedingComments(JCTree tree, boolean printWhitespace) {
         CommentSet commentSet = commentHandler.getComments(tree);
         if (!commentSet.getPrecedingComments().isEmpty()) {
             for (Comment c : commentSet.getPrecedingComments())
-                printComment(c, true);
+                printComment(c, true, printWhitespace);
             return;
         }
         LinkedList<Comment> comments = new LinkedList<Comment>();
@@ -1685,14 +1692,14 @@ public final class VeryPretty extends JCTree.Visitor {
             }
         }
         for (Comment c : comments)
-            printComment(c, true);
+            printComment(c, true, printWhitespace);
     }
 
-    private void printTrailingComments(JCTree tree) {
+    private void printTrailingComments(JCTree tree, boolean printWhitespace) {
         CommentSet commentSet = commentHandler.getComments(tree);
         if (!commentSet.getTrailingComments().isEmpty()) {
             for (Comment c : commentSet.getTrailingComments())
-                printComment(c, false);
+                printComment(c, false, printWhitespace);
             return;
         }
         LinkedList<Comment> comments = new LinkedList<Comment>();
@@ -1765,10 +1772,10 @@ public final class VeryPretty extends JCTree.Visitor {
             }
         }
         for (Comment c : comments)
-            printComment(c, false);
+            printComment(c, false, printWhitespace);
     }
 
-    private void printEmptyBlockComments(JCTree tree) {
+    private void printEmptyBlockComments(JCTree tree, boolean printWhitespace) {
         LinkedList<Comment> comments = new LinkedList<Comment>();
         if (cInfo != null) {
             int pos = TreeInfo.getEndPos(tree, origUnit.endPositions) - 1;
@@ -1810,23 +1817,25 @@ public final class VeryPretty extends JCTree.Visitor {
             }
         }
         for (Comment c : comments)
-            printComment(c, false);
+            printComment(c, false, printWhitespace);
     }
 
-    private void printComment(Comment comment, boolean preceding) {
+    private void printComment(Comment comment, boolean preceding, boolean printWhitespace) {
         if (Comment.Style.WHITESPACE == comment.style()) {
-            char[] data = comment.getText().toCharArray();
-            int n = -1;
-            for (int i = 0; i < data.length; i++) {
-                if (data[i] == '\n') {
-                    n++;
+            if (printWhitespace) {
+                char[] data = comment.getText().toCharArray();
+                int n = -1;
+                for (int i = 0; i < data.length; i++) {
+                    if (data[i] == '\n') {
+                        n++;
+                    }
                 }
-            }
-            if (n > 0) {
-                if (out.lastBlankLines > 0 && out.lastBlankLines < n)
-                    n = out.lastBlankLines;
-                blankLines(n);
-                toLeftMargin();
+                if (n > 0) {
+                    if (out.lastBlankLines > 0 && out.lastBlankLines < n)
+                        n = out.lastBlankLines;
+                    blankLines(n);
+                    toLeftMargin();
+                }
             }
             return;
         }
