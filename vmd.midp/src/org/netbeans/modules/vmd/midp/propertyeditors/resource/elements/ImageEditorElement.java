@@ -46,6 +46,8 @@ import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.api.model.common.ActiveDocumentSupport;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -58,7 +60,7 @@ import org.openide.util.NbBundle;
 public class ImageEditorElement extends PropertyEditorResourceElement {
 
     private static final String[] EXTENSIONS = {"png", "gif", "jpg", "jpeg"}; // NOI18N
-
+    
     private long componentID;
     private boolean doNotFireEvent;
     private Project project;
@@ -85,7 +87,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     public List<String> getPropertyValueNames() {
         return Arrays.asList(ImageCD.PROP_RESOURCE_PATH);
     }
-    
+
     public void setDesignComponentWrapper(final DesignComponentWrapper wrapper) {
         DesignDocument document = ActiveDocumentSupport.getDefault().getActiveDocument();
         if (document != null) {
@@ -140,13 +142,13 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
     }
 
     private void setText(String text) {
-        if (text == null || text.length() == 0) {
-            return;
+        if (text == null) {
+            text = "";
         }
 
         addImage(text);
     }
-    
+
     private void addImage(String path) {
         doNotFireEvent = true;
         if (comboBoxModel.getIndexOf(path) == -1) {
@@ -157,7 +159,7 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         doNotFireEvent = false;
         updatePreview();
     }
-    
+
     @SuppressWarnings("unchecked")
     private void sortComboBoxContent() {
         int size = pathTextComboBox.getItemCount();
@@ -207,7 +209,10 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             } else {
                 for (String ext : EXTENSIONS) {
                     if (ext.equals(fo.getExt().toLowerCase())) {
-                        addImage(convertFile(fo));
+                        String path = convertFile(fo);
+                        if (path != null) {
+                            addImage(path);
+                        }
                         break;
                     }
                 }
@@ -223,7 +228,9 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         try {
             File file = new File(path);
             bufferedImage = ImageIO.read(file);
-            fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            if (bufferedImage != null) {
+                fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            }
         } catch (IOException ex) {
         }
 
@@ -279,24 +286,25 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
         String sourcePath = sourceFolder.getPath();
 
         if (!fullPath.contains(sourcePath)) {
-            try {
-                File possible = new File(sourcePath + File.separator + file.getNameExt());
-                if (possible.exists()) {
-                    possible.delete();
+            File possible = new File(sourcePath + File.separator + file.getNameExt());
+            if (possible.exists()) {
+                return null;
+            } else {
+                try {
+                    file = file.copy(sourceFolder, file.getName(), file.getExt());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                file = file.copy(sourceFolder, file.getName(), file.getExt());
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
-        fullPath = file.getPath();
 
+        fullPath = file.getPath();
         int i = fullPath.indexOf(sourcePath) + sourcePath.length();
         return fullPath.substring(i);
     }
 
     private static class ImageFilter extends FileFilter {
-        
+
         private String description;
 
         public ImageFilter() {
@@ -495,8 +503,13 @@ public class ImageEditorElement extends PropertyEditorResourceElement {
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(chooser.getSelectedFile()));
             lastDir = chooser.getSelectedFile().getParentFile().getPath();
             String relativePath = convertFile(fo);
-            setText(relativePath);
-            pathTextComboBoxActionPerformed(null);
+            if (relativePath != null) {
+                setText(relativePath);
+                pathTextComboBoxActionPerformed(null);
+            } else {
+                String message = NbBundle.getMessage(ImageEditorElement.class, "MSG_FILE_EXIST"); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+            }
         }
     }//GEN-LAST:event_chooserButtonActionPerformed
 

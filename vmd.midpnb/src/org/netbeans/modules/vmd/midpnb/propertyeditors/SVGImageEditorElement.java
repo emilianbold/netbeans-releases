@@ -44,6 +44,8 @@ import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.resource.elements.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -138,8 +140,8 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
     }
 
     private void setText(String text) {
-        if (text == null || text.length() == 0) {
-            return;
+        if (text == null) {
+            text = "";
         }
 
         addImage(text);
@@ -202,7 +204,10 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
                 searchImagesInDirectory(fo);
             } else {
                 if (EXTENSION.equals(fo.getExt().toLowerCase())) {
-                    addImage(convertFile(fo));
+                    String path = convertFile(fo);
+                    if (path != null) {
+                        addImage(path);
+                    }
                 }
             }
         }
@@ -213,7 +218,7 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         String path = getSourceFolder().getPath() + relativePath;
         SVGImage svgImage = null;
         try {
-            FileObject svgFileObject = FileUtil.toFileObject(new File(path));
+            FileObject svgFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
             if (svgFileObject != null) {
                 svgImage = Util.createSVGImage(svgFileObject, true);
             }
@@ -250,18 +255,19 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
         String sourcePath = sourceFolder.getPath();
 
         if (!fullPath.contains(sourcePath)) {
-            try {
-                File possible = new File(sourcePath + File.separator + file.getNameExt());
-                if (possible.exists()) {
-                    possible.delete();
+            File possible = new File(sourcePath + File.separator + file.getNameExt());
+            if (possible.exists()) {
+                return null;
+            } else {
+                try {
+                    file = file.copy(sourceFolder, file.getName(), file.getExt());
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                file = file.copy(sourceFolder, file.getName(), file.getExt());
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
         }
-        fullPath = file.getPath();
 
+        fullPath = file.getPath();
         int i = fullPath.indexOf(sourcePath) + sourcePath.length();
         return fullPath.substring(i);
     }
@@ -410,7 +416,13 @@ public class SVGImageEditorElement extends PropertyEditorResourceElement {
             FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(chooser.getSelectedFile()));
             lastDir = chooser.getSelectedFile().getParentFile().getPath();
             String relativePath = convertFile(fo);
-            setText(relativePath);
+            if (relativePath != null) {
+                setText(relativePath);
+                pathTextComboBoxActionPerformed(null);
+            } else {
+                String message = NbBundle.getMessage(SVGImageEditorElement.class, "MSG_FILE_EXIST"); // NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
+            }
         }
     }//GEN-LAST:event_chooserButtonActionPerformed
 
