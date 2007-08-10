@@ -130,6 +130,11 @@
 				<tocitem text="About the Java ME Wireless Toolkit" target="me.about_toolkit" />
 				<tocitem text="Using the Java ME Wireless Toolkit Utilities" target="me.toolkit_using" />
 			</tocitem>
+			<tocitem text="Desiging MIDP Games">
+				<tocitem text="About the Game Builder" target="cldc.games_about" />
+				<tocitem text="Working with the Game Builder" target="cldc.games_working" />
+				<tocitem text="Game Builder Task Quick Reference" target="cldc.games_quickref" />
+			</tocitem>
 		</tocitem>
 		<tocitem text="Java ME CDC Development">
 			<tocitem text="Getting Started">

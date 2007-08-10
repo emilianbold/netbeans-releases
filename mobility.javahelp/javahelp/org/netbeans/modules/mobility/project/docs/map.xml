@@ -229,4 +229,10 @@
 	<mapID target="cldc.gloss_svg" url="glossary/gloss_svg.html"/>
 	<mapID target="org.netbeans.modules.mvd.ui.editors.UpgradePanel" url="ui/dialog_upgradeinformation.html"/>
 	<mapID target="cdc.panelConfigurationPlatform" url="ui/wizard_newcdcproject_platformselection.html"/>
+	<mapID target="cldc.games_about" url="games/games_about.html"/>
+	<mapID target="cldc.games_quickref" url="games/games_quickref.html"/>
+	<mapID target="cldc.games_working" url="games/games_working.html"/>
+	<mapID target="cldc.gloss_tiledlayers" url="glossary/gloss_tiledlayers.html"/>
+	<mapID target="cldc.gloss_sprites" url="glossary/gloss_sprites.html"/>
+	<mapID target="cldc.gloss_scenes" url="glossary/gloss_scenes.html"/>
 </map>
