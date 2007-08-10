@@ -39,10 +39,12 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.etl.model.ETLDefinition;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
+import org.netbeans.modules.etl.ui.palette.PaletteSupport;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopComponent;
 import org.netbeans.modules.etl.ui.view.ETLEditorTopView;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.graph.IToolBar;
+import org.netbeans.modules.sql.framework.ui.graph.impl.BirdsEyeView;
 import org.netbeans.modules.sql.framework.ui.graph.view.impl.SQLToolBar;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLCollaborationView;
 import org.openide.ErrorManager;
@@ -147,7 +149,8 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
             //
             getETLDataObject().getLookup(), // this lookup contain objects that are used in OM clients
             Lookups.singleton(this),
-            new AbstractLookup(nodesHack),           
+            new AbstractLookup(nodesHack),    
+            Lookups.fixed(new Object[]{PaletteSupport.createPalette()}),
         });
     }    
     
