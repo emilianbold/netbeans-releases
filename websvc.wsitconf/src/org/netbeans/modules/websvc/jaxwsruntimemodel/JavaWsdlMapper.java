@@ -66,6 +66,9 @@ public class JavaWsdlMapper {
     public static final String PORT_TYPE            = "PortType";   //NOI18N
     public static final String BINDING              = "Binding";    //NOI18N
 
+    private static final String JAVAX_JWS_WEBSERVICE = "javax.jws.WebService";
+    private static final String UTF8 = "UTF-8";
+    
     /** Creates a new instance of JavaWsdlMapper */
     public JavaWsdlMapper() { }
     
@@ -75,8 +78,9 @@ public class JavaWsdlMapper {
      * @return the namespace for the specified <code>packageName</code>
      */
     public static String getNamespace(String packageName) {
-        if (packageName == null || packageName.length() == 0)
+        if (packageName == null || packageName.length() == 0) {
             return null;
+        }
 
         StringTokenizer tokenizer = new StringTokenizer(packageName, ".");
         String[] tokens;
@@ -107,7 +111,9 @@ public class JavaWsdlMapper {
     public static QName getServiceName(FileObject implClass) {
 
         final java.lang.String[] serviceNameQNameARR = new String[2];
-        if (implClass == null) return null;
+        if (implClass == null) {
+            return null;
+        }
         try {    
             JavaSource js = JavaSource.forFileObject(implClass);
             js.runUserActionTask(new AbstractTask<CompilationController>() {
@@ -123,7 +129,7 @@ public class JavaWsdlMapper {
                      List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
                      for (AnnotationMirror m : annotations) {
                         Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
-                        if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
+                        if (qualifiedName.contentEquals(JAVAX_JWS_WEBSERVICE)) { //NOI18N
                             String serviceNameAnnot = null;
                             String targetNamespaceAnnot = null;
 
@@ -134,10 +140,14 @@ public class JavaWsdlMapper {
                                 String val = (String) ex.getValue().getValue();
                                 if (el.getSimpleName().contentEquals("serviceName")) {         //NOI18N
                                     serviceNameAnnot = val;
-                                    if (serviceNameAnnot!=null) serviceNameAnnot = URLEncoder.encode(serviceNameAnnot,"UTF-8"); //NOI18N
+                                    if (serviceNameAnnot!=null) {
+                                        serviceNameAnnot = URLEncoder.encode(serviceNameAnnot,UTF8); //NOI18N
+                                    }
                                 } else if (el.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
                                     targetNamespaceAnnot = val;
-                                    if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,"UTF-8"); //NOI18N
+                                    if (targetNamespaceAnnot!=null) {
+                                        targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,UTF8); //NOI18N
+                                    }
                                 }
                                 if (targetNamespaceAnnot!=null && serviceNameAnnot!=null) break;
                             }
@@ -208,7 +218,7 @@ public class JavaWsdlMapper {
                                         String val = (String) ex.getValue().getValue();
                                         if (el.getSimpleName().contentEquals("operationName")) {         //NOI18N
                                             nameAnnot = val;
-                                            if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
+                                            if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,UTF8); //NOI18N
                                         }
                                         if (nameAnnot!=null) break;
                                     }
@@ -301,7 +311,7 @@ public class JavaWsdlMapper {
                                         String val = (String) ex.getValue().getValue();
                                         if (el.getSimpleName().contentEquals("operationName")) {         //NOI18N
                                             nameAnnot = val;
-                                            if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
+                                            if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,UTF8); //NOI18N
                                         }
                                         if (nameAnnot!=null) break;
                                     }
@@ -312,7 +322,7 @@ public class JavaWsdlMapper {
                                 if (!foundWebMethodAnnotation) {
                                     foundWebMethodAnnotation=true;
                                     // remove all methods added before because only annotated methods should be added
-                                    if (operations.size()>0) operations.clear();
+                                    if (!operations.isEmpty()) operations.clear();
                                 }
                                 if (nameAnnot != null) {
                                     operations.add(nameAnnot);
@@ -348,7 +358,7 @@ public class JavaWsdlMapper {
                      List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
                      for (AnnotationMirror m : annotations) {
                         Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
-                        if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
+                        if (qualifiedName.contentEquals(JAVAX_JWS_WEBSERVICE)) { //NOI18N
                             String nameAnnot = null;
                             String targetNamespaceAnnot = null;
 
@@ -359,10 +369,10 @@ public class JavaWsdlMapper {
                                 String val = (String) ex.getValue().getValue();
                                 if (el.getSimpleName().contentEquals("name")) {         //NOI18N
                                     nameAnnot = val;
-                                    if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
+                                    if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,UTF8); //NOI18N
                                 } else if (el.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
                                     targetNamespaceAnnot = val;
-                                    if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,"UTF-8"); //NOI18N
+                                    if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,UTF8); //NOI18N
                                 }
                                 if (targetNamespaceAnnot!=null && nameAnnot!=null) break;
                             }
@@ -403,7 +413,7 @@ public class JavaWsdlMapper {
                      List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
                      for (AnnotationMirror m : annotations) {
                         Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
-                        if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
+                        if (qualifiedName.contentEquals(JAVAX_JWS_WEBSERVICE)) { //NOI18N
                             String wsdlLoc = null;
                             @SuppressWarnings("unchecked")
                             Map<ExecutableElement, AnnotationValue> expressions = (Map<ExecutableElement, AnnotationValue>) m.getElementValues();
@@ -412,7 +422,7 @@ public class JavaWsdlMapper {
                                 String val = (String) ex.getValue().getValue();
                                 if (el.getSimpleName().contentEquals("wsdlLocation")) {     //NOI18N
                                     wsdlLoc = val;
-                                    if (wsdlLoc!=null) wsdlLoc = URLEncoder.encode(wsdlLoc,"UTF-8"); //NOI18N
+                                    if (wsdlLoc!=null) wsdlLoc = URLEncoder.encode(wsdlLoc,UTF8); //NOI18N
                                 }
                                 if (wsdlLoc != null) break;
                             }
@@ -448,7 +458,7 @@ public class JavaWsdlMapper {
                      List<? extends AnnotationMirror> annotations = te.getAnnotationMirrors();
                      for (AnnotationMirror m : annotations) {
                         Name qualifiedName = ((TypeElement)m.getAnnotationType().asElement()).getQualifiedName();
-                        if (qualifiedName.contentEquals("javax.jws.WebService")) { //NOI18N
+                        if (qualifiedName.contentEquals(JAVAX_JWS_WEBSERVICE)) { //NOI18N
                             String portNameAnnot = null;
                             String nameAnnot = null;
                             String targetNamespaceAnnot = null;
@@ -460,13 +470,13 @@ public class JavaWsdlMapper {
                                 String val = (String) ex.getValue().getValue();
                                 if (el.getSimpleName().contentEquals("name")) {         //NOI18N
                                     nameAnnot = val;
-                                    if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,"UTF-8"); //NOI18N
+                                    if (nameAnnot!=null) nameAnnot = URLEncoder.encode(nameAnnot,UTF8); //NOI18N
                                 } else if (el.getSimpleName().contentEquals("portName")) {   //NOI18N
                                     portNameAnnot = val;
-                                    if (portNameAnnot!=null) portNameAnnot = URLEncoder.encode(portNameAnnot,"UTF-8"); //NOI18N
+                                    if (portNameAnnot!=null) portNameAnnot = URLEncoder.encode(portNameAnnot,UTF8); //NOI18N
                                 } else if (el.getSimpleName().contentEquals("targetNamespace")) {   //NOI18N
                                     targetNamespaceAnnot = val;
-                                    if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,"UTF-8"); //NOI18N
+                                    if (targetNamespaceAnnot!=null) targetNamespaceAnnot = URLEncoder.encode(targetNamespaceAnnot,UTF8); //NOI18N
                                 }
                                 if (targetNamespaceAnnot!=null && nameAnnot!=null && portNameAnnot != null) break;
                             }

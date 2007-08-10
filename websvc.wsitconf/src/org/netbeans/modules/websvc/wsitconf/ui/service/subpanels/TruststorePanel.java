@@ -25,7 +25,6 @@ import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -48,7 +47,6 @@ public class TruststorePanel extends JPanel {
 
     private static final String DEFAULT_PASSWORD="changeit";    //NOI18N
 
-    private WSDLModel model;
     private WSDLComponent comp;
 
     private String storeType = JKS;
@@ -59,17 +57,14 @@ public class TruststorePanel extends JPanel {
     
     private boolean inSync = false;
     
-    private WSDLModel clientServiceModel;
     private boolean client;
     
-    public TruststorePanel(WSDLComponent comp, Project p, boolean jsr109, String profile, boolean client, WSDLModel clientServiceModel) {
+    public TruststorePanel(WSDLComponent comp, Project p, boolean jsr109, String profile, boolean client) {
         super();
-        this.model = comp.getModel();
         this.comp = comp;
         this.jsr109 = jsr109;
         this.project = p;
         this.profile = profile;
-        this.clientServiceModel = clientServiceModel;
         this.client = client;
         
         initComponents();
@@ -119,15 +114,7 @@ public class TruststorePanel extends JPanel {
     private void setStoreType(String type) {
         this.storeType = type;
     }
-    
-    private String getStoreType() {
-        String type = this.storeType;
-        if ("".equals(type) || (type == null)) {    //NOI18N
-            return JKS;
-        }
-        return type;
-    }
-    
+        
     public void sync() {
         inSync = true;
         
@@ -294,7 +281,6 @@ public class TruststorePanel extends JPanel {
         chooser.setMultiSelectionEnabled(false);
         chooser.setFileFilter(new StoreFileFilter());
         File f = new File(storeLocationTextField.getText());
-        File dir = null;
         if ((f != null) && (f.exists())) {
             if (f.isDirectory()) {
                 chooser.setCurrentDirectory(f);

@@ -61,6 +61,7 @@ import org.openide.filesystems.FileObject;
  * @author Martin Grebac
  */
 public class SenderVouchesProfile extends SecurityProfile {
+    private static final String CERTS_DIR = "certs";
     
     private static final String PKGNAME = "samlcb";
 
@@ -134,12 +135,12 @@ public class SenderVouchesProfile extends SecurityProfile {
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + "certs" + File.separator + "client-keystore.jks", false, true);
+                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-keystore.jks", false, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, true);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, true);
 
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + "certs" + File.separator + "client-truststore.jks", true, true);
+                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks", true, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, true, true);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, true, true);
         }
@@ -192,7 +193,7 @@ public class SenderVouchesProfile extends SecurityProfile {
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + "certs" + File.separator + "server-keystore.jks", false, false);
+                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks", false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
         }
@@ -204,7 +205,7 @@ public class SenderVouchesProfile extends SecurityProfile {
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
             if (Util.isTomcat(p)) {
                 FileObject tomcatLoc = Util.getTomcatLocation(p);
-                String loc = tomcatLoc.getPath() + File.separator + "certs" + File.separator + "server-keystore.jks";
+                String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks";
                 if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false))) {
                     if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, false))) {
                         return true;
@@ -235,10 +236,10 @@ public class SenderVouchesProfile extends SecurityProfile {
                 ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true))) {
                     if (Util.isTomcat(p)) {
                         FileObject tomcatLoc = Util.getTomcatLocation(p);
-                        String loc = tomcatLoc.getPath() + File.separator + "certs" + File.separator + "client-truststore.jks";
+                        String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks";
                         if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true))) {
                             if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, true))) {
-                                loc = tomcatLoc.getPath() + File.separator + "certs" + File.separator + "client-keystore.jks";
+                                loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-keystore.jks";
                                 if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false))) {
                                     if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, false))) {
                                         return true;

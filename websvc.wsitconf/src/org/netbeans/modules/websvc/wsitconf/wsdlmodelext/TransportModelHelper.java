@@ -25,7 +25,6 @@ import org.netbeans.modules.j2ee.dd.api.common.NameAlreadyUsedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -48,6 +47,7 @@ import org.netbeans.modules.xml.xam.Model;
  * @author Martin Grebac
  */
 public class TransportModelHelper {
+    private static final String SERVLET_NAME = "ServletName";
 
     private static final String TCP_NONJSR109 = "com.sun.xml.ws.transport.tcp.server.glassfish.WSStartupServlet";   //NOI18N
             
@@ -129,15 +129,15 @@ public class TransportModelHelper {
                         if (servlet == null) {      //NOI18N
                             try {
                                 String servletName = s.getName();
-                                servlet = (Servlet)wApp.addBean("Servlet", new String[]{"ServletName","ServletClass"},    //NOI18N
-                                        new Object[]{servletName,servletClassName}, "ServletName");                                 //NOI18N
+                                servlet = (Servlet)wApp.addBean("Servlet", new String[]{SERVLET_NAME,"ServletClass"},    //NOI18N
+                                        new Object[]{servletName,servletClassName},SERVLET_NAME);                                 //NOI18N
                                 servlet.setLoadOnStartup(new java.math.BigInteger("1"));                            //NOI18N
                                 String serviceName = s.getServiceName();
                                 if (serviceName == null) {
-                                    serviceName = servletClassName.substring(servletClassName.lastIndexOf(".")+1) + JavaWsdlMapper.SERVICE;
+                                    serviceName = servletClassName.substring(servletClassName.lastIndexOf('.')+1) + JavaWsdlMapper.SERVICE;
                                 }
-                                wApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"}, //NOI18N
-                                        new Object[]{servletName, "/" + serviceName}, "ServletName");                               //NOI18N
+                                wApp.addBean("ServletMapping", new String[]{SERVLET_NAME,"UrlPattern"}, //NOI18N
+                                        new Object[]{servletName, "/" + serviceName},SERVLET_NAME);                               //NOI18N
                                 wApp.write(wm.getDeploymentDescriptor());
                             } catch (NameAlreadyUsedException ex) {
                                 ex.printStackTrace();
@@ -150,7 +150,7 @@ public class TransportModelHelper {
                     } else {
                         if (!isTcpListener(wApp)) {
                             try {
-                                Listener l = (Listener)wApp.addBean("Listener", new String[]{"ListenerClass"},  //NOI18N
+                                wApp.addBean("Listener", new String[]{"ListenerClass"},  //NOI18N
                                         new Object[]{TCP_NONJSR109}, "ListenerClass");                          //NOI18N
                                 wApp.write(wm.getDeploymentDescriptor());
                             } catch (NameAlreadyUsedException ex) {

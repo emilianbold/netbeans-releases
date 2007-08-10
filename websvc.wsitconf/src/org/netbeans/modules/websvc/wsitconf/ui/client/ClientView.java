@@ -21,7 +21,6 @@ package org.netbeans.modules.websvc.wsitconf.ui.client;
 import java.util.ArrayList;
 import java.util.HashSet;
 import javax.xml.namespace.QName;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.AdvancedConfigurationClientNode;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.CallbackClientNode;
 import org.netbeans.modules.websvc.wsitconf.ui.client.nodes.BindingContainerClientNode;
@@ -64,7 +63,7 @@ public class ClientView extends SectionView {
     static final String TRANSPORT_NODE_ID = "transpotr";                        //NOI18N
     static final String ADVANCEDCONFIG_NODE_ID = "advancedconfig";              //NOI18N
 
-    ClientView(InnerPanelFactory factory, WSDLModel clientModel, WSDLModel serviceModel, Service s, Project project, Node node) {
+    ClientView(InnerPanelFactory factory, WSDLModel clientModel, WSDLModel serviceModel, Service s) {
     
         super(factory);
 
@@ -222,7 +221,7 @@ public class ClientView extends SectionView {
 
         for (WSDLComponent wc : compsToTry) {
             List<WSDLComponent> suppTokens = SecurityTokensModelHelper.getSupportingTokens(wc);
-            if ((suppTokens != null) && (suppTokens.size() > 0)) {
+            if ((suppTokens != null) && (!suppTokens.isEmpty())) {
                 for (WSDLComponent suppToken : suppTokens) {
                     WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(suppToken);
                     if (token instanceof UsernameToken) {

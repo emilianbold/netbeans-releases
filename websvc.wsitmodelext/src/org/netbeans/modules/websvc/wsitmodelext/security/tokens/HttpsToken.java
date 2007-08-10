@@ -28,5 +28,5 @@ public interface HttpsToken extends GeneralToken {
     public static final String REQUIRECLIENTCERTIFICATE = "RequireClientCertificate";      //NOI18N
 
     void setRequireClientCertificate(boolean require);
-    boolean getRequireClientCertificate();
+    boolean isRequireClientCertificate();
 }

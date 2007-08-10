@@ -21,7 +21,6 @@ package org.netbeans.modules.websvc.wsitmodelext.transport.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.transport.OptimizedTCPTransport;
 import org.netbeans.modules.websvc.wsitmodelext.transport.TCPQName;
-import org.netbeans.modules.websvc.wsitmodelext.transport.impl.TCPComponentImpl;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLVisitor;
 import org.w3c.dom.Element;

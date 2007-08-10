@@ -50,6 +50,7 @@ public class UsernameAuthenticationProfile extends SecurityProfile {
     
     public static final String DEFAULT_USERNAME = "wsitUser";
     public static final String DEFAULT_PASSWORD = "changeit";
+    private static final String CERTS_DIR = "certs";
 
     public int getId() {
         return 10;
@@ -116,7 +117,7 @@ public class UsernameAuthenticationProfile extends SecurityProfile {
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false))) {
             if (Util.isTomcat(p)) {
                 FileObject tomcatLoc = Util.getTomcatLocation(p);
-                String loc = tomcatLoc.getPath() + File.separator + "certs" + File.separator + "server-keystore.jks";
+                String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks";
                 if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false))) {
                     if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, false))) {
                         return true;
@@ -134,7 +135,7 @@ public class UsernameAuthenticationProfile extends SecurityProfile {
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + "certs" + File.separator + "server-keystore.jks", false, false);
+                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "server-keystore.jks", false, false);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, false, false);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, false, false);
         }
@@ -152,7 +153,7 @@ public class UsernameAuthenticationProfile extends SecurityProfile {
         if (Util.isTomcat(p)) {
             FileObject tomcatLoc = Util.getTomcatLocation(p);
             ProprietarySecurityPolicyModelHelper.setStoreLocation(component, 
-                    tomcatLoc.getPath() + File.separator + "certs" + File.separator + "client-truststore.jks", true, true);
+                    tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks", true, true);
             ProprietarySecurityPolicyModelHelper.setStoreType(component, KeystorePanel.JKS, true, true);
             ProprietarySecurityPolicyModelHelper.setStorePassword(component, KeystorePanel.DEFAULT_PASSWORD, true, true);
         }
@@ -167,7 +168,7 @@ public class UsernameAuthenticationProfile extends SecurityProfile {
             if ((DEFAULT_PASSWORD.equals(passwd)) && (DEFAULT_USERNAME.equals(user))) {
                 if (Util.isTomcat(p)) {
                     FileObject tomcatLoc = Util.getTomcatLocation(p);
-                    String loc = tomcatLoc.getPath() + File.separator + "certs" + File.separator + "client-truststore.jks";
+                    String loc = tomcatLoc.getPath() + File.separator + CERTS_DIR + File.separator + "client-truststore.jks";
                     if (loc.equals(ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true))) {
                         if (KeystorePanel.DEFAULT_PASSWORD.equals(ProprietarySecurityPolicyModelHelper.getStorePassword(component, true))) {
                             return true;

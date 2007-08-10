@@ -52,7 +52,7 @@ public class ATAssertionImpl extends TxComponentImpl implements ATAssertion {
         setAnyAttribute(PolicyQName.OPTIONAL.getQName(), Boolean.toString(optional));
     }
 
-    public boolean getOptional() {
+    public boolean isOptional() {
         return Boolean.parseBoolean(getAnyAttribute(PolicyQName.OPTIONAL.getQName()));
     }
 

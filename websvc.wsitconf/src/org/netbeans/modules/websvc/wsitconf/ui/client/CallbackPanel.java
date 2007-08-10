@@ -47,7 +47,6 @@ import org.openide.nodes.Node;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.wsitconf.spi.SecurityCheckerRegistry;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
-import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.ui.client.subpanels.DynamicCredsPanel;
 import org.netbeans.modules.websvc.wsitconf.ui.client.subpanels.StaticCredsPanel;
 import org.netbeans.modules.websvc.wsitconf.ui.service.ServicePanel;
@@ -87,7 +86,7 @@ public class CallbackPanel extends SectionInnerPanel {
 
     private String profile;
 
-    public CallbackPanel(SectionView view, WSDLModel model, Node node, Binding binding, JaxWsModel jaxWsModel, WSDLModel serviceModel) {
+    public CallbackPanel(SectionView view, Node node, Binding binding, JaxWsModel jaxWsModel, WSDLModel serviceModel) {
         super(view);
         this.view = view;
         this.node = node;
@@ -158,7 +157,7 @@ public class CallbackPanel extends SectionInnerPanel {
         if (ComboConstants.DYNAMIC.equals(type)) {
             return new DynamicCredsPanel(binding, project, !amSec && !defaults);
         }
-        return new StaticCredsPanel(binding, project, !amSec && !defaults);
+        return new StaticCredsPanel(binding, !amSec && !defaults);
     }
 
     private void setCredType(String credType, boolean defaults) {
@@ -314,7 +313,7 @@ public class CallbackPanel extends SectionInnerPanel {
 
         for (WSDLComponent wc : compsToTry) {
             List<WSDLComponent> suppTokens = SecurityTokensModelHelper.getSupportingTokens(wc);
-            if ((suppTokens != null) && (suppTokens.size() > 0)) {
+            if (suppTokens != null) {
                 for (WSDLComponent suppToken : suppTokens) {
                     WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(suppToken);
                     if (token instanceof X509Token) {
@@ -507,7 +506,7 @@ public class CallbackPanel extends SectionInnerPanel {
 
 private void trustStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trustStoreButtonActionPerformed
     boolean jsr109 = isJsr109Supported();
-    TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, true, serviceModel);
+    TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, true);
     DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
             NbBundle.getMessage(ServicePanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
     Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
@@ -520,7 +519,7 @@ private void trustStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//
 
 private void keyStoreButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyStoreButtonActionPerformed
     boolean jsr109 = isJsr109Supported();
-    KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, true, serviceModel);
+    KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, true);
     DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
             NbBundle.getMessage(ServicePanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
     Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);

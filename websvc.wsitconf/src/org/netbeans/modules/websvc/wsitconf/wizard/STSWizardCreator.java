@@ -192,7 +192,7 @@ public class STSWizardCreator {
         ClassPath classPath = ClassPath.getClassPath(implClassFo, ClassPath.SOURCE);            
         String serviceImplPath = classPath.getResourceName(implClassFo, '.', false);
         String portJavaName = port.getJavaName();
-        String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf("."));
+        String artifactsPckg = portJavaName.substring(0, portJavaName.lastIndexOf('.'));
 
         serviceID = jaxWsSupport.addService(targetName, serviceImplPath, wsdlURL.toString(), service.getName(), port.getName(), artifactsPckg, jsr109Supported && Util.isJavaEE5orHigher(project));
         final String wsdlLocation = jaxWsSupport.getWsdlLocation(serviceID);

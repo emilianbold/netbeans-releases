@@ -34,9 +34,9 @@ public interface SCClientConfiguration extends ExtensibilityElement{
     String getVisibility();
 
     void setRequireCancelSCT(boolean requireCancel);
-    boolean getRequireCancelSCT();
+    boolean isRequireCancelSCT();
     
     void setRenewExpiredSCT(boolean renewExpired);
-    boolean getRenewExpiredSCT();
+    boolean isRenewExpiredSCT();
 
 }

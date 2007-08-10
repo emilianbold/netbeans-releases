@@ -24,7 +24,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPoli
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.Validator;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 import javax.swing.*;
 import java.util.Set;
@@ -37,7 +36,6 @@ import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
  */
 public class ValidatorsPanel extends JPanel {
 
-    private WSDLModel model;
     private WSDLComponent comp;
 
     private Project p;
@@ -47,7 +45,6 @@ public class ValidatorsPanel extends JPanel {
         
     public ValidatorsPanel(WSDLComponent comp, Project p, String profile) {
         super();
-        this.model = comp.getModel();
         this.comp = comp;
         this.p = p;
         this.profile = profile;
@@ -229,6 +226,7 @@ public class ValidatorsPanel extends JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
+
         jToggleButton1 = new javax.swing.JToggleButton();
         usernameValidatorLabel = new javax.swing.JLabel();
         timestampValidatorLabel = new javax.swing.JLabel();
@@ -245,36 +243,36 @@ public class ValidatorsPanel extends JPanel {
 
         jToggleButton1.setText("jToggleButton1");
 
-        usernameValidatorLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/wsitconf/ui/service/subpanels/Bundle").getString("LBL_ValidatorPanel_UsernameVLabel"));
+        usernameValidatorLabel.setText(org.openide.util.NbBundle.getMessage(ValidatorsPanel.class, "LBL_ValidatorPanel_UsernameVLabel")); // NOI18N
 
-        timestampValidatorLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/wsitconf/ui/service/subpanels/Bundle").getString("LBL_ValidatorPanel_TimestampVLabel"));
+        timestampValidatorLabel.setText(org.openide.util.NbBundle.getMessage(ValidatorsPanel.class, "LBL_ValidatorPanel_TimestampVLabel")); // NOI18N
 
-        certificateValidatorLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/wsitconf/ui/service/subpanels/Bundle").getString("LBL_ValidatorPanel_CertificateVLabel"));
+        certificateValidatorLabel.setText(org.openide.util.NbBundle.getMessage(ValidatorsPanel.class, "LBL_ValidatorPanel_CertificateVLabel")); // NOI18N
 
-        samlValidatorLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/wsitconf/ui/service/subpanels/Bundle").getString("LBL_ValidatorPanel_SAMLVLabel"));
+        samlValidatorLabel.setText(org.openide.util.NbBundle.getMessage(ValidatorsPanel.class, "LBL_ValidatorPanel_SAMLVLabel")); // NOI18N
 
-        usernameValidatorButton.setText("Browse...");
+        usernameValidatorButton.setText(org.openide.util.NbBundle.getMessage(ValidatorsPanel.class, "LBL_ValidatorPanel_Browse")); // NOI18N
         usernameValidatorButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 usernameValidatorButtonActionPerformed(evt);
             }
         });
 
-        timestampValidatorButton.setText("Browse...");
+        timestampValidatorButton.setText(org.openide.util.NbBundle.getMessage(ValidatorsPanel.class, "LBL_ValidatorPanel_Browse")); // NOI18N
         timestampValidatorButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 timestampValidatorButtonActionPerformed(evt);
             }
         });
 
-        certificateValidatorButton.setText("Browse...");
+        certificateValidatorButton.setText(org.openide.util.NbBundle.getMessage(ValidatorsPanel.class, "LBL_ValidatorPanel_Browse")); // NOI18N
         certificateValidatorButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 certificateValidatorButtonActionPerformed(evt);
             }
         });
 
-        samlValidatorButton.setText("Browse...");
+        samlValidatorButton.setText(org.openide.util.NbBundle.getMessage(ValidatorsPanel.class, "LBL_ValidatorPanel_Browse")); // NOI18N
         samlValidatorButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 samlValidatorButtonActionPerformed(evt);
@@ -304,14 +302,14 @@ public class ValidatorsPanel extends JPanel {
                                     .add(timestampValidatorButton)
                                     .add(usernameValidatorButton)))
                             .add(timestampValidatorLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 11, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 20, Short.MAX_VALUE)
                         .add(jToggleButton1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(certificateValidatorLabel)
                             .add(samlValidatorLabel)
                             .add(usernameValidatorLabel))
-                        .addContainerGap(389, Short.MAX_VALUE))))
+                        .addContainerGap(402, Short.MAX_VALUE))))
         );
 
         layout.linkSize(new java.awt.Component[] {certificateValidatorTextField, samlValidatorTextField, timestampValidatorTextField, usernameValidatorTextField}, org.jdesktop.layout.GroupLayout.HORIZONTAL);

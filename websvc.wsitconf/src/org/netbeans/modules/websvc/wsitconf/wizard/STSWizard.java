@@ -178,14 +178,18 @@ public class STSWizard implements TemplateWizard.Iterator {
                     try {
                         WsdlServiceHandler.parse(wsdlURL.toExternalForm());
                     } catch (ParserConfigurationException ex) {
+                        logger.log(Level.FINE, null, ex);
                     } catch (SAXException ex) {
-                    } catch (IOException ex) {}
+                        logger.log(Level.FINE, null, ex);
+                    } catch (IOException ex) {
+                        logger.log(Level.FINE, null, ex);
+                    }
                 } else {
                     List services = wsdlModel.getServices();
-                    if (services != null && services.size() > 0) {
+                    if (services != null && !services.isEmpty()) {
                         service = (WsdlService) services.get(0);
                         List ports = service.getPorts();
-                        if (ports != null && ports.size() > 0)
+                        if (ports != null && !ports.isEmpty())
                             port = (WsdlPort) ports.get(0);
                     }
                 }

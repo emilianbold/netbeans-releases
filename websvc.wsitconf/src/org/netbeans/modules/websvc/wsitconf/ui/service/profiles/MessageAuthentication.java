@@ -25,7 +25,6 @@ import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.AlgoSuiteModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
@@ -34,7 +33,6 @@ import org.netbeans.modules.websvc.wsitmodelext.security.WssElement;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 /**
  *
@@ -45,7 +43,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
     private boolean inSync = false;
 
     private WSDLComponent comp;
-    private WSDLModel model;
     
     /**
      * Creates new form MessageAuthentication
@@ -53,7 +50,6 @@ public class MessageAuthentication extends javax.swing.JPanel {
     public MessageAuthentication(WSDLComponent comp) {
         super();
         initComponents();
-        this.model = comp.getModel();
         this.comp = comp;
 
         inSync = true;

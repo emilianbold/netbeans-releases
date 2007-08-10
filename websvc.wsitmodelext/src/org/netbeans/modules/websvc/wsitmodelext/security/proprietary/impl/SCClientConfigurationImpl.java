@@ -61,7 +61,7 @@ public class SCClientConfigurationImpl extends ProprietarySCComponentClientImpl 
         setAttribute(REQUIRECANCELSCT, ProprietarySecurityPolicyAttribute.REQUIRECANCELSCT, Boolean.toString(requireCancel));
     }
 
-    public boolean getRequireCancelSCT() {
+    public boolean isRequireCancelSCT() {
         return Boolean.parseBoolean(getAttribute(ProprietarySecurityPolicyAttribute.REQUIRECANCELSCT));
     }
 
@@ -69,7 +69,7 @@ public class SCClientConfigurationImpl extends ProprietarySCComponentClientImpl 
         setAttribute(RENEWEXPIREDSCT, ProprietarySecurityPolicyAttribute.RENEWEXPIREDSCT, Boolean.toString(renewExpired));
     }
 
-    public boolean getRenewExpiredSCT() {
+    public boolean isRenewExpiredSCT() {
         return Boolean.parseBoolean(getAttribute(ProprietarySecurityPolicyAttribute.RENEWEXPIREDSCT));
     }
     

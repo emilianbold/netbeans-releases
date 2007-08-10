@@ -30,9 +30,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.ui.ClassDialog;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.STSConfiguration;
-import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 /**
  *
@@ -40,12 +38,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
  */
 public class STSConfigServicePanel extends JPanel {
     
-    private ServiceProvidersTablePanel panel;
-
-    private WSDLModel model;
     private Binding binding;
-    private SectionView view;
-    
     private Project project;
 
     private boolean inSync = false;
@@ -55,8 +48,7 @@ public class STSConfigServicePanel extends JPanel {
     /**
      * Creates new form STSConfigServicePanel
      */
-    public STSConfigServicePanel(WSDLModel model, Project p, Binding binding) {
-        this.model = model;
+    public STSConfigServicePanel( Project p, Binding binding) {
         this.project = p;
         this.binding = binding;
 
@@ -123,16 +115,8 @@ public class STSConfigServicePanel extends JPanel {
         inSync = false;
     }
     
-    private String getLifeTime() {
-        return this.lifeTimeTextField.getText();
-    }
-
     private void setLifeTime(String time) {
         this.lifeTimeTextField.setText(time);
-    }
-
-    private String getIssuer() {
-        return this.issuerField.getText();
     }
 
     private void setIssuer(String issuer) {
@@ -151,10 +135,6 @@ public class STSConfigServicePanel extends JPanel {
         this.contractTextField.setText(classname);
     }
 
-    private String getContractClass() {
-        return contractTextField.getText();
-    }
-   
     private void refreshPanels() {
         updateLayout();
     }

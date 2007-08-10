@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.wizard;
 
-import java.awt.Component;
-import javax.swing.JComponent;
 import org.openide.WizardDescriptor;
 
 /**

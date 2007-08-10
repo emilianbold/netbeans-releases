@@ -29,6 +29,8 @@ import org.netbeans.modules.websvc.wsitmodelext.policy.PolicyReference;
 import org.netbeans.modules.xml.wsdl.model.*;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlQName;
 import org.netbeans.modules.websvc.wsitmodelext.addressing.Addressing10WsdlUsingAddressing;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -38,6 +40,9 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
  * @author Martin Grebac
  */
 public class PolicyModelHelper {
+    private static final String POLICY = "Policy";
+    
+    private static final Logger logger = Logger.getLogger(PolicyModelHelper.class.getName());
     
     /**
      * Creates top level policy (Policy/ExactlyOne/All) elements if they don't exist. Used for creating nested policies.
@@ -70,7 +75,7 @@ public class PolicyModelHelper {
             policyName = getPolicyUriForElement(c);
             if (policyName == null) {
                 if (c instanceof Binding) {
-                    policyName = ((Binding)c).getName() + "Policy";                 //NOI18N
+                    policyName = ((Binding)c).getName() + POLICY;                 //NOI18N
                 }
                 if (c instanceof BindingInput) {
                     msgName = ((BindingInput)c).getName();
@@ -78,7 +83,7 @@ public class PolicyModelHelper {
                         msgName = ((BindingOperation)c.getParent()).getName() + "_Input";          //NOI18N
                     }
                     Binding b = (Binding)c.getParent().getParent();
-                    policyName = b.getName() + "_" + msgName + "_" + "Policy";           //NOI18N
+                    policyName = b.getName() + "_" + msgName + "_" + POLICY;           //NOI18N
                 }
                 if (c instanceof BindingOutput) {
                     msgName = ((BindingOutput)c).getName();
@@ -86,7 +91,7 @@ public class PolicyModelHelper {
                         msgName = ((BindingOperation)c.getParent()).getName() + "_Output";          //NOI18N
                     }
                     Binding b = (Binding)c.getParent().getParent();
-                    policyName = b.getName() + "_" + msgName + "_" + "Policy";           //NOI18N
+                    policyName = b.getName() + "_" + msgName + "_" + POLICY;           //NOI18N
                 }
                 if (c instanceof BindingFault) {
                     msgName = ((BindingFault)c).getName();
@@ -94,7 +99,7 @@ public class PolicyModelHelper {
                         msgName = ((BindingOperation)c.getParent()).getName() + "_Fault";          //NOI18N
                     }
                     Binding b = (Binding)c.getParent().getParent();
-                    policyName = b.getName() + "_" + msgName + "_" + "Policy";           //NOI18N
+                    policyName = b.getName() + "_" + msgName + "_" + POLICY;           //NOI18N
                 }
                 if (c instanceof BindingOperation) {
                     msgName = ((BindingOperation)c).getName();
@@ -102,7 +107,7 @@ public class PolicyModelHelper {
                         msgName = ((BindingOperation)c.getParent()).getName();          //NOI18N
                     }
                     Binding b = (Binding)c.getParent();
-                    policyName = b.getName() + "_" + msgName + "_" + "Policy";           //NOI18N
+                    policyName = b.getName() + "_" + msgName + "_" + POLICY;           //NOI18N
                 }
             }
 
@@ -181,7 +186,7 @@ public class PolicyModelHelper {
     /* Returns name of policy attached to a wsdl component */
     private static String getPolicyUriForElement(WSDLComponent c) {
         List<PolicyReference> extPRefElems = c.getExtensibilityElements(PolicyReference.class);
-        if ((extPRefElems != null) && (extPRefElems.size() > 0)) {
+        if ((extPRefElems != null) && (!extPRefElems.isEmpty())) {
             PolicyReference pref = extPRefElems.get(0);
             String policyURI = pref.getPolicyURI();
             return policyURI;
@@ -237,7 +242,7 @@ public class PolicyModelHelper {
                         p.getParent().removeExtensibilityElement(p);
                     }
                     List<PolicyReference> extPRefElems = c.getExtensibilityElements(PolicyReference.class);
-                    if ((extPRefElems != null) && (extPRefElems.size() > 0)) {
+                    if ((extPRefElems != null) && (!extPRefElems.isEmpty())) {
                         PolicyReference pref = extPRefElems.get(0);
                         pref.getParent().removeExtensibilityElement(pref);
                     }

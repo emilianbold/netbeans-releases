@@ -30,8 +30,6 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import java.awt.*;
 import java.util.Iterator;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 
 /**
  * @author Martin Grebac
@@ -91,8 +89,7 @@ public class ClientTopComponent extends TopComponent {
         
         org.netbeans.modules.xml.wsdl.model.Service s = getService(client.getName(), clientWsdlModel); //TODO - the client name just won't work!!!
         if (s != null) {
-            Project p = FileOwnerQuery.getOwner(jaxWsModel.getJaxWsFile());
-            ClientView mview = new ClientView(panelFactory, clientWsdlModel, serviceModel, s, p, node);
+            ClientView mview = new ClientView(panelFactory, clientWsdlModel, serviceModel, s);
             tb.setContentView(mview);
             add(tb);
         }

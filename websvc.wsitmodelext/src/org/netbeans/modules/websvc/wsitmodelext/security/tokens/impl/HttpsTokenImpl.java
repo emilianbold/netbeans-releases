@@ -52,7 +52,7 @@ public class HttpsTokenImpl extends TokensComponentImpl implements HttpsToken {
         setAttribute(REQUIRECLIENTCERTIFICATE, SecurityPolicyAttribute.REQUIRECLIENTCERTIFICATE, Boolean.toString(require));        
     }
 
-    public boolean getRequireClientCertificate() {
+    public boolean isRequireClientCertificate() {
         return Boolean.parseBoolean(getAttribute(SecurityPolicyAttribute.REQUIRECLIENTCERTIFICATE));
     }
 

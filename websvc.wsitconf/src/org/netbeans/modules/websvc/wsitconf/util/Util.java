@@ -19,18 +19,14 @@
 
 package org.netbeans.modules.websvc.wsitconf.util;
 
-import java.util.logging.Level;
-
 import java.util.logging.Logger;
 import java.awt.Component;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JLabel;
 import java.awt.Container;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -92,6 +88,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class Util {
+    private static final String LOGGER_GLOBAL = "global";
+    private static final String WSSIP = "wssip";
+    private static final String XWS_SECURITY_CLIENT = "xws-security-client";
+    private static final String XWS_SECURITY_SERVER = "xws-security-server";
 
     public enum ProjectType {
         WEB, EJB, CLIENT, UNKNOWN
@@ -141,7 +141,7 @@ public class Util {
      *  Recursively finds a JLabel that has labelText in comp
      */
     public static JLabel findLabel(JComponent comp, String labelText) {
-        Vector<Component> allComponents = new Vector<Component>();
+        ArrayList<Component> allComponents = new ArrayList<Component>();
         getAllComponents(comp.getComponents(), allComponents);
         Iterator iterator = allComponents.iterator();
         while(iterator.hasNext()) {
@@ -246,7 +246,9 @@ public class Util {
                 }
                 return i.intValue() > 0;
             }
-        } catch (NumberFormatException nfe) {}
+        } catch (NumberFormatException nfe) {
+            logger.log(Level.FINE, null, nfe); // just ignore
+        }
         return false;
     }
 
@@ -432,7 +434,7 @@ public class Util {
                     folder = FileUtil.toFileObject(f);
                 }
             } catch (Exception ex) {
-                Logger.getLogger("global").log(Level.INFO, null, ex);
+                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
             }    
         }
         return folder;
@@ -543,7 +545,7 @@ public class Util {
                         }
                     }
                 } catch (Exception ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                    Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
                 }
             }
             return;
@@ -554,15 +556,15 @@ public class Util {
         if (glassfish) {
             try {
                 if (!client) refreshBuildScript(project);
-                copyKey(serverKeyStoreBundled, "xws-security-server", srcPasswd, srcPasswd, serverKeyStorePath, "xws-security-server", dstPasswd, false);
-                copyKey(serverKeyStoreBundled, "wssip", srcPasswd, srcPasswd, serverKeyStorePath, "wssip", dstPasswd, false);
+                copyKey(serverKeyStoreBundled, XWS_SECURITY_SERVER, srcPasswd, srcPasswd, serverKeyStorePath,XWS_SECURITY_SERVER, dstPasswd, false);
+                copyKey(serverKeyStoreBundled, WSSIP, srcPasswd, srcPasswd, serverKeyStorePath,WSSIP, dstPasswd, false);
                 copyKey(serverTrustStoreBundled, "certificate-authority", srcPasswd, srcPasswd, serverTrustStorePath, "xwss-certificate-authority", dstPasswd, true);
-                copyKey(serverTrustStoreBundled, "xws-security-client", srcPasswd, srcPasswd, serverTrustStorePath, "xws-security-client", dstPasswd, true);
-                copyKey(clientKeyStoreBundled, "xws-security-client", srcPasswd, srcPasswd, clientKeyStorePath, "xws-security-client", dstPasswd, false);
-                copyKey(clientTrustStoreBundled, "xws-security-server", srcPasswd, srcPasswd, clientTrustStorePath, "xws-security-server", dstPasswd, true);
-                copyKey(clientTrustStoreBundled, "wssip", srcPasswd, srcPasswd, clientTrustStorePath, "wssip", dstPasswd, true);
+                copyKey(serverTrustStoreBundled, XWS_SECURITY_CLIENT, srcPasswd, srcPasswd, serverTrustStorePath,XWS_SECURITY_CLIENT, dstPasswd, true);
+                copyKey(clientKeyStoreBundled, XWS_SECURITY_CLIENT, srcPasswd, srcPasswd, clientKeyStorePath,XWS_SECURITY_CLIENT, dstPasswd, false);
+                copyKey(clientTrustStoreBundled, XWS_SECURITY_SERVER, srcPasswd, srcPasswd, clientTrustStorePath,XWS_SECURITY_SERVER, dstPasswd, true);
+                copyKey(clientTrustStoreBundled, WSSIP, srcPasswd, srcPasswd, clientTrustStorePath,WSSIP, dstPasswd, true);
             } catch (Exception ex) {
-                Logger.getLogger("global").log(Level.INFO, null, ex);
+                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
             }
         }
         
@@ -807,15 +809,15 @@ public class Util {
                 }
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                    Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
                 }
             }
         }
@@ -845,9 +847,9 @@ public class Util {
                     writer.newLine();
                 }
             } catch (FileNotFoundException ex) {
-                Logger.getLogger("global").log(Level.INFO, null, ex);
+                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
             } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.INFO, null, ex);
+                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
             } finally {
                 try {
                     if (writer != null) {
@@ -859,7 +861,7 @@ public class Util {
                         reader.close();
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                    Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
                 }
             }
         }
@@ -873,7 +875,7 @@ public class Util {
                     Util.class.getClassLoader().getResource(WSIT_DEPLOY_XSL),
                     false);
         } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
         }
     }
     
@@ -895,15 +897,15 @@ public class Util {
                 }
             }
         } catch (FileNotFoundException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger("global").log(Level.INFO, null, ex);
+            Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
                 } catch (IOException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                    Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
                 }
             }
         }
@@ -918,18 +920,17 @@ public class Util {
                 reader = new BufferedReader(new FileReader(buildScript + BACKUP_EXT));
                 writer = new BufferedWriter(new FileWriter(buildScript));
                 added = false;
-                int index = 0;
                 
                 while ((line = reader.readLine()) != null) {
-                    if ((index = line.indexOf(IMPORT_WSIT_DEPLOY_XML)) == -1) {
+                    if ((line.indexOf(IMPORT_WSIT_DEPLOY_XML)) == -1) {
                         writer.write(line);
                         writer.newLine();
                     }
                 }
             } catch (FileNotFoundException ex) {
-                Logger.getLogger("global").log(Level.INFO, null, ex);
+                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
             } catch (IOException ex) {
-                Logger.getLogger("global").log(Level.INFO, null, ex);
+                Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
             } finally {
                 try {
                     if (writer != null) {
@@ -941,7 +942,7 @@ public class Util {
                         reader.close();
                     }
                 } catch (IOException ex) {
-                    Logger.getLogger("global").log(Level.INFO, null, ex);
+                    Logger.getLogger(LOGGER_GLOBAL).log(Level.INFO, null, ex);
                 }
             }
         }

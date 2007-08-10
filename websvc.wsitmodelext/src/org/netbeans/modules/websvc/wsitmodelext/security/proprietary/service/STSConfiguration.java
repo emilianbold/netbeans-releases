@@ -33,8 +33,8 @@ public interface STSConfiguration extends ExtensibilityElement{
     String getVisibility();
 
     void setEncryptIssuedKey(boolean encrypt);
-    boolean getEncryptIssuedKey();
+    boolean isEncryptIssuedKey();
 
     void setEncryptIssuedToken(boolean encrypt);
-    boolean getEncryptIssuedToken();    
+    boolean isEncryptIssuedToken();    
 }

@@ -123,7 +123,7 @@ public class ProprietarySecurityPolicyModelHelper {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         STSConfiguration sc = getSTSConfiguration(p);
         if (sc != null) {
-            return sc.getEncryptIssuedKey();
+            return sc.isEncryptIssuedKey();
         }
         return false;
     }
@@ -132,7 +132,7 @@ public class ProprietarySecurityPolicyModelHelper {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         STSConfiguration sc = getSTSConfiguration(p);
         if (sc != null) {
-            return sc.getEncryptIssuedToken();
+            return sc.isEncryptIssuedToken();
         }
         return false;
     }
@@ -187,7 +187,7 @@ public class ProprietarySecurityPolicyModelHelper {
     public static List<ServiceProvider> getSTSServiceProviders(STSConfiguration stsConfig) {
         if (stsConfig != null) {
             List<ServiceProviders> elems = stsConfig.getExtensibilityElements(ServiceProviders.class);
-            if ((elems != null) && (elems.size() > 0)) {
+            if ((elems != null) && (!elems.isEmpty())) {
                 List<ServiceProvider> sps = elems.get(0).getExtensibilityElements(ServiceProvider.class);
                 return sps;
             }
@@ -278,7 +278,7 @@ public class ProprietarySecurityPolicyModelHelper {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         SCClientConfiguration sc = getSCClientConfiguration(p);
         if (sc != null) {
-            return sc.getRenewExpiredSCT();
+            return sc.isRenewExpiredSCT();
         }
         return false;
     }
@@ -287,7 +287,7 @@ public class ProprietarySecurityPolicyModelHelper {
         Policy p = PolicyModelHelper.getPolicyForElement(b);
         SCClientConfiguration sc = getSCClientConfiguration(p);
         if (sc != null) {
-            return sc.getRequireCancelSCT();
+            return sc.isRequireCancelSCT();
         }
         return false;
     }
@@ -787,7 +787,7 @@ public class ProprietarySecurityPolicyModelHelper {
             WSDLComponentFactory wcf = model.getFactory();
             List<ServiceProviders> sProvidersList = stsConfig.getExtensibilityElements(ServiceProviders.class);
             ServiceProviders sProviders = null;
-            if ((sProvidersList != null) && (sProvidersList.size() > 0)) {
+            if ((sProvidersList != null) && (!sProvidersList.isEmpty())) {
                sProviders = sProvidersList.get(0); 
             }
             if (sProviders == null) {

@@ -28,13 +28,11 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPoli
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMSunModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RequiredConfigurationHelper;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -48,7 +46,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     private boolean inSync = false;
 
     private static final String DEFAULT_LIFETIME = "36000";                     //NOI18N
-    private static final String DEFAULT_TIMEOUT = "5000";                     //NOI18N
+//    private static final String DEFAULT_TIMEOUT = "5000";                     //NOI18N
     private static final String DEFAULT_RMRESENDINTERVAL = "2000";              //NOI18N
     private static final String DEFAULT_RMCLOSETIMEOUT = "0";                    //NOI18N
     private static final String DEFAULT_RMREQUESTACKINTERVAL = "200";           //NOI18N
@@ -59,7 +57,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
     private DefaultFormatterFactory rmReqDff = null;
     private DefaultFormatterFactory timeoutDff = null;
 
-    public AdvancedConfigPanelClient(SectionView view, Node node, Binding binding, WSDLModel serviceModel) {
+    public AdvancedConfigPanelClient(SectionView view, Binding binding, WSDLModel serviceModel) {
         super(view);
         this.serviceModel = serviceModel;
         this.binding = binding;

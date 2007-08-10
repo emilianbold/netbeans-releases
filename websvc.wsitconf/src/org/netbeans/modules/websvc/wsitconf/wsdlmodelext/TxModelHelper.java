@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.wsdlmodelext;
 
-import java.util.List;
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
 import org.netbeans.modules.websvc.wsitmodelext.tx.ATAlwaysCapability;
 import org.netbeans.modules.websvc.wsitmodelext.tx.ATAssertion;
@@ -61,13 +60,13 @@ public class TxModelHelper {
 //        if (WSITModelSupport.isServiceFromWsdl(node) || // do not care about annotation if WS from WSDL
 //            (ComboConstants.TX_NOTSUPPORTED.equals(txConfig) && (txAnnot == null)) || ( // Nothing is set
 //           !ComboConstants.TX_NOTSUPPORTED.equals(txConfig))) {  // Something is set in wsit config
-            setTxInConfig(bop, node, txValue);
+            setTxInConfig(bop, txValue);
 //        } else {
 //            setTxInAnnotation(bop, node, txValue);
 //        }
     }
 
-    private static void setTxInAnnotation(BindingOperation bop, Node node, String txValue) {
+//    private static void setTxInAnnotation(BindingOperation bop, Node node, String txValue) {
 //        Method m = JMIUtils.getMethod(node, bop.getName());
 //        
 //        VariableAccess va = getTxAnnotationVariable(m);
@@ -75,9 +74,9 @@ public class TxModelHelper {
 //            va.setName(txValue);
 //        }
 //        
-    }
+//    }
     
-    private static void setTxInConfig(BindingOperation bop, Node node, String txValue) {
+    private static void setTxInConfig(BindingOperation bop, String txValue) {
         WSDLModel model = bop.getModel();
         Policy p = PolicyModelHelper.getPolicyForElement(bop);
         boolean isTransaction = model.isIntransaction();
@@ -150,7 +149,7 @@ public class TxModelHelper {
         return tx;
     }
 
-    private static String getTxFromAnnotation(BindingOperation bop, Node node) {
+//    private static String getTxFromAnnotation(BindingOperation bop, Node node) {
 //        JavaClass jc = JMIUtils.getJavaClassFromNode(node);
 //        Method m = JMIUtils.getMethod(node, bop.getName());
 //        
@@ -165,9 +164,9 @@ public class TxModelHelper {
 //        if (value != null) {
 //            return value;
 //        }
-
-        return ComboConstants.TX_NOTSUPPORTED;
-    }
+//
+//        return ComboConstants.TX_NOTSUPPORTED;
+//    }
 
 //    private static String getTxFromAnnotation(Feature f) {
 //        VariableAccess va = getTxAnnotationVariable(f);
@@ -194,53 +193,53 @@ public class TxModelHelper {
 //        return null;
 //    }
 
-    private static String getTxComboValue(String annotationAttr) {
-        if (annotationAttr != null) {
-            if ("MANDATORY".equals(annotationAttr)) {       //NOI18N
-                return ComboConstants.TX_MANDATORY;
-            }
-            if ("REQUIRED".equals(annotationAttr)) {        //NOI18N
-                return ComboConstants.TX_REQUIRED;
-            }
-            if ("REQUIRES_NEW".equals(annotationAttr)) {    //NOI18N
-                return ComboConstants.TX_REQUIRESNEW;
-            }
-            if ("SUPPORTED".equals(annotationAttr)) {       //NOI18N
-                return ComboConstants.TX_SUPPORTED;
-            }
-            if ("NOT_SUPPORTED".equals(annotationAttr)) {   //NOI18N
-                return ComboConstants.TX_NOTSUPPORTED;
-            }
-            if ("NEVER".equals(annotationAttr)) {           //NOI18N
-                return ComboConstants.TX_NEVER;
-            }
-        }
-        return null;
-    }
+//    private static String getTxComboValue(String annotationAttr) {
+//        if (annotationAttr != null) {
+//            if ("MANDATORY".equals(annotationAttr)) {       //NOI18N
+//                return ComboConstants.TX_MANDATORY;
+//            }
+//            if ("REQUIRED".equals(annotationAttr)) {        //NOI18N
+//                return ComboConstants.TX_REQUIRED;
+//            }
+//            if ("REQUIRES_NEW".equals(annotationAttr)) {    //NOI18N
+//                return ComboConstants.TX_REQUIRESNEW;
+//            }
+//            if ("SUPPORTED".equals(annotationAttr)) {       //NOI18N
+//                return ComboConstants.TX_SUPPORTED;
+//            }
+//            if ("NOT_SUPPORTED".equals(annotationAttr)) {   //NOI18N
+//                return ComboConstants.TX_NOTSUPPORTED;
+//            }
+//            if ("NEVER".equals(annotationAttr)) {           //NOI18N
+//                return ComboConstants.TX_NEVER;
+//            }
+//        }
+//        return null;
+//    }
 
-    private static String getAnnotationAttrValue(String comboStr) {
-        if (comboStr != null) {
-            if (ComboConstants.TX_MANDATORY.equals(comboStr)) {
-                return "MANDATORY";                             //NOI18N
-            }
-            if (ComboConstants.TX_REQUIRED.equals(comboStr)) {
-                return "REQUIRED";                              //NOI18N
-            }
-            if (ComboConstants.TX_REQUIRESNEW.equals(comboStr)) {
-                return "REQUIRES_NEW";                          //NOI18N
-            }
-            if (ComboConstants.TX_SUPPORTED.equals(comboStr)) {
-                return "SUPPORTED";                             //NOI18N
-            }
-            if (ComboConstants.TX_NOTSUPPORTED.equals(comboStr)) {
-                return "NOT_SUPPORTED";                         //NOI18N
-            }
-            if (ComboConstants.TX_NEVER.equals(comboStr)) {
-                return "NEVER";                                 //NOI18N
-            }
-        }
-        return null;
-    }
+//    private static String getAnnotationAttrValue(String comboStr) {
+//        if (comboStr != null) {
+//            if (ComboConstants.TX_MANDATORY.equals(comboStr)) {
+//                return "MANDATORY";                             //NOI18N
+//            }
+//            if (ComboConstants.TX_REQUIRED.equals(comboStr)) {
+//                return "REQUIRED";                              //NOI18N
+//            }
+//            if (ComboConstants.TX_REQUIRESNEW.equals(comboStr)) {
+//                return "REQUIRES_NEW";                          //NOI18N
+//            }
+//            if (ComboConstants.TX_SUPPORTED.equals(comboStr)) {
+//                return "SUPPORTED";                             //NOI18N
+//            }
+//            if (ComboConstants.TX_NOTSUPPORTED.equals(comboStr)) {
+//                return "NOT_SUPPORTED";                         //NOI18N
+//            }
+//            if (ComboConstants.TX_NEVER.equals(comboStr)) {
+//                return "NEVER";                                 //NOI18N
+//            }
+//        }
+//        return null;
+//    }
     
     private static String getTxFromConfig(BindingOperation bop) {
         Policy p = PolicyModelHelper.getPolicyForElement(bop);
@@ -249,7 +248,7 @@ public class TxModelHelper {
         ATAlwaysCapability txAlways = getATAlwaysAssertion(p);
         
         if ((tx != null) && (txAlways == null)) {
-            if (tx.getOptional()) {
+            if (tx.isOptional()) {
                 return ComboConstants.TX_SUPPORTED;
             }
             return ComboConstants.TX_MANDATORY;

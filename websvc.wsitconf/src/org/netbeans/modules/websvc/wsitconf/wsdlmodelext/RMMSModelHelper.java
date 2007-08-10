@@ -26,7 +26,6 @@ import org.netbeans.modules.websvc.wsitmodelext.rm.MaxReceiveBufferSize;
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMMSQName;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponentFactory;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Model;
 
 /**

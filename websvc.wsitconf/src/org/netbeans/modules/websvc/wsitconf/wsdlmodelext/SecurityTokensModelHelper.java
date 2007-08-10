@@ -104,7 +104,7 @@ public class SecurityTokensModelHelper {
     public SecurityTokensModelHelper() { }
 
     public static boolean isRequireClientCertificate(HttpsToken token) {
-        return token.getRequireClientCertificate();
+        return token.isRequireClientCertificate();
     }
 
     public static void setRequireClientCertificate(HttpsToken token, boolean require) {
@@ -171,7 +171,7 @@ public class SecurityTokensModelHelper {
     public static String getTokenInclusionLevel(WSDLComponent tokenType) {
         String incLevelStr = ((ExtensibilityElement)tokenType).getAnyAttribute(TokensQName.INCLUDETOKENATTRIBUTE.getQName());
         if (incLevelStr != null) {
-            incLevelStr = incLevelStr.substring(incLevelStr.lastIndexOf("/")+1, incLevelStr.length()); //NOI18N
+            incLevelStr = incLevelStr.substring(incLevelStr.lastIndexOf('/')+1, incLevelStr.length()); //NOI18N
             return NbBundle.getMessage(ComboConstants.class, "COMBO_" + incLevelStr); //NOI18N
         } else {
             return ComboConstants.NONE;

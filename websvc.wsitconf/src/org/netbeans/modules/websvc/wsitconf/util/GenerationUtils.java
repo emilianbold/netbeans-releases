@@ -58,6 +58,9 @@ public final class GenerationUtils extends SourceUtils {
      */
     static final String CLASS_TEMPLATE = "Templates/Classes/Class.java"; // NOI18N
     static final String INTERFACE_TEMPLATE = "Templates/Classes/Interface.java"; // NOI18N
+    private static final String MODIFIERS_TREE = "modifiersTree";
+    private static final String PROPERTY_NAME = "propertyName";
+    private static final String PROPERTY_TYPE = "propertyType";
 
     // <editor-fold desc="Constructors and factory methods">
 
@@ -417,7 +420,7 @@ public final class GenerationUtils extends SourceUtils {
      * @return the new constructor; never null.
      */
     public MethodTree createAssignmentConstructor(ModifiersTree modifiersTree, String constructorName, List<VariableTree> parameters) {
-        Parameters.notNull("modifiersTree", modifiersTree);
+        Parameters.notNull( MODIFIERS_TREE,modifiersTree);
         Parameters.javaIdentifier("constructorName", constructorName); // NOI18N
         Parameters.notNull("parameters", parameters); // NOI18N
 
@@ -447,7 +450,7 @@ public final class GenerationUtils extends SourceUtils {
      * @return the new field; never null.
      */
     public VariableTree createField(ModifiersTree modifiersTree, String fieldName, String fieldType) {
-        Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
+        Parameters.notNull( MODIFIERS_TREE,modifiersTree); // NOI18N
         Parameters.javaIdentifier("fieldName", fieldName); // NOI18N
         Parameters.notNull("fieldType", fieldType); // NOI18N
 
@@ -524,9 +527,9 @@ public final class GenerationUtils extends SourceUtils {
      * @return the new method; never null.
      */
     public MethodTree createPropertyGetterMethod(ModifiersTree modifiersTree, String propertyName, String propertyType) throws IOException {
-        Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
-        Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
-        Parameters.notNull("propertyType", propertyType); // NOI18N
+        Parameters.notNull( MODIFIERS_TREE,modifiersTree); // NOI18N
+        Parameters.javaIdentifier( PROPERTY_NAME,propertyName); // NOI18N
+        Parameters.notNull( PROPERTY_TYPE,propertyType); // NOI18N
         getWorkingCopy().toPhase(Phase.RESOLVED);
 
         return createPropertyGetterMethod(modifiersTree, propertyName, createType(propertyType));
@@ -541,9 +544,9 @@ public final class GenerationUtils extends SourceUtils {
      * @return the new method; never null.
      */
     public MethodTree createPropertyGetterMethod(ModifiersTree modifiersTree, String propertyName, Tree propertyType) throws IOException {
-        Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
-        Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
-        Parameters.notNull("propertyType", propertyType); // NOI18N
+        Parameters.notNull( MODIFIERS_TREE,modifiersTree); // NOI18N
+        Parameters.javaIdentifier( PROPERTY_NAME,propertyName); // NOI18N
+        Parameters.notNull( PROPERTY_TYPE,propertyType); // NOI18N
         getWorkingCopy().toPhase(Phase.RESOLVED);
 
         return getTreeMaker().Method(
@@ -565,9 +568,9 @@ public final class GenerationUtils extends SourceUtils {
      * @return the new method; never null.
      */
     public MethodTree createPropertySetterMethod(ModifiersTree modifiersTree, String propertyName, String propertyType) throws IOException {
-        Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
-        Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
-        Parameters.notNull("propertyType", propertyType); // NOI18N
+        Parameters.notNull( MODIFIERS_TREE,modifiersTree); // NOI18N
+        Parameters.javaIdentifier( PROPERTY_NAME,propertyName); // NOI18N
+        Parameters.notNull( PROPERTY_TYPE,propertyType); // NOI18N
         getWorkingCopy().toPhase(Phase.RESOLVED);
 
         return createPropertySetterMethod(modifiersTree, propertyName, createType(propertyType));
@@ -581,9 +584,9 @@ public final class GenerationUtils extends SourceUtils {
      * @return the new method; never null.
      */
     public MethodTree createPropertySetterMethod(ModifiersTree modifiersTree, String propertyName, Tree propertyType) throws IOException {
-        Parameters.notNull("modifiersTree", modifiersTree); // NOI18N
-        Parameters.javaIdentifier("propertyName", propertyName); // NOI18N
-        Parameters.notNull("propertyType", propertyType); // NOI18N
+        Parameters.notNull( MODIFIERS_TREE,modifiersTree); // NOI18N
+        Parameters.javaIdentifier( PROPERTY_NAME,propertyName); // NOI18N
+        Parameters.notNull( PROPERTY_TYPE,propertyType); // NOI18N
         getWorkingCopy().toPhase(Phase.RESOLVED);
 
         TreeMaker make = getTreeMaker();

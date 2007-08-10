@@ -790,7 +790,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
         UndoCounter undoCounter = new UndoCounter();
         model.addUndoableEditListener(undoCounter);
 
-        STSConfigServicePanel stsConfigPanel = new STSConfigServicePanel(model, project, binding);
+        STSConfigServicePanel stsConfigPanel = new STSConfigServicePanel(project, binding);
         DialogDescriptor dlgDesc = new DialogDescriptor(stsConfigPanel, 
                 NbBundle.getMessage(ServicePanel.class, "LBL_STSConfig_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
@@ -810,7 +810,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private void trustButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_trustButtonActionPerformed
         boolean jsr109 = isJsr109Supported();
         String profile = (String) profileCombo.getSelectedItem();
-        TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, false, null);
+        TruststorePanel storePanel = new TruststorePanel(binding, project, jsr109, profile, false);
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
                 NbBundle.getMessage(ServicePanel.class, "LBL_Truststore_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
@@ -823,7 +823,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 
     private void keyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyButtonActionPerformed
         boolean jsr109 = isJsr109Supported();
-        KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, false, null);
+        KeystorePanel storePanel = new KeystorePanel(binding, project, jsr109, false);
         DialogDescriptor dlgDesc = new DialogDescriptor(storePanel, 
                 NbBundle.getMessage(ServicePanel.class, "LBL_Keystore_Panel_Title")); //NOI18N
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);

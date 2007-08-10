@@ -30,6 +30,6 @@ public interface OptionalAttributeAllowed extends ExtensibilityElement {
     public static final String OPTIONAL = "OPTIONAL";     //NOI18N
     
     void setOptional(boolean optional);
-    boolean getOptional();
+    boolean isOptional();
 
 }

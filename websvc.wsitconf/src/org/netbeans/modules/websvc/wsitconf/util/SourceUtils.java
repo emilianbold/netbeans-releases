@@ -22,8 +22,6 @@ package org.netbeans.modules.websvc.wsitconf.util;
 import com.sun.source.tree.*;
 import com.sun.source.util.*;
 import java.io.IOException;
-import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import org.netbeans.api.java.source.CompilationController;
@@ -203,44 +201,6 @@ public class SourceUtils {
             }
         }
         return null;
-    }
-
-    /**
-     * Returns true if the given method is a main method.
-     */
-    private boolean isMainMethod(ExecutableElement method) {
-        // check method name
-        if (!method.getSimpleName().contentEquals("main")) { // NOI18N
-            return false;
-        }
-        // check modifiers
-        Set<Modifier> modifiers = method.getModifiers();
-        if (!modifiers.contains(Modifier.PUBLIC) || !modifiers.contains(Modifier.STATIC)) {
-            return false;
-        }
-        // check return type
-        if (TypeKind.VOID != method.getReturnType().getKind()) {
-            return false;
-        }
-        // check parameters
-        // there must be just one parameter
-        List<? extends VariableElement> params = method.getParameters();
-        if (params.size() != 1) {
-            return false;
-        }
-        VariableElement param = params.get(0); // it is ok to take first item, it was tested before
-        TypeMirror paramType = param.asType();
-        // parameter must be an array
-        if (TypeKind.ARRAY != paramType.getKind()) {
-            return false;
-        }
-        ArrayType arrayType = (ArrayType) paramType;
-        TypeElement stringTypeElement = controller.getElements().getTypeElement(String.class.getName());
-        // array must be array of Strings
-        if (!controller.getTypes().isSameType(stringTypeElement.asType(), arrayType.getComponentType())) {
-            return false;
-        }
-        return true;
     }
 
     // </editor-fold>

@@ -28,7 +28,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelp
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.HttpsToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TransportToken;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 /**
  *
@@ -39,7 +38,6 @@ public class TransportSecurity extends javax.swing.JPanel {
     private boolean inSync = false;
 
     private WSDLComponent comp;
-    private WSDLModel model;
     
     /**
      * Creates new form TransportSecurity
@@ -47,7 +45,6 @@ public class TransportSecurity extends javax.swing.JPanel {
     public TransportSecurity(WSDLComponent comp) {
         super();
         initComponents();
-        this.model = comp.getModel();
         this.comp = comp;
 
         inSync = true;

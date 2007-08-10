@@ -56,7 +56,7 @@ public class ClientPanelFactory implements org.netbeans.modules.xml.multiview.ui
             String id = (String)key;
             if (id.startsWith(ClientView.CALLBACK_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.CALLBACK_NODE_ID.length()));
-                return new CallbackPanel((SectionView) editor.getContentView(), clientModel, node, b, jaxwsmodel, serviceModel);
+                return new CallbackPanel((SectionView) editor.getContentView(), node, b, jaxwsmodel, serviceModel);
             }
             if (id.startsWith(ClientView.STS_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.STS_NODE_ID.length()));
@@ -64,11 +64,11 @@ public class ClientPanelFactory implements org.netbeans.modules.xml.multiview.ui
             }
             if (id.startsWith(ClientView.TRANSPORT_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.TRANSPORT_NODE_ID.length()));
-                return new TransportPanelClient((SectionView) editor.getContentView(), node, b, serviceModel, jaxwsmodel);
+                return new TransportPanelClient((SectionView) editor.getContentView(), node, b, jaxwsmodel);
             }
             if (id.startsWith(ClientView.ADVANCEDCONFIG_NODE_ID)) {
                 Binding b = PolicyModelHelper.getBinding(clientModel, id.substring(ClientView.ADVANCEDCONFIG_NODE_ID.length()));
-                return new AdvancedConfigPanelClient((SectionView) editor.getContentView(), node, b, serviceModel);
+                return new AdvancedConfigPanelClient((SectionView) editor.getContentView(), b, serviceModel);
             }
         }
         return null;

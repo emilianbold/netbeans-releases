@@ -26,7 +26,6 @@ import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.nodes.Node;
 
 /**
@@ -40,7 +39,7 @@ public class TransportPanelClient extends SectionInnerPanel {
     private boolean inSync = false;
     private JaxWsModel jaxwsmodel;
    
-    public TransportPanelClient(SectionView view, Node node, Binding binding, WSDLModel serviceModel, JaxWsModel jaxWsModel) {
+    public TransportPanelClient(SectionView view, Node node, Binding binding, JaxWsModel jaxWsModel) {
         super(view);
         this.node = node;
         this.binding = binding;

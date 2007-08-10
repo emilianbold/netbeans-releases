@@ -30,7 +30,6 @@ import org.netbeans.modules.websvc.wsitmodelext.security.tokens.HttpsToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.TransportToken;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 /**
  *
@@ -41,7 +40,6 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
     private boolean inSync = false;
 
     private WSDLComponent comp;
-    private WSDLModel model;
     
     /**
      * Creates new form MessageAuthentication
@@ -49,7 +47,6 @@ public class SAMLAuthorizationOverSSL extends javax.swing.JPanel implements Comb
     public SAMLAuthorizationOverSSL(WSDLComponent comp) {
         super();
         initComponents();
-        this.model = comp.getModel();
         this.comp = comp;
 
         inSync = true;

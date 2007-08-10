@@ -25,7 +25,6 @@ import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -47,9 +46,6 @@ public class KeystorePanel extends JPanel {
 
     public static final String DEFAULT_PASSWORD="changeit";    //NOI18N
     
-    private WSDLModel model;
-    private WSDLModel clientServiceModel;
-    
     private WSDLComponent comp;
 
     private boolean jsr109 = false;
@@ -60,14 +56,12 @@ public class KeystorePanel extends JPanel {
     
     private boolean inSync = false;
     
-    public KeystorePanel(WSDLComponent comp, Project p, boolean jsr109, boolean client, WSDLModel clientServiceModel) {
+    public KeystorePanel(WSDLComponent comp, Project p, boolean jsr109, boolean client) {
         super();
-        this.model = comp.getModel();
         this.comp = comp;
         this.jsr109 = jsr109;
         this.project = p;
         this.client = client;
-        this.clientServiceModel = clientServiceModel;
         
         initComponents();
 
@@ -125,14 +119,6 @@ public class KeystorePanel extends JPanel {
 
     private void setKeystoreType(String type) {
         this.keystoreType = type;
-    }
-    
-    private String getKeystoreType() {
-        String type = this.keystoreType;
-        if ("".equals(type) || (type == null)) {    //NOI18N
-            return JKS;
-        }
-        return type;
     }
     
     public void sync() {

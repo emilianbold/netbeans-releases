@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.client.nodes;
 
-import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 

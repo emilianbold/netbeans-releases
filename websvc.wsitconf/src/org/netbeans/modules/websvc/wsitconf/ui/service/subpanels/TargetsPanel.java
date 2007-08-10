@@ -20,12 +20,12 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 
 import java.awt.Component;
+import java.util.ArrayList;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.modules.websvc.wsitconf.ui.security.listmodels.*;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -33,7 +33,6 @@ import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.util.Vector;
-import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.NotifyDescriptor;
 
@@ -43,7 +42,6 @@ import org.openide.NotifyDescriptor;
  */
 public class TargetsPanel extends javax.swing.JPanel {
     
-    private WSDLModel model;
     private WSDLComponent comp;
 
     private Binding binding;
@@ -60,7 +58,6 @@ public class TargetsPanel extends javax.swing.JPanel {
      */
     public TargetsPanel(WSDLComponent c) {
         super();
-        this.model = c.getModel();
         this.comp = c;
         
         WSDLComponent b = c;
@@ -221,7 +218,7 @@ public class TargetsPanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         int[] rows = jTable1.getSelectedRows();
-        Vector rowsToRemove = new Vector();
+        ArrayList rowsToRemove = new ArrayList();
         for (int i=0; i<rows.length; i++) {            
             rowsToRemove.add(getTargetsModel().get(rows[i]));
         }
@@ -275,10 +272,10 @@ public class TargetsPanel extends javax.swing.JPanel {
                             getTargetsModel().add(row);
                         }
                     }
-                    boolean rm = true;
-                    if (binding != null) {
-                        rm = RMModelHelper.isRMEnabled(binding);
-                    }
+//                    boolean rm = true;
+//                    if (binding != null) {
+//                        rm = RMModelHelper.isRMEnabled(binding);
+//                    }
 //                    if (rm) {
                         for (String s : MessageHeader.RM_HEADERS) {
                             MessageHeader h = new MessageHeader(s);

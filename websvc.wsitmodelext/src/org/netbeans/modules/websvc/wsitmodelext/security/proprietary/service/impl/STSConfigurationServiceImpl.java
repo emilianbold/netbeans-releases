@@ -61,7 +61,7 @@ public class STSConfigurationServiceImpl extends ProprietaryTrustComponentServic
         setAttribute(ENCRYPTISSUEDKEY, ProprietarySecurityPolicyAttribute.ENCRYPTISSUEDKEY, Boolean.toString(encrypt));
     }
 
-    public boolean getEncryptIssuedKey() {
+    public boolean isEncryptIssuedKey() {
         return Boolean.parseBoolean(getAttribute(ProprietarySecurityPolicyAttribute.ENCRYPTISSUEDKEY));
     }
 
@@ -69,7 +69,7 @@ public class STSConfigurationServiceImpl extends ProprietaryTrustComponentServic
         setAttribute(ENCRYPTISSUEDTOKEN, ProprietarySecurityPolicyAttribute.ENCRYPTISSUEDTOKEN, Boolean.toString(encrypt));        
     }
 
-    public boolean getEncryptIssuedToken() {
+    public boolean isEncryptIssuedToken() {
         return Boolean.parseBoolean(getAttribute(ProprietarySecurityPolicyAttribute.ENCRYPTISSUEDTOKEN));
     }    
 }

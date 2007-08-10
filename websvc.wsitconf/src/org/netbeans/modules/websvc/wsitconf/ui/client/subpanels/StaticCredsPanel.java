@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.client.subpanels;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -36,13 +35,10 @@ public class StaticCredsPanel extends javax.swing.JPanel {
     private Binding binding;
     private boolean enable;
     
-    private Project project;
-
     /** Creates new form DynamicCredentials */
-    public StaticCredsPanel(Binding b, Project project, boolean enable) {
+    public StaticCredsPanel(Binding b, boolean enable) {
         this.binding = b;
         this.enable = enable;
-        this.project = project;
                
         initComponents();
         
@@ -71,7 +67,7 @@ public class StaticCredsPanel extends javax.swing.JPanel {
     }
     
     private String getDefaultPassword() {
-        return new String(this.defaultPasswordField.getPassword());
+        return String.copyValueOf(this.defaultPasswordField.getPassword());
     }
 
     private void setDefaultPassword(String passwd) {
@@ -87,7 +83,9 @@ public class StaticCredsPanel extends javax.swing.JPanel {
     }
     
     public void setValue(javax.swing.JComponent source, Object value) {
-        if (inSync) return;
+        if (inSync) {
+            return;
+        }
             
         if (source.equals(defaultUsernameTextField)) {
             String u = getDefaultUsername();
@@ -95,16 +93,12 @@ public class StaticCredsPanel extends javax.swing.JPanel {
                 u = null;
             }
             ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.USERNAME_CBHANDLER, null, u, true);
-            return;
-        }
-
-        if (source.equals(defaultPasswordField)) {
+        } else if (source.equals(defaultPasswordField)) {
             String p = getDefaultPassword();
             if ((p != null) && (p.length() == 0)) {
                 p = null;
             }
             ProprietarySecurityPolicyModelHelper.setCallbackHandler(binding, CallbackHandler.PASSWORD_CBHANDLER, null, p, true);
-            return;
         }
         
         enableDisable();

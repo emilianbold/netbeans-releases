@@ -24,11 +24,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.undo.UndoManager;
@@ -279,6 +279,7 @@ public class WSITModelSupport {
             }
         } catch (IOException e) {
             // ignore - this happens when files are imported recursively
+            logger.log(Level.FINE, null, e);
         }
     }
     
@@ -504,7 +505,7 @@ public class WSITModelSupport {
                 }
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.log(Level.INFO, null, ex);
         }
         return model;
     }
@@ -515,7 +516,7 @@ public class WSITModelSupport {
             Definitions d = model.getDefinitions();
             Types t = d.getTypes();
             if (t != null) {
-                t.getSchemas().retainAll(new Vector());
+                t.getSchemas().retainAll(new ArrayList());
             }
         } finally {
             model.endTransaction();
@@ -627,7 +628,7 @@ public class WSITModelSupport {
         if (model == null) return null;
         Definitions definitions = model.getDefinitions();
         Collection<Binding> bindings = definitions.getBindings();
-        if ((bindings == null) || (bindings.size() == 0)) return null;
+        if ((bindings == null) || (bindings.isEmpty())) return null;
         if (bindings.size() == 1) return bindings.iterator().next();
         Collection<org.netbeans.modules.xml.wsdl.model.Service> services = definitions.getServices();
         for (org.netbeans.modules.xml.wsdl.model.Service s : services) {
