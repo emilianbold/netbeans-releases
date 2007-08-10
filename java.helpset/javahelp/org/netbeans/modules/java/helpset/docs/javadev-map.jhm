@@ -93,6 +93,7 @@
 <mapID target="refactor.renameClass" url="refactor/renameClass.html" />
 <mapID target="refactor.renameField" url="refactor/renameField.html" />
 <mapID target="refactor.moveClass" url="refactor/moveClass.html" />
+<mapID target="refactor.copyClass" url="refactor/copyClass.html" />
 <mapID target="refactor.encapsulateField" url="refactor/encapsulateField.html" />
 <mapID target="refactor.changeParameters" url="refactor/changeParameters.html" />
 <mapID target="refactor.convertAnonymous" url="refactor/convertAnonymous.html" />

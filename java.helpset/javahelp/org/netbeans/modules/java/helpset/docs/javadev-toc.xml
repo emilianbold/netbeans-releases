@@ -67,6 +67,7 @@
     <tocitem text="Moving an Inner Class One Level Up" target="refactor.moveInner"/>
     <tocitem text="Moving a Class Member to a Superclass" target="refactor.pullUp"/>
     <tocitem text="Moving a Class Member to a Subclass" target="refactor.pushDown"/>
+    <tocitem text="Copying a Class" target="refactor.copyClass" />
     <tocitem text="Encapsulating a Field" target="refactor.encapsulateField" /> 
     <tocitem text="Changing a Method's Signature" target="refactor.changeParameters"/>
     <tocitem text="Introducing a Variable, Constant, Field, or Method" target="refactor.extractMethod"/>
