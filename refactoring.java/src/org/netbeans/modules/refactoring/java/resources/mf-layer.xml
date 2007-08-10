@@ -103,11 +103,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     
   </folder> 
-  <folder name="Services">
-      <folder name="org-netbeans-modules-refactoring">
-          <file name="options"/>
-      </folder>
-  </folder>
     <folder name="Actions">
         <folder name="Refactoring">
             <file name="org-netbeans-modules-refactoring-java-api-ui-PushDownAction.instance">
