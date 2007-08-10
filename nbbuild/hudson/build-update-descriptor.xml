@@ -9,7 +9,9 @@
         <gzip src="workspace/nbbuild/nbms/updates.xml" destfile="workspace/nbbuild/nbms/updates.xml.gz"/>
         <taskdef name="vuc" classname="org.netbeans.nbbuild.VerifyUpdateCenter" classpath="workspace/nbbuild/nbantext.jar"/>
         <echo>Checking synchronic and diachronic consistency of NBMs; see http://wiki.netbeans.org/wiki/view/DevFaqImplementationDependency</echo>
-        <property name="disabled.autoloads" value="org.netbeans.modules.apisupport.harness,org.netbeans.modules.ide.branding"/>
+        <!-- harness and branding in build just for installed files, modules are dummy -->
+        <!-- org.netbeans.lib.terminalemulator is really unused in cnd cluster, yet apparently has to be in the build anyway; contact Thomas Preisler -->
+        <property name="disabled.autoloads" value="org.netbeans.modules.apisupport.harness,org.netbeans.modules.ide.branding,org.netbeans.lib.terminalemulator"/>
         <vuc updates="workspace/nbbuild/nbms/updates.xml" oldupdates="lastSuccessful/archive/nbbuild/nbms/updates.xml" disabledautoloads="${disabled.autoloads}" checkautoupdatevisibility="true" report="workspace/nbbuild/nbms/vuc-report.xml">
             <classpath>
                 <fileset dir="workspace/nbbuild/netbeans">
