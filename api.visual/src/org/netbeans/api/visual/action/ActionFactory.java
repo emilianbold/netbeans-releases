@@ -130,6 +130,10 @@ public final class ActionFactory {
 
     private static final WidgetAction CYCLE_FOCUS_OBJECT_SCENE = createCycleFocusAction (new CycleObjectSceneFocusProvider ());
 
+    private static final PanAction PAN_ACTION = new PanAction ();
+
+    private static final WheelPanAction WHEEL_PAN_ACTION = new WheelPanAction ();
+
     private ActionFactory () {
     }
 
@@ -457,7 +461,16 @@ public final class ActionFactory {
      * @return the pan action
      */
     public static WidgetAction createPanAction () {
-        return new PanAction ();
+        return PAN_ACTION;
+    }
+
+    /**
+     * Creates a scene view panning action using mouse-wheel.
+     * @return the wheel pan action
+     * @since 2.7
+     */
+    public static WidgetAction createWheelPanAction () {
+        return WHEEL_PAN_ACTION;
     }
 
     /**

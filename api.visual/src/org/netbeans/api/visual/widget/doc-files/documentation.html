@@ -979,10 +979,13 @@ The action allows to move control points of a ConnectionWidget. There are built-
 <h3><a name="PanAction">PanAction</a></h3>
 
 <p>
-Created by: <code>ActionFactory.createPanAction ()</code>
+Created by: <code>ActionFactory.createPanAction ()</code>, <code>ActionFactory.createWheelPanAction ()</code>
 
 <p>
 The action allows to scroll the view using mouse movement while mouse-middle-button is pressed. It requires to have JComponent view placed into a JScrollPane. This action is usually assigned to a Scene only.
+
+<p>
+The <code>WheelPanAction</code> allows to scroll ascene view using mouse-wheel. Then no key modifier is pressed, then the view is scrolled vertically. If shift key is held, then the view is scrolled horizontally.
 
 <h3><a name="PopupMenuAction">PopupMenuAction</a></h3>
 

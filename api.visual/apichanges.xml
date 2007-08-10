@@ -476,6 +476,20 @@
             <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
             <issue number="105285"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>WheelPanAction introduced</summary>
+            <version major="2" minor="7"/>
+            <date day="10" month="8" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                WheelPanAction has been added to allow vertical and horizontal scrolling of a scene view using mouse wheel.
+            </description>
+            <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
+            <issue number="107774"/>
+        </change>
     </changes>
 
     <htmlcontents>
