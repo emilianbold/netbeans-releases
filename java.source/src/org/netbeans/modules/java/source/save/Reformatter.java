@@ -172,7 +172,7 @@ public class Reformatter implements ReformatTask {
             lastTree = path.getLeaf();
             path = path.getParentPath();
         }
-        if (lastTree != null) {
+        if (lastTree != null && path != null) {
             switch (path.getLeaf().getKind()) {
             case CLASS:
                 for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
