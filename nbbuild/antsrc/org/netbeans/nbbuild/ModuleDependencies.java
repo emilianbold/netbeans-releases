@@ -121,6 +121,10 @@ public class ModuleDependencies extends Task {
                     generatePublicPackages(o.file, false, true);                    
                     continue;
                 }
+                if ("kits".equals(o.type.getValue())) {
+                    generateKits(o.file);
+                    continue;
+                }
             }
         
         } catch (IOException ex) {
@@ -175,6 +179,13 @@ public class ModuleDependencies extends Task {
                     }
                     m = new ModuleInfo (input.name, f, codebasename);
                     m.majorVersion = majorVersion;
+                }
+
+                String showInAutoUpdate = file.getManifest().getMainAttributes().getValue("AutoUpdate-Show-In-Client");
+                if (showInAutoUpdate == null) {
+                    m.showInAutoupdate = true;
+                } else {
+                    m.showInAutoupdate = Boolean.parseBoolean(showInAutoUpdate);
                 }
 
                 m.publicPackages = file.getManifest ().getMainAttributes ().getValue ("OpenIDE-Module-Public-Packages");
@@ -406,6 +417,33 @@ public class ModuleDependencies extends Task {
         w.close ();
     }
     
+    private void generateKits(File output) throws BuildException, IOException {
+        PrintWriter w = new PrintWriter(new FileWriter(output));
+        for (ModuleInfo m : modules) {
+            if (regexp != null && !regexp.matcher(m.group).matches()) {
+                continue;
+            }
+            if (m.showInAutoupdate) {
+                w.print("KIT ");
+                w.print(m.getName());
+                w.println();
+                for (Dependency d : m.depends) {
+                    if (regexp != null && !regexp.matcher(m.group).matches()) {
+                        continue;
+                    }
+                    if (!d.isSpecial()) {
+                        ModuleInfo theModuleOneIsDependingOn = findModuleInfo(d, m);
+                        if (theModuleOneIsDependingOn.showInAutoupdate) {
+                            w.print("  REQUIRES " + theModuleOneIsDependingOn.getName());
+                            w.println();
+                        }
+                    }
+                }
+            }
+        }
+        w.close();
+    }
+
     private void generateSharedPackages (File output) throws BuildException, IOException {
         TreeMap<String,List<ModuleInfo>> packages = new TreeMap<String,List<ModuleInfo>>();
         
@@ -671,6 +709,7 @@ public class ModuleDependencies extends Task {
                 "group-implementation-dependencies",
                 "group-friend-packages",
                 "external-libraries",
+                "kits",
             };
         }
     }
@@ -686,6 +725,7 @@ public class ModuleDependencies extends Task {
         public String implementationVersion;
         public Set<Dependency> depends;
         public Set<Dependency> provides;
+        public boolean showInAutoupdate;
         
         public ModuleInfo (String g, File f, String a) {
             this.group = g;
