@@ -33,6 +33,7 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import lib.EditorTestCase;
 import code_folding.CodeFoldingTest;
+import junit.textui.TestRunner;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -457,5 +458,10 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         closeFileWithDiscard();
 
     }
+    
+      public static void main(String[] args) {
+          TestRunner.run(JavaFoldsTest.class);
+      }
+
     
 }

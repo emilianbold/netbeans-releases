@@ -5,6 +5,6 @@ public class testJavaSmartBracketAfterLBraceAndSpace {
     public void test() {
         if (true) {  
             
-        } 
+        }
     }
 }

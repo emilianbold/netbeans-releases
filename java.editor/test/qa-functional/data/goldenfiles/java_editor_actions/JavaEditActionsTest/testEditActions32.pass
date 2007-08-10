@@ -1,22 +1,22 @@
 package editor_actions.EditActionsTest;
 
 public class testEditActions {
-    
+
     /** test  mode */
-    public void testEditActions() {
+    public testEditActions() {
     }
-    
-    public String getString(){
+
+    public String getString() {
         return "Str insdxrtStringg";
     }
-    
+
     /**INSDXRTSTRiNG
      * 1
      * 2
      * 4
      * 5
      */
-    public static void ahoj(){
-        st
+    public static void ahoj() {
     }
 }
+

@@ -158,5 +158,8 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
         return fileLengthValueResolver;
     }
     
+    protected void resetCounter() {
+        index = 0;
+    }
     
 }

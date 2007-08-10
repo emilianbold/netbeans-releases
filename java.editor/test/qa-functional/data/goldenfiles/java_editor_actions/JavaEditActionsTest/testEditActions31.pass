@@ -6,9 +6,9 @@ public class testEditActions {
      public void testEditActions() {
     }
     
-     public String getString(){
-         return "Str insdxrtStringg";
-     }
+    public String getString() {
+        return "Str insdxrtStringg";
+    }
     
     /**INSDXRTSTRiNG
      * 1
@@ -17,6 +17,5 @@ public class testEditActions {
      * 5
      */
     public static void ahoj(){
-        st 
     }
 }

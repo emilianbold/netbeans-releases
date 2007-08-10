@@ -80,7 +80,8 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="gencode,all" name="Generate Code Tests" >
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/test/java/editor/codegeneration/CreateConstructor.class"/>		
+                <include name="org/netbeans/test/java/editor/codegeneration/CreateConstructor.class"/>
+                <include name="org/netbeans/test/java/editor/codegeneration/CreateGetterSetter.class"/>
             </patternset>
         </testset>
     </testbag>

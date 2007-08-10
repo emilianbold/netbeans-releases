@@ -58,7 +58,10 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
     protected static String foldToStringChildren(Fold fold, int indent) {
         indent += 4;
         StringBuffer sb = new StringBuffer();
-        sb.append(fold);
+        String foldTxt = fold.toString();        
+        foldTxt = foldTxt.replace("E1", "E0");
+        foldTxt = foldTxt.replace("C1", "C0");
+        sb.append(foldTxt);
         sb.append('\n');
         int foldCount = fold.getFoldCount();
         for (int i = 0; i < foldCount; i++) {
