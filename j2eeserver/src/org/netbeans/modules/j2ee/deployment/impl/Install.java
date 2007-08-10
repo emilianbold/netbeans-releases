@@ -24,10 +24,6 @@ import java.util.Iterator;
 
 
 /**
- *
- * Install.java
- *
- * Created on January 7, 2004, 7:34 AM
  * @author  nn136682
  */
 public class Install extends org.openide.modules.ModuleInstall {
@@ -36,7 +32,7 @@ public class Install extends org.openide.modules.ModuleInstall {
     public Install() {
     }
 
-    public void close() {
+    @Override public void close() {
         if (ServerRegistry.wasInitialized ()) {
             Collection instances = ServerRegistry.getInstance().getInstances();
             for (Iterator i=instances.iterator(); i.hasNext();) {
