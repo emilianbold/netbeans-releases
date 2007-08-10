@@ -32,8 +32,11 @@ import java.awt.*;
  */
 public final class AlignWithResizeStrategyProvider extends AlignWithSupport implements ResizeStrategy, ResizeProvider {
 
-    public AlignWithResizeStrategyProvider (AlignWithWidgetCollector collector, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
+    private boolean outerBounds;
+
+    public AlignWithResizeStrategyProvider (AlignWithWidgetCollector collector, LayerWidget interractionLayer, AlignWithMoveDecorator decorator, boolean outerBounds) {
         super (collector, interractionLayer, decorator);
+        this.outerBounds = outerBounds;
     }
 
     public Rectangle boundsSuggested (Widget widget, Rectangle originalBounds, Rectangle suggestedBounds, ControlPoint controlPoint) {
@@ -49,15 +52,29 @@ public final class AlignWithResizeStrategyProvider extends AlignWithSupport impl
         switch (controlPoint) {
             case BOTTOM_CENTER:
                 suggestedLocation = new Point (suggestedBounds.x + suggestedBounds.width / 2, suggestedBounds.y + suggestedBounds.height);
+                if (! outerBounds)
+                    suggestedLocation.y -= insets.bottom;
 
                 point = super.locationSuggested (widget, new Rectangle (suggestedLocation), suggestedLocation, false, true, false, false);
+
+                if (! outerBounds)
+                    point.y += insets.bottom;
 
                 suggestedBounds.height = Math.max (miny, point.y - suggestedBounds.y);
                 break;
             case BOTTOM_LEFT:
                 suggestedLocation = new Point (suggestedBounds.x, suggestedBounds.y + suggestedBounds.height);
+                if (! outerBounds) {
+                    suggestedLocation.y -= insets.bottom;
+                    suggestedLocation.x += insets.left;
+                }
 
                 point = super.locationSuggested (widget, new Rectangle (suggestedLocation), suggestedLocation, true, true, false, false);
+
+                if (! outerBounds) {
+                    point.y += insets.bottom;
+                    point.x -= insets.left;
+                }
 
                 suggestedBounds.height = Math.max (miny, point.y - suggestedBounds.y);
 
@@ -67,8 +84,17 @@ public final class AlignWithResizeStrategyProvider extends AlignWithSupport impl
                 break;
             case BOTTOM_RIGHT:
                 suggestedLocation = new Point (suggestedBounds.x + suggestedBounds.width, suggestedBounds.y + suggestedBounds.height);
+                if (! outerBounds) {
+                    suggestedLocation.y -= insets.bottom;
+                    suggestedLocation.x -= insets.right;
+                }
 
                 point = super.locationSuggested (widget, new Rectangle (suggestedLocation), suggestedLocation, true, true, false, false);
+
+                if (! outerBounds) {
+                    point.y += insets.bottom;
+                    point.x += insets.right;
+                }
 
                 suggestedBounds.height = Math.max (miny, point.y - suggestedBounds.y);
 
@@ -76,24 +102,39 @@ public final class AlignWithResizeStrategyProvider extends AlignWithSupport impl
                 break;
             case CENTER_LEFT:
                 suggestedLocation = new Point (suggestedBounds.x, suggestedBounds.y + suggestedBounds.height / 2);
+                if (! outerBounds)
+                    suggestedLocation.x += insets.left;
 
                 point = super.locationSuggested (widget, new Rectangle (suggestedLocation), suggestedLocation, true, false, false, false);
 
+                if (! outerBounds)
+                    point.x -= insets.left;
+                
                 tempx = Math.min (point.x, suggestedBounds.x + suggestedBounds.width - minx);
                 suggestedBounds.width = suggestedBounds.x + suggestedBounds.width - tempx;
                 suggestedBounds.x = tempx;
                 break;
             case CENTER_RIGHT:
                 suggestedLocation = new Point (suggestedBounds.x + suggestedBounds.width, suggestedBounds.y + suggestedBounds.height / 2);
+                if (! outerBounds)
+                    suggestedLocation.x -= insets.right;
 
                 point = super.locationSuggested (widget, new Rectangle (suggestedLocation), suggestedLocation, true, false, false, false);
 
+                if (! outerBounds)
+                    point.x += insets.right;
+                
                 suggestedBounds.width = Math.max (minx, point.x - suggestedBounds.x);
                 break;
             case TOP_CENTER:
                 suggestedLocation = new Point (suggestedBounds.x + suggestedBounds.width / 2, suggestedBounds.y);
+                if (! outerBounds)
+                    suggestedLocation.y += insets.top;
 
                 point = super.locationSuggested (widget, new Rectangle (suggestedLocation), suggestedLocation, false, true, false, false);
+
+                if (! outerBounds)
+                    point.y -= insets.top;
 
                 tempy = Math.min (point.y, suggestedBounds.y + suggestedBounds.height - miny);
                 suggestedBounds.height = suggestedBounds.y + suggestedBounds.height - tempy;
@@ -101,8 +142,17 @@ public final class AlignWithResizeStrategyProvider extends AlignWithSupport impl
                 break;
             case TOP_LEFT:
                 suggestedLocation = new Point (suggestedBounds.x, suggestedBounds.y);
+                if (! outerBounds) {
+                    suggestedLocation.y += insets.top;
+                    suggestedLocation.x += insets.left;
+                }
 
                 point = super.locationSuggested (widget, new Rectangle (suggestedLocation), suggestedLocation, true, true, false, false);
+
+                if (! outerBounds) {
+                    point.y -= insets.top;
+                    point.x -= insets.left;
+                }
 
                 tempy = Math.min (point.y, suggestedBounds.y + suggestedBounds.height - miny);
                 suggestedBounds.height = suggestedBounds.y + suggestedBounds.height - tempy;
@@ -114,8 +164,17 @@ public final class AlignWithResizeStrategyProvider extends AlignWithSupport impl
                 break;
             case TOP_RIGHT:
                 suggestedLocation = new Point (suggestedBounds.x + suggestedBounds.width, suggestedBounds.y);
+                if (! outerBounds) {
+                    suggestedLocation.y += insets.top;
+                    suggestedLocation.x -= insets.right;
+                }
 
                 point = super.locationSuggested (widget, new Rectangle (suggestedLocation), suggestedLocation, true, true, false, false);
+
+                if (! outerBounds) {
+                    point.y -= insets.top;
+                    point.x += insets.right;
+                }
 
                 tempy = Math.min (point.y, suggestedBounds.y + suggestedBounds.height - miny);
                 suggestedBounds.height = suggestedBounds.y + suggestedBounds.height - tempy;

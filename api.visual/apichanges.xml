@@ -461,6 +461,21 @@
             <class package="org.netbeans.api.visual.widget" name="Widget" link="yes"/>
             <issue number="104474"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>Added support to checking AlignWith-actions with client areas</summary>
+            <version major="2" minor="7"/>
+            <date day="10" month="8" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                AlignWithMoveAction and AlignWithResizeAction allow checking client area of widget (widget boundary without border insets).
+                There are 4 new methods in ActionFactory class introduces to allow specifying outerBounds parameter.
+            </description>
+            <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
+            <issue number="105285"/>
+        </change>
     </changes>
 
     <htmlcontents>

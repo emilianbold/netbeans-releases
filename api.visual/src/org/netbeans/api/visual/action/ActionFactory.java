@@ -191,8 +191,22 @@ public final class ActionFactory {
      * @return the align-with move action
      */
     public static WidgetAction createAlignWithMoveAction (LayerWidget collectionLayer, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
+        return createAlignWithMoveAction (collectionLayer, interractionLayer, decorator, true);
+    }
+
+    /**
+     * Creates a align-with move action.
+     * @param collectionLayer the layer with objects that the alignment is checked against.
+     * @param interractionLayer the interraction layer where the align-with hint lines are placed
+     * @param decorator the align-with move decorator
+     * @param outerBounds if true, then the align-with is check against whole bounds of widgets in collection layer;
+     *      if false, then the align-with is check against client area (widget bounds without border insets
+     * @return the align-with move action
+     * @since 2.7
+     */
+    public static WidgetAction createAlignWithMoveAction (LayerWidget collectionLayer, LayerWidget interractionLayer, AlignWithMoveDecorator decorator, boolean outerBounds) {
         assert collectionLayer != null;
-        return createAlignWithMoveAction (new SingleLayerAlignWithWidgetCollector (collectionLayer), interractionLayer, decorator != null ? decorator : ALIGN_WITH_MOVE_DECORATOR_DEFAULT);
+        return createAlignWithMoveAction (new SingleLayerAlignWithWidgetCollector (collectionLayer, outerBounds), interractionLayer, decorator != null ? decorator : ALIGN_WITH_MOVE_DECORATOR_DEFAULT, outerBounds);
     }
 
     /**
@@ -203,8 +217,22 @@ public final class ActionFactory {
      * @return the align-with move action
      */
     public static WidgetAction createAlignWithMoveAction (AlignWithWidgetCollector collector, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
+        return createAlignWithMoveAction (collector, interractionLayer, decorator, true);
+    }
+
+    /**
+     * Creates a align-with move action.
+     * @param collector the collector of objects that the alignment is checked against.
+     * @param interractionLayer the interraction layer where the align-with hint lines are placed
+     * @param decorator the align-with move decorator
+     * @param outerBounds if true, then the align-with is check against whole bounds of widgets in collection layer;
+     *      if false, then the align-with is check against client area (widget bounds without border insets
+     * @return the align-with move action
+     * @since 2.7
+     */
+    public static WidgetAction createAlignWithMoveAction (AlignWithWidgetCollector collector, LayerWidget interractionLayer, AlignWithMoveDecorator decorator, boolean outerBounds) {
         assert collector != null  &&  interractionLayer != null  &&  decorator != null;
-        AlignWithMoveStrategyProvider sp = new AlignWithMoveStrategyProvider (collector, interractionLayer, decorator);
+        AlignWithMoveStrategyProvider sp = new AlignWithMoveStrategyProvider (collector, interractionLayer, decorator, outerBounds);
         return createMoveAction (sp, sp);
     }
 
@@ -216,8 +244,22 @@ public final class ActionFactory {
      * @return the align-with resize action
      */
     public static WidgetAction createAlignWithResizeAction (LayerWidget collectionLayer, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
+        return createAlignWithResizeAction (collectionLayer, interractionLayer, decorator, true);
+    }
+
+    /**
+     * Creates a align-with resize action.
+     * @param collectionLayer the layer with objects that the alignment is checked against.
+     * @param interractionLayer the interraction layer where the align-with hint lines are placed
+     * @param decorator the align-with move decorator
+     * @param outerBounds if true, then the align-with is check against whole bounds of widgets in collection layer;
+     *      if false, then the align-with is check against client area (widget bounds without border insets
+     * @return the align-with resize action
+     * @since 2.7
+     */
+    public static WidgetAction createAlignWithResizeAction (LayerWidget collectionLayer, LayerWidget interractionLayer, AlignWithMoveDecorator decorator, boolean outerBounds) {
         assert collectionLayer != null;
-        return createAlignWithResizeAction (new SingleLayerAlignWithWidgetCollector (collectionLayer), interractionLayer, decorator != null ? decorator : ALIGN_WITH_MOVE_DECORATOR_DEFAULT);
+        return createAlignWithResizeAction (new SingleLayerAlignWithWidgetCollector (collectionLayer, outerBounds), interractionLayer, decorator != null ? decorator : ALIGN_WITH_MOVE_DECORATOR_DEFAULT, outerBounds);
     }
 
     /**
@@ -228,8 +270,22 @@ public final class ActionFactory {
      * @return the align-with resize action
      */
     public static WidgetAction createAlignWithResizeAction (AlignWithWidgetCollector collector, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
+        return createAlignWithResizeAction (collector, interractionLayer, decorator, true);
+    }
+
+    /**
+     * Creates a align-with resize action.
+     * @param collector the collector of objects that the alignment is checked against.
+     * @param interractionLayer the interraction layer where the align-with hint lines are placed
+     * @param decorator the align-with move decorator
+     * @param outerBounds if true, then the align-with is check against whole bounds of widgets in collection layer;
+     *      if false, then the align-with is check against client area (widget bounds without border insets
+     * @return the align-with resize action
+     * @since 2.7
+     */
+    public static WidgetAction createAlignWithResizeAction (AlignWithWidgetCollector collector, LayerWidget interractionLayer, AlignWithMoveDecorator decorator, boolean outerBounds) {
         assert collector != null && interractionLayer != null && decorator != null;
-        AlignWithResizeStrategyProvider sp = new AlignWithResizeStrategyProvider (collector, interractionLayer, decorator);
+        AlignWithResizeStrategyProvider sp = new AlignWithResizeStrategyProvider (collector, interractionLayer, decorator, outerBounds);
         return createResizeAction (sp, sp);
     }
 

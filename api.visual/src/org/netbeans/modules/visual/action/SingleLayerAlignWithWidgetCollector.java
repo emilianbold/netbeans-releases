@@ -31,9 +31,11 @@ import java.util.ArrayList;
 public final class SingleLayerAlignWithWidgetCollector implements AlignWithWidgetCollector {
 
     private LayerWidget collectionLayer;
+    private boolean outerBounds;
 
-    public SingleLayerAlignWithWidgetCollector (LayerWidget collectionLayer) {
+    public SingleLayerAlignWithWidgetCollector (LayerWidget collectionLayer, boolean outerBounds) {
         this.collectionLayer = collectionLayer;
+        this.outerBounds = outerBounds;
     }
 
     public java.util.List<Rectangle> getRegions (Widget movingWidget) {
@@ -41,7 +43,7 @@ public final class SingleLayerAlignWithWidgetCollector implements AlignWithWidge
         ArrayList<Rectangle> regions = new ArrayList<Rectangle> (children.size ());
         for (Widget widget : children)
             if (widget != movingWidget)
-                regions.add (widget.convertLocalToScene (widget.getBounds ()));
+                regions.add (widget.convertLocalToScene (outerBounds ? widget.getBounds () : widget.getClientArea ()));
         return regions;
     }
 

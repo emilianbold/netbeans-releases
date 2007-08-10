@@ -29,16 +29,28 @@ import java.awt.*;
  */
 public final class AlignWithMoveStrategyProvider extends AlignWithSupport implements MoveStrategy, MoveProvider {
 
-    public AlignWithMoveStrategyProvider (AlignWithWidgetCollector collector, LayerWidget interractionLayer, AlignWithMoveDecorator decorator) {
+    private boolean outerBounds;
+
+    public AlignWithMoveStrategyProvider (AlignWithWidgetCollector collector, LayerWidget interractionLayer, AlignWithMoveDecorator decorator, boolean outerBounds) {
         super (collector, interractionLayer, decorator);
+        this.outerBounds = outerBounds;
     }
 
     public Point locationSuggested (Widget widget, Point originalLocation, Point suggestedLocation) {
         Point widgetLocation = widget.getLocation ();
-        Rectangle widgetBounds = widget.getBounds ();
+        Rectangle widgetBounds = outerBounds ? widget.getBounds () : widget.getClientArea ();
         Rectangle bounds = widget.convertLocalToScene (widgetBounds);
         bounds.translate (suggestedLocation.x - widgetLocation.x, suggestedLocation.y - widgetLocation.y);
+        Insets insets = widget.getBorder ().getInsets ();
+        if (! outerBounds) {
+            suggestedLocation.x += insets.left;
+            suggestedLocation.y += insets.top;
+        }
         Point point = super.locationSuggested (widget, bounds, suggestedLocation, true, true, true, true);
+        if (! outerBounds) {
+            point.x -= insets.left;
+            point.y -= insets.top;
+        }
         return widget.getParentWidget ().convertSceneToLocal (point);
     }
 
