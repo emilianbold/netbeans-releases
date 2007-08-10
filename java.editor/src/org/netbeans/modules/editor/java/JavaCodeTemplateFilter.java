@@ -20,23 +20,20 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.Tree;
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
-import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,12 +53,9 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter, Task<Compilat
         JavaSource js = JavaSource.forDocument(component.getDocument());
         if (js != null) {
             try {
-                if (SourceUtils.isScanInProgress()) {
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
-                    Toolkit.getDefaultToolkit().beep();
-                } else {
-                    js.runUserActionTask(this, true);
-                }
+                Future<Void> f = js.runWhenScanFinished(this, true);
+                if (!f.isDone())
+                    f.cancel(true);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
