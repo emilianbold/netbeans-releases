@@ -20,6 +20,7 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
 import org.netbeans.modules.sun.manager.jbi.util.MyMBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.util.DoNotShowAgainMessage;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.PropertySupport;
@@ -32,6 +33,11 @@ import org.openide.util.NbBundle;
  */
 class SchemaBasedConfigPropertySupport<T> 
         extends PropertySupport.ReadWrite<T> {
+    
+    // These are not persistent across sessions.
+    private static boolean promptForApplicationRestart = true;
+    private static boolean promptForComponentRestart = true;
+    private static boolean promptForServerRestart = true;
 
     private Attribute attr;
     private MBeanAttributeInfo info;
@@ -65,16 +71,30 @@ class SchemaBasedConfigPropertySupport<T>
                     
                     MyMBeanAttributeInfo myInfo = (MyMBeanAttributeInfo)info;
                     
-                    if (myInfo.isApplicationRestartRequired()) {
-                        promptForRestart("MSG_NEEDS_APPLICATION_RESTART");
+                    DoNotShowAgainMessage d;
+                            
+                    if (myInfo.isApplicationRestartRequired() && 
+                            promptForApplicationRestart) {
+                        d = promptForRestart("MSG_NEEDS_APPLICATION_RESTART");
+                        if (d.getDoNotShowAgain()) {
+                            promptForApplicationRestart = false;
+                        }
                     }
 
-                    if (myInfo.isComponentRestartRequired()) {
-                        promptForRestart("MSG_NEEDS_COMPONENT_RESTART");
+                    if (myInfo.isComponentRestartRequired() &&
+                            promptForComponentRestart) {
+                        d = promptForRestart("MSG_NEEDS_COMPONENT_RESTART");
+                        if (d.getDoNotShowAgain()) {
+                            promptForComponentRestart = false;
+                        }
                     }
 
-                    if (myInfo.isServerRestartRequired()) {
-                        promptForRestart("MSG_NEEDS_SERVER_RESTART");
+                    if (myInfo.isServerRestartRequired() &&
+                            promptForServerRestart) {
+                        d = promptForRestart("MSG_NEEDS_SERVER_RESTART");
+                        if (d.getDoNotShowAgain()) {
+                            promptForServerRestart = false;
+                        }
                     }
                 }
             }
@@ -92,10 +112,11 @@ class SchemaBasedConfigPropertySupport<T>
         return true;
     }
     
-    private void promptForRestart(String msgBundleName) {
-        NotifyDescriptor d = new NotifyDescriptor.Message(
+    private DoNotShowAgainMessage promptForRestart(String msgBundleName) {
+        DoNotShowAgainMessage d = new DoNotShowAgainMessage(
                 NbBundle.getMessage(getClass(), msgBundleName),
-                NotifyDescriptor.INFORMATION_MESSAGE);
+                NotifyDescriptor.INFORMATION_MESSAGE);        
         DialogDisplayer.getDefault().notify(d);
+        return d;
     }
 }
