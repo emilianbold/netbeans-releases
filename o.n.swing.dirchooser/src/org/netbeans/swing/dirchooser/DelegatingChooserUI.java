@@ -75,7 +75,7 @@ public class DelegatingChooserUI extends ComponentUI {
         if (fc.getFileSelectionMode() == JFileChooser.DIRECTORIES_ONLY) {
             return DirectoryChooserUI.class;
         }
-        return Install.getOrigChooser();
+        return Module.getOrigChooser();
     }
 
 }

@@ -21,6 +21,11 @@
 
 package org.netbeans.swing.dirchooser;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.plaf.FileChooserUI;
 import org.openide.modules.ModuleInstall;
 
 /**
@@ -30,14 +35,78 @@ import org.openide.modules.ModuleInstall;
  */
 public class Module extends ModuleInstall {
     
-    public void restored() {
-        super.restored();
-        Install.install();
+    private static final String KEY = "FileChooserUI"; // NOI18N
+    private static Class<? extends FileChooserUI> originalImpl;
+    private static PropertyChangeListener pcl;
+    
+    private static final String QUICK_CHOOSER_NAME = 
+            "org.netbeans.modules.quickfilechooser.ChooserComponentUI";
+    
+    private static final String FORCE_STANDARD_CHOOSER = "standard-file-chooser"; // NOI18N
+
+    @Override public void restored() {
+        install();
     }
 
-    public void uninstalled() {
-        super.uninstalled();
-        Install.uninstall();
+    @Override public void uninstalled() {
+        uninstall();
+    }
+        
+    public static void install() {
+        // don't install directory chooser if standard chooser is desired
+        if (isStandardChooserForced()) {
+            return;
+        }
+        final UIDefaults uid = UIManager.getDefaults();
+        originalImpl = (Class<? extends FileChooserUI>) uid.getUIClass(KEY);
+        Class impl = DelegatingChooserUI.class;
+        final String val = impl.getName();
+        // don't install dirchooser if quickfilechooser is present
+        if (!isQuickFileChooser(uid.get(KEY))) {
+            uid.put(KEY, val);
+            // To make it work in NetBeans too:
+            uid.put(val, impl);
+        }
+        // #61147: prevent NB from switching to a different UI later (under GTK):
+        uid.addPropertyChangeListener(pcl = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                String name = evt.getPropertyName();
+                Object className = uid.get(KEY);
+                if ((name.equals(KEY) || name.equals("UIDefaults")) && !val.equals(className)
+                        && !isQuickFileChooser(className)) {
+                    uid.put(KEY, val);
+                }
+            }
+        });
+    }
+    
+    public static void uninstall() {
+        if (isInstalled()) {
+            assert pcl != null;
+            UIDefaults uid = UIManager.getDefaults();
+            uid.removePropertyChangeListener(pcl);
+            pcl = null;
+            String val = originalImpl.getName();
+            uid.put(KEY, val);
+            uid.put(val, originalImpl);
+            originalImpl = null;
+        }
+    }
+    
+    public static boolean isInstalled() {
+        return originalImpl != null;
+    }
+    
+    static Class<? extends FileChooserUI> getOrigChooser () {
+        return originalImpl;
+    }
+    
+    private static boolean isQuickFileChooser (Object className) {
+        return QUICK_CHOOSER_NAME.equals(className);
+    }
+    
+    private static boolean isStandardChooserForced () {
+        return Boolean.getBoolean(FORCE_STANDARD_CHOOSER);
     }
     
 }
