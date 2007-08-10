@@ -21,6 +21,8 @@ package org.netbeans.modules.java.hints.errors;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.ThrowTree;
@@ -106,18 +108,32 @@ public final class UncaughtException implements ErrorRule<Void> {
         return Collections.singleton("compiler.err.unreported.exception.need.to.catch.or.throw");
     }
     
+    @SuppressWarnings("fallthrough")
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         List<Fix> result = new ArrayList<Fix>();
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
         List<? extends TypeMirror> uncauched = null;
+        boolean disableSurroundWithTryCatch = false;
         Element el;
         
         OUTTER: while (path != null) {
             Tree leaf = path.getLeaf();
             
             switch (leaf.getKind()) {
-                case NEW_CLASS:
                 case METHOD_INVOCATION:
+                    //check for super/this constructor call (and disable surround with try-catch):
+                    MethodInvocationTree mit = (MethodInvocationTree) leaf;
+                    
+                    if (mit.getMethodSelect().getKind() == Kind.IDENTIFIER) {
+                        String ident = ((IdentifierTree) mit.getMethodSelect()).getName().toString();
+                        
+                        if ("super".equals(ident) || "this".equals(ident)) {
+                            Element element = info.getTrees().getElement(path);
+                            
+                            disableSurroundWithTryCatch = element != null && element.getKind() == ElementKind.CONSTRUCTOR;
+                        }
+                    }
+                case NEW_CLASS:
                     el = info.getTrees().getElement(path);
                     if (el != null && EXECUTABLE_ELEMENTS.contains(el.getKind())) {
                         uncauched = ((ExecutableElement) el).getThrownTypes();
@@ -151,7 +167,7 @@ public final class UncaughtException implements ErrorRule<Void> {
                 }
             }
             
-            if (!uncauched.isEmpty()) {
+            if (!uncauched.isEmpty() && !disableSurroundWithTryCatch) {
                 List<TypeMirrorHandle> thandles = new ArrayList<TypeMirrorHandle>();
                 
                 for (TypeMirror tm : uncauched) {

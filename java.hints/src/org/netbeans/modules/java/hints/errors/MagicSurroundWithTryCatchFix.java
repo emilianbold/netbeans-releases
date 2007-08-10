@@ -25,18 +25,21 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
@@ -127,7 +130,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                     
                     if (catchTree.getLeaf().getKind() == Kind.TRY) {
                         //only add catches for uncatched exceptions:
-                        new TransformerImpl(wc, thandles, streamAlike, statement).scan(catchTree.getLeaf(), null);
+                        new TransformerImpl(wc, thandles, streamAlike, statement).scan(catchTree, null);
                     } else {
                         //find block containing this statement, if exists:
                         TreePath blockTree = currentPath;
@@ -136,7 +139,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                                 && blockTree.getLeaf().getKind() != Kind.BLOCK)
                             blockTree = blockTree.getParentPath();
                         
-                        new TransformerImpl(wc, thandles, streamAlike, statement).scan(blockTree.getLeaf(), null);
+                        new TransformerImpl(wc, thandles, streamAlike, statement).scan(blockTree, null);
                     }
                 }
                 }).commit();
@@ -146,7 +149,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         return null;
     }
     
-    private final class TransformerImpl extends TreeScanner<Void, Void> {
+    private final class TransformerImpl extends TreePathScanner<Void, Void> {
         
         private WorkingCopy info;
         private List<TypeMirrorHandle> thandles;
@@ -297,11 +300,39 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             return tryStatement;
         }
         
+        private BlockTree createBlock(StatementTree... trees) {
+            List<StatementTree> statements = new LinkedList<StatementTree>();
+            
+            for (StatementTree t : trees) {
+                if (t != null) {
+                    statements.add(t);
+                }
+            }
+            
+            return make.Block(statements, false);
+        }
+        
         public @Override Void visitBlock(BlockTree bt, Void p) {
             List<CatchTree> catches = createCatches();
             
+            //#89379: if inside a constructor, do not wrap the "super"/"this" call:
+            //please note that the "super" or "this" call is supposed to be always
+            //in the constructor body
+            BlockTree toUse = bt;
+            StatementTree toKeep = null;
+            Tree parent = getCurrentPath().getParentPath().getLeaf();
+            
+            if (parent.getKind() == Kind.METHOD && bt.getStatements().size() > 0) {
+                MethodTree mt = (MethodTree) parent;
+                
+                if (mt.getReturnType() == null) {
+                    toKeep = bt.getStatements().get(0);
+                    toUse = make.Block(bt.getStatements().subList(1, bt.getStatements().size()), false);
+                }
+            }
+            
             if (!streamAlike) {
-                info.rewrite(bt, make.Block(Collections.singletonList(make.Try(bt, catches, null)), false));
+                info.rewrite(bt, createBlock(toKeep, make.Try(toUse, catches, null)));
             } else {
                 VariableTree originalDeclaration = (VariableTree) statement.getLeaf();
                 VariableTree declaration = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), originalDeclaration.getName(), originalDeclaration.getType(), make.Identifier("null"));
@@ -309,7 +340,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
                 BlockTree finallyTree = make.Block(Collections.singletonList(createFinallyCloseBlockStatement(originalDeclaration.getName())), false);
                 
                 info.rewrite(originalDeclaration, assignment);
-                info.rewrite(bt, make.Block(Arrays.asList(declaration, make.Try(bt, catches, finallyTree)), false));
+                info.rewrite(bt, createBlock(toKeep, declaration, make.Try(toUse, catches, finallyTree)));
             }
             
             return null;
