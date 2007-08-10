@@ -471,6 +471,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             }
 
             RubyElementCtx ctx = new RubyElementCtx(cc, caret);
+            if (ctx.getSimpleName() == null) {
+                return;
+            }
             ui = createRefactoringUI(ctx, start, end, cc);
         }
         
@@ -487,7 +490,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
             if (ui!=null) {
                 UI.openRefactoringUI(ui, activetc);
             } else {
-                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameKeyword"));
+                JOptionPane.showMessageDialog(null,NbBundle.getMessage(RefactoringActionsProvider.class, "ERR_CannotRenameLoc"));
             }
         }
         
