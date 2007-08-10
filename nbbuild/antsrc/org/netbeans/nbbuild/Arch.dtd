@@ -24,7 +24,7 @@ Describes format of NetBeans Architecture Answers file
 
 <!ENTITY % xhtml PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <!--
-<!ENTITY % xhtml PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "../../../../../libs/external/dtds/xhtml1-20020801/DTD/xhtml1-strict.dtd">
+<!ENTITY % xhtml PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "../../../../external/xhtml1-dtds/xhtml1-strict.dtd">
 <!ENTITY % xhtml PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "Arch-fake-xhtml.dtd">
 -->
 

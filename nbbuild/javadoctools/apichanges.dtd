@@ -35,7 +35,7 @@ Describes format of NetBeans API changes list.
 | details-by-api
 ">
 
-<!ENTITY % xhtml PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "../../libs/external/dtds/xhtml1-20020801/DTD/xhtml1-strict.dtd">
+<!ENTITY % xhtml PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "../external/xhtml1-dtds/xhtml1-strict.dtd">
 <!-- Override special to include date tags: -->
 <!ENTITY % special "br | span | bdo | object | img | map | date">
 <!-- Override lists to include change lists formatted in various ways: -->

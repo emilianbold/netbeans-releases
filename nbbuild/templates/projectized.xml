@@ -162,15 +162,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <echo level="error" message="Cannot build javadoc for module ${basedir} as it requires JDK 1.6"/>
     </target>
 
-    <target name="-check-for-xhtml-dtd">
-        <available property="have.xhtml.dtd" file="${nb_all}/libs/external/dtds/xhtml1-20020801/DTD/xhtml1-strict.dtd"/>
-    </target>
-    <target name="-prepare-xhtml-dtd" unless="have.xhtml.dtd" depends="-check-for-xhtml-dtd">
-        <echo>Unpacking XHTML DTD...</echo>
-        <ant dir="${nb_all}/libs/external" target="unzip"/>
-    </target>
-
-    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn,-prepare-xhtml-dtd" unless="skip.javadoc">
+    <target name="javadoc" depends="build-init,-javadoc-init,-conditional-javadoc-warn" unless="skip.javadoc">
         <property name="javadoc.check.failonerror" value="false" />
         <!-- This should become an import at some point, perhaps: -->
         <ant dir="${nb_all}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
