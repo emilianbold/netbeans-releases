@@ -490,6 +490,21 @@
             <class package="org.netbeans.api.visual.action" name="ActionFactory" link="yes"/>
             <issue number="107774"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>Bird view support added</summary>
+            <version major="2" minor="7"/>
+            <date day="10" month="8" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                Bird view is a window that is always under your mouse-cursor and shows the scene with a specified zoom factor.
+                A bird view can be created using Scene.createBirdView method. To enable bird view you need to call the BirdViewController.show method on returned controller instance.
+            </description>
+            <class package="org.netbeans.api.visual.widget" name="Scene" link="yes"/>
+            <issue number="108510"/>
+        </change>
     </changes>
 
     <htmlcontents>

@@ -512,6 +512,9 @@ This widget represents a root node of the tree hierarchy of widgets. It controls
 <td>createSatelliteView
 <td>Creates a satellite view of the scene. It is showing an overview of the scene. In case the JComponent view is placed in a JScrollPane and the scene does not fit into the panel, then the satellite view paints an viewport rectangle which representing visible area. It also allows user to move with the actual viewport of the scene.
 <tr>
+<td>createBirdView
+<td>Creates a bird view of the scene. It is enough to create one bird view and reuse it all the time. The bird view is tracking mouse cursor and when the cursor is over visible area of the scene view, then an additional always-on-top window is shown and shows pointed part of the scene with specified zoom factor. The method returns <code>BirdViewController</code> which allows control over the bird view. When the bird view is enabled, then it consumes all events of the scene view.
+<tr>
 <td>getGraphics
 <td>Returns an instance of <code>Graphics2D</code> used by whole scene. The instance is the one that was available during the last JComponent.addNotify or JComponent.paint method call on the JComponent view.
 <tr>

@@ -22,8 +22,8 @@ import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.TwoStateHoverProvider;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.animator.SceneAnimator;
-import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.laf.InputBindings;
+import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.modules.visual.util.GeomUtil;
 import org.netbeans.modules.visual.widget.SatelliteComponent;
 
@@ -126,12 +126,21 @@ public class Scene extends Widget {
         return component;
     }
 
-    /**
+        /**
      * Creates a satellite view.
      * @return the satellite view
      */
     public JComponent createSatelliteView () {
         return new SatelliteComponent (this);
+    }
+
+    /**
+     * Creates a bird view with specific zoom factor.
+     * @return the bird view controller
+     * @since 2.7
+     */
+    public BirdViewController createBirdView () {
+        return new BirdViewController (this);
     }
 
     void setViewShowing (boolean viewShowing) {
