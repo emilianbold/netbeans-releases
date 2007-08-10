@@ -83,6 +83,9 @@ public final class GenCodeUtil
 
     }
     
+
+    
+
     
     public static String assembleMultiDimDataType(
         String coreTypeName, 
@@ -100,7 +103,7 @@ public final class GenCodeUtil
 	
 	if (isPrimitive 
 	    && collectionTypes[(int)dimCount - 1] != null
-	    && ! collectionTypes[(int)dimCount - 1].equals(""))
+	    && ! collectionTypes[(int)dimCount - 1].equals(IMultiplicityRange.AS_ARRAY))
 	{
 	    String type = JavaClassUtils.getPrimitiveWrapperType(coreTypeName);
 	    if (fullyQualified) 
@@ -117,7 +120,7 @@ public final class GenCodeUtil
 	for (int i = 0; i < dimCount; i++)
         {
 	    String colType = collectionTypes[i];
-	    if (((colType != null) && ( ! colType.trim().equals(""))) 
+	    if (((colType != null) && ( ! colType.trim().equals(IMultiplicityRange.AS_ARRAY))) 
 		&& ((i != dimCount - 1) || ( ! isPrimitive)))
 	    {
 		leftPart += colType;
@@ -347,14 +350,14 @@ public final class GenCodeUtil
 	    int dimCount = (int)mult.getRangeCount();
 	    if (isPrimitive 
 		&& collectionTypes[(int)dimCount - 1] != null
-		&& ! collectionTypes[(int)dimCount - 1].equals(""))
+		&& ! collectionTypes[(int)dimCount - 1].equals(IMultiplicityRange.AS_ARRAY))
 	    {		
 		isPrimitive = false;
 	    }	    
 	    for (int i = 0; i < dimCount; i++)
 	    {
 		String colType = collectionTypes[i];
-		if (((colType != null) && ( ! colType.trim().equals(""))) 
+		if (((colType != null) && ( ! colType.trim().equals(IMultiplicityRange.AS_ARRAY))) 
 		    && ((i != dimCount - 1) || ( ! isPrimitive)))
 		{
 		    res.add(new String[]{JavaClassUtils.getPackageName(colType), 
@@ -474,8 +477,10 @@ public final class GenCodeUtil
 	    if (iter.hasNext()) {	
 		IMultiplicityRange range = iter.next();
 		if (range != null) {
-		    type = range.getCollectionType(false);
-		    type = JavaClassUtils.convertUMLtoJava(type);
+		    type = range.getCollectionTypeValue(true);
+		    if (! IMultiplicityRange.AS_ARRAY.equals(type)) {
+			type = JavaClassUtils.convertUMLtoJava(type);
+		    }
 		}	        
 	    }
 	    // as there is always a value set at the attribute/parameter level
@@ -484,7 +489,7 @@ public final class GenCodeUtil
 	    //if (type == null || type.trim().equals("") ) {
 	    //	type = UMLSupport.getUMLSupport().getCollectionOverride();		
 	    //}
-	    if (! fullyQualified) {
+	    if (! fullyQualified && ! IMultiplicityRange.AS_ARRAY.equals(type)) {
 		type = JavaClassUtils.getShortClassName(type);
 	    }
 	    res[i] = type;

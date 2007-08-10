@@ -34,7 +34,12 @@ import org.netbeans.modules.uml.common.generics.ETPairT;
 
 public interface IMultiplicityRange extends IElement
 {
-    
+
+    /**
+     * prop value when collection type is set to "As Array"
+     */
+    public static  final String AS_ARRAY = "[]";
+
     /**
      * Gets the lower bound for this range.
      * @return The lower range
@@ -111,11 +116,25 @@ public interface IMultiplicityRange extends IElement
      * an array.  The collectionType property allows a collection type to be
      * specified.
      * 
-     * @param asArray If true "As Array" will be returned when no collection is 
-     *                specified.  If false, an empty string will be returned.
-     * @return The type of collection to use.
+     * @param useDefault If true default collection type (or as array) 
+     *                   will be returned when no collection is 
+     *                   specified.  If false, an empty string will be returned.
+     * @return The type of collection to use. Localized for "synthetic" values
+     *         like "As Array"
      */
-    public String getCollectionType(boolean asArray);
+    public String getCollectionType(boolean useDefault);
+    
+    /**
+     * Sometimes a user will want the code to be generated as collection not
+     * an array.  The collectionType property allows a collection type to be
+     * specified.
+     * 
+     * @param useDefault If true default collection type (or array) 
+     *                   will be returned when no collection is 
+     *                   specified.  If false, an empty string will be returned.
+     * @return The type of collection to use. Non-localized.
+     */
+    public String getCollectionTypeValue(boolean useDefault);
     
     /**
      * Sets the collection type to use when generating code.  An empty string 

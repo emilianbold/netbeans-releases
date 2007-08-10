@@ -29,6 +29,7 @@ import org.dom4j.Node;
 
 import org.netbeans.modules.uml.core.reverseengineering.parsingfacilities.Identifier;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ITokenDescriptor;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IMultiplicityRange;
 
 /**
  * @author Aztec
@@ -225,6 +226,7 @@ public class ArrayDeclaratorStateHandler extends StateHandler
                         {
                             setNodeAttribute(dataNode, "lower", "0");
                             setNodeAttribute(dataNode, "upper", "*");
+                            setNodeAttribute(dataNode, "collectionType", IMultiplicityRange.AS_ARRAY);
                         }
                     }
                 }

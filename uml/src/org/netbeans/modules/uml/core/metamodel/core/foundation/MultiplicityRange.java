@@ -382,12 +382,11 @@ public class MultiplicityRange extends Element implements IMultiplicityRange
      * an array.  The collectionType property allows a collection type to be
      * specified.
      * 
-     * @return The type of collection to use. If no collection type is specified
-     *         "As Array" (or the localized form) wil be returned.
+     * @return The type of collection to use. 
      */
     public String getCollectionType()
     {
-        return getCollectionType(true);
+        return getCollectionType(false);
     }
     
     /**
@@ -395,11 +394,21 @@ public class MultiplicityRange extends Element implements IMultiplicityRange
      * an array.  The collectionType property allows a collection type to be
      * specified.
      *
-     * @param asArray If true "As Array" will be returned when no collection is
-     *                specified.  If false, an empty string will be returned.
-     * @return The type of collection to use.
+     * @return The type of collection to use. Localized for "synthetic" values
+     *         like "As Array"
      */
-    public String getCollectionType(boolean asArray)
+    public String getCollectionType(boolean useDefault)
+    {
+        String retVal = getCollectionTypeValue(useDefault);
+
+        if(retVal != null && retVal.equals(AS_ARRAY)) 
+	{
+	    retVal = NbBundle.getMessage(MultiplicityRange.class, "LBL_AS_ARRAY");
+	}
+        return retVal;
+    }
+
+    public String getCollectionTypeValue(boolean useDefault)
     {
         String retVal = super.getAttributeValue("collectionType");
         
@@ -408,19 +417,20 @@ public class MultiplicityRange extends Element implements IMultiplicityRange
         
         if((retVal == null) || (retVal.length() == 0))
         {
-            if(useCollection == true)
-            {
-                String defaultCollection = prefs.get("UML_COLLECTION_OVERRIDE_DEFAULT",
-                                                     "java.util.ArrayList");
-                retVal = defaultCollection.replace(".", "::");
-            }
-            else if(asArray == true)
-            {
-                retVal = NbBundle.getMessage(MultiplicityRange.class, "LBL_AS_ARRAY");
-            }
-        }
-        
-        return retVal;
+	    if(useDefault) {
+		if(useCollection == true)
+		{
+		    String defaultCollection = prefs.get("UML_COLLECTION_OVERRIDE_DEFAULT",
+							 "java.util.ArrayList");
+		    retVal = defaultCollection.replace(".", "::");
+		}
+		else 
+		{
+		    retVal = AS_ARRAY;
+		}
+	    }
+        } 
+       return retVal;
     }
     
     /**
@@ -438,7 +448,7 @@ public class MultiplicityRange extends Element implements IMultiplicityRange
         }
         else
         {
-            super.setAttributeValue("collectionType", "");
+            super.setAttributeValue("collectionType", AS_ARRAY);
         }
         
         IMultiplicity mult = this.getParentMultiplicity();
