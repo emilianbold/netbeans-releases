@@ -275,11 +275,21 @@ public class DeployServiceAssembly extends Task {
     }
       
     private void startServer(String serverInstanceID) {
-        org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst =
-                ServerRegistry.getInstance().getServerInstance(serverInstanceID);
+        org.netbeans.modules.j2ee.deployment.impl.ServerInstance inst = null;
+        
+        try {
+             inst = ServerRegistry.getInstance().getServerInstance(serverInstanceID);
+        } catch (Exception e) {
+            // NPE from command line deployment.
+            // Fine. Not supporting auto server start if deployed from command line.
+            return;
+        }
+        
         if (inst == null) {
             log("Bad target server ID: " + serverInstanceID);
+            return;
         }
+        
         ServerString server = new ServerString(inst);
         
         org.netbeans.modules.j2ee.deployment.impl.ServerInstance serverInstance = 
