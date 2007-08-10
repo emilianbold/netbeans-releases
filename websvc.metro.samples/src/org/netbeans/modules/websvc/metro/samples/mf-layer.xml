@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<filesystem>
+    <folder name="Templates">
+        <folder name="Project">
+            <folder name="Samples">
+                <folder name="Metro">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.metro.samples.Bundle"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/metro/samples/descriptions/metroSamplesCategory.html"/>
+                    <attr name="position" intvalue="250"/>
+                    <file name="SecureCalculator" url="SecureCalculator">
+                        <attr name="position" intvalue="300"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="files" stringvalue="SecureCalculatorApp.zip,SecureCalculatorClientApp.zip"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/metro/samples/descriptions/SecureCalculator.html"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.metro.samples.Bundle"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.websvc.metro.samples.WebSampleProjectIterator"/>
+                        <attr name="prjType" stringvalue="web"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>
