@@ -25,6 +25,7 @@ import java.util.Arrays;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 
 /**
  *
@@ -57,5 +58,25 @@ public class UtilTest extends NbTestCase {
         assertTrue(Util.containsClass(Arrays.asList(classpath1), "org.netbeans.test.db.driver.TestDriver"));
         // the driver is among the classes
         assertTrue(Util.containsClass(Arrays.asList(classpath2), "org.netbeans.test.db.driver.TestDriver"));
-    }       
+    } 
+    
+    public void testGetJ2eeSpecificationLabel() {
+        assertNotNull(Util.getJ2eeSpecificationLabel(J2eeModule.J2EE_13));
+        assertNotNull(Util.getJ2eeSpecificationLabel(J2eeModule.J2EE_14));
+        assertNotNull(Util.getJ2eeSpecificationLabel(J2eeModule.JAVA_EE_5));
+        
+        try {
+            Util.getJ2eeSpecificationLabel("nothing");
+            fail("Expected exception not thrown");
+        } catch (IllegalArgumentException ex) {
+            //expected
+        }
+                     
+        try {
+            Util.getJ2eeSpecificationLabel(null);
+            fail("Expected exception not thrown");
+        } catch (NullPointerException ex) {
+            //expected
+        }
+    }
 }

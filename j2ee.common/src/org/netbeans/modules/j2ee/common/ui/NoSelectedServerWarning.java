@@ -31,6 +31,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.openide.DialogDescriptor;
@@ -46,7 +47,11 @@ public final class NoSelectedServerWarning extends JPanel {
     
     public static final String OK_ENABLED = "ok_enabled"; //NOI18N
     
-    private NoSelectedServerWarning(Object[] moduleTypes, String j2eeSpec) {
+    private final String j2eeSpec;
+    
+    private NoSelectedServerWarning(Object[] moduleTypes, String j2eeSpec) {       
+        this.j2eeSpec = j2eeSpec;
+        
         initComponents();
         serverList.setModel(new ServerListModel(moduleTypes, j2eeSpec));
         if (serverList.getModel().getSize() > 0) {
@@ -143,10 +148,13 @@ public final class NoSelectedServerWarning extends JPanel {
         jTextArea1 = new javax.swing.JTextArea();
         jTextArea2 = new javax.swing.JTextArea();
         jButtonAddServer = new javax.swing.JButton();
+        listLabel = new javax.swing.JLabel();
 
+        setPreferredSize(new java.awt.Dimension(400, 280));
         setLayout(new java.awt.GridBagLayout());
 
         jScrollPane2.setMinimumSize(new java.awt.Dimension(200, 100));
+
         serverList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         serverList.setPreferredSize(null);
         serverList.setVisibleRowCount(4);
@@ -154,7 +162,7 @@ public final class NoSelectedServerWarning extends JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -166,7 +174,7 @@ public final class NoSelectedServerWarning extends JPanel {
         jTextArea1.setColumns(25);
         jTextArea1.setEditable(false);
         jTextArea1.setLineWrap(true);
-        jTextArea1.setText(NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_NoSelectedServerWarning_jLabel1"));
+        jTextArea1.setText(NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_NoSelectedServerWarning_jLabel1")); // NOI18N
         jTextArea1.setWrapStyleWord(true);
         jTextArea1.setFocusable(false);
         jTextArea1.setOpaque(false);
@@ -180,7 +188,7 @@ public final class NoSelectedServerWarning extends JPanel {
 
         jTextArea2.setEditable(false);
         jTextArea2.setLineWrap(true);
-        jTextArea2.setText(org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_NoSuitableServerWarning_jLabel2"));
+        jTextArea2.setText(org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_NoSuitableServerWarning_jLabel2")); // NOI18N
         jTextArea2.setWrapStyleWord(true);
         jTextArea2.setFocusable(false);
         jTextArea2.setOpaque(false);
@@ -193,24 +201,30 @@ public final class NoSelectedServerWarning extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
         add(jTextArea2, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddServer, org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_AddServer"));
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonAddServer, org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_AddServer")); // NOI18N
         jButtonAddServer.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonAddServerActionPerformed(evt);
             }
         });
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LAST_LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(jButtonAddServer, gridBagConstraints);
-        jButtonAddServer.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "ACSN_AddServer"));
-        jButtonAddServer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "ACSD_AddServer"));
+        jButtonAddServer.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "ACSN_AddServer")); // NOI18N
+        jButtonAddServer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "ACSD_AddServer")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(listLabel, org.openide.util.NbBundle.getMessage(NoSelectedServerWarning.class, "LBL_NoSelectedServerWarning_listLabel", new Object[] {Util.getJ2eeSpecificationLabel(j2eeSpec)})); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
+        add(listLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
     private void jButtonAddServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAddServerActionPerformed
@@ -240,6 +254,7 @@ public final class NoSelectedServerWarning extends JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
+    private javax.swing.JLabel listLabel;
     private javax.swing.JList serverList;
     // End of variables declaration//GEN-END:variables
     

@@ -55,6 +55,7 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 public class Util {
@@ -362,5 +363,39 @@ public class Util {
             }
         }
         return false;
+    }
+    
+    /**
+     * Returns the label (the name) of the given Java EE specification version.
+     * 
+     * @param specificationVersion version of the Java EE specification.
+     *        Acceptable values are those defined in {@link J2eeModule}:
+     * <ul>
+     *     <li>{@link J2eeModule.J2EE_13}
+     *     <li>{@link J2eeModule.J2EE_14}
+     *     <li>{@link J2eeModule.JAVA_EE_5}
+     * </ul>
+     * 
+     * @return true if the specified classpath contains a class of the given name,
+     *         false otherwise.
+     * 
+     * @throws NullPointerException if the specificationVersion is <code>null</code>
+     * @throws IllegalArgumentException if the value of the method parameter
+     *         is not known specification version constant
+     * 
+     * @since 1.18
+     */    
+    public static String getJ2eeSpecificationLabel(String specificationVersion) {
+        Parameters.notNull("specificationVersion", specificationVersion); // NOI18N
+        
+        if (J2eeModule.J2EE_13.equals(specificationVersion)) {
+            return NbBundle.getMessage(Util.class, "LBL_J2EESpec_13");
+        } else if (J2eeModule.J2EE_14.equals(specificationVersion)) {
+            return NbBundle.getMessage(Util.class, "LBL_J2EESpec_14");
+        } else if (J2eeModule.JAVA_EE_5.equals(specificationVersion)) {
+            return NbBundle.getMessage(Util.class, "LBL_JavaEESpec_5");  
+        } else {
+            throw new IllegalArgumentException("Unknown specification version: " + specificationVersion); // NOI18N
+        }
     }
 }
