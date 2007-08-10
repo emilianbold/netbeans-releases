@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+* Copyright 2007 Sun Microsystems, Inc. All rights reserved.
+* Use is subject to license terms.
+-->
+<html>
+<head>
+<title>Copying a Class</title>
+<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2>Copying a Class</h2>
+<p><small> <a href="#seealso">See Also</a> </small></p>
+
+
+<p><b>To copy a class, either to the same or to another package, and to change the code that 
+  references that class:</b></p>
+<ol>
+  <li>In the Projects window or the Source Editor window, right-click the class 
+    and choose Refactor &gt; Copy from 
+    the contextual menu. </li>
+  <li>In the <a href="csh/copy-class_db.html">Copy Class dialog box</a>, select  
+    the package from the To Package combo box or type 
+    the fully qualified package name, such as <tt>com.myCom.myPkg</tt>.</li>
+  <li>If you click Refactor, the IDE applies 
+    the changes automatically and skips the remaining steps. If you click Preview,
+    the Refactoring window displays the lines of code that will be changed. Review 
+    the list and clear the checkbox of any code that you do not want changed. If the 
+    class that you are pushing members from has multiple subclasses and you do not 
+    want the members to be pushed to all of them, be sure to clear the checkboxes 
+    for the corresponding subclasses. Click Do Refactoring to apply the selected changes.</li>
+</li>
+</ol>
+
+        <ul class="note">
+            <li>You can also initiate the copying of a class by dragging a class's node 
+in the Projects window to another package's node or by cutting and pasting a class's node.
+        </ul>
+
+
+<p><b>To copy a class without doing refactoring:</b></p>
+<ol>
+  <li>In the Projects window, manually copy the class to another package. 
+<p>You can cut and 
+  paste the class, or you can use drag and drop.</p>
+</li>
+  <li>In the Copy Class dialog box, select the Copy Without Refactoring checkbox.</li>
+  <li>Click Next.</li>
+</ol>
+
+    <ul class="note">
+    <li>You should always perform a clean build after completing
+    	any refactoring commands. You can do a clean build by right-clicking the project's 
+    	node in the Projects window and choosing Clean and Build Project.
+    </li>
+  </ul>
+
+
+
+<dl>
+	<dt><a name="seealso">See Also</a></dt>
+	<dd><a href="renameClass.html">Renaming a Class or Interface</a></dd>
+	<dd><a href="findClass.html">Finding Class, Method, and Field Usages</a></dd>
+	<dd><a href="undo.html">Undoing Refactoring Changes</a></dd>
+</dl>
+<hr>
+<small><a href="../credits.html">Legal Notices</a></small> 
+<table cellpadding="50" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+</table> 
+</body>
+</html>
