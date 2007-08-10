@@ -41,8 +41,6 @@ import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject
 import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsImporter;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.DatasourceUISettings;
 import org.netbeans.modules.visualweb.dataconnectivity.ui.MissingConnectionsAlertPanel;
-import org.netbeans.modules.visualweb.dataconnectivity.ui.UpdateDataSourcesDialog;
-import org.netbeans.modules.visualweb.dataconnectivity.ui.WaitForUpdatePanel;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -264,43 +262,7 @@ public class ImportDataSource {
                 }
             }
         });
-    }
-    
-    
-    /**
-     * Show OK dialog that starts the migration of user settings and updates the project's data
-     * sources.  
-     * @param project  Project from which the Update action occurred
-     */
-    public static synchronized void showUpdate(final Project project) {
-        UpdateDataSourcesDialog updateDataSourcesDialog = new UpdateDataSourcesDialog(project);
-        updateDataSourcesDialog.updateDatasources(
-                NbBundle.getMessage(ImportDataSource.class,"LBL_UpdateDatasources_Title"),org.openide.util.NbBundle.getMessage(ImportDataSource.class, "ACSD_UpdateDatasources"), project); //  NOI18N
-    }
-    
-    /**
-     * Show OK/Cancel dialog that starts the migration of user settings and updating the project's data
-     * sources.  After clicking ok the progress bar will show the progress.
-     * @param project  Project from which the Update action occurred
-     */
-    public static synchronized void showUpdateWait(final Project project) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    WaitForUpdatePanel pleaseWait = new WaitForUpdatePanel(project);                    
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(WaitForUpdatePanel.class, "MSG_WaitForUpdate"), NotifyDescriptor.INFORMATION_MESSAGE); //NOI18N                    
-                    
-                    if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
-                        pleaseWait.setVisible(true);
-                        DialogDisplayer.getDefault().notify(nd);
-                    }
-                    
-                } finally {
-                    
-                }
-            }
-        });
-    }
+    }                 
     
     public static void registerDatabaseSettings() {
         DatabaseSettingsImporter.getInstance().locateAndRegisterConnections(false);
