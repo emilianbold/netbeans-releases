@@ -79,8 +79,7 @@ public class LanguagesDataNode extends DataNode {
                     DataObject[] dob = df.getChildren ();
                     int i, k = dob.length;
                     for (i = 0; i < k; i++) {
-                        InstanceCookie ic = (InstanceCookie) dob [i].getCookie 
-                            (InstanceCookie.class);
+                        InstanceCookie ic = dob [i].getCookie(InstanceCookie.class);
                         Class clazz = ic.instanceClass ();
                         if (JSeparator.class.isAssignableFrom (clazz))
                             actions.add (null);
@@ -98,7 +97,7 @@ public class LanguagesDataNode extends DataNode {
             else
                 mimeTypeToActions.put (mimeType, super.getActions (context));
         }
-        return (Action[]) mimeTypeToActions.get (mimeType);
+        return mimeTypeToActions.get(mimeType);
     }
 }
 
