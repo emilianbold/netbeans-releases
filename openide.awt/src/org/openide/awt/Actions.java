@@ -824,6 +824,7 @@ public class Actions extends Object {
         /** @param changedProperty the name of property that has changed
         * or null if it is not known
         */
+        @Override
         public void updateState(String changedProperty) {
             super.updateState(changedProperty);
 
@@ -865,6 +866,7 @@ public class Actions extends Object {
         /** @param changedProperty the name of property that has changed
         * or null if it is not known
         */
+        @Override
         public void updateState(String changedProperty) {
             if ((changedProperty == null) || changedProperty.equals(SystemAction.PROP_ENABLED)) {
                 button.setEnabled(action.isEnabled());
@@ -895,6 +897,7 @@ public class Actions extends Object {
             }
         }
 
+        @Override
         protected void updateButtonIcon() {
             Object i = null;
             Object obj = action.getValue("noIconInMenu"); //NOI18N
@@ -964,7 +967,7 @@ public class Actions extends Object {
             }
         }
 
-        // Not actually used:
+        @Override
         protected boolean useTextIcons() {
             return false;
         }
@@ -1001,6 +1004,7 @@ public class Actions extends Object {
         /** @param changedProperty the name of property that has changed
         * or null if it is not known
         */
+        @Override
         public void updateState(String changedProperty) {
             super.updateState(changedProperty);
 
@@ -1017,6 +1021,7 @@ public class Actions extends Object {
             }
         }
 
+        @Override
         protected void updateButtonIcon() {
             if (hasOwnIcon) {
                 super.updateButtonIcon();
@@ -1029,6 +1034,7 @@ public class Actions extends Object {
             }
         }
 
+        @Override
         protected boolean useTextIcons() {
             return false;
         }
@@ -1085,6 +1091,7 @@ public class Actions extends Object {
 //            checkVisibility();
         }
         
+        @Override
         public void updateState(String changedProperty) {
             super.updateState(changedProperty);
 //            checkVisibility();
@@ -1258,10 +1265,12 @@ public class Actions extends Object {
          * @see #getPreferredSize
          * @see java.awt.LayoutManager
          */
+        @Override
         public Dimension getMaximumSize() {
             return this.getPreferredSize();
         }
 
+        @Override
         public Dimension getMinimumSize() {
             return this.getPreferredSize();
         }
@@ -1288,10 +1297,12 @@ public class Actions extends Object {
          * @see #getPreferredSize
          * @see java.awt.LayoutManager
          */
+        @Override
         public Dimension getMaximumSize() {
             return this.getPreferredSize();
         }
 
+        @Override
         public Dimension getMinimumSize() {
             return this.getPreferredSize();
         }
@@ -1390,6 +1401,7 @@ public class Actions extends Object {
 
         // override the superclass behaviour to not pollute
         // the heap with useless properties strings. Saves tens of KBs
+        @Override
         public void setProperties(Hashtable props) {
             props = (Hashtable) props.clone();
             consumer.setProperties(props);
