@@ -24,6 +24,8 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportFactory;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportImpl;
@@ -125,6 +127,10 @@ public class CustomJAXWSSupportProvider implements JAXWSSupportProvider {
         }
         
         public FileObject getDeploymentDescriptorFolder() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
