@@ -395,7 +395,7 @@ public class JPDAStart extends Task implements Runnable {
             File f = FileUtil.normalizeFile (project.resolveFile (pathName));
             if (!isValid (f, project)) continue;
             URL url = fileToURL (f, project);
-            if (f == null) continue;
+            if (url == null) continue;
             l.add (url);
         }
         URL[] urls = (URL[]) l.toArray (new URL [l.size ()]);
