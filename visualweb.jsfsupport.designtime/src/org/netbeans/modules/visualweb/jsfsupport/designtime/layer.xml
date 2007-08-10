@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="true"/>
             
             
-            <attr name="position" intvalue="400"/>
+            <attr name="position" intvalue="500"/>
             <file name="BigDecimalConverter.comp_palette_item" url="resources/BigDecimalConverter.comp_palette_item"/>   
             <file name="BigIntegerConverter.comp_palette_item" url="resources/BigIntegerConverter.comp_palette_item"/>       
             <file name="BooleanConverter.comp_palette_item" url="resources/BooleanConverter.comp_palette_item"/>            
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="isExpanded" boolvalue="true"/>       
             <attr name="isReadonly" boolvalue="true"/>
             
-            <attr name="position" intvalue="300"/>
+            <attr name="position" intvalue="400"/>
             <file name="DoubleRangeValidator.comp_palette_item" url="resources/DoubleRangeValidator.comp_palette_item"/>        
             <file name="LengthValidatord.comp_palette_item" url="resources/LengthValidator.comp_palette_item"/>        
             <file name="LongRangeValidator.comp_palette_item" url="resources/LongRangeValidator.comp_palette_item"/>

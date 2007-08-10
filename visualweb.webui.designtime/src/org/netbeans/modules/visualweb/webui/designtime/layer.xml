@@ -136,11 +136,11 @@
                 <attr name="position" intvalue="1200"/>
             </file>            
         </folder>                
-        <folder name="Composite">
+        <folder name="Composite">            
             <attr name="isExpanded" boolvalue="true"/>
             <attr name="isReadonly" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.webui.designtime.resources.Bundle"/>
-            <attr name="position" intvalue="900"/>
+            <attr name="position" intvalue="300"/>
             <file name="Alert.comp_palette_item" url="resources/Alert.comp_palette_item">
                 <attr name="position" intvalue="100"/>
             </file>
