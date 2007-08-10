@@ -16,6 +16,8 @@
  */
 package org.netbeans.modules.java.source.save;
 
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
@@ -144,6 +146,7 @@ public class Reformatter implements ReformatTask {
             return -1;
         int indent = 0;
         SourcePositions sp = controller.getTrees().getSourcePositions();
+        Tree lastTree = null;
         while (path != null) {
             int offset = (int)sp.getStartPosition(path.getCompilationUnit(), path.getLeaf());
             if (offset < 0)
@@ -166,7 +169,28 @@ public class Reformatter implements ReformatTask {
                     }
                 }
             }
+            lastTree = path.getLeaf();
             path = path.getParentPath();
+        }
+        if (lastTree != null) {
+            switch (path.getLeaf().getKind()) {
+            case CLASS:
+                for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
+                    if (tree == lastTree) {
+                        indent += tabSize;
+                        break;
+                    }
+                }
+                break;
+            case BLOCK:
+                for (Tree tree : ((BlockTree)path.getLeaf()).getStatements()) {
+                    if (tree == lastTree) {
+                        indent += tabSize;
+                        break;
+                    }
+                }
+                break;
+            }
         }
         return indent;
     }
