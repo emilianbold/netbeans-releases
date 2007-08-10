@@ -29,8 +29,6 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.spi.autoupdate.AutoupdateClusterCreator;
 import org.netbeans.updater.UpdateTracking;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 
@@ -49,33 +47,27 @@ public class InstallManager {
     static File findTargetDirectory (UpdateElement installed, UpdateElementImpl update, boolean isGlobal) {
         File res = null;
         
-        // #111384: fixed modules must be installed globally
-        isGlobal |= update.isFixed ();
-        
-        // adjust isGlobal to forced global if present
-        isGlobal |= update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ();
-        
-        // global or local
-        if (isGlobal) {
-            // is global
-            // new one or update?
-            if (installed != null) {
-                res = getInstallDir (installed, update);
-            }
-            if (res == null) {
+        // if an update, overwrite the existing location, wherever that is.
+        if (installed != null) {
+            
+            res = getInstallDir (installed, update);
+            
+        } else {
+
+            // #111384: fixed modules must be installed globally
+            isGlobal |= update.isFixed ();
+
+            // adjust isGlobal to forced global if present
+            isGlobal |= update.getInstallInfo ().isGlobal () != null && update.getInstallInfo ().isGlobal ().booleanValue ();
+            
+            String targetCluster = update.getInstallInfo ().getTargetCluster ();
+
+            // global or local
+            if ((targetCluster != null && targetCluster.length () > 0) || isGlobal) {
+                
+                // is global or
                 // does have a target cluster?
-                String targetCluster = update.getInstallInfo ().getTargetCluster ();
-                File firstPossible = null;
-                for (File cluster : UpdateTracking.clusters (false)) {
-                    if (firstPossible == null) {
-                        if (! cluster.exists ()) {
-                            cluster.mkdirs ();
-                        }
-                        if (cluster.canWrite ()) {
-                            firstPossible = cluster;
-                        }
-                    }
-                    
+                for (File cluster : UpdateTracking.clusters (true)) {
                     if (targetCluster != null && targetCluster.equals (cluster.getName ())) {
                         if (! cluster.exists ()) {
                             cluster.mkdirs ();
@@ -92,54 +84,76 @@ public class InstallManager {
                 
                 // handle non-existing clusters
                 if (res == null && targetCluster != null) {
-                    for (AutoupdateClusterCreator creator : Lookup.getDefault ().lookupAll (AutoupdateClusterCreator.class)) {
-                        File possibleCluster = Trampoline.SPI.findCluster (targetCluster, creator);
-                        if (possibleCluster != null) {
-                            try {
-                                ERR.log (Level.FINE, "Found cluster candidate " + possibleCluster + " for declared target cluster " + targetCluster);
-                                File[] dirs = Trampoline.SPI.registerCluster (targetCluster, possibleCluster, creator);
-                                
-                                // it looks good, generate new netbeans.dirs
-                                res = possibleCluster;
-                                
-                                StringBuffer sb = new StringBuffer ();
-                                String sep = "";
-                                for (int i = 0; i < dirs.length; i++) {
-                                    sb.append (sep);
-                                    sb.append (dirs [i].getPath ());
-                                    sep = File.pathSeparator;
-                                }
-                                
-                                System.setProperty("netbeans.dirs", sb.toString ()); // NOI18N
-                                ERR.log (Level.FINE, "Was written new netbeans.dirs " + sb);
-                                
-                                res = possibleCluster;
-                                break;
-                                
-                            } catch (IOException ioe) {
-                                ERR.log (Level.INFO, ioe.getMessage (), ioe);
-                            }
-                        }
-                    }
+                    res = createNonExistingCluster (targetCluster);
                 }
                 
-                // target cluster not found
+                // target cluster still not found
                 if (res == null) {
-                    assert firstPossible != null : "No writeable cluster found.";
-                    res = firstPossible != null ? firstPossible : getUserDir ();
+                    
+                    res = createNonExistingCluster (UpdateTracking.EXTRA_CLUSTER_NAME);
+                    
+                    // no new cluster was created => use userdir
+                    res = res == null? getUserDir () : res;
+                    
+                    // create UpdateTracking.EXTRA_CLUSTER_NAME
                     if (ERR.isLoggable (Level.INFO)) {
                         if (targetCluster != null) {
                             ERR.log (Level.INFO, "Declared target cluster " + targetCluster + 
                                     " in " + update.getUpdateElement () + " wasn't found. Will be used " + res);
                         }
                     }
+                    
                 }
+                
+                // if no writable => getUserDir()
+                if (ERR.isLoggable (Level.INFO)) {
+                    if (res == null || ! res.canWrite ()) {
+                        ERR.log (Level.INFO, "Declared target cluster " + targetCluster + 
+                                " in " + update.getUpdateElement () + " is not writable. Will be used " + res);
+                    }
+                }
+                res = res == null || ! res.canWrite () ? getUserDir () : res;
+
+                
+            } else {
+                // is local
+                res = getUserDir ();
             }
-        } else {
-            // is local
-            res = getUserDir ();
         }
         ERR.log (Level.FINEST, "UpdateElement " + update.getUpdateElement () + " has the target cluster " + res);
+        return res;
+    }
+    
+    private static File createNonExistingCluster (String targetCluster) {
+        File res = null;
+        for (AutoupdateClusterCreator creator : Lookup.getDefault ().lookupAll (AutoupdateClusterCreator.class)) {
+            File possibleCluster = Trampoline.SPI.findCluster (targetCluster, creator);
+            if (possibleCluster != null) {
+                try {
+                    ERR.log (Level.FINE, "Found cluster candidate " + possibleCluster + " for declared target cluster " + targetCluster);
+                    File[] dirs = Trampoline.SPI.registerCluster (targetCluster, possibleCluster, creator);
+
+                    // it looks good, generate new netbeans.dirs
+                    res = possibleCluster;
+
+                    StringBuffer sb = new StringBuffer ();
+                    String sep = "";
+                    for (int i = 0; i < dirs.length; i++) {
+                        sb.append (sep);
+                        sb.append (dirs [i].getPath ());
+                        sep = File.pathSeparator;
+                    }
+
+                    System.setProperty("netbeans.dirs", sb.toString ()); // NOI18N
+                    ERR.log (Level.FINE, "Was written new netbeans.dirs " + sb);
+
+                    break;
+
+                } catch (IOException ioe) {
+                    ERR.log (Level.INFO, ioe.getMessage (), ioe);
+                }
+            }
+        }
         return res;
     }
     
@@ -173,10 +187,18 @@ public class InstallManager {
                 res = UpdateTracking.getPlatformDir ();
             }
         } else {
+            
+            /* comment out for xtesting
             FileObject searchForFO = FileUtil.toFileObject (configFile);
             for (File cluster : UpdateTracking.clusters (true)) {       
                 cluster = FileUtil.normalizeFile(cluster);
                 if (FileUtil.isParentOf (FileUtil.toFileObject (cluster), searchForFO)) {
+                    res = cluster;
+                    break;
+                }*/
+            
+            for (File cluster : UpdateTracking.clusters (true)) {       
+                if (isParentOf (cluster, configFile)) {
                     res = cluster;
                     break;
                 }
@@ -186,6 +208,22 @@ public class InstallManager {
         }
 
         return res;
+    }
+    
+    private static boolean isParentOf (File parent, File child) {
+        if (parent.equals (child.getParentFile ())) {
+            return true;
+        }
+        if (! parent.isDirectory ()) {
+            return false;
+        }
+        File [] childs = parent.listFiles ();
+        for (int i = 0; i < childs.length; i++) {
+            if (isParentOf (childs [i], child)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     static File getUserDir () {

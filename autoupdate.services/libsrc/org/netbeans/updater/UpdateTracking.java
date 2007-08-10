@@ -59,6 +59,8 @@ public final class UpdateTracking {
     public static final String ATTR_ADDITIONAL_NBM_NAME = "nbm_name"; // NOI18N
     public static final String ATTR_ADDITIONAL_SOURCE = "source-display-name"; // NOI18N
     
+    public static final String EXTRA_CLUSTER_NAME = "extra";
+    
     /** Platform dependent file name separator */
     private static final String FILE_SEPARATOR = System.getProperty ("file.separator");
     private static final String LOCALE_DIR = FILE_SEPARATOR + "locale" + FILE_SEPARATOR; // NOI18N

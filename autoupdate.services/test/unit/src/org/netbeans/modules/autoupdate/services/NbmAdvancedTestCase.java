@@ -25,6 +25,11 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Arrays;
+import org.netbeans.api.autoupdate.InstallSupport;
+import org.netbeans.api.autoupdate.OperationContainer;
+import org.netbeans.api.autoupdate.OperationException;
+import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 
@@ -38,14 +43,36 @@ public class NbmAdvancedTestCase extends NbTestCase {
         super (name);
     }
     
+    protected File userDir;
+    protected File platformDir;
+    protected File nextDir;
+    protected File installDir;
+    
     @Override
-    protected void setUp () throws IOException {
+    protected void setUp () throws IOException, Exception {
+        super.setUp ();
+        
         clearWorkDir ();
-        System.setProperty ("netbeans.user", getWorkDirPath ());
-        File pf = new File (new File (getWorkDir(), "platform"), "installdir");
-        pf.mkdirs ();
-        new File (pf, "config").mkdir();
-        System.setProperty ("netbeans.home", pf.toString ());
+        
+        userDir = new File (getWorkDir (), "userdir");
+        assertTrue (userDir.mkdirs ());
+        System.setProperty ("netbeans.user", userDir.toString ());
+        assertEquals (userDir.toString (), System.getProperty ("netbeans.user"));
+        
+        installDir = new File (new File (getWorkDir (), "install"), "testnetbeans");
+        new File (installDir, "config").mkdirs ();
+        System.setProperty ("netbeans.home", installDir.toString ());
+        assertEquals (installDir.toString (), System.getProperty ("netbeans.home"));
+        
+        platformDir = new File (installDir, "platform");
+        assertTrue (platformDir.mkdirs ());
+        
+        nextDir = new File (installDir, "next");
+        assertTrue (nextDir.mkdirs ());
+        
+        System.setProperty (
+            "netbeans.dirs", 
+            platformDir.toString () + File.pathSeparatorChar + nextDir.toString ());
     }
     
     public static String generateModuleElement (String codeName, String version, String requires, boolean kit, boolean eager, String... deps) {
@@ -60,6 +87,21 @@ public class NbmAdvancedTestCase extends NbTestCase {
                 "OpenIDE-Module-Name=\"" + codeName + "\" " +
                 "AutoUpdate-Show-In-Client=\"" + kit + "\" " +
                 (requires == null || requires.length () == 0 ? "" : "OpenIDE-Module-Requires=\"" + requires + "\" ") +
+                "OpenIDE-Module-Specification-Version=\"" + version + "\"/>";
+        res += "</module>";
+        return res;
+    }
+    
+    public static String generateModuleElement (String codeName, String version, Boolean global, String targetCluster) {
+        String res = "<module codenamebase=\"" + codeName + "\" " +
+                "homepage=\"http://au.netbeans.org/\" distribution=\"nbresloc:/org/netbeans/api/autoupdate/data/org-yourorghere-independent.nbm\" " +
+                "license=\"standard-nbm-license.txt\" downloadsize=\"98765\" " +
+                "needsrestart=\"false\" moduleauthor=\"\" " +
+                (global == null ? "" : "global=\"" + global + "\" ") + 
+                (targetCluster == null || targetCluster.length () == 0 ? "" : "targetcluster=\"" + targetCluster + "\" ") + 
+                "releasedate=\"2006/02/23\">";
+        res +=  "<manifest OpenIDE-Module=\"" + codeName + "\" " +
+                "OpenIDE-Module-Name=\"" + codeName + "\" " +
                 "OpenIDE-Module-Specification-Version=\"" + version + "\"/>";
         res += "</module>";
         return res;
@@ -107,6 +149,29 @@ public class NbmAdvancedTestCase extends NbTestCase {
         os.write (s.getBytes ());
         os.close ();
         return res.toURL ();
+    }
+    
+    protected UpdateElement installUpdateUnit (UpdateUnit unit) {
+        OperationContainer ic = OperationContainer.createForInstall ();
+        assertNotNull (unit + " has available update.", unit.getAvailableUpdates ());
+        ic.add (unit.getAvailableUpdates ().get (0));
+        assertTrue ("Install operation on " + unit + " is valid.", ic.listInvalid ().isEmpty ());
+        assertFalse ("Something will be installed for " + unit, ic.listAll ().isEmpty ());
+        InstallSupport is = (InstallSupport) ic.getSupport ();
+        try {
+            
+            InstallSupport.Validator v = is.doDownload (null, false);
+            InstallSupport.Installer i = is.doValidate (v, null);
+            is.doInstall (i, null);
+            
+        } catch (OperationException ox) {
+            fail (ox.toString ());
+        }
+        
+        // check if unit was installed
+        assertNotNull (unit + " is installed.", unit.getInstalled ());
+        
+        return unit.getInstalled ();
     }
     
     public class MyProvider extends AutoupdateCatalogProvider {

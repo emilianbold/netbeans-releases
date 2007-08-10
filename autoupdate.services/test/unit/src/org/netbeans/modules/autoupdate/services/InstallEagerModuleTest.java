@@ -159,25 +159,4 @@ public class InstallEagerModuleTest extends NbmAdvancedTestCase {
         
     }
     
-    private void installUpdateUnit (UpdateUnit unit) {
-        OperationContainer ic = OperationContainer.createForInstall ();
-        assertNotNull (unit + " has available update.", unit.getAvailableUpdates ());
-        ic.add (unit.getAvailableUpdates ().get (0));
-        assertTrue ("Install operation on " + unit + " is valid.", ic.listInvalid ().isEmpty ());
-        assertFalse ("Something will be installed for " + unit, ic.listAll ().isEmpty ());
-        InstallSupport is = (InstallSupport) ic.getSupport ();
-        try {
-            
-            InstallSupport.Validator v = is.doDownload (null, false);
-            InstallSupport.Installer i = is.doValidate (v, null);
-            is.doInstall (i, null);
-            
-        } catch (OperationException ox) {
-            fail (ox.toString ());
-        }
-        
-        // check if unit was installed
-        assertNotNull (unit + " is installed.", unit.getInstalled ());
-    }
-    
 }
