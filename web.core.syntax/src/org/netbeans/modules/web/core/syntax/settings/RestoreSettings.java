@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.web.core.syntax.settings;
 
-import org.netbeans.modules.web.core.syntax.settings.JspMultiSettingsInitializer;
-import org.netbeans.modules.web.core.syntax.*;
 import org.netbeans.editor.Settings;
 import org.openide.modules.ModuleInstall;
 
@@ -29,11 +27,11 @@ import org.openide.modules.ModuleInstall;
  */
 public class RestoreSettings extends ModuleInstall {
 
-    public void restored () {
+    @Override public void restored () {
         Settings.addInitializer (new JspMultiSettingsInitializer());
     }
 
-    public void uninstalled () {
+    @Override public void uninstalled () {
         Settings.removeInitializer (JspMultiSettingsInitializer.NAME);
     }
 } // end of clas RestoreColoring
