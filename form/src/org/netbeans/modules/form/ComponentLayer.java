@@ -149,6 +149,7 @@ class ComponentLayer extends JPanel
             designerSize = size;
         }
 
+        @Override
         public Dimension getPreferredSize() {
             Dimension size = new Dimension(designerSize);
             Insets insets = getInsets();
@@ -157,6 +158,7 @@ class ComponentLayer extends JPanel
             return size;
         }
 
+        @Override
         public void paint(Graphics g) {
             try {
                 FormLAF.setUseDesignerDefaults(formModel);

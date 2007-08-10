@@ -98,12 +98,12 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     private FormEditor formEditor;
 
     // layout visualization and interaction
-    private List selectedComponents = new ArrayList();
-    private List selectedLayoutComponents = new ArrayList();
+    private List<RADComponent> selectedComponents = new ArrayList<RADComponent>();
+    private List<RADComponent> selectedLayoutComponents = new ArrayList<RADComponent>();
     private VisualReplicator replicator;
     private LayoutDesigner layoutDesigner;
-    private List designerActions;
-    private List resizabilityActions;
+    private List<Action> designerActions;
+    private List<Action> resizabilityActions;
     
     private JToggleButton[] resizabilityButtons;
             
@@ -194,6 +194,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             // bounds set out of visible area (as they physically stay in their
             // container and the layout manager may lay them back if some
             // validation occurs)
+            @Override
             protected void paintChildren(Graphics g) {
                 handleLayer.maskDraggingComponents();
                 super.paintChildren(g);
@@ -243,10 +244,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                             && (nodes.length == 0)) {
                             switchLookup();
                         }
-                        List list = new ArrayList(nodes.length);
+                        List<Node> list = new ArrayList<Node>(nodes.length);
                         list.addAll(Arrays.asList(nodes));
                         list.remove(delegate);
-                        explorerManager.setSelectedNodes((Node[])list.toArray(new Node[list.size()]));
+                        explorerManager.setSelectedNodes(list.toArray(new Node[list.size()]));
                     } catch (PropertyVetoException ex) {
                         ex.printStackTrace();
                     }
@@ -389,6 +390,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return formEditor;
     }
     
+    @Override
     public javax.swing.Action[] getActions() {
         Action[] actions = super.getActions();
         SystemAction fsAction = SystemAction.get(FileSystemAction.class);
@@ -525,6 +527,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     if (container instanceof RootPaneContainer) {
                         JRootPane rootPane = ((RootPaneContainer)container).getRootPane();
                         JLayeredPane newPane = new JLayeredPane() {
+                            @Override
                             public void paint(Graphics g) {
                                 try {
                                     FormLAF.setUsePreviewDefaults(formModel, previewLaf, uiDefaults);
@@ -551,6 +554,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     return container;
                 }
             }
+        
         );
         } finally {
             FormLAF.setUsePreviewDefaults(null, null, null);
@@ -831,7 +835,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // ---------
     // components selection
 
-    public java.util.List getSelectedComponents() {
+    public java.util.List<RADComponent> getSelectedComponents() {
         return selectedComponents;
     }
 
@@ -846,7 +850,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return selectedNodes;
     }
     
-    java.util.List getSelectedLayoutComponents() {
+    java.util.List<RADComponent> getSelectedLayoutComponents() {
         return selectedLayoutComponents;
     }
 
@@ -1083,7 +1087,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         if (n > 0) {
             if (n > 1)
                 return null;
-            RADComponent sel = (RADComponent) selectedComponents.get(0);
+            RADComponent sel = selectedComponents.get(0);
             if (sel instanceof RADVisualComponent) {
                 currentComp = sel;
             } else {
@@ -1225,9 +1229,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
      * all designer actions or just the subset for the form toolbar.
      * @return <code>Collection</code> of <code>Action</code> objects.
      */
-    public Collection getDesignerActions(boolean forToolbar) {
+    public Collection<Action> getDesignerActions(boolean forToolbar) {
         if (designerActions == null) {
-            designerActions = new LinkedList();
+            designerActions = new LinkedList<Action>();
             // Grouping actions
             designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.LEADING, true));
             designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.TRAILING, true));
@@ -1246,9 +1250,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         return forToolbar ? designerActions.subList(0, designerActions.size()/2) : designerActions;
     }
 
-    public Collection getResizabilityActions() {
+    public Collection<Action> getResizabilityActions() {
         if (resizabilityActions == null) {
-            resizabilityActions = new LinkedList();
+            resizabilityActions = new LinkedList<Action>();
             resizabilityActions.add(new ResizabilityAction(LayoutConstants.HORIZONTAL));
             resizabilityActions.add(new ResizabilityAction(LayoutConstants.VERTICAL));
         }
@@ -1260,9 +1264,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
      *
      * @return <code>Collection</code> of <code>String</code> objects.
      */
-    Collection selectedLayoutComponentIds() {
+    Collection<String> selectedLayoutComponentIds() {
         Iterator metacomps = getSelectedLayoutComponents().iterator();
-        Collection selectedIds = new LinkedList();
+        Collection<String> selectedIds = new LinkedList<String>();
         while (metacomps.hasNext()) {
             RADComponent metacomp = (RADComponent)metacomps.next();
             selectedIds.add(metacomp.getId());
@@ -1581,14 +1585,17 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     // methods of TopComponent
 
     // only MultiViewDescriptor is stored, not MultiViewElement
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("gui.formeditor"); // NOI18N
     }
 
+    @Override
     public void componentActivated() {
         if (formModel == null)
             return;
@@ -1608,6 +1615,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             handleLayer.requestFocus();               
     }
 
+    @Override
     public void componentDeactivated() {
         if (formModel == null)
             return;
@@ -1619,11 +1627,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         resetConnection();
     }
 
+    @Override
     public UndoRedo getUndoRedo() {
         UndoRedo ur = formModel != null ? formModel.getUndoRedoManager() : null;
         return ur != null ? ur : super.getUndoRedo();
     }
     
+    @Override
     protected String preferredID() {
         return formEditor.getFormDataObject().getName();
     }
@@ -1657,6 +1667,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
     }
 
+    @Override
     public void requestVisible() {
         if (multiViewObserver != null)
             multiViewObserver.requestVisible();
@@ -1664,6 +1675,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             super.requestVisible();
     }
 
+    @Override
     public void requestActive() {
         if (multiViewObserver != null)
             multiViewObserver.requestActive();
@@ -1671,6 +1683,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             super.requestActive();
     }
 
+    @Override
     public void componentClosed() {
         super.componentClosed();
         if (formModel != null) {
@@ -1685,6 +1698,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         }
     }
 
+    @Override
     public void componentShowing() {
         super.componentShowing();
         if (!formEditor.isFormLoaded()) {
@@ -1700,11 +1714,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         FormEditorSupport.checkFormGroupVisibility();
     }
 
+    @Override
     public void componentHidden() {
         super.componentHidden();
         FormEditorSupport.checkFormGroupVisibility();
     }
 
+    @Override
     public void componentOpened() {
         super.componentOpened();
         if ((formEditor == null) && (multiViewObserver != null)) { // Issue 67879
@@ -2022,7 +2038,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                     }
                 }
             }
-            Class type = needJComponent ? JComponent.class : Component.class;
+            Class<?> type = needJComponent ? JComponent.class : Component.class;
             return comp != null && type.isAssignableFrom(comp.getClass()) ?
                    (Component) comp : null;
         }
@@ -2031,8 +2047,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     // --------
 
-    private Collection componentIds() {
-        List componentIds = new LinkedList();
+    private Collection<String> componentIds() {
+        List<String> componentIds = new LinkedList<String>();
         List selectedComps = getSelectedLayoutComponents();
         LayoutModel layoutModel = getFormModel().getLayoutModel();
         Iterator iter = selectedComps.iterator();
@@ -2283,13 +2299,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             this.delegate = delegate;
         }
         
-        public Object lookup(Class clazz) {
+        public <T> T lookup(Class<T> clazz) {
             return (clazz == Node.class) ? null : delegate.lookup(clazz);
         }
         
-        public Lookup.Result lookup(Lookup.Template template) {
+        public <T> Result<T> lookup(Template<T> template) {
             if (template.getType() == Node.class) {
-                return Lookup.EMPTY.lookup(new Lookup.Template(Node.class));
+                return Lookup.EMPTY.lookup(new Lookup.Template<T>(template.getType()));
             } else {
                 return delegate.lookup(template);
             }
@@ -2387,7 +2403,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             boolean autoUndo = true;
             LayoutDesigner layoutDesigner = getLayoutDesigner();
             Collection componentIds = componentIds();
-            Set containers = new HashSet();
+            Set<RADVisualContainer> containers = new HashSet<RADVisualContainer>();
             try {
                 Iterator iter = componentIds.iterator();
                 while (iter.hasNext()) {
@@ -2402,9 +2418,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 }
                 autoUndo = false;
             } finally {
-                Iterator iter = containers.iterator();
+                Iterator<RADVisualContainer> iter = containers.iterator();
                 while (iter.hasNext()) {
-                    formModel.fireContainerLayoutChanged((RADVisualContainer)iter.next(), null, null, null);
+                    formModel.fireContainerLayoutChanged(iter.next(), null, null, null);
                 }
                 if (!layoutUndoMark.equals(layoutModel.getChangeMark())) {
                     formModel.addUndoableEdit(ue);

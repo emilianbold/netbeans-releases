@@ -598,7 +598,7 @@ public class MetaComponentCreator {
                     newCont.getLayoutSupport()
                         .copyLayoutDelegateFrom(sourceLayout, newComps);
                 } else {
-                    Map sourceToTargetIds = new HashMap(sourceSubs.length);
+                    Map<String,String> sourceToTargetIds = new HashMap<String,String>(sourceSubs.length);
                     for (int i=0; i<sourceSubs.length; i++) {
                         sourceToTargetIds.put(sourceSubs[i].getId(), newSubs[i].getId());
                     }
@@ -612,8 +612,8 @@ public class MetaComponentCreator {
         }
 
         // 3rd - copy changed properties
-        java.util.List sourceList = new ArrayList();
-        java.util.List namesList = new ArrayList();
+        java.util.List<RADProperty> sourceList = new ArrayList<RADProperty>();
+        java.util.List<String> namesList = new ArrayList<String>();
 
         Iterator it = sourceComp.getBeanPropertiesIterator(
                                    FormProperty.CHANGED_PROPERTY_FILTER,
@@ -660,7 +660,7 @@ public class MetaComponentCreator {
             && newComp instanceof RADVisualComponent)
         {
             Map constraints = ((RADVisualComponent)sourceComp).getConstraintsMap();
-            Map newConstraints = new HashMap();
+            Map<Object,LayoutConstraints> newConstraints = new HashMap<Object,LayoutConstraints>();
 
             for (it = constraints.entrySet().iterator(); it.hasNext(); ) {
                 Map.Entry entry = (Map.Entry)it.next();
@@ -1246,7 +1246,7 @@ public class MetaComponentCreator {
         return loadedClass;
     }
 
-    private boolean checkFormClass(Class compClass) {
+    private boolean checkFormClass(Class<?> compClass) {
         if (formModel.getFormBaseClass().isAssignableFrom(compClass)) {
             String formClassBinaryName = getClassBinaryName(
                     FormEditor.getFormDataObject(formModel).getPrimaryFile());
@@ -1304,7 +1304,7 @@ public class MetaComponentCreator {
     }
 
     private boolean initComponentInstance(RADComponent metacomp,
-                                          Class compClass)
+                                          Class<?> compClass)
     {
 
         try {
@@ -1335,7 +1335,7 @@ public class MetaComponentCreator {
         Object comp = newMetaComp.getBeanInstance();
         String varName = newMetaComp.getName();
         // Map of propertyNames -> propertyValues
-        Map changes = new HashMap();
+        Map<String,Object> changes = new HashMap<String,Object>();
 
         if (comp instanceof JLabel) {
             if ("".equals(((JLabel)comp).getText())) { // NOI18N

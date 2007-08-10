@@ -45,20 +45,20 @@ public class FormModel
     private boolean readOnly = false;
 
     // the class on which the form is based (which is extended in the java file)
-    private Class formBaseClass;
+    private Class<?> formBaseClass;
 
     // the top metacomponent of the form (null if form is based on Object)
     private RADComponent topRADComponent;
 
     // other components - out of the main hierarchy under topRADComponent
-    private ArrayList<RADComponent> otherComponents = new ArrayList(10);
+    private List<RADComponent> otherComponents = new ArrayList<RADComponent>(10);
 
     // holds both topRADComponent and otherComponents
     private ComponentContainer modelContainer;
 
     private LayoutModel layoutModel;
 
-    private Map<String,RADComponent> idToComponents = new HashMap();
+    private Map<String,RADComponent> idToComponents = new HashMap<String,RADComponent>();
 
     private boolean formLoaded = false;
 
@@ -70,7 +70,7 @@ public class FormModel
     private FormEvents formEvents;
 
     // list of listeners registered on FormModel
-    private ArrayList listeners;
+    private ArrayList<FormModelListener> listeners;
     private EventBroker eventBroker;
     private boolean firing;
 
@@ -93,7 +93,7 @@ public class FormModel
      * the top meta component, and is also presented as the top component
      * in designer and inspector.
      */
-    public void setFormBaseClass(Class formClass) throws Exception {
+    public void setFormBaseClass(Class<?> formClass) throws Exception {
         if (formBaseClass != null)
             throw new IllegalStateException("Form type already initialized."); // NOI18N
 
@@ -105,9 +105,11 @@ public class FormModel
             else {
                 topComp = new RADVisualComponent() {
                     // top-level component does not have a variable
+                    @Override
                     public String getName() {
                         return FormUtils.getBundleString("CTL_FormTopContainerName"); // NOI18N
                     }
+                    @Override
                     public void setName(String value) {}
                 };
             }
@@ -129,7 +131,7 @@ public class FormModel
         layoutModel.setChangeRecording(false);
     }
 
-    public Class getFormBaseClass() {
+    public Class<?> getFormBaseClass() {
         return formBaseClass;
     }
 
@@ -188,7 +190,7 @@ public class FormModel
     }
 
     public final RADComponent getMetaComponent(String id) {
-        return (RADComponent) idToComponents.get(id);
+        return idToComponents.get(id);
     }
 
     public RADComponent findRADComponent(String name) {
@@ -206,7 +208,7 @@ public class FormModel
      * created. The order of the components is random.
      */
     public java.util.List<RADComponent> getComponentList() {
-        return new ArrayList(idToComponents.values());
+        return new ArrayList<RADComponent>(idToComponents.values());
     }
 
     /**
@@ -215,7 +217,7 @@ public class FormModel
      * (used e.g. by code generator or persistence manager).
      */
     public java.util.List<RADComponent> getOrderedComponentList() {
-        java.util.List<RADComponent> list = new ArrayList(idToComponents.size());
+        java.util.List<RADComponent> list = new ArrayList<RADComponent>(idToComponents.size());
         collectMetaComponents(getModelContainer(), list);
         return list;
     }
@@ -239,7 +241,7 @@ public class FormModel
     }
 
     public List<RADComponent> getVisualComponents() {
-        List<RADComponent> list = new ArrayList(idToComponents.size());
+        List<RADComponent> list = new ArrayList<RADComponent>(idToComponents.size());
         for (Map.Entry<String,RADComponent> e : idToComponents.entrySet()) {
             RADComponent metacomp = e.getValue();
             if (metacomp instanceof RADVisualComponent) {
@@ -256,7 +258,7 @@ public class FormModel
     }
 
     private static void collectMetaComponents(ComponentContainer cont,
-                                              java.util.List list) {
+                                              java.util.List<RADComponent> list) {
         RADComponent[] comps = cont.getSubBeans();
         for (int i = 0; i < comps.length; i++) {
             RADComponent comp = comps[i];
@@ -267,7 +269,7 @@ public class FormModel
     }
 
     private static void collectVisualMetaComponents(RADVisualContainer cont,
-                                                    java.util.List list) {
+                                                    java.util.List<RADComponent> list) {
         RADVisualComponent[] comps = cont.getSubComponents();
         for (int i = 0; i < comps.length; i++) {
             RADComponent comp = comps[i];
@@ -582,13 +584,13 @@ public class FormModel
     // [Undo manager performing undo/redo in AWT event thread should not be
     //  probably implemented here - in FormModel - but seperately.]
     class UndoRedoManager extends UndoRedo.Manager {
-        private Mutex.ExceptionAction runUndo = new Mutex.ExceptionAction() {
+        private Mutex.ExceptionAction<Object> runUndo = new Mutex.ExceptionAction<Object>() {
             public Object run() throws Exception {
                 superUndo();
                 return null;
             }
         };
-        private Mutex.ExceptionAction runRedo = new Mutex.ExceptionAction() {
+        private Mutex.ExceptionAction<Object> runRedo = new Mutex.ExceptionAction<Object>() {
             public Object run() throws Exception {
                 superRedo();
                 return null;
@@ -602,6 +604,7 @@ public class FormModel
             super.redo();
         }
 
+        @Override
         public void undo() throws CannotUndoException {
             if (java.awt.EventQueue.isDispatchThread()) {
                 superUndo();
@@ -620,6 +623,7 @@ public class FormModel
             }
         }
 
+        @Override
         public void redo() throws CannotRedoException {
             if (java.awt.EventQueue.isDispatchThread()) {
                 superRedo();
@@ -644,7 +648,7 @@ public class FormModel
 
     public synchronized void addFormModelListener(FormModelListener l) {
         if (listeners == null)
-            listeners = new ArrayList();
+            listeners = new ArrayList<FormModelListener>();
         listeners.add(l);
     }
 
@@ -1070,7 +1074,7 @@ public class FormModel
      * to the broker from AWT event dispatch thread.
      */
     private class EventBroker implements Runnable {
-        private List eventList;
+        private List<FormModelEvent> eventList;
 
         public void sendEvent(FormModelEvent ev) {
             if (shouldSendLater(ev))
@@ -1082,7 +1086,7 @@ public class FormModel
         public void sendEventImmediately(FormModelEvent ev) {
             t("firing event directly from event broker: "+ev.getChangeType()); // NOI18N
             if (eventList == null)
-                eventList = new ArrayList();
+                eventList = new ArrayList<FormModelEvent>();
             eventList.add(ev);
             run();
         }
@@ -1095,7 +1099,7 @@ public class FormModel
             }
 
             if (eventList == null) {
-                eventList = new ArrayList();
+                eventList = new ArrayList<FormModelEvent>();
                 java.awt.EventQueue.invokeLater(this);
             }
 
@@ -1107,14 +1111,14 @@ public class FormModel
             return eventList != null || ev.isModifying();
         }
 
-        private List pickUpEvents() {
-            List list = eventList;
+        private List<FormModelEvent> pickUpEvents() {
+            List<FormModelEvent> list = eventList;
             eventList = null;
             return list;
         }
 
         public void run() {
-            List list = pickUpEvents();
+            List<FormModelEvent> list = pickUpEvents();
             if (list != null && !list.isEmpty()) {
                 FormModelEvent[] events = new FormModelEvent[list.size()];
                 list.toArray(events);
@@ -1174,7 +1178,7 @@ public class FormModel
         public void reorderSubComponents(int[] perm) {
             RADComponent[] components = new RADComponent[otherComponents.size()];
             for (int i=0; i < perm.length; i++)
-                components[perm[i]] = (RADComponent) otherComponents.get(i);
+                components[perm[i]] = otherComponents.get(i);
 
             otherComponents.clear();
             otherComponents.addAll(Arrays.asList(components));

@@ -192,7 +192,7 @@ public class FormLAF {
         throws Exception
     {
         try {
-            return Mutex.EVENT.readAccess(new Mutex.ExceptionAction() {
+            return Mutex.EVENT.readAccess(new Mutex.ExceptionAction<Object>() {
                 public Object run() throws Exception {
                     // FIXME(-ttran) needs to hold a lock on UIDefaults to
                     // prevent other threads from creating Swing components
@@ -225,7 +225,7 @@ public class FormLAF {
     }
 
     static void executeWithLookAndFeel(final FormModel formModel, final Runnable run) {
-        Mutex.EVENT.readAccess(new Mutex.Action() {
+        Mutex.EVENT.readAccess(new Mutex.Action<Object>() {
             public Object run() {
                 // FIXME(-ttran) needs to hold a lock on UIDefaults to
                 // prevent other threads from creating Swing components

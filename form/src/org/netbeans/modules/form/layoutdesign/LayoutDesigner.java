@@ -67,7 +67,7 @@ public class LayoutDesigner implements LayoutConstants {
 	}
         Object changeMark = layoutModel.getChangeMark();
         boolean changeRequired = imposeSize || optimizeStructure;
-        Set updatedContainers = changeRequired ? new HashSet() : null;
+        Set<LayoutComponent> updatedContainers = changeRequired ? new HashSet<LayoutComponent>() : null;
         try {
             if (changeRequired) {
                 modelListener.deactivate(); // some changes may happen...
@@ -86,9 +86,9 @@ public class LayoutDesigner implements LayoutConstants {
             imposeSize = optimizeStructure = false;
 
             if (updatedContainers != null) {
-                Iterator it = updatedContainers.iterator();
+                Iterator<LayoutComponent> it = updatedContainers.iterator();
                 while (it.hasNext()) {
-                    LayoutComponent cont = (LayoutComponent) it.next();
+                    LayoutComponent cont = it.next();
                     visualMapper.rebuildLayout(cont.getId());
                 }
                 updatePositions(null);
@@ -128,7 +128,7 @@ public class LayoutDesigner implements LayoutConstants {
         }
     }
 
-    private void updatePositions(Set updatedContainers) {
+    private void updatePositions(Set<LayoutComponent> updatedContainers) {
         Iterator it = layoutModel.getAllComponents();
         while (it.hasNext()) {
             LayoutComponent comp = (LayoutComponent) it.next();
@@ -323,11 +323,11 @@ public class LayoutDesigner implements LayoutConstants {
 
     public void dumpTestcode(DataObject form) {
         LayoutTestUtils.dumpTestcode(testCode, form, getModelCounter());
-        testCode = new ArrayList();
-        testCode0 = new ArrayList();
-        beforeMove = new ArrayList();
-        move1 = new ArrayList();
-        move2 = new ArrayList();
+        testCode = new ArrayList<String>();
+        testCode0 = new ArrayList<String>();
+        beforeMove = new ArrayList<String>();
+        move1 = new ArrayList<String>();
+        move2 = new ArrayList<String>();
         isMoving = false;
     }
     
@@ -355,7 +355,7 @@ public class LayoutDesigner implements LayoutConstants {
             if (container == null) {
                 container = comp.getParent();
             } else if (comp.getParent() != container) {
-                return Collections.EMPTY_LIST;
+                return Collections.emptyList();
             }
 
             int layerIndex = container.getLayoutRootsIndex(comp.getLayoutInterval(HORIZONTAL));
@@ -524,9 +524,9 @@ public class LayoutDesigner implements LayoutConstants {
             if (!isMoving) {
                 isMoving = true;
                 // backup all current entries and clear the testcode list
-                beforeMove = new ArrayList();
+                beforeMove = new ArrayList<String>();
                 beforeMove.addAll(testCode);
-                testCode = new ArrayList();
+                testCode = new ArrayList<String>();
 		lastMovePoint = new Point(0,0);
             }
 
@@ -536,9 +536,9 @@ public class LayoutDesigner implements LayoutConstants {
 		testCode0 = testCode;
 	    }
 
-            move2 = new ArrayList();
+            move2 = new ArrayList<String>();
             move2.add("// > MOVE");
-            testCode = new ArrayList();
+            testCode = new ArrayList<String>();
         }
         if ((!visualStateUpToDate) || (dragger == null)) {
             return; // visual state of layout structure not updated yet (from last operation)
@@ -852,10 +852,10 @@ public class LayoutDesigner implements LayoutConstants {
      * Pass <code>null</code> when you invoke this method.
      */
     private LayoutInterval restrictedCopy(LayoutInterval interval,
-        Map<LayoutComponent, LayoutComponent> componentMap, LayoutRegion space, int dimension, List temp) {
+        Map<LayoutComponent, LayoutComponent> componentMap, LayoutRegion space, int dimension, List<Object> temp) {
         boolean processTemp = (temp == null);
         if (temp == null) {
-            temp = new LinkedList();
+            temp = new LinkedList<Object>();
         }
         if (interval.isGroup()) {
             boolean parallel = interval.isParallel();
@@ -2597,7 +2597,7 @@ public class LayoutDesigner implements LayoutConstants {
             } else if (par.isSequential()) {
                 // Change resizability of gaps
                 boolean parentSeq = (parent == par);
-                List resizableList = new LinkedList();
+                List<LayoutInterval> resizableList = new LinkedList<LayoutInterval>();
                 int alignment = parentSeq ? LayoutInterval.getEffectiveAlignment(interval) : 0;
                 LayoutInterval leadingGap = null;
                 LayoutInterval trailingGap = null;
@@ -2787,7 +2787,7 @@ public class LayoutDesigner implements LayoutConstants {
 	}
     }
 
-    private void destroyRedundantGroups(Set updatedContainers) {
+    private void destroyRedundantGroups(Set<LayoutComponent> updatedContainers) {
         Iterator it = layoutModel.getAllComponents();
         while (it.hasNext()) {
             LayoutComponent comp = (LayoutComponent) it.next();
@@ -2857,7 +2857,7 @@ public class LayoutDesigner implements LayoutConstants {
     void takeOutInterval(LayoutInterval interval, LayoutInterval boundary) {
         LayoutInterval parent = interval.getParent();
         int index = parent.indexOf(interval);
-        List toRemove = new LinkedList();
+        List<LayoutInterval> toRemove = new LinkedList<LayoutInterval>();
         toRemove.add(interval);
         if (parent.isSequential()) {
             // Remove leading gap
@@ -2881,7 +2881,7 @@ public class LayoutDesigner implements LayoutConstants {
                     int alignment = LayoutInterval.getEffectiveAlignment(interval);
                     int size = 0;
                     for (int i=0; i<3; i++) {
-                        size += LayoutInterval.getIntervalCurrentSize((LayoutInterval)toRemove.get(i), VERTICAL);
+                        size += LayoutInterval.getIntervalCurrentSize(toRemove.get(i), VERTICAL);
                     }
                     gap.setSizes(NOT_EXPLICITLY_DEFINED, size, (alignment == TRAILING) ? Short.MAX_VALUE : USE_PREFERRED_SIZE);
                 }
@@ -3916,22 +3916,19 @@ public class LayoutDesigner implements LayoutConstants {
     // converted cursor position used during moving/resizing
     private int[] cursorPos = { 0, 0 };
 
-    // resizability of a component in the designer
-    private boolean[][] resizability = { { true, true }, { true, true } };
-
     // -----
     // test generation support
 
     static final String TEST_SWITCH = "netbeans.form.layout_test"; // NOI18N
 
     /* stores test code lines */
-    public List testCode = new ArrayList();
+    public List<String> testCode = new ArrayList<String>();
 
     // these below are used for removing unwanted move entries, otherwise the code can exceed 10000 lines in a few seconds of form editor work ;O)
-    private List testCode0 = new ArrayList();
-    private List beforeMove = new ArrayList();
-    private List move1 = new ArrayList();
-    private List move2 = new ArrayList();
+    private List<String> testCode0 = new ArrayList<String>();
+    private List<String> beforeMove = new ArrayList<String>();
+    private List<String> move1 = new ArrayList<String>();
+    private List<String> move2 = new ArrayList<String>();
     private boolean isMoving = false;
     
     private int modelCounter = -1;
