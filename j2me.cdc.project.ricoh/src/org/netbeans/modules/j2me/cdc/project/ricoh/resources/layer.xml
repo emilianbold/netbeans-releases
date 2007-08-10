@@ -140,15 +140,6 @@
                                 <attr name="platform" stringvalue="ricoh"/>
                                 <attr name="sampletype" stringvalue="xlet"/>
                             </file>
-                            <file name="SoapClient.zip" url="samples/SoapClient.zip">
-                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
-                                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
-                                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples/SoapClient.html"/>
-                                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/resources/cdcProject.png"/>
-                                <attr name="template" boolvalue="true"/>
-                                <attr name="platform" stringvalue="ricoh"/>
-                                <attr name="sampletype" stringvalue="xlet"/>
-                            </file>
                             <file name="TimeSet.zip" url="samples/TimeSet.zip">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ricoh.Bundle"/>
                                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.j2me.cdc.project.ricoh.SamplesWizardIterator.createIterator"/>
