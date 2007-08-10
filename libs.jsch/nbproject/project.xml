@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jsch-0.1.24.jar</runtime-relative-path>
-                <binary-origin>../external/jsch-0.1.24.jar</binary-origin>
+                <binary-origin>external/jsch-0.1.24.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
