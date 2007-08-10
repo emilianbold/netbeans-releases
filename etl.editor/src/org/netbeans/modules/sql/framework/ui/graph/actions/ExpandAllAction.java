@@ -34,7 +34,7 @@ import org.openide.util.NbBundle;
  */
 public class ExpandAllAction extends GraphAction {
 
-    private static final URL expandAllImgUrl = ExpandAllAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Expand_All.png");
+    private static final URL expandAllImgUrl = ExpandAllAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/expand_all_edm.png");
 
     public ExpandAllAction() {
         //action name

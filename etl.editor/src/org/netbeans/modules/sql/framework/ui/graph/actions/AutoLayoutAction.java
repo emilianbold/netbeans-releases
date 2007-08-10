@@ -36,7 +36,7 @@ import org.openide.util.NbBundle;
  */
 public class AutoLayoutAction extends GraphAction {
 
-    private static final URL autoLayoutImgUrl = AutoLayoutAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Auto_Layout.png");
+    private static final URL autoLayoutImgUrl = AutoLayoutAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/layout_edm.png");
 
     public AutoLayoutAction() {
         //action name

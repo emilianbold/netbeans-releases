@@ -35,7 +35,7 @@ import org.openide.util.NbBundle;
  */
 public class CollapseAllAction extends GraphAction {
 
-    private static final URL collapseAllImgUrl = CollapseAllAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Collapse_All.png");
+    private static final URL collapseAllImgUrl = CollapseAllAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/collapse_all_edm.png");
 
     public CollapseAllAction() {
         //action name
