@@ -447,8 +447,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 List<AnnotationTree> annotations = new ArrayList<AnnotationTree>();
 
                 //add @Id() only if not in an embeddable PK class
-                boolean idAnnotated = isPKMember && !needsPKClass;
-                if (idAnnotated) {
+                if (isPKMember && !needsPKClass) {
                     annotations.add(genUtils.createAnnotation("javax.persistence.Id")); // NOI18N
                 }
 
@@ -473,11 +472,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     annotations.add(genUtils.createAnnotation("javax.persistence.Temporal", Collections.singletonList(temporalAnnValueArgument)));
                 }
 
-                if (idAnnotated) {
-                    return new Property(Modifier.PRIVATE, Modifier.PUBLIC, Modifier.PROTECTED, annotations, genUtils.createType(getMemberType(m)), memberName);
-                } else {
-                    return new Property(Modifier.PRIVATE, annotations, genUtils.createType(getMemberType(m)), memberName);
-                }
+                return new Property(Modifier.PRIVATE, annotations, getMemberType(m), memberName);
             }
 
             /**
@@ -672,25 +667,29 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 private final MethodTree getter;
                 private final MethodTree setter;
 
-                public Property(Modifier modifier, List<AnnotationTree> annotations, Tree type, String name) throws IOException {
-                    this(modifier, Modifier.PUBLIC, Modifier.PUBLIC, annotations, type, name);
+                public Property(Modifier modifier, List<AnnotationTree> annotations, String type, String name) throws IOException {
+                    this(modifier, annotations, genUtils.createType(type), name);
                 }
 
-                public Property(Modifier fieldModifier, Modifier getterModifier, Modifier setterModifier, List<AnnotationTree> annotations, Tree type, String name) throws IOException {
+                public Property(Modifier modifier, List<AnnotationTree> annotations, TypeMirror type, String name) throws IOException {
+                    this(modifier, annotations, copy.getTreeMaker().Type(type), name);
+                }
+
+                private Property(Modifier modifier, List<AnnotationTree> annotations, Tree typeTree, String name) throws IOException {
                     TreeMaker make = copy.getTreeMaker();
                     field = make.Variable(
-                            make.Modifiers(EnumSet.of(fieldModifier), fieldAccess ? annotations : Collections.<AnnotationTree>emptyList()),
+                            make.Modifiers(EnumSet.of(modifier), fieldAccess ? annotations : Collections.<AnnotationTree>emptyList()),
                             name,
-                            type,
+                            typeTree,
                             null);
                     getter = genUtils.createPropertyGetterMethod(
-                            make.Modifiers(EnumSet.of(getterModifier), fieldAccess ? Collections.<AnnotationTree>emptyList() : annotations),
+                            make.Modifiers(EnumSet.of(Modifier.PUBLIC), fieldAccess ? Collections.<AnnotationTree>emptyList() : annotations),
                             name,
-                            type);
+                            typeTree);
                     setter = genUtils.createPropertySetterMethod(
-                            genUtils.createModifiers(setterModifier),
+                            genUtils.createModifiers(Modifier.PUBLIC),
                             name,
-                            type);
+                            typeTree);
                 }
 
                 public VariableTree getField() {
@@ -756,9 +755,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 if (needsPKClass) {
                     String pkFieldName = createFieldName(pkClassName);
                     pkProperty = new Property(
-                            Modifier.PROTECTED, Modifier.PUBLIC, Modifier.PROTECTED,
+                            Modifier.PROTECTED,
                             Collections.singletonList(genUtils.createAnnotation("javax.persistence.EmbeddedId")),
-                            genUtils.createType(pkFQClassName),
+                            pkFQClassName,
                             pkFieldName);
                     properties.add(pkProperty);
                 }
@@ -903,7 +902,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 }
                 annotations.add(genUtils.createAnnotation("javax.persistence." + relationAnn, annArguments)); // NOI18N
 
-                properties.add(new Property(Modifier.PRIVATE, annotations, copy.getTreeMaker().Type(fieldType), memberName));
+                properties.add(new Property(Modifier.PRIVATE, annotations, fieldType, memberName));
             }
 
             protected void finish() {
