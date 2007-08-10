@@ -260,7 +260,7 @@
 <mapID target="org.netbeans.modules.refactoring.java.ui.RenameRefactoringUI.Method" url="refactor/csh/rename_db.html" />
 <mapID target="org.netbeans.modules.refactoring.java.ui.RenameRefactoringUI.Field" url="refactor/csh/rename_db.html" />
 <mapID target="org.netbeans.modules.refactoring.java.ui.RenameRefactoringUI.JavaClass" url="refactor/csh/rename_db.html" />
-<mapID target="org.netbeans.modules.refactoring.java.ui.RenameRefactoringUI.JavaPackage" url="refactor/renameClass.html" />
+<mapID target="org.netbeans.modules.refactoring.java.ui.RenameRefactoringUI.JavaPackage" url="refactor/csh/rename_db.html" />
 <!--Move Multiple Classes dialog box - either from Move Classes command or after manual move-->
 <mapID target="org.netbeans.modules.refactoring.java.ui.MoveClassesUI" url="refactor/moveClass.html" />  
 <!--Move/Copy Single Class:-->
