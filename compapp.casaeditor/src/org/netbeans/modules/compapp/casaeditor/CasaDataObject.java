@@ -39,7 +39,6 @@ import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
@@ -57,8 +56,6 @@ public class CasaDataObject extends MultiDataObject {
     private transient Node.Cookie mBuildCookie = new JbiBuildCookie();
     private transient boolean mIsBuilding;
     
-    private transient AtomicReference<Lookup> myLookup =
-            new AtomicReference<Lookup>();
     private transient AtomicReference<InstanceContent> myServices =
             new AtomicReference<InstanceContent>();
     private transient AtomicBoolean isLookupInit = new AtomicBoolean( false );
@@ -99,12 +96,13 @@ public class CasaDataObject extends MultiDataObject {
         super.handleDelete();
     }
     
+    @Override
     protected FileObject handleMove(DataFolder df) throws IOException {
         //TODO:make sure we save file before moving This is what jave move does.
         //It also launch move refactoring dialog which we should be doing
         //as well
         if (isModified()) {
-            SaveCookie sCookie = (SaveCookie) this.getCookie(SaveCookie.class);
+            SaveCookie sCookie = this.getCookie(SaveCookie.class);
             if (sCookie != null) {
                 sCookie.save();
             }
