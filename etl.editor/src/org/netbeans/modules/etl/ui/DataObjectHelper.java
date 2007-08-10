@@ -47,6 +47,7 @@ import org.openide.WizardDescriptor;
 import org.openide.windows.WindowManager;
 
 import com.sun.sql.framework.exception.BaseException;
+import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 
 /**
  *
@@ -112,6 +113,33 @@ public class DataObjectHelper {
             ErrorManager.getDefault().notify(ex);
         }
     }
+    
+    public void initializeETLDataObject(WizardDescriptor descriptor, ETLCollaborationModel collabModel, IGraphView graphView) throws Exception {
+        ETLWizardHelper wHelper = new ETLWizardHelper(descriptor);
+        
+        List sourceOTDList = wHelper.getSelectedSourceOtds();
+        List destinationOTDList = wHelper.getSelectedDestinationOtds();
+        SQLJoinView joinView = wHelper.getSQLJoinView();
+        List jVisibleColumns = wHelper.getTableColumnNodes();     
+        
+        // first add join view
+        if (joinView != null) {
+            JoinUtility.handleNewJoinCreation(joinView, jVisibleColumns, graphView);
+            
+            // WT #67643: Ensure that flatfile tables in join views have filename runtime
+            // inputs.
+            establishRuntimeInputs(collabModel, joinView.getSourceTables());
+        }
+        
+        if (sourceOTDList != null) {
+            addDestinationOTDs(sourceOTDList, collabModel);
+        }
+        
+        if (destinationOTDList != null) {
+            addDestinationOTDs(destinationOTDList, collabModel);
+        }
+        establishRuntimeOutputs(collabModel.getSQLDefinition());
+    }    
     
     private static void addDestinationOTDs(List otds, ETLCollaborationModel collabModel)
     throws BaseException {
@@ -243,6 +271,43 @@ public class DataObjectHelper {
     private void establishRuntimeOutputs(ETLDataObject mObj) {
         try {
             SQLDefinition sqlDefn = mObj.getETLDefinition().getSQLDefinition();
+            RuntimeDatabaseModel rtModel = sqlDefn.getRuntimeDbModel();
+            if(rtModel == null) {
+                rtModel = new RuntimeDatabaseModelImpl();
+            }
+            RuntimeOutput rtOutTable = new RuntimeOutputImpl();
+            // add STATUS
+            SQLDBColumn column = SQLModelObjectFactory.getInstance().createTargetColumn("STATUS", Types.VARCHAR, 0, 0, true);
+            column.setEditable(false);
+            rtOutTable.addColumn(column);
+            
+            // add STARTTIME
+            column = SQLModelObjectFactory.getInstance().createTargetColumn("STARTTIME", Types.TIMESTAMP, 0, 0, true);
+            column.setEditable(false);
+            rtOutTable.addColumn(column);
+            
+            // add ENDTIME
+            column = SQLModelObjectFactory.getInstance().createTargetColumn("ENDTIME", Types.TIMESTAMP, 0, 0, true);
+            column.setEditable(false);
+            rtOutTable.addColumn(column);
+            
+            Iterator it = sqlDefn.getTargetTables().iterator();
+            while(it.hasNext()) {
+                TargetTable targetTable = (TargetTable)it.next();
+                String argName = SQLObjectUtil.getTargetTableCountRuntimeOutput(targetTable);                
+                column = SQLModelObjectFactory.getInstance().createTargetColumn(argName, Types.INTEGER, 0, 0, true);
+                column.setEditable(false);
+                rtOutTable.addColumn(column);
+            }            
+            rtModel.addTable(rtOutTable);
+            sqlDefn.addObject(rtModel);
+        } catch (Exception ex) {
+            //ignore
+        }
+    }
+    
+    private void establishRuntimeOutputs(SQLDefinition sqlDefn) {
+        try {
             RuntimeDatabaseModel rtModel = sqlDefn.getRuntimeDbModel();
             if(rtModel == null) {
                 rtModel = new RuntimeDatabaseModelImpl();

@@ -54,6 +54,11 @@ import org.netbeans.modules.sql.framework.ui.view.SQLStatementPanel;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.sql.framework.ui.graph.actions.FitToHeightAction;
+import org.netbeans.modules.sql.framework.ui.graph.actions.FitToPageAction;
+import org.netbeans.modules.sql.framework.ui.graph.actions.FitToWidthAction;
+import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomInAction;
+import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomOutAction;
 /**
  * ETL Editor top view. This class just provides ETL specfic actions in toolbar and graph
  * right click.
@@ -146,23 +151,38 @@ public class ETLEditorTopView extends BasicTopView {
         //null is used for seperator
 //        actions.add(null);
         
-        actions.add(GraphAction.getAction(TestRunAction.class));
-        actions.add(GraphAction.getAction(ValidationAction.class));
-        actions.add(GraphAction.getAction(EditDbModelAction.class));
-        actions.add(GraphAction.getAction(SelectTableAction.class));
+        actions.add(GraphAction.getAction(ExpandAllAction.class));
+        actions.add(GraphAction.getAction(CollapseAllAction.class));
         actions.add(GraphAction.getAction(ToggleOutputAction.class));
+        
+        actions.add(GraphAction.getAction(SelectTableAction.class));
+        
         //null is used for seperator
         actions.add(null);
         
         actions.add(GraphAction.getAction(JoinAction.class));
+        actions.add(GraphAction.getAction(EditDbModelAction.class));
         actions.add(GraphAction.getAction(RuntimeInputAction.class));
         actions.add(GraphAction.getAction(RuntimeOutputAction.class));
+       
         //null is used for seperator
         actions.add(null);
+       
+     /*   actions.add(GraphAction.getAction(FitToHeightAction.class));
+        actions.add(GraphAction.getAction(FitToPageAction.class));
+        actions.add(GraphAction.getAction(FitToWidthAction.class));
+        // null is used for seperator
+        actions.add(null);*/
         
-        actions.add(GraphAction.getAction(ExpandAllAction.class));
-        actions.add(GraphAction.getAction(CollapseAllAction.class));
+        actions.add(GraphAction.getAction(ZoomInAction.class));
+        actions.add(GraphAction.getAction(ZoomOutAction.class));
+        actions.add(GraphAction.getAction(ZoomAction.class));
+        // null is used for seperator
+        actions.add(null);
+    
         actions.add(GraphAction.getAction(AutoLayoutAction.class));
+        actions.add(GraphAction.getAction(ValidationAction.class));
+        actions.add(GraphAction.getAction(TestRunAction.class));
 //        actions.add(GraphAction.getAction(PrintAction.class));
         //null is used for seperator
         actions.add(null);
@@ -202,24 +222,36 @@ public class ETLEditorTopView extends BasicTopView {
 //        actions.add(undoAction);
 //        actions.add(redoAction);
 //        actions.add(null);
-        actions.add(GraphAction.getAction(TestRunAction.class));
-        actions.add(GraphAction.getAction(ValidationAction.class));
-        actions.add(GraphAction.getAction(EditDbModelAction.class));
-        actions.add(GraphAction.getAction(SelectTableAction.class));
+        
+        actions.add(GraphAction.getAction(ExpandAllAction.class));
+        actions.add(GraphAction.getAction(CollapseAllAction.class));
         actions.add(GraphAction.getAction(ToggleOutputAction.class));
+        actions.add(GraphAction.getAction(SelectTableAction.class));
+      
         // null is used for seperator
         actions.add(null);
         actions.add(GraphAction.getAction(JoinAction.class));
+        actions.add(GraphAction.getAction(EditDbModelAction.class));
         actions.add(GraphAction.getAction(RuntimeInputAction.class));
         actions.add(GraphAction.getAction(RuntimeOutputAction.class));
         // null is used for seperator
         actions.add(null);
-        actions.add(GraphAction.getAction(ExpandAllAction.class));
-        actions.add(GraphAction.getAction(CollapseAllAction.class));
+       
+     /*   actions.add(GraphAction.getAction(FitToHeightAction.class));
+        actions.add(GraphAction.getAction(FitToPageAction.class));
+        actions.add(GraphAction.getAction(FitToWidthAction.class));
+        // null is used for seperator
+        actions.add(null);*/
+       
+        actions.add(GraphAction.getAction(ZoomInAction.class));
+        actions.add(GraphAction.getAction(ZoomOutAction.class));
+        actions.add(GraphAction.getAction(ZoomAction.class));
+        // null is used for seperator
+        actions.add(null);
         actions.add(GraphAction.getAction(AutoLayoutAction.class));
 //        actions.add(GraphAction.getAction(PrintAction.class));
-        actions.add(GraphAction.getAction(ZoomAction.class));
-        
+        actions.add(GraphAction.getAction(ValidationAction.class));
+        actions.add(GraphAction.getAction(TestRunAction.class));
         return actions;
     }
     

@@ -43,6 +43,7 @@ import org.openide.util.HelpCtx;
 import org.xml.sax.InputSource;
 
 import com.sun.org.apache.xerces.internal.util.XMLChar;
+import org.netbeans.modules.etl.ui.view.ETLEditorTopView;
 
 /**
  * Represents a ETL file.
@@ -77,7 +78,7 @@ public class ETLDataObject extends MultiDataObject {
         }
         return this.mNode;
     }
-    
+       
     /**
      * subclasses should look updateServices() and additionalInitialLookup()
      */
@@ -185,6 +186,13 @@ public class ETLDataObject extends MultiDataObject {
         };
     }
     
+   public ETLEditorTopView getEditorView() {
+        if(this.view == null) {
+            view = new ETLEditorTopView(getModel());
+        }
+        return this.view;
+    }
+    
     public ETLEditorSupport getETLEditorSupport() {
         return editorSupport;
     }
@@ -206,6 +214,7 @@ public class ETLDataObject extends MultiDataObject {
     
     private static final long serialVersionUID = 6338889116068357651L;
     private transient ETLEditorSupport editorSupport;
+    private ETLEditorTopView view;
     private transient ETLCollaborationTopComponent mTC;
     private transient ETLCollaborationModel mModel;
     private transient AtomicReference<Lookup> myLookup =
@@ -214,7 +223,6 @@ public class ETLDataObject extends MultiDataObject {
             new AtomicReference<InstanceContent>();
     private transient AtomicBoolean isLookupInit = new AtomicBoolean(false);            
     private Node mNode = null;
-    
     public static final String ETL_ICON = "org/netbeans/modules/etl/ui/resources/images/ETLDefinition.png";
 }
 
