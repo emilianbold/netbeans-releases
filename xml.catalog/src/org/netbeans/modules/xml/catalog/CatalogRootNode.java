@@ -210,18 +210,7 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
         public synchronized void propertyChange(PropertyChangeEvent e) {
             if (CatalogSettings.PROP_MOUNTED_CATALOGS.equals(e.getPropertyName())) {
                 createKeys((CatalogSettings)e.getSource());
-            } else if (CatalogSettings.PROP_PRJ_INSTANCE.equals(e.getPropertyName())) {
-                
-                //??? switch model instances it is an ugly hack
-                
-                CatalogSettings mounted = (CatalogSettings) e.getOldValue();
-                if (mounted != null) {
-                    mounted.removePropertyChangeListener(this);
-                }
-                mounted = (CatalogSettings) e.getNewValue();
-                if (mounted != null) mounted.addPropertyChangeListener(this);
-                createKeys(mounted);
-            }
+            } 
         }
         
         /** 

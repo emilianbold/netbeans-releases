@@ -60,9 +60,7 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
 
             <!-- Store mounted catalogs per project. -->
-            <file name="org-netbeans-modules-xml-catalog-settings-CatalogSettings.settings" url="ProjectSettings.xml">
-                <attr name="SystemFileSystem.layer" stringvalue="project"/>
-            </file>
+            <file name="org-netbeans-modules-xml-catalog-settings-CatalogSettings.settings" url="ProjectSettings.xml"/>
         </folder>
     </folder>
 

@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog.settings;
@@ -24,7 +24,6 @@ import java.beans.*;
 import org.netbeans.modules.xml.catalog.lib.IteratorIterator;
 
 import org.openide.*;
-import org.openide.util.HelpCtx;
 import org.openide.util.io.NbMarshalledObject;
 
 import org.netbeans.modules.xml.catalog.spi.*;
@@ -36,8 +35,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.FolderLookup;
 import org.openide.util.Lookup;
-import org.openide.util.LookupListener;
-import org.openide.util.LookupEvent;
 import org.openide.util.lookup.Lookups;
 
 
@@ -87,13 +84,6 @@ public final class CatalogSettings implements Externalizable {
     // folder at SFS holding global registrations
     private static final String REGISTRATIONS = "Plugins/XML/UserCatalogs";
 
-    /** 
-     * Project has changed. You MUST switch to new settings instance. 
-     * It is fired at the old instance.
-     * @deprecated It is hack for NetBeans 3.X lacking project system
-     */
-    public static final String PROP_PRJ_INSTANCE = "cat-prj-in";
-    
     // cached instance
     private static Lookup userCatalogLookup;
 
@@ -103,11 +93,6 @@ public final class CatalogSettings implements Externalizable {
     private PropertyChangeSupport listeners = null; 
 
     private final CatalogListener catalogListener = new CL();
-    
-    private static ErrorManager err = null;
-
-    // active result of lookup for this setting
-    private static Lookup.Result result = null;
     
     // the only active instance in current project
     private static CatalogSettings instance = null;
@@ -134,24 +119,8 @@ public final class CatalogSettings implements Externalizable {
      * @deprecated does not allow multiple opened projects
      */
     public static synchronized CatalogSettings getDefault() {
-        if (result == null) {
-            result = Lookup.getDefault().lookup(new Lookup.Template(CatalogSettings.class));
-            
-            // listen at project "switch", we are project setting
-            result.addLookupListener(new LookupListener() {
-                public void resultChanged(LookupEvent e) {
-                    CatalogSettings oldSettings = instance;
-                    synchronized (CatalogSettings.class) {
-                        instance = (CatalogSettings) Lookup.getDefault().lookup(CatalogSettings.class);
-                    }
-                    if (oldSettings != null) {
-                        oldSettings.firePropertyChange(PROP_PRJ_INSTANCE, oldSettings, instance);
-                    }
-                }
-            });
-            
-            // start result listening
-            instance = (CatalogSettings) result.allInstances().iterator().next();
+        if (instance == null) {
+            instance = Lookup.getDefault().lookup(CatalogSettings.class);
         }
         return instance;
     }
@@ -379,8 +348,8 @@ public final class CatalogSettings implements Externalizable {
     /**
      * For debugging purposes only.
      */
-    public String toString() {
-        Lookup.Template template = new Lookup.Template(CatalogReader.class);
+    @Override public String toString() {
+        Lookup.Template template = new Lookup.Template<CatalogReader>(CatalogReader.class);
         Lookup.Result result = getUserCatalogsLookup().lookup(template);        
         return "CatalogSettings[ global-scope: " + result.allInstances() + 
             ", project-scope: " + mountedCatalogs + " ]";
