@@ -446,6 +446,7 @@ public class RailsProject implements Project, RakeProjectListener {
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
             "Templates/Ruby/RhtmlTemplate.rhtml", // NOI18N
+            "Templates/Ruby/ErbTemplate.erb", // NOI18N
             "Templates/Ruby/main.rb", // NOI18N
             "Templates/Ruby/test.rb", // NOI18N
             "Templates/Ruby/class.rb", // NOI18N

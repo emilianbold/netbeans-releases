@@ -57,7 +57,7 @@ public enum RhtmlTokenId implements TokenId {
     /** Contents inside <% %> */
     RUBY("ruby"),
     /** <% or %> */
-    DELIMITER("ruby-delimiter");
+    DELIMITER("ruby-delimiter"); // Note - referenced in LexUtilities
 
     public static final String MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     
