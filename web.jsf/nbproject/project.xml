@@ -260,6 +260,14 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.project</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.catalog</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -419,6 +427,7 @@ Microsystems, Inc. All Rights Reserved.
                 <friend>org.netbeans.modules.web.jsf.navigation</friend>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.project.jsf</friend>
+                <friend>org.netbeans.modules.web.frameworks.facelets</friend>
                 <package>org.netbeans.modules.web.jsf.api</package>
                 <package>org.netbeans.modules.web.jsf.api.editor</package>
                 <package>org.netbeans.modules.web.jsf.api.facesmodel</package>

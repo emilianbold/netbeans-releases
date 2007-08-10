@@ -51,7 +51,7 @@
                               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
                               <Component id="lServletName" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                              <Component id="tServletName" pref="308" max="32767" attributes="0"/>
+                              <Component id="tServletName" pref="350" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
@@ -62,7 +62,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="cbVerify" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="tURLPattern" alignment="0" pref="302" max="32767" attributes="0"/>
+                                  <Component id="tURLPattern" alignment="0" pref="352" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -236,24 +236,24 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="rbRegisteredLibrary" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cbLibraries" pref="298" max="32767" attributes="0"/>
+                              <Component id="cbLibraries" pref="343" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="rbNewLibrary" alignment="0" pref="450" max="32767" attributes="0"/>
+                          <Component id="rbNewLibrary" alignment="0" pref="478" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="17" pref="17" max="17" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="lDirectory" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="lVersion" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="18" max="32767" attributes="0"/>
+                              <EmptySpace pref="62" max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                  <Component id="jtVersion" alignment="1" max="32767" attributes="1"/>
+                                  <Component id="jtNewLibraryName" alignment="1" max="32767" attributes="1"/>
                                   <Component id="jtFolder" alignment="1" pref="238" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="jbBrowse" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="rbNoneLibrary" alignment="0" pref="450" max="32767" attributes="0"/>
+                          <Component id="rbNoneLibrary" alignment="0" pref="478" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -278,11 +278,11 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
                           <Component id="lVersion" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="jtVersion" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jtNewLibraryName" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="rbNoneLibrary" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="100" max="32767" attributes="0"/>
+                      <EmptySpace pref="140" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -390,7 +390,7 @@
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="MNE_lJSFVer" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-                  <ComponentRef name="jtVersion"/>
+                  <ComponentRef name="jtNewLibraryName"/>
                 </Property>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="LBL_VERSION" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
@@ -400,14 +400,14 @@
                 </Property>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="jtVersion">
+            <Component class="javax.swing.JTextField" name="jtNewLibraryName">
               <Properties>
                 <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/web/jsf/wizards/Bundle.properties" key="HINT_Version" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
               <Events>
-                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="jtVersionKeyReleased"/>
+                <EventHandler event="keyReleased" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="jtNewLibraryNameKeyReleased"/>
               </Events>
             </Component>
             <Component class="javax.swing.JRadioButton" name="rbNoneLibrary">

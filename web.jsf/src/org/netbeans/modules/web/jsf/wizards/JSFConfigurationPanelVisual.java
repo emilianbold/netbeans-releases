@@ -35,23 +35,22 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author  petr, Radko Najman
+ * @author  Petr Pisl, Radko Najman
  */
 public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements HelpCtx.Provider, DocumentListener  {
+    private static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
 
     private JSFConfigurationPanel panel;
     
     private ArrayList <Library> jsfLibraries;
     private boolean webModule25Version;
     private String serverInstanceID;
-    private boolean addJSF = false;
     
     /** Creates new form JSFConfigurationPanelVisual */
     public JSFConfigurationPanelVisual(JSFConfigurationPanel panel, boolean customizer) {
@@ -66,13 +65,19 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         }
     }
     
+    private boolean isKnownJSFLibrary(Library library){
+        String name = library.getName();
+        return (JSFUtils.DEFAULT_JSF_1_2_NAME.equals(name) || JSFUtils.DEFAULT_JSF_1_1_NAME.equals(name)
+                || name.toUpperCase().startsWith(JSFUtils.CREATED_JSF_NAME_PREFIX));
+    }
+    
     private void initLibraries(){
         Library libraries[] = LibraryManager.getDefault().getLibraries();
-        Vector <String> items = new Vector();
-        jsfLibraries = new ArrayList();
+        Vector <String> items = new Vector <String>();
+        jsfLibraries = new ArrayList <Library>();
         
         for (int i = 0; i < libraries.length; i++) {
-            if (libraries[i].getName().startsWith("JSF-") || libraries[i].getName().equals("jsf12")) { //NOI18N
+            if (isKnownJSFLibrary(libraries[i])) { //NOI18N
                 String displayName = libraries[i].getDisplayName();
                 items.add(displayName);
                 jsfLibraries.add(libraries[i]);
@@ -121,7 +126,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         jtFolder = new javax.swing.JTextField();
         jbBrowse = new javax.swing.JButton();
         lVersion = new javax.swing.JLabel();
-        jtVersion = new javax.swing.JTextField();
+        jtNewLibraryName = new javax.swing.JTextField();
         rbNoneLibrary = new javax.swing.JRadioButton();
 
         setLayout(new java.awt.CardLayout());
@@ -167,7 +172,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         .add(11, 11, 11)
                         .add(lServletName)
                         .add(37, 37, 37)
-                        .add(tServletName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE))
+                        .add(tServletName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE))
                     .add(confPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -176,7 +181,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(confPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(cbVerify)
-                            .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)))
+                            .add(tURLPattern, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)))
                     .add(confPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .add(cbPackageJars)))
@@ -265,14 +270,14 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
         });
 
         lVersion.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle").getString("MNE_lJSFVer").charAt(0));
-        lVersion.setLabelFor(jtVersion);
+        lVersion.setLabelFor(jtNewLibraryName);
         lVersion.setText(bundle.getString("LBL_VERSION")); // NOI18N
         lVersion.setToolTipText(bundle.getString("HINT_Version")); // NOI18N
 
-        jtVersion.setToolTipText(bundle.getString("HINT_Version")); // NOI18N
-        jtVersion.addKeyListener(new java.awt.event.KeyAdapter() {
+        jtNewLibraryName.setToolTipText(bundle.getString("HINT_Version")); // NOI18N
+        jtNewLibraryName.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                jtVersionKeyReleased(evt);
+                jtNewLibraryNameKeyReleased(evt);
             }
         });
 
@@ -296,20 +301,20 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                     .add(libPanelLayout.createSequentialGroup()
                         .add(rbRegisteredLibrary)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cbLibraries, 0, 298, Short.MAX_VALUE))
-                    .add(rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                        .add(cbLibraries, 0, 343, Short.MAX_VALUE))
+                    .add(rbNewLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE)
                     .add(libPanelLayout.createSequentialGroup()
                         .add(17, 17, 17)
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lDirectory)
                             .add(lVersion))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 18, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 62, Short.MAX_VALUE)
                         .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(jtVersion)
+                            .add(jtNewLibraryName)
                             .add(jtFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(jbBrowse))
-                    .add(rbNoneLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
+                    .add(rbNoneLibrary, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE))
                 .addContainerGap())
         );
         libPanelLayout.setVerticalGroup(
@@ -329,10 +334,10 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(lVersion)
-                    .add(jtVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jtNewLibraryName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(rbNoneLibrary)
-                .addContainerGap(100, Short.MAX_VALUE))
+                .addContainerGap(140, Short.MAX_VALUE))
         );
 
         jsfTabbedPane.addTab(org.openide.util.NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_TAB_Libraries"), libPanel); // NOI18N
@@ -345,9 +350,9 @@ private void rbNoneLibraryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-
     updateLibrary();
 }//GEN-LAST:event_rbNoneLibraryItemStateChanged
 
-private void jtVersionKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtVersionKeyReleased
+private void jtNewLibraryNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jtNewLibraryNameKeyReleased
     checkNewLibrarySetting();
-}//GEN-LAST:event_jtVersionKeyReleased
+}//GEN-LAST:event_jtNewLibraryNameKeyReleased
 
 private void rbNewLibraryItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rbNewLibraryItemStateChanged
     updateLibrary();
@@ -389,7 +394,7 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     private javax.swing.JButton jbBrowse;
     private javax.swing.JTabbedPane jsfTabbedPane;
     private javax.swing.JTextField jtFolder;
-    private javax.swing.JTextField jtVersion;
+    private javax.swing.JTextField jtNewLibraryName;
     private javax.swing.JLabel lDirectory;
     private javax.swing.JLabel lServletName;
     private javax.swing.JLabel lURLPattern;
@@ -422,12 +427,12 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         String urlPattern = tURLPattern.getText();
-        if (urlPattern == null || urlPattern.trim().equals("")){
+        if (urlPattern == null || urlPattern.trim().equals("")) {                                    // NOI18N
           wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
                 NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsEmpty"));
           return false;
         }
-        if (!isPatternValid(urlPattern)){
+        if (!isPatternValid(urlPattern)) {
           wizardDescriptor.putProperty("WizardPanel_errorMessage",                                  // NOI18N
                 NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_URLPatternIsNotValid"));
           return false;
@@ -450,54 +455,32 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             }
         }
         
-        if (addJSF) {
-            if ((rbNewLibrary.isSelected() && (jtFolder.getText().trim().length() <= 0 || jtVersion.getText().trim().length() <= 0))
-                    || (rbRegisteredLibrary.isSelected() && cbLibraries.getItemCount() <= 0)) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
-                return false;
-            }
+        if ((rbNewLibrary.isSelected() && (jtFolder.getText().trim().length() <= 0 || jtNewLibraryName.getText().trim().length() <= 0))
+                || (rbRegisteredLibrary.isSelected() && cbLibraries.getItemCount() <= 0)) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_MissingJSF")); //NOI18N
+            return false;
         }
+        
         
         if (rbNewLibrary.isSelected()) {
             String folder = jtFolder.getText().trim();
-            String version = jtVersion.getText().trim();
-            if (folder.length() <= 0) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyJSFFolder")); //NOI18N
+            String newLibraryName = jtNewLibraryName.getText().trim();
+            String message =JSFUtils.isJSFInstallFolder(new File(folder));
+            if (message != null) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", message); //NOI18N
                 return false;
             }
-            File jsfFolder = new File(folder);
-            if (!jsfFolder.exists()) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NonExistingJSFFolder")); //NOI18N
+            if (newLibraryName.length() <= 0) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyNewLibraryName")); //NOI18N
                 return false;
             }
-            if (!jsfFolder.isDirectory()) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NotJSFFolder")); //NOI18N
-                return false;
-            }
-            FileObject fo = FileUtil.toFileObject(jsfFolder);
-            FileObject[] ch = fo.getChildren();
-            int counter = 0;
-            for (int i = 0; i < ch.length; i++) {
-                FileObject child = ch[i];
-                if (child.getName().equalsIgnoreCase("jsf-api") || child.getName().equalsIgnoreCase("jsf-impl")) //NOI18N
-                    counter++;
-            }
-            if (counter != 2) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_NotValidJSFFolder")); //NOI18N
-                return false;
-            }
-            if (version.length() <= 0) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_EmptyJSFVersion")); //NOI18N
-                return false;
-            }
-            Library lib = JSFUtils.getJSFLibrary(version);
+            Library lib = JSFUtils.getJSFLibrary(newLibraryName);
             if (lib != null) {
                 wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_AlreadyExists")); //NOI18N
                 return false;
             }
         }
                 
-        
         if(wizardDescriptor!=null)
             wizardDescriptor.putProperty("WizardPanel_errorMessage", null);                             // NOI18N
         return true;
@@ -532,37 +515,42 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
 //        optionsPanel.read(d);
     }
     
+    /**  Method looks at the project classpath and is looking for javax.faces.FacesException.
+     *   If there is not this class on the classpath, then is offered appropriate jsf library
+     *   according web module version.
+     */
     private void initLibSettings(boolean webModule25Version, String serverInstanceID) {
         try {
-            addJSF = false;
             File[] cp = Deployment.getDefault().getJ2eePlatform(serverInstanceID).getClasspathEntries();
-            boolean isJSF = Util.containsClass(Arrays.asList(cp), "javax.faces.FacesException");
-            if (isJSF)
+            boolean isJSF = Util.containsClass(Arrays.asList(cp),FACES_EXCEPTION);
+            if (isJSF) {
                 rbNoneLibrary.setSelected(true);
-            else if (webModule25Version) {
-                Library jsf12 = LibraryManager.getDefault().getLibrary("jsf12");
-                if (jsf12 != null) {
+            }
+            else {
+                Library profferedLibrary = null;
+                if (webModule25Version) {
+                    //if the web module follows 2.5 specification, select jsf 1.2, which is budnled
+                    profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_2_NAME);
+                }
+                else {
+                    // select the jsf 1.1 library, if it's installed
+                    profferedLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSF_1_1_NAME);
+                }
+                
+                if (profferedLibrary != null) {
+                    // if there is a proffered library, select
                     rbRegisteredLibrary.setSelected(true);
-                    cbLibraries.setSelectedItem(jsf12.getDisplayName());
-                } else
-                    rbNewLibrary.setSelected(true);
-            } else {
-                Library[] libs = LibraryManager.getDefault().getLibraries();
-                Library lib = null;
-                for (int i = 0; i < libs.length; i++) {
-                    if (libs[i].getDisplayName().startsWith("JSF-")) {
-                        lib = libs[i];
-                        break;
+                    cbLibraries.setSelectedItem(profferedLibrary.getDisplayName());
+                }
+                else {
+                    // there is not a proffered library -> select one or select creating new one
+                    if (jsfLibraries.size() == 0) {
+                        rbNewLibrary.setSelected(true);
                     }
                 }
-                if (lib != null) {
-                    rbRegisteredLibrary.setSelected(true);
-                    cbLibraries.setSelectedItem(lib.getDisplayName());
-                } else
-                    rbNewLibrary.setSelected(true);
-                    addJSF = true;
             }
-        } catch (IOException exc) {
+        } catch (IOException exception) {
+            Exceptions.printStackTrace(exception);
         }
     }
 
@@ -660,26 +648,28 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         jtFolder.setEnabled(enabled);
         jbBrowse.setEnabled(enabled);
         lVersion.setEnabled(enabled);
-        jtVersion.setEnabled(enabled);
+        jtNewLibraryName.setEnabled(enabled);
     }
 
-    private void checkNewLibrarySetting(){
+    private void checkNewLibrarySetting() {
         String message = null;
         String fileName = jtFolder.getText();
-        if (fileName == null || "".equals(fileName)){
+        // clear the panel error message
+        panel.setErrorMessage(null);
+        
+        if (fileName == null || "".equals(fileName)) {
             message = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_PathIsNotFaceletsFolder");
         } else {
             File folder = new File(fileName);
-            if (!JSFUtils.isJSFInstallFolder(folder)){
-                message = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_PathIsNotFaceletsFolder");
-            } else {
+            message = JSFUtils.isJSFInstallFolder(folder);
+            if (message == null) {
                 panel.setInstallFolder(folder);
                 
-                String version = jtVersion.getText().trim();
-                if (version == null || "".equals(version)){
+                String version = jtNewLibraryName.getText().trim();
+                if (version == null || "".equals(version)) {
                     message = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "MSG_VersionHasToBeDefined");
-                } else{
-                    String name = "jsf-"+ JSFUtils.convertLibraryVersion(version);  //NOI18N
+                } else {
+                    String name = "jsf-"+ JSFUtils.convertLibraryName(version);  //NOI18N
                     int length = jsfLibraries.size();
                     for (int i = 0; i < length; i++) {
                         if(jsfLibraries.get(i).getName().equals(name)){
@@ -687,8 +677,8 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                         }
                     }
                 }
-                if (message == null){
-                    panel.setNewLibraryVersion(jtVersion.getText().trim());
+                if (message == null) {
+                    panel.setNewLibraryName(jtNewLibraryName.getText().trim());
                 }
             }
         }

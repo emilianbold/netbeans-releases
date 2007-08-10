@@ -22,7 +22,6 @@ package org.netbeans.modules.web.jsf;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -46,11 +45,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
 import org.netbeans.modules.web.spi.webmodule.FrameworkConfigurationPanel;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,76 +72,54 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
     }
     
     public Set extend(WebModule webModule) {
-        FileObject fileObject = webModule.getDocumentBase();
-        Project project = FileOwnerQuery.getOwner(fileObject);
         Set result = new HashSet();
-              
-        try {
-            FileObject dd = webModule.getDeploymentDescriptor();
-            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
-            ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
-            if (ddRoot != null){
-                if (cp.findResource("javax/faces/FacesException.class") == null) {  //NOI18N
-                    ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
-                    if (WebApp.VERSION_2_5.equals(ddRoot.getVersion())) {
-                        Library jsf12Library = LibraryManager.getDefault().getLibrary("jsf12");                        
-                        if (jsf12Library != null) {
-                            if (cpExtender != null) {
-                                try {
-                                    cpExtender.addLibrary(jsf12Library);
-                                    Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
-                                    if (jstlLibrary != null){
-                                        cpExtender.addLibrary(jstlLibrary);
-                                    }
-                                } catch (IOException ioExceptoin) {
-                                    LOGGER.log(Level.WARNING, "Exception during extending an web project", ioExceptoin); //NOI18N
-                                }
-                            }
-                        }
-                    } else {
-                        Library jsfLib = null;
-                        JSFConfigurationPanel.LibraryType libraryType = panel.getLibraryType();
-                        if (libraryType != null && libraryType != JSFConfigurationPanel.LibraryType.NONE) {
-                            if (libraryType == JSFConfigurationPanel.LibraryType.USED) {
-                                jsfLib = panel.getLibrary();
-                            } else if (libraryType == JSFConfigurationPanel.LibraryType.NEW) {
-                                String libraryVersion = panel.getNewLibraryVersion();
-                                File installFolder = panel.getInstallFolder();
-                                if (installFolder != null && libraryVersion != null) {
-                                    try {
-                                        JSFUtils.createJSFUserLibrary(installFolder, libraryVersion);
-                                        jsfLib = JSFUtils.getJSFLibrary(libraryVersion);
-                                    } catch (IOException exception){
-                                        LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
-                                    }
-                                }
-                            }
-                        }
-                        
-                        if (cpExtender != null) {
-                            try {
-                                if (jsfLib != null) {
-                                    cpExtender.addLibrary(jsfLib);
-                                }
-                                Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
-                                if (jstlLibrary != null){
-                                    cpExtender.addLibrary(jstlLibrary);
-                                }
-                            } catch (IOException ioe) {
-                                LOGGER.log(Level.WARNING, "Exception during extending an web project", ioe); //NOI18N
-                            }
-                        }
-                    }
+        Library jsfLibrary = null;      
+        Library jstlLibrary = null;
+        
+        JSFConfigurationPanel.LibraryType libraryType = panel.getLibraryType();
+        if (libraryType == JSFConfigurationPanel.LibraryType.NEW) {
+            // create new jsf library
+            String libraryVersion = panel.getNewLibraryName();
+            File installFolder = panel.getInstallFolder();
+            if (installFolder != null && libraryVersion != null) {
+                try {
+                    JSFUtils.createJSFUserLibrary2(installFolder, libraryVersion);
+                    jsfLibrary = JSFUtils.getJSFLibrary(libraryVersion);
+                } catch (IOException exception) {
+                    LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
                 }
             }
-            
+        } else {
+            if (libraryType == JSFConfigurationPanel.LibraryType.USED) {
+                //use a selected library
+                jsfLibrary = panel.getLibrary();
+                if (jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_1_2_NAME) 
+                        || jsfLibrary.getName().equals(JSFUtils.DEFAULT_JSF_1_1_NAME)) {
+                    jstlLibrary = LibraryManager.getDefault().getLibrary(JSFUtils.DEFAULT_JSTL_1_1_NAME);
+                }
+            }
+        }
+
+        try {
+            FileObject fileObject = webModule.getDocumentBase();
+            if (jsfLibrary != null){
+                Project project = FileOwnerQuery.getOwner(fileObject);
+                WebProjectLibrariesModifier projectLibraryModifier = project.getLookup().lookup(WebProjectLibrariesModifier.class);
+                Library[] libraries;
+                if (jstlLibrary != null) {
+                    libraries = new Library[]{jsfLibrary, jstlLibrary};
+                }
+                else {
+                    libraries = new Library[]{jsfLibrary};
+                }
+                projectLibraryModifier.addCompileLibraries(libraries);
+            }
+            ClassPath cp = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
             boolean isMyFaces = cp.findResource("org/apache/myfaces/webapp/StartupServletContextListener.class") != null; //NOI18N
             FileSystem fileSystem = webModule.getWebInf().getFileSystem();
             fileSystem.runAtomicAction(new CreateFacesConfig(webModule, isMyFaces));
             result.add(webModule.getDocumentBase().getFileObject("welcomeJSF", "jsp")); //NOI18N
-        } catch (FileNotFoundException exception) {
-            LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N 
-        } catch (IOException exception) {
+        }  catch (IOException exception) {   
            LOGGER.log(Level.WARNING, "Exception during extending an web project", exception); //NOI18N
         }
         return result;
@@ -250,7 +226,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
             if (ddRoot != null){
                 try{
                     Servlet servlet = (Servlet)ddRoot.createBean("Servlet"); //NOI18N
-                    String servletName = panel == null ? "Faces Servlet" : panel.getServletName();
+                    String servletName = panel == null ? "Faces Servlet" : panel.getServletName(); //NOI18N
                     servlet.setServletName(servletName); //NOI18N
                     servlet.setServletClass("javax.faces.webapp.FacesServlet"); //NOI18N
                     ddRoot.addServlet(servlet);

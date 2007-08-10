@@ -46,7 +46,7 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
     public enum LibraryType {USED, NEW, NONE};
     private LibraryType libraryType;
     private Library jsfCoreLibrary;
-    private String newLibraryVersion;
+    private String newLibraryName;
     private File installedFolder;
 
     /** Creates a new instance of JSFConfigurationPanel */
@@ -176,12 +176,12 @@ public class JSFConfigurationPanel implements FrameworkConfigurationPanel, Wizar
         fireChangeEvent();
     }
 
-    public String getNewLibraryVersion(){
-        return newLibraryVersion;
+    public String getNewLibraryName(){
+        return newLibraryName;
     }
     
-    public void setNewLibraryVersion(String version){
-        this.newLibraryVersion = version;
+    public void setNewLibraryName(String version){
+        this.newLibraryName = version;
     }
 
     public File getInstallFolder(){

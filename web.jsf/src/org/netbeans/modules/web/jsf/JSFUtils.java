@@ -20,130 +20,135 @@
 package org.netbeans.modules.web.jsf;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.project.libraries.LibraryFactory;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Pisl, Radko Najman
  */
 public class JSFUtils {
-    private static final String LIB_JSF_NAME = "JSF";
-    private static final String LIBS_FOLDER = "org-netbeans-api-project-libraries/Libraries"; //NOI18N
+    private static final String LIB_JSF_NAME = "JSF";       //NOI18N
+    private static final String LIB_FOLDER = "lib";         //NOI18N
     
-    private static final String JSF_API_JAR = "jsf-api.jar";
-    private static final String JSF_IMPL_JAR = "jsf-impl.jar";
-    private static final String DIGESTER_JAR = "commons-digester.jar";
-    private static final String LOGGING_JAR = "commons-logging.jar";
-    private static final String COLLECTIONS_JAR = "commons-collections.jar";
-    private static final String BEANUTILS_JAR = "commons-beanutils.jar";
-        
-    public static boolean isJSFInstallFolder(File file){
-        boolean result = false;
-        if (file.exists() && file.isDirectory()){
-            File jsf_impl = new File(file, JSF_IMPL_JAR);
-            if (jsf_impl.exists())
-                result = true;
+    // the names of bundled jsf libraries
+    public static String DEFAULT_JSF_1_1_NAME = "jsf1102";  //NOI18N
+    public static String DEFAULT_JSF_1_2_NAME = "jsf12";    //NOI18N
+    // the name of jstl libraryr
+    public static String DEFAULT_JSTL_1_1_NAME = "jstl11";  //NOI18N
+    // prefix for all jsf libraries, created by the framework. 
+    public static String CREATED_JSF_NAME_PREFIX = "JSF-";  //NOI18N
+    
+    /** This method finds out, whether the input file is a folder that contains
+     * a jsf implementation. It looks for lib folder and in this lib looks 
+     * through jars, whether their contain javax.faces.FacesException class.
+     * 
+     * @return null if the folder contains a jsf implemention or a error message
+     */
+    public static String isJSFInstallFolder(File folder) {
+        String result = null;
+        if (folder.exists() && folder.isDirectory()) {
+            File libFolder = new File(folder, LIB_FOLDER);
+            if (libFolder.exists()) {
+                File[] files = libFolder.listFiles(new FileFilter() {
+
+                    public boolean accept(File pathname) {
+                        boolean accepted = false;
+                        if (pathname.getName().endsWith(".jar")) {  //NOI18N
+                            accepted = true;
+                        }
+                        return accepted;
+                    }
+                    
+                });
+                if (files != null && files.length > 0) {
+                    URL [] urls = new URL[files.length];
+                    try {
+                        for (int i = 0; i < files.length; i++) {
+                            urls[i] = files[i].toURL();
+                        }
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    URLClassLoader classLoader = new URLClassLoader(urls);
+                    URL facesException = classLoader.getResource("javax/faces/FacesException.class"); //NOI18N
+                    if (facesException == null) {
+                        result = NbBundle.getMessage(JSFUtils.class, "ERROR_IS_NOT_JSF_API", libFolder.getPath());
+                    }
+                }                
+            }
+            else {
+                result = NbBundle.getMessage(JSFUtils.class, "ERROR_THERE_IS_NOT_LIB_FOLDER", folder.getPath());
+            }
+        }
+        else {
+            result = NbBundle.getMessage(JSFUtils.class, "ERROR_IS_NOT_VALID_PATH", folder.getPath());
         }
         return result;
     }
     
-    //XXX: Replace this when API for managing libraries is available
-    public static boolean createJSFUserLibrary(File folder, final String version) throws IOException {
-        assert folder != null;
+    public static boolean createJSFUserLibrary2(File folder, final String libraryName) throws IOException {
+        boolean result = false;
         
-        final File jsfLibFolder = new File(folder.getPath()); // NOI18N
-        if (!jsfLibFolder.exists() || !jsfLibFolder.isDirectory())
-            return false;
-        
-        final File jsfApiJar = new File(jsfLibFolder, JSF_API_JAR);
-        final File jsfImplJar = new File(jsfLibFolder, JSF_IMPL_JAR);
-        final File digesterJar = new File(jsfLibFolder, DIGESTER_JAR);
-        final File loggingJar = new File(jsfLibFolder, LOGGING_JAR);
-        final File collectionsJar = new File(jsfLibFolder, COLLECTIONS_JAR);
-        final File beanutilsJar = new File(jsfLibFolder, BEANUTILS_JAR);
-        if (!jsfApiJar.exists() || !jsfImplJar.exists()
-                || !digesterJar.exists() || !loggingJar.exists()
-                || !collectionsJar.exists() || !beanutilsJar.exists())
-            return false;
-        
-        final FileSystem sysFs = Repository.getDefault().getDefaultFileSystem();
-        final FileObject libsFolder = sysFs.findResource(LIBS_FOLDER);
-        final String convertedVersion = convertLibraryVersion(version);
-        assert libsFolder != null && libsFolder.isFolder();
-        
-        sysFs.runAtomicAction(new FileSystem.AtomicAction() {
-            public void run() throws IOException {
-                String fileName = LIB_JSF_NAME + "-" + convertedVersion; //NOI18N
-                FileObject jsf = libsFolder.getFileObject(fileName + ".xml");
-                if (jsf == null) {
-                    jsf = libsFolder.createData(fileName + ".xml");
+        // find all jars in the folder/lib
+        File libFolder = new File(folder, LIB_FOLDER);
+        if (libFolder.exists() && libFolder.isDirectory()) {
+            File[] jars = libFolder.listFiles( new FileFilter () {
+                public boolean accept(File pathname) {
+                    return pathname.getName().endsWith(".jar"); //NOI18N
                 }
-                FileLock lock = jsf.lock();
-                try {
-                    PrintWriter out = new PrintWriter(new OutputStreamWriter(jsf.getOutputStream(lock)));                    
-                    try {
-                        String[] resources = new String[]{
-                            FileUtil.getArchiveRoot(jsfApiJar.toURI().toURL()).toString(),
-                            FileUtil.getArchiveRoot(jsfImplJar.toURI().toURL()).toString(),
-                            FileUtil.getArchiveRoot(digesterJar.toURI().toURL()).toString(),
-                            FileUtil.getArchiveRoot(loggingJar.toURI().toURL()).toString(),
-                            FileUtil.getArchiveRoot(collectionsJar.toURI().toURL()).toString(),
-                            FileUtil.getArchiveRoot(beanutilsJar.toURI().toURL()).toString()
-                        };
-                        createLibraryFile(out, fileName, resources);
-                    } finally {
-                        out.close();
-                    }
-                } finally {
-                    lock.releaseLock();
-                }
+            });
+
+            // obtain URLs of the jar file
+            List <URL> urls = new ArrayList <URL> ();
+            for (int i = 0; i < jars.length; i++) {
+                urls.add(jars[i].toURL());
             }
-        });
-        return true;
+
+            // create new library and regist in the Library Manager. 
+            LibraryManager libraryManager = LibraryManager.getDefault();
+            LibraryImplementation libImpl = LibrariesSupport.getLibraryTypeProvider("j2se").createLibrary(); //NOI18N
+            libImpl.setName("JSF-" + convertLibraryName(libraryName));  //NOI18N
+            libImpl.setDescription(libraryName);
+            libImpl.setContent("classpath", urls);  //NOI18N
+            libraryManager.addLibrary(LibraryFactory.createLibrary(libImpl));
+            
+            result = true;
+        }
+        
+        return result;
     }
     
     public static Library getJSFLibrary(final String version){
-        String convertedVersion = convertLibraryVersion(version);
-        return LibraryManager.getDefault().getLibrary( LIB_JSF_NAME + "-" + convertedVersion);
+        String convertedVersion = convertLibraryName(version);
+        return LibraryManager.getDefault().getLibrary( LIB_JSF_NAME + "-" + convertedVersion); //NOI18N
     }
     
     /* Converts a string to the text, which is fit for the LibraryManager as a library name
      */
-    public static String convertLibraryVersion(String version){
+    public static String convertLibraryName(String version){
         String converted = version;
         converted = converted.replace('.', '-');
         converted = converted.replace(' ', '_');
         return converted;
     }
-        
-    private static void createLibraryFile(PrintWriter out, String name, String[] resources ){
-        out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");  //NOI18N
-        out.println("<!DOCTYPE library PUBLIC \"-//NetBeans//DTD Library Declaration 1.0//EN\" \"http://www.netbeans.org/dtds/library-declaration-1_0.dtd\">");  //NOI18N
-        out.println("<library version=\"1.0\">");           //NOI18N
-        out.println("\t<name>"+name+"</name>");             //NOI18N
-        out.println("\t<type>j2se</type>");                 //NOI18N
-        out.println("\t<volume>");                          //NOI18N
-        out.println("\t\t<type>classpath</type>");          //NOI18N
-        for (int i = 0; i < resources.length; i++) {
-            out.println("\t\t<resource>"+resources[i]+"</resource>");    //NOI18N
-        }
-        out.println("\t</volume>");                         //NOI18N
-        out.println("\t<volume>");                          //NOI18N
-        out.println("\t\t<type>src</type>");                //NOI18N
-        out.println("\t</volume>");                         //NOI18N
-        out.println("\t<volume>");                          //NOI18N
-        out.println("\t\t<type>javadoc</type>");            //NOI18N
-        out.println("\t</volume>");                         //NOI18N
-        out.println("</library>");                          //NOI18N
-    }
-    
 }
