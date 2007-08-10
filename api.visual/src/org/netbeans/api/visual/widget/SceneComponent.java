@@ -641,7 +641,6 @@ final class SceneComponent extends JComponent implements Accessible, MouseListen
         }
 
         public void commit (SceneComponent component) {
-            System.out.println ("toolTipText = " + toolTipText);
             component.setToolTipText (toolTipText);
             component.setCursor (cursor);
         }
