@@ -20,7 +20,6 @@
 package org.netbeans.modules.websvc.wsitmodelext.policy;
 
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMAssertion;
-import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *

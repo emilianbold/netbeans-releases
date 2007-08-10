@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.LifeTime;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**

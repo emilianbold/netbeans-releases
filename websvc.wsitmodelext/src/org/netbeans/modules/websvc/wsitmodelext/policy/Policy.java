@@ -19,8 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.policy;
 
-import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
-
 /**
  *
  * @author Martin Grebac

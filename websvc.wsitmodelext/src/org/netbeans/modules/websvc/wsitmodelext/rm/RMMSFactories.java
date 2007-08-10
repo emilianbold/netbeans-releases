@@ -19,9 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.rm;
 
-import java.security.InvalidParameterException;
-import java.util.Collection;
-import java.util.HashSet;
 import org.netbeans.modules.websvc.wsitmodelext.rm.impl.FlowControlImpl;
 import org.netbeans.modules.websvc.wsitmodelext.rm.impl.MaxReceiveBufferSizeImpl;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;

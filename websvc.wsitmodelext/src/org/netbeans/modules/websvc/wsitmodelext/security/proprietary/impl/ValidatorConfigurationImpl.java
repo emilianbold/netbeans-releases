@@ -20,7 +20,6 @@
 package org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl;
 
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietaryPolicyQName;
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyAttribute;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ValidatorConfiguration;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ProprietarySecurityPolicyQName;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;

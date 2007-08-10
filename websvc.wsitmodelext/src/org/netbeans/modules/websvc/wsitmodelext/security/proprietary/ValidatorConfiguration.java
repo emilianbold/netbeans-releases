@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.websvc.wsitmodelext.security.proprietary;
 
-import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.Validator;
 import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**

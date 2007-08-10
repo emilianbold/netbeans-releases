@@ -24,7 +24,6 @@ import org.netbeans.modules.websvc.wsitmodelext.rm.Ordered;
 import org.netbeans.modules.websvc.wsitmodelext.rm.RMAssertion;
 import org.netbeans.modules.websvc.wsitmodelext.security.Wss10;
 import org.netbeans.modules.websvc.wsitmodelext.security.Wss11;
-import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
 
 /**
  *
