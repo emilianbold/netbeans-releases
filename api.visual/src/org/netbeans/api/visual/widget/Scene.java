@@ -190,6 +190,21 @@ public class Scene extends Widget {
     }
 
     /**
+     * This method invokes Scene.validate method with a specific Graphics2D instance. This is useful for rendering a scene off-screen
+     * without creating and showning the main scene view. See test.view.OffscreenRenderingTest example for usages.
+     * <p>
+     * Note: Do not call this method unless you know the consequences. The scene is going to be validated using the specified Graphics2D
+     * instance even after the method call therefore it may break scene layout when your main scene view is finally created and shown.
+     * @param graphics the graphics instance used for validation
+     * @since 2.7
+     */
+    public final void validate (Graphics2D graphics) {
+        Graphics2D prevoiusGraphics = getGraphics ();
+        setGraphics (graphics);
+        validate ();
+        setGraphics (prevoiusGraphics);
+}
+    /**
      * Paints the whole scene into the graphics instance. The method calls validate before rendering.
      * @param graphics the Graphics2D instance where the scene is going to be painted
      */
@@ -294,29 +309,31 @@ public class Scene extends Widget {
 
         Dimension preferredSize = rect != null ? rect.getSize () : new Dimension ();
         preferredSize = new Dimension ((int) (preferredSize.width * zoomFactor), (int) (preferredSize.height * zoomFactor));
-        if (! preferredSize.equals (component.getPreferredSize ())) {
-            component.setPreferredSize (preferredSize);
-            component.revalidate ();
-//            repaintSatellite ();
-        }
-
-        Dimension componentSize = component.getSize ();
-        componentSize.width = (int) (componentSize.width / zoomFactor);
-        componentSize.height = (int) (componentSize.height / zoomFactor);
         Rectangle bounds = getBounds ();
+        if (component != null) {
+            if (! preferredSize.equals (component.getPreferredSize ())) {
+                component.setPreferredSize (preferredSize);
+                component.revalidate ();
+                bounds = getBounds ();
+//                repaintSatellite ();
+            }
 
-        boolean sceneResized = false;
-        if (bounds.width < componentSize.width) {
-            bounds.width = componentSize.width;
-            sceneResized = true;
-        }
-        if (bounds.height < componentSize.height) {
-            bounds.height = componentSize.height;
-            sceneResized = true;
-        }
-        if (sceneResized)
-            resolveBounds (getLocation (), bounds);
+            Dimension componentSize = component.getSize ();
+            componentSize.width = (int) (componentSize.width / zoomFactor);
+            componentSize.height = (int) (componentSize.height / zoomFactor);
 
+            boolean sceneResized = false;
+            if (bounds.width < componentSize.width) {
+                bounds.width = componentSize.width;
+                sceneResized = true;
+            }
+            if (bounds.height < componentSize.height) {
+                bounds.height = componentSize.height;
+                sceneResized = true;
+            }
+            if (sceneResized)
+                resolveBounds (getLocation (), bounds);
+        }
         if (! getLocation ().equals (preLocation)  ||  ! bounds.equals (preBounds)) {
             Rectangle rectangle = convertLocalToScene (getBounds ());
             if (repaintRegion == null)
@@ -363,7 +380,8 @@ public class Scene extends Widget {
             if (repaintRegion != null) {
                 Rectangle r = convertSceneToView (repaintRegion);
                 r.grow (1, 1);
-                component.repaint (r);
+                if (component != null)
+                    component.repaint (r);
                 repaintSatellite ();
                 repaintRegion = null;
             }

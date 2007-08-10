@@ -524,6 +524,9 @@ This widget represents a root node of the tree hierarchy of widgets. It controls
 <td>validate
 <td>This method validates whole scene with all widgets. Usually it is called automatically e.g. at the end of event processing. See <a href="#ValidationProcess">Validation Process</a> section.
 <tr>
+<td>validate(Graphics2D)
+<td>This method validates whole scene with all widgets using specified Graphics2D. This is used for off-screen rendering when you do not have a main scene view created yet. Be aware that the scene is going to remain validated with specified font metrics after the method call. This may break scene layout when your main scene view is finally created and shown. See <a href="#ValidationProcess">Validation Process</a> section.
+<tr>
 <td>getMaximumBounds<br>setMaximumBounds
 <td>Controls the maximum bounds of the scene. By default it is <code>[-Integer.MAX_VALUE/2,-Integer.MAX_VALUE/2,Integer.MAX_VALUE,Integer.MAX_VALUE]</code>. This is used to limit the scene bounds e.g. to positive values only.
 <tr>
