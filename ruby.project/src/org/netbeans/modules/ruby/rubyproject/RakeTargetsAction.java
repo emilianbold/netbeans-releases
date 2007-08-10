@@ -50,6 +50,9 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.modules.ruby.rubyproject.RakeSupport;
 import org.netbeans.modules.ruby.rubyproject.api.RubyExecution;
@@ -350,12 +353,47 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
 
         refreshing = true;
 
-        String rakeOutput = hiddenRakeRunner(FileUtil.toFile(project.getProjectDirectory()));
+        String rakeOutput = hiddenRakeRunner(project);
         writeRakeTargets(project, rakeOutput);
         refreshing = false;
     }
 
-    private static String hiddenRakeRunner(File pwd) {
+    private static String hiddenRakeRunner(Project project) {
+        File pwd = FileUtil.toFile(project.getProjectDirectory());
+
+        // See if we're in the right directory
+        String[] rakeFiles = new String[] {"rakefile", "Rakefile", "rakefile.rb", "Rakefile.rb" }; // NOI18N
+        boolean found = false;
+        for (String s : rakeFiles) {
+            File f = new File(pwd, s);
+            if (f.exists()) {
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            // Try to adjust the directory to a folder which contains a rakefile
+            Sources src = ProjectUtils.getSources(project);
+            //TODO: needs to be generified
+            SourceGroup[] rubygroups = src.getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
+            if (rubygroups != null && rubygroups.length > 0) {
+                for (SourceGroup group : rubygroups) {
+                    FileObject f = group.getRootFolder();
+                    for (String s : rakeFiles) {
+                        if (f.getFileObject(s) != null) {
+                            found = true;
+                            pwd = FileUtil.toFile(f);
+                            break;
+                        }
+                    }
+                    if (found) {
+                        break;
+                    }
+                }
+            }
+        }
+        
         // Install the given gem
         String rakeCmd = RubyInstallation.getInstance().getRake();
         List<String> argList = new ArrayList<String>();
