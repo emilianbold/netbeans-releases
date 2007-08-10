@@ -171,12 +171,6 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
                         // for non-static methods if the target type is an interface
                         MemberInfo<ElementHandle> object = (MemberInfo) table.getModel().getValueAt(row,
                                                                                      1);
-
-                        if (object.getElementHandle().getKind()==ElementKind.METHOD) {
-                            if (sourceKind.isInterface() && !((MemberInfo) object).getModifiers().contains(Modifier.STATIC)) {
-                                value = Boolean.TRUE;
-                            }
-                        }
                         // the super method automatically makes sure the checkbox is not visible if the
                         // "Make Abstract" value is null (which holds for non-methods)
                         // and that the checkbox is disabled if the cell is not editable (which holds for
@@ -290,13 +284,12 @@ public class PushDownPanel extends JPanel implements CustomRefactoringPanel {
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             if (columnIndex == 2) {
                 // column 2 is editable only in case of non-static methods
-                // if the target type is not an interface
                 if (members[rowIndex][2] == null) {
                     return false;
                 }
                 Object element = members[rowIndex][1];
                
-                return !sourceKind.isInterface() && !(((MemberInfo) element).getModifiers().contains(Modifier.STATIC));
+                return !(((MemberInfo) element).getModifiers().contains(Modifier.STATIC));
             } else {
                 // column 0 is always editable, column 1 is never editable
                 return columnIndex == 0;

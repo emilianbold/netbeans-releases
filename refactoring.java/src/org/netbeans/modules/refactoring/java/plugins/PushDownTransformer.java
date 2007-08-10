@@ -63,18 +63,19 @@ public class PushDownTransformer extends RefactoringVisitor {
                     Element current = workingCopy.getTrees().getElement(TreePath.getPath(getCurrentPath(), t));
                     if (members[i].getGroup()!=MemberInfo.Group.IMPLEMENTS && current.equals(members[i].getElementHandle().resolve(workingCopy))) {
                         if (members[i].isMakeAbstract()) {
-                            if (!classIsAbstract) {
-                                classIsAbstract = true;
-                                Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
+                            if (current.getKind().isClass()) {
+                                if (!classIsAbstract) {
+                                    classIsAbstract = true;
+                                    Set<Modifier> mod = new HashSet<Modifier>(njuClass.getModifiers().getFlags());
+                                    mod.add(Modifier.ABSTRACT);
+                                    ModifiersTree modifiers = make.Modifiers(mod);
+                                    rewrite(njuClass.getModifiers(), modifiers);
+                                }
+
+
+                                MethodTree method = (MethodTree) t;
+                                Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
                                 mod.add(Modifier.ABSTRACT);
-                                ModifiersTree modifiers = make.Modifiers(mod);
-                                rewrite(njuClass.getModifiers(), modifiers);
-                            }
-                            
-                            
-                            MethodTree method = (MethodTree) t;
-                            Set<Modifier> mod = new HashSet<Modifier>(method.getModifiers().getFlags());
-                            mod.add(Modifier.ABSTRACT);
                             MethodTree nju = make.Method(
                                     make.Modifiers(mod),
                                     method.getName(),
@@ -84,7 +85,8 @@ public class PushDownTransformer extends RefactoringVisitor {
                                     method.getThrows(),
                                     (BlockTree) null,
                                     (ExpressionTree)method.getDefaultValue());
-                            rewrite(method, nju);
+                                rewrite(method, nju);
+                            }
                         } else {
                             njuClass = make.removeClassMember(njuClass, t);
                             rewrite(tree, njuClass);
