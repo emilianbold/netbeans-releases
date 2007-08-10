@@ -30,11 +30,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
@@ -96,9 +98,9 @@ public class AssignResultToVariable extends AbstractHint {
                 return null;
             }
             
-            ExecutableElement ee = (ExecutableElement) e;
+            TypeMirror type = info.getTrees().getTypeMirror(treePath);
             
-            if (ee.getReturnType() == null || ee.getReturnType().getKind() == TypeKind.VOID) {
+            if (type == null || NOT_ACCEPTABLE_TYPE_KINDS.contains(type.getKind())) {
                 return null;
             }
             
@@ -130,7 +132,7 @@ public class AssignResultToVariable extends AbstractHint {
         return NbBundle.getMessage(AssignResultToVariable.class, "DESC_AssignResultToVariable");
     }
 
-    private static final class FixImpl implements Fix {
+    static final class FixImpl implements Fix {
         
         private FileObject file;
         private Document doc;
@@ -161,18 +163,21 @@ public class AssignResultToVariable extends AbstractHint {
                             return ;
                         }
                         
-                        Element  el = copy.getTrees().getElement(tp);
+                        TypeMirror type = copy.getTrees().getTypeMirror(tp);
                         
-                        if (el == null || el.getKind() != ElementKind.METHOD) {
+                        if (type == null || NOT_ACCEPTABLE_TYPE_KINDS.contains(type.getKind())) {
                             return ;
                         }
                         
-                        ExecutableElement ee = (ExecutableElement) el;
+                        if (isCapturedType(copy, type)) {
+                            type = ((TypeVariable) type).getUpperBound();
+                        }
+                        
                         TreeMaker make = copy.getTreeMaker();
                         
                         name[0] = Utilities.guessName(copy, tp);
                         
-                        VariableTree var = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name[0], make.Type(ee.getReturnType()), (ExpressionTree) tp.getLeaf());
+                        VariableTree var = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name[0], make.Type(type), (ExpressionTree) tp.getLeaf());
                         
                         copy.rewrite(tp.getParentPath().getLeaf(), var);
                     }
@@ -249,4 +254,21 @@ public class AssignResultToVariable extends AbstractHint {
         }
     }
 
+    private static final Set<TypeKind> NOT_ACCEPTABLE_TYPE_KINDS = EnumSet.of(TypeKind.ERROR, TypeKind.EXECUTABLE, TypeKind.NONE, TypeKind.NULL, TypeKind.OTHER, TypeKind.PACKAGE, TypeKind.WILDCARD, TypeKind.VOID);
+    
+    //XXX: maybe create an API method for this?
+    private static boolean isCapturedType(CompilationInfo info, TypeMirror tm) {
+        if (tm.getKind() != TypeKind.TYPEVAR) {
+            return false;
+        }
+        
+        Element el = info.getTypes().asElement(tm);
+        
+        if (el == null || el.getKind() != ElementKind.TYPE_PARAMETER) {
+            return false;
+        }
+        
+        return !SourceVersion.isName(el.getSimpleName().toString());
+    }
+    
 }

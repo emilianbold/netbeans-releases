@@ -18,170 +18,92 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.AssignResultToVariable;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import javax.swing.text.Document;
-import junit.framework.TestCase;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileLock;
+import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class AssignResultToVariableTest extends NbTestCase {
+public class AssignResultToVariableTest extends TreeRuleTestBase {
     
     public AssignResultToVariableTest(String testName) {
         super(testName);
     }
     
-    protected void setUp() throws Exception {
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
-        super.setUp();
-    }
-    
     public void testDoNothingForVoidReturnType() throws Exception {
-        performTestAnalysisTest("package test; public class Test {public void t() {get();} public void get() {}}", 51, Collections.<String>emptyList());
+        performAnalysisTest("test/Test.java", "package test; public class Test {public void t() {get();} public void get() {}}", 51);
     }
     
     public void testProposeHint() throws Exception {
-        performTestAnalysisTest("package test; public class Test {public void t() {get();} public int get() {}}", 51, Collections.<String>singletonList("0:50-0:53:hint:Assign Return Value To New Variable"));
+        performAnalysisTest("test/Test.java", "package test; public class Test {public void t() {get();} public int get() {}}", 51, "0:50-0:53:hint:Assign Return Value To New Variable");
     }
     
-    protected void prepareTest(String code) throws Exception {
-        FileObject workFO = makeScratchDir(this);
-        
-        assertNotNull(workFO);
-        
-        FileObject sourceRoot = workFO.createFolder("src");
-        FileObject buildRoot  = workFO.createFolder("build");
-        FileObject cache = workFO.createFolder("cache");
-        
-        FileObject data = FileUtil.createData(sourceRoot, "test/Test.java");
-        
-        writeIntoFile(data, code);
-        
-        SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
-        
-        DataObject od = DataObject.find(data);
-        EditorCookie ec = od.getCookie(EditorCookie.class);
-        
-        assertNotNull(ec);
-        
-        Document doc = ec.openDocument();
-        
-        doc.putProperty(Language.class, JavaTokenId.language());
-        
-        JavaSource js = JavaSource.forFileObject(data);
-        
-        assertNotNull(js);
-        
-        info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
-        
-        assertNotNull(info);
+    public void testApplyHintGenericType() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void t() {java.util.List<String> l = null; l.get(0);}}",
+                       111 - 25,
+                       "0:83-0:88:hint:Assign Return Value To New Variable",
+                       "FixImpl",
+                       "package test; public class Test {public void t() {java.util.List<String> l = null;String get = l.get(0); }}");
+    }
+
+    public void testApplyHintGenericType2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test {public void t() {java.util.List<? extends String> l = null; l.get(0);}}",
+                       121 - 25,
+                       "0:93-0:98:hint:Assign Return Value To New Variable",
+                       "FixImpl",
+                       "package test; public class Test {public void t() {java.util.List<? extends String> l = null;String get = l.get(0); }}");
     }
     
-    private CompilationInfo info;
-    
-    private void performTestAnalysisTest(String code, int offset, List<String> golden) throws Exception {
-        prepareTest(code);
-        
-        final AssignResultToVariable artv = new AssignResultToVariable();
-        final List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
-        
-        Method m = CaretAwareJavaSourceTaskFactory.class.getDeclaredMethod("setLastPosition", FileObject.class, int.class);
-        
-        assertNotNull(m);
-        
-        m.setAccessible(true);
-        
-        m.invoke(null, new Object[] {info.getFileObject(), offset});
-        
-        class ScannerImpl extends TreePathScanner {
-            @Override
-            public Object scan(Tree tree, Object p) {
-                if (tree != null && artv.getTreeKinds().contains(tree.getKind())) {
-                    List<ErrorDescription> localErrors = artv.run(info, new TreePath(getCurrentPath(), tree));
-                    
-                    if (localErrors != null) {
-                        errors.addAll(localErrors);
-                    }
-                }
-                return super.scan(tree, p);
-            }
-        };
-        
-        new ScannerImpl().scan(info.getCompilationUnit(), null);
-        
-        List<String> errorDisplaNames = new ArrayList<String>();
-        
-        for (ErrorDescription ed : errors) {
-            errorDisplaNames.add(ed.toString());
-        }
-        
-        assertEquals(golden, errorDisplaNames);
+    public void testApplyHintGenericType3() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test<T> {public void t() {get();} T get() {return null;}}",
+                       79 - 25,
+                       "0:53-0:56:hint:Assign Return Value To New Variable",
+                       "FixImpl",
+                       "package test; public class Test<T> {public void t() {T get = get(); } T get() {return null;}}");
     }
     
-    /**Copied from org.netbeans.api.project.
-     * Create a scratch directory for tests.
-     * Will be in /tmp or whatever, and will be empty.
-     * If you just need a java.io.File use clearWorkDir + getWorkDir.
-     */
-    public static FileObject makeScratchDir(NbTestCase test) throws IOException {
-        test.clearWorkDir();
-        File root = test.getWorkDir();
-        assert root.isDirectory() && root.list().length == 0;
-        FileObject fo = FileUtil.toFileObject(root);
-        if (fo != null) {
-            // Presumably using masterfs.
-            return fo;
-        } else {
-            // For the benefit of those not using masterfs.
-            LocalFileSystem lfs = new LocalFileSystem();
-            try {
-                lfs.setRootDirectory(root);
-            } catch (PropertyVetoException e) {
-                assert false : e;
-            }
-            Repository.getDefault().addFileSystem(lfs);
-            return lfs.getRoot();
-        }
-    }
-    
-    private void writeIntoFile(FileObject file, String what) throws Exception {
-        FileLock lock = file.lock();
-        OutputStream out = file.getOutputStream(lock);
+    protected List<ErrorDescription> computeErrors(CompilationInfo info, TreePath path) {
+        int offset = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), path.getLeaf());
+        
+        while (path != null && !new AssignResultToVariable().getTreeKinds().contains(path.getLeaf().getKind()))
+            path = path.getParentPath();
+        
+        if (path == null)
+            return null;
         
         try {
-            out.write(what.getBytes());
-        } finally {
-            out.close();
-            lock.releaseLock();
+            Method m = CaretAwareJavaSourceTaskFactory.class.getDeclaredMethod("setLastPosition", FileObject.class, int.class);
+
+            assertNotNull(m);
+
+            m.setAccessible(true);
+
+            m.invoke(null, new Object[]{info.getFileObject(), offset});
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+        
+        return new AssignResultToVariable().run(info, path);
+    }
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        if (f instanceof AssignResultToVariable.FixImpl) {
+            return "FixImpl";
+        } else {
+            return super.toDebugString(info, f);
         }
     }
+    
 }
