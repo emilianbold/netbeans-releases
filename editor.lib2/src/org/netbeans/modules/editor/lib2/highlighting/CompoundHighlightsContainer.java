@@ -53,7 +53,7 @@ public final class CompoundHighlightsContainer extends AbstractHighlightsContain
     private HighlightsContainer[] layers;
     private long version = 0;
 
-    private final String LOCK = new String("CompoundHighlightsContainer.LOCK"); //NOI18N
+    private final Object LOCK = new String("CompoundHighlightsContainer.LOCK"); //NOI18N
     private final LayerListener listener = new LayerListener(this);
 
     private OffsetsBag cache;
