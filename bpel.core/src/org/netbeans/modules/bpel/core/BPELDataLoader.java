@@ -49,14 +49,11 @@ public class BPELDataLoader extends UniFileLoader {
     
     static final String LOADER_NAME ="LBL_loader_name";             // NOI18N 
     
-    private static final String DATAOBJECT_CLASS_NAME = 
-        BPELDataObject.class.getCanonicalName();
-    
     /**
      * Creates a new instance of BPELDataLoader
      */
     public BPELDataLoader() {
-        super( DATAOBJECT_CLASS_NAME );
+        super("org.netbeans.modules.bpel.core.BPELDataObject");
     }
     
     /** 
@@ -123,12 +120,12 @@ public class BPELDataLoader extends UniFileLoader {
         return new FileEntry(obj, secondaryFile);
     }
 	
-	/**
-	 * other modules can decorate with Special Actions
-	 * to see the default actions look in the layer.xml
-	 */
-	protected String actionsContext() {
-		return ACTION_CONTEXT;
-	}
+    /**
+     * other modules can decorate with Special Actions
+     * to see the default actions look in the layer.xml
+     */
+    @Override protected String actionsContext() {
+            return ACTION_CONTEXT;
+    }
 
 }

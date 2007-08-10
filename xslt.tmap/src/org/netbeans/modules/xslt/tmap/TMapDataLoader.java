@@ -28,8 +28,6 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
 
-
-
 /**
  *
  * @author Vitaly Bychkov
@@ -46,7 +44,7 @@ public class TMapDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 1L;
     
     public TMapDataLoader() {
-        super(TMapDataObject.class.getCanonicalName());
+        super("org.netbeans.modules.xslt.tmap.TMapDataObject");
     }
     
     @Override
