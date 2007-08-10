@@ -94,7 +94,7 @@ public class DataObjectHelper {
             // inputs.
             establishRuntimeInputs(collabModel, joinView.getSourceTables());
         }
-        
+       
         if (sourceOTDList != null) {
             addDestinationOTDs(sourceOTDList, collabModel);
         }

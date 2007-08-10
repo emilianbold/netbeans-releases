@@ -54,9 +54,6 @@ import org.netbeans.modules.sql.framework.ui.view.SQLStatementPanel;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.StringUtil;
-import org.netbeans.modules.sql.framework.ui.graph.actions.FitToHeightAction;
-import org.netbeans.modules.sql.framework.ui.graph.actions.FitToPageAction;
-import org.netbeans.modules.sql.framework.ui.graph.actions.FitToWidthAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomInAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomOutAction;
 /**
