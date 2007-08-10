@@ -108,7 +108,7 @@ public class DeleteUnreferencedClusterFiles extends Task {
                 String path = prefix + n;
                 if (!files.contains(path)) {
                     extraFiles.append("\n" + cluster + ": untracked file " + path);
-                    // XXX uncomment once test is passing: f.delete();
+                    f.delete();
                 }
             }
         }
