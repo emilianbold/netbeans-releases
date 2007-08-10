@@ -55,11 +55,6 @@ public class ReleaseFilesLicense extends Task {
         this.license = license;
     }
 
-    private File licenses;
-    public void setLicenses(File licenses) {
-        this.licenses = licenses;
-    }
-
     private File standardLicense;
     public void setStandardLicense(File standardLicense) {
         this.standardLicense = standardLicense;
@@ -79,7 +74,7 @@ public class ReleaseFilesLicense extends Task {
                 pw.println();
                 append(pw, standardLicense);
                 for (String name : extraLicenseFiles.split("[, ]+")) {
-                    File f = new File(licenses, name);
+                    File f = getProject().resolveFile(name);
                     if (!f.isFile()) {
                         log("No such license: " + f, Project.MSG_WARN);
                         continue;
@@ -87,9 +82,19 @@ public class ReleaseFilesLicense extends Task {
                     pw.println();
                     pw.println();
                     pw.println("==================================================");
-                    pw.println("Additional license (" + name + "):");
+                    pw.println("Additional license (" + f.getName() + "):");
                     pw.println();
-                    append(pw, f);
+                    InputStream is = new FileInputStream(f);
+                    try {
+                        BufferedReader r = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                        String line;
+                        while ((line = r.readLine()) != null && line.length() > 0) {}
+                        while ((line = r.readLine()) != null) {
+                            pw.println(line);
+                        }
+                    } finally {
+                        is.close();
+                    }
                 }
                 Map<File,Set<String>> inferredLicenses = new TreeMap<File,Set<String>>();
                 RELEASE_FILE: for (Map.Entry<?,?> entry : ((Map<?,?>) getProject().getProperties()).entrySet()) {

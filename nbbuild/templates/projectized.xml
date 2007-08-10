@@ -219,7 +219,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="license.file.override" location="build/license"/>
         <property name="extra.license.files" value=""/>
         <taskdef name="releasefileslicense" classname="org.netbeans.nbbuild.extlibs.ReleaseFilesLicense" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <releasefileslicense license="${license.file.override}" standardlicense="${nb_all}/nbbuild/standard-nbm-license.txt" extralicensefiles="${extra.license.files}" licenses="${nb_all}/nbbuild/licenses"/>
+        <releasefileslicense license="${license.file.override}" standardlicense="${nb_all}/nbbuild/standard-nbm-license.txt" extralicensefiles="${extra.license.files}"/>
     </target>
 
     <target name="nbm" depends="-create-dest-dir-nbm,-create-license.file,projectized-common.nbm"/>
