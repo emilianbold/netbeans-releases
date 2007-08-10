@@ -24,8 +24,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="xmlbeangen">
         <taskdef name="xmlbean" classname="org.apache.xmlbeans.impl.tool.XMLBean"
-                classpath="../../libs/external/xbean-1.0.4.jar" />
-	<xmlbean classpath="../../libs/external/xbean-1.0.4.jar"
+                classpath="../../libs/xmlbeans/external/xbean-1.0.4.jar" />
+	<xmlbean classpath="../../libs/xmlbeans/external/xbean-1.0.4.jar"
 		schema="src/org/netbeans/modules/collab/channel/output/resources/share-output.xsd"
 		destfile="lib/output-schema.jar"/>
     </target>

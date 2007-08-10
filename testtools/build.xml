@@ -59,9 +59,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/jellytools/jelly2-nb.jar" />
         <pathelement location="${jemmysupport.dir}/modules/org-netbeans-modules-jemmysupport.jar" />
         <pathelement location="${tools.jar}"/>
-        <fileset dir="${nbroot}/libs/external">
+        <fileset dir="${nbroot}/libs/xerces/external">
           <include name="xerces*.jar"/>
-          <include name="xml-apis*.jar"/>
         </fileset>
       </classpath>
       <!-- XXX temporarily build only generator. Other stuff need to be updated. -->

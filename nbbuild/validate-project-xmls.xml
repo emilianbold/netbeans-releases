@@ -57,9 +57,8 @@ Microsystems, Inc. All Rights Reserved.
         <java classname="ValidateAllBySchema" failonerror="true" fork="true">
             <classpath>
                 <pathelement location="${nbroot}/ant/project/eg"/>
-                <fileset dir="${nbroot}/libs/external">
+                <fileset dir="${nbroot}/libs/xerces/external">
                     <include name="xerces*.jar"/>
-                    <include name="xml-commons-dom-ranges*.jar"/>
                 </fileset>
             </classpath>
             <arg value="${xmls}"/>

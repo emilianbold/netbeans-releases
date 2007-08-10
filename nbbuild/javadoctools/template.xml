@@ -133,9 +133,6 @@ cause it to fail.
         <condition property="javadoc.reference.generated" >
             <isset property="javadoc.docs.${javadoc.name}" />
         </condition>
-
-        <!-- Make sure XHTML DTDs exist: -->
-        <ant dir="../../libs/external" target="unzip"/>
     </target>
 
     <target name="javadoc-generate-references" depends="javadoc-init" unless="javadoc.reference.generated" >

@@ -63,8 +63,6 @@ Microsystems, Inc. All Rights Reserved.
             <include name="xtest/nbjunit/**/*"/>
             <exclude name="xtest/nbjunit/nbjunit-*-src.zip"/>
 
-            <include name="libs/external/*html*"/>
-            <include name="libs/external/build.xml"/>
             <include name="junit/external/junit-3.8.2.jar"/>
         </cvsfileset>
 	<zip destfile="build/nbjunit-${version}-src.zip">

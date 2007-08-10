@@ -70,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
 		<pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar" />
                 <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar" />
 		<pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar"/>
-		<pathelement location="../../libs/external/xerces-2.6.0.jar"/>
+		<pathelement location="../../libs/xerces/external/xerces-2.8.0.jar"/>
 		<pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
 		<pathelement location="${projects/projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/>
 		<pathelement location="${projects/projectuiapi.dir}/modules/org-netbeans-modules-projectuiapi.jar"/>
