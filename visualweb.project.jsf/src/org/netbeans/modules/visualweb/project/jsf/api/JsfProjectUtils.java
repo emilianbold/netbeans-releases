@@ -410,6 +410,7 @@ public class JsfProjectUtils {
         if (project == null)
             return null;
 
+        String oldStartPage = getProjectProperty(project, JsfProjectConstants.PROP_START_PAGE);
         putProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, newStartPage);
 
         // Adjust the path to the startpage based on JSF parameters
@@ -420,7 +421,10 @@ public class JsfProjectUtils {
                 WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
                 if (ddRoot != null) {
                     String facesMapping = getFacesURLPattern(ddRoot);
-                    setWelcomeFile(wm, ddRoot, facesMapping, newStartPage, true);
+                    if (oldStartPage != null) {
+                        removeWelcomeFile(ddRoot, facesMapping, oldStartPage);
+                    }
+                    setWelcomeFile(wm, ddRoot, facesMapping, newStartPage);
                     ddRoot.write(dd);
                 }
             } catch (IOException e) {
@@ -460,7 +464,25 @@ public class JsfProjectUtils {
     private static String FORWARD_JSF = "forwardToJSF.jsp"; //NOI18N
     private static String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
 
-    public static void setWelcomeFile(WebModule webModule, WebApp ddRoot, String facesMapping, String pageName, boolean force) {
+    public static void removeWelcomeFile(WebApp ddRoot, String facesMapping, String pageName) {
+        // remove welcome file
+        WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
+        if (welcomeFiles == null) {
+            return;
+        }
+
+        String welcomePath;
+        if (facesMapping.charAt(0) == '/') {
+            // if the mapping start with '/' (like /faces/*), then the welcame file can be the mapping
+            welcomeFiles.removeWelcomeFile(ConfigurationUtils.translateURI(facesMapping, pageName));
+        } else {
+            // if the mapping doesn't strat '/' (like *.jsf), then the welcome file has to be
+            // a helper file, which will foward the request to the right url
+            welcomeFiles.removeWelcomeFile(FORWARD_JSF);
+        }
+    }
+
+    public static void setWelcomeFile(WebModule webModule, WebApp ddRoot, String facesMapping, String pageName) {
         // add welcome file
         WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
         if (welcomeFiles == null) {
@@ -472,26 +494,38 @@ public class JsfProjectUtils {
             }
         }
 
-        if (force || welcomeFiles.sizeWelcomeFile() == 0) {
-            if (facesMapping.charAt(0) == '/') {
-                // if the mapping start with '/' (like /faces/*), then the welcame file can be the mapping
-                welcomeFiles.setWelcomeFile(new String[] { ConfigurationUtils.translateURI(facesMapping, pageName) });
-            } else {
-                // if the mapping doesn't strat '/' (like *.jsf), then the welcome file has to be
-                // a helper file, which will foward the request to the right url
-                welcomeFiles.setWelcomeFile(new String[] { FORWARD_JSF });
-                //copy forwardToJSF.jsp
-                if (facesMapping.charAt(0) != '/') {
-                    try {
-                        String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
-                        content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, pageName));
-                        FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
-                        createFile(target, content, "UTF-8");  //NOI18N
-                    } catch (IOException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                    }
+        String welcomePath;
+        if (facesMapping.charAt(0) == '/') {
+            // if the mapping start with '/' (like /faces/*), then the welcame file can be the mapping
+            welcomePath = ConfigurationUtils.translateURI(facesMapping, pageName);
+        } else {
+            // if the mapping doesn't strat '/' (like *.jsf), then the welcome file has to be
+            // a helper file, which will foward the request to the right url
+            welcomePath = FORWARD_JSF;
+            //copy forwardToJSF.jsp
+            if (facesMapping.charAt(0) != '/') {
+                try {
+                    String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
+                    content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, pageName));
+                    FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
+                    createFile(target, content, "UTF-8");  //NOI18N
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }
+        }
+
+        if (welcomeFiles.sizeWelcomeFile() == 0) {
+            welcomeFiles.addWelcomeFile(welcomePath);
+        } else {
+            ArrayList<String> list = new ArrayList(welcomeFiles.sizeWelcomeFile()+1);
+            list.add(welcomePath);
+            for (String file: welcomeFiles.getWelcomeFile()) {
+                if (!welcomePath.equals(file)) {
+                    list.add(file);
+                }
+            }
+            welcomeFiles.setWelcomeFile(list.toArray(new String[0]));
         }
     }
 

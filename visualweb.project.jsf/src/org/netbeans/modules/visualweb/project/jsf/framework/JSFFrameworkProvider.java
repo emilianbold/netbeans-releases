@@ -431,7 +431,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     ddRoot.addServletMapping(mapping);
 
                     // add welcome file
-                    JsfProjectUtils.setWelcomeFile(webModule, ddRoot, facesMapping, pageName, false);
+                    JsfProjectUtils.setWelcomeFile(webModule, ddRoot, facesMapping, pageName);
 
                     // Catch ServletException
                     ErrorPage errorPage = (ErrorPage)ddRoot.createBean("ErrorPage");
