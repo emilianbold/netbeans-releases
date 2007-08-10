@@ -20,7 +20,8 @@
     <mapID target="sjs_security"                                url="general/sjs_configure_security.html" />
     <mapID target="adminconsole"                                url="general/adminconsole.html" />
     <mapID target="jsp_connectionpool_tomcatmodule"             url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
-    <!--<mapID target="lookup_jms"                              url="general/def_jms_lookup.html" />
+    
+<!--<mapID target="lookup_jms"                              url="general/def_jms_lookup.html" />
     <mapID target="lookup_jdbc"                                 url="general/def_jdbcresource_lookup.html" />-->
 
     
@@ -88,18 +89,11 @@
     <mapID target="AS_RegServ_DefinePorts"      				url="runtimetab/RegServ_Create.html" />
   
     <!-- sun-ejb-jar.xml DD editor CSH: -->
-  <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"              			url="ejbconfigeditors/sunconfig.html" />
-  <mapID target="AS_CFG_StatefulEjb"            				url="ejbconfigeditors/sessionbean.html" />
-  <mapID target="AS_CFG_StatelessEjb"            				url="ejbconfigeditors/sessionbean.html" />
-  <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode"              				url="ejbconfigeditors/entitybean.html" />
-  <mapID target="AS_CFG_CmpEntityEjb"            				url="ejbconfigeditors/entitybean.html" />
-  <mapID target="AS_CFG_MDEjb"                  				url="ejbconfigeditors/messagebean.html" />
-  <!-- <mapID target="AS_CFG_EjbJarMessages"            				url="ejbconfigeditors/sun-msgdestination.html" /> -->
-  <mapID target="AS_CFG_OneOneFinder"            				url="ejbconfigeditors/ent-finder.html" />
-  <mapID target="AS_CFG_EjbJarPmDescriptors"            			url="ejbconfigeditors/sun-pmdescriptor.html" />
-  <mapID target="AS_CFG_EjbJarCmpProperty"                                      url="ejbconfigeditors/sun-cmpproperty.html" />
-  <mapID target="AS_CFG_EjbJarCmpSchemaProperty"            			url="ejbconfigeditors/sun-schemagen.html" />
-  <mapID target="AS_CFG_Activation_Config_Property"            			url="ejbconfigeditors/mes_activate.html" />
+  <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.SunEjbJarDetailsNode"    url="ejbconfigeditors/sunconfig.html" />
+  <mapID target="AS_CFG_StatefulEjb"                                                            url="ejbconfigeditors/sessionbean.html" />
+  <mapID target="AS_CFG_StatelessEjb"                                                           url="ejbconfigeditors/sessionbean.html" />
+  <mapID target="org.netbeans.modules.j2ee.sun.ddloaders.multiview.ejb.EjbNode"              	url="ejbconfigeditors/entitybean.html" />
+  <mapID target="AS_CFG_CmpEntityEjb"                                                           url="ejbconfigeditors/entitybean.html" />
 
   <!-- sun-application.xml DD editor CSH: -->
   <mapID target="AS_CFG_Application"                    			url="appconfigeditors/sunapplication.html" />
