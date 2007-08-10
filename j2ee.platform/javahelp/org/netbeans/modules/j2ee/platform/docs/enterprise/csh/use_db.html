@@ -14,38 +14,33 @@
 <body>
 <h2>Choose Database Dialog Box</h2>
 <p><small> <a href="#seealso">See Also</a> </small></p>
-<p>You use this dialog box to insert look-up code for a networked database into 
-  a Java class file. The lookup code looks for a data source with the given JNDI 
-  name and attempts to retrieve a connection to it.</p>
+<p>You use this dialog box add code to a Java class file that looks up a networked database. 
+You can choose to specify an existing class containing the lookup code or the IDE can generate the lookup code for you.
+The lookup code uses a reference name that refers to the JNDI name of your data resource.
+If there is no reference name associated with your data resource, you can create a new reference name in the dialog box.</p>
+
 <p>You can only insert database look-up code in Java classes that are located 
   in an EJB module project or web application project. You open the dialog box 
   by right-clicking the class in the Source Editor and choosing Enterprise Resources 
   &gt; Use Database.</p>
 <p>You use the dialog box as follows:</p>
 <ol>
-  <li>Enter a JNDI name for the database connection. This name must be the same 
-    as the JNDI name of the JDBC data source for the database on the target server. 
-  </li>
-  <ul class="note">
-    <li>If you are deploying to the Sun Java System Application Server, you can also generate 
-      a connection pool and data source for the database connection by selecting 
-      the Create Server Resources checkbox. The resources are created under the 
-      project's Server Resources node.</li>
-  </ul>
-  <li>Select the database to which you want to connect in the Connection drop-down 
-    list. If the database is not listed, do the following: 
-    <ol>
-      <li>If the JDBC driver for the database server is not registered in the 
-        IDE, click Add Driver.</li>
-      <li>Click Add Connection to connect to the database. </li>
-    </ol>
-  </li>
+  <li>Select the name of the resource reference from the drop-down list.
+  The resource reference refers to the JNDI name of the data source you want to use.
+  If no resource reference to your data source is available in the drop-down list, 
+  click Add to create a new reference name.</li>
   <li>Under Service Locator Strategy, specify whether to generate inline lookup 
     code or use an existing <a href="../general/service_locator.html">service 
     locator</a>. You can click the Browse to search for the service locator class 
     name.</li>
   <li>Click OK.</li>
 </ol>
+<ul class="note">
+    <li>When you create a new reference name for a data source you need to choose a data source in your project or on the server.
+If the data source does not exist, you must create the data source by specifying the JNDI name and database connection
+for the data source.</li>
+</ul>
+
 <dl>
     <dt><a name="seealso">See Also</a></dt>
   <dd><a href="../../server/server_aboutdbconnect.html">About Connection Pools</a></dd>

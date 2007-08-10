@@ -27,8 +27,9 @@
 <ol>
   <li>Select the destination for the JMS message by selecting one of the following:
       <ul>
-          <li><b>Project Destinations.</b> Choose a destination from the open projects listed in the drop-down list.</li>
-          <li><b>Server Destinations.</b></li>
+          <li><b>Project Destinations.</b> Choose from the list of available destinations in open projects.
+      If no destination is available in the drop-down list, you can click Add to create a new destination.</li>
+          <li><b>Server Destinations.</b> Choose from the list of available destinations that exist on the server.</li>
           <li><b>Message Driven Bean.</b> that is the destination for the message. </li>
       </ul></li>
   <li>Specify a Service Locator Strategy by choosing to generate an inline lookup 
@@ -49,7 +50,7 @@
   </li>
 </ol>
 <ul class="note">
-  <li>If your project's target server is the Sun Java System Application Server, the IDE automatically 
+  <li>If your project's target server is the Sun Java System Application Server/GlassFish, the IDE automatically 
     configures a destination and connection factory for the message-driven bean 
     when you create the bean. If you are deploying to a different application 
     server, you have to configure the server-specific deployment descriptors and 
@@ -60,7 +61,7 @@
   <dd><a href="../../ejb/general/about_msg_driven_beans.html">About Message-Driven Beans</a></dd>
   <dd><a href="../general/service_locator.html">Using a Service Locator</a></dd>
   <dd><a href="nbdocs://org.netbeans.modules.j2ee.sun.appsrv81/org/netbeans/modules/j2ee/sun/ide/docs/general/def_jms.html">Setting 
-    up a JMS Resource on the Sun Java System Application Server</a></dd>
+    up a JMS Resource on the Sun Java System Application Server/GlassFish</a></dd>
 </dl>
 
 

@@ -72,13 +72,13 @@
         deployed to the same server instance as the enterprise application.</li>
     </ul>
   </li>
-  <li><b>Adding the EJB module to a J2EE application.</b> You can add an EJB module 
+  <li><b>Adding the EJB module to a Java EE application.</b> You can add an EJB module 
     to an enterprise project by doing any of the following: 
     <ul>
       <li>Specifying the enterprise application in the New Project wizard when 
-        creating the project.</li>
-      <li>Right-clicking the J2EE Modules node for any enterprise application 
-        project and choosing Add J2EE Module.</li>
+        creating the EJB module project.</li>
+      <li>Right-clicking the enterprise application project node or the Java EE Modules node
+        in the enterprise application project and choosing Add Java EE Module.</li>
     </ul>
   </li>
   <li><b>Configuring deployment descriptors.</b> The IDE automatically updates 
@@ -86,12 +86,12 @@
     you insert a call to an enterprise bean or create select or finder methods, 
     the IDE automatically enters the necessary information in your deployment 
     descriptors.
-    <p> For the Sun Java System Application Server, the IDE also configures the 
-      server-specific deployment descriptor as you edit your EJB module. For all 
-      other application servers, you have to write the server-specific deployment 
-      descriptors yourself. You can edit a deployment descriptor by expanding 
-      the EJB module's Configuration Files node and double-clicking the deployment 
-      descriptor node.
+    <p>For the Sun Java System Application Server/GlassFish, the IDE also configures the 
+    server-specific deployment descriptor as you edit your EJB module. For all 
+    other application servers, you have to write the server-specific deployment 
+    descriptors yourself. You can edit a deployment descriptor by expanding 
+    the EJB module's Configuration Files node and double-clicking the deployment 
+    descriptor node.</p>
   </li>
 </ul>
 <dl>

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright Â© 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 <!DOCTYPE map
@@ -14,7 +14,7 @@
 
 
 <!-- Start of "Developing Web Applications" help -->
-
+    <mapID target="about_entwebapps" url="web/about_webtier.html" />
         <!-- Start of "About" section -->
         <!--
         <mapID target="about_webapps" url="web/about/about_webapps.html" />
@@ -34,24 +34,7 @@
 		<mapID target="create_webapps_proj" url="web/create/about/create_webapps_proj.html" />
                 -->
 		<!-- End of "Create/About" subsection -->
-	        <!-- Start of "Create/Applet" subsection -->
-		<!--
-                <mapID target="applet_create" url="web/create/applet/applet_create.html" />
-		<mapID target="applet_run" url="web/create/applet/applet_run.html" />
-		<mapID target="applet_security" url="web/create/applet/applet_security.html" />
-                -->
-		<!-- End of "Create/Applet" subsection -->
-		<!-- Start of "Create/Filter" subsection -->
-       		<!--
-                <mapID target="about_filter" url="web/create/filter/about_filter.html" />
-		<mapID target="filter_addtodd" url="web/create/filter/filter_addtodd.html" />
-		<mapID target="filter_create" url="web/create/filter/filter_create.html" />
-		<mapID target="filter_run" url="web/create/filter/filter_run.html" />
-                -->    
-		<!-- End of "Create/Filter" subsection -->
-		<!-- Start of "Create/HTML" subsection -->
-		<!-- <mapID target="html_create" url="web/create/html/html_create.html" /> -->
-		<!-- End of "Create/HTML" subsection -->
+	        
 		<!-- Start of "Create/JSP" subsection -->
 		<!-- <mapID target="about_jsp_edit" url="web/create/jsp/about_jsp_edit.html" />
 		<mapID target="about_jsp_syntax" url="web/create/jsp/about_jsp_syntax.html" />
@@ -74,41 +57,6 @@
 <mapID target="tomcat_non_jwsdp" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_websvc.html" />
 -->
 		<!-- End of "Create/JSP" subsection -->
-		<!-- Start of "Create/Listener" subsection -->
-       		<!-- <mapID target="about_listener" url="web/create/listener/about_listener.html" />
-		<mapID target="listener_addtodd" url="web/create/listener/listener_addtodd.html" />
-		<mapID target="listener_create" url="web/create/listener/listener_create.html" />
-		<mapID target="listener_run" url="web/create/listener/listener_run.html" /> -->
-		<!-- End of "Create/Listener" subsection -->
-	        <!-- Start of "Create/Servlet" subsection -->
-       		<!-- <mapID target="about_servlet" url="web/create/servlet/about_servlet.html" />
-		<mapID target="servlet_create" url="web/create/servlet/servlet_create.html" />
-		<mapID target="servlet_run" url="web/create/servlet/servlet_run.html" />
-		<mapID target="servlet_edit" url="web/create/servlet/servlet_edit.html" /> -->
-		<!-- End of "Create/Servlet" subsection -->
-		<!-- Start of "Create/Tag" subsection -->
-		<!-- <mapID target="about_jstl" url="web/create/tag/about/about_jstl.html" />
-		<mapID target="about_taglib" url="web/create/tag/about/about_taglib.html" />
-		<mapID target="about_framework" url="web/create/tag/framework/about_framework.html" />
-		<mapID target="about_crud" url="web/create/tag/framework/about_crud.html" />
-		<mapID target="framework_jsf_create" url="web/create/tag/framework/framework_jsf_create.html" />
-		<mapID target="framework_jsf_add" url="web/create/tag/framework/framework_jsf_add.html" />
-		<mapID target="framework_crud_generate" url="web/create/tag/framework/framework_crud_generate.html" />
-		<mapID target="framework_jsf_datatable" url="web/create/tag/framework/framework_jsf_datatable.html" />
-		<mapID target="framework_jsf_form" url="web/create/tag/framework/framework_jsf_form.html" />
-		<mapID target="framework_struts_create" url="web/create/tag/framework/framework_struts_create.html" />
-		<mapID target="framework_struts_add" url="web/create/tag/framework/framework_struts_add.html" />
-		<mapID target="about_tagfile" url="web/create/tag/tagfile/about_tagfile.html" />
-		<mapID target="tagfile_create" url="web/create/tag/tagfile/tagfile_create.html" />
-		<mapID target="taghandler_create" url="web/create/tag/taghandler/taghandler_create.html" />
-		<mapID target="taghandler_edit" url="web/create/tag/taghandler/taghandler_edit.html" />
-		<mapID target="taglib_manage" url="web/create/tag/taglib/taglib_manage.html" />
-		<mapID target="taglib_create_separate" url="web/create/tag/taglib/taglib_create_separate.html" />
-		<mapID target="about_tld" url="web/create/tag/tld/about_tld.html" />
-		<mapID target="tld_edit" url="web/create/tag/tld/tld_edit.html" />
-		<mapID target="tld_create" url="web/create/tag/tld/tld_create.html" /> -->
-		<!-- End of "Create/Tag" subsection -->
-	<!-- End of "Create" section -->
 
 	<!-- Start of "Configure" section -->
         <!-- <mapID target="about_webapp_configure" url="web/configure/about_webapp_configure.html" />
@@ -126,118 +74,12 @@
         <!-- <mapID target="about_deploy" url="web/deploy/about_deploy.html" />
         <mapID target="deploy_quickref" url="web/deploy/deploy_quickref.html" />
 	<mapID target="deploy_webapp" url="web/deploy/deploy_webapp.html" />
-	<mapID target="deploy_changebrowser" url="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/default.html" />
-	<mapID target="deploy_changeserver" url="web/deploy/deploy_changeserver.html" />
-<mapID target="deploy_tomcat_manager" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html" /> -->
+        <mapID target="deploy_tomcat_manager" url="nbdocs://org.netbeans.modules.tomcat5/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html" /> -->
 	<!-- End of "Deploy" section -->
 
 
 
 <!-- End of "Developing Web Applications" help -->
-	
-<!-- Start of CSH for Web Applications -->
-
-        <!-- PROJECT PROPERTIES DIALOG BOX FOR A STANDARD WEB APPLICATION: -->
-	<!-- The Non-Panel panel in Project Properties for a Standard Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/csh/dbox_projprops/WebCustomizerSources.html" /> -->
-	<!-- The Sources panel in Project Properties for a Standard Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerSources" url="web/csh/dbox_projprops/WebCustomizerSources.html" /> -->
-	<!-- The Libraries panel in Project Properties for a Standard Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerLibraries" url="web/csh/dbox_projprops/WebCustomizerLibraries.html" /> -->
-        <!-- The Compile panel in Project Properties for a Standard Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/csh/dbox_projprops/WebCustomizerCompile.html" /> -->
-        <!-- The Packaging panel in Project Properties for a Standard Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWar" url="web/csh/dbox_projprops/WebCustomizerWar.html" /> -->
-	<!-- The Documenting panel in Project Properties for a Standard Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/csh/dbox_projprops/WebCustomizerJavadoc.html" /> -->
-	<!-- The Run panel in Project Properties for a Standard Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRun" url="web/csh/dbox_projprops/WebCustomizerRun.html" /> -->
-	<!-- The Web Services panel in Project Properties for a Standard Web Application -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHost" url="web/csh/dbox_projprops/CustomizerWSServiceHost.html" /> -->
-	<!-- The Web Service Clients panel in Project Properties for a Standard Web Application -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSClientHost" url="web/csh/dbox_projprops/CustomizerWSClientHost.html" /> -->
-	<!-- The Disabled Web Services panel in Project Properties for a Standard Web Application -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHostDisabled" url="web/csh/dbox_projprops/CustomizerWSServiceHostDisabled.html" /> -->
-	<!-- The Disabled Web Service Clients panel in Project Properties for a Standard Web Application -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSClientHostDisabled" url="web/csh/dbox_projprops/CustomizerWSClientHostDisabled.html" /> -->
-
-        <!-- PROJECT PROPERTIES DIALOG BOX FOR A FREE-FORM WEB APPLICATION: -->
-	<!-- The Web Sources panel in Project Properties for a Free-Form Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/WebLocationsPanel.html" /> -->
-	<!-- The Web Sources Classpath panel in Project Properties for a Free-Form Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathPanel" url="web/csh/dbox_projprops_freeform/WebClasspathPanel.html" /> -->
-
-	<!-- NEW PROJECT WIZARD FOR A FREE-FORM WEB APPLICATION: -->
-	<!-- The Web Sources panel in New Project Wizard for a Free-Form Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsWizardPanel" url="web/csh/projwiz_freeform/WebLocationsWizardPanel.html" /> -->
-	<!-- The Web Sources Classpath panel in New Project Wizard for a Free-Form Web Application: -->
-	<!-- <mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathWizardPanel" url="web/csh/projwiz_freeform/WebClasspathWizardPanel.html" /> -->
-
-	<!-- NEW PROJECT WIZARD FOR A STANDARD WEB APPLICATION:-->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="web/csh/projwiz_standard/PanelConfigureProject.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="web/csh/projwiz_standard/ThePanel.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" url="web/csh/projwiz_standard/SecondPanel.html" /> -->
-
-<!--CSH for HTML Editor-->
-<!-- <mapID target="org.netbeans.modules.editor.html.HTMLKit" url="web/create/jsp/about_jsp_edit.html" /> -->
-
-<!--CSH for JSP Editor-->
-<!-- <mapID target="org.netbeans.modules.web.core.syntax.JSPKit" url="web/create/jsp/about_jsp_edit.html" /> -->
-
-	<!-- GRAPHIC EDITOR FOR WEB.XML FILES:-->
-	<!-- <mapID target="dd_multiview_overview_overviewNode" url="web/csh/graphic_editor/dd_multiview_overview_overviewNode.html" /> -->
-	<!-- <mapID target="dd_multiview_overview_contextParamsNode" url="web/csh/graphic_editor/dd_multiview_overview_contextParamsNode.html" /> -->
-	<!-- <mapID target="dd_multiview_overview_listenersNode" url="web/csh/graphic_editor/dd_multiview_overview_listenersNode.html" /> -->
-	<!-- <mapID target="dd_multiview_servlets_servletsNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletsNode.html" /> -->
-	<!-- <mapID target="dd_multiview_servlets_servletNode" url="web/csh/graphic_editor/dd_multiview_servlets_servletsNode.html" /> -->
-	<!-- <mapID target="dd_multiview_filters_filtersNode" url="web/csh/graphic_editor/dd_multiview_filters_filtersNode.html" /> -->
-	<!-- <mapID target="dd_multiview_filters_filterNode" url="web/csh/graphic_editor/dd_multiview_filters_filtersNode.html" /> -->
-	<!-- <mapID target="dd_multiview_filters_filterMappingsNode" url="web/csh/graphic_editor/dd_multiview_filters_filtersNode.html" /> -->
-	<!-- <mapID target="dd_multiview_pages_welcomeFilesNode" url="web/csh/graphic_editor/dd_multiview_pages_welcomeFilesNode.html" /> -->
-	<!-- <mapID target="dd_multiview_pages_errorPagesNode" url="web/csh/graphic_editor/dd_multiview_pages_errorPagesNode.html" /> -->
-	<!-- <mapID target="dd_multiview_pages_jspPropertyGroupsNode" url="web/csh/graphic_editor/dd_multiview_pages_jspPropertyGroupsNode.html" /> -->
-	<!-- <mapID target="dd_multiview_pages_jspPropertyGroupNode" url="web/csh/graphic_editor/dd_multiview_pages_jspPropertyGroupsNode.html" /> -->
-
-	<!-- <mapID target="dd_multiview_references_messageDestRefsNode" url="web/csh/graphic_editor/dd_multiview_references_messageDestRefsNode.html" /> -->
-	<!-- <mapID target="dd_multiview_references_ejbRefsNode" url="web/csh/graphic_editor/dd_multiview_references_ejbRefsNode.html" /> -->
-	<!-- <mapID target="dd_multiview_references_envEntriesNode" url="web/csh/graphic_editor/dd_multiview_references_envEntriesNode.html" /> -->
-	<!-- <mapID target="dd_multiview_references_resRefsNode" url="web/csh/graphic_editor/dd_multiview_references_resRefsNode.html" /> -->
-	<!-- <mapID target="dd_multiview_references_resEnvRefsNode" url="web/csh/graphic_editor/dd_multiview_references_resEnvRefsNode.html" /> -->
-	
-	<!-- GRAPHIC EDITOR FOR WEB.XML FILES - SECURITY-RELATED SECTIONS: -->
-	<!-- <mapID target="dd_multiview_security_loginconfigNode" url="web/csh/graphic_editor/dd_multiview_security_loginconfigNode.html" /> -->
-	<!-- <mapID target="dd_multiview_security_securityrolesNode" url="web/csh/graphic_editor/dd_multiview_security_securityrolesNode.html" /> -->
-	<!-- <mapID target="dd_multiview_security_securityconstraintsNode" url="web/csh/graphic_editor/dd_multiview_security_securityconstraintsNode.html" /> -->
-
-	<!-- The Library Manager dialog box csh topic: -->
-	<!-- <mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/csh_library_manager.html" /> -->
-
-	
-
-	<!--STRUTS AND JSF FRAMEWORK WIZARD PANEL AND PROJECT PROPERTIES DIALOG BOX:-->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSupportedFrameworks" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.struts.ui.StrutsConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="web/csh/projwiz_standard/PanelSupportedFrameworks.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" url="web/csh/dbox_projprops/CustomizerFrameworks.html" /> -->
-
-	<!--STRUTS AND JSF FRAMEWORK DIALOG BOXES:-->
-	<!-- <mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="web/create/tag/framework/struts/AddActionPanel.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.struts.dialogs.AddFIActionPanel" url="web/create/tag/framework/struts/AddForwardIncludePanel.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.struts.dialogs.AddExceptionDialogPanel" url="web/create/tag/framework/struts/AddException.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.struts.dialogs.AddForwardDialogPanel" url="web/create/tag/framework/struts/AddForward.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.struts.dialogs.AddFormBeanPanel" url="web/create/tag/framework/struts/AddFormBean.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.struts.dialogs.AddFormPropertyPanel" url="web/create/tag/framework/struts/AddFormProperty.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="web/create/tag/framework/jsf/AddNavigationRuleDialog.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="web/create/tag/framework/jsf/AddNavigationCaseDialog.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="web/create/tag/framework/jsf/AddManagedBeanDialog.html" /> -->
-	<!-- mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="web/create/tag/framework/jsf/file_ManagedBeanPanel.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="web/create/tag/framework/struts/file_ActionPanel.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="web/create/tag/framework/struts/file_ActionPanel1.html" /> -->
-	<!-- <mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="web/create/tag/framework/struts/file_FormBeanNewPanel.html" /> -->
-
-
-<!-- End of CSH for Web Applications -->
-
 
 
 <!-- Start of "Developing Web Services" help -->

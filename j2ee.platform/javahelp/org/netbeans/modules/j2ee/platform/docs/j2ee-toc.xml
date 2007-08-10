@@ -54,9 +54,74 @@
     <!-- Start of enterprise applications -->
     
     <tocitem text="Enterprise Applications" expand="false">
+        <tocitem text="About Enterprise Applications" >
+            <tocitem text="About Enterprise Applications" target="about_ent_apps" />
+            <tocitem text="Working With Enterprise Applications" target="ent_app_process" />
+            <tocitem text="Enterprise Application Tasks: Quick Reference" target="ent_app_quickref" />
+        </tocitem>
+        <tocitem text="Creating and Configuring Enterprise Applications" >
+            <tocitem text="Creating an Enterprise Application Project" target="ent_app_creating" />
+            <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
+            <tocitem text="Adding an External Resource to an Enterprise Application" target="add_resources_to_ent_app" />
+            <tocitem text="Editing an Enterprise Application's Deployment Descriptor" target="ent_app_configure" />
+        </tocitem>
+        <tocitem text="Developing Enterprise Beans" >
+            <tocitem text="About Enterprise Beans" >
+                <tocitem text="About Enterprise Beans" target="about_ejbs" />
+                <tocitem text="Working With Enterprise Beans" target="ejb_process" />
+                <tocitem text="Enterprise Bean Tasks: Quick Reference" target="ejb_quickref" />
+                <tocitem text="About Session Beans" target="about_session_beans" />
+                <tocitem text="About Message-Driven Beans" target="about_msg_driven_beans" />
+                <tocitem text="About EJB 2.1 Entity Beans" target="about_entity_beans" />
+            </tocitem>
+            <tocitem text="Creating and Editing Enterprise Beans" >
+                <tocitem text="Creating an EJB Module Project" target="create_ejb_project" />
+                <tocitem text="Creating an Enterprise Bean" target="create_ejb" />
+                <tocitem text="Generating Session Beans for Entity Classes" target="persist_session" />
+                <tocitem text="About Business Methods" target="about_business_method" />
+                <tocitem text="Defining a Business Method" target="define_business_method" />
+                <tocitem text="About Calling an Enterprise Bean" target="about_call_ejb" />
+                <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
+                <tocitem text="Accessing a Connection Pool from a Java Class" target="use_db" />
+                <tocitem text="Sending an E-mail from a Java File" target="send_email" />
+                <tocitem text="Sending a JMS Message" target="send_jms" />
+                <tocitem text="Using a Service Locator" target="service_locator" />
+                <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb" />
+            </tocitem>
+            <tocitem text="Configuring EJB Modules" >
+                <tocitem text="About Configuring EJB Modules" target="config_ejb_about" />
+                <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
+                <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
+                <tocitem text="Configuring EJB Deployment Descriptors" target="config_ejb_dd" />
+                <tocitem text="About Container-Managed Relationships" target="about_ejb_relationship" /> 
+                <tocitem text="Managing Container-Managed Relationships" target="ejb_relationship" /> 
+            </tocitem>
+            <tocitem text="Building and Deploying EJB Modules" >
+                <tocitem text="Building an EJB Module" target="build_ejb" />
+                <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
+                <tocitem text="Deploying an EJB Module" target="deploy_ejb" />
+            </tocitem>
+            <tocitem text="Debugging and Testing EJB Modules" >
+                <tocitem text="Debugging an EJB Module" target="debug_ejb" />
+                <tocitem text="Writing A Debug Target for a Free-Form EJB Module Project" target="debug_ejb_freeform" />
+                <tocitem text="Profiling an EJB Module" target="profile_ejb" />
+                <tocitem text="Testing an EJB Module" target="test_ejb" />
+            </tocitem>
+            <tocitem text="Developing EJB 2.1 Entity Beans" >
+                <tocitem text="About EJB 2.1 Entity Beans" target="about_entity_beans" />
+                <tocitem text="About EJB 2.1 CMP Mappings" target="about_cmp" />
+                <tocitem text="EJB 2.1 Entity Bean: Quick Reference" target="entity_quickref" />
+                <tocitem text="Generating CMP Entity Beans from a Database" target="generate_cmp_beans" />            
+                <tocitem text="Defining a Finder Method" target="define_finder_method" />
+                <tocitem text="Adding EJB QL to a Finder or Select Method" target="add_ejbql" />
+                <tocitem text="Defining a Select Method" target="define_select_method" />
+                <tocitem text="Defining a CMP Field" target="define_cmp_field" />
+            </tocitem>
+        </tocitem>
 
-
-
+        <tocitem text="Developing Web Applications">
+            <tocitem text="About Web Applications in Enterprise Applications" target="about_entwebapps" />
+        </tocitem>
     
      <!--   <tocitem text="Developing Web Applications">
     
@@ -293,59 +358,7 @@
             <tocitem text="Obtaining an Entity Manager" target="persist_entitymanager" />
             <tocitem text="Adding Support for Java Persistence" target="persist_support" />
         </tocitem>
-        <tocitem text="Developing Enterprise Beans" >
-            <tocitem text="About Enterprise Beans" >
-                <tocitem text="About Enterprise Beans" target="about_ejbs" />
-                <tocitem text="Working With Enterprise Beans" target="ejb_process" />
-                <tocitem text="Enterprise Bean Tasks: Quick Reference" target="ejb_quickref" />
-                <tocitem text="About Session Beans" target="about_session_beans" />
-                <tocitem text="About Message-Driven Beans" target="about_msg_driven_beans" />
-                <tocitem text="About EJB 2.1 Entity Beans" target="about_entity_beans" />
-            </tocitem>
-            <tocitem text="Creating and Editing Enterprise Beans" >
-                <tocitem text="Creating an EJB Module Project" target="create_ejb_project" />
-                <tocitem text="Creating an Enterprise Bean" target="create_ejb" />
-                <tocitem text="Generating Session Beans for Entity Classes" target="persist_session" />
-                <tocitem text="About Business Methods" target="about_business_method" />
-                <tocitem text="Defining a Business Method" target="define_business_method" />
-                <tocitem text="About Calling an Enterprise Bean" target="about_call_ejb" />
-                <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
-                <tocitem text="Accessing a Connection Pool from a Java Class" target="use_db" />
-                <tocitem text="Sending an E-mail from a Java File" target="send_email" />
-                <tocitem text="Sending a JMS Message" target="send_jms" />
-                <tocitem text="Using a Service Locator" target="service_locator" />
-                <tocitem text="Refactoring an Enterprise Bean" target="refactor_ejb" />
-            </tocitem>
-            <tocitem text="Configuring EJB Modules" >
-                <tocitem text="About Configuring EJB Modules" target="config_ejb_about" />
-                <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
-                <tocitem text="About Deployment Descriptors" target="about_deployment_descriptors" />
-                <tocitem text="Configuring EJB Deployment Descriptors" target="config_ejb_dd" />
-                <tocitem text="About Container-Managed Relationships" target="about_ejb_relationship" /> 
-                <tocitem text="Managing Container-Managed Relationships" target="ejb_relationship" /> 
-            </tocitem>
-            <tocitem text="Building and Deploying EJB Modules" >
-                <tocitem text="Building an EJB Module" target="build_ejb" />
-                <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
-                <tocitem text="Deploying an EJB Module" target="deploy_ejb" />
-            </tocitem>
-            <tocitem text="Debugging and Testing EJB Modules" >
-                <tocitem text="Debugging an EJB Module" target="debug_ejb" />
-                <tocitem text="Writing A Debug Target for a Free-Form EJB Module Project" target="debug_ejb_freeform" />
-                <tocitem text="Profiling an EJB Module" target="profile_ejb" />
-                <tocitem text="Testing an EJB Module" target="test_ejb" />
-            </tocitem>
-            <tocitem text="Developing EJB 2.1 Entity Beans" >
-                <tocitem text="About EJB 2.1 Entity Beans" target="about_entity_beans" />
-                <tocitem text="About EJB 2.1 CMP Mappings" target="about_cmp" />
-                <tocitem text="EJB 2.1 Entity Bean: Quick Reference" target="entity_quickref" />
-                <tocitem text="Generating CMP Entity Beans from a Database" target="generate_cmp_beans" />            
-                <tocitem text="Defining a Finder Method" target="define_finder_method" />
-                <tocitem text="Adding EJB QL to a Finder or Select Method" target="add_ejbql" />
-                <tocitem text="Defining a Select Method" target="define_select_method" />
-                <tocitem text="Defining a CMP Field" target="define_cmp_field" />
-            </tocitem>
-        </tocitem>
+        
         <tocitem text="Developing Application Clients">
             <tocitem text="About Enterprise Application Clients" target="appclient_about"></tocitem>
             <tocitem text="Working with Java EE Application Clients" target="appclient_process"></tocitem>
@@ -354,29 +367,15 @@
             <tocitem text="Editing an Enterprise Application Client's Deployment Descriptors" target="appclient_edit_dd" />
             <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
         </tocitem>
-        <tocitem text="Assembling Enterprise Applications" >
-            <tocitem text="About Enterprise Applications" >
-                <tocitem text="About Enterprise Applications" target="about_ent_apps" />
-                <tocitem text="Working With Enterprise Applications" target="ent_app_process" />
-                <tocitem text="Enterprise Application Tasks: Quick Reference" target="ent_app_quickref" />
+        
+        <tocitem text="Building and Running Enterprise Applications" >
+            <tocitem text="Building an Enterprise Application" target="ent_app_build" />
+            <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
+            <tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" /> 
+            <tocitem text="Repackaging an Archive for a Different Server">
+                <tocitem text="About Packaged Archive Projects" target="archiveproject_about" />
+                <tocitem text="Redeploying an Application to a Different Server" target="archiveproject-deploying" />
             </tocitem>
-            <tocitem text="Creating and Configuring Enterprise Applications" >
-                <tocitem text="Creating an Enterprise Application Project" target="ent_app_creating" />
-                <tocitem text="Adding a Module to an Enterprise Application" target="add_modules_to_ent_app" />
-                <tocitem text="Adding an External Resource to an Enterprise Application" target="add_resources_to_ent_app" />
-                <tocitem text="Editing an Enterprise Application's Deployment Descriptor" target="ent_app_configure" />
-            </tocitem>
-            <tocitem text="Building and Running Enterprise Applications" >
-                <tocitem text="Building an Enterprise Application" target="ent_app_build" />
-                <tocitem text="Verifying an Enterprise Application" target="ent_app_verify" />
-                <tocitem text="Deploying an Enterprise Application" target="ent_app_deploy" /> 
-                <tocitem text="Changing the Target Server" target="deploy_changeserver" />
-                <tocitem text="Changing the Default Web Browser" target="deploy_changebrowser" />
-            </tocitem>
-        </tocitem>
-        <tocitem text="Repackaging an Archive for a Different Server">
-            <tocitem text="About Packaged Archive Projects" target="archiveproject_about" />
-            <tocitem text="Redeploying an Application to a Different Server" target="archiveproject-deploying" />
         </tocitem>
     </tocitem> 
 </toc>
