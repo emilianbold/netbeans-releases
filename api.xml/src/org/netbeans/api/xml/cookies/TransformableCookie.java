@@ -18,12 +18,9 @@
  */
 package org.netbeans.api.xml.cookies;
 
-import java.io.IOException;
-
 import javax.xml.transform.Source;
 import javax.xml.transform.Result;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerConfigurationException;
 
 import org.openide.nodes.Node;
 
