@@ -36,8 +36,8 @@ public class LocalesDomain extends Domain {
         Locale[] locales = Locale.getAvailableLocales();
         elements = new Element[locales.length];
         for (int i = 0; i < locales.length; i++) {
-            String c = locales[i].toString();
-            elements[i] = new Element(c, locales[i].getDisplayName() + " (" + c + ")");
+            String c = locales[i].toString();            
+            elements[i] = new LocaleElement(locales[i], locales[i].getDisplayName() + " (" + c + ")");                        
         }
         Arrays.sort(elements);
     }
@@ -51,6 +51,23 @@ public class LocalesDomain extends Domain {
 
     public String getDisplayName() {
         return bundle.getMessage("Locales.displayName");
-    }
+    } 
+    
+    static class LocaleElement extends Element {                
+        String language;
+        String country;
+        String variant;
+        
+        LocaleElement(Locale locale, String displayName) {           
+            super(locale, displayName);
+            this.language = locale.getLanguage();
+            this.country = locale.getCountry();
+            this.variant = locale.getVariant();
+        }
 
+        public String getJavaInitializationString() {         
+            return "new java.util.Locale(\"" + language + "\", \"" +
+                    country + "\", \"" + variant + "\")";
+        }
+    }
 }
