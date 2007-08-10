@@ -29,7 +29,7 @@
 <mapID target="files.templatemacros" url="files/files_template_macros.html" />
 <mapID target="files.unknown" url="files/files_unknown.html" />
 <mapID target="files.runtime" url="files/files_runtime.html" />
-
+<mapID target="files.encoding" url="files/encoding.html" />
 
 
 

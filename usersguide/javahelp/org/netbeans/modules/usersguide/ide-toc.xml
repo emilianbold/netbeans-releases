@@ -28,6 +28,7 @@
     <tocitem text="Using Macros in Templates" target="files.templatemacros" />
     <tocitem text="Working with Unknown File Extensions" target="files.unknown" />
     <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />
+    <tocitem text="Setting Character Encoding" target="files.encoding" />
   </tocitem>
 
 
