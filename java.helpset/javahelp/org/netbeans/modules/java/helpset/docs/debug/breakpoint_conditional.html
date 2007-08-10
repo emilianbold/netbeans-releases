@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-*     Copyright ï¿½ 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 *
 -->
@@ -14,13 +14,23 @@
 <h2>Setting a Conditional Breakpoint</h2>
 <p> <small><a href="#seealso">See Also</a></small></p>
 <p>You can set conditions on a breakpoint so that execution only breaks if the 
-condition is true. You can set conditions on any breakpoint except thread and 
-class breakpoints.</p>
+condition is true. You can set conditions on any breakpoint except thread breakpoints
+by selecting the Conditions checkbox and entering the condition.
+For all breakpoints you can specify how often the breakpoint is triggered by selecting the
+Break When Hit Count checkbox and choosing a criteria from the drop-down list and specifying a numerical value.</p>
+<p>Class breakpoints and exception breakpoints allow you to set the following:</p>
+<ul>
+    <li>For class breakpoints you can exclude classes triggering the breakpoint by selecting the Exclude classes checkbox and
+    specifying the classes to exclude.</li>
+    <li>For exception breakpoints you can filter the classes triggering the breakpoint by selecting the
+    Filter on Classes Throwing the Exception checkbox and specifying the names of classes to match or exclude.</li>
+</ul>
+
 <p><b>To set conditions on a breakpoint:</b></p>
 <ol>
   <li>Create a new breakpoint or open an existing breakpoint's customizer 
-  by right-clicking its name in the <a href="CSH/breakpoint_view.html">Breakpoints window</a> and choosing Customize.</p>. 
-  <li> Type the condition in the Condition field. The condition must follow the 
+  by right-clicking its name in the <a href="CSH/breakpoint_view.html">Breakpoints window</a> and choosing Customize.</li> 
+  <li>Select the Condition checkbox Type the condition in the Condition field. The condition must follow the 
     Java syntax rules. The condition may include anything that can be on the right 
     side of the equal sign (<tt>=</tt>). The condition may also include variables 
     and methods that are within the current context. The following are exceptions: 
@@ -29,6 +39,7 @@ class breakpoints.</p>
       <li> You cannot access outerclass methods and variables directly. Use <tt>this.<i>variableName</i></tt> or <tt>this$1</tt>. </li>
     </ul>
   </li>
+  <li>(Optional) Select the Break When Hit Count checkbox and choose a criteria from the drop-down list and specify a numerical value.</li>
 </ol>
 <p>Conditional line breakpoints have a <img src="images/ConditionalBreakpoint.gif" alt="conditional breakpoint icon">
 icon in the left margin of the Source Editor.</p>
