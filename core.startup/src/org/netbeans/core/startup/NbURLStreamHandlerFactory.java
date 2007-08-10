@@ -44,7 +44,7 @@ import org.openide.util.NbBundle;
  * @author Jesse Glick
  */
 final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory, LookupListener {
-    private static Logger LOG = Logger.getLogger(NbURLStreamHandlerFactory.class.getName());
+    private static final Logger LOG = Logger.getLogger(NbURLStreamHandlerFactory.class.getName());
     
     private Lookup.Result<URLStreamHandlerFactory> r = null;
     private URLStreamHandlerFactory[] handlers = null;
