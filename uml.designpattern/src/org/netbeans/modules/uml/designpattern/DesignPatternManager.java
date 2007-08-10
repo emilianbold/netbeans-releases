@@ -3791,12 +3791,16 @@ public class DesignPatternManager implements IDesignPatternManager {
     public IElement getEndOfRelationship(IPropertyElement pPropEle, int relEnd) {
         IElement pElement = null;
         if (pPropEle != null) {
+            // 78871, do not process the interim relationship element
+            if (pPropEle.getValue() == null)
+                return null;
+            
             String name = pPropEle.getName();
             Object pDispDP = pPropEle.getElement();
             if (pDispDP instanceof IAggregation) {
                 name = "Aggregation";
             }
-            if (name.equals("Association")) {
+            if (name.equals("Association")) {           
                 if (pDispDP instanceof IAssociation) {
                     IAssociation pAssocDP = (IAssociation)pDispDP;
                     ETList <IAssociationEnd> pEndsDP = pAssocDP.getEnds();
