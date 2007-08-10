@@ -41,7 +41,7 @@ import org.openide.util.NbBundle;
  */
 public class ValidationAction extends GraphAction {
 
-    private static final URL validateImgUrl = ValidationAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/validate.png");
+    private static final URL validateImgUrl = ValidationAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/validation_edm.png");
 
     public ValidationAction() {
         //action name
