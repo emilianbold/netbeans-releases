@@ -32,6 +32,7 @@ public class GraphLayoutFactory {
      * Creates a tree graph layout.
      * Use GraphLayoutSupport.setTreeGraphLayoutRootNode method to set the root node of the graph.
      * If not set/found, then layout is not executed.
+     * Note: Use GraphLayoutSupport.setTreeGraphLayoutProperties method to set the parameters of the layout later.
      * @param originX the x-axis origin
      * @param originY the y-axis origin
      * @param verticalGap the vertical gap between cells

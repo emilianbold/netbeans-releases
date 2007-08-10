@@ -505,6 +505,20 @@
             <class package="org.netbeans.api.visual.widget" name="Scene" link="yes"/>
             <issue number="108510"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>GraphLayouSupport.setTreeGraphLayoutProperties method introduced</summary>
+            <version major="2" minor="7"/>
+            <date day="10" month="8" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                The GraphLayouSupport.setTreeGraphLayoutProperties method allows change properties of tree graph layout i.e. originX, originY, verticalGap, horizontalGap, vertical.
+            </description>
+            <class package="org.netbeans.api.visual.graph.layout" name="GraphLayoutSupport" link="yes"/>
+            <issue number="111339"/>
+        </change>
     </changes>
 
     <htmlcontents>

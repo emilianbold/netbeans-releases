@@ -50,6 +50,14 @@ public final class TreeGraphLayout<N,E> extends GraphLayout<N,E> {
         this.rootNode = rootNode;
     }
 
+    public void setProperties (int originX, int originY, int verticalGap, int horizontalGap, boolean vertical) {
+        this.originX = originX;
+        this.originY = originY;
+        this.verticalGap = verticalGap;
+        this.horizontalGap = horizontalGap;
+        this.vertical = vertical;
+    }
+
     protected void performGraphLayout (UniversalGraph<N, E> graph) {
         if (rootNode == null)
             return;
