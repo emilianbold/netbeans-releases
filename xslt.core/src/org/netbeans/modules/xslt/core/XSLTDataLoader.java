@@ -41,7 +41,6 @@ import org.openide.util.NbBundle;
 public class XSLTDataLoader extends UniFileLoader {
     private static final long serialVersionUID = 1L;
 
-    private static final String XSLT_PROJECT_TYPE = "org.netbeans.modules.xslt.project"; // NOI18N
     public static final String MIME_TYPE = "application/xslt+xml";
     static final String PRIMARY_EXTENSION = "xsl";                 // NOI18N
     static final String PRIMARY_EXTENSION2 = "xslt";              // NOI18N
@@ -54,19 +53,16 @@ public class XSLTDataLoader extends UniFileLoader {
     public static final String ACTION_CONTEXT = "Loaders/" +       // NOI18N
         MIME_TYPE + "/Actions";                                    // NOI18N
     static final String LOADER_NAME ="LBL_loader_name";             // NOI18N 
-    private static final String DATAOBJECT_CLASS_NAME = 
-        XSLTDataObject.class.getCanonicalName();
-    
     
     public XSLTDataLoader() {
-        super(DATAOBJECT_CLASS_NAME);
+        super("org.netbeans.modules.xslt.core.XSLTDataObject"); // NOI18N
     }
 
     /** Does initialization. Initializes display name,
      * extension list and the actions. */
     protected void initialize() {
         super.initialize();
-                getExtensions().addMimeType(XSLTDataLoader.MIME_TYPE);
+        getExtensions().addMimeType(MIME_TYPE);
     }
     
     /**
@@ -148,12 +144,6 @@ public class XSLTDataLoader extends UniFileLoader {
         return new FileEntry(obj, primaryFile);
     }
     
-    protected MultiDataObject.Entry createSecondaryEntry(MultiDataObject obj, 
-            FileObject secondaryFile) 
-    {       
-        return new FileEntry(obj, secondaryFile);
-    }
-        
         /**
          * other modules can decorate with Special Actions
          * to see the default actions look in the layer.xml
