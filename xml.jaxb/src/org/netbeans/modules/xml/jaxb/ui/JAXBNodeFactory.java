@@ -23,9 +23,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -36,18 +33,13 @@ import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.nodes.Node;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author gpatil
  */
 public class JAXBNodeFactory implements NodeFactory {
-    public static String JAXB_NODE_NAME = "JAXB Bindings" ; // NOI18N
-    private static Logger logger = Logger.getLogger(
-            JAXBNodeFactory.class.getName());
+    public static final String JAXB_NODE_NAME = "JAXB Bindings" ; // NOI18N
     
     public JAXBNodeFactory() {
     }
