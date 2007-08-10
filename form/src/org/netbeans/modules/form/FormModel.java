@@ -399,10 +399,12 @@ public class FormModel
     }
     
     void setNaturalContainerLayoutImpl(RADVisualContainer metacont) {
-        LayoutSupportManager currentLS = metacont.getLayoutSupport();
-        LayoutSupportDelegate currentDel = currentLS.getLayoutDelegate();
+        LayoutSupportDelegate currentDel = metacont.getLayoutSupport().getLayoutDelegate();
         metacont.setOldLayoutSupport(false);
         fireContainerLayoutExchanged(metacont, currentDel, null);
+        for (RADVisualComponent metacomp : metacont.getSubComponents()) {
+            metacomp.resetConstraintsProperties();
+        }
     }
 
     public void setNaturalContainerLayout(RADVisualContainer metacont) {
