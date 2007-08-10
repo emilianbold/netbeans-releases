@@ -21,6 +21,8 @@ package org.netbeans.api.visual.widget;
 import org.netbeans.modules.visual.util.GeomUtil;
 
 import java.awt.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 
@@ -60,6 +62,11 @@ public class LabelWidget extends Widget {
     private VerticalAlignment verticalAlignment = VerticalAlignment.BASELINE;
     private Orientation orientation = Orientation.NORMAL;
     private boolean paintAsDisabled;
+    private boolean useGlyphVector = false;
+
+    private GlyphVector cacheGlyphVector;
+    private String cacheLabel;
+    private Font cacheFont;
 
     /**
      * Creates a label widget.
@@ -174,16 +181,58 @@ public class LabelWidget extends Widget {
     }
 
     /**
+     * Returns whether the label widget is using glyph vector for rendering text.
+     * @return true, if the label widget is using glyph vector
+     */
+    public boolean isUseGlyphVector () {
+        return useGlyphVector;
+    }
+
+    /**
+     * Sets whether the label widget is using glyph vector for rendering text.
+     * <p>
+     * Note that using glyph vector could slow-down the rendering performance.
+     * Note that if you are not using glyph vector then the text may be clipped when a scene has zoom factor different from 1.0.
+     * @param useGlyphVector if true, then a glyph vector is used for rendering text
+     */
+    public void setUseGlyphVector (boolean useGlyphVector) {
+        if (this.useGlyphVector == useGlyphVector)
+            return;
+        this.useGlyphVector = useGlyphVector;
+        cacheGlyphVector = null;
+        cacheLabel = null;
+        cacheFont = null;
+        revalidate ();
+    }
+
+    private void assureGlyphVector () {
+        Font font = getFont ();
+        FontRenderContext fontRenderContext = getGraphics ().getFontRenderContext ();
+        if (cacheGlyphVector != null  &&  cacheFont == font  &&  cacheLabel == label)
+            return;
+        cacheFont = font;
+        cacheLabel = label;
+        cacheGlyphVector = font.createGlyphVector (new FontRenderContext (new AffineTransform (), fontRenderContext.isAntiAliased (), fontRenderContext.usesFractionalMetrics ()), cacheLabel);
+    }
+
+    /**
      * Calculates a client area for the label.
      * @return the client area
      */
     protected Rectangle calculateClientArea () {
         if (label == null)
             return super.calculateClientArea ();
-        Graphics2D gr = getGraphics ();
-        FontMetrics fontMetrics = gr.getFontMetrics (getFont ());
-        Rectangle2D stringBounds = fontMetrics.getStringBounds (label, gr);
-        Rectangle rectangle = GeomUtil.roundRectangle (stringBounds);
+        Rectangle rectangle;
+        if (useGlyphVector) {
+            assureGlyphVector ();
+            rectangle = GeomUtil.roundRectangle (cacheGlyphVector.getVisualBounds ());
+            rectangle.grow (1, 1); // WORKAROUND - even text antialiasing is included into the boundary
+        } else {
+            Graphics2D gr = getGraphics ();
+            FontMetrics fontMetrics = gr.getFontMetrics (getFont ());
+            Rectangle2D stringBounds = fontMetrics.getStringBounds (label, gr);
+            rectangle = GeomUtil.roundRectangle (stringBounds);
+        }
         switch (orientation) {
             case NORMAL:
                 return rectangle;
@@ -201,7 +250,10 @@ public class LabelWidget extends Widget {
         if (label == null)
             return;
         Graphics2D gr = getGraphics ();
-        gr.setFont (getFont ());
+        if (useGlyphVector)
+            assureGlyphVector ();
+        else
+            gr.setFont (getFont ());
 
         FontMetrics fontMetrics = gr.getFontMetrics ();
         Rectangle clientArea = getClientArea ();
@@ -220,10 +272,16 @@ public class LabelWidget extends Widget {
                         x = clientArea.x;
                         break;
                     case CENTER:
-                        x = clientArea.x + (clientArea.width - fontMetrics.stringWidth (label)) / 2;
+                        if (useGlyphVector)
+                            x = clientArea.x + (clientArea.width - getCacheGlyphVectorWidth ()) / 2;
+                        else
+                            x = clientArea.x + (clientArea.width - fontMetrics.stringWidth (label)) / 2;
                         break;
                     case RIGHT:
-                        x = clientArea.x + clientArea.width - fontMetrics.stringWidth (label);
+                        if (useGlyphVector)
+                            x = clientArea.x + clientArea.width - getCacheGlyphVectorWidth ();
+                        else
+                            x = clientArea.x + clientArea.width - fontMetrics.stringWidth (label);
                         break;
                     default:
                         return;
@@ -271,10 +329,16 @@ public class LabelWidget extends Widget {
                         y = 0;
                         break;
                     case TOP:
+                        if (useGlyphVector)
+                            y = clientArea.y + getCacheGlyphVectorWidth ();
+                        else
                         y = clientArea.y + fontMetrics.stringWidth (label);
                         break;
                     case CENTER:
-                        y = clientArea.y + (clientArea.height + fontMetrics.stringWidth (label)) / 2;
+                        if (useGlyphVector)
+                            y = clientArea.y + (clientArea.height + getCacheGlyphVectorWidth ()) / 2;
+                        else
+                            y = clientArea.y + (clientArea.height + fontMetrics.stringWidth (label)) / 2;
                         break;
                     case BOTTOM:
                         y = clientArea.y + clientArea.height;
@@ -304,15 +368,28 @@ public class LabelWidget extends Widget {
         if (paintAsDisabled  &&  background instanceof Color) {
             Color color = ((Color) background);
             gr.setColor (color.brighter ());
-            gr.drawString (label, 1, 1);
+            if (useGlyphVector)
+                gr.fill (cacheGlyphVector.getOutline (1, 1));
+            else
+                gr.drawString (label, 1, 1);
             gr.setColor (color.darker ());
-            gr.drawString (label, 0, 0);
+            if (useGlyphVector)
+                gr.fill (cacheGlyphVector.getOutline ());
+            else
+                gr.drawString (label, 0, 0);
         } else {
             gr.setColor (getForeground ());
-            gr.drawString (label, 0, 0);
+            if (useGlyphVector)
+                gr.fill (cacheGlyphVector.getOutline ());
+            else
+                gr.drawString (label, 0, 0);
         }
         
         gr.setTransform(previousTransform);
+    }
+
+    private int getCacheGlyphVectorWidth () {
+        return GeomUtil.roundRectangle (cacheGlyphVector.getVisualBounds ()).width;
     }
 
 }

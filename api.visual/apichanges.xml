@@ -430,6 +430,22 @@
             <class package="org.netbeans.api.visual.widget" name="Widget" link="yes"/>
             <issue number="108856"/>
         </change>
+
+        <change>
+            <api name="general"/>
+            <summary>Accurate LabelWidget rendering using glyph vector</summary>
+            <version major="2" minor="7"/>
+            <date day="10" month="8" year="2007"/>
+            <author login="dkaspar"/>
+            <compatibility addition="yes"/>
+            <description>
+                LabelWidget now has useGlyphVector property. If true then the text in a LabelWidget is converted into glyph-vector (a shape)
+		that is rendered. This allows accurate rendering independently on zoom-factor of a scene.
+                Note that the glyph-vector rendering is slower than regular rendering.
+            </description>
+            <class package="org.netbeans.api.visual.widget" name="LabelWidget" link="yes"/>
+            <issue number="98762"/>
+        </change>
     </changes>
 
     <htmlcontents>
