@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
+import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +47,6 @@ import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.util.FileFilters;
-import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -70,7 +70,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
     private boolean busy;
     
     public JBIComponentContainerNode(final AppserverJBIMgmtController controller,
-            String type, String name) {
+            NodeType type, String name) {
         super(controller, type);
         setDisplayName(name);
     }
@@ -292,7 +292,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
     
     protected abstract String getComponentTypeLabel();
     
-    protected abstract String getComponentType();
+    protected abstract JBIComponentType getComponentType();
     
     //==========================================================================
     
@@ -304,7 +304,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         
         public ServiceEngines(final AppserverJBIMgmtController controller) {
             super(controller,
-                    NodeTypes.SERVICE_ENGINES,
+                    NodeType.SERVICE_ENGINES,
                     NbBundle.getMessage(JBIComponentContainerNode.class, "SERVICE_ENGINES"));    // NOI18N
         }
         
@@ -345,8 +345,8 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
             return "SERVICE_ENGINE";    // NOI18N
         }
         
-        protected String getComponentType() {
-            return JBIComponentStatus.ENGINE_TYPE;    
+        protected JBIComponentType getComponentType() {
+            return JBIComponentType.SERVICE_ENGINE;    
         }
         
         public HelpCtx getHelpCtx() {
@@ -362,7 +362,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         
         public BindingComponents(final AppserverJBIMgmtController controller) {
             super(controller,
-                    NodeTypes.BINDING_COMPONENTS,
+                    NodeType.BINDING_COMPONENTS,
                     NbBundle.getMessage(JBIComponentContainerNode.class, "BINDING_COMPONENTS")); // NOI18N
         }
         
@@ -403,8 +403,8 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
             return "BINDING_COMPONENT";    // NOI18N
         }
         
-        protected String getComponentType() {
-            return JBIComponentStatus.BINDING_TYPE;    
+        protected JBIComponentType getComponentType() {
+            return JBIComponentType.BINDING_COMPONENT;    
         }
         
         public HelpCtx getHelpCtx() {
@@ -420,7 +420,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         
         public SharedLibraries(final AppserverJBIMgmtController controller) {
             super(controller,
-                    NodeTypes.SHARED_LIBRARIES,
+                    NodeType.SHARED_LIBRARIES,
                     NbBundle.getMessage(JBIComponentContainerNode.class, "SHARED_LIBRARIES"));   // NOI18N
         }
         
@@ -454,8 +454,8 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
             return "SHARED_LIBRARY";    // NOI18N
         }
         
-        protected String getComponentType() {
-            return JBIComponentStatus.NAMESPACE_TYPE;    
+        protected JBIComponentType getComponentType() {
+            return JBIComponentType.SHARED_LIBRARY;    
         }
         
         public HelpCtx getHelpCtx() {

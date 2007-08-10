@@ -33,12 +33,10 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceUnitStatus;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.util.datatransfer.ExTransferable;
 import org.w3c.dom.Document;
@@ -53,15 +51,13 @@ import org.xml.sax.InputSource;
  */
 public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
     
-    private static final String NODE_TYPE = NodeTypes.SERVICE_UNIT;
-    
     private String componentName;
     
     public JBIServiceUnitNode(final AppserverJBIMgmtController controller,
             final String name,
             final String displayName,
             final String description) {
-        super(controller, NODE_TYPE);
+        super(controller, NodeType.SERVICE_UNIT);
         setName(name);
         setDisplayName(displayName);
         setShortDescription(description);
@@ -104,11 +100,11 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
         String status = (unitStatus == null) ? null : unitStatus.getStatus();
         
         String externalBadgeIconName = null;
-        if (JBIComponentStatus.INSTALLED_STATE.equals(status)) {
+        if (JBIComponentStatus.SHUTDOWN.equals(status)) {
             externalBadgeIconName = IconConstants.INSTALLED_ICON;
-        } else if (JBIComponentStatus.STOPPED_STATE.equals(status)) {
+        } else if (JBIComponentStatus.STOPPED.equals(status)) {
             externalBadgeIconName = IconConstants.STOPPED_ICON;
-        } else if (!JBIComponentStatus.STARTED_STATE.equals(status)) {
+        } else if (!JBIComponentStatus.STARTED.equals(status)) {
             externalBadgeIconName = IconConstants.UNKNOWN_ICON;
         }
         
@@ -134,8 +130,8 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
             DocumentBuilder builder = factory.newDocumentBuilder();
             // parse SU DD
             Document suDoc = builder.parse(new InputSource(new StringReader(suDD)));
-            Element services = (Element) suDoc.getElementsByTagName("services").item(0);
-            boolean isBC = services.getAttribute("binding-component").equals("true");
+            Element services = (Element) suDoc.getElementsByTagName("services").item(0); // NOI18N
+            boolean isBC = services.getAttribute("binding-component").equals("true"); // NOI18N
             
             if (!isBC) {
                 retValue.put( new ExTransferable.Single(ServiceUnitDataFlavor) {
@@ -193,7 +189,7 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
                 
                 // parse SA DD
                 Document saDoc = builder.parse(new InputSource(new StringReader(saDD)));
-                NodeList sus = saDoc.getElementsByTagName("service-unit");
+                NodeList sus = saDoc.getElementsByTagName("service-unit"); // NOI18N
                 for (int i = 0; i < sus.getLength(); i++) {
                     Element su = (Element) sus.item(i);
                     String name = ((Element)su.getElementsByTagName("name").item(0)).getFirstChild().getNodeValue(); // identification/name
@@ -207,7 +203,7 @@ public class JBIServiceUnitNode extends AppserverJBIMgmtLeafNode {
             }
             
             if (componentName == null) {
-                componentName = "?";
+                componentName = "?"; // NOI18N
             }
         }
         return componentName;

@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,7 +42,7 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
     
     private static Logger logger;
     
-    private String nodeType;
+    private NodeType nodeType;
     private AppserverJBIMgmtController appsrvrJBIMgmtController;
     
     /**
@@ -51,14 +50,14 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
      *
      */
     public AppserverJBIMgmtNode(final AppserverJBIMgmtController controller, 
-            final Children children, final String nodeType) {
+            final Children children, final NodeType nodeType) {
         super(children);
         setNodeProperties(nodeType);
 
         appsrvrJBIMgmtController = controller;
     }
     
-    public String getNodeType(){
+    public NodeType getNodeType(){
         return nodeType;
     }
 
@@ -82,7 +81,7 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
      *
      */
     protected String getNodeDisplayName() {
-        return NbBundle.getMessage(AppserverJBIMgmtNode.class, getNodeType());
+        return getNodeType().getDisplayName();
     }    
        
     /**
@@ -90,8 +89,7 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
      */
     protected String getNodeShortDescription() {
         try {
-            return NbBundle.getMessage(AppserverJBIMgmtNode.class, 
-                    getNodeType() + "_SHORT_DESC");  // NOI18N
+            return getNodeType().getShortDescription();
         } catch (Exception e) {
             return ""; // not necessarily defined // NOI18N
         }
@@ -221,7 +219,7 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode {
         return logger;
     }
         
-    private void setNodeProperties(String nodeType) {
+    private void setNodeProperties(NodeType nodeType) {
         this.nodeType = nodeType;
         setDisplayName(getNodeDisplayName());
 //        setIconBaseWithExtension(getNodeIconPath());

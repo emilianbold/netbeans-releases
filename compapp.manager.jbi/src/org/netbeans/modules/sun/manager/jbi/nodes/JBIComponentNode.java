@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
+import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +43,6 @@ import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentConfigurator;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
-import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
-import org.netbeans.modules.sun.manager.jbi.util.MyMBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Sheet;
 import org.openide.DialogDisplayer;
@@ -63,7 +62,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     
     private boolean busy;
     
-    private String compType;    
+    private JBIComponentType compType;    
     
     // Cached component configuration schema
     private String configSchema;
@@ -72,7 +71,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     
         
     public JBIComponentNode(final AppserverJBIMgmtController controller,
-            String compType, String nodeType, String name, String description) {
+            JBIComponentType compType, NodeType nodeType, String name, String description) {
         super(controller, nodeType);
         setName(name);
         setDisplayName(name);
@@ -304,11 +303,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         if (busy) {
             externalBadgeIconName = IconConstants.BUSY_ICON;
         } else {
-            if (JBIComponentStatus.INSTALLED_STATE.equals(state)) {
+            if (JBIComponentStatus.SHUTDOWN.equals(state)) {
                 externalBadgeIconName = getInstalledIconBadgeName();
-            } else if (JBIComponentStatus.STOPPED_STATE.equals(state)) {
+            } else if (JBIComponentStatus.STOPPED.equals(state)) {
                 externalBadgeIconName = getStoppedIconBadgeName();
-            } else if (!JBIComponentStatus.STARTED_STATE.equals(state)) {
+            } else if (!JBIComponentStatus.STARTED.equals(state)) {
                 externalBadgeIconName = getUnknownIconBadgeName();
             }
         }
@@ -345,7 +344,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         return getAdminService().getJBIComponentStatus(compType, getName());
     }
         
-    private void clearJBIComponentStatusCache(String compType) {
+    private void clearJBIComponentStatusCache(JBIComponentType compType) {
         getAdminService().clearJBIComponentStatusCache(compType);
     }
     
@@ -376,8 +375,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     public boolean canStart() {
         String state = getState();
         return !busy &&
-                (JBIComponentStatus.STOPPED_STATE.equals(state) ||
-                JBIComponentStatus.INSTALLED_STATE.equals(state));
+                (JBIComponentStatus.STOPPED.equals(state) ||
+                JBIComponentStatus.SHUTDOWN.equals(state));
     }
     
     /**
@@ -424,7 +423,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      *
      */
     public boolean canStop() {
-        return !busy && JBIComponentStatus.STARTED_STATE.equals(getState()); 
+        return !busy && JBIComponentStatus.STARTED.equals(getState()); 
     }
     
     /**
@@ -472,7 +471,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      */
     public boolean canShutdown() {
         return canStop() ||
-                !busy && JBIComponentStatus.STOPPED_STATE.equals(getState()); 
+                !busy && JBIComponentStatus.STOPPED.equals(getState()); 
     }
     
     /**
@@ -524,7 +523,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      */
     public boolean canUninstall() {
         return canShutdown() ||
-                !busy && JBIComponentStatus.INSTALLED_STATE.equals(getState()); 
+                !busy && JBIComponentStatus.SHUTDOWN.equals(getState()); 
     }
     
     /**
@@ -607,8 +606,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         public ServiceEngine(final AppserverJBIMgmtController controller,
                 String name, String description) {
             super(controller,
-                    JBIComponentStatus.ENGINE_TYPE,
-                    NodeTypes.SERVICE_ENGINE,
+                    JBIComponentType.SERVICE_ENGINE,
+                    NodeType.SERVICE_ENGINE,
                     name, description);
         }
         
@@ -690,8 +689,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         public BindingComponent(final AppserverJBIMgmtController controller,
                 String name, String description) {
             super(controller,
-                    JBIComponentStatus.BINDING_TYPE,
-                    NodeTypes.BINDING_COMPONENT,
+                    JBIComponentType.BINDING_COMPONENT,
+                    NodeType.BINDING_COMPONENT,
                     name, description);
         }
         
@@ -773,8 +772,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         public SharedLibrary(final AppserverJBIMgmtController controller,
                 String name, String description) {
             super(controller,
-                    JBIComponentStatus.NAMESPACE_TYPE,
-                    NodeTypes.SHARED_LIBRARY,
+                    JBIComponentType.SHARED_LIBRARY,
+                    NodeType.SHARED_LIBRARY,
                     name, description);
         }
         

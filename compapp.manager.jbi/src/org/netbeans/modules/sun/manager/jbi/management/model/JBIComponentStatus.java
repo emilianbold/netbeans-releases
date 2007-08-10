@@ -28,32 +28,12 @@ import java.io.Serializable;
  */
 public class JBIComponentStatus implements Serializable {
 
-    /** Deployment Type  */
-    public static final String DEPLOYMENT_TYPE = "service-assembly"; // NOI18N
-//    public static final String DEPLOYMENT_TYPE = "Deployment";
-    /** unknown type */
-    public static final String UNKNOWN_TYPE = "unknown"; // NOI18N
-    /** Binding type  */
-    public static final String BINDING_TYPE = "binding-component"; // NOI18N
-//    public static final String BINDING_TYPE = "Binding";
-    /** Engine Type */
-    public static final String ENGINE_TYPE = "service-engine"; // NOI18N
-//    public static final String ENGINE_TYPE = "Engine";
-    /** Namespace Type  */
-    public static final String NAMESPACE_TYPE = "shared-library"; // NOI18N
-//    public static final String NAMESPACE_TYPE = "SharedLibrary";
-
-    /** state  Loaded state.  */
-    public static final String UNKNOWN_STATE = "Unknown"; // NOI18N
-    /** state loaded */
-    public static final String LOADED_STATE = "Loaded"; // NOI18N
     /** Installed state */
-//    public static final String INSTALLED_STATE = "Installed";
-    public static final String INSTALLED_STATE = "Shutdown"; // NOI18N
+    public static final String SHUTDOWN = "Shutdown"; // NOI18N
     /** Stopped state  */
-    public static final String STOPPED_STATE = "Stopped"; // NOI18N
+    public static final String STOPPED = "Stopped"; // NOI18N
     /** Started state */
-    public static final String STARTED_STATE = "Started"; // NOI18N
+    public static final String STARTED = "Started"; // NOI18N
 
     String componentId;
     String state;
@@ -67,8 +47,6 @@ public class JBIComponentStatus implements Serializable {
     public JBIComponentStatus() {
         super();
     }
-
-
 
     /**
      * @param componentId
@@ -135,7 +113,6 @@ public class JBIComponentStatus implements Serializable {
     public void setState(String status) {
         this.state = status;
     }
-
 
     /**
      * @return Returns the type.

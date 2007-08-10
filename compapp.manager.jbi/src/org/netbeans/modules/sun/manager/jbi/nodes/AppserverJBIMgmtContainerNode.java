@@ -24,7 +24,6 @@ import java.util.logging.Level;
 import javax.swing.Action;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.nodes.JBIContainerChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
@@ -42,7 +41,8 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
      *
      */
     public AppserverJBIMgmtContainerNode(
-            final AppserverJBIMgmtController controller, final String type) {
+            
+            final AppserverJBIMgmtController controller, final NodeType type) {
         super(controller, getChildren(controller, type), type);
     }
     
@@ -64,7 +64,7 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
      *
      */
     static Children getChildren(final AppserverJBIMgmtController controller, 
-            final String type){
+            final NodeType type){
         return new JBIContainerChildren(controller, type);
     }
 
@@ -84,10 +84,10 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
      *
      *
      */
-    public static class JBIContainerChildren extends Children.Keys {
-        String type;
+    public static class JBIContainerChildren extends Children.Keys<Node> {
+        NodeType type;
         JBIContainerChildFactory cfactory;
-        public JBIContainerChildren(AppserverJBIMgmtController controller, String type) {
+        public JBIContainerChildren(AppserverJBIMgmtController controller, NodeType type) {
             if(controller == null) {
                 getLogger().log(Level.FINE, "Controller for child factory " + "is null");   // NOI18N
                 getLogger().log(Level.FINE, "Type: " + type);   // NOI18N
@@ -108,9 +108,9 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
         public void updateKeys() {
             refresh();
         }
-        protected org.openide.nodes.Node[] createNodes(Object obj) {
+        protected Node[] createNodes(Node obj) {
             try {
-                return new Node[] { (Node)obj };
+                return new Node[] { obj };
             } catch(RuntimeException rex) {
                 getLogger().log(Level.FINE, rex.getMessage(), rex);
                 return new Node[] {};

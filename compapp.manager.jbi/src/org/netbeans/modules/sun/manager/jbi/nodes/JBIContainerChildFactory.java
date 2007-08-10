@@ -19,7 +19,7 @@
 
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
-import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
+import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
@@ -57,9 +57,9 @@ public class JBIContainerChildFactory {
      * @param type The NodeType typs for a particular node.
      * @return The Children object containing a Node[] array of children.
      */
-    public Children getChildren(Node node, String type) {
+    public Children getChildren(Node node, NodeType type) {
         Children children = new Children.Array();
-        children.add((Node[]) getChildrenObject(node, type));        
+        children.add(getChildrenObject(node, type));        
         return children;
     }
     
@@ -69,25 +69,25 @@ public class JBIContainerChildFactory {
      * @param type
      * @return
      */
-    public Object[] getChildrenObject(Node node, String type) {
-        Object[] children = new Object[] {};
-        if (NodeTypes.JBI.equals(type)) {
+    public Node[] getChildrenObject(Node node, NodeType type) {
+        Node[] children = new Node[] {};
+        if (NodeType.JBI.equals(type)) {
             children = createJBIChildren();
-        } else if (NodeTypes.SERVICE_ENGINES.equals(type)) {
+        } else if (NodeType.SERVICE_ENGINES.equals(type)) {
             children = 
                 createJBIComponentContainerChildren(
-                        JBIComponentStatus.ENGINE_TYPE);
-        } else if (NodeTypes.BINDING_COMPONENTS.equals(type)) {
+                        JBIComponentType.SERVICE_ENGINE);
+        } else if (NodeType.BINDING_COMPONENTS.equals(type)) {
             children = 
                 createJBIComponentContainerChildren(
-                        JBIComponentStatus.BINDING_TYPE);
-        } else if (NodeTypes.SHARED_LIBRARIES.equals(type)) {
+                        JBIComponentType.BINDING_COMPONENT);
+        } else if (NodeType.SHARED_LIBRARIES.equals(type)) {
             children = 
                 createJBIComponentContainerChildren(
-                        JBIComponentStatus.NAMESPACE_TYPE);
-        } else if (NodeTypes.SERVICE_ASSEMBLIES.equals(type)) {
+                        JBIComponentType.SHARED_LIBRARY);
+        } else if (NodeType.SERVICE_ASSEMBLIES.equals(type)) {
             children = createServiceAssembliesChildren();
-        } else if (NodeTypes.SERVICE_ASSEMBLY.equals(type)) {
+        } else if (NodeType.SERVICE_ASSEMBLY.equals(type)) {
             children = 
                 createServiceAssemblyChildren(
                         (JBIServiceAssemblyNode) node);
@@ -114,7 +114,7 @@ public class JBIContainerChildFactory {
      * @param componentType
      * @return
      */
-    private Node[] createJBIComponentContainerChildren(String componentType) {
+    private Node[] createJBIComponentContainerChildren(JBIComponentType componentType) {
         AdministrationService adminService = 
                 controller.getJBIAdministrationService();
         List<JBIComponentStatus> compList = 
@@ -128,11 +128,11 @@ public class JBIContainerChildFactory {
             String description = comp.getDescription();
             
             Node newNode;
-            if (componentType.equals(JBIComponentStatus.ENGINE_TYPE)) {
+            if (componentType.equals(JBIComponentType.SERVICE_ENGINE)) {
                 newNode = 
                     new JBIComponentNode.ServiceEngine(
                             controller, name, description);
-            } else if (componentType.equals(JBIComponentStatus.BINDING_TYPE)) {
+            } else if (componentType.equals(JBIComponentType.BINDING_COMPONENT)) {
                 newNode = 
                     new JBIComponentNode.BindingComponent(
                             controller, name, description);

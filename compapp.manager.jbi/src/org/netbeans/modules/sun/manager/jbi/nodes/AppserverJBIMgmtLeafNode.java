@@ -38,7 +38,7 @@ public abstract class AppserverJBIMgmtLeafNode extends AppserverJBIMgmtNode {
      * @param nodeType The type of leaf node to construct (e.g. JVM, etc.)
      */
     public AppserverJBIMgmtLeafNode(final AppserverJBIMgmtController controller, 
-            final String nodeType) {
+            final NodeType nodeType) {
         super(controller, Children.LEAF, nodeType);
     }
     

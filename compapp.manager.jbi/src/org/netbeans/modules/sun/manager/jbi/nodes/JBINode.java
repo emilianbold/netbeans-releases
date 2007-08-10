@@ -28,7 +28,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.JBIFrameworkService;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
+import org.netbeans.modules.sun.manager.jbi.nodes.NodeType;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.actions.PropertiesAction;
 import org.openide.util.actions.SystemAction;
@@ -43,7 +43,7 @@ public class JBINode extends AppserverJBIMgmtContainerNode {
         
     /** Creates a new instance of JBINode */
     public JBINode(final AppserverJBIMgmtController controller) {        
-        super(controller, NodeTypes.JBI);
+        super(controller, NodeType.JBI);
     }
     
     /**

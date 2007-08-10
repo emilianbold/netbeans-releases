@@ -47,7 +47,6 @@ import org.netbeans.modules.sun.manager.jbi.actions.DeployAction;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AdministrationService;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -55,7 +54,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
@@ -66,15 +64,13 @@ import org.w3c.dom.NodeList;
 public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
         implements Deployable {
     
-    private static final String NODE_TYPE = NodeTypes.SERVICE_ASSEMBLIES;
-    
     private static String lastInstallDir = null;
         
     private boolean busy;
     
     
     public JBIServiceAssembliesNode(final AppserverJBIMgmtController controller) {
-        super(controller, NODE_TYPE);
+        super(controller, NodeType.SERVICE_ASSEMBLIES);
         
         setDisplayName(NbBundle.getMessage(JBIServiceAssembliesNode.class, "SERVICE_ASSEMBLIES"));  // NOI18N
     }

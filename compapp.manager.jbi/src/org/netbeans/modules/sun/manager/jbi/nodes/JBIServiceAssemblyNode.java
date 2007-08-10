@@ -42,7 +42,6 @@ import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceAssemblyStatus;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIServiceUnitStatus;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.util.NodeTypes;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Sheet;
 import org.openide.actions.PropertiesAction;
@@ -63,7 +62,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
     public JBIServiceAssemblyNode(final AppserverJBIMgmtController controller,
             String name,
             String description) {
-        super(controller, NodeTypes.SERVICE_ASSEMBLY);
+        super(controller, NodeType.SERVICE_ASSEMBLY);
         setName(name);
         setDisplayName(name);
         setShortDescription(description);
@@ -95,11 +94,11 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         if (busy) {
             externalBadgeIconName = IconConstants.BUSY_ICON;
         } else {
-            if (JBIComponentStatus.INSTALLED_STATE.equals(status)) {
+            if (JBIComponentStatus.SHUTDOWN.equals(status)) {
                 externalBadgeIconName = IconConstants.INSTALLED_ICON;
-            } else if (JBIComponentStatus.STOPPED_STATE.equals(status)) {
+            } else if (JBIComponentStatus.STOPPED.equals(status)) {
                 externalBadgeIconName = IconConstants.STOPPED_ICON;
-            } else if (!JBIComponentStatus.STARTED_STATE.equals(status)) {
+            } else if (!JBIComponentStatus.STARTED.equals(status)) {
                 externalBadgeIconName = IconConstants.UNKNOWN_ICON;
             }
         }
