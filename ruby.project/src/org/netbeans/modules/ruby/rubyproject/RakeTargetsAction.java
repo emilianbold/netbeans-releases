@@ -358,42 +358,46 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
         refreshing = false;
     }
 
-    private static String hiddenRakeRunner(Project project) {
-        File pwd = FileUtil.toFile(project.getProjectDirectory());
+    private static FileObject getRakeFile(Project project) {
+        FileObject pwd = project.getProjectDirectory();
 
         // See if we're in the right directory
         String[] rakeFiles = new String[] {"rakefile", "Rakefile", "rakefile.rb", "Rakefile.rb" }; // NOI18N
-        boolean found = false;
         for (String s : rakeFiles) {
-            File f = new File(pwd, s);
-            if (f.exists()) {
-                found = true;
-                break;
+            FileObject f = pwd.getFileObject(s);
+            if (f != null) {
+                return f;
             }
         }
         
-        if (!found) {
-            // Try to adjust the directory to a folder which contains a rakefile
-            Sources src = ProjectUtils.getSources(project);
-            //TODO: needs to be generified
-            SourceGroup[] rubygroups = src.getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
-            if (rubygroups != null && rubygroups.length > 0) {
-                for (SourceGroup group : rubygroups) {
-                    FileObject f = group.getRootFolder();
-                    for (String s : rakeFiles) {
-                        if (f.getFileObject(s) != null) {
-                            found = true;
-                            pwd = FileUtil.toFile(f);
-                            break;
-                        }
-                    }
-                    if (found) {
-                        break;
+        // Try to adjust the directory to a folder which contains a rakefile
+        Sources src = ProjectUtils.getSources(project);
+        //TODO: needs to be generified
+        SourceGroup[] rubygroups = src.getSourceGroups(RubyProject.SOURCES_TYPE_RUBY);
+        if (rubygroups != null && rubygroups.length > 0) {
+            for (SourceGroup group : rubygroups) {
+                FileObject f = group.getRootFolder();
+                for (String s : rakeFiles) {
+                    FileObject r = f.getFileObject(s);
+                    if (r != null) {
+                        return r;
                     }
                 }
             }
         }
         
+        return null;
+    }
+    
+    private static String hiddenRakeRunner(Project project) {
+        File pwd;
+        FileObject rakeFile = getRakeFile(project);
+        if (rakeFile == null) {
+            pwd = FileUtil.toFile(project.getProjectDirectory());
+        } else {
+            pwd = FileUtil.toFile(rakeFile.getParent());
+        }
+
         // Install the given gem
         String rakeCmd = RubyInstallation.getInstance().getRake();
         List<String> argList = new ArrayList<String>();
@@ -683,24 +687,7 @@ public final class RakeTargetsAction extends SystemAction implements ContextAwar
 
             File pwd = null;
 
-            FileObject rakeFile = null;
-            if (project instanceof RubyProject) {
-                FileObject root = project.getProjectDirectory();
-                String[] names = new String[] { "rakefile", "Rakefile", "rakefile.rb", "Rakefile.rb" }; // NOI18N
-                String[] prefixes = new String[] { "", "lib/" }; // NOI18N
-                for (String prefix : prefixes) {
-                    for (String name : names) {
-                        rakeFile = root.getFileObject(prefix + name);
-                        if (rakeFile != null) {
-                            break;
-                        }
-                    }
-                    if (rakeFile != null) {
-                        break;
-                    }
-                }
-            }
-            
+            FileObject rakeFile = getRakeFile(project);
             if (rakeFile == null) {
                 pwd = FileUtil.toFile(project.getProjectDirectory());
             }
