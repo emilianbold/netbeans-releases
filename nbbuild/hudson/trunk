@@ -50,11 +50,12 @@ BASENAME=netbeans-$BUILD_TAG
 mkdir -p $DIST/zip/moduleclusters
 mkdir -p $DIST/contrib
 
-find netbeans | egrep -v "netbeans/(extra|testtools|cnd)" | zip -q $DIST/zip/$BASENAME-full.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit
 
-find netbeans | egrep -v "netbeans/(extra|testtools|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-basic.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa|cnd)" | zip -q $DIST/zip/$BASENAME-standard.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd)" | zip -q $DIST/contrib/$BASENAME-rubyide.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-java.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-mobility.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity)" | zip -q $DIST/zip/$BASENAME-javaee.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit
 
 cd netbeans
 expat='^extra/|^testtools/'
@@ -64,11 +65,8 @@ for c in platform ide java apisupport harness enterprise profiler uml visualweb 
 done
 find * | egrep -v "$expat" | zip -q $DIST/zip/moduleclusters/$BASENAME-nb6.0-etc.zip -@ || exit
 
-# XXX because cnd is not included in -full.zip yet, we copy its cluster zip to
-# the top level dir to make it easier for users to find
-cp -p $DIST/zip/moduleclusters/$BASENAME-cnd.zip $DIST/zip/
+cp -p $DIST/zip/moduleclusters/$BASENAME-platform.zip $DIST/zip/
 
-cd ../..
 generated=nbbuild/build/generated
 rm -rf $generated
 ant -f nbbuild/build.xml generate-golden-files generate-files-layout index-layer-paths || exit
