@@ -236,8 +236,8 @@ public class InstallManager {
 
     static boolean needsRestart (boolean isUpdate, UpdateElementImpl update, File dest) {
         assert update.getInstallInfo () != null : "Each UpdateElement must know own InstallInfo but " + update;
-        boolean isForcedGlobal = update.getInstallInfo ().needsRestart () != null && update.getInstallInfo ().needsRestart ().booleanValue ();
-        boolean needsRestart = isForcedGlobal || isUpdate;
+        boolean isForcedRestart = update.getInstallInfo ().needsRestart () != null && update.getInstallInfo ().needsRestart ().booleanValue ();
+        boolean needsRestart = isForcedRestart || isUpdate;
         if (! needsRestart) {
             // handle installation into core or lib directory
             needsRestart = willInstallInSystem (dest);

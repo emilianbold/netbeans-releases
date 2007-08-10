@@ -83,7 +83,7 @@ public class NbmAdvancedTestCase extends NbTestCase {
                 "eager=\"" + eager + "\" " + 
                 "releasedate=\"2006/02/23\">";
         res +=  "<manifest OpenIDE-Module=\"" + codeName + "\" " +
-                (deps != null || deps.length == 0 ? "" : "OpenIDE-Module-Module-Dependencies=\"" + deps2ModuleModuleDependencies (deps) + "\" ") +
+                (deps == null || deps.length == 0 ? "" : "OpenIDE-Module-Module-Dependencies=\"" + deps2ModuleModuleDependencies (deps) + "\" ") +
                 "OpenIDE-Module-Name=\"" + codeName + "\" " +
                 "AutoUpdate-Show-In-Client=\"" + kit + "\" " +
                 (requires == null || requires.length () == 0 ? "" : "OpenIDE-Module-Requires=\"" + requires + "\" ") +

@@ -22,9 +22,6 @@ package org.netbeans.modules.autoupdate.services;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -123,6 +120,8 @@ public class InstallEagerModuleTest extends NbmAdvancedTestCase {
         
         // initial check of updates being and its states
         ModuleItem eagerModuleItem = (ModuleItem) Trampoline.SPI.impl (updates.get (eagerModule + "_1.0"));
+        assertFalse (eagerModuleItem.getModuleInfo ().getDependencies () + " are not empty.",
+                eagerModuleItem.getModuleInfo ().getDependencies ().isEmpty ());
         ModuleItem regularModule1Item = (ModuleItem) Trampoline.SPI.impl (updates.get (regularModule1 + "_1.0"));
         ModuleItem regularModule2Item = (ModuleItem) Trampoline.SPI.impl (updates.get (regularModule2 + "_1.0"));
         assertTrue (eagerModule + " is eager.", eagerModuleItem.isEager () && ! eagerModuleItem.isAutoload ());
@@ -154,8 +153,7 @@ public class InstallEagerModuleTest extends NbmAdvancedTestCase {
         // check states installed regular 1 and others
         assertNotNull (u1 + " is installed.", u1.getInstalled ());
         assertNotNull (u2 + " is installed.", u2.getInstalled ());
-        // XXX: fails because core/mm doesn't load them
-        //assertNotNull (ea + " is must be installed as well because all required modules are on.", ea.getInstalled ());
+        assertNotNull (ea + " is must be installed as well because all required modules are on.", ea.getInstalled ());
         
     }
     

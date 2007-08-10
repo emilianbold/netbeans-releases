@@ -175,6 +175,8 @@ public class UpdateManagerImpl extends Object {
             if (updateUnitsRef != null) {
                 updateUnitsRef = null;
             }
+            availableEagers = null;
+            installedEagers = null;
         }
     }
     
