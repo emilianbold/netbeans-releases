@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright � 2007 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2007 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -33,21 +33,14 @@
 
 
 
-<!--begin Beans section-->
-
-
-
-
-<mapID target="beans.getset" url="beans/getset.html" />
-
-
-<mapID target="beans.glossary_serialized" url="beans/glossary_serialized.html" />
 
 
 
 
 
-<mapID target="java.encoding" url="java/encoding.html" />
+
+
+
 
 
 
@@ -291,8 +284,6 @@
    <!-- remove id; Issue 54894-->
       <mapID target="org.netbeans.modules.form.editors2.CustomTableModelEditor" url="pending.html" /> 
    
-<!--generic node; for example, used for Runtime | VCS Commands node; remove after 4.1-->         
-   <mapID target="org.netbeans.core.ui.LookupNode" url="pending.html" />   
    
 <!--OptionsAction is Options window:--> 
    <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 

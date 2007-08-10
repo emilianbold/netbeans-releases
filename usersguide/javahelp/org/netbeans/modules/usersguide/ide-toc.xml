@@ -84,7 +84,7 @@
       <tocitem text="Setting Keyboard Shortcuts" target="shortcuts.menucuts-setting" />
       <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />      
 
-      <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
+
     </tocitem>
 
     <tocitem text="Configuring the IDE's Workspace">
