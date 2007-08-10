@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.gsfpath.classpath.ClassPath;
 
-import org.netbeans.modules.gsf.Language;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -46,7 +45,7 @@ public class GsfDataLoader extends UniFileLoader {
     boolean initialized;
 
     public GsfDataLoader() {
-        super(GsfDataObject.class.getName());
+        super("org.netbeans.modules.gsf.GsfDataObject");
     }
 
     @Override
