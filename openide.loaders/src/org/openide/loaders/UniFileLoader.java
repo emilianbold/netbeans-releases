@@ -101,7 +101,7 @@ public abstract class UniFileLoader extends MultiFileLoader {
     protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
 
         // Debug messages for #17014. Please remove, when the bug is fixed.
-        StringBuffer buf = new StringBuffer("Error in data system. Please reopen the bug #17014 with the following message: "); //NOI18N
+        StringBuilder buf = new StringBuilder("Error in data system. Please reopen the bug #17014 with the following message: "); //NOI18N
         buf.append("\n  DataLoader:"); //NOI18N
         buf.append(getClass().getName());
         buf.append("\n  DataObject:"); //NOI18N
