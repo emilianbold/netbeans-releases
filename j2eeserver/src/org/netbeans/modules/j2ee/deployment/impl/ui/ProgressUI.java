@@ -138,9 +138,13 @@ public class ProgressUI implements ProgressListener {
     /** Finish the task, unregister the progress object listener and dispose the ui. */
     public void finish() {
         handle.finish();
-        if (progObj != null) {
-            progObj.removeProgressListener(this);
+        ProgressObject po = null;
+        synchronized (this) {
+            po = progObj;
             progObj = null;
+        }
+        if (po != null) {
+            po.removeProgressListener(this);
         }
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
@@ -165,23 +169,28 @@ public class ProgressUI implements ProgressListener {
     /** Set a progress object this progress UI will monitor. */
     public void setProgressObject(ProgressObject obj) {
         // do not listen to the old progress object anymore
-        if (progObj != null) {
-            progObj.removeProgressListener(this);
+        ProgressObject po = null;
+        synchronized (this) {
+            po = progObj;
         }
-        progObj = obj;
-        if (progObj != null) {
-            synchronized (this) {
-                completionEventProcessed = false;
+        if (po != null) {
+            po.removeProgressListener(this);
+        }
+        synchronized (this) {
+            progObj = obj;
+            if (obj == null) {
+                return;
             }
-            progObj.addProgressListener(this);
-            // safety-catch to not to miss the completion event, if it had come
-            // before the progress listener was registered
-            DeploymentStatus status = progObj.getDeploymentStatus();
-            if (status.isCompleted() || status.isFailed()) {
-                handleDeploymentStatus(status);
-            } else {
-                progress(status.getMessage());
-            }
+            completionEventProcessed = false;
+        }
+        obj.addProgressListener(this);
+        // safety-catch to not to miss the completion event, if it had come
+        // before the progress listener was registered
+        DeploymentStatus status = obj.getDeploymentStatus();
+        if (status.isCompleted() || status.isFailed()) {
+            handleDeploymentStatus(status);
+        } else {
+            progress(status.getMessage());
         }
     }
     
