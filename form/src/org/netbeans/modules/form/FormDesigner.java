@@ -178,7 +178,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         initialized = true;
         removeAll();
 
-        componentLayer = new ComponentLayer();
+        componentLayer = new ComponentLayer(formModel);
         handleLayer = new HandleLayer(this);
         nonVisualTray = FormEditor.isNonVisualTrayEnabled() ?
                         new NonVisualTray(formEditor.getFormModel()) : null;
@@ -512,10 +512,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     {
         final UIDefaults uiDefaults = FormLAF.initPreviewLaf(previewLaf);
         Container result = null;
-        Locale defaultLocale = switchToDesignLocale(metacomp.getFormModel());
+        final FormModel formModel = metacomp.getFormModel();
+        Locale defaultLocale = switchToDesignLocale(formModel);
         try {
-            FormLAF.setUsePreviewDefaults(true, previewLaf, uiDefaults);
-            result = (Container) FormLAF.executeWithLookAndFeel(
+            FormLAF.setUsePreviewDefaults(formModel, previewLaf, uiDefaults);
+            result = (Container) FormLAF.executeWithLookAndFeel(formModel,
             new Mutex.ExceptionAction () {
                 public Object run() throws Exception {
                     VisualReplicator r = new VisualReplicator(false, FormUtils.getViewConverters(), null);
@@ -526,10 +527,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                         JLayeredPane newPane = new JLayeredPane() {
                             public void paint(Graphics g) {
                                 try {
-                                    FormLAF.setUsePreviewDefaults(true, previewLaf, uiDefaults);
+                                    FormLAF.setUsePreviewDefaults(formModel, previewLaf, uiDefaults);
                                     super.paint(g);
                                 } finally {
-                                    FormLAF.setUsePreviewDefaults(false, null, null);
+                                    FormLAF.setUsePreviewDefaults(null, null, null);
                                 }
                             }
                         };
@@ -552,7 +553,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
         );
         } finally {
-            FormLAF.setUsePreviewDefaults(false, null, null);
+            FormLAF.setUsePreviewDefaults(null, null, null);
             if (defaultLocale != null)
                 Locale.setDefault(defaultLocale);
         }
@@ -2091,7 +2092,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             if (lafBlock) { // Look&Feel UI defaults remapping needed
                 Locale defaultLocale = switchToDesignLocale(getFormModel());
                 try {
-                    FormLAF.executeWithLookAndFeel(this);
+                    FormLAF.executeWithLookAndFeel(formModel, this);
                 }
                 finally {
                     if (defaultLocale != null)

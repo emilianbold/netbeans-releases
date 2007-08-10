@@ -24,10 +24,13 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.metal.*;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.util.*;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 
 /**
  * Support for execution of tasks in another look and feel.
@@ -43,16 +46,21 @@ public class FormLAF {
     /** DelegatingDefaults installed in UIManager.FormLAF */
     private static DelegatingDefaults delDefaults;
     /** User UIDefaults of the IDE. */
-    private static Map netbeansDefaults = new HashMap();
+    private static Map<Object,Object> netbeansDefaults = new HashMap<Object,Object>();
     /** User UIDefaults of components */
-    private static Map userDefaults = new HashMap(UIManager.getDefaults());
+    private static Map<Object,Object> userDefaults = new HashMap<Object,Object>(UIManager.getDefaults());
     /** Maps LAF class to its theme. */
     private static Map<Class, MetalTheme> lafToTheme = new HashMap<Class, MetalTheme>();
     /** Determines whether the IDE LAF is subclass of MetalLookAndFeel. */
     private static boolean ideLafIsMetal;
+    /** Determines whether the current LAF block corresponds to preview. */
     private static boolean preview;
+    /** LAF class of preview. */
     private static Class previewLaf;
 
+    /**
+     * <code>FormLAF</code> has static methods only => no need for public constructor.
+     */
     private FormLAF() {
     }
     
@@ -108,8 +116,6 @@ public class FormLAF {
                     createLayoutStyle(previewLookAndFeel.getID())); 
             }
 
-            previewDefaults.putAll(delDefaults.getCustomizedUIDefaults());
-
             return previewDefaults;
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -161,9 +167,28 @@ public class FormLAF {
 
         delDefaults = new DelegatingDefaults(null, original.getDefaults(), ide);
         method.invoke(lafState, new Object[] {delDefaults});
+
+        // See UIDefaults.getUIClass() method - it stores className-class pairs
+        // in its map. When project classpath is updated new versions
+        // of classes are loaded which results in ClassCastException if
+        // such new classes are casted to the ones obtained from the map.
+        // Hence, we remove such mappings to avoid problems.
+        UIManager.getDefaults().addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (delDefaults.isDelegating() || delDefaults.isPreviewing()) {
+                    Object newValue = evt.getNewValue();
+                    if (newValue instanceof Class) {
+                        Class<?> clazz = (Class<?>)newValue;
+                        if (ComponentUI.class.isAssignableFrom(clazz)) {
+                            UIManager.getDefaults().put(evt.getPropertyName(), null);
+                        }
+                    }
+                }
+            }
+        });
     }
 
-    static Object executeWithLookAndFeel(final Mutex.ExceptionAction act)
+    static Object executeWithLookAndFeel(final FormModel formModel, final Mutex.ExceptionAction act)
         throws Exception
     {
         try {
@@ -179,7 +204,7 @@ public class FormLAF {
                                 restoreAfter = false;
                             else {
                                 lafBlockEntered = true;
-                                useDesignerLookAndFeel();
+                                useDesignerLookAndFeel(formModel);
                                 restoreAfter = true;
                             }
                             return act.run();
@@ -199,7 +224,7 @@ public class FormLAF {
         }
     }
 
-    static void executeWithLookAndFeel(final Runnable run) {
+    static void executeWithLookAndFeel(final FormModel formModel, final Runnable run) {
         Mutex.EVENT.readAccess(new Mutex.Action() {
             public Object run() {
                 // FIXME(-ttran) needs to hold a lock on UIDefaults to
@@ -212,7 +237,7 @@ public class FormLAF {
                             restoreAfter = false;
                         else {
                             lafBlockEntered = true;
-                            useDesignerLookAndFeel();
+                            useDesignerLookAndFeel(formModel);
                             restoreAfter = true;
                         }
                         run.run();
@@ -229,7 +254,7 @@ public class FormLAF {
         });
     }
 
-    private static void useDesignerLookAndFeel() {
+    private static void useDesignerLookAndFeel(FormModel formModel) {
         if (!initialized) {
             try {
                 initialize();
@@ -244,7 +269,7 @@ public class FormLAF {
         defaults.keySet().removeAll(netbeansDefaults.keySet());
 
         if (!preview) {
-            setUseDesignerDefaults(true);
+            setUseDesignerDefaults(formModel);
         } else if (MetalLookAndFeel.class.isAssignableFrom(previewLaf)) {
             MetalLookAndFeel.setCurrentTheme(lafToTheme.get(previewLaf));
         }
@@ -256,7 +281,7 @@ public class FormLAF {
         UIManager.getDefaults().putAll(netbeansDefaults);
 
         if (!preview) {
-            setUseDesignerDefaults(false);
+            setUseDesignerDefaults(null);
         } else if (ideLafIsMetal) {
             MetalLookAndFeel.setCurrentTheme(lafToTheme.get(UIManager.getLookAndFeel().getClass()));
         }
@@ -308,23 +333,65 @@ public class FormLAF {
         return LayoutStyle.getSharedInstance();
     }
 
-    static void setUseDesignerDefaults(boolean designerDefaults) {
-        delDefaults.setDelegating(designerDefaults);
+    /**
+     * Maps class loader (project class loader of the form) to set of defaults
+     * added when this class loader was in use.
+     */
+    private static Map<ClassLoader, Map<Object,Object>> classLoaderToDefaults = new WeakHashMap<ClassLoader, Map<Object,Object>>();
+    /** Last content of UIDefaults - to be able to find newly added defaults. */
+    private static UIDefaults lastDefaults = new UIDefaults();
+    /** Defaults that correspond to project class loader in use. */
+    private static Map<Object,Object> classLoaderDefaults;
+
+    static void setUseDesignerDefaults(FormModel formModel) {
+        ClassLoader classLoader = null;
+        UIDefaults defaults = UIManager.getDefaults();
+        if (formModel == null) {
+            // Determine new user defaults add add them to classLoaderDefaults
+            UIDefaults newDefaults = new UIDefaults();
+            newDefaults.putAll(UIManager.getDefaults());
+            newDefaults.keySet().removeAll(lastDefaults.keySet());
+            classLoaderDefaults.putAll(newDefaults);
+            defaults.putAll(lastDefaults);
+        } else {
+            FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
+            classLoader = ClassPathUtils.getProjectClassLoader(formFile);
+            classLoaderDefaults = classLoaderToDefaults.get(classLoader);
+            if (classLoaderDefaults == null) {
+                classLoaderDefaults = new HashMap<Object,Object>();
+                classLoaderToDefaults.put(classLoader, classLoaderDefaults);
+            }
+            lastDefaults.clear();
+            lastDefaults.putAll(defaults);
+            defaults.putAll(classLoaderDefaults);
+        }
+        delDefaults.setDelegating(classLoader);
     }
 
     static String oldNoXP;
-    static void setUsePreviewDefaults(boolean previewing, Class previewLAF, UIDefaults uiDefaults) {
+    static void setUsePreviewDefaults(FormModel formModel, Class previewLAF, UIDefaults uiDefaults) {
         boolean classic = (previewLAF == null)
             ? ((previewLaf == null) ? false : isClassicWinLAF(previewLaf.getName()))
             : isClassicWinLAF(previewLAF.getName());
-        preview = previewing;
+        preview = (formModel != null);
         previewLaf = previewLAF;
-        if (previewing) {
+        ClassLoader classLoader = null;
+        if (preview) {
             if (classic) {
                 oldNoXP = System.getProperty(SWING_NOXP);
                 System.setProperty(SWING_NOXP, "y"); // NOI18N
                 invalidateXPStyle();
             }
+            FileObject formFile = FormEditor.getFormDataObject(formModel).getFormFile();
+            classLoader = ClassPathUtils.getProjectClassLoader(formFile);
+            classLoaderDefaults = classLoaderToDefaults.get(classLoader);
+            if (classLoaderDefaults == null) {
+                classLoaderDefaults = new HashMap<Object,Object>();
+                classLoaderToDefaults.put(classLoader, classLoaderDefaults);
+            }
+            Map<Object,Object> added = new HashMap<Object,Object>(classLoaderDefaults);
+            added.keySet().removeAll(uiDefaults.keySet());
+            uiDefaults.putAll(added);
             delDefaults.setPreviewDefaults(uiDefaults);
         } else {
             if (classic) {
@@ -337,16 +404,15 @@ public class FormLAF {
             }
             oldNoXP = null;
         }
-        delDefaults.setPreviewing(previewing);
+        delDefaults.setPreviewing(classLoader);
     }
 
     public static boolean getUsePreviewDefaults() {
         return preview && !delDefaults.isDelegating();
     }
-
-    static void setCustomizingUIClasses(boolean customizing) {
-        if (delDefaults != null)
-            delDefaults.setCustomizingUIClasses(customizing);
+    
+    public static boolean inLAFBlock() {
+        return preview || delDefaults.isDelegating();
     }
 
     /**
@@ -365,9 +431,6 @@ public class FormLAF {
         /** If true, then the preview map is used. */
         private boolean previewing;     
         /** If true, then new UI components may install their defaults. */
-        private boolean customizingUI;
-        /** Map of defaults of new UI components. */
-        private Map customizedUIDefaults = new HashMap();
         
         DelegatingDefaults(UIDefaults preview, UIDefaults original, UIDefaults ide) {
             this.preview = preview;
@@ -379,28 +442,48 @@ public class FormLAF {
             this.preview = preview;
         }
 
-        public void setDelegating(boolean delegating){
-            this.delegating = delegating;
+        /**
+         * Maps class loader (project class loader of the form) to set of LAF defaults
+         * added when this class loader was in use.
+         */
+        private Map<ClassLoader, UIDefaults> classLoaderToLAFDefaults = new WeakHashMap<ClassLoader,UIDefaults>();
+        /** LAF defaults that correspond to project class loader in use. */
+        private UIDefaults classLoaderLAFDefaults;
+
+        public void setDelegating(ClassLoader classLoader){
+            classLoaderLAFDefaults = classLoaderToLAFDefaults.get(classLoader);
+            if (classLoaderLAFDefaults == null) {
+                classLoaderLAFDefaults = new UIDefaults();
+                classLoaderToLAFDefaults.put(classLoader, classLoaderLAFDefaults);
+            }
+            this.delegating = (classLoader != null);
         }
 
         public boolean isDelegating() {
             return delegating;
         }
 
-        public void setPreviewing(boolean previewing){
-            this.previewing = previewing;
+        // Preview may not work if project classpath has been changed
+        // while the form was opened: new UIDefaults are created
+        // when the classpath is changed - this allows correct creation
+        // of new components; unfortunately both new and old components
+        // are _cloned_ when preview is done
+        // There are also other use-cases that may fail e.g.
+        // attempt to connect (via some property) old and new
+        // component. But all these use-cases should work after form reload.
+        public void setPreviewing(ClassLoader classLoader){
+            this.previewing = (classLoader != null);
+            if (previewing) {
+                classLoaderLAFDefaults = classLoaderToLAFDefaults.get(classLoader);
+                if (classLoaderLAFDefaults == null) {
+                    classLoaderLAFDefaults = new UIDefaults();
+                    classLoaderToLAFDefaults.put(classLoader, classLoaderLAFDefaults);
+                }
+            }
         }
 
         public boolean isPreviewing() {
             return previewing;
-        }
-
-        public void setCustomizingUIClasses(boolean customizing) {
-            customizingUI = customizing;
-        }
-
-        public Map getCustomizedUIDefaults() {
-            return customizedUIDefaults;
         }
 
         // Delegated methods
@@ -411,19 +494,32 @@ public class FormLAF {
 
         @Override
         public Object get(Object key) {
-            return delegating ? original.get(key) : (previewing ? preview.get(key) : ide.get(key));
+            Object value;
+            if (delegating) {
+                value = classLoaderLAFDefaults.get(key);
+                if (value == null) {
+                    value = original.get(key);
+                }
+            } else if (previewing) {
+                value = classLoaderLAFDefaults.get(key);
+                if (value == null) {
+                    value = preview.get(key);
+                }
+            } else {
+                value = ide.get(key);
+            }
+            return value;
         }
 
         @Override
         public Object put(Object key, Object value) {
-            if (delegating) {
-                if (customizingUI) {
-                    customizedUIDefaults.put(key, value);
-                }
-                return original.put(key, value);
+            Object retVal;
+            if (delegating || previewing) {
+                retVal = classLoaderLAFDefaults.put(key, value);
             } else {
-                return (previewing ? preview.put(key, value) : ide.put(key, value));
+                retVal = ide.put(key, value);
             }
+            return retVal;
         }
 
         @Override

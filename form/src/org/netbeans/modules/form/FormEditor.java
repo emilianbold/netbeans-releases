@@ -249,7 +249,7 @@ public class FormEditor {
         // load the form data (FormModel) and report errors
         synchronized(persistenceManager) {
             try {
-                FormLAF.executeWithLookAndFeel(new Mutex.ExceptionAction() {
+                FormLAF.executeWithLookAndFeel(formModel, new Mutex.ExceptionAction() {
                     public Object run() throws Exception {
                         persistenceManager.loadForm(formDataObject,
                                                     formModel,

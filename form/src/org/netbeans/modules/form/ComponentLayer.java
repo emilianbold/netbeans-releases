@@ -55,13 +55,13 @@ class ComponentLayer extends JPanel
      * in the whole ComponentLayer area. */
     private DesignerPanel designerPanel;
 
-    ComponentLayer() {
+    ComponentLayer(FormModel formModel) {
         componentContainer = new FakePeerContainer();
         componentContainer.setLayout(new BorderLayout());
         componentContainer.setBackground(Color.white);
         componentContainer.setFont(FakePeerSupport.getDefaultAWTFont());
 
-        designerPanel = new DesignerPanel();
+        designerPanel = new DesignerPanel(formModel);
         designerPanel.setLayout(new BorderLayout());
         designerPanel.add(componentContainer, BorderLayout.CENTER);
 
@@ -128,8 +128,10 @@ class ComponentLayer extends JPanel
         private static int BORDER_THICKNESS = 4; // [could be changeable]
 
         private Dimension designerSize = new Dimension(400, 300);
+        private FormModel formModel;
 
-        DesignerPanel() {
+        DesignerPanel(FormModel formModel) {
+            this.formModel = formModel;
             updateBorder();
         }
 
@@ -157,7 +159,7 @@ class ComponentLayer extends JPanel
 
         public void paint(Graphics g) {
             try {
-                FormLAF.setUseDesignerDefaults(true);
+                FormLAF.setUseDesignerDefaults(formModel);
                 super.paint(g);
             } catch (Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -184,7 +186,7 @@ class ComponentLayer extends JPanel
                 g.translate(-insets.left, -insets.top);
                 g.setClip(oldClip);
             } finally {
-                FormLAF.setUseDesignerDefaults(false);
+                FormLAF.setUseDesignerDefaults(null);
             }
         }
     }

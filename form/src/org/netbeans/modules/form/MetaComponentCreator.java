@@ -119,7 +119,7 @@ public class MetaComponentCreator {
             return null;
 
         try { // Look&Feel UI defaults remapping needed
-            return (RADComponent) FormLAF.executeWithLookAndFeel(
+            return (RADComponent) FormLAF.executeWithLookAndFeel(formModel,
                 new Mutex.ExceptionAction() {
                     public Object run() throws Exception {
                         return copyComponent2(sourceComp, null,
@@ -186,7 +186,7 @@ public class MetaComponentCreator {
             releasePrecreatedComponent();
 
         try { // Look&Feel UI defaults remapping needed
-            FormLAF.executeWithLookAndFeel(
+            FormLAF.executeWithLookAndFeel(formModel,
                 new Mutex.ExceptionAction() {
                     public Object run() throws Exception {
                         preMetaComp = createVisualComponent(compClass);
@@ -300,7 +300,7 @@ public class MetaComponentCreator {
             return null;
 
         try { // Look&Feel UI defaults remapping needed
-            return (RADComponent) FormLAF.executeWithLookAndFeel(
+            return (RADComponent) FormLAF.executeWithLookAndFeel(formModel,
                 new Mutex.ExceptionAction() {
                     public Object run() throws Exception {
                         return createAndAddComponent2(compClass,
@@ -1196,20 +1196,15 @@ public class MetaComponentCreator {
             return prepareClass0(classSource);
         } else {
             try {
-                return (Class)FormLAF.executeWithLookAndFeel(
+                return (Class)FormLAF.executeWithLookAndFeel(formModel,
                     new Mutex.ExceptionAction() {
                         public Object run() throws Exception {
-                            FormLAF.setCustomizingUIClasses(true); // Issue 80198
-                            try {
-                                Class clazz = prepareClass0(classSource);
-                                if (clazz != null) {
-                                    // Force creation of the default instance in the correct L&F context
-                                    BeanSupport.getDefaultInstance(clazz);
-                                }
-                                return clazz;
-                            } finally {
-                                FormLAF.setCustomizingUIClasses(false);
+                            Class clazz = prepareClass0(classSource);
+                            if (clazz != null) {
+                                // Force creation of the default instance in the correct L&F context
+                                BeanSupport.getDefaultInstance(clazz);
                             }
+                            return clazz;
                         }
                     }
                 );
@@ -1229,6 +1224,11 @@ public class MetaComponentCreator {
         try {
             if (!ClassPathUtils.checkUserClass(className, formFile)) {
                 ClassPathUtils.updateProject(formFile, classSource);
+                if (FormLAF.inLAFBlock()) {
+                    // Force update to new class loader
+                    FormLAF.setUseDesignerDefaults(null);
+                    FormLAF.setUseDesignerDefaults(formModel);
+                }
             }
             loadedClass = ClassPathUtils.loadClass(className, formFile);
         }

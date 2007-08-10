@@ -87,6 +87,11 @@ public class ClassPathUtils {
         }
         return fcl;
     }
+    
+    // Don't use - public only because of FormLAF
+    public static ClassLoader getProjectClassLoader(FileObject fileInProject) {
+        return getFormClassLoader(fileInProject).getProjectClassLoader();
+    }
 
     static int getClassLoadingType(String className) {
         int i = className.lastIndexOf("[L"); // NOI18N
