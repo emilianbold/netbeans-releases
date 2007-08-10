@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modles.compapp.kit
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modles/compapp/kit/Bundle.properties
+OpenIDE-Module: org.netbeans.modules.compapp.kit
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/compapp/kit/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
 
