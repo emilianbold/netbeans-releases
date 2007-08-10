@@ -21,25 +21,22 @@ package org.netbeans.modules.cnd.makeproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.SharedClassObject;
 
-public class MakeOptions extends SystemOption implements PropertyChangeListener {
-    static final long serialVersionUID = 5619262632730516348L;
+public class MakeOptions extends SharedClassObject implements PropertyChangeListener {
     static private MakeOptions instance = null;
-    //
+    
     // Default make options
     static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
-    static private String defaultMakeOptions = "";
-    static private String makeOptions = null;
-    //
-    // Default Platform
+    static private String defaultMakeOptions = ""; // NOI18N
+    
+    // Platform
     static final String PLATFORM = "platform"; // NOI18N
-    static private int defaultPlatform;
-    static private int platform = -1;
-    //
+    
     // Default Path mode
     public static final int PATH_REL_OR_ABS = 0;
     public static final int PATH_REL = 1;
@@ -50,19 +47,15 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
         getString("TXT_AlwaysAbsolute"),
     };
     static final String PATH_MODE = "pathMode"; // NOI18N
-    static private int pathMode = PATH_REL;
     
     // Dependency checking
     static final String DEPENDENCY_CHECKING = "dependencyChecking"; // NOI18N
-    static private boolean dependencyChecking = false;
     
     // Save
     static final String SAVE = "save";  // NOI18N
-    static private boolean save = true;
     
     // Reuse
     static final String REUSE = "reuse";  // NOI18N
-    static private boolean reuse = true;
     
     static public MakeOptions getInstance() {
         if (instance == null) {
@@ -84,74 +77,74 @@ public class MakeOptions extends SystemOption implements PropertyChangeListener 
         addPropertyChangeListener(this);
     }
     
-    public String displayName() {
-        return "Make Project Options"; // NOI18N (not visible)
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(MakeOptions.class);
     }
     
+    // Make Options
     public String getMakeOptions() {
-        if (makeOptions == null) {
-            makeOptions = defaultMakeOptions;
+        return getPreferences().get(MAKE_OPTIONS, getDefaultMakeOptions());
         }
-        return makeOptions;
-    }
-    
     public void setMakeOptions(String value) {
         String oldValue = getMakeOptions();
-        makeOptions = value;
+        getPreferences().put(MAKE_OPTIONS, value);
         if (!oldValue.equals(value))
             firePropertyChange(MAKE_OPTIONS, oldValue, value);
     }
     
+    // Platform
     public int getPlatform() {
-        if (platform < 0) {
-            platform = Platform.getDefaultPlatform();
+        return getPreferences().getInt(PLATFORM, Platform.getDefaultPlatform());
         }
-        return platform;
-    }
-    
     public void setPlatform(int value) {
         int oldValue = getPlatform();
-        platform = value;
+        getPreferences().putInt(PLATFORM, value);
         if (oldValue != value)
             firePropertyChange(PLATFORM, "" + oldValue, "" + value); // NOI18N
     }
     
+    // Path Mode
     public int getPathMode() {
-        return pathMode;
+        return getPreferences().getInt(PATH_MODE, PATH_REL);
     }
-    
     public void setPathMode(int pathMode) {
         int oldValue = getPathMode();
-        this.pathMode = pathMode;
+        getPreferences().putInt(PATH_MODE, pathMode);
         if (oldValue != pathMode)
-            firePropertyChange(MAKE_OPTIONS, new Integer(oldValue), new Integer(pathMode));
+            firePropertyChange(PATH_MODE, new Integer(oldValue), new Integer(pathMode));
     }
     
+    // Dependency Checking
+    public boolean getDepencyChecking() {
+        return getPreferences().getBoolean(DEPENDENCY_CHECKING, false);
+    }
     public void setDepencyChecking(boolean dependencyChecking) {
         boolean oldValue = getDepencyChecking();
-        this.dependencyChecking = dependencyChecking;
+        getPreferences().putBoolean(DEPENDENCY_CHECKING, dependencyChecking);
         if (oldValue != dependencyChecking)
             firePropertyChange(DEPENDENCY_CHECKING, new Boolean(oldValue), new Boolean(dependencyChecking));
     }
     
-    public boolean getDepencyChecking() {
-        return dependencyChecking;
-    }
-    
+    // Save
     public boolean getSave() {
-        return save;
+        return getPreferences().getBoolean(SAVE, true);
     }
-
     public void setSave(boolean save) {
-        this.save = save;
+        boolean oldValue = getSave();
+        getPreferences().putBoolean(SAVE, save);
+        if (oldValue != save)
+            firePropertyChange(SAVE, new Boolean(oldValue), new Boolean(save));
     }
     
+    // Reuse
     public boolean getReuse() {
-        return reuse;
+        return getPreferences().getBoolean(REUSE, true);
     }
-
     public void setReuse(boolean reuse) {
-        this.reuse = reuse;
+        boolean oldValue = getReuse();
+        getPreferences().putBoolean(REUSE, reuse);
+        if (oldValue != reuse)
+            firePropertyChange(REUSE, new Boolean(oldValue), new Boolean(reuse));
     }
     
     public void propertyChange(PropertyChangeEvent pce) {

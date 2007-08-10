@@ -3,7 +3,6 @@
 <settings version="1.0">
     <module name="org.netbeans.modules.cnd.makeproject"/>
     <instanceof class="org.openide.util.SharedClassObject"/>
-    <instanceof class="org.openide.options.SystemOption"/>
     <instanceof class="org.netbeans.modules.cnd.makeproject.MakeOptions"/>
     <instance class="org.netbeans.modules.cnd.makeproject.MakeOptions"/>
 </settings>
