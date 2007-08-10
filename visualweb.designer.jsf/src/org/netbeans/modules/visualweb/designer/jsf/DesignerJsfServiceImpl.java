@@ -51,8 +51,12 @@ public class DesignerJsfServiceImpl implements DesignerJsfService {
                     new NullPointerException("Can not create JsfForm for JSF data Object, jsfJspDataObject=" + jsfJspDataObject)); // NOI18N
             return new NotAvailableMultiViewElement();
         }
+        
+        // XXX #112235 There could be created designer representing external form (e.g. fragment),
+        // which doesn't have associated multiview element yet, the one needs to be used.
+        Designer designerWithoutMultiView = findDesignerWithoutMultiViewElement(jsfForm);
 //        Designer designer = JsfForm.createDesigner(jsfForm);
-        Designer designer = jsfForm.createDesigner();
+        Designer designer = designerWithoutMultiView == null ? jsfForm.createDesigner() : designerWithoutMultiView;
         if (designer == null) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                     new NullPointerException("Can not create Designer for JsfForm, jsfForm=" + jsfForm)); // NOI18N
@@ -62,4 +66,15 @@ public class DesignerJsfServiceImpl implements DesignerJsfService {
         return JsfForm.createMultiViewElement(jsfForm, designer, jsfJspDataObject);
     }
 
+
+    /** Find designer without multi view element. */
+    private static Designer findDesignerWithoutMultiViewElement(JsfForm jsfForm) {
+        Designer[] designers = JsfForm.findDesigners(jsfForm);
+        for (Designer candidate : designers) {
+            if (candidate != null && JsfForm.findJsfMultiViewElementForDesigner(candidate) == null) {
+                return candidate;
+            }
+        }
+        return null;
+    }
 }
