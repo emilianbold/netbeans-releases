@@ -52,11 +52,11 @@ public class MainView implements GlobalRepositoryListener, EditorManager {
 
 	private void initComponents() {
 		this.rootPanel = new JPanel();
+		this.rootPanel.setLayout(new BorderLayout());
 		this.rootPanel.setBackground(Color.WHITE);
 
 		//editor components
 		this.mainEditorPanel = new JPanel();
-		this.mainEditorPanel.setLayout(new GridBagLayout());
 		this.mainEditorPanel.setBorder(null);
 		this.mainEditorPanel.setBackground(Color.WHITE);
 		

@@ -999,7 +999,6 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 				}
 			}
 			else {
-
 				for (Iterator<Position> it = cellsSelected.iterator(); it.hasNext();) {
 					Position position = it.next();
 					if (position.getCol() == col) {
@@ -1175,6 +1174,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	public void columnsRemoved(TiledLayer tiledLayer, int index, int count) {
 		this.shiftSelectedCellColumns(index, -count);
+		this.trimSelectedCellsToSize();
 		this.revalidate();
 		this.repaint();
 		this.rulerHorizontal.repaint();
@@ -1189,9 +1189,22 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
 	
 	public void rowsRemoved(TiledLayer tiledLayer, int index, int count) {
 		this.shiftSelectedCellRows(index, -count);
+		this.trimSelectedCellsToSize();
 		this.revalidate();
 		this.repaint();
 		this.rulerVertical.repaint();
+	}
+	
+	private void trimSelectedCellsToSize() {
+		Set<Position> bucket = new HashSet<Position>();
+		synchronized (cellsSelected) {
+			for (Position cell : cellsSelected) {
+                if (cell.getRow() >= tiledLayer.getRowCount() || cell.getCol() >= this.tiledLayer.getColumnCount()) {
+					bucket.add(cell);
+				}
+            }
+			cellsSelected.removeAll(bucket);
+		}
 	}
 	
 	private void shiftSelectedCellRows(int index, int count) {
