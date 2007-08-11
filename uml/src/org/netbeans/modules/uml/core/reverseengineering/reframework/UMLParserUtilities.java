@@ -649,19 +649,20 @@ public class UMLParserUtilities
         ETList<IParameter> pars = op.getParameters();
         ETList<IREParameter> repars = reo.getParameters();
         
-        if (op.getReturnType().getName().equals("")) {
-            for (int i = 0, count = pars.size(); i < count; ++i)
-            {
-                if (pars.get(i).getDirection() == BaseElement.PDK_RESULT) {
-                    String returnType = XMLManip.getAttributeValue(pars.get(i).getDOM4JNode(), "type");
-                    if (returnType.indexOf(".") != -1)
-                        returnType = returnType.substring(returnType.lastIndexOf(".")+1) ;
-                    
-                    op.setReturnType2(returnType);
-                }
-            }
-            
-        }
+//        if (op.getReturnType().getName().equals("")) {
+//            for (int i = 0, count = pars.size(); i < count; ++i)
+//            {
+//                if (pars.get(i).getDirection() == BaseElement.PDK_RESULT) {
+//                    String returnType = XMLManip.getAttributeValue(pars.get(i).getDOM4JNode(), "type");
+//                    if (returnType.indexOf(".") != -1)
+//                        returnType = returnType.substring(returnType.lastIndexOf(".")+1) ;
+//                    
+//                    op.setReturnType2(returnType);
+//                }
+//            }
+//            
+//        }
+        
         
         if ((pars == null || pars.size() == 0) && 
                 (repars == null || repars.size() == 0))
@@ -673,7 +674,7 @@ public class UMLParserUtilities
         
         for (int i = 0, count = pars.size(); i < count; ++i)
         {
-           if (pars.get(i).getDirection() == BaseElement.PDK_RESULT) continue;           
+//           if (pars.get(i).getDirection() == BaseElement.PDK_RESULT) continue;           
            if(!isMatchingParameter(op,pars.get(i),repars.get(i),false))
               return false;
         }
@@ -774,6 +775,11 @@ public class UMLParserUtilities
        if(type != null)
        {
           qualifiedParameterType = type.getFullyQualifiedName(false);
+       } else {
+           String tmp = parameter.getTypeID() ;
+           tmp = tmp.replace(".", "::") ;
+           parameter.setType2(tmp);
+           qualifiedParameterType = tmp ;
        }
        
        String parameterType = parameter.getTypeName();
