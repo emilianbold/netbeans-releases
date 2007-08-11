@@ -46,6 +46,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.naming.DatabaseSettingsIm
 import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 import org.netbeans.modules.visualweb.dataconnectivity.sql.DesignTimeDataSourceHelper;
 import org.netbeans.modules.visualweb.dataconnectivity.utils.ImportDataSource;
+import org.netbeans.modules.visualweb.insync.Model;
 import org.netbeans.modules.visualweb.insync.ModelSet;
 import org.netbeans.modules.visualweb.insync.ModelSetsListener;
 import org.netbeans.modules.visualweb.insync.models.FacesModelSet;
@@ -198,18 +199,26 @@ public class DataSourceResolver implements DataSourceInfoListener {
             }
             
             topComponent.setCursor(null);
-
         }
     }
 
     public class WaitForModelingListener implements ModelSetsListener {
-
+        
         /*---------- ModelSetsListener------------*/
 
         public void modelSetAdded(ModelSet modelSet) {
             // update data sources nodes, if necessary
+            Model[] modelSets = modelSet.getModels();
+            
+            // make sure the sources are modeled
+            for (Model mModel : modelSets) {
+                String filenameExt = mModel.getFile().getExt();
+                if (filenameExt.equals("jsp") || filenameExt.equals("java") ) {
+                    FacesModelSet.getFacesModelIfAvailable(mModel.getFile());                   
+                }
+            }            
+                        
             ProjectDataSourceTracker.refreshDataSourceReferences(project);
-
             if (handle != null) {
                 handle.finish();
             }
@@ -228,6 +237,6 @@ public class DataSourceResolver implements DataSourceInfoListener {
             // not implemented
         }
 
-        /*---------- end of interface implements ------------*/
-    }
+        /*---------- end of interface implements ------------*/        
+    }            
 }
