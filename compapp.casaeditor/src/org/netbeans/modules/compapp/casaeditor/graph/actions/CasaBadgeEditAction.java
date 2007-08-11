@@ -21,13 +21,12 @@ package org.netbeans.modules.compapp.casaeditor.graph.actions;
 
 import java.awt.Dialog;
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.action.WidgetAction.State;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.Constants;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphScene;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaBindingBadges;
 import org.netbeans.modules.compapp.casaeditor.graph.CasaNodeWidgetBinding;
@@ -124,17 +123,20 @@ public class CasaBadgeEditAction extends WidgetAction.Adapter {
         nodeWidget.getBadges().setBadgePressed(CasaBindingBadges.Badge.IS_EDITABLE, false);
         
         propertySheetPanel.setNodes(new Node[] { editNodeRef });
-        
+
+        final Object[] options = new Object[] {Constants.CLOSE};
         final DialogDescriptor descriptor = new DialogDescriptor(
                 propertySheetPanel,
                 NbBundle.getMessage(getClass(), "STR_PROPERTIES", editNodeRef.getDisplayName()),
                 true,
-                new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                if (evt.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                }
-            }
-        });
+                options,
+                null, 
+                DialogDescriptor.DEFAULT_ALIGN, 
+                null,
+                null); 
+        descriptor.setClosingOptions(options);
+                
+        
         final Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         
         // The dialog is modal, allow the action chain to continue while
