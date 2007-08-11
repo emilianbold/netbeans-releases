@@ -67,6 +67,7 @@ find * | egrep -v "$expat" | zip -q $DIST/zip/moduleclusters/$BASENAME-nb6.0-etc
 
 cp -p $DIST/zip/moduleclusters/$BASENAME-platform.zip $DIST/zip/
 
+cd ../..
 generated=nbbuild/build/generated
 rm -rf $generated
 ant -f nbbuild/build.xml generate-golden-files generate-files-layout index-layer-paths || exit
