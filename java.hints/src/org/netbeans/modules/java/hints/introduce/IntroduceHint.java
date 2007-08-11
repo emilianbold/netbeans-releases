@@ -409,6 +409,18 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             paramNames.add(ve.getSimpleName().toString());
         }
         
+        List<VariableElement> additionalLocalVariables = new LinkedList<VariableElement>(scanner.selectionWrittenLocalVariables);
+        
+        additionalLocalVariables.removeAll(scanner.usedLocalVariables);
+        
+        List<TypeMirrorHandle> additionaLocalTypes = new LinkedList<TypeMirrorHandle>();
+        List<String> additionaLocalNames = new LinkedList<String>();
+        
+        for (VariableElement ve : additionalLocalVariables) {
+            additionaLocalTypes.add(TypeMirrorHandle.create(ve.asType()));
+            additionaLocalNames.add(ve.getSimpleName().toString());
+        }
+        
         List<TreePathHandle> exits = new LinkedList<TreePathHandle>();
         
         for (TreePath tp : scanner.selectionExits) {
@@ -449,7 +461,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             exceptionHandles.add(TypeMirrorHandle.create(tm));
         }
         
-        return new IntroduceMethodFix(info.getJavaSource(), h, paramTypes, paramNames, TypeMirrorHandle.create(returnType), returnName, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1]);
+        return new IntroduceMethodFix(info.getJavaSource(), h, paramTypes, paramNames, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnName, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1]);
     }
     
     static boolean checkConstantExpression(CompilationInfo info, TreePath path) {
@@ -682,6 +694,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private boolean hasReturns = false;
         private boolean hasBreaks = false;
         private boolean hasContinues = false;
+        private boolean secondPass = false;
+        private boolean stopSecondPass = false;
         private AtomicBoolean cancel;
 
         public ScanStatement(CompilationInfo info, Tree firstInSelection, Tree lastInSelection, AtomicBoolean cancel) {
@@ -693,6 +707,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         @Override
         public Void scan(Tree tree, Void p) {
+            if (stopSecondPass)
+                return null;
+            
             if (phase != PHASE_AFTER_SELECTION) {
                 if (tree == firstInSelection) {
                     phase = PHASE_INSIDE_SELECTION;
@@ -703,13 +720,18 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 }
             }
             
-            Void result = super.scan(tree, p);
+            if (secondPass && tree == firstInSelection) {
+                stopSecondPass = true;
+                return null;
+            }
+            
+            super.scan(tree, p);
             
             if (tree == lastInSelection) {
                 phase = PHASE_AFTER_SELECTION;
             }
             
-            return result;
+            return null;
         }
 
         @Override
@@ -742,7 +764,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 }
             }
             
-            return super.visitAssignment(node, p);
+            //make sure the variable on the left side is not considered to be read:
+            return scan(node.getExpression(), p);
         }
 
         @Override
@@ -830,10 +853,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             super.visitWhileLoop(node, p);
             
             if (phase == PHASE_AFTER_SELECTION) {
-                //#109663:
+                //#109663&#112552:
                 //the selection was inside the while-loop, the variables inside the
-                //condition of the while loop need to be considered to be used again after the loop:
+                //condition&statement of the while loop need to be considered to be used again after the loop:
+                secondPass = true;
                 scan(node.getCondition(), p);
+                scan(node.getStatement(), p);
+                secondPass = false;
+                stopSecondPass = false;
             }
             
             return null;
@@ -844,11 +871,32 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             super.visitForLoop(node, p);
             
             if (phase == PHASE_AFTER_SELECTION) {
-                //#109663:
+                //#109663&#112552:
                 //the selection was inside the for-loop, the variables inside the
-                //condition and update parts of the for loop need to be considered to be used again after the loop:
+                //condition, update and statement parts of the for loop need to be considered to be used again after the loop:
+                secondPass = true;
                 scan(node.getCondition(), p);
                 scan(node.getUpdate(), p);
+                scan(node.getStatement(), p);
+                secondPass = false;
+                stopSecondPass = false;
+            }
+            
+            return null;
+        }
+
+        @Override
+        public Void visitDoWhileLoop(DoWhileLoopTree node, Void p) {
+            super.visitDoWhileLoop(node, p);
+            
+            if (phase == PHASE_AFTER_SELECTION) {
+                //#109663&#112552:
+                //the selection was inside the do-while, the variables inside the
+                //statement part of the do-while loop need to be considered to be used again after the loop:
+                secondPass = true;
+                scan(node.getStatement(), p);
+                secondPass = false;
+                stopSecondPass = false;
             }
             
             return null;
@@ -1296,6 +1344,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private TreePathHandle parentBlock;
         private List<TypeMirrorHandle> parameterTypes;
         private List<String> parameterNames;
+        private List<TypeMirrorHandle> additionalLocalTypes;
+        private List<String> additionalLocalNames;
         private TypeMirrorHandle returnType;
         private String returnName;
         private boolean declareVariableForReturnValue;
@@ -1305,11 +1355,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private int from;
         private int to;
 
-        public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TypeMirrorHandle> parameterTypes, List<String> parameterNames, TypeMirrorHandle returnType, String returnName, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to) {
+        public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TypeMirrorHandle> parameterTypes, List<String> parameterNames, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, String returnName, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to) {
             this.js = js;
             this.parentBlock = parentBlock;
             this.parameterTypes = parameterTypes;
             this.parameterNames = parameterNames;
+            this.additionalLocalTypes = additionalLocalTypes;
+            this.additionalLocalNames = additionalLocalNames;
             this.returnType = returnType;
             this.returnName = returnName;
             this.declareVariableForReturnValue = declareVariableForReturnValue;
@@ -1366,7 +1418,26 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         realArguments.add(make.Identifier(name));
                     }
                     
-                    List<StatementTree> methodStatements = new LinkedList<StatementTree>(statements.getStatements().subList(from, to + 1));
+                    List<StatementTree> methodStatements = new LinkedList<StatementTree>();
+                    
+                    Iterator<TypeMirrorHandle> additionalType = additionalLocalTypes.iterator();
+                    Iterator<String> additionalName = additionalLocalNames.iterator();
+                    
+                    while (additionalType.hasNext() && additionalName.hasNext()) {
+                        TypeMirror tm = additionalType.next().resolve(copy);
+                        
+                        if (tm == null) {
+                            //XXX:
+                            return ;
+                        }
+                        
+                        Tree type = make.Type(tm);
+                        
+                        methodStatements.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), additionalName.next(), type, null));
+                    }
+                    
+                    methodStatements.addAll(statements.getStatements().subList(from, to + 1));
+                    
                     Tree returnTypeTree = make.Type(returnType);
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
                     

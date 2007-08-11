@@ -611,6 +611,40 @@ public class IntroduceHintTest extends NbTestCase {
                        53 - 32, 67 - 32, false);
     }
     
+    public void testIntroduceMethod112552a() throws Exception {
+        performFixTest("package test; public class Test {public static void t() {boolean first = true; while (true) {if (first) {first = false;} else {break;}}}}",
+                       130 - 25, 144 - 25,
+                       "package test; public class Test {public static void t() {boolean first = true; while (true) {if (first) {first = name();} else {break;}}} private static boolean name() { boolean first; first = false; return first; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+    
+    public void testIntroduceMethod112552b() throws Exception {
+        performFixTest("package test; public class Test {public static void t(int a) {boolean first = true; while (true) {if (first) {while (a != 1) {first = false;}} else {break;}}}}",
+                       151 - 25, 165 - 25,
+                       "package test; public class Test {public static void t(int a) {boolean first = true; while (true) {if (first) {while (a != 1) {first = name();}} else {break;}}} private static boolean name() { boolean first; first = false; return first; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+    
+    public void testIntroduceMethod112552c() throws Exception {
+        performFixTest("package test; public class Test {public static void t() {boolean first = true; for (;;) {if (first) {first = false;} else {break;}}}}",
+                       126 - 25, 140 - 25,
+                       "package test; public class Test {public static void t() {boolean first = true; for (;;) {if (first) {first = name();} else {break;}}} private static boolean name() { boolean first; first = false; return first; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+    
+    public void testIntroduceMethod112552d() throws Exception {
+        performFixTest("package test; public class Test {public static void t() {boolean first = true; do {if (first) {first = false;} else {break;}} while (true);}}",
+                       120 - 25, 134 - 25,
+                       "package test; public class Test {public static void t() {boolean first = true; do {if (first) {first = name();} else {break;}} while (true);} private static boolean name() { boolean first; first = false; return first; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
+    
+    public void testIntroduceMethod112552e() throws Exception {
+        performFixTest("package test; public class Test {public static void t() {boolean first = true; while (true) {first = false; while (first) {System.err.println();}}}}",
+                       148 - 25, 169 - 25,
+                       "package test; public class Test {public static void t() {boolean first = true; while (true) {first = false; while (first) { name();}}} private static void name() { System.err.println(); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true));
+    }
     
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
