@@ -48,7 +48,6 @@ rm -f netbeans/build_info
 BASENAME=netbeans-$BUILD_TAG
 
 mkdir -p $DIST/zip/moduleclusters
-mkdir -p $DIST/contrib
 
 find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit
 
@@ -58,12 +57,12 @@ find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|id
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit
 
 cd netbeans
-expat='^extra/|^testtools/'
+expat='extra|testtools'
 for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd identity; do
-    zip -q -r $DIST/zip/moduleclusters/$BASENAME-${c}.zip ${c}* || exit
-    expat="$expat|^$c[0-9]*/"
+    find * | egrep "^$c[0-9]*/" | zip -q $DIST/zip/moduleclusters/$BASENAME-$c.zip -@ || exit
+    expat="$expat|$c[0-9]*"
 done
-find * | egrep -v "$expat" | zip -q $DIST/zip/moduleclusters/$BASENAME-nb6.0-etc.zip -@ || exit
+find * | egrep -v "^($expat)(/|$)" | zip -q $DIST/zip/moduleclusters/$BASENAME-nb6.0-etc.zip -@ || exit
 
 cp -p $DIST/zip/moduleclusters/$BASENAME-platform.zip $DIST/zip/
 
