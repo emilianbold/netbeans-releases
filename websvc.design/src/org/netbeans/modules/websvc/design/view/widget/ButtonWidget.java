@@ -28,14 +28,18 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.SelectProvider;
+import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
@@ -49,6 +53,8 @@ import org.netbeans.api.visual.widget.Widget;
 public class ButtonWidget extends ImageLabelWidget implements PropertyChangeListener{
     
     private Action action;
+    private char mnemonics_key = KeyEvent.CHAR_UNDEFINED;
+    private HotKeyAction mnemAction;
     public static int BORDER_RADIUS = 3;
     private Object key = new Object();
 
@@ -96,6 +102,8 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
     public ButtonWidget(Scene scene, Action action) {
         this(scene, null, getActionName(action));
         setAction(action);
+        setToolTipText(getActionTooltip(action));
+        setMnemonics(getActionMnemonics(action));
     }
     
     /**
@@ -126,6 +134,18 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
         }
     }
     
+    public void setMnemonics(char c) {
+        mnemonics_key = Character.toUpperCase(c);
+        if(mnemonics_key!=KeyEvent.CHAR_UNDEFINED && mnemAction == null) {
+            mnemAction = new HotKeyAction(new ButtonHotKeyProvider(this));
+            getScene().getActions().addAction(mnemAction);
+        }
+    }
+    
+    public char getMnemonics() {
+        return mnemonics_key;
+    }
+
     public void propertyChange(PropertyChangeEvent evt) {
         if(evt.getSource()==action && "enabled".equals(evt.getPropertyName())) {
             setButtonEnabled((Boolean)evt.getNewValue());
@@ -143,9 +163,6 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
         repaint();
     }
     
-    /*
-     *
-     */
     /**
      * Changed method name so that it doesnt clash with Widget.isEnabled.
      * @return
@@ -220,6 +237,20 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
         Object icon = action.getValue(Action.SMALL_ICON);
         return (icon instanceof ImageIcon ? ((ImageIcon)icon).getImage(): null);
     }
+
+    private static String getActionTooltip(Action action) {
+        return (String)action.getValue(Action.SHORT_DESCRIPTION);
+    }
+
+    private static char getActionMnemonics(Action action) {
+        String name = getActionName(action);
+        if (name == null) return KeyEvent.CHAR_UNDEFINED;
+        Integer mKey = (Integer) action.getValue(Action.MNEMONIC_KEY);
+        if(mKey==null) return KeyEvent.CHAR_UNDEFINED;
+        if(mKey<0||name.length()<mKey) return KeyEvent.CHAR_UNDEFINED;
+        return name.charAt(mKey);
+    }
+
     protected static class ButtonBorder implements Border {
         private ButtonWidget button;
         private Color borderColor;
@@ -330,5 +361,23 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
                 ((ButtonWidget)widget).performAction();
         }
         
+    }
+
+    public final static class ButtonHotKeyProvider implements HotKeyAction.HotKeyProvider {
+
+        private ButtonWidget widget;
+        
+        public ButtonHotKeyProvider (ButtonWidget widget) {
+            this.widget = widget;
+        }
+
+        public boolean processHotKey(Widget w, char mnemonics) {
+            if(widget.isVisible() && widget.getMnemonics()==mnemonics) {
+                widget.performAction();
+                return true;
+            }
+            return false;
+        }
+
     }
 }

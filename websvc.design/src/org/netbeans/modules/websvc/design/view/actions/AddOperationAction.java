@@ -82,6 +82,8 @@ public class AddOperationAction extends AbstractAction {
     public AddOperationAction(Service service, FileObject implementationClass) {
         super(getName());
         putValue(SMALL_ICON, new ImageIcon(IMAGE));
+        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(AddOperationAction.class, "Hint_AddOperation"));
+        putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddOperationAction.class, "LBL_AddOperation_mnem_pos")));
         this.service=service;
         this.implementationClass = implementationClass;
         this.wsdlFile = getWSDLFile();

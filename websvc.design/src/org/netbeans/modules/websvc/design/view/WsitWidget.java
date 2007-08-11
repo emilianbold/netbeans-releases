@@ -189,6 +189,8 @@ public class WsitWidget extends AbstractTitledWidget {
         private EditWSAttributesCookie cookie;
         public AdvancedAction(Service service, FileObject implementationClass){
             super(NbBundle.getMessage(WsitWidget.class, "LBL_Wsit_Advanced"));
+            putValue(SHORT_DESCRIPTION, NbBundle.getMessage(AdvancedAction.class, "Hint_Wsit_Advanced"));
+            putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AdvancedAction.class, "LBL_Wsit_Advanced_mnem_pos")));
             this.implementationClass = implementationClass;
             this.service = service;
             setEnabled(false);

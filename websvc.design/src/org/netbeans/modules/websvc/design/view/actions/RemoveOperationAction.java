@@ -73,6 +73,8 @@ public class RemoveOperationAction extends AbstractAction{
     /** Creates a new instance of RemoveOperationAction */
     public RemoveOperationAction(Service service) {
         super(getName());
+        putValue(SHORT_DESCRIPTION, NbBundle.getMessage(RemoveOperationAction.class, "Hint_RemoveOperation"));
+        putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddOperationAction.class, "LBL_RemoveOperation_mnem_pos")));
         this.service = service;
         setEnabled(false);
     }
