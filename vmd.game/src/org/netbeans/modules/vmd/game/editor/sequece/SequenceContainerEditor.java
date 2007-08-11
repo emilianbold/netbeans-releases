@@ -365,7 +365,6 @@ public class SequenceContainerEditor extends JPanel implements SequenceEditingPa
 		MainView.center(frame);
 		frame.setVisible(true);
 		frame.getContentPane().doLayout();
-		
 	}
 	
 	

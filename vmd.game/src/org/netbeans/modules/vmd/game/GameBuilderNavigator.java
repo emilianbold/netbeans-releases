@@ -73,16 +73,17 @@ public class GameBuilderNavigator extends JPanel implements NavigatorPanel, Edit
 			return;
 		doc.getTransactionManager().readAccess(new Runnable() {
 			public void run() {
-					GameAccessController controller = doc.getListenerManager().getAccessController(GameAccessController.class);
-					if (controller == null)
-						return;
-					GameBuilderNavigator.this.gameDesign = controller.getGameDesign();
-					System.out.println("\t\t gameDesign = " + controller.getGameDesign()); // NOI18N
-					GameBuilderNavigator.this.gameDesign.getMainView().addEditorManagerListener(GameBuilderNavigator.this);
-					Editable editable = GameBuilderNavigator.this.gameDesign.getMainView().getCurrentEditable();
-					if (editable == null)
-						return;
-					navigator[0] = editable.getNavigator();
+                GameAccessController controller = doc.getListenerManager().getAccessController(GameAccessController.class);
+                if (controller == null)
+                    return;
+                GameBuilderNavigator.this.gameDesign = controller.getGameDesign();
+                System.out.println("\t\t gameDesign = " + controller.getGameDesign()); // NOI18N
+                GameBuilderNavigator.this.gameDesign.getMainView().addEditorManagerListener(GameBuilderNavigator.this);
+                Editable editable = GameBuilderNavigator.this.gameDesign.getMainView().getCurrentEditable();
+                if (editable == null) {
+                    return;
+                }
+                navigator[0] = editable.getNavigator();
 			}			
 		});
 		this.setNavigator(navigator[0]);

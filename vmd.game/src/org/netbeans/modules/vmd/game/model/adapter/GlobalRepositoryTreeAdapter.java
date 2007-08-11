@@ -37,6 +37,9 @@ import org.netbeans.modules.vmd.game.model.SceneListener;
 import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 
+/**
+ * @author Karel Herink
+ */
 public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryListener, SceneListener, PropertyChangeListener {
 
 	private EventListenerList listenerList;
@@ -124,12 +127,14 @@ public class GlobalRepositoryTreeAdapter implements TreeModel, GlobalRepositoryL
 	
 	public void sceneAdded(Scene scene, int index) {
 		scene.addPropertyChangeListener(this);
+		scene.addSceneListener(this);
 		TreePath path = new TreePath(this.getRoot());
 		this.fireNodeInserted(path, index, scene);
 	}
 
 	public void sceneRemoved(Scene scene, int index) {
 		scene.removePropertyChangeListener(this);
+		scene.removeSceneListener(this);
 		TreePath path = new TreePath(this.getRoot());
 		this.fireNodeRemoved(path, index, scene);
 	}

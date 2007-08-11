@@ -24,6 +24,9 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 
 
+/**
+ * @author Karel Herink
+ */
 public interface Editable {
 
 	public static final String PROPERTY_NAME = "editable.prop.name"; // NOI18N
