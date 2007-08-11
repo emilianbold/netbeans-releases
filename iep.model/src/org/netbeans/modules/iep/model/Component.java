@@ -2,6 +2,8 @@ package org.netbeans.modules.iep.model;
 
 import java.util.Collection;
 import java.util.List;
+
+import org.netbeans.modules.iep.model.lib.TcgComponentType;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
@@ -43,9 +45,12 @@ public interface Component extends IEPComponent {
     
     void removeChildComponent(Component child);
     
+    
     void addProperty(Property property);
     
     void removeProperty(Property property);
     
     Property getProperty(String name);
+    
+    TcgComponentType getComponentType();
 }

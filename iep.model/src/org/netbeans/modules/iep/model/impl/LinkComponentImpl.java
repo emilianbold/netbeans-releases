@@ -22,6 +22,20 @@ public class LinkComponentImpl extends ComponentImpl implements LinkComponent {
 		return null;
 	}
 
+	//TODO change it to Referenceable component
+	public void setFrom(OperatorComponent from) {
+		if(from != null) {
+			Property fromProperty = getProperty(LinkComponent.PROP_FROM);
+			if(fromProperty == null) {
+				fromProperty = getModel().getFactory().createProperty(getModel());
+				fromProperty.setName(LinkComponent.PROP_FROM);
+			}
+			
+			fromProperty.setValue(from.getId());
+		}
+		
+	}
+	
 	public OperatorComponent getTo() {
 		Property fromProperty = getProperty(LinkComponent.PROP_TO);
 		if(fromProperty != null) {
@@ -29,5 +43,35 @@ public class LinkComponentImpl extends ComponentImpl implements LinkComponent {
 		}
 		
 		return null;
+	}
+	
+	public void setTo(OperatorComponent to) {
+		if(to != null) {
+			Property toProperty = getProperty(LinkComponent.PROP_TO);
+			if(toProperty == null) {
+				toProperty = getModel().getFactory().createProperty(getModel());
+				toProperty.setName(LinkComponent.PROP_TO);
+			}
+			
+			toProperty.setValue(to.getId());
+		}
+		
+		
+	}
+	
+	public String toString() {
+		String from = null;
+		String to = null;
+		OperatorComponent fromComp = getFrom();
+		OperatorComponent toComp = getTo();
+		if(fromComp != null) {
+			from = fromComp.getDisplayName();
+		}
+		
+		if(toComp != null) {
+			to = toComp.getDisplayName();
+		}
+		
+		return "From: " + from + " -->To: " + to;
 	}
 }

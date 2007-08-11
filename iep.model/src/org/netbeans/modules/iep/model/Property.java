@@ -1,5 +1,6 @@
 package org.netbeans.modules.iep.model;
 
+import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 
@@ -23,4 +24,6 @@ public interface Property extends IEPComponent {
 	void setValue(String value);
 	
 	Component getParentComponent();
+	
+	TcgPropertyType getPropertyType();
 }

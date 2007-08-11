@@ -22,6 +22,7 @@ import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPQNames;
 import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.lib.TcgPropertyType;
 import org.w3c.dom.Element;
 
 /**
@@ -30,6 +31,8 @@ import org.w3c.dom.Element;
  */
 public class PropertyImpl extends IEPComponentBase implements Property {
 
+	private TcgPropertyType mType;
+	
     public PropertyImpl(IEPModel model) {
         this(model, createNewElement(IEPQNames.PROPERTY.getQName(), model));
     }
@@ -68,5 +71,17 @@ public class PropertyImpl extends IEPComponentBase implements Property {
     
     public String toString() {
     	return getName();
+    }
+    
+    public TcgPropertyType getPropertyType() {
+    	
+    	if(mType == null) {
+	    	Component parent = getParentComponent();
+	    	if(parent != null) {
+	    		mType = parent.getComponentType().getPropertyType(getName());
+	    	}
+    	}
+    	
+    	return mType;
     }
 }

@@ -1,9 +1,12 @@
 package org.netbeans.modules.iep.model.impl;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPModel;
+import org.netbeans.modules.iep.model.ModelHelper;
 import org.netbeans.modules.iep.model.OperatorComponent;
 import org.netbeans.modules.iep.model.OperatorType;
 import org.netbeans.modules.iep.model.Property;
@@ -12,6 +15,11 @@ import org.w3c.dom.Element;
 
 public class OperatorComponentImpl extends ComponentImpl implements OperatorComponent {
 
+	private OperatorType mAllowedInputType;
+	
+	private OperatorType mAllowedOutputType;
+	
+	
 	public OperatorComponentImpl(IEPModel model,  Element e) {
             super(model, e);
         }
@@ -74,6 +82,18 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		
 		return id;
 	}
+	
+	public void setId(String id) {
+		Property p = super.getProperty(PROP_ID);
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_ID);
+			addProperty(p);
+			
+		}
+		
+		p.setValue(id+"");
+	}
 
 	public List<OperatorComponent> getInputOperatorList() {
 		List<OperatorComponent> inputOperators = new ArrayList<OperatorComponent>();
@@ -81,28 +101,105 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		Property p = getProperty(PROP_INPUT_ID_LIST);
 		if(p != null) {
 			String value = p.getValue();
+			List inputs = (List) p.getPropertyType().getType().parse(value);
+			if(inputs != null) {
+				Iterator it = inputs.iterator();
+				while(it.hasNext()) {
+					String id = (String) it.next();
+					OperatorComponent oc = ModelHelper.findOperator(id, getModel());
+					if(oc != null) {
+						inputOperators.add(oc);
+					}
+				}
+			}
 		}
-		return null;
+		
+		return inputOperators;
 	}
 
 	public List<SchemaComponent> getInputSchemaIdList() {
-		return null;
+		List<SchemaComponent> inputSchemas = new ArrayList<SchemaComponent>();
+		
+		Property p = getProperty(PROP_INPUT_SCHEMA_ID_LIST);
+		if(p != null) {
+			String value = p.getValue();
+			List inputSchemaIds = (List) p.getPropertyType().getType().parse(value);
+			if(inputSchemaIds != null) {
+				Iterator it = inputSchemaIds.iterator();
+				while(it.hasNext()) {
+					String name = (String) it.next();
+					SchemaComponent sc = ModelHelper.findSchema(name, getModel());
+					if(sc != null) {
+						inputSchemas.add(sc);
+					}
+				}
+			}
+		}
+		
+		return inputSchemas;
 	}
 
 	public OperatorType getInputType() {
-		return null;
+		if(mAllowedInputType == null) {
+			Property p = getProperty(PROP_INPUTTYPE);
+			if(p != null) {
+				String value = p.getValue();
+				if(value != null) {
+					mAllowedInputType = OperatorType.getType(value);
+				}
+			}
+		}
+		return mAllowedInputType;
 	}
 
 	public SchemaComponent getOutputSchemaId() {
-		return null;
+		SchemaComponent outputSchema = null;
+		
+		Property p = getProperty(PROP_OUTPUT_SCHEMA_ID);
+		if(p != null) {
+			String name = p.getValue();
+			if(name != null) {
+				outputSchema = ModelHelper.findSchema(name, getModel());
+			}
+		}
+		
+		return outputSchema;
 	}
 
 	public OperatorType getOutputType() {
-		return null;
+		if(mAllowedOutputType == null) {
+			Property p = getProperty(PROP_INPUTTYPE);
+			if(p != null) {
+				String value = p.getValue();
+				if(value != null) {
+					mAllowedOutputType = OperatorType.getType(value);
+				}
+			}
+		}
+		return mAllowedOutputType;
+		
 	}
 
 	public List<OperatorComponent> getStaticInputTableList() {
-		return null;
+		List<OperatorComponent> inputTables = new ArrayList<OperatorComponent>();
+		
+		Property p = getProperty(PROP_STATIC_INPUT_ID_LIST);
+		if(p != null) {
+			String value = p.getValue();
+			List inputSchemaIds = (List) p.getPropertyType().getType().parse(value);
+			if(inputSchemaIds != null) {
+				Iterator it = inputSchemaIds.iterator();
+				while(it.hasNext()) {
+					String id = (String) it.next();
+					OperatorComponent sc = ModelHelper.findOperator(id, getModel());
+					if(sc != null) {
+						inputTables.add(sc);
+					}
+				}
+			}
+		}
+		
+		return inputTables;
 	}
 
 	public List<Property> getToColumnList() {
@@ -241,11 +338,28 @@ public class OperatorComponentImpl extends ComponentImpl implements OperatorComp
 		
 		String displayName = null;
 		
-		Property p = super.getProperty(PROP_DISPLAYNAME);
+		Property p = super.getProperty(PROP_NAME);
 		if(p != null) {
 			displayName = p.getValue();
 		}
 		
 		return displayName;
+	}
+	
+	public void setDisplayName(String displayName) {
+		Property p = super.getProperty(PROP_NAME);
+		if(p == null) {
+			p = getModel().getFactory().createProperty(getModel());
+			p.setName(PROP_NAME);
+			addProperty(p);
+			
+		}
+		
+		p.setValue(displayName);
+	}
+	
+	
+	public String toString() {
+		return "name:" + getName() + " type:" + getType();
 	}
 }

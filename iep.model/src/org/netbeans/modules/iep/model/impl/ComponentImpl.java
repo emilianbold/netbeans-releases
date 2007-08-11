@@ -25,6 +25,8 @@ import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.IEPQNames;
 import org.netbeans.modules.iep.model.IEPVisitor;
 import org.netbeans.modules.iep.model.Property;
+import org.netbeans.modules.iep.model.lib.TcgComponentType;
+import org.netbeans.modules.iep.model.lib.TcgModelManager;
 import org.netbeans.modules.xml.wsdl.model.spi.GenericExtensibilityElement.StringAttribute;
 import org.w3c.dom.Element;
 
@@ -34,6 +36,8 @@ import org.w3c.dom.Element;
  */
 public class ComponentImpl extends IEPComponentBase implements Component {
 
+	private TcgComponentType mType;
+	
     public ComponentImpl(IEPModel model,  Element e) {
     	super(model, e);
     }
@@ -128,5 +132,16 @@ public class ComponentImpl extends IEPComponentBase implements Component {
     	
     	return prop;
     }
+    
+    public TcgComponentType getComponentType() {
+    	if(mType == null) {
+            this.mType = TcgModelManager.getInstance().getTcgComponentType(getType());
+    	}
+    	
+    	
+
+        return mType;
+    }
+    
     
 }

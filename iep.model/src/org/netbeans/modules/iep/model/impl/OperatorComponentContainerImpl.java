@@ -1,7 +1,9 @@
 package org.netbeans.modules.iep.model.impl;
 
+import java.util.Iterator;
 import java.util.List;
 
+import org.netbeans.modules.iep.model.Component;
 import org.netbeans.modules.iep.model.IEPComponent;
 import org.netbeans.modules.iep.model.IEPModel;
 import org.netbeans.modules.iep.model.OperatorComponent;
@@ -48,4 +50,24 @@ public class OperatorComponentContainerImpl extends ComponentImpl implements Ope
 		removeChildComponent(operator);
 	}
 
+	public OperatorComponent findChildComponent(String id) {
+		if(id == null) {
+			return null;
+		}
+		
+		OperatorComponent child = null;
+    	List<OperatorComponent> children = getAllOperatorComponent();
+    	Iterator<OperatorComponent> it = children.iterator();
+    	while(it.hasNext()) {
+    		OperatorComponent c = it.next();
+    		String cid = c.getId();
+    		if(id.equals(cid)) {
+    			child = c;
+    			break;
+    		}
+    	}
+    	
+    	return child;
+    	
+    }
 }

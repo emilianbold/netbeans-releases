@@ -9,4 +9,6 @@ public interface OperatorComponentContainer extends Component {
 	void addOperatorComponent(OperatorComponent operator);
 	
 	void removeOperatorComponent(OperatorComponent operator);
+	
+	OperatorComponent findChildComponent(String id);
 }

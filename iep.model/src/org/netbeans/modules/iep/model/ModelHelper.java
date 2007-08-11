@@ -15,15 +15,7 @@ public class ModelHelper {
 		PlanComponent pComponent = model.getPlanComponent();
 		OperatorComponentContainer operatorsComponent = pComponent.getOperatorComponentContainer();
 		if(operatorsComponent != null) {
-			List<OperatorComponent> operators = operatorsComponent.getAllOperatorComponent();
-			Iterator<OperatorComponent> it = operators.iterator(); 
-			while(it.hasNext()) {
-				OperatorComponent oc = it.next();
-				if(id.equals(oc.getId())) {
-					operatorComponent = oc;
-					break;
-				}
-			}
+			operatorComponent = operatorsComponent.findChildComponent(id);
 		}
 		
 		return operatorComponent;

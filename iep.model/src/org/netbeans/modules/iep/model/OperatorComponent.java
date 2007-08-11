@@ -14,7 +14,7 @@ public interface OperatorComponent extends Component {
 	
 	public static final String PROP_ID = "id";
 	
-	public static final String PROP_DISPLAYNAME = "name";
+	public static final String PROP_NAME = "name";
 	
 	public static final String PROP_INPUT_SCHEMA_ID_LIST = "inputSchemaIdList";
 
@@ -54,7 +54,11 @@ public interface OperatorComponent extends Component {
 	
 	String getId();
 	
+	void setId(String id);
+	
 	String getDisplayName();
+	
+	void setDisplayName(String displayName);
 	
 	List<SchemaComponent> getInputSchemaIdList();
 
@@ -87,6 +91,5 @@ public interface OperatorComponent extends Component {
 	public List<Property> getGroupByColumnList();
 	
 	public String getWhereClause();
-	
 	
 }
