@@ -23,6 +23,8 @@ import java.beans.PropertyEditorSupport;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
+import javax.accessibility.AccessibleContext;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.KeyStroke;
@@ -34,6 +36,7 @@ import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.PropertyModel;
 import javax.xml.namespace.QName;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -99,8 +102,15 @@ public class PortTypeEditor extends PropertyEditorSupport
             if(portType != null) {
                  mPortTypesComboBox.setSelectedItem(mapPTtoQName.get(portType));
             }
+            initAccessibility();
         }
 
+        private void initAccessibility() {
+            ResourceBundle bundle = NbBundle.getBundle(PortTypeEditor.class);
+            AccessibleContext context = mPortTypesComboBox.getAccessibleContext();
+            context.setAccessibleName(bundle.getString("ACSN_qNameSelector"));
+            context.setAccessibleDescription(bundle.getString("ACSD_qNameSelector")); 
+        }
         public void connect(PropertyEditor propertyEditor, PropertyEnv env) {
             editor = propertyEditor;
             reset();
