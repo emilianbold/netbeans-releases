@@ -170,7 +170,6 @@ public class DataSourceResolver implements DataSourceInfoListener {
         // Update Project's datasources
         try {
             new DesignTimeDataSourceHelper().updateDataSource(project);
-            ProjectDataSourceTracker.refreshDataSources(project);
         } catch (NamingException ne) {
             Logger.getLogger("copy").info("Migrating user settings failed " + ne); //NOI18N
         }
