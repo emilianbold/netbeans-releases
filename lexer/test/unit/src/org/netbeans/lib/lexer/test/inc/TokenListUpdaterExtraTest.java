@@ -85,4 +85,22 @@ public class TokenListUpdaterExtraTest extends TestCase {
         return doc;
     }
 
+    public void testTokenCountWasCalledInUpdater() throws Exception {
+        Document doc = new ModificationTextDocument();
+        String text = "+/* */";
+        doc.insertString(0, text, null);
+        
+        doc.putProperty(Language.class, TestTokenId.language());
+        TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+        TokenSequence<?> ts = hi.tokenSequence();
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.PLUS, "+", -1);
+        doc.remove(1, 3); // Remove "/* "
+        ts = hi.tokenSequence();
+        ts.moveEnd();
+        assertTrue(ts.movePrevious());
+        LexerTestUtilities.assertTokenEquals(ts,TestTokenId.DIV, "/", -1);
+    }
+
+
 }

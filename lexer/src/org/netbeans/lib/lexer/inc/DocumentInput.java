@@ -19,6 +19,8 @@
 
 package org.netbeans.lib.lexer.inc;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -45,6 +47,9 @@ import org.netbeans.spi.lexer.*;
 
 public final class DocumentInput<D extends Document>
 extends MutableTextInput<D> implements DocumentListener {
+
+    // -J-Dorg.netbeans.lib.lexer.TokenHierarchyOperation.level=FINE
+    private static final Logger LOG = Logger.getLogger(org.netbeans.lib.lexer.TokenHierarchyOperation.class.getName());
 
     private static final String PROP_MIME_TYPE = "mimeType"; //NOI18N
     
@@ -111,6 +116,9 @@ extends MutableTextInput<D> implements DocumentListener {
     private void modified(boolean insert, DocumentEvent e) {
         int offset = e.getOffset();
         int length = e.getLength();
+        if (LOG.isLoggable(Level.FINE) && !DocumentUtilities.isWriteLocked(doc)) {
+            LOG.log(Level.FINE, "Lexer update while document not write-locked", new Exception()); // NOI18N
+        }
         if (insert) {
             tokenHierarchyControl().textModified(offset, 0, null, length);
         } else {
