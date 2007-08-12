@@ -119,7 +119,7 @@ public final class FormatterImpl extends ExtFormatter {
             return endOffset - startOffset; // should not happen in reality
         indentImpl.reformat(startOffset, endOffset);
         TaskHandler handler = indentImpl.reformatHandler();
-        return (handler != null)
+        return (handler != null && handler.hasItems())
                 ? Math.max(handler.endPos().getOffset() - startOffset, 0)
                 : endOffset - startOffset;
     }
