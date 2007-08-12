@@ -43,8 +43,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSetConfig
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
@@ -163,12 +161,13 @@ public final class MakeProject implements Project, AntProjectListener {
 	    new MakeSources(this, helper),
             new AntProjectHelperProvider (),
 	    projectDescriptorProvider,
-            MobilityBridge.createBridge(this),
+            new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
             new NativeProjectProvider(this, projectDescriptorProvider),
 	    new RecommendedTemplatesImpl(),
             new MakeProjectOperations(this),
             new FolderSearchInfo(projectDescriptorProvider),
             new MakeProjectType()
+        
         });
     }
 

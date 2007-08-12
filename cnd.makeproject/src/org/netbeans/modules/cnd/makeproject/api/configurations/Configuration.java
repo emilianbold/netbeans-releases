@@ -27,9 +27,10 @@ import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.spi.project.ProjectConfiguration;
 import org.openide.util.NbBundle;
 
-public abstract class Configuration {
+public abstract class Configuration implements ProjectConfiguration {
     private String baseDir;
     private String name;
     private boolean defaultConfiguration;
@@ -89,9 +90,6 @@ public abstract class Configuration {
     }
     
     public String getDisplayName() {
-        if (isDefault())
-            return getName() + " " + getString("ActiveTxt"); // NOI18N
-        else
             return getName();
     }
     
@@ -104,6 +102,9 @@ public abstract class Configuration {
     }
     
     public String toString() {
+        if (isDefault())
+            return getDisplayName() + " " + getString("ActiveTxt"); // NOI18N
+        else
         return getDisplayName();
     }
     

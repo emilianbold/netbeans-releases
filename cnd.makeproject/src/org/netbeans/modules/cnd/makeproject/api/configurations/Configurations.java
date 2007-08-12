@@ -22,7 +22,9 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class Configurations {
@@ -31,7 +33,7 @@ public class Configurations {
     public static final String PROP_ACTIVE_CONFIGURATION = "activeconfiguration"; // NOI18N
 
     private PropertyChangeSupport pcs;
-    private List configurations;
+    private List<Configuration> configurations;
 
     public Configurations() {
         pcs = new PropertyChangeSupport(this);
@@ -97,6 +99,12 @@ public class Configurations {
 	return (Configuration[]) configurations.toArray(new Configuration[size()]);
     }
 
+    public Collection<Configuration> getConfsAsCollection() {
+        Collection<Configuration> collection = new LinkedHashSet<Configuration>();
+        collection.addAll(configurations);
+        return collection;
+    }
+    
     public Configuration[] getClonedConfs() {
 	Configuration[] cs = new Configuration[size()];
 	for (int i = 0; i < size(); i++) {
@@ -110,7 +118,7 @@ public class Configurations {
 	String[] names = new String[size()];
 	for (int i = 0; i < size(); i++) {
 	    Configuration configuration = (Configuration)configurations.get(i);
-	    names[i] = configuration.getDisplayName();
+	    names[i] = configuration.toString();
 	}
 	return names;
     }
@@ -161,19 +169,29 @@ public class Configurations {
     /*
      * Set default configuration
      */
-    public void setActive(String name) {
+    public void setActive(Configuration def) {
+        if (def == null)
+            return;
         Configuration old = getActive();
-	Configuration def = getConf(name);
-	if (def != null) {
+        if (def == old)
+            return; // Nothing has changed
+        
 	    for (Iterator it = configurations.iterator(); it.hasNext(); ) {
 		Configuration c = (Configuration)it.next();
 		c.setDefault(false);
-	    }
+            if (c == def) {
 	    def.setDefault(true);
-	}
-        
         pcs.firePropertyChange(PROP_ACTIVE_CONFIGURATION, old, def);
         pcs.firePropertyChange(PROP_DEFAULT, null, null);
+    }
+        }
+    }
+
+    /*
+     * Set default configuration
+     */
+    public void setActive(String name) {
+        setActive(getConf(name));
     }
 
     public void setActive(int index) {
