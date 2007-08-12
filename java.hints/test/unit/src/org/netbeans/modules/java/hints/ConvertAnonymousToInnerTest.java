@@ -58,6 +58,14 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
         public TreePath visitNewClass(NewClassTree node, Void p) {
             return getCurrentPath();
         }
+
+        @Override
+        public TreePath reduce(TreePath r1, TreePath r2) {
+            if (r1 == null)
+                return r2;
+            return r1;
+        }
+        
     }
     
     public void testSimpleConvert() throws Exception {
@@ -274,6 +282,94 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
                 "        private ArrayListImpl(Collection<? extends CharSequence> arg0) {\n" + 
                 "            super(arg0);\n" + 
                 "        }\n" + 
+                "    }\n" +
+                "}\n");
+    }
+    
+    public void testInnerClass1() throws Exception {
+        performTest(
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        new X() {};\n" +
+                "    }\n" +
+                "    class X {}\n" +
+                "}\n",
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        new XImpl();\n" +
+                "    }\n" +
+                "    class X {}\n" +
+                "    private class XImpl extends Test.X {\n" +
+                "        private XImpl() {\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n");
+    }
+    
+    public void testInnerClass2() throws Exception {
+        performTest(
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        new Test() {};\n" +
+                "    }\n" +
+                "}\n",
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        new TestImpl();\n" +
+                "    }\n" +
+                "    private static class TestImpl extends Test {\n" +
+                "        private TestImpl() {\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n");
+    }
+    
+    public void testInnerClass3() throws Exception {
+        performTest(
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        new X() {};\n" +
+                "    }\n" +
+                "    static class X {}\n" +
+                "}\n",
+                "package hierbas.del.litoral;\n\n" +
+                "import hierbas.del.litoral.Test.X;\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        new XImpl();\n" +
+                "    }\n" +
+                "    static class X {}\n" +
+                "    private static class XImpl extends X {\n" +
+                "        private XImpl() {\n" +
+                "        }\n" +
+                "    }\n" +
+                "}\n");
+    }
+    
+    public void testInnerClass4() throws Exception {
+        performTest(
+                "package hierbas.del.litoral;\n\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        new X() {};\n" +
+                "    }\n" +
+                "    interface X {}\n" +
+                "}\n",
+                "package hierbas.del.litoral;\n\n" +
+                "import hierbas.del.litoral.Test.X;\n" +
+                "public class Test {\n" +
+                "    public void taragui() {\n" +
+                "        new XImpl();\n" +
+                "    }\n" +
+                "    interface X {}\n" +
+                "    private static class XImpl implements X {\n" +
+                "        private XImpl() {\n" +
+                "        }\n" +
                 "    }\n" +
                 "}\n");
     }

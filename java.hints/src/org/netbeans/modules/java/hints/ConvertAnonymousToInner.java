@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -247,13 +248,30 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         TypeMirror superType = copy.getTrees().getTypeMirror(new TreePath(newClassToConvert, nct.getIdentifier()));
         Element superTypeElement = copy.getTrees().getElement(new TreePath(newClassToConvert, nct.getIdentifier()));
+        
+        boolean isStaticContext = true;
+        FileObject source = SourceUtils.getFile(superTypeElement, copy.getClasspathInfo());
+        
+        if (source == copy.getFileObject() /*&& copy.getElementUtilities().outermostTypeElement(superTypeElement) != superTypeElement*/) {
+            Element currentElement = superTypeElement;
+            
+            while (currentElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
+                if (!currentElement.getModifiers().contains(Modifier.STATIC)) {
+                    isStaticContext = false;
+                    break;
+                }
+                
+                currentElement = currentElement.getEnclosingElement();
+            }
+        }
+        
         Tree superTypeTree = make.Type(superType);
         
         Logger.getLogger(ConvertAnonymousToInner.class.getName()).log(Level.FINE, "usedFieldsVariables = {0}", usedFieldsVariables ); //NOI18N
         
         TreePath superConstructorCall = new FindSuperConstructorCall().scan(newClassToConvert, null);
         
-        ModifiersTree classModifiers = make.Modifiers(usedFieldsVariables.isEmpty() ? EnumSet.of(Modifier.PRIVATE, Modifier.STATIC) : EnumSet.of(Modifier.PRIVATE));
+        ModifiersTree classModifiers = make.Modifiers((isStaticContext && usedFieldsVariables.isEmpty()) ? EnumSet.of(Modifier.PRIVATE, Modifier.STATIC) : EnumSet.of(Modifier.PRIVATE));
         
         List<Tree> members = new ArrayList<Tree>();
         List<VariableTree> constrArguments = new ArrayList<VariableTree>();
