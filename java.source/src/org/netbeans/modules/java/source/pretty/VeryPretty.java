@@ -828,7 +828,7 @@ public final class VeryPretty extends JCTree.Visitor {
             print(' ');
 	printNoParenExpr(tree.cond);
 	print(cs.spaceWithinIfParens() ? " )" : ")");
-        boolean prevblock = tree.thenpart.getKind() == Tree.Kind.BLOCK || cs.redundantIfBraces() == BracesGenerationStyle.GENERATE;
+        boolean prevblock = tree.thenpart.getKind() == Tree.Kind.BLOCK && cs.redundantIfBraces() != BracesGenerationStyle.ELIMINATE || cs.redundantIfBraces() == BracesGenerationStyle.GENERATE;
 	if (tree.elsepart != null && danglingElseChecker.hasDanglingElse(tree.thenpart)) {
 	    printBlock(tree.thenpart, cs.getOtherBracePlacement(), cs.spaceBeforeIfLeftBrace());
 	    prevblock = true;
