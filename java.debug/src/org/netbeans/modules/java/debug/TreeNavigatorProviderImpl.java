@@ -20,23 +20,32 @@ package org.netbeans.modules.java.debug;
 
 import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.Document;
+import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
-import org.netbeans.modules.editor.highlights.spi.Highlighter;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.navigator.NavigatorPanel;
+import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -57,19 +66,7 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
         manager.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                    FileObject file = TreeNavigatorJavaSourceFactory.getInstance().getFile();
-                    
-                    if (file == null)
-                        return ;
-                    
-                    List<Highlight> result = new ArrayList<Highlight>();
-                    
-                    for (Node n : manager.getSelectedNodes()) {
-                        if (n instanceof Highlight)
-                            result.add((Highlight) n);
-                    }
-                    
-                    Highlighter.getDefault().setHighlights(file, "tree", result); //NOI18N
+                    setHighlights(TreeNavigatorJavaSourceFactory.getInstance().getFile(), manager);
                 }
             }
         });
@@ -119,6 +116,55 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
         TreeNavigatorJavaSourceFactory.getInstance().setLookup(Lookup.EMPTY, null);
     }
 
+    static OffsetsBag getBag(Document doc) {
+        OffsetsBag bag = (OffsetsBag) doc.getProperty(TreeNavigatorProviderImpl.class);
+                
+        if (bag == null) {
+            doc.putProperty(TreeNavigatorProviderImpl.class, bag = new OffsetsBag(doc));
+        }
+        
+        return bag;
+    }
+    
+    static void setHighlights(FileObject file, ExplorerManager manager) {
+        if (file == null) {
+            return;
+        }
+        try {
+            DataObject od = DataObject.find(file);
+
+            EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
+
+            if (ec == null) {
+                return;
+            }
+            Document doc = ec.getDocument();
+
+            if (doc == null) {
+                return;
+            }
+            OffsetsBag bag = new OffsetsBag(doc);
+
+            for (Node n : manager.getSelectedNodes()) {
+                if (n instanceof OffsetProvider) {
+                    OffsetProvider p = (OffsetProvider) n;
+                    final int start = p.getStart();
+                    final int end = p.getEnd();
+                    
+                    if (start >= 0 && end >= 0) {
+                        bag.addHighlight(start, end, HIGHLIGHT);
+                    }
+                }
+            }
+
+            getBag(doc).setHighlights(bag);
+        } catch (DataObjectNotFoundException ex) {
+            Logger.getLogger(TreeNavigatorProviderImpl.class.getName()).log(Level.FINE, null, ex);
+        }
+    }
+    
+    private static final AttributeSet HIGHLIGHT = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(224, 224, 224));
+    
     private final class TaskImpl implements CancellableTask<CompilationInfo> {
         
         public void cancel() {

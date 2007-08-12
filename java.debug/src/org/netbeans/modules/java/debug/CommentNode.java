@@ -19,8 +19,6 @@
 package org.netbeans.modules.java.debug;
 
 import org.netbeans.api.java.source.Comment;
-import org.netbeans.editor.Coloring;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
@@ -29,7 +27,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public class CommentNode extends AbstractNode implements Highlight {
+public class CommentNode extends AbstractNode implements OffsetProvider {
 
     private Comment comment;
 
@@ -48,8 +46,4 @@ public class CommentNode extends AbstractNode implements Highlight {
         return comment.endPos();
     }
 
-    public Coloring getColoring() {
-        return TreeNode.HIGHLIGHT;
-    }
-    
 }

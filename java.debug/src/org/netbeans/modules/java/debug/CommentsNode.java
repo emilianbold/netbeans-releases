@@ -13,7 +13,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.debug;
@@ -21,8 +21,6 @@ package org.netbeans.modules.java.debug;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.java.source.Comment;
-import org.netbeans.editor.Coloring;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -31,7 +29,7 @@ import org.openide.nodes.Node;
  *
  * @author Jan Lahoda
  */
-public class CommentsNode extends AbstractNode implements Highlight {
+public class CommentsNode extends AbstractNode implements OffsetProvider {
 
     private List<Comment> comments;
 
@@ -64,10 +62,6 @@ public class CommentsNode extends AbstractNode implements Highlight {
         }
         
         return end;
-    }
-
-    public Coloring getColoring() {
-        return TreeNode.HIGHLIGHT;
     }
 
     private static final class ChildrenImpl extends Children.Keys {

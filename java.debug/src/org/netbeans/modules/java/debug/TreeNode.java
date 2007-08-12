@@ -67,15 +67,12 @@ import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.editor.Coloring;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -85,10 +82,8 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public class TreeNode extends AbstractNode implements Highlight {
+public class TreeNode extends AbstractNode implements OffsetProvider {
     
-    static final Coloring HIGHLIGHT = new Coloring(null, null, new Color(224, 224, 224));
-
     private TreePath tree;
     private CompilationInfo info;
     private boolean synthetic;
@@ -139,10 +134,6 @@ public class TreeNode extends AbstractNode implements Highlight {
         return (int)info.getTrees().getSourcePositions().getEndPosition(tree.getCompilationUnit(), tree.getLeaf());
     }
 
-    public Coloring getColoring() {
-        return HIGHLIGHT;
-    }
-    
     private static final class NodeChilren extends Children.Keys {
         
         public NodeChilren(List<Node> nodes) {

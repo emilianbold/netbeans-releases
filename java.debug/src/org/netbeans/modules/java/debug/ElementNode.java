@@ -19,7 +19,6 @@
 package org.netbeans.modules.java.debug;
 
 import com.sun.source.tree.Tree;
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -30,8 +29,6 @@ import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementScanner6;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.editor.Coloring;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -40,10 +37,8 @@ import org.openide.nodes.Node;
  *
  * @author Jan Lahoda
  */
-public class ElementNode extends AbstractNode implements Highlight {
+public class ElementNode extends AbstractNode implements OffsetProvider {
     
-    private static final Coloring HIGHLIGHT = new Coloring(null, null, new Color(224, 224, 224));
-
     private Element element;
     private CompilationInfo info;
     
@@ -52,7 +47,7 @@ public class ElementNode extends AbstractNode implements Highlight {
 //    }
     
     public static Node getTree(CompilationInfo info, Element element) {
-        List<Node> result = new ArrayList();
+        List<Node> result = new ArrayList<Node>();
         
         new FindChildrenElementVisitor(info).scan(element, result);
         
@@ -86,18 +81,14 @@ public class ElementNode extends AbstractNode implements Highlight {
             return -1;
     }
 
-    public Coloring getColoring() {
-        return HIGHLIGHT;
-    }
-    
-    private static final class NodeChilren extends Children.Keys {
+    private static final class NodeChilren extends Children.Keys<Node> {
         
         public NodeChilren(List<Node> nodes) {
             setKeys(nodes);
         }
         
-        protected Node[] createNodes(Object key) {
-            return new Node[] {(Node) key};
+        protected Node[] createNodes(Node key) {
+            return new Node[] {key};
         }
         
     }

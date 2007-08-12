@@ -22,22 +22,16 @@ import com.sun.source.util.TreePath;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.editor.highlights.spi.Highlight;
-import org.netbeans.modules.editor.highlights.spi.Highlighter;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
-import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -57,17 +51,7 @@ public class ElementNavigatorProviderImpl implements NavigatorPanel {
         manager.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
-                    List<Highlight> result = new ArrayList<Highlight>();
-                    FileObject file = ElementNavigatorJavaSourceFactory.getInstance().getFile();
-                    
-                    if (file == null)
-                        return ;
-                    
-                    for (Node n : manager.getSelectedNodes()) {
-                        result.add((Highlight) n);
-                    }
-                    
-                    Highlighter.getDefault().setHighlights(file, "tree", result); //NOI18N
+                    TreeNavigatorProviderImpl.setHighlights(ElementNavigatorJavaSourceFactory.getInstance().getFile(), manager);
                 }
             }
         });
